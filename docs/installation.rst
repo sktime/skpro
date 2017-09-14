@@ -1,23 +1,27 @@
 Installation
 ************
 
-Installation is easy using the python package manager `pip`_. ::
+The installation of the latest stable version is easy using the python package manager `pip`_. ::
 
     pip install skpro
 
-skpro depends on the scikit-learn package and its respective dependencies numpy and scipy which will be pulled in automatically during installation.
+``skpro`` depends on the ``scikit-learn`` package and its respective dependencies ``numpy`` and ``scipy`` which will be pulled in automatically during installation.
 Furthermore, you may install optional package dependencies that enhance the workflow components (i.e. `uncertainties`_ and `tabulate`_). ::
 
     pip install skpro[workflow]
 
-That's it. You are now ready to go. We recommend reading the :doc:`/introduction` for a quick start.
+That's it. You are now ready to go. We recommend reading the :doc:`/user_guide` to get started.
 
 Bleeding edge
 ^^^^^^^^^^^^^
 
 To test or develop new features you may want to install the latest package version from the master branch (bleeding edge installation).
 
-Clone the source from our `public code repository`_ on GitHub and change into the skpro directory. Run ::
+Clone the source from our `public code repository`_ on GitHub and change into the skpro directory. Make sure that all dependencies are installed ::
+
+    pip install -r requirements.txt
+
+Then run ::
 
     python setup.py develop
 

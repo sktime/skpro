@@ -1,49 +1,136 @@
 User Guide
 **********
 
-This guide will give a short overview of the basic functions in skpro package.
+This guide will give a short overview of the basic functions in ``skpro`` package.
 For further details you may explore the `API documentation <api/modules.html>`_.
 
 Overview
 --------
 
-Figure [fig:overview] gives an overview about central elements and
-concepts of the implemented API and how it extends the scikit-learn
-toolbox. To understand the probabilistic extension, it is firstly
+The figure below gives an overview about central elements and
+concepts of skpro and how it extends the scikit-learn
+toolbox. To understand skpro, it is firstly
 helpful to quickly review scikit-learn’s classical prediction workflow,
-particularly its seminal *Estimator* object. In scikit-learn, an
-Estimator object represents a certain prediction strategy (e.g. Linear
-regression), that can be fitted using the *fit(X, y)* function. The
+particularly its seminal ``Estimator`` object. In scikit-learn, an
+``Estimator`` object represents a certain prediction strategy (e.g. Linear
+regression), that can be fitted using the ``fit(X, y)`` function. The
 fitted estimator can then be used to obtain the predictions on new data
-using the *predict(X)* method. Finally, the predicted values can be
+using the ``predict(X)`` method. Finally, the predicted values can be
 compared with the actual targets using one of the available classical
 loss functions.
 
-Our probabilistic extension of scikit-learn seeks to replicate this
-general pattern, specifically the idea of encapsulating the
-probabilistic prediction models in an estimator-like structure that
-offers a fit and predict method. As apparent in the overview figure
-[fig:overview], we introduce “ProbabilisticEstimator” objects to extend into the
-probabilistic domain.
+skpro seeks to replicate this general pattern, specifically the idea of encapsulating the
+probabilistic prediction models in an ``ProbabilisticEstimator`` that
+offers a fit and predict method but returns a predicted probability distribution.
 
-.. figure:: figures/overview.png
-   :alt: Overview of the implemented *scikit-learn*-based probabilistic
-   prediction framework.
-   :width: 90.0%
+.. figure:: _static/overview.png
+   :width: 90%
 
-   Overview of the implemented *scikit-learn*-based probabilistic
-   prediction framework.
+   Overview of the skpro prediction framework and how it extends the *scikit-learn*
+   package.
 
+Metrics
+-------
 
-API structure
--------------
+To evaluate the accuracy of the predicted distributions, the API
+provides probabilistic loss metrics (cp. overview figure
+[fig:overview]). Specifically, the log-loss and the Gneiting loss, as
+described in section [sec:probabilistic-losses], were implemented. For
+consistency, the signatures of the provided loss functions are unified
+and correspond with the classical loss functions that are provided by
+scikit-learn. Like the scikit-learn package, the metrics package
+provides a helper function to transform a given loss function into a
+score function, which is used, for instance, in cross-validation and
+hyperparameter optimization.
 
-In the following, we give an overview of the implemented classes that
-inherit from the previously discussed central base classes
-*Distribution* and *Estimator*.
+Prediction strategy
+-------------------
 
-Distributions
-~~~~~~~~~~~~~
+How can probabilistic prediction models be learned, specifically
+strategies that predict probability distributions? The approach that we
+investigate in this work is a hybrid one in the sense that is uses
+classical estimators to predict defining parameters of continuous
+distributions. The idea is that the prediction of a normal distribution
+can be brought down to a prediction of its defining parameters mean
+:math:`\mu` and standard deviation :math:`\sigma`. Likewise we can
+predict a Laplacian distribution by predicting its defining parameter
+location :math:`\mu` and scale :math:`b`. More general, we seek to
+obtain *point estimates* and *variance predictions* that are plugged
+into the definition of the respective predicted distribution. The point
+estimates can be understood as equivalent to the classical predictions
+in non-probabilistic settings, for example an estimated housing price.
+While these estimates are definite in the classical setting, the
+probabilistic point estimates can be interpreted as the expected value
+of the predicted distribution (e.g. as :math:`\mu` in the case of a
+Normal distribution). The variance predictions, on the other hand,
+estimate the uncertainty of the point prediction and account for the
+expected fluctuation or deviation of the probabilistic prediction (e.g.
+:math:`\sigma` of the Normal distribution). The variance estimates can,
+for instance, account for the reliability of the price forecast and have
+no equivalent in the classical setting. Given the estimated point and
+variance parameters, various distribution types (e.g. Normal, Laplace
+etc.) can take them to form the predicted distribution output. Which
+type is selected can be decided based on the data which is being
+modelled, for instance, by choosing the distribution type that minimizes
+the probabilistic loss for provided point and variance estimate. In this
+way, suitable probabilistic predictions, that is predicted
+distributions, can be obtained.
+
+Residual estimation
+~~~~~~~~~~~~~~~~~~~
+
+The prediction-via-parameter strategy has the obvious advantage that
+existing classic learning algorithms can be reused in the probabilistic
+setting. In fact, in this paradigm the same algorithm that is used to
+predict a housing price can be employed to obtain the point prediction
+which represents the mean of the predicted price distribution for this
+house. It is, however, an open question how the variance predictions
+that are understood to estimate the probabilistic uncertainty of these
+point predictions can be obtained .
+
+An intuitive idea is to use the residuals of the point estimations,
+since they represent the magnitude of error committed during point
+prediction and hence suggest how correct or certain these predictions
+actually were. In the supervised setting, where the correct training
+labels :math:`y_i` are provided, we can easily obtain the absolute
+training residuals
+:math:`\varepsilon_{\text{train}, i} = |\hat{y}_i - y_i`\ \| of the
+point predictions :math:`\hat{y}_i`. Since training and test data are
+assumed to be i.i.d. sampled from the same generative distribution, we
+can estimate the test residuals based on the training residuals. More
+precisely, we fit a residual model using the training features and
+calculated training residuals (:math:`x_i`,
+:math:`\varepsilon_{\text{train}, i}`). Using the trained residual
+model, we are then able to estimate the test residuals
+:math:`\hat{\varepsilon}_{\text{test}, j}` for given test features
+:math:`x_j^*`. Note that the obtained residuals are the residuals of the
+distributional parameter estimation and not of the overall distribution
+estimate. It is, however, reasonable to assume that higher residuals in
+the prediction of the distribution’s parameter imply higher residuals of
+the overall distributional prediction. We thus regard
+:math:`\hat{\varepsilon}_{\text{test}, j}` as a prediction of the
+distribution’s deviation parameter (e.g. :math:`\sigma` in
+:math:`\mathcal{N}(\mu, \sigma)`), that is the variance prediction of
+the overall strategy.
+
+Note that we calculated the absolute residuals to account for the
+non-negativity of the variance. Alternatively, the strategy can be
+modified by fitting the squared or logarithmic training residuals to the
+residual model and back transforming the estimated test residuals using
+the square root and exponential function respectively. Such a residuals
+transformations can, for instance, be useful to emphasize or depreciate
+larger residuals, e.g. the influence of outliers in the data.
+Additionally, the residual strategy involves two distinct estimators,
+the point and the residual estimator, which are not necessarily of the
+same type. One could, for example, use a linear regression to obtain the
+point predictions while choosing a more sophisticated strategy to model
+the residuals of that regression. It should be noted that the involved
+estimators are again classical estimators that return real-valued
+predictions; with the given strategy the estimators hence turn out be
+reusable for the purposes of probabilistic prediction making.
+
+Parametric estimation
+---------------------
 
 Since in this study distributions are predicted through an estimation of
 their defining parameters, we implemented a “parametric” distribution
@@ -155,24 +242,6 @@ Accordingly, it is possible to use scikit-learn’s **pipelines
 meta-estimator** to combine multiple estimation steps into a single
 model. This allows one, for instance, to conveniently prepend
 data-pre-processing for the actual prediction algorithm.
-
-Metrics and visualisations
---------------------------
-
-To evaluate the accuracy of the predicted distributions, the API
-provides probabilistic loss metrics (cp. overview figure
-[fig:overview]). Specifically, the log-loss and the Gneiting loss, as
-described in section [sec:probabilistic-losses], were implemented. For
-consistency, the signatures of the provided loss functions are unified
-and correspond with the classical loss functions that are provided by
-scikit-learn. Like the scikit-learn package, the metrics package
-provides a helper function to transform a given loss function into a
-score function, which is used, for instance, in cross-validation and
-hyperparameter optimization.
-
-To support the analysis, different plot methods are available that take
-the predicted distribution and the corresponding ground truth to
-visualise the performance, residuals, or Q-Q-comparison.
 
 Workflow automation
 -------------------

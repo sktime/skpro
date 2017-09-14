@@ -11,13 +11,14 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   Introduction <introduction>
    Installation <installation>
-   Getting started <introduction>
    User guide <user_guide>
-   License <license>
-   Authors <authors>
+   API Reference <api/modules>
    Changelog <changes>
-   Module Reference <api/modules>
+   Authors <authors>
+   License <license>
+
 
 
 Indices and tables
