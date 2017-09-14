@@ -2,7 +2,7 @@ User Guide
 **********
 
 This guide will give a short overview of the basic functions in skpro package.
-For further details you may check the `reference guide <api/modules.html>`_ as well.
+For further details you may explore the `API documentation <api/modules.html>`_.
 
 Overview
 --------
@@ -26,7 +26,7 @@ offers a fit and predict method. As apparent in the overview figure
 [fig:overview], we introduce “ProbabilisticEstimator” objects to extend into the
 probabilistic domain.
 
-.. figure:: figures/overview.pdf
+.. figure:: figures/overview.png
    :alt: Overview of the implemented *scikit-learn*-based probabilistic
    prediction framework.
    :width: 90.0%

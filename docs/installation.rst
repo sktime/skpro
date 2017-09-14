@@ -12,6 +12,23 @@ Furthermore, you may install optional package dependencies that enhance the work
 
 That's it. You are now ready to go. We recommend reading the :doc:`/introduction` for a quick start.
 
+Bleeding edge
+^^^^^^^^^^^^^
+
+To test or develop new features you may want to install the latest package version from the master branch (bleeding edge installation).
+
+Clone the source from our `public code repository`_ on GitHub and change into the skpro directory. Run ::
+
+    python setup.py develop
+
+to install the package into the activated Python environment. To build the documentation run ::
+
+    python setup.py docs
+
+Note that bleeding edge installations are likely contain bugs are not recommended for productive environments.
+
+
 .. _pip: http://www.pip-installer.org/
 .. _uncertainties: http://pythonhosted.org/uncertainties/
 .. _tabulate: https://pypi.python.org/pypi/tabulate
+.. _public code repository: https://github.com/kiraly-group/skpro

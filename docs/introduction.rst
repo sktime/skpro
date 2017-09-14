@@ -23,7 +23,6 @@ Let's discuss a well-known, simple example to see what this is about: Boston Hou
 If you are familiar with scikit-learn you will recognise that we define and train a model on the boston housing dataset and obtain the test prediction *y_pred*. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values -- nothing unexpected there.
 
 Crucially, however, the skpro model does not just return a list of numbers or point predictions here. Instead, *y_pred* is a probablistic prediction, i.e. it represents probability distributions for each individual data point.
-
 We can, for instance, obtain the distribution's standard deviation or even its probability density function from it. ::
 
     deviation = y_pred.std()
@@ -31,7 +30,7 @@ We can, for instance, obtain the distribution's standard deviation or even its p
 
 The skpro predictions are hence forecasts of a genuine probabilistic kind that are a primary interest for many real-world applications.
 
-Continue to the comprehensive :doc:`user_guide` to learn more.
+This is skpro in a nutshell. Continue to the comprehensive :doc:`user_guide` to learn more.
 
 .. _scikit-learn: http://scikit-learn.org/
 .. _Dr Franz Király: https://www.ucl.ac.uk/statistics/people/franz-kiraly
