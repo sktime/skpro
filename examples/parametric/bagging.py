@@ -1,3 +1,6 @@
+from sklearn.datasets import load_boston
+from sklearn.tree import DecisionTreeRegressor
+
 from skpro.workflow.table import Table, IdModifier, SortModifier
 from skpro.workflow.cross_validation import CrossValidationController, CrossValidationView
 from skpro.metrics import log_loss, gneiting_loss
@@ -5,17 +8,14 @@ from skpro.workflow import Model
 from skpro.ensemble import BaggingRegressor
 from skpro.workflow.utils import InfoView, InfoController
 from skpro.workflow.manager import DataManager
-from sklearn.datasets import load_boston
 from skpro.parametric import ParamtericEstimator
 from skpro.parametric.estimators import Constant
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression
 
 # Load the dataset
 X, y = load_boston(return_X_y=True)
 data = DataManager(X, y, name='Boston')
 
-if False: # DEBUG
+if True:  # DEBUG
     import numpy as np
     from sklearn.model_selection import cross_val_score
 
@@ -26,20 +26,19 @@ if False: # DEBUG
         mse = np.sum((np.abs(y_pred - data.y_test))) / len(y_pred)
         # print('MSE: ', mse)
 
-        scores = cross_val_score(model, data.X, data.y, cv=5)
+        scores = cross_val_score(model, data.X, data.y, cv=3)
 
         print('CV: %f+-%f' % (np.mean(scores), np.std(scores) / np.sqrt(len(scores))))
 
 
     print('Without bagging: ')
-    model = RandomForestRegressor(n_estimators=30, max_depth=5)
-    model = LinearRegression()
+    model = DecisionTreeRegressor()
     evaluate(model)
 
     print('With bagging:')
     from sklearn.ensemble import BaggingRegressor as SklearnBaggingRegressor
     from sklearn.base import clone
-    bagged_model = SklearnBaggingRegressor(clone(model), max_samples=0.5, max_features=0.5, bootstrap=False)
+    bagged_model = SklearnBaggingRegressor(clone(model), n_estimators=50, bootstrap=True, oob_score=True) #, max_samples=0.5, max_features=0.5, bootstrap=False)
 
     evaluate(model)
 
@@ -72,5 +71,6 @@ for point_estimator in [RandomForestRegressor()]:#, LinearRegression()]:
             #BaggingRegressor(model, bootstrap=False, n_estimators=1)
             BaggingRegressor(model, max_samples=0.1, max_features=0.1, bootstrap=False, n_estimators=100)
         ))
+
 
 tbl.print(models)

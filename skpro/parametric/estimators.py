@@ -1,6 +1,5 @@
-from sklearn.base import BaseEstimator
 import numpy as np
-from ..base import describe
+from sklearn.base import BaseEstimator
 
 
 class Minimum(BaseEstimator):
@@ -22,11 +21,11 @@ class Minimum(BaseEstimator):
 
         return prediction
 
-    def description(self):
-        return 'Min(' + describe(self.estimator) + ', min=' + str(self.minimum) + ')'
+    def __str__(self, describer=str):
+        return 'Min(' + describer(self.estimator) + ', min=' + str(self.minimum) + ')'
 
     def __repr__(self):
-        return 'Min(' + repr(self.estimator) + ', min=' + str(self.minimum) + ')'
+        return self.__str__(repr)
 
 
 class Constant(BaseEstimator):
@@ -62,9 +61,9 @@ class Constant(BaseEstimator):
         return self
 
     def predict(self, X):
-        return np.ones((X.shape[0], )) * self.constant
+        return np.ones((X.shape[0],)) * self.constant
 
-    def description(self):
+    def __str__(self):
         return self.__repr__()
 
     def __repr__(self):

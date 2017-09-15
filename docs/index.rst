@@ -14,6 +14,7 @@ Contents
    Introduction <introduction>
    Installation <installation>
    User guide <user_guide>
+   Workflow automation <workflow>
    API Reference <api/modules>
    Changelog <changes>
    Authors <authors>

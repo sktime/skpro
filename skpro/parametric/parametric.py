@@ -1,8 +1,9 @@
-from ..base import ProbabilisticEstimator, describe
 import numpy as np
 from scipy.stats import norm, laplace, uniform
 from sklearn.externals import six
 import collections
+
+from ..base import ProbabilisticEstimator
 
 
 class EstimatorManager:
@@ -84,12 +85,9 @@ class EstimatorManager:
 
     def fit(self, X, y):
         for name, estimator in self.estimators_.items():
-            if isinstance(estimator['estimator'], str):
-                # don't fit links
-                continue
-
-            estimator['estimator'].fit(X, y)
-            estimator['fitted'] = True
+            if not isinstance(estimator['estimator'], str):
+                estimator['estimator'].fit(X, y)
+                estimator['fitted'] = True
 
     def __len__(self):
         return len(self.estimators_)
@@ -106,7 +104,6 @@ class EstimatorManager:
 
     def __contains__(self, item):
         return item in self.estimators_
-
 
 class ParamtericEstimator(ProbabilisticEstimator):
 
@@ -188,7 +185,7 @@ class ParamtericEstimator(ProbabilisticEstimator):
 
         return self
 
-    def description(self, describer=describe):
+    def __str__(self, describer=str):
         if 'point_std' in self.estimators:
             params = 'point/std=' + describer(self.point_std)
         else:
@@ -197,4 +194,4 @@ class ParamtericEstimator(ProbabilisticEstimator):
         return self.shape + '(' + params + ')'
 
     def __repr__(self):
-        return self.description(repr)
+        return self.__str__(repr)

@@ -19,7 +19,6 @@ def make_scorer(loss_function, greater_is_better=True, return_std=False):
 
 
 def gneiting_loss(dist_pred, y, sample=True, return_std=False):
-
     lp2 = getattr(dist_pred, 'lp2', False)
     if not lp2:
         raise Exception('The estimator does not provide lp2 integration')
@@ -37,7 +36,7 @@ def linearized_log_loss(dist_pred, y, range=1e-10, sample=True, return_std=False
 
     def f(x):
         if x <= range:
-            return (-1/range)*x - np.log(range) + 1
+            return (-1 / range) * x - np.log(range) + 1
         else:
             return -np.log(x)
 
@@ -63,7 +62,7 @@ def log_loss(dist_pred, y, sample=True, return_std=False):
 def brier_loss(dist_pred, y, sample=True, return_std=False):
     pdf = dist_pred.pdf(y)
 
-    loss = (1 - pdf)**2
+    loss = (1 - pdf) ** 2
 
     if sample:
         return sample_loss(loss, return_std)

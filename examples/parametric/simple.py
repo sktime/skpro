@@ -1,10 +1,10 @@
-from skpro.parametric import ParamtericEstimator
-from skpro.parametric.estimators import Constant
-from skpro.metrics import log_loss
-
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.datasets.base import load_boston
 from sklearn.model_selection import train_test_split
+
+from skpro.parametric import ParamtericEstimator
+from skpro.parametric.estimators import Constant
+from skpro.metrics import log_loss
 
 # Define the parametric model
 model = ParamtericEstimator(
@@ -43,5 +43,6 @@ ax2.set_ylabel('Loss')
 ax2.plot(y_test, losses, 'y_', label=u'Loss: ' + overall)
 ax2.tick_params(colors='y')
 ax2.legend(loc=0)
+
 
 pyplot.show()

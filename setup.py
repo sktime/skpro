@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
 from setuptools import setup
 
 
@@ -10,7 +11,8 @@ def setup_package():
     sphinx = ['sphinx'] if needs_sphinx else []
     setup(setup_requires=['six', 'pyscaffold>=2.5a0,<2.6a0'] + sphinx,
           use_pyscaffold=True,
-          extras_require={'workflow': ["uncertainties", "tabulate"]}
+          extras_require={'workflow': ["uncertainties", "tabulate"],
+                          'bayesian': ["pymc3"]}
           )
 
 

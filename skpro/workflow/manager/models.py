@@ -26,17 +26,13 @@ class ModelManager:
         return models
 
     def all(self):
-        models = []
-        for k, v in self.models.items():
-            models.append(v.clone())
-
-        return models
+        return [v.clone() for v in self.models.values()]
 
     def info(self):
         print('Total number of registered models: %i\n' % len(self.models))
 
         for k, v in self.models.items():
-            print(k, v.description())
+            print(k, str(v))
 
     def __iter__(self):
         for k, v in self.models.items():

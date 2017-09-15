@@ -1,7 +1,8 @@
+# TODO: Issue #19
+
+import numpy as np
 from sklearn.base import BaseEstimator
 from pymc3 import Model, Normal, HalfNormal, find_MAP, NUTS, sample, summary, Slice
-import numpy as np
-from skpro.base import describe
 
 
 class BayesianLinearRegression(BaseEstimator):

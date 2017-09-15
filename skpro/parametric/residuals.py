@@ -1,6 +1,5 @@
-from sklearn.base import BaseEstimator
 import numpy as np
-from ..base import describe
+from sklearn.base import BaseEstimator
 
 
 def identity(y_pred):
@@ -8,7 +7,7 @@ def identity(y_pred):
 
 
 def squared_error_ft(y, y_pred):
-    return (y-y_pred)**2
+    return (y - y_pred) ** 2
 
 
 def squared_error_pt(y_pred):
@@ -16,14 +15,14 @@ def squared_error_pt(y_pred):
 
 
 def abs_error_ft(y, y_pred):
-    return np.abs(y-y_pred)
+    return np.abs(y - y_pred)
 
 
 abs_error_pt = identity
 
 
 def log_error_ft(y, y_pred):
-    residuals = np.abs(y-y_pred)
+    residuals = np.abs(y - y_pred)
     residuals[residuals <= 1] = 1
     return np.log(residuals)
 
@@ -80,10 +79,12 @@ class ResidualEstimator(BaseEstimator):
 
         return y_pred_
 
-    def description(self):
-        return 'RE(' + describe(self.base_estimator) + ', ' + describe(self.residual_estimator) + ', ' + describe(self.fit_transform) + ')'
+    def __str__(self):
+        return 'RE(' + str(self.base_estimator) + ', ' \
+               + str(self.residual_estimator) + ', ' + str(self.fit_transform) + ')'
 
     def __repr__(self):
-        return 'ResidualEstimator(' + str(self.base_estimator) + ', ' + repr(self.residual_estimator) + ', ' + repr(self.fit_transform) + ')'
+        return 'ResidualEstimator(' + str(self.base_estimator) + ', ' \
+               + repr(self.residual_estimator) + ', ' + repr(self.fit_transform) + ')'
 
 

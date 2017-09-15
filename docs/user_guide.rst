@@ -4,30 +4,23 @@ User Guide
 This guide will give a short overview of the basic functions in ``skpro`` package.
 For further details you may explore the `API documentation <api/modules.html>`_.
 
+.. note:: skpro uses many of scikit-learn's building principles and conventions. If you aren't familiar with scikit-learn make sure to explore its `project documentation`_.
+
 Overview
 --------
 
-The figure below gives an overview about central elements and
-concepts of skpro and how it extends the scikit-learn
-toolbox. To understand skpro, it is firstly
-helpful to quickly review scikit-learn’s classical prediction workflow,
-particularly its seminal ``Estimator`` object. In scikit-learn, an
-``Estimator`` object represents a certain prediction strategy (e.g. Linear
-regression), that can be fitted using the ``fit(X, y)`` function. The
-fitted estimator can then be used to obtain the predictions on new data
-using the ``predict(X)`` method. Finally, the predicted values can be
-compared with the actual targets using one of the available classical
-loss functions.
-
-skpro seeks to replicate this general pattern, specifically the idea of encapsulating the
-probabilistic prediction models in an ``ProbabilisticEstimator`` that
-offers a fit and predict method but returns a predicted probability distribution.
+The figure below gives an overview about central elements and concepts of skpro and how it extends the scikit-learn toolbox. To understand skpro, it is firstly helpful to quickly review scikit-learn’s classical prediction workflow, particularly its seminal ``Estimator`` object. In scikit-learn, an ``Estimator`` object represents a certain prediction strategy (e.g. Linear regression), that can be fitted using the ``fit(X, y)`` function. The fitted estimator can then be used to obtain the predictions on new data using the ``predict(X)`` method. Finally, the predicted values can be compared with the actual targets using one of the available classical loss functions.
 
 .. figure:: _static/overview.png
    :width: 90%
 
    Overview of the skpro prediction framework and how it extends the *scikit-learn*
    package.
+
+skpro seeks to replicate this general pattern and introduces the ``ProbabilisticEstimator`` class that encapsulates the
+probabilistic prediction models. Like the ``Estimator`` class it offers a fit and predict method but returns a probability distribution as prediction (``Distribution`` class). The returned distribution objects provide methods to obtain relevant distribution properties, for example the distribution's probability density function (``y_pred.pdf(x)``).
+
+The predictions obtained from skpro's estimators are hence of a genuine probabilistic kind that represent predicted probability distributions for each data point. For example, if predictions for a vector ``X`` of length k are obtained, the returned ``y_pred`` object represents k predicted distributions. ``y_pred.std()`` will therefore return a vector of length k that contains the standard deviations of the predicted distribution; y_pred[i]`` provides access to the point prediction (e.g. mean) of the
 
 Metrics
 -------
@@ -243,103 +236,9 @@ meta-estimator** to combine multiple estimation steps into a single
 model. This allows one, for instance, to conveniently prepend
 data-pre-processing for the actual prediction algorithm.
 
-Workflow automation
--------------------
+Developing your own prediction models
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Unlike scikit-learn, which only provides a loose library of validation
-components, we propose an object-oriented structure that standardizes
-the prediction workflows. The objective is to support efficient model
-management and fair model assessment in unified framework. After all,
-the user should only be concerned with the definition and development of
-models while leaving the tedious tasks of result aggregation to the
-framework.
+TODO
 
-Model-view-controller structure
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Our workflow framework is build up of three fundamental components:
-model, controller, view. The model object contains the actual prediction
-algorithm that was defined by the user (e.g. a distribution object). It
-thus unifies and simplifies the management of learning algorithms. It
-allows to store information and configuration for the algorithm it
-contains, e.g. a name or a range of hyperparameters that should be
-optimized. In future, it might support saving of trained models for
-later use. Secondly, a controller represents an action or task that can
-be done with a model to obtain certain information. A scoring
-controller, for instance, might take a dataset and loss function and
-return the loss score of the model on this dataset. The controller can
-save the obtained data for later use. Finally, a view object takes what
-a controller returns to present it to the user. A scoring view, for
-example, could take a raw score value and format it in power mode. The
-separation of controller and view level is advantageous since controller
-tasks like the training of a model to obtain a score can be
-computationally expensive. Thus, a reformation of an output should not
-require the revaluation of the task. Moreover, if a view only displays a
-part of the information it yet useful to store the full information the
-controller returned.
-
-Our framework currently implements one major controller, the **Cross
-validation controller (CV)**, and multiple views to display scores and
-model information. The CV controller encapsulates the cross-validation
-procedure described in section [sec:cross-validation]. It takes a
-dataset and loss function and returns the fold-losses as well as the
-overall loss with confidence interval for a given model (cp. eq.
-[eq:cv-model-performance]). If the model specifies a range of
-hyperparameters for tuning, the controller automatically optimizes the
-hyperparamters in a nested cross-validation procedure and additionally
-returns the found best hyperparameters (cp. sec. [sec:model-tuning]).
-
-The model-view-controller structure (MVC) encapsulates a fundamental
-procedure in machine learning: perform a certain task with a certain
-model and display the results. Thanks to its unified API, the MVC
-building blocks can then be easily used for result aggregation and
-comparison.
-
-Result aggregation and comparison
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-At its current stage, the workflow framework support a simple way of
-results aggregation and comparison, namely a results table. A table can
-be easily defined by providing controller-view-pairs as columns and
-models as rows. The framework will then evaluate the table cells by
-running the controller task for the respective models and render the
-results table using the specified views. Note that the evaluation of the
-controller tasks and the process of rendering the table is decoupled. It
-is therefore possible to access the “raw” table with all the information
-each controller returned and then render the table with the reduced
-information that is actually needed. Furthermore, the decoupling allows
-for manipulation or enhancement of the raw data before rendering. The
-raw table data can, for example, be sorted by the model performances.
-Notably, the table supports so-called rank-sorting. Rank sorting is, for
-instance, useful if models are compared on different datasets and ought
-to be sorted by their overall performance. In this case, it is
-unsuitable to simply average the dataset’s performance scores since the
-value ranges might differ considerably between the different datasets.
-Instead, it is useful to rank the performances on each dataset and then
-average the model’s rank on each dataset to obtain the overall rank.
-Table [tbl:results-table-example] shows an example of such a rank sorted
-result table that is typically generated by the workflow framework and
-that will be used to present the results of the numerical experiments in
-the following section.
-
-center
-
-+-----+-------------------+--------------------------------+--------------------------------+----+----+
-| #   | Model             | CV(Dataset A, loss function)   | CV(Dataset B, loss function)   |    |    |
-+=====+===================+================================+================================+====+====+
-| 0   | Example model 1   | (2) 12\ :math:`\pm`\ 1\*       | (1) 3\ :math:`\pm`\ 2\*        |    |    |
-+-----+-------------------+--------------------------------+--------------------------------+----+----+
-| 1   | Example model 2   | (1) 5\ :math:`\pm`\ 0.5\*      | (2) 9\ :math:`\pm`\ 1\*        |    |    |
-+-----+-------------------+--------------------------------+--------------------------------+----+----+
-| 2   | Example model 3   | (3) 28\ :math:`\pm`\ 3\*       | (3) 29\ :math:`\pm`\ 4\*       |    |    |
-+-----+-------------------+--------------------------------+--------------------------------+----+----+
-
-Table: Example and explanation of a rank-sorted results table that can
-be easily created in the workflow framework: Models are listed in the
-rows of the table while the columns present the cross-validated
-performance of a certain dataset and loss function. The numbers in
-parentheses denote the model’s performance rank in the respective
-column. The models are sorted by the average model rank, displaying
-models with the best performances (that is the lowest losses) on top of
-the table.
-
+.. _project documentation: http://scikit-learn.org/stable/tutorial/basic/tutorial.html

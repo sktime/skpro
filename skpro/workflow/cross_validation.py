@@ -1,11 +1,11 @@
+import numpy as np
+from uncertainties import ufloat
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import KFold
+
 from ..model_selection import cross_val_score
 from ..metrics import make_scorer
-from .base import Controller
-from uncertainties import ufloat
-from .base import View
-import numpy as np
+from .base import Controller, View
 
 
 class CrossValidationController(Controller):
@@ -47,7 +47,6 @@ class CrossValidationController(Controller):
                 best_params.append(estimator.best_params_)
                 return loss_function(y_pred, y_test)
 
-        # sort out cross_val_score
         scores = cross_val_score(
             clf,
             self.data.X,
@@ -80,7 +79,7 @@ class CrossValidationView(View):
                 best = data['best_params'][0]
                 tuning = ''
                 comma = ''
-                for k,v in data['tuning'].items():
+                for k, v in data['tuning'].items():
                     tuning += comma + k + ': '
                     comma = '; '
 
@@ -97,8 +96,7 @@ class CrossValidationView(View):
             else:
                 result += '*'
 
-        if self.with_ranks:
-            if 'vrank' in data:
-                result = '(%i) ' % data['vrank'] + result
+        if self.with_ranks and 'vrank' in data:
+            result = '(%i) ' % data['vrank'] + result
 
         return result

@@ -1,52 +1,30 @@
 import abc
-from sklearn.base import BaseEstimator
 import functools
 import warnings
+
+from sklearn.base import BaseEstimator
 from .metrics import log_loss
 
 
-def describe(estimator):
-    """
-    Returns a description for a given estimator
-
-    Args:
-        estimator (Estimator): Estimator
-
-    Returns:
-        str: Estimator description
-    """
-    if isinstance(estimator, str):
-        return estimator
-
-    # Custom description?
-    if getattr(estimator, 'description', False):
-        return estimator.description()
-    # Pipeline?
-    elif estimator.__class__.__name__ == 'Pipeline':
-        r = '{'
-        sep = ''
-        for name, model in estimator.steps:
-            r += sep + name
-            sep = ', '
-        r += '}'
-        return r
-    # Fall-through default
-    else:
-        return estimator.__class__.__name__
-
-
 class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
+    """
+    Abstract base class for probabilistic prediction models
+    """
 
-    class InterfaceCache(abc.ABCMeta):
+    class ImplementsCachingAndCompatibility(abc.ABCMeta):
         """
-        Automatic caching for the interface methods
+        Enhances the distribution interface behind the
+        scenes with automatic caching and ensures
+        compatibility with other components
         """
+
         def __init__(cls, name, bases, clsdict):
+            # Automatic caching of the interface methods
             for method in ['point', 'std']:
                 cls._cached(cls, clsdict, method)
 
-            # adjust std signature to allow for the
-            # use with np.std etc.
+            # We generalize the std signature to allow for the
+            # use with np.std() etc.
             def std(self, *args, **kwargs):
                 return clsdict['std'](self)
 
@@ -58,10 +36,14 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
                 def cache_override(self, *args, **kwargs):
                     return clsdict[method](self, *args, **kwargs)
 
-                # override function
+                # Override function
                 setattr(cls, method, cache_override)
 
-    class Distribution(metaclass=InterfaceCache):
+    class Distribution(metaclass=ImplementsCachingAndCompatibility):
+        """
+        Abstract base class for the distribution interface
+        return by probabilistic estimators
+        """
 
         def __init__(self, estimator, X):
             self.estimator = estimator
@@ -103,6 +85,9 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
     def name(self):
         return self.__class__.__name__
 
+    def __str__(self):
+        return '%s()' % self.__class__.__name__
+
     def __repr__(self):
         return '%s()' % self.__class__.__name__
 
@@ -114,7 +99,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         return self._distribution()(self, X)
 
     def fit(self, X, y):
-        self.estimators.fit(X, y)
+        warnings.warn('The estimator doesn\'t implement a fit procedure', UserWarning)
 
         return self
 

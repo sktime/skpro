@@ -1,6 +1,8 @@
-from sklearn.ensemble import BaggingRegressor as BaseBaggingRegressor
-from .base import ProbabilisticEstimator, describe
 import numpy as np
+
+from sklearn.ensemble import BaggingRegressor as BaseBaggingRegressor
+
+from .base import ProbabilisticEstimator
 
 
 class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
@@ -12,7 +14,7 @@ class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
             self.distributions = distributions
             self.n_estimators = n_estimators
 
-        def _reduce(self, func, *args, **kwargs):
+        def _mean_reduce(self, func, *args, **kwargs):
             reduced = []
             for distribution in self.distributions[0]:
                 f = getattr(distribution, func, False)
@@ -24,16 +26,17 @@ class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
             return np.mean(reduced, axis=0)
 
         def point(self):
-            return self._reduce('point')
+            return self._mean_reduce('point')
 
         def std(self):
-            return self._reduce('std')
+            return self._mean_reduce('std')
 
         def pdf(self, x):
-            return self._reduce('pdf', x)
+            return self._mean_reduce('pdf', x)
 
         def lp2(self):
-            return self._reduce('lp2')
+            # TODO: reduce properly
+            return self._mean_reduce('lp2')
 
     def predict(self, X):
         """Predict regression target for X.
@@ -52,36 +55,35 @@ class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
         y : array of shape = [n_samples]
             The predicted values.
         """
-        #check_is_fitted(self, "estimators_features_")
+        # check_is_fitted(self, "estimators_features_")
         # Check data
-        #X = check_array(X, accept_sparse=['csr', 'csc'])
+        # X = check_array(X, accept_sparse=['csr', 'csc'])
 
         # Parallel loop
         from sklearn.ensemble.base import _partition_estimators
         n_jobs, n_estimators, starts = _partition_estimators(self.n_estimators,
                                                              self.n_jobs)
 
-        from sklearn.externals.joblib import Parallel, delayed
-
         def _parallel_predict_regression(estimators, estimators_features, X):
             """Private function used to compute predictions within a job."""
-            r = []
-            for estimator, features in zip(estimators, estimators_features):
-                r.append(estimator.predict(X[:, features]))
-            return r
+            return [
+                estimator.predict(X[:, features])
+                for estimator, features in zip(estimators, estimators_features)
+            ]
 
-        all_y_hat = []
-        for i in range(n_jobs):
-            all_y_hat.append(_parallel_predict_regression(
-            self.estimators_[starts[i]:starts[i + 1]],
-            self.estimators_features_[starts[i]:starts[i + 1]],
-            X))
+        all_y_hat = [
+            _parallel_predict_regression(
+                self.estimators_[starts[i]:starts[i + 1]],
+                self.estimators_features_[starts[i]:starts[i + 1]],
+                X
+            ) for i in range(n_jobs)
+        ]
 
         # Reduce
-        return self._distribution()(self, X,  all_y_hat, n_estimators)
+        return self._distribution()(self, X, all_y_hat, n_estimators)
 
-    def description(self, describer=describe):
+    def __str__(self, describer=str):
         return 'BaggingRegressor(' + describer(self.base_estimator) + ')'
 
     def __repr__(self):
-        return self.description(repr)
+        return self.__str__(repr)

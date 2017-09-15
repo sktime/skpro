@@ -1,29 +1,28 @@
 import abc
 import hashlib
-from sklearn.base import clone
 import json
+
+from sklearn.base import clone
 
 
 class Model:
 
-    def __init__(self, instance, tuning=None, group=None, database={}):
+    def __init__(self, instance, tuning=None, group=None, database=None):
         self.instance = clone(instance)
         self.group = group
+        if database is None:
+            database = {}
         self.database = database
         if isinstance(tuning, dict) and len(tuning) == 0:
-            # Convert empty dicts to None
             tuning = None
 
         self.tuning = tuning
 
     def __repr__(self):
-        return repr(self.instance)
+        return 'Model(' + repr(self.instance) + ')'
 
-    def description(self):
-        try:
-            return self.instance.description()
-        except:
-            return repr(self.instance)
+    def __str__(self):
+        return 'Model(' + str(self.instance) + ')'
 
     def __getitem__(self, item):
         return self.database[item]
@@ -46,10 +45,6 @@ class Controller(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def identifier(self):
-        pass
-
-    @abc.abstractmethod
-    def description(self):
         pass
 
     @abc.abstractmethod

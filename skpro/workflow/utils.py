@@ -40,12 +40,12 @@ class InfoController(Controller):
     def __repr__(self):
         return 'InfoController()'
 
-    def description(self):
+    def __str__(self):
         return 'Info'
 
     def run(self, model):
         return {
-            'description': model.description(),
+            'description': str(model),
             'repr': repr(model),
             'group': getattr(model, 'group', 'None')
         }
