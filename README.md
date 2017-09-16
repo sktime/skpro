@@ -6,7 +6,7 @@ Supervised learning for probabilistic prediction
 
 This repository hosts the development of the ``skpro`` package that extends ``scikit-learn`` with prediction of probability distributions in supervised contexts.
 
-Check out the [examples](examples) to learn more.
+Read our [documentation](docs) or check out the [examples](examples) to learn more.
 
 ### Installation
 

@@ -5,4 +5,4 @@ Changelog
 Version 1.0b
 ============
 
-- Public beta
+- First public release (beta) of skpro

@@ -105,6 +105,7 @@ class EstimatorManager:
     def __contains__(self, item):
         return item in self.estimators_
 
+
 class ParamtericEstimator(ProbabilisticEstimator):
 
     class Distribution(ProbabilisticEstimator.Distribution):
@@ -182,6 +183,11 @@ class ParamtericEstimator(ProbabilisticEstimator):
                                      (key, self.__class__.__name__))
                 if key in self.estimators:
                     self.estimators[key] = value
+
+        return self
+
+    def fit(self, X, y):
+        self.estimators.fit(X, y)
 
         return self
 
