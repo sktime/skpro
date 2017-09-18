@@ -150,10 +150,10 @@ class Table:
 
     def __init__(self, tasks=None, modifiers=None):
         if tasks is None:
-            tasks = {}
+            tasks = []
         self.tasks = tasks
         if modifiers is None:
-            modifiers = {}
+            modifiers = []
         self.modifiers = modifiers
         self.rendered_ = None
 
