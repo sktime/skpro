@@ -4,6 +4,7 @@ from sklearn.externals import six
 import collections
 
 from ..base import ProbabilisticEstimator
+from ..parametric.estimators import Constant
 
 
 class EstimatorManager:
@@ -39,6 +40,9 @@ class EstimatorManager:
 
             # make it accessible on the parent
             setattr(self.parent, name, selector)
+        elif isinstance(estimator, (int, float)):
+            # automatically wrap constants in Constant estimator
+            estimator = Constant(estimator)
         else:
             # attach estimator
             setattr(estimator, 'estimator', self.parent)
@@ -137,6 +141,13 @@ class ParamtericEstimator(ProbabilisticEstimator):
                 return 0
 
     def __init__(self, shape='norm', point=None, std=None, point_std=None):
+        """
+        TODO: can be string, num, estimator
+        :param shape:
+        :param point:
+        :param std:
+        :param point_std:
+        """
         self.estimators = EstimatorManager(self)
         self.shape = shape
         if shape == 'norm':

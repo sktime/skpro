@@ -8,6 +8,7 @@ from skpro.metrics import log_loss
 
 # Define the parametric model
 model = ParamtericEstimator(
+    shape='norm',
     point=RandomForestRegressor(),
     std=Constant('mean(y)')
 )

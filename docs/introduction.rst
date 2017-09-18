@@ -25,8 +25,8 @@ Let's have a look at a well-known, simple example to see what this is about: Bos
 
 .. literalinclude:: ../examples/parametric/simple.py
     :language: python
-    :emphasize-lines: 9-13, 20-22
-    :lines: 1-22
+    :emphasize-lines: 9-14, 21-23
+    :lines: 1-23
 
 >>> Loss: 4.054001+-0.001248
 

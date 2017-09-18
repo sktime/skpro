@@ -1,0 +1,46 @@
+skpro\.workflow package
+=======================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    skpro.workflow.manager
+    skpro.workflow.table
+
+Submodules
+----------
+
+skpro\.workflow\.base module
+----------------------------
+
+.. automodule:: skpro.workflow.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+skpro\.workflow\.cross\_validation module
+-----------------------------------------
+
+.. automodule:: skpro.workflow.cross_validation
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+skpro\.workflow\.utils module
+-----------------------------
+
+.. automodule:: skpro.workflow.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: skpro.workflow
+    :members:
+    :undoc-members:
+    :show-inheritance:
