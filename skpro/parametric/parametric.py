@@ -130,6 +130,7 @@ class ParamtericEstimator(ProbabilisticEstimator):
             return self.estimator.shape_.ppf(x, loc=self.point(), scale=self.std())
 
         def lp2(self):
+            # Analytic solutions
             if self.estimator.shape == 'norm':
                 return 1 / (2 * self.std() * np.sqrt(np.pi))
             elif self.estimator.shape == 'laplace':
@@ -137,8 +138,8 @@ class ParamtericEstimator(ProbabilisticEstimator):
             elif self.estimator.shape == 'uniform':
                 return 1
             else:
-                # TODO: warn
-                return 0
+                # fallback to numerical approximation
+                super().lp2()
 
     def __init__(self, shape='norm', point=None, std=None, point_std=None):
         """

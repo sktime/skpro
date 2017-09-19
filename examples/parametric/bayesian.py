@@ -37,7 +37,4 @@ for point_estimator in [RandomForestRegressor(), BayesianLinearRegression()]:
         model = ParamtericEstimator(point=point_estimator, std=std_estimator)
         models.append(Model(model))
 
-results = tbl.print(models)
-
-with open('/home/ucjufgr/Scratch/results_baysian.txt', 'w') as f:
-    f.write(results)
+tbl.print(models)

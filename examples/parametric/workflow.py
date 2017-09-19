@@ -20,7 +20,7 @@ tbl = Table()
 # Adding controllers displayed as columns
 tbl.add(InfoController(), InfoView())
 
-for loss_func in [gneiting_loss, log_loss]:
+for loss_func in [gneiting_loss]:
     tbl.add(
         controller=CrossValidationController(data, loss_func=loss_func),
         view=CrossValidationView()
@@ -34,7 +34,7 @@ tbl.modify(IdModifier())
 # Compose the models displayed as rows
 models = []
 for point_estimator in [RandomForestRegressor(), LinearRegression()]:
-    for std_estimator in [Constant('mean(y)'), Constant(42)]:
+    for std_estimator in [Constant('mean(y)')]:
         model = ParamtericEstimator(point=point_estimator, std=std_estimator)
         models.append(Model(model))
 

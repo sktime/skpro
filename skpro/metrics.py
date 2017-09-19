@@ -21,7 +21,7 @@ def make_scorer(loss_function, greater_is_better=True, return_std=False):
 def gneiting_loss(dist_pred, y, sample=True, return_std=False):
     lp2 = getattr(dist_pred, 'lp2', False)
     if not lp2:
-        raise Exception('The estimator does not provide lp2 integration')
+        raise Exception('The estimator does not provide an lp2 integration')
 
     loss = -2 * dist_pred.pdf(y) + lp2()
 

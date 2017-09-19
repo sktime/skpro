@@ -1,6 +1,7 @@
 import abc
 import functools
 import warnings
+import numpy as np
 
 from sklearn.base import BaseEstimator
 from .metrics import log_loss
@@ -74,13 +75,36 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             raise NotImplementedError()
 
         def cdf(self, x):
-            warnings.warn(self.__name__ + ' does not implement a cdf function', UserWarning)
+            warnings.warn(self.__class__.__name__ + ' does not implement a cdf function', UserWarning)
 
         def ppf(self, x):
-            warnings.warn(self.__name__ + ' does not implement a ppf function', UserWarning)
+            warnings.warn(self.__class__.__name__ + ' does not implement a ppf function', UserWarning)
 
         def lp2(self):
-            warnings.warn(self.__name__ + ' does not implement a lp2 function', UserWarning)
+            """
+            Implements the L2 norm of the PDF
+
+            ..math::
+            L^2 = \int PDF(x)^2 dx
+
+            :return:
+            """
+            warnings.warn(self.__class__.__name__ +
+                          ' does not implement a lp2 function, defaulting to numerical approximation', UserWarning)
+
+            def elementwise_integrand(func, index):
+                """ Returns function for squared PDF at a certain index """
+                def integrand(x):
+                    return func(x)[index]**2
+
+                return integrand
+
+            from scipy.integrate import quad as integrate
+            return np.array([
+                # y, y_err of
+                integrate(elementwise_integrand(self.pdf, index), -np.inf, np.inf)
+                for index in range(len(self.X))
+            ])[:, 0]
 
     def name(self):
         return self.__class__.__name__

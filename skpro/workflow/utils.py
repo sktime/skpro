@@ -45,7 +45,7 @@ class InfoController(Controller):
 
     def run(self, model):
         return {
-            'description': str(model),
+            'description': str(model).replace('\n           ', ''),
             'repr': repr(model),
             'group': getattr(model, 'group', 'None')
         }
