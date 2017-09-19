@@ -3,5 +3,6 @@
 # ATTENTION: Don't remove pytest-cov and pytest as they are needed.
 pytest-cov
 pytest
+hypothesis[numpy]
 Sphinx
 sphinx_rtd_theme
