@@ -31,10 +31,9 @@ tbl.modify(SortModifier(key=lambda x: x[-1]['data']['score']))
 tbl.modify(IdModifier())
 
 # Compose the models displayed as rows
-models = []
-for point_estimator in [RandomForestRegressor(), BayesianLinearRegression()]:
-    for std_estimator in [Constant('mean(y)')]:
-        model = ParamtericEstimator(point=point_estimator, std=std_estimator)
-        models.append(Model(model))
+models = [
+    Model(ParamtericEstimator(point=RandomForestRegressor(), std=Constant('mean(y)'))),
+    Model(ParamtericEstimator(point_std=BayesianLinearRegression()))
+]
 
 tbl.print(models)

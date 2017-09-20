@@ -20,7 +20,7 @@ class EstimatorManager:
         Args:
             name (str):  Name of the estimator
             estimator (mixed): Estimator object or string name of a registered estimator
-            selector (mixed): Optional callable to retrieve prediction from estimator
+            selector (mixed): Optional callable with signature (estimator, X) to retrieve prediction from estimator
 
         Returns:
             bool: True on success
@@ -164,6 +164,16 @@ class ParamtericEstimator(ProbabilisticEstimator):
             self.estimators.register('point', point)
             self.estimators.register('std', std)
         else:
+            if point is None:
+                # set default point extractor
+                def point(estimator, X):
+                    return estimator.predict(X)
+
+            if std is None:
+                # set default std extractor
+                def std(estimator, X):
+                    return estimator.predict(X, return_std=True)[:, 1]
+
             self.estimators.register('point_std', point_std)
             self.estimators.register('point', 'point_std', point)
             self.estimators.register('std', 'point_std', std)
