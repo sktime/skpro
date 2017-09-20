@@ -59,6 +59,32 @@ def log_loss(dist_pred, y, sample=True, return_std=False):
     return loss
 
 
+def rank_probability_loss(dist_pred, y, sample=True, return_std=False):
+    def term(index, one_minus=False):
+        def integrand(x):
+            if one_minus:
+                return (1 - dist_pred.cdf(x)[index]) ** 2
+            else:
+                return dist_pred.cdf(x)[index] ** 2
+
+        return integrand
+
+    from scipy.integrate import quad as integrate
+
+    loss = -1 * np.array([
+        # -int_ -\infty ^ y F(x)² dx
+        - integrate(term(index), -np.inf, y[index])[0]
+        # – int_y ^\infty(1 - F(x))² dx
+        - integrate(term(index, one_minus=True), y[index], np.inf)[0]
+        for index in range(len(dist_pred.X))
+    ])
+
+    if sample:
+        return sample_loss(loss, return_std)
+
+    return loss
+
+
 def brier_loss(dist_pred, y, sample=True, return_std=False):
     pdf = dist_pred.pdf(y)
 
