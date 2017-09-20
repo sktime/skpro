@@ -3,10 +3,52 @@ from sklearn.base import BaseEstimator
 import pymc3 as pm
 
 
-def default_linear_model(X, y):
-    model = pm.Model()
-    with model:
-        # Priors for unknown model parameters
+def _default_predictive_model(y):
+    with pm.Model() as model:
+        mu = pm.Normal("mu", mu=y.mean(), sd=1)
+        sd = pm.HalfNormal("sd", sd=1)
+        obs = pm.Normal("obs", mu=mu, sd=sd, observed=y)
+
+        step = pm.NUTS()
+        trace = pm.sample(1000, step)
+
+        samples = pm.sample_ppc(trace, samples=500, size=len(y))
+
+    return samples
+
+
+class BayesianLinearRegression(BaseEstimator):
+
+    def __init__(self, model=_default_predictive_model):
+        """
+        Estimator wrapper interfacing PyMC3's Bayesian Linear Regression
+        to be used with the parametric probabilistic estimator
+
+        :param model: Optional callable with signature (X, y) that returns
+                      a trace with linear model variables ``alpha`` and ``betas``
+                      for the model f(x) = alpha + beta * X
+        :param param_based_prediction: If true, the paramete
+        """
+        self.model = model
+
+    def fit(self, X, y):
+        # TODO: use training data
+
+        return self
+
+    def predict(self, X, return_std=False):
+        self.samples = self.model(X)
+        y_pred = self.samples["obs"].mean(axis=0)
+
+        if return_std:
+            std = self.samples["obs"].std(axis=0)
+            return np.stack((y_pred, std), axis=1)
+
+        return y_pred
+
+
+def _default_estimation_model(X, y):
+    with pm.Model() as model:
         alpha = pm.Normal("alpha", mu=y.mean(), sd=10)
         betas = pm.Normal("betas", mu=0, sd=10, shape=X.shape[1])
         sigma = pm.HalfNormal("sigma", sd=10)
@@ -20,9 +62,9 @@ def default_linear_model(X, y):
     return trace
 
 
-class BayesianLinearRegression(BaseEstimator):
+class BayesianLinearEstimation(BaseEstimator):
 
-    def __init__(self, model=None):
+    def __init__(self, model=_default_estimation_model):
         """
         Estimator wrapper interfacing PyMC3's Bayesian Linear Regression
         to be used with the parametric probabilistic estimator
@@ -31,8 +73,6 @@ class BayesianLinearRegression(BaseEstimator):
                       a trace with linear model variables ``alpha`` and ``betas``
                       for the model f(x) = alpha + beta * X
         """
-        if model is None:
-            model = default_linear_model
         self.model = model
         self.chain = None
 
