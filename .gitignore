@@ -31,8 +31,8 @@ htmlcov/*
 .tox
 junit.xml
 coverage.xml
-tests/.hypothesis/*
-.hypothesis/*
+tests/.hypothesis/
+.hypothesis/
 
 # Build and docs folder/files
 build/*

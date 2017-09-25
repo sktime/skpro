@@ -3,7 +3,8 @@ import numpy as np
 from tabulate import tabulate
 
 from ..base import Model, View, Controller
-from ..utils import ItemView
+from ..utils import ItemView, InfoController, InfoView
+from ..cross_validation import CrossValidationView, CrossValidationController
 
 
 class Modifier(metaclass=abc.ABCMeta):
@@ -137,13 +138,26 @@ class RankModifier(Modifier):
 
 class SortModifier(Modifier):
 
-    def __init__(self, key, reverse=False):
+    def __init__(self, key=None, reverse=False):
+        if key is None:
+            key = lambda x: x[-1]['data']['score']
         self.key = key
         self.reverse = reverse
 
     def modify(self, raw, headers):
         sorted_raw = sorted(raw, key=self.key, reverse=self.reverse)
         return sorted_raw, headers
+
+
+def filter_modifier(modifier):
+    if modifier == 'rank' or modifier == 'ranks':
+        return RankModifier()
+    elif modifier == 'id' or modifier == 'ids':
+        return IdModifier()
+    elif modifier == 'sort':
+        return SortModifier()
+    else:
+        return modifier
 
 
 class Table:
@@ -153,7 +167,10 @@ class Table:
             tasks = []
         self.tasks = tasks
         if modifiers is None:
-            modifiers = []
+            modifiers = ['id', 'rank', 'sort']
+        # resolve shorthands
+        modifiers = [filter_modifier(modifier) for modifier in modifiers]
+
         self.modifiers = modifiers
         self.rendered_ = None
 
@@ -167,8 +184,17 @@ class Table:
         self.tasks.append((controller, view))
         self.rendered_ = None
 
+        return self
+
+    def cv(self, data, loss_func, tune=False):
+        return self.add(CrossValidationController(data, loss_func, tune=tune),
+                 CrossValidationView())
+
+    def info(self, with_group=False):
+        return self.add(InfoController(), InfoView(with_group=with_group))
+
     def modify(self, modifier):
-        self.modifiers.append(modifier)
+        self.modifiers.append(filter_modifier(modifier))
 
     def render(self, models, verbose=0, debug=False):
         if len(self.tasks) == 0:
@@ -180,7 +206,7 @@ class Table:
         i = 0
         for model in models:
             if not issubclass(model.__class__, Model):
-                raise Exception('models must only contain subclass instances of skpro.workflow.Model')
+                model = Model(model)
 
             if verbose > 1:
                 print('Evaluating model %i/%i: %s' % (i + 1, len(models), str(model)))

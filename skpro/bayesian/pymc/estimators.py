@@ -7,14 +7,9 @@ def _default_predictive_model(y):
     with pm.Model() as model:
         mu = pm.Normal("mu", mu=y.mean(), sd=1)
         sd = pm.HalfNormal("sd", sd=1)
-        obs = pm.Normal("obs", mu=mu, sd=sd, observed=y)
+        y_pred = pm.Normal("y_pred", mu=mu, sd=sd, observed=y)
 
-        step = pm.NUTS()
-        trace = pm.sample(1000, step)
-
-        samples = pm.sample_ppc(trace, samples=500, size=len(y))
-
-    return samples
+    return model
 
 
 class BayesianLinearRegression(BaseEstimator):
@@ -32,16 +27,18 @@ class BayesianLinearRegression(BaseEstimator):
         self.model = model
 
     def fit(self, X, y):
-        # TODO: use training data
 
         return self
 
     def predict(self, X, return_std=False):
-        self.samples = self.model(X)
-        y_pred = self.samples["obs"].mean(axis=0)
+        with self.model(X):
+            trace = pm.sample(1000)
+            samples = pm.sample_ppc(trace, samples=500, size=len(X))
+
+        y_pred = samples["y_pred"].mean(axis=0)
 
         if return_std:
-            std = self.samples["obs"].std(axis=0)
+            std = samples["y_pred"].std(axis=0)
             return np.stack((y_pred, std), axis=1)
 
         return y_pred

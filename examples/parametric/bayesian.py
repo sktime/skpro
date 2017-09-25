@@ -1,16 +1,15 @@
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.datasets.base import load_boston
+from sklearn.ensemble import RandomForestRegressor
 
+from skpro.bayesian.pymc3.estimators import LinearRegression
+from skpro.metrics import log_loss
 from skpro.parametric import ParamtericEstimator
 from skpro.parametric.estimators import Constant
-from skpro.metrics import log_loss
-from skpro.parametric.bayesian import BayesianLinearRegression
+from skpro.workflow import Model
+from skpro.workflow.cross_validation import CrossValidationController, CrossValidationView
 from skpro.workflow.manager import DataManager
 from skpro.workflow.table import Table, IdModifier, SortModifier
-from skpro.workflow.cross_validation import CrossValidationController, CrossValidationView
-from skpro.workflow import Model
 from skpro.workflow.utils import InfoView, InfoController
-
 
 X, y = load_boston(return_X_y=True)
 data = DataManager(X, y, name='Boston')
@@ -33,7 +32,7 @@ tbl.modify(IdModifier())
 # Compose the models displayed as rows
 models = [
     Model(ParamtericEstimator(point=RandomForestRegressor(), std=Constant('mean(y)'))),
-    Model(ParamtericEstimator(point_std=BayesianLinearRegression()))
+    Model(ParamtericEstimator(point_std=LinearRegression()))
 ]
 
 tbl.print(models)

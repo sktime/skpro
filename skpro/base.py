@@ -70,9 +70,8 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         def std(self):
             raise NotImplementedError()
 
-        @abc.abstractmethod
         def pdf(self, x):
-            raise NotImplementedError()
+            warnings.warn(self.__class__.__name__ + ' does not implement a pdf function', UserWarning)
 
         def cdf(self, x):
             warnings.warn(self.__class__.__name__ + ' does not implement a cdf function', UserWarning)
