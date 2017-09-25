@@ -161,6 +161,12 @@ class ParamtericEstimator(ProbabilisticEstimator):
             raise ValueError(str(shape) + ' is not a valid distribution')
 
         if point_std is None:
+            if point is None:
+                point = Constant('mean(y)')
+
+            if std is None:
+                point = Constant('std(y)')
+
             self.estimators.register('point', point)
             self.estimators.register('std', std)
         else:

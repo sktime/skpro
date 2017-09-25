@@ -3,7 +3,8 @@ import pymc3 as pm
 
 from skpro.bayesian.pymc import PyMC
 
-from skpro.metrics import rank_probability_loss
+from skpro.parametric import ParamtericEstimator
+from skpro.metrics import rank_probability_loss, linearized_log_loss
 from skpro.workflow.manager import DataManager
 from skpro.workflow.table import Table
 
@@ -21,8 +22,11 @@ def pymc_model(y):
 X, y = load_boston(return_X_y=True)
 data = DataManager(X, y, name='Boston')
 
-tbl = Table().info().cv(data, rank_probability_loss)
+tbl = Table().info()\
+    .cv(data, linearized_log_loss)\
+    .cv(data, rank_probability_loss)
 
 tbl.print([
-    PyMC(model=pymc_model)
+    PyMC(model=pymc_model),
+    ParamtericEstimator()
 ])
