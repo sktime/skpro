@@ -4,6 +4,7 @@ import pymc3 as pm
 from skpro.bayesian.pymc import PyMC
 
 from skpro.parametric import ParamtericEstimator
+from skpro.bayesian.pymc.estimators import BayesianLinearRegression, BayesianLinearEstimation
 from skpro.metrics import rank_probability_loss, linearized_log_loss
 from skpro.workflow.manager import DataManager
 from skpro.workflow.table import Table
@@ -28,5 +29,7 @@ tbl = Table().info()\
 
 tbl.print([
     PyMC(model=pymc_model),
-    ParamtericEstimator()
+    ParamtericEstimator(),
+    ParamtericEstimator(point_std=BayesianLinearRegression()),
+    ParamtericEstimator(point_std=BayesianLinearEstimation())
 ])

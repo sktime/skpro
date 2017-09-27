@@ -165,7 +165,7 @@ class ParamtericEstimator(ProbabilisticEstimator):
                 point = Constant('mean(y)')
 
             if std is None:
-                point = Constant('std(y)')
+                std = Constant('std(y)')
 
             self.estimators.register('point', point)
             self.estimators.register('std', std)

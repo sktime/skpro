@@ -40,10 +40,6 @@ class PyMC(ProbabilisticEstimator):
                 for index in range(len(self.X))
             ]
 
-            #kde.fit(x[:, np.newaxis])
-            # score_samples() returns the log-likelihood of the samples
-            #return np.exp(log_pdf)
-
         def _ecdf(self):
             if self.ecdf_ is None:
                 self.ecdf_ = [
