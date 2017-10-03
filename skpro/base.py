@@ -43,7 +43,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
     class Distribution(metaclass=ImplementsCachingAndCompatibility):
         """
         Abstract base class for the distribution interface
-        return by probabilistic estimators
+        returned by probabilistic estimators
         """
 
         def __init__(self, estimator, X):

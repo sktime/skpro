@@ -1,9 +1,9 @@
-import pymc3 as pm
 import numpy as np
+import pymc3 as pm
 from sklearn.neighbors import KernelDensity
 
-from ...base import ProbabilisticEstimator
-from ..bridge import ecdf
+from skpro.base import ProbabilisticEstimator
+from skpro.bridge import ecdf
 
 
 class PyMC(ProbabilisticEstimator):
