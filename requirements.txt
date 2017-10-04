@@ -1,9 +1,7 @@
 numpy
 scipy
 scikit-learn
-pytest
-hypothesis
-pytest-cov
 # pymc3, uncertainties, tabulate are optional dependencies that
 # that are pulled in by setup.py if required. See setup.py
 # for details
+# To install test dependencies use the test-requirements.txt
