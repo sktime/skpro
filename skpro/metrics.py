@@ -83,14 +83,3 @@ def rank_probability_loss(dist_pred, y, sample=True, return_std=False):
         return sample_loss(loss, return_std)
 
     return loss
-
-
-def brier_loss(dist_pred, y, sample=True, return_std=False):
-    pdf = dist_pred.pdf(y)
-
-    loss = (1 - pdf) ** 2
-
-    if sample:
-        return sample_loss(loss, return_std)
-
-    return loss

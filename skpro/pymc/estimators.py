@@ -51,15 +51,12 @@ def _default_estimation_model(X, y):
         sigma = pm.HalfNormal("sigma", sd=10)
 
         mu = alpha + pm.math.dot(betas, X.T)
-        likelihood = pm.Normal("likelihood", mu=mu, sd=sigma, observed=y)
+        y_pred = pm.Normal("y_pred", mu=mu, sd=sigma, observed=y)
 
-        step = pm.NUTS()
-        trace = pm.sample(1000, step)
-
-    return trace
+    return model
 
 
-class BayesianLinearEstimation(BaseEstimator):
+class BayesianLinearRegression(BaseEstimator):
 
     def __init__(self, model=_default_estimation_model):
         """
@@ -71,17 +68,18 @@ class BayesianLinearEstimation(BaseEstimator):
                       for the model f(x) = alpha + beta * X
         """
         self.model = model
-        self.chain = None
+        self.chain_ = None
 
     def fit(self, X, y):
-        trace = self.model(X, y)
-        self.chain = trace[100:]
+        model = self.model(X, y)
+
+        self.chain_ = pm.sample(1000)[100:]
 
         return self
 
     def predict(self, X, return_std=False):
-        alpha_pred = self.chain['alpha'].mean()
-        betas_pred = self.chain['betas'].mean(axis=0)
+        alpha_pred = self.chain_['alpha'].mean()
+        betas_pred = self.chain_['betas'].mean(axis=0)
 
         y_pred = alpha_pred + np.dot(betas_pred, X.T)
 
