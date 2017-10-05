@@ -92,7 +92,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
                           ' does not implement a lp2 function, defaulting to numerical approximation', UserWarning)
 
             def elementwise_integrand(func, index):
-                """ Returns function for squared PDF at a certain index """
+                """ Returns squared function at a certain index """
                 def integrand(x):
                     return func(x)[index]**2
 

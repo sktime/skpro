@@ -1,5 +1,5 @@
 from skpro.base import ProbabilisticEstimator
-from .interface import PyMCInterface
+from .interface import InterfacePyMC
 
 
 class PyMC(ProbabilisticEstimator):
@@ -13,13 +13,13 @@ class PyMC(ProbabilisticEstimator):
             return self.estimator.pymc_model.samples().std(axis=1)
 
         def cdf(self, x):
-            pass
+            return self.estimator.adapter.cdf(x)
 
         def pdf(self, x):
-            pass
+            return self.estimator.adapter.pdf(x)
 
     def __init__(self, pymc_model=None, adapter=None):
-        if not issubclass(pymc_model.__class__, PyMCInterface):
+        if not issubclass(pymc_model.__class__, InterfacePyMC):
             raise TypeError('model has to be a subclass of skpro.pymc.interface. '
                             '%s given.' % pymc_model.__class__)
 
@@ -27,11 +27,17 @@ class PyMC(ProbabilisticEstimator):
         self.adapter = adapter
 
     def fit(self, X, y):
+        # fit the PyMC model
         self.pymc_model.on_fit(X, y)
 
         return self
 
     def predict(self, X):
+        # predict with PyMC model
         self.pymc_model.on_predict(X)
 
+        # initialise adapter with samples
+        self.adapter(self.pymc_model.samples())
+
+        # return predicted distribution object
         return super().predict(X)

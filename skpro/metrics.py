@@ -60,6 +60,21 @@ def log_loss(dist_pred, y, sample=True, return_std=False):
 
 
 def rank_probability_loss(dist_pred, y, sample=True, return_std=False):
+    """ Rank probability loss
+    .. math::
+        L(F,y) = -int_-\infty^y F(x)² dx – int_y^\infty (1-F(x))² dx
+
+    Parameters
+    ----------
+    dist_pred
+    y
+    sample
+    return_std
+
+    Returns
+    -------
+
+    """
     def term(index, one_minus=False):
         def integrand(x):
             if one_minus:
