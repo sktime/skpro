@@ -1,5 +1,9 @@
+import numpy as np
+
 from skpro.base import ProbabilisticEstimator
 from .interface import InterfacePyMC
+
+from sklearn.base import clone
 
 
 class PyMC(ProbabilisticEstimator):
@@ -13,10 +17,14 @@ class PyMC(ProbabilisticEstimator):
             return self.estimator.pymc_model.samples().std(axis=1)
 
         def cdf(self, x):
-            return self.estimator.adapter.cdf(x)
+            return np.array([
+                self.estimator.adapter[i].cdf(x) for i in range(self.X)
+            ])
 
         def pdf(self, x):
-            return self.estimator.adapter.pdf(x)
+            return np.array([
+                self.estimator.adapter[i].pdf(x) for i in range(self.X)
+            ])
 
     def __init__(self, pymc_model=None, adapter=None):
         if not issubclass(pymc_model.__class__, InterfacePyMC):
@@ -37,7 +45,10 @@ class PyMC(ProbabilisticEstimator):
         self.pymc_model.on_predict(X)
 
         # initialise adapter with samples
-        self.adapter(self.pymc_model.samples())
+        samples = self.pymc_model.samples()
+        self.adapter = [
+            clone(self.adapter)(samples[index, :]) for index in range(len(X))
+        ]
 
         # return predicted distribution object
         return super().predict(X)

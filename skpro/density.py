@@ -2,7 +2,7 @@ import abc
 import numpy as np
 
 from sklearn.neighbors import KernelDensity
-from sklearn.base import clone
+from sklearn.base import BaseEstimator
 
 
 def ecdf(a):
@@ -43,10 +43,10 @@ def step_function(xs, ys):
         index = len(ys) - 1 if index >= len(ys) else index
         return ys[index]
 
-    return func
+    return np.vectorize(func)
 
 
-class DensityAdapter(metaclass=abc.ABCMeta):
+class DensityAdapter(BaseEstimator, metaclass=abc.ABCMeta):
     """
     Abtract base class for density adapter
     that transform an input into an
@@ -74,7 +74,7 @@ class DensityAdapter(metaclass=abc.ABCMeta):
 
         Returns
         -------
-        np.array  Vector of density functions for each point prediction evaluated at x
+        mixed  Density function evaluated at x
         """
         raise NotImplementedError()
 
@@ -88,7 +88,7 @@ class DensityAdapter(metaclass=abc.ABCMeta):
 
         Returns
         -------
-        np.array  Vector of density functions for each point prediction evaluated at x
+        mixed Cumulative density function evaluated at x
         """
         raise NotImplementedError()
 
@@ -101,31 +101,25 @@ class KernelDensityAdapter(DensityAdapter):
 
     def __init__(self, estimator=KernelDensity()):
         self.estimator = estimator
-        self.estimators_ = []
 
-    def __call__(self, inlet):
+    def __call__(self, sample):
         """
         Adapter entry point
 
         Parameters
         ----------
-        np.array(N, M) inlet: N bayesian samples of length M
+        np.array(M) inlet: Bayesian sample of length M
         """
 
-        # fit kernel density estimators for each row
-        self.estimators_ = [
-            clone(self.estimator).fit(inlet[index, :, np.newaxis]) for index in range(len(inlet))
-        ]
+        # fit kernel density estimator
+        self.estimator.fit(sample[:, np.newaxis])
 
     def cdf(self, x):
-        # TODO: integrate pdfs elementwise
+        # TODO: integrate pdf
         pass
 
     def pdf(self, x):
-        return np.array([
-            np.exp(self.estimators_[index].score_samples(x[:, np.newaxis]))[0]
-            for index in range(len(self.estimators_))
-        ])
+        return np.exp(self.estimator.score_samples(x[:, np.newaxis]))
 
 
 class EmpiricalDensityAdapter(DensityAdapter):
@@ -135,18 +129,24 @@ class EmpiricalDensityAdapter(DensityAdapter):
     """
 
     def __init__(self):
-        self.ecdfs = []
+        self.xs_ = None
+        self.ys_ = None
+        self.step_function_ = None
 
-    def __call__(self, inlet):
-        self.ecdfs = [
-            ecdf(inlet[index, :]) for index in range(len(inlet))
-        ]
+    def __call__(self, sample):
+        """
+        Adapter entry point
+
+        Parameters
+        ----------
+        np.array(M) inlet: Bayesian sample of length M
+        """
+        self.xs_, self.ys_ = ecdf(sample)
+        self.step_function_ = step_function(self.xs, self.ys)
 
     def cdf(self, x):
-        # TODO: point-wise ecdf as function
-        step_function(self.ecdfs[0][0])
-        pass
+        return self.step_function_(x)
 
     def pdf(self, x):
-        # TODO: integrate cdf stepfunction
+        # TODO: integrate cdf stepfunction, manually using xs, ys, summing up the bars
         pass

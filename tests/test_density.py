@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import norm
 
 from hypothesis import given
 from hypothesis.strategies import floats
@@ -40,50 +41,40 @@ def test_ecdf_from_sample(sample):
     # is it monotone?
     assert np.array_equal(ys, sorted(ys))
 
-
-def test_kernel_density_adapter():
-    # Bayesian test samples
-    N = 5
-    inlet = get_bayesian_sample(N)
+@given(floats(-10, 10))
+def test_kernel_density_adapter(x):
+    # Bayesian test sample
+    sample = np.random.normal(loc=5, scale=10, size=500)
 
     # Initialise adapter
     adapter = KernelDensityAdapter()
-    adapter(inlet)
-    x = np.random.laplace(0, 15, N)
+    adapter(sample)
 
     # PDF
     pdf = adapter.pdf(x)
-    assert type(pdf) == np.ndarray
-    assert len(pdf) == len(inlet)
-    assert np.abs(pdf.mean()) < 20
+    assert type(pdf) == float
+    assert pdf - norm.pdf(x, loc=5, scale=10) < 0.01
 
     # CDF
     cdf = adapter.cdf(x)
-    assert type(cdf) == np.ndarray
-    assert len(cdf) == len(inlet)
-    assert np.isclose(1, adapter.cdf(1e10))
-    assert np.isclose(0, adapter.cdf(-10e10))
+    assert type(cdf) == float
+    assert cdf - norm.cdf(x, loc=5, scale=10) < 0.01
 
 
 def test_empirical_density_adapter():
-    # Bayesian test samples
-    N = 5
-    inlet = get_bayesian_sample(N)
+    # Bayesian test sample
+    sample = np.random.normal(loc=5, scale=10, size=500)
 
     # Initialise adapter
     adapter = EmpiricalDensityAdapter()
-    adapter(inlet)
-    x = np.random.laplace(0, 15, N)
+    adapter(sample)
 
     # PDF
     pdf = adapter.pdf(x)
-    assert type(pdf) == np.ndarray
-    assert len(pdf) == len(inlet)
-    assert np.abs(pdf.mean()) < 20
+    assert type(pdf) == float
+    assert pdf - norm.pdf(x, loc=5, scale=10) < 0.01
 
     # CDF
     cdf = adapter.cdf(x)
-    assert type(cdf) == np.ndarray
-    assert len(cdf) == len(inlet)
-    assert np.isclose(1, adapter.cdf(1e10))
-    assert np.isclose(0, adapter.cdf(-10e10))
+    assert type(cdf) == float
+    assert cdf - norm.cdf(x, loc=5, scale=10) < 0.01
