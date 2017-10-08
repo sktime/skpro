@@ -31,7 +31,7 @@ class EstimatorManager:
 
         fitted = None
         if isinstance(estimator, str):
-            # Sanity checks for linking
+            # sanity checks for linking
             if not estimator in self.estimators_:
                 raise AttributeError('Estimator %s you try to link is not registered' % estimator)
 

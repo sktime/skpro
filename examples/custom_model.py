@@ -21,11 +21,11 @@ class MyCustomModel(ProbabilisticEstimator):
 
         def point(self):
             """ Implements the point prediction """
-            return np.ones((len(self.X), 1)) * self.estimator.random_mean_prediction_
+            return self.estimator.random_mean_prediction_
 
         def std(self):
             """ Implements the variance prediction """
-            return np.ones((len(self.X), 1)) * self.estimator.random_std_prediction_
+            return self.estimator.random_std_prediction_
 
         def pdf(self, x):
             """ Implements the pdf function """
