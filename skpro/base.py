@@ -18,48 +18,59 @@ def vectorvalued(f):
     -------
     Decorated function
     """
-    def wrapper(*args, **kwargs):
-        if 'skpro_distribution_already_vectorized' in kwargs:
-            del kwargs['skpro_distribution_already_vectorized']
-        return f(*args, **kwargs)
+    f.already_vectorized = True
+    return f
 
+
+def _with_meta(wrapper, f):
+    """ Forward meta information from decorated method to decoration
+
+    Parameters
+    ----------
+    wrapper
+    f
+
+    Returns
+    -------
+    Method with meta information
+    """
+    wrapper.already_vectorized = getattr(f, 'already_vectorized', False)
     return wrapper
 
 
-def generalize(f):
+def _generalize(f):
     """ Generalizes the signature to allow for the use with np.std() etc.
     """
 
     def wrapper(self, *args, **kwargs):
         return f(self)
 
-    return wrapper
+    return _with_meta(wrapper, f)
 
 
-def vectorize(f):
+def _vectorize(f):
     """ Enables automatic vectorization of a function
 
     The wrapper vectorizes a interface function unless
     it is decorated with the vectorvalued decorator
     """
     def wrapper(self, *args, **kwargs):
-        try:
-            # return if already vectorized
-            return f(skpro_distribution_already_vectorized='?')
-        except TypeError:
-            result = []
-            number_of_points = len(self.X)
-            for index in range(number_of_points):
-                self.index = index
-                result.append(f(self, *args, **kwargs))
+        if getattr(f, 'already_vectorized', False):
+            return f(self, *args, **kwargs)
 
-            self.index = None
-            return np.array(result)
+        result = []
+        number_of_points = len(self.X)
+        for index in range(number_of_points):
+            self.index = index
+            result.append(f(self, *args, **kwargs))
 
-    return wrapper
+        self.index = None
+        return np.array(result)
+
+    return _with_meta(wrapper, f)
 
 
-def elementwise(f):
+def _elementwise(f):
     """ Enables elementwise operations
 
     The wrapper implements two different modes of argument evaluation
@@ -107,10 +118,10 @@ def elementwise(f):
         self.index = None
         return np.array(result)
 
-    return wrapper
+    return _with_meta(wrapper, f)
 
 
-def cached(f):
+def _cached(f):
     """ Enables caching
 
     Wrapper uses lru_cache to cache function result
@@ -120,7 +131,7 @@ def cached(f):
     def wrapper(self, *args, **kwargs):
         return f(self, *args, **kwargs)
 
-    return wrapper
+    return _with_meta(wrapper, f)
 
 
 class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
@@ -138,11 +149,11 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         def __init__(cls, name, bases, clsdict):
             for method in ['pdf', 'cdf']:
                 if method in clsdict:
-                    setattr(cls, method, elementwise(clsdict[method]))
+                    setattr(cls, method, _elementwise(clsdict[method]))
 
-            for method in ['point', 'std']:
+            for method in ['point', 'std', 'lp2']:
                 if method in clsdict:
-                    setattr(cls, method, vectorize(cached(clsdict[method])))
+                    setattr(cls, method, _cached(_vectorize(clsdict[method])))
 
     class Distribution(metaclass=ImplementsEnhancedInterface):
         """
@@ -201,20 +212,49 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             -------
             ``skpro.base.ProbabilisticEstimator.Distribution``
             """
+            # [slice, mode]
             if isinstance(key, tuple) and len(key) == 2:
-                mode = key[1]
                 selection = key[0]
+                mode = key[1]
+            # [mode]
             elif isinstance(key, str):
-                mode = key
                 selection = slice(None)
+                mode = key
             else:
-                mode = None
                 selection = key
+                mode = None
 
+            # [int k]
             if isinstance(selection, int):
+                if selection >= len(self):
+                    raise IndexError('Selection is out of bounds')
+
                 selection = slice(selection, selection+1)
 
+            # out of bounds subset
+            if len(range(*selection.indices(len(self)))) == 0:
+                raise IndexError('Selection is out of bounds')
+
+            # return subset replication
             return self.replicate(selection, mode)
+
+        def __point__(self, name):
+            if len(self) > 1:
+                raise TypeError('Multiple distributions can not be converted to ' + name)
+
+            return self.point()[0]
+
+        def __op__(self):
+            if len(self) > 1:
+                raise NotImplemented
+
+            return self.point()[0]
+
+        def __float__(self):
+            return float(self.__point__('float'))
+
+        def __int__(self):
+            return int(self.__point__('int'))
 
         @abc.abstractmethod
         def point(self):
@@ -251,19 +291,16 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             warnings.warn(self.__class__.__name__ +
                           ' does not implement a lp2 function, defaulting to numerical approximation', UserWarning)
 
-            def elementwise_integrand(func, index):
-                """ Returns squared function at a certain index """
+            def squared(func):
+                """ Returns squared function """
                 def integrand(x):
-                    return func(x)[index]**2
+                    return func(x)**2
 
                 return integrand
 
             from scipy.integrate import quad as integrate
-            return np.array([
-                # y, y_err of
-                integrate(elementwise_integrand(self.pdf, index), -np.inf, np.inf)
-                for index in range(len(self.X))
-            ])[:, 0]
+                   # y, y_err of
+            return integrate(squared(self.pdf), -np.inf, np.inf)[0]
 
     def name(self):
         return self.__class__.__name__

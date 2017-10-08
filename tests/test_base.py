@@ -2,11 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-
-from hypothesis import given
-from hypothesis.strategies import floats
-from hypothesis.extra.numpy import arrays
-
 import pytest
 
 from skpro.base import ProbabilisticEstimator, vectorvalued
@@ -21,11 +16,10 @@ class TestEstimator(ProbabilisticEstimator):
 
         @vectorvalued
         def std(self):
+            # returns a vector rather than a point
             return self.X[:, 0]/10
 
         def pdf(self, x):
-            # self.X provides access to the current feature point
-            # and x to the current prediction setting
             return -self.X[0]*x
 
 
@@ -83,10 +77,26 @@ def test_interface_vectorization():
     X = np.array([np.ones(3) * i for i in range(5)])
     y_pred = estimator.predict(X)
 
-    assert y_pred.point().shape == (5,)
-    assert y_pred.std().shape == (5,)
+    # point interface
+    np.testing.assert_array_equal(y_pred.point(), np.arange(5) * 10)
+    # test vectorvalued decorator
+    np.testing.assert_array_equal(y_pred.std(), np.arange(5) / 10)
+    # lp2 integration
+    np.testing.assert_array_equal(y_pred.lp2(), np.zeros(5))
 
 
+def test_numeric_emulation():
+    estimator = TestEstimator()
+    A = np.array([np.ones(3) * i for i in range(5)])
+    y_pred_1 = estimator.predict(A)
+    B = np.array([-np.ones(3) * i for i in range(5)])
+    y_pred_2 = estimator.predict(B)
 
+    # only elementwise operation
+    with pytest.raises(TypeError):
+        float(y_pred_1)
 
+    # type conversion
+    assert float(y_pred_1[2]) == 20.0
+    assert int(y_pred_1[3]) == 30
 
