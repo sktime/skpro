@@ -3,7 +3,7 @@ from scipy.stats import norm, laplace, uniform
 from sklearn.externals import six
 import collections
 
-from ..base import ProbabilisticEstimator
+from ..base import ProbabilisticEstimator, vectorvalued
 from ..parametric.estimators import Constant
 
 
@@ -114,9 +114,11 @@ class ParamtericEstimator(ProbabilisticEstimator):
 
     class Distribution(ProbabilisticEstimator.Distribution):
 
+        @vectorvalued
         def std(self):
             return self.estimator.estimators.predict('std', self.X)
 
+        @vectorvalued
         def point(self):
             return self.estimator.estimators.predict('point', self.X)
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-from skpro.base import ProbabilisticEstimator
+from skpro.base import ProbabilisticEstimator, vectorvalued
 from .interface import InterfacePyMC
 
 from sklearn.base import clone
@@ -10,21 +10,19 @@ class PyMC(ProbabilisticEstimator):
 
     class Distribution(ProbabilisticEstimator.Distribution):
 
+        @vectorvalued
         def point(self):
             return self.estimator.pymc_model.samples().mean(axis=1)
 
+        @vectorvalued
         def std(self):
             return self.estimator.pymc_model.samples().std(axis=1)
 
         def cdf(self, x):
-            return np.array([
-                self.estimator.adapter[i].cdf(x) for i in range(self.X)
-            ])
+            return self.estimator.adapter[self.index].cdf(x)
 
         def pdf(self, x):
-            return np.array([
-                self.estimator.adapter[i].pdf(x) for i in range(self.X)
-            ])
+            return self.estimator.adapter[self.index].cdf(x)
 
     def __init__(self, pymc_model=None, adapter=None):
         if not issubclass(pymc_model.__class__, InterfacePyMC):
