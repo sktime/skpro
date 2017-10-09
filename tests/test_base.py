@@ -44,9 +44,10 @@ def test_distribution_bracket_notation():
     # MODE: elementwise
 
     # 0-dim, one dist, one point
-    np.testing.assert_array_equal(y_pred[2].pdf(1), np.array([-2.]))
+    assert y_pred[2].pdf(1) == -2.
+    assert y_pred[3].pdf(2) == -6.
     # 0-dim, more dist than points
-    np.testing.assert_array_equal(y_pred[1:4].pdf(7), np.array([-7., ]))
+    np.testing.assert_array_equal(y_pred[1:4].pdf(7), np.array([-7., -14., -21.]))
 
     # 1-dim, one dist, many points
     np.testing.assert_array_equal(y_pred[2].pdf(x), np.ones((5)) * -8.)
@@ -58,18 +59,18 @@ def test_distribution_bracket_notation():
     # MODE: batch
 
     # 0-dim, one dist, one point
-    np.testing.assert_array_equal(y_pred[2, 'batch'].pdf(1), np.array([[-2.]]))
+    assert y_pred[2, 'batch'].pdf(1) == -2.
+    assert y_pred[3, 'batch'].pdf(2) == -6.
     # 0-dim, more dist than points
-    np.testing.assert_array_equal(y_pred[1:4, 'batch'].pdf(7), np.array([[-7.], [-14.], [-21.]]))
+    np.testing.assert_array_equal(y_pred[1:4, 'batch'].pdf(7), np.array([-7., -14., -21.]))
 
     # 1-dim, one dist, many points
-    np.testing.assert_array_equal(y_pred[2, 'batch'].pdf(x), [np.ones((5)) * -8.])
+    np.testing.assert_array_equal(y_pred[2, 'batch'].pdf(x), np.ones((5)) * -8.)
     # 1-dim, less dist than points
     np.testing.assert_array_equal(y_pred[2:4, 'batch'].pdf(x),
                                   [np.ones((5)) * -8., np.ones((5)) * -12.])
     # full batch notation
-    np.testing.assert_array_equal(y_pred['batch'].pdf(1),
-                                  -np.arange(5)[:, np.newaxis])
+    np.testing.assert_array_equal(y_pred['batch'].pdf(1), -np.arange(5))
 
 
 def test_interface_vectorization():
@@ -97,6 +98,6 @@ def test_numeric_emulation():
         float(y_pred_1)
 
     # type conversion
-    assert float(y_pred_1[2]) == 20.0
+    assert float(y_pred_1[2]) == 20.
     assert int(y_pred_1[3]) == 30
 

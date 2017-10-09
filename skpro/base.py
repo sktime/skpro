@@ -65,7 +65,11 @@ def _vectorize(f):
             result.append(f(self, *args, **kwargs))
 
         self.index = slice(None)
-        return np.array(result)
+
+        if len(result) > 1:
+            return np.array(result)
+        else:
+            return result[0]
 
     return _with_meta(wrapper, f)
 
@@ -86,16 +90,14 @@ def _elementwise(f):
     """
 
     def wrapper(self, x, *args, **kwargs):
-        # ensure x is one-dimensional
-        if len(np.array(x).shape) == 0:
-            x = np.array((x,))
-        elif len(np.array(x).shape) > 1:
+        if len(np.array(x).shape) > 1:
             x = x.flatten()
 
         result = []
         number_of_points = len(self.X)
+        elementwise = self.mode == 'elementwise' and len(np.array(x).shape) != 0
 
-        if self.mode == 'elementwise':
+        if elementwise:
             evaluations = len(x)
         else:
             # batch
@@ -103,7 +105,7 @@ def _elementwise(f):
 
         for index in range(evaluations):
             # set evaluation index
-            if self.mode == 'elementwise':
+            if elementwise:
                 self.index = index % number_of_points
                 at = x[index]
             else:
@@ -116,7 +118,11 @@ def _elementwise(f):
 
         # deactivate evaluation index
         self.index = slice(None)
-        return np.array(result)
+
+        if len(result) > 1:
+            return np.array(result)
+        else:
+            return result[0]
 
     return _with_meta(wrapper, f)
 
@@ -153,7 +159,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
             for method in ['point', 'std', 'lp2']:
                 if method in clsdict:
-                    setattr(cls, method, _cached(_vectorize(clsdict[method])))
+                    setattr(cls, method, _vectorize(clsdict[method]))
 
     class Distribution(metaclass=ImplementsEnhancedInterface):
         """
@@ -239,13 +245,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             if len(self) > 1:
                 raise TypeError('Multiple distributions can not be converted to ' + name)
 
-            return self.point()[0]
-
-        def __op__(self):
-            if len(self) > 1:
-                raise NotImplemented
-
-            return self.point()[0]
+            return self.point()
 
         def __float__(self):
             return float(self.__point__('float'))
@@ -288,16 +288,14 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             warnings.warn(self.__class__.__name__ +
                           ' does not implement a lp2 function, defaulting to numerical approximation', UserWarning)
 
-            def squared(func):
-                """ Returns squared function """
-                def integrand(x):
-                    return func(x)**2
-
-                return integrand
+            def squared(f, index):
+                def wrapper(x):
+                    return f(x)[index]**2
+                return wrapper
 
             from scipy.integrate import quad as integrate
                    # y, y_err of
-            return integrate(squared(self.pdf), -np.inf, np.inf)[0]
+            return integrate(squared(self.pdf, self.index), -np.inf, np.inf)[0]
 
     def name(self):
         return self.__class__.__name__
