@@ -7,10 +7,6 @@ from skpro.pymc import PyMC, PlugAndPlayPyMC
 from skpro.workflow.manager import DataManager
 from skpro.workflow.table import Table
 
-# Load the data
-X, y = load_boston(return_X_y=True)
-data = DataManager(X, y, name='Boston')
-
 
 def pymc_linear_regression(model, X, y):
     """Defines a linear regression model in PyMC
@@ -35,17 +31,12 @@ def pymc_linear_regression(model, X, y):
         y_pred = pm.Normal("y_pred", mu=mu, sd=sigma, observed=y)
 
 
-# Initiate PyMC model
+data = DataManager('boston')
 model = PyMC(pymc_model=PlugAndPlayPyMC(pymc_linear_regression))
-
-
-
 y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
 
-print(rank_probability_loss(y_pred, data.y_test, return_std=True))
+print(rank_probability_loss(data.y_test, y_pred, return_std=True))
 
 from matplotlib import pyplot
-
 pyplot.scatter(y_pred, data.y_test)
-
 pyplot.show()

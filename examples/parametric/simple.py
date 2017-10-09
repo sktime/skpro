@@ -8,9 +8,9 @@ from skpro.metrics import log_loss
 
 # Define the parametric model
 model = ParamtericEstimator(
-    shape='norm',
     point=RandomForestRegressor(),
-    std=Constant('std(y)')
+    std=Constant('std(y)'),
+    shape='norm'
 )
 
 # Train and predict on boston housing data

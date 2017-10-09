@@ -1,4 +1,3 @@
-from sklearn.datasets import load_boston
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 
@@ -12,8 +11,7 @@ from skpro.parametric import ParamtericEstimator
 from skpro.parametric.estimators import Constant
 
 # Load the dataset
-X, y = load_boston(return_X_y=True)
-data = DataManager(X, y, name='Boston')
+data = DataManager('boston')
 
 tbl = Table()
 

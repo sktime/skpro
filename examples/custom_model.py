@@ -29,7 +29,7 @@ class MyCustomModel(ProbabilisticEstimator):
 
         def pdf(self, x):
             """ Implements the pdf function """
-            return norm.pdf(x, loc=self.point(), scale=self.std())
+            return norm.pdf(x, loc=self.point()[self.index], scale=self.std()[self.index])
 
     def __init__(self):
         self.random_mean_prediction_ = None
@@ -49,4 +49,4 @@ model = MyCustomModel()
 X, y = load_boston(return_X_y=True)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 y_pred = model.fit(X_train, y_train).predict(X_test)
-print('Loss: %f+-%f' % log_loss(y_pred, y_test, return_std=True))
+print('Loss: %f+-%f' % log_loss(y_test, y_pred, return_std=True))

@@ -1,4 +1,3 @@
-from sklearn.datasets import load_boston
 from sklearn.tree import DecisionTreeRegressor
 
 from skpro.workflow.table import Table, IdModifier, SortModifier
@@ -11,9 +10,8 @@ from skpro.workflow.manager import DataManager
 from skpro.parametric import ParamtericEstimator
 from skpro.parametric.estimators import Constant
 
-# Load the dataset
-X, y = load_boston(return_X_y=True)
-data = DataManager(X, y, name='Boston')
+
+data = DataManager('boston')
 
 if True:  # DEBUG
     import numpy as np

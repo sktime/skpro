@@ -321,4 +321,4 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         return self
 
     def score(self, X, y):
-        return -1 * log_loss(self.predict(X), y, sample=True)
+        return -1 * log_loss(y, self.predict(X), sample=True)

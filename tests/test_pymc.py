@@ -19,10 +19,9 @@ def pymc_model(y):
 
 
 def test_construct_estimator(self):
-    X, y = load_boston(return_X_y=True)
-    data = DataManager(X, y, name='Boston')
-
+    data = DataManager('boston')
     model = PyMC()
+
     y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
 
 

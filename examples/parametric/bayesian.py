@@ -1,4 +1,3 @@
-from sklearn.datasets.base import load_boston
 from sklearn.ensemble import RandomForestRegressor
 
 from skpro.bayesian.pymc3.estimators import LinearRegression
@@ -11,8 +10,7 @@ from skpro.workflow.manager import DataManager
 from skpro.workflow.table import Table, IdModifier, SortModifier
 from skpro.workflow.utils import InfoView, InfoController
 
-X, y = load_boston(return_X_y=True)
-data = DataManager(X, y, name='Boston')
+data = DataManager('boston')
 
 tbl = Table()
 

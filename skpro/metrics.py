@@ -18,12 +18,12 @@ def make_scorer(loss_function, greater_is_better=True, return_std=False):
     return scorer
 
 
-def gneiting_loss(dist_pred, y, sample=True, return_std=False):
+def gneiting_loss(y_true, dist_pred, sample=True, return_std=False):
     lp2 = getattr(dist_pred, 'lp2', False)
     if not lp2:
         raise Exception('The estimator does not provide an lp2 integration')
 
-    loss = -2 * dist_pred.pdf(y) + lp2()
+    loss = -2 * dist_pred.pdf(y_true) + lp2()
 
     if sample is True:
         return sample_loss(loss, return_std)
@@ -31,8 +31,8 @@ def gneiting_loss(dist_pred, y, sample=True, return_std=False):
     return loss
 
 
-def linearized_log_loss(dist_pred, y, range=1e-10, sample=True, return_std=False):
-    pdf = dist_pred.pdf(y)
+def linearized_log_loss(y_true, dist_pred, range=1e-10, sample=True, return_std=False):
+    pdf = dist_pred.pdf(y_true)
 
     def f(x):
         if x <= range:
@@ -49,8 +49,8 @@ def linearized_log_loss(dist_pred, y, range=1e-10, sample=True, return_std=False
     return loss
 
 
-def log_loss(dist_pred, y, sample=True, return_std=False):
-    pdf = dist_pred.pdf(y)
+def log_loss(y_true, dist_pred, sample=True, return_std=False):
+    pdf = dist_pred.pdf(y_true)
     loss = -np.log(pdf)
 
     if sample:
@@ -59,7 +59,7 @@ def log_loss(dist_pred, y, sample=True, return_std=False):
     return loss
 
 
-def rank_probability_loss(dist_pred, y, sample=True, return_std=False):
+def rank_probability_loss(y_true, dist_pred, sample=True, return_std=False):
     """ Rank probability loss
     .. math::
         L(F,y) = -int_-\infty^y F(x)² dx – int_y^\infty (1-F(x))² dx
@@ -67,7 +67,7 @@ def rank_probability_loss(dist_pred, y, sample=True, return_std=False):
     Parameters
     ----------
     dist_pred
-    y
+    y_true
     sample
     return_std
 
@@ -88,10 +88,10 @@ def rank_probability_loss(dist_pred, y, sample=True, return_std=False):
 
     loss = -1 * np.array([
         # -int_ -\infty ^ y F(x)² dx
-        - integrate(term(index), -np.inf, y[index])[0]
+        - integrate(term(index), -np.inf, y_true[index])[0]
         # – int_y ^\infty(1 - F(x))² dx
-        - integrate(term(index, one_minus=True), y[index], np.inf)[0]
-        for index in range(len(dist_pred.X))
+        - integrate(term(index, one_minus=True), y_true[index], np.inf)[0]
+        for index in range(len(dist_pred))
     ])
 
     if sample:
