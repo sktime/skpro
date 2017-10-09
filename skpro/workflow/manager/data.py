@@ -1,5 +1,7 @@
 import numpy as np
+
 from sklearn.model_selection import train_test_split, KFold
+from sklearn.datasets import load_boston, load_diabetes
 
 
 class DataManager:
@@ -9,7 +11,17 @@ class DataManager:
     assigned
     """
 
-    def __init__(self, X=None, y=None, split=0.2, random_state=None, name='Unnamed'):
+    def __init__(self, X=None, y=None, split=0.2, random_state=None, name=None):
+        if isinstance(X, str):
+            # autoload sklearn datasets
+            name = X
+            if X.lower() == 'boston':
+                X, y = load_boston(return_X_y=True)
+            elif X.lower() == 'diabetes':
+                X, y = load_diabetes(return_X_y=True)
+            else:
+                raise ValueError("'%s' is not a valid dataset" % X)
+
         self.random_state = random_state
         self.split = split
         self._X = None
@@ -20,7 +32,7 @@ class DataManager:
         self.y_test = None
         self.X = X
         self.y = y
-        self.name = name
+        self.name = name if isinstance(name, str) else 'Unnamed'
 
     def data(self):
         try:

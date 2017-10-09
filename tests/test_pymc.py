@@ -7,6 +7,7 @@ from skpro.workflow.manager import DataManager
 
 from skpro.pymc import PyMC
 
+
 def pymc_model(y):
     model = pm.Model()
     with model:

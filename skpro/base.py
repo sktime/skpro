@@ -64,7 +64,7 @@ def _vectorize(f):
             self.index = index
             result.append(f(self, *args, **kwargs))
 
-        self.index = None
+        self.index = slice(None)
         return np.array(result)
 
     return _with_meta(wrapper, f)
@@ -115,7 +115,7 @@ def _elementwise(f):
             result.append(f(self, at, *args, **kwargs))
 
         # deactivate evaluation index
-        self.index = None
+        self.index = slice(None)
         return np.array(result)
 
     return _with_meta(wrapper, f)
@@ -164,7 +164,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         def __init__(self, estimator, X, selection=slice(None), mode='elementwise'):
             self.estimator = estimator
             self._X = X
-            self.index = None
+            self.index = slice(None)
             self.selection = selection
             if mode not in ['elementwise', 'batch']:
                 mode = 'elementwise'
@@ -172,10 +172,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
         @property
         def X(self):
-            if self.index is None:
-                return self._X[self.selection, :]
-            else:
-                return self._X[self.selection, :][self.index]
+            return self._X[self.selection, :][self.index]
 
         @X.setter
         def X(self, value):

@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import norm, laplace, uniform
+import scipy.stats
 from sklearn.externals import six
 import collections
 
@@ -123,27 +123,27 @@ class ParamtericEstimator(ProbabilisticEstimator):
             return self.estimator.estimators.predict('point', self.X)
 
         def pdf(self, x):
-            return self.estimator.shape_.pdf(x, loc=self.point(), scale=self.std())
+            return self.estimator.shape_.pdf(x, loc=self.point()[self.index], scale=self.std()[self.index])
 
         def cdf(self, x):
-            return self.estimator.shape_.cdf(x, loc=self.point(), scale=self.std())
+            return self.estimator.shape_.cdf(x, loc=self.point()[self.index], scale=self.std()[self.index])
 
         def ppf(self, x):
-            return self.estimator.shape_.ppf(x, loc=self.point(), scale=self.std())
+            return self.estimator.shape_.ppf(x, loc=self.point()[self.index], scale=self.std()[self.index])
 
         def lp2(self):
             # Analytic solutions
             if self.estimator.shape == 'norm':
-                return 1 / (2 * self.std() * np.sqrt(np.pi))
+                return 1 / (2 * self.std()[self.index] * np.sqrt(np.pi))
             elif self.estimator.shape == 'laplace':
-                return 1 / (2 * self.std())
+                return 1 / (2 * self.std()[self.index])
             elif self.estimator.shape == 'uniform':
                 return 1
             else:
                 # fallback to numerical approximation
                 super().lp2()
 
-    def __init__(self, shape='norm', point=None, std=None, point_std=None):
+    def __init__(self, point=None, std=None, point_std=None, shape='norm'):
         """
         TODO: can be string, num, estimator
         :param shape:
@@ -153,19 +153,15 @@ class ParamtericEstimator(ProbabilisticEstimator):
         """
         self.estimators = EstimatorManager(self)
         self.shape = shape
-        if shape == 'norm':
-            self.shape_ = norm
-        elif shape == 'laplace':
-            self.shape_ = laplace
-        elif shape == 'uniform':
-            self.shape_ = uniform
-        else:
-            raise ValueError(str(shape) + ' is not a valid distribution')
+        self.shape_ = getattr(scipy.stats, shape, False)
+
+        if not self.shape_:
+            raise ValueError(str(shape) + ' is not a valid distribution (as defined in the scipy.stats module)')
 
         if point_std is None:
+            # default to mean baseline
             if point is None:
                 point = Constant('mean(y)')
-
             if std is None:
                 std = Constant('std(y)')
 
