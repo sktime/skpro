@@ -7,7 +7,8 @@ from sklearn.linear_model import LinearRegression
 from skpro.workflow.manager import DataManager
 from skpro.parametric import ParamtericEstimator
 from skpro.parametric.residuals import ResidualEstimator
-from skpro.metrics import log_loss
+from skpro.metrics import linearized_log_loss
+
 
 def test_baseline():
     data = DataManager('boston')
@@ -28,7 +29,7 @@ def test_baseline():
 
     # pdf, cdf?
     x = np.random.randint(0, 10)
-    i = np.random.randint(0, len(data.X_test))
+    i = np.random.randint(0, len(data.X_test) - 1)
 
     assert y_pred[i].pdf(x) == norm.pdf(x, mu, sigma)
     assert y_pred[i].cdf(x) == norm.cdf(x, mu, sigma)
@@ -55,4 +56,7 @@ def test_residual_prediction():
     baseline = baseline_model.fit(data.X_train, data.y_train).predict(data.X_test)
     y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
 
-    utils.assert_close_prediction(y_pred.point(), data.y_test, within=0.5)
+    baseline_loss = linearized_log_loss(data.y_test, baseline)
+    y_pred_loss = linearized_log_loss(data.y_test, y_pred)
+
+    assert baseline_loss > y_pred_loss

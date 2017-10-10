@@ -55,16 +55,20 @@ def _vectorize(f):
     it is decorated with the vectorvalued decorator
     """
     def wrapper(self, *args, **kwargs):
-        if getattr(f, 'already_vectorized', False):
-            return f(self, *args, **kwargs)
-
-        result = []
-        number_of_points = len(self.X)
-        for index in range(number_of_points):
-            self.index = index
-            result.append(f(self, *args, **kwargs))
-
+        # cache index
+        index_ = self.index
         self.index = slice(None)
+
+        if getattr(f, 'already_vectorized', False):
+            result = f(self, *args, **kwargs)
+        else:
+            result = []
+            for index in range(len(self.X)):
+                self.index = index
+                result.append(f(self, *args, **kwargs))
+
+        # rollback index
+        self.index = index_
 
         if len(result) > 1:
             return np.array(result)
@@ -93,31 +97,35 @@ def _elementwise(f):
         if len(np.array(x).shape) > 1:
             x = x.flatten()
 
-        result = []
-        number_of_points = len(self.X)
-        elementwise = self.mode == 'elementwise' and len(np.array(x).shape) != 0
+        # cache index
+        index_ = self.index
+        self.index = slice(None)
+
+        # disable elementwise mode if x is scalar
+        elementwise = (self.mode == 'elementwise' and len(np.array(x).shape) != 0)
 
         if elementwise:
             evaluations = len(x)
         else:
-            # batch
-            evaluations = number_of_points
+            evaluations = len(self.X)
 
+        # compose result
+        result = []
+        number_of_points = len(self.X)
         for index in range(evaluations):
-            # set evaluation index
+            # set evaluation index and point
             if elementwise:
                 self.index = index % number_of_points
                 at = x[index]
             else:
-                # batch
                 self.index = index
                 at = x
 
             # evaluate the function at this point
             result.append(f(self, at, *args, **kwargs))
 
-        # deactivate evaluation index
-        self.index = slice(None)
+        # rollback index
+        self.index = index_
 
         if len(result) > 1:
             return np.array(result)
@@ -215,11 +223,15 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             -------
             ``skpro.base.ProbabilisticEstimator.Distribution``
             """
-            # [slice, mode]
+
+            # cache index
+            index_ = self.index
+            self.index = slice(None)
+
+            # parse key
             if isinstance(key, tuple) and len(key) == 2:
                 selection = key[0]
                 mode = key[1]
-            # [mode]
             elif isinstance(key, str):
                 selection = slice(None)
                 mode = key
@@ -227,19 +239,27 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
                 selection = key
                 mode = None
 
-            # [int k]
+            # convert index to slice for consistent usage
             if isinstance(selection, int):
+                if selection > 40:
+                    a = 1
+
                 if selection >= len(self):
                     raise IndexError('Selection is out of bounds')
 
                 selection = slice(selection, selection+1)
 
-            # out of bounds subset
+            # check for out of bounds subsets
             if len(range(*selection.indices(len(self)))) == 0:
                 raise IndexError('Selection is out of bounds')
 
-            # return subset replication
-            return self.replicate(selection, mode)
+            # create subset replication
+            replication = self.replicate(selection, mode)
+
+            # rollback index
+            self.index = index_
+
+            return replication
 
         def __point__(self, name):
             if len(self) > 1:
@@ -288,14 +308,9 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             warnings.warn(self.__class__.__name__ +
                           ' does not implement a lp2 function, defaulting to numerical approximation', UserWarning)
 
-            def squared(f, index):
-                def wrapper(x):
-                    return f(x)[index]**2
-                return wrapper
-
             from scipy.integrate import quad as integrate
                    # y, y_err of
-            return integrate(squared(self.pdf, self.index), -np.inf, np.inf)[0]
+            return integrate(lambda x: self[self.index].pdf(x)**2, -np.inf, np.inf)[0]
 
     def name(self):
         return self.__class__.__name__

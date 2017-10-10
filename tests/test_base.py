@@ -7,24 +7,40 @@ import pytest
 from skpro.base import ProbabilisticEstimator, vectorvalued
 
 
-class TestEstimator(ProbabilisticEstimator):
+class EstimatorForTesting(ProbabilisticEstimator):
+
+    def __init__(self):
+        self.debug = dict()
+
+    def debug_count(self, key):
+        if key not in self.debug or not isinstance(self.debug[key], int):
+            self.debug[key] = 1
+
+        self.debug[key] += 1
 
     class Distribution(ProbabilisticEstimator.Distribution):
 
         def point(self):
+            self.estimator.debug_count('point')
             return self.X[0]*10
 
         @vectorvalued
         def std(self):
+            self.estimator.debug_count('std')
             # returns a vector rather than a point
             return self.X[:, 0]/10
 
         def pdf(self, x):
+            self.estimator.debug_count('pdf')
             return -self.X[0]*x
+
+        def lp2(self):
+            x = 1
+            return self[self.index].pdf(x)**2
 
 
 def test_distribution_bracket_notation():
-    estimator = TestEstimator()
+    estimator = EstimatorForTesting()
     X = np.array([np.ones(3)*i for i in range(5)])
     y_pred = estimator.predict(X)
 
@@ -74,7 +90,7 @@ def test_distribution_bracket_notation():
 
 
 def test_interface_vectorization():
-    estimator = TestEstimator()
+    estimator = EstimatorForTesting()
     X = np.array([np.ones(3) * i for i in range(5)])
     y_pred = estimator.predict(X)
 
@@ -83,11 +99,13 @@ def test_interface_vectorization():
     # test vectorvalued decorator
     np.testing.assert_array_equal(y_pred.std(), np.arange(5) / 10)
     # lp2 integration
-    np.testing.assert_array_equal(y_pred.lp2(), np.zeros(5))
+    lp2 = y_pred.lp2()
+    assert len(lp2) == 5
+    assert lp2[0] == 0.0
 
 
 def test_numeric_emulation():
-    estimator = TestEstimator()
+    estimator = EstimatorForTesting()
     A = np.array([np.ones(3) * i for i in range(5)])
     y_pred_1 = estimator.predict(A)
     B = np.array([-np.ones(3) * i for i in range(5)])

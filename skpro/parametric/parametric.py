@@ -123,13 +123,13 @@ class ParamtericEstimator(ProbabilisticEstimator):
             return self.estimator.estimators.predict('point', self.X)
 
         def pdf(self, x):
-            return self.estimator.shape_.pdf(x, loc=self.point()[self.index], scale=self.std()[self.index])
+            return self.estimator.shape_.pdf(x, loc=self[self.index].point(), scale=self[self.index].std())
 
         def cdf(self, x):
-            return self.estimator.shape_.cdf(x, loc=self.point()[self.index], scale=self.std()[self.index])
+            return self.estimator.shape_.cdf(x, loc=self[self.index].point(), scale=self[self.index].std())
 
         def ppf(self, x):
-            return self.estimator.shape_.ppf(x, loc=self.point()[self.index], scale=self.std()[self.index])
+            return self.estimator.shape_.ppf(x, loc=self[self.index].point(), scale=self[self.index].std())
 
         def lp2(self):
             # Analytic solutions
