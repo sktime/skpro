@@ -44,7 +44,8 @@ def test_ecdf_from_sample(sample):
 @given(floats(-10, 10))
 def test_kernel_density_adapter(x):
     # Bayesian test sample
-    sample = np.random.normal(loc=5, scale=10, size=500)
+    loc, scale = 5, 10
+    sample = np.random.normal(loc=loc, scale=scale, size=500)
 
     # Initialise adapter
     adapter = KernelDensityAdapter()
@@ -53,7 +54,7 @@ def test_kernel_density_adapter(x):
     # PDF
     pdf = adapter.pdf(x)
     assert isinstance(pdf, np.float)
-    assert abs(pdf - norm.pdf(x, loc=5, scale=10)) < 0.01
+    assert abs(pdf - norm.pdf(x, loc=loc, scale=scale)) < 0.01
 
     # CDF
     cdf = adapter.cdf(x)
@@ -63,8 +64,10 @@ def test_kernel_density_adapter(x):
 
 @given(floats(-10, 10))
 def test_empirical_density_adapter(x):
-    # Bayesian test sample
-    sample = np.random.normal(loc=5, scale=10, size=500)
+    # Bayesian test sample\
+    loc, scale = 5, 10
+
+    sample = np.random.normal(loc=loc, scale=scale, size=5000)
 
     # Initialise adapter
     adapter = EmpiricalDensityAdapter()
@@ -73,17 +76,9 @@ def test_empirical_density_adapter(x):
     # PDF
     pdf = adapter.pdf(x)
     assert isinstance(pdf, float)
-    # adapter._hist = np.array([0.95, 1.05])
-    # adapter._edges = np.array([0.0, 0.5, 1.0])
-    #
-    # print(adapter.pdf(0.6))
+    # assert abs(pdf - norm.pdf(x, loc=loc, scale=scale)) < 0.1
 
-    # print(x)
-    # print(pdf)
-    # print(adapter._hist)
-    # print(adapter._edges)
-    # assert abs(pdf - norm.pdf(x, loc=5, scale=10)) < 0.01
     # CDF
     cdf = adapter.cdf(x)
     assert isinstance(cdf, float)
-    assert abs(cdf - norm.cdf(x, loc=5, scale=10)) < 0.1
+    assert abs(cdf - norm.cdf(x, loc=loc, scale=scale)) < 0.1
