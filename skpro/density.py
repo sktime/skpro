@@ -161,26 +161,13 @@ class EmpiricalDensityAdapter(DensityAdapter):
 
         self.step_function_ = step_function(self.xs_, self.ys_)
 
+        self._kde_estimator = KernelDensity(kernel='tophat')
+        self._kde_estimator.fit(sample.reshape((-1, 1)))
+
     def cdf(self, x):
         x_cdf = self.step_function_(x)
 
         return x_cdf
 
     def pdf(self, x):
-        indexed_max = np.where(self._edges > x)[0]
-        if len(indexed_max) == 0:
-            return 1.0
-
-        i_max = min(indexed_max)
-        if i_max == 0:
-            return 0.0
-
-        pdf_sum = 0
-
-        for i in range(1, i_max):
-            bin_size = self._edges[i] - self._edges[i - 1]
-            pdf_sum += self._hist[i - 1] * bin_size
-
-        pdf_sum += self._hist[i_max - 1] * (x - self._edges[i_max - 1])
-
-        return pdf_sum
+        return np.exp(self._kde_estimator.score_samples(x))[0]
