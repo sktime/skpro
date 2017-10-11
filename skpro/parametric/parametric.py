@@ -110,7 +110,7 @@ class EstimatorManager:
         return item in self.estimators_
 
 
-class ParamtericEstimator(ProbabilisticEstimator):
+class ParametricEstimator(ProbabilisticEstimator):
 
     class Distribution(ProbabilisticEstimator.Distribution):
 

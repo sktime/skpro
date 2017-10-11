@@ -7,7 +7,7 @@ from skpro.workflow import Model
 from skpro.ensemble import BaggingRegressor
 from skpro.workflow.utils import InfoView, InfoController
 from skpro.workflow.manager import DataManager
-from skpro.parametric import ParamtericEstimator
+from skpro.parametric import ParametricEstimator
 from skpro.parametric.estimators import Constant
 
 
@@ -63,7 +63,7 @@ models = []
 
 for point_estimator in [RandomForestRegressor()]:#, LinearRegression()]:
     for std_estimator in [RandomForestRegressor(), Constant('mean(y)')]:
-        model = ParamtericEstimator(point=point_estimator, std=std_estimator)
+        model = ParametricEstimator(point=point_estimator, std=std_estimator)
         models.append(Model(model))
         models.append(Model(
             #BaggingRegressor(model, bootstrap=False, n_estimators=1)

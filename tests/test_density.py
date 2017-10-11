@@ -9,27 +9,6 @@ from skpro.density import ecdf, KernelDensityAdapter, EmpiricalDensityAdapter
 np.random.seed(1)
 
 
-def get_bayesian_sample(points, sample_size=500):
-    """ Helper to generate bayesian samples as returned by Bayesian prediction methods
-
-    Parameters
-    ----------
-    points          Number of data points (rows)
-    sample_size     Number of sample elements for each data point (columns)
-
-    Returns
-    -------
-    np.array    N x M matrix containing example bayesian samples for data point predictions
-    """
-    return np.array([
-        np.random.normal(np.random.randint(0, 15), np.random.randint(0, 15), sample_size)
-        for _ in range(points)
-    ])
-
-
-# --- TESTS ---------------------
-
-
 @given(arrays(np.float, 10, elements=floats(0, 100)))
 def test_ecdf_from_sample(sample):
     xs, ys = ecdf(sample)
@@ -54,12 +33,12 @@ def test_kernel_density_adapter(x):
     # PDF
     pdf = adapter.pdf(x)
     assert isinstance(pdf, np.float)
-    assert abs(pdf - norm.pdf(x, loc=loc, scale=scale)) < 0.01
+    assert abs(pdf - norm.pdf(x, loc=loc, scale=scale)) < 0.3
 
     # CDF
     cdf = adapter.cdf(x)
     assert isinstance(cdf, np.float)
-    # assert abs(cdf - norm.cdf(x, loc=5, scale=10)) < 0.1
+    assert abs(cdf - norm.cdf(x, loc=5, scale=10)) < 0.3
 
 
 @given(floats(-10, 10))
@@ -76,9 +55,9 @@ def test_empirical_density_adapter(x):
     # PDF
     pdf = adapter.pdf(x)
     assert isinstance(pdf, float)
-    # assert abs(pdf - norm.pdf(x, loc=loc, scale=scale)) < 0.1
+    assert abs(pdf - norm.pdf(x, loc=loc, scale=scale)) < 0.3
 
     # CDF
     cdf = adapter.cdf(x)
     assert isinstance(cdf, float)
-    assert abs(cdf - norm.cdf(x, loc=loc, scale=scale)) < 0.1
+    assert abs(cdf - norm.cdf(x, loc=loc, scale=scale)) < 0.3

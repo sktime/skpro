@@ -2,7 +2,7 @@ from sklearn.ensemble import RandomForestRegressor
 
 from skpro.bayesian.pymc3.estimators import LinearRegression
 from skpro.metrics import log_loss
-from skpro.parametric import ParamtericEstimator
+from skpro.parametric import ParametricEstimator
 from skpro.parametric.estimators import Constant
 from skpro.workflow import Model
 from skpro.workflow.cross_validation import CrossValidationController, CrossValidationView
@@ -29,8 +29,8 @@ tbl.modify(IdModifier())
 
 # Compose the models displayed as rows
 models = [
-    Model(ParamtericEstimator(point=RandomForestRegressor(), std=Constant('mean(y)'))),
-    Model(ParamtericEstimator(point_std=LinearRegression()))
+    Model(ParametricEstimator(point=RandomForestRegressor(), std=Constant('mean(y)'))),
+    Model(ParametricEstimator(point_std=LinearRegression()))
 ]
 
 tbl.print(models)

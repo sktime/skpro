@@ -7,7 +7,7 @@ from skpro.metrics import log_loss, gneiting_loss, rank_probability_loss
 from skpro.workflow import Model
 from skpro.workflow.utils import InfoView, InfoController
 from skpro.workflow.manager import DataManager
-from skpro.parametric import ParamtericEstimator
+from skpro.parametric import ParametricEstimator
 from skpro.parametric.estimators import Constant
 
 # Load the dataset
@@ -35,7 +35,7 @@ tbl.modify(IdModifier())
 models = []
 for point_estimator in [RandomForestRegressor(), LinearRegression(), Constant('mean(y)')]:
     for std_estimator in [Constant('std(y)'), Constant(42)]:
-        model = ParamtericEstimator(point=point_estimator, std=std_estimator)
+        model = ParametricEstimator(point=point_estimator, std=std_estimator)
         models.append(Model(model))
 
 tbl.print(models)

@@ -2,7 +2,7 @@ import pymc3 as pm
 from sklearn.datasets import load_boston
 
 from skpro.metrics import rank_probability_loss, linearized_log_loss
-from skpro.parametric import ParamtericEstimator
+from skpro.parametric import ParametricEstimator
 from skpro.pymc import PyMC, PlugAndPlayPyMC
 from skpro.workflow.manager import DataManager
 from skpro.workflow.table import Table

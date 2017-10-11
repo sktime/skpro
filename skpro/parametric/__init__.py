@@ -1,1 +1,1 @@
-from .parametric import ParamtericEstimator
+from .parametric import ParametricEstimator

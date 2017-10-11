@@ -5,7 +5,7 @@ import utils
 from sklearn.linear_model import LinearRegression
 
 from skpro.workflow.manager import DataManager
-from skpro.parametric import ParamtericEstimator
+from skpro.parametric import ParametricEstimator
 from skpro.parametric.residuals import ResidualEstimator
 from skpro.metrics import linearized_log_loss
 
@@ -13,7 +13,7 @@ from skpro.metrics import linearized_log_loss
 def test_baseline():
     data = DataManager('boston')
 
-    model = ParamtericEstimator()
+    model = ParametricEstimator()
     y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
 
     mu = np.mean(data.y_train)
@@ -38,7 +38,7 @@ def test_baseline():
 def test_simple_model():
     data = DataManager('boston')
 
-    model = ParamtericEstimator(LinearRegression(), LinearRegression())
+    model = ParametricEstimator(LinearRegression(), LinearRegression())
     y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
 
     utils.assert_close_prediction(y_pred.point(), data.y_test, within=0.5)
@@ -47,8 +47,8 @@ def test_simple_model():
 def test_residual_prediction():
     data = DataManager('boston')
 
-    baseline_model = ParamtericEstimator(LinearRegression())
-    model = ParamtericEstimator(
+    baseline_model = ParametricEstimator(LinearRegression())
+    model = ParametricEstimator(
         point=LinearRegression(),
         std=ResidualEstimator('point', LinearRegression())
     )

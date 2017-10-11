@@ -2,10 +2,10 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.datasets.base import load_boston
 from sklearn.model_selection import GridSearchCV
 
-from skpro.parametric import ParamtericEstimator
+from skpro.parametric import ParametricEstimator
 from skpro.parametric.estimators import Constant
 
-model = ParamtericEstimator(
+model = ParametricEstimator(
     point=RandomForestRegressor(),
     std=Constant('mean(y)')
 )

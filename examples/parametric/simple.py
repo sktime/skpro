@@ -2,12 +2,12 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.datasets.base import load_boston
 from sklearn.model_selection import train_test_split
 
-from skpro.parametric import ParamtericEstimator
+from skpro.parametric import ParametricEstimator
 from skpro.parametric.estimators import Constant
 from skpro.metrics import log_loss
 
 # Define the parametric model
-model = ParamtericEstimator(
+model = ParametricEstimator(
     point=RandomForestRegressor(),
     std=Constant('std(y)'),
     shape='norm'

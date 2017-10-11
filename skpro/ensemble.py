@@ -14,29 +14,26 @@ class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
             self.distributions = distributions
             self.n_estimators = n_estimators
 
-        def _mean_reduce(self, func, *args, **kwargs):
+        def point(self):
+            return NotImplemented
+
+        def std(self):
+            return NotImplemented
+
+        def pdf(self, x):
+            ## the pdf(x) is used to calculate the loss
+            # the bagged pdf should be calculated by
+            # simple averaging the predicted pdfs
             reduced = []
             for distribution in self.distributions[0]:
-                f = getattr(distribution, func, False)
-                if not callable(f):
-                    raise AttributeError('%s does not exist' % f)
+                pdf = getattr(distribution, 'pdf', False)
+                if not callable(pdf):
+                    raise AttributeError('%s does not exist' % pdf)
 
-                reduced.append(f(*args, **kwargs))
+                reduced.append(pdf(x))
 
             return np.mean(reduced, axis=0)
 
-        def point(self):
-            return self._mean_reduce('point')
-
-        def std(self):
-            return self._mean_reduce('std')
-
-        def pdf(self, x):
-            return self._mean_reduce('pdf', x)
-
-        def lp2(self):
-            # TODO: reduce properly
-            return self._mean_reduce('lp2')
 
     def predict(self, X):
         """Predict regression target for X.
