@@ -121,9 +121,11 @@ class KernelDensityAdapter(DensityAdapter):
 
     def cdf(self, x):
         a = 10
+        grid_size = 1000
+
         minus_inf = self._min_sample - a * self._std_sample
 
-        step = 0.01
+        step = (x - minus_inf) / grid_size
         grid = np.arange(minus_inf, x, step)
 
         pdf_estimation = np.exp(self.estimator.score_samples(grid.reshape(-1, 1)))
@@ -155,19 +157,10 @@ class EmpiricalDensityAdapter(DensityAdapter):
         np.array(M) inlet: Bayesian sample of length M
         """
         self.xs_, self.ys_ = ecdf(sample)
-        self._hist, self._edges = np.histogram(
-            sample, bins='auto', density=True
-        )
-
         self.step_function_ = step_function(self.xs_, self.ys_)
 
-        self._kde_estimator = KernelDensity(kernel='tophat')
-        self._kde_estimator.fit(sample.reshape((-1, 1)))
-
     def cdf(self, x):
-        x_cdf = self.step_function_(x)
-
-        return x_cdf
+        return self.step_function_(x)
 
     def pdf(self, x):
-        return np.exp(self._kde_estimator.score_samples(x))[0]
+        return 'NOT_EXISTING'

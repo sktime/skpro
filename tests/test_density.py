@@ -43,7 +43,7 @@ def test_kernel_density_adapter(x):
 
 @given(floats(-10, 10))
 def test_empirical_density_adapter(x):
-    # Bayesian test sample\
+    # Bayesian test sample
     loc, scale = 5, 10
 
     sample = np.random.normal(loc=loc, scale=scale, size=5000)
@@ -52,12 +52,11 @@ def test_empirical_density_adapter(x):
     adapter = EmpiricalDensityAdapter()
     adapter(sample)
 
-    # PDF
-    pdf = adapter.pdf(x)
-    assert isinstance(pdf, float)
-    assert abs(pdf - norm.pdf(x, loc=loc, scale=scale)) < 0.3
-
     # CDF
     cdf = adapter.cdf(x)
     assert isinstance(cdf, float)
     assert abs(cdf - norm.cdf(x, loc=loc, scale=scale)) < 0.3
+
+    # PDF
+    pdf = adapter.pdf(x)
+    assert pdf == 'NOT_EXISTING'

@@ -3,8 +3,9 @@ import functools
 import warnings
 import numpy as np
 
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, clone
 from .metrics import log_loss
+from .density import DensityAdapter, KernelDensityAdapter
 
 
 def vectorvalued(f):
@@ -335,3 +336,105 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
     def score(self, X, y):
         return -1 * log_loss(y, self.predict(X), sample=True)
+
+
+###############################################################################
+
+class VendorInterface(metaclass=abc.ABCMeta):
+
+    def on_fit(self, X, y):
+        pass
+
+    def on_predict(self, X):
+        pass
+
+
+class VendorEstimator(ProbabilisticEstimator):
+
+    class Distribution(ProbabilisticEstimator.Distribution,  metaclass=abc.ABCMeta):
+
+        def cdf(self, x):
+            return self.estimator.adapters_[self.index].cdf(x)
+
+        def pdf(self, x):
+            return self.estimator.adapters_[self.index].cdf(x)
+
+    def __init__(self, model=None, adapter=None):
+        self.model = self._check_model(model)
+        self.adapter = self._check_adapter(adapter)
+        self.adapters_ = []
+
+    def _check_model(self, model=None):
+        if not issubclass(model.__class__, VendorInterface):
+            raise ValueError('model has to be a VendorInterface'
+                             '%s given.' % model.__class__)
+
+        return model
+
+    def _check_adapter(self, adapter):
+
+        return adapter
+
+    def fit(self, X, y):
+        self.model.on_fit(X, y)
+
+        return self
+
+    def predict(self, X):
+        self.model.on_predict(X)
+
+        return super().predict(X)
+
+
+class BayesianVendorInterface(VendorInterface):
+
+    @abc.abstractmethod
+    @functools.lru_cache()
+    def samples(self):
+        raise NotImplementedError()
+
+
+class BayesianVendorEstimator(VendorEstimator):
+
+    class Distribution(VendorEstimator.Distribution):
+
+        @vectorvalued
+        def point(self):
+            return self.estimator.model.samples().mean(axis=1)
+
+        @vectorvalued
+        def std(self):
+            return self.estimator.model.samples().std(axis=1)
+
+    def _check_model(self, model=None):
+        if not issubclass(model.__class__, BayesianVendorInterface):
+            raise ValueError('model has to be a subclass of skpro.base.BayesianVendorInterface'
+                            '%s given.' % model.__class__)
+
+        return model
+
+    def _check_adapter(self, adapter=None):
+        if adapter is None:
+            # default adapter
+            adapter = KernelDensityAdapter()
+
+        if not issubclass(adapter.__class__, DensityAdapter):
+            raise ValueError('adapter has to be a subclass of skpro.density.DensityAdapter'
+                            '%s given.' % adapter.__class__)
+
+        return adapter
+
+    def predict(self, X):
+        self.model.on_predict(X)
+
+        # initialise adapter with samples
+        samples = self.model.samples()
+        for index in range(len(X)):
+            adapter = clone(self.adapter)
+            adapter(samples[index, :])
+            self.adapters_.append(adapter)
+
+        # return predicted distribution object
+        return super().predict(X)
+
+

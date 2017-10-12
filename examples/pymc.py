@@ -1,11 +1,12 @@
 import pymc3 as pm
-from sklearn.datasets import load_boston
 
-from skpro.metrics import rank_probability_loss, linearized_log_loss
-from skpro.parametric import ParametricEstimator
-from skpro.pymc import PyMC, PlugAndPlayPyMC
+from skpro.metrics import log_loss
+
+from skpro.vendors.pymc import Pymc, PymcInterface
 from skpro.workflow.manager import DataManager
-from skpro.workflow.table import Table
+
+
+# Define the model using PyMC's syntax
 
 
 def pymc_linear_regression(model, X, y):
@@ -31,12 +32,19 @@ def pymc_linear_regression(model, X, y):
         y_pred = pm.Normal("y_pred", mu=mu, sd=sigma, observed=y)
 
 
-data = DataManager('boston')
-model = PyMC(pymc_model=PlugAndPlayPyMC(pymc_linear_regression))
-y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
+# Plug the model definition into the PyMC interface
 
-print(rank_probability_loss(data.y_test, y_pred, return_std=True))
+model = Pymc(
+    model=PymcInterface(model_definition=pymc_linear_regression)
+)
+
+
+# Run prediction, print and plot the results
+
+data = DataManager('boston')
+y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
+print('Log loss: ', log_loss(data.y_test, y_pred, return_std=True))
 
 from matplotlib import pyplot
-pyplot.scatter(y_pred, data.y_test)
+pyplot.scatter(y_pred.point(), data.y_test)
 pyplot.show()
