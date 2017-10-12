@@ -6,8 +6,7 @@ from ..base import BayesianVendorEstimator, BayesianVendorInterface
 
 class Pymc(BayesianVendorEstimator):
 
-    def valid_model_definition(self):
-        return callable(self.model.model_definition)
+    pass
 
 
 class PymcInterface(BayesianVendorInterface):
