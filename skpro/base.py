@@ -167,7 +167,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
             for method in ['point', 'std', 'lp2']:
                 if method in clsdict:
-                    setattr(cls, method, _vectorize(clsdict[method]))
+                    setattr(cls, method, _cached(_vectorize(clsdict[method])))
 
     class Distribution(metaclass=ImplementsEnhancedInterface):
         """
