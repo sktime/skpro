@@ -340,6 +340,23 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
 ###############################################################################
 
+def not_existing(f):
+    """
+    Decorates an interface method to declare it theoretically non existent
+
+    Parameters
+    ----------
+    f   Method to decorate
+
+    Returns
+    -------
+    Decorated method
+    """
+    f.not_existing = True
+
+    return f
+
+
 class VendorInterface(metaclass=abc.ABCMeta):
 
     def on_fit(self, X, y):
@@ -354,10 +371,18 @@ class VendorEstimator(ProbabilisticEstimator):
     class Distribution(ProbabilisticEstimator.Distribution,  metaclass=abc.ABCMeta):
 
         def cdf(self, x):
+            if getattr(self.estimator.adapters_[self.index].cdf, 'not_existing'):
+                raise NotImplementedError('The distribution has no cumulative distribution function. '
+                                          'You may use a different adapter to approximate it.')
+
             return self.estimator.adapters_[self.index].cdf(x)
 
         def pdf(self, x):
-            return self.estimator.adapters_[self.index].cdf(x)
+            if getattr(self.estimator.adapters_[self.index].pdf, 'not_existing'):
+                raise NotImplementedError('The distribution has no probability density function. '
+                                          'You may use a different adapter to estimate a density.')
+
+            return self.estimator.adapters_[self.index].pdf(x)
 
     def __init__(self, model=None, adapter=None):
         self.model = self._check_model(model)

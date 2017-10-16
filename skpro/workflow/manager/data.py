@@ -34,7 +34,10 @@ class DataManager:
         self.y = y
         self.name = name if isinstance(name, str) else 'Unnamed'
 
-    def data(self):
+    def data(self, copy=True):
+        if not copy:
+            return self.X, self.y
+
         try:
             X_ = np.copy(self._X)
             y_ = np.copy(self._y)
@@ -72,18 +75,6 @@ class DataManager:
         X, y = zip(*data)
 
         self.X, self.y = np.array(X), np.array(y)
-
-    def kfold(self, splits=3):
-        split = self.split
-        self.split = False
-        kf = KFold(n_splits=splits, shuffle=True, random_state=self.random_state)
-        for train, test in kf.split(self.X, self.y):
-            self.X_train, self.X_test, self.y_train, self.y_test = \
-                self.X[train], self.X[test], self.y[train], self.y[test]
-
-            yield True
-
-        self.split = split
 
     @property
     def X(self):

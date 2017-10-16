@@ -15,7 +15,6 @@ class Model:
         self.database = database
         if isinstance(tuning, dict) and len(tuning) == 0:
             tuning = None
-
         self.tuning = tuning
 
     def __repr__(self):
