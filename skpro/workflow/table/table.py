@@ -17,9 +17,12 @@ class Modifier(metaclass=abc.ABCMeta):
 
 class IdModifier(Modifier):
 
+    def __init__(self, start_with=1):
+        self.start_with = start_with
+
     def modify(self, raw, headers):
         for i, row in enumerate(raw):
-            raw[i] = [{'data': {'index': i + 1}, 'view': ItemView('index')}] + row
+            raw[i] = [{'data': {'index': self.start_with + i}, 'view': ItemView('index')}] + row
 
         headers = ['#'] + headers
 
@@ -28,28 +31,29 @@ class IdModifier(Modifier):
 
 class RankModifier(Modifier):
 
-    def __init__(self, vertical='score', horizontal='score', visible=False):
-        self.vertical = self.conf(vertical)
-        self.horizontal = self.conf(horizontal)
+    def __init__(self, vertical='score', horizontal='score', aggregate=False, visible=False):
+        self.vertical = vertical
+        self.horizontal = horizontal
+        self.aggregate = aggregate
         self.visible = visible
         self.rendered_ = None
 
-    def conf(self, value):
-        # TODO: find better solution
-        if value is False:
-            return False, False, False
-        elif value[0] == '~':
-            return value[1:], True, False
-        elif value[0] == '*':
-            return value[1:], True, True
-        else:
-            return value, False, False
-
-    def rankdata(self, a):
+    def _rank(self, a):
         """
-        https://stackoverflow.com/questions/3071415/efficient-method-to-calculate-the-rank-vector-of-a-list-in-python
-        :param a:
-        :return:
+        Calculates a rank vector from a list
+
+        Parameters
+        ----------
+        a : array-like
+            The list
+
+        Returns
+        -------
+        Rank vector
+
+        Additional Information
+        ----------------------
+        See https://stackoverflow.com/questions/3071415/efficient-method-to-calculate-the-rank-vector-of-a-list-in-python
         """
         def rank_simple(vector):
             return sorted(range(len(vector)), key=vector.__getitem__)
@@ -59,23 +63,35 @@ class RankModifier(Modifier):
         svec = [a[rank] for rank in ivec]
         sumranks = 0
         dupcount = 0
-        newarray = [0] * n
+        result = [0] * n
         for i in range(n):
             sumranks += i
             dupcount += 1
             if i == n - 1 or svec[i] != svec[i + 1]:
                 averank = sumranks / float(dupcount) + 1
                 for j in range(i - dupcount + 1, i + 1):
-                    newarray[ivec[j]] = averank
+                    result[ivec[j]] = averank
                 sumranks = 0
                 dupcount = 0
-        return newarray
+
+        return result
 
     def modify(self, raw, headers):
+        """
+
+        Parameters
+        ----------
+        raw
+        headers
+
+        Returns
+        -------
+
+        """
 
         # Calculate horizontal ranks
-        if self.horizontal[0]:
-            field = self.horizontal[0]
+        if self.horizontal:
+            field = self.horizontal
             for row in raw:
                 sortable = []
                 map = {}
@@ -84,13 +100,12 @@ class RankModifier(Modifier):
                         sortable.append(cell['data'][field])
                         map[len(sortable) - 1] = cell['data']
 
-                for k, rank in enumerate(self.rankdata(sortable)):
+                for k, rank in enumerate(self._rank(sortable)):
                     map[k]['hrank'] = rank
 
-
         # Calculate vertical ranks
-        if self.vertical[0]:
-            field = self.vertical[0]
+        if self.vertical:
+            field = self.vertical
             for col in range(len(raw[0])):
                 sortable = []
                 map = {}
@@ -100,17 +115,15 @@ class RankModifier(Modifier):
                         sortable.append(cell['data'][field])
                         map[len(sortable) - 1] = cell['data']
 
-                for k, rank in enumerate(self.rankdata(sortable)):
+                for k, rank in enumerate(self._rank(sortable)):
                     map[k]['vrank'] = rank
 
-        # aggregate
-        if self.vertical[0] and self.vertical[1]:
+        # Aggregate
+        if self.aggregate:
+            # vertical
             for row in raw:
                 avg = []
                 for cell in row:
-                    # TODO
-                    # Using 'vrank' as a key in a lot of plases.
-                    # May be better to define it in a variable?
                     if 'vrank' in cell['data']:
                         avg.append(cell['data']['vrank'])
 
@@ -119,7 +132,7 @@ class RankModifier(Modifier):
                     'data': {'vrank': avg_mean}
                 })
 
-        if self.horizontal[0] and self.horizontal[1]:
+            # horizontal
             avgs = []
             for col in range(len(raw[0])):
                 avg = []
@@ -255,12 +268,23 @@ class Table:
 
     def print(self, models, fmt='pipe', with_headers=True, raw=False, return_only=False, verbose=1, debug=False):
         """
-        Renders and prints the table
-        :param fmt: None, 'pipe', 'latex'
-        :param with_headers: Bool
-        :param return_only:
-        :return:
+
+        Parameters
+        ----------
+        models
+        fmt: string or list
+            None, 'pipe', 'latex'
+        with_headers
+        raw
+        return_only
+        verbose
+        debug
+
+        Returns
+        -------
+
         """
+
         self.render(models, verbose=verbose, debug=debug)
 
         if with_headers:
