@@ -5,7 +5,7 @@ from scipy.integrate import simps
 from sklearn.base import BaseEstimator
 from sklearn.neighbors import KernelDensity
 
-from .base import not_existing
+from .utils import not_existing
 
 
 def ecdf(a):
