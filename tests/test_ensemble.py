@@ -1,45 +1,48 @@
-import numpy as np
-
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import BaggingRegressor as ClassicBaggingRegressor
 from sklearn.metrics import mean_squared_error as mse
+from sklearn.tree import DecisionTreeRegressor
 
-from skpro.workflow.manager import DataManager
-from skpro.parametric import ParametricEstimator
-from skpro.ensemble import BaggingRegressor
+from skpro.ensemble import BaggingRegressor as SkProBaggingRegressor
 from skpro.metrics import linearized_log_loss as loss
+from skpro.parametric import ParametricEstimator
+from skpro.workflow.manager import DataManager
+
+
+def prediction(model, data):
+    return model.fit(data.X_train, data.y_train).predict(data.X_test)
+
 
 def test_bagging_wrapper():
     data = DataManager('boston')
 
-    def prediction(model):
-        return model.fit(data.X_train, data.y_train).predict(data.X_test)
-
     # classical sklearn bagging mechanism to ensure we have the correct
     # parameters in place
+    #
+    baseline_classic = prediction(DecisionTreeRegressor(), data)
 
-    baseline_classic = prediction(DecisionTreeRegressor())
-    bagged_classic = prediction(ClassicBaggingRegressor(
-        DecisionTreeRegressor(),
-        max_samples=0.5,
-        max_features=0.5,
-        bootstrap=False,
-        n_estimators=100
-    ))
+    bagged_classic = prediction(
+        ClassicBaggingRegressor(
+            DecisionTreeRegressor()
+        ),
+        data
+    )
 
     # does the bagging reduce the loss?
     assert mse(data.y_test, baseline_classic) > mse(data.y_test, bagged_classic)
 
     # corresponding skpro bagging mechanism
 
-    baseline = prediction(ParametricEstimator(point=DecisionTreeRegressor()))
-    bagged = prediction(BaggingRegressor(
+    baseline_prediction = prediction(
         ParametricEstimator(point=DecisionTreeRegressor()),
-        max_samples=0.5,
-        max_features=0.5,
-        bootstrap=False,
-        n_estimators=100
-    ))
+        data
+    )
+
+    skpro_bagging_prediction = prediction(
+        SkProBaggingRegressor(
+            ParametricEstimator(point=DecisionTreeRegressor())
+        ),
+        data
+    )
 
     # does the bagging reduce the loss?
-    assert loss(data.y_test, baseline) > loss(data.y_test, bagged)
+    assert loss(data.y_test, baseline_prediction) > loss(data.y_test, skpro_bagging_prediction)

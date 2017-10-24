@@ -1,14 +1,11 @@
 import numpy as np
-
 from sklearn.ensemble import BaggingRegressor as BaseBaggingRegressor
 
 from .base import ProbabilisticEstimator
 
 
 class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
-
     class Distribution(ProbabilisticEstimator.Distribution):
-
         def __init__(self, estimator, X, distributions, n_estimators):
             super().__init__(estimator, X)
             self.distributions = distributions
@@ -24,16 +21,14 @@ class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
             ## the pdf(x) is used to calculate the loss
             # the bagged pdf should be calculated by
             # simple averaging the predicted pdfs
-            reduced = []
-            for distribution in self.distributions[0]:
-                pdf = getattr(distribution, 'pdf', False)
-                if not callable(pdf):
-                    raise AttributeError('%s does not exist' % pdf)
 
-                reduced.append(pdf(x))
-
-            return np.mean(reduced, axis=0)
-
+            return np.sum(
+                [
+                    d.pdf(x)
+                    for distrs in self.distributions
+                    for d in distrs
+                ]
+            ) / self.n_estimators
 
     def predict(self, X):
         """Predict regression target for X.
@@ -57,6 +52,7 @@ class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
         # X = check_array(X, accept_sparse=['csr', 'csc'])
 
         # Parallel loop
+
         from sklearn.ensemble.base import _partition_estimators
         n_jobs, n_estimators, starts = _partition_estimators(self.n_estimators,
                                                              self.n_jobs)
