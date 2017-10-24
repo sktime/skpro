@@ -10,14 +10,14 @@ Furthermore, you may install optional package dependencies that enhance the work
 
     pip install skpro[workflow]
 
-That's it. You are now ready to go. We recommend reading the :doc:`/user_guide` to get started.
+That's it. You are now ready to go. We recommend reading the :doc:`user guide <user_guide>` to get started.
 
 Bleeding edge
 ^^^^^^^^^^^^^
 
 To test or develop new features you may want to install the latest package version from the master branch (bleeding edge installation).
 
-Clone the source from our `public code repository`_ on GitHub and change into the skpro directory. Make sure that all dependencies are installed ::
+Clone the source from our `public code repository`_ on GitHub and change into the skpro directory. Make sure that all dependencies are installed: ::
 
     pip install -r requirements.txt
 
@@ -30,6 +30,8 @@ to install the package into the activated Python environment. To build the docum
     python setup.py docs
 
 Note that bleeding edge installations are likely contain bugs are not recommended for productive environments.
+
+If you like to contribute to documentation please refer to our :doc:`contribution guide <contributing>`.
 
 
 .. _pip: http://www.pip-installer.org/

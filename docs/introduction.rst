@@ -3,7 +3,7 @@ Introduction
 
 Probabilistic forecasting makes predictions in settings where even perfect prior knowledge does not allow for impeccable forecast and provides appropriate measures of the uncertainty that is associated with them. In a supervised context, probabilistic prediction problems have been tackled through various strategies in both the frequentist and the Bayesian domain.
 
-``skpro`` presents a supervised domain-agnostic framework that allows for probabilistic modelling, namely the prediction of probability distributions for individual data points. The package is based on the popular machine learning library `scikit-learn`_ and is being developed open source under the direction of `Dr Franz Király`_ and is released under an :doc:`MIT license <license>`.
+``skpro`` presents a supervised domain-agnostic framework that allows for probabilistic modelling, namely the prediction of probability distributions for individual data points. The package is based on the popular machine learning library `scikit-learn`_ and is being developed open source under the direction of `Dr Franz Király`_ and is released under an :doc:`BSD license <license>`.
 
 Features
 ^^^^^^^^
@@ -40,7 +40,7 @@ We can, for instance, obtain the distribution's standard deviation or even its p
 
 The skpro predictions are hence forecasts of a genuine probabilistic kind that are a primary interest for many real-world applications.
 
-This is in a nutshell what skpro is about. Head to the :doc:`installation instructions <installation>` or continue to the comprehensive :doc:`user guide <user_guide>` to learn more.
+This is in a nutshell what skpro is about. Read the :doc:`installation instructions <installation>` or continue to the comprehensive :doc:`user guide <user_guide>` to learn more.
 
 .. _scikit-learn: http://scikit-learn.org/
 .. _Dr Franz Király: https://www.ucl.ac.uk/statistics/people/franz-kiraly
