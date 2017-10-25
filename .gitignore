@@ -38,7 +38,7 @@ tests/.hypothesis/
 build/*
 dist/*
 sdist/*
-# docs/api/*
+docs/api/*
 docs/_build/*
 cover/*
 MANIFEST

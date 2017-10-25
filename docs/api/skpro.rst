@@ -1,6 +1,15 @@
 skpro package
 =============
 
+Subpackages
+-----------
+
+.. toctree::
+
+    skpro.parametric
+    skpro.vendors
+    skpro.workflow
+
 Submodules
 ----------
 
@@ -12,10 +21,10 @@ skpro\.base module
     :undoc-members:
     :show-inheritance:
 
-skpro\.metrics module
+skpro\.density module
 ---------------------
 
-.. automodule:: skpro.metrics
+.. automodule:: skpro.density
     :members:
     :undoc-members:
     :show-inheritance:
@@ -28,24 +37,29 @@ skpro\.ensemble module
     :undoc-members:
     :show-inheritance:
 
-skpro\.model_selection module
------------------------------
+skpro\.metrics module
+---------------------
+
+.. automodule:: skpro.metrics
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+skpro\.model\_selection module
+------------------------------
 
 .. automodule:: skpro.model_selection
     :members:
     :undoc-members:
     :show-inheritance:
 
-skpro\.parametric module
-------------------------
+skpro\.utils module
+-------------------
 
-`Parametric submodule <skpro.parametric.html>`_
-
-
-skpro\.workflow module
-----------------------
-
-`Workflow submodule <skpro.workflow.html>`_
+.. automodule:: skpro.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
 Module contents
