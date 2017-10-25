@@ -1,11 +1,16 @@
 import numpy as np
+
 from sklearn.ensemble import BaggingRegressor as BaseBaggingRegressor
+from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import check_array
 
 from .base import ProbabilisticEstimator
 
 
 class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
+
     class Distribution(ProbabilisticEstimator.Distribution):
+
         def __init__(self, estimator, X, distributions, n_estimators):
             super().__init__(estimator, X)
             self.distributions = distributions
@@ -18,23 +23,20 @@ class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
             return NotImplemented
 
         def pdf(self, x):
-            ## the pdf(x) is used to calculate the loss
-            # the bagged pdf should be calculated by
-            # simple averaging the predicted pdfs
-
+            # Average the predicted PDFs
             return np.sum(
                 [
                     d.pdf(x)
-                    for distrs in self.distributions
-                    for d in distrs
+                    for distribution in self.distributions
+                    for d in distribution
                 ]
             ) / self.n_estimators
 
     def predict(self, X):
-        """Predict regression target for X.
+        """ Predict regression target for X.
 
         The predicted regression target of an input sample is computed as the
-        mean predicted regression targets of the estimators in the ensemble.
+        averaged predicted distributions of the estimators in the ensemble.
 
         Parameters
         ----------
@@ -44,26 +46,28 @@ class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
 
         Returns
         -------
-        y : array of shape = [n_samples]
-            The predicted values.
+        y : skpro.base.Distribution = [n_samples]
+            The predicted bagged distributions.
         """
-        # check_is_fitted(self, "estimators_features_")
+
+        # Ensure estimator were being fitted
+        check_is_fitted(self, "estimators_features_")
         # Check data
-        # X = check_array(X, accept_sparse=['csr', 'csc'])
+        X = check_array(X, accept_sparse=['csr', 'csc'])
 
         # Parallel loop
-
         from sklearn.ensemble.base import _partition_estimators
         n_jobs, n_estimators, starts = _partition_estimators(self.n_estimators,
                                                              self.n_jobs)
 
         def _parallel_predict_regression(estimators, estimators_features, X):
-            """Private function used to compute predictions within a job."""
+            """ Private function used to compute predictions within a job. """
             return [
                 estimator.predict(X[:, features])
                 for estimator, features in zip(estimators, estimators_features)
             ]
 
+        # Obtain predictions
         all_y_hat = [
             _parallel_predict_regression(
                 self.estimators_[starts[i]:starts[i + 1]],
