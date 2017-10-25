@@ -25,10 +25,10 @@ Let's have a look at a well-known, simple example to see what this is about: Bos
 
 .. literalinclude:: ../examples/parametric/simple.py
     :language: python
-    :emphasize-lines: 9-14, 21-23
-    :lines: 1-23
+    :emphasize-lines: 4-5, 11-15
+    :lines: 1-17
 
->>> Loss: 4.054001+-0.001248
+>>> Loss: 3.444260+-0.062277
 
 If you are familiar with scikit-learn you will recognise that we define and train a model on the boston housing dataset and obtain the test prediction *y_pred*. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values -- nothing unexpected there.
 

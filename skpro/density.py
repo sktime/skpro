@@ -99,7 +99,7 @@ class DensityAdapter(BaseEstimator, metaclass=abc.ABCMeta):
 class KernelDensityAdapter(DensityAdapter):
     """
     DensityAdapter that uses kernel density estimation
-    to transform Bayesian samples
+    to transform samples
     """
 
     def __init__(self, estimator=KernelDensity()):
@@ -142,7 +142,7 @@ class KernelDensityAdapter(DensityAdapter):
 class EmpiricalDensityAdapter(DensityAdapter):
     """
     DensityAdapter that uses empirical cdf
-    to transform Bayesian samples
+    to transform samples
     """
 
     def __init__(self):

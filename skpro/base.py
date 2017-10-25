@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, clone
 from .metrics import log_loss
 from .density import DensityAdapter, KernelDensityAdapter
+from .utils import ensure_existence
 
 
 def vectorvalued(f):
@@ -23,7 +24,7 @@ def vectorvalued(f):
     return f
 
 
-def _with_meta(wrapper, f):
+def _forward_meta(wrapper, f):
     """ Forward meta information from decorated method to decoration
 
     Parameters
@@ -36,6 +37,8 @@ def _with_meta(wrapper, f):
     Method with meta information
     """
     wrapper.already_vectorized = getattr(f, 'already_vectorized', False)
+    wrapper.non_existing = getattr(f, 'not_existing', False)
+
     return wrapper
 
 
@@ -46,7 +49,7 @@ def _generalize(f):
     def wrapper(self, *args, **kwargs):
         return f(self)
 
-    return _with_meta(wrapper, f)
+    return _forward_meta(wrapper, f)
 
 
 def _vectorize(f):
@@ -76,7 +79,7 @@ def _vectorize(f):
         else:
             return result[0]
 
-    return _with_meta(wrapper, f)
+    return _forward_meta(wrapper, f)
 
 
 def _elementwise(f):
@@ -133,7 +136,7 @@ def _elementwise(f):
         else:
             return result[0]
 
-    return _with_meta(wrapper, f)
+    return _forward_meta(wrapper, f)
 
 
 def _cached(f):
@@ -146,7 +149,7 @@ def _cached(f):
     def wrapper(self, *args, **kwargs):
         return f(self, *args, **kwargs)
 
-    return _with_meta(wrapper, f)
+    return _forward_meta(wrapper, f)
 
 
 class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
@@ -162,13 +165,14 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         """
 
         def __init__(cls, name, bases, clsdict):
+
             for method in ['pdf', 'cdf']:
                 if method in clsdict:
-                    setattr(cls, method, _elementwise(clsdict[method]))
+                    setattr(cls, method, _elementwise(ensure_existence(clsdict[method])))
 
             for method in ['point', 'std', 'lp2']:
                 if method in clsdict:
-                    setattr(cls, method, _cached(_vectorize(clsdict[method])))
+                    setattr(cls, method, _cached(_vectorize(_generalize(ensure_existence(clsdict[method])))))
 
     class Distribution(metaclass=ImplementsEnhancedInterface):
         """
@@ -355,16 +359,12 @@ class VendorEstimator(ProbabilisticEstimator):
     class Distribution(ProbabilisticEstimator.Distribution,  metaclass=abc.ABCMeta):
 
         def cdf(self, x):
-            if getattr(self.estimator.adapters_[self.index].cdf, 'not_existing'):
-                raise NotImplementedError('The distribution has no cumulative distribution function. '
-                                          'You may use a different adapter to approximate it.')
+            ensure_existence(self.estimator.adapters_[self.index].cdf)
 
             return self.estimator.adapters_[self.index].cdf(x)
 
         def pdf(self, x):
-            if getattr(self.estimator.adapters_[self.index].pdf, 'not_existing'):
-                raise NotImplementedError('The distribution has no probability density function. '
-                                          'You may use a different adapter to estimate a density.')
+            ensure_existence(self.estimator.adapters_[self.index].pdf)
 
             return self.estimator.adapters_[self.index].pdf(x)
 
