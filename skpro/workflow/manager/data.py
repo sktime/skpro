@@ -1,6 +1,6 @@
 import numpy as np
 
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_boston, load_diabetes
 
 
@@ -9,9 +9,33 @@ class DataManager:
     A helper to manage datasets more easily. Test/training split
     is carried out behind the scenes whenever new data is being
     assigned
+
+    Parameters
+    ----------
+    X : np.array | string
+        Features or 'boston', 'diabetes' to load sklearn datasets
+    y : np.array
+        Labels
+    split: float, default=0.2
+        Train/test split
+    name: string, default=None
+        Optional name to be used in the object representation
+    random_state: int, default=None
+        Optional random state to be used during split
+
+    Attributes
+    ----------
+    X_train : np.array
+        Training features
+    X_test : np.array
+        Training labels
+    y_train : np.array
+        Test features
+    y_test : np.array
+        Test labels
     """
 
-    def __init__(self, X=None, y=None, split=0.2, random_state=None, name=None):
+    def __init__(self, X=None, y=None, split=0.2, name=None, random_state=None):
         if isinstance(X, str):
             # autoload sklearn datasets
             name = X
@@ -35,6 +59,17 @@ class DataManager:
         self.name = name if isinstance(name, str) else 'Unnamed'
 
     def data(self, copy=True):
+        """ Returns the data
+
+        Parameters
+        ----------
+        copy: boolean, default=True
+            If false, reference copy will be used
+
+        Returns
+        -------
+        X, y
+        """
         if not copy:
             return self.X, self.y
 
@@ -46,6 +81,12 @@ class DataManager:
             return False
 
     def clone(self):
+        """ Clones the data manager
+
+        Returns
+        -------
+        A copy of the data manager itself
+        """
         X, y = self.data()
         return DataManager(X, y, self.split, name=self.name)
 
@@ -67,6 +108,17 @@ class DataManager:
         )
 
     def shuffle(self, random_state=None):
+        """ Shuffles the data
+
+        Parameters
+        ----------
+        random_state: int, default=None
+            Optional random state
+
+        Returns
+        -------
+        None
+        """
         if random_state is not None:
             self.random_state = random_state
 

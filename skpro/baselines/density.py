@@ -40,11 +40,9 @@ class DensityBaseline(ProbabilisticEstimator):
         self.training_std_ = None
 
     def fit(self, X, y):
-        # Use the label to estimate the density
+        # Use the labels to estimate the density
         self.adapter(y)
         self.training_mean_ = np.mean(y)
         self.training_std_ = np.std(y)
 
         return self
-
-

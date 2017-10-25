@@ -8,22 +8,33 @@ from ..parametric.estimators import Constant
 
 
 class EstimatorManager:
+    """ Helper class that simplifies the estimator management
+
+    Parameters
+    ----------
+    parent: subclass of sklearn.base.BaseEstimator
+        Parent estimator object
+    """
 
     def __init__(self, parent):
         self.estimators_ = collections.OrderedDict()
         self.parent = parent
 
     def register(self, name, estimator, selector=None):
-        """
-        Registers an estimator
+        """ Registers an estimator
 
-        Args:
-            name (str):  Name of the estimator
-            estimator (mixed): Estimator object or string name of a registered estimator
-            selector (mixed): Optional callable with signature (estimator, X) to retrieve prediction from estimator
+        Parameters
+        ----------
+        name: str
+            Name of the estimator
+        estimator: Estimator object | string name of a registered estimator
+            Instance of subclass of sklearn.base.BaseEstimator
+        selector: callable(estimator, X) (optional)
+            Defines how a prediction should be retrieved from an estimator
 
-        Returns:
-            bool: True on success
+        Returns
+        -------
+        bool: True on success
         """
 
         if estimator is None:
@@ -145,11 +156,13 @@ class ParametricEstimator(ProbabilisticEstimator):
 
     def __init__(self, point=None, std=None, point_std=None, shape='norm'):
         """
-        TODO: can be string, num, estimator
-        :param shape:
-        :param point:
-        :param std:
-        :param point_std:
+
+        Parameters
+        ----------
+        point: str, num, estimator
+        std
+        point_std
+        shape
         """
         self.estimators = EstimatorManager(self)
         self.shape = shape

@@ -111,7 +111,7 @@ class KernelDensityAdapter(DensityAdapter):
 
         Parameters
         ----------
-        np.array(M) inlet: Bayesian sample of length M
+        np.array(M) inlet: Sample of length M
         """
 
         # fit kernel density estimator

@@ -2,13 +2,16 @@ from .base import Controller, View
 
 
 class RawView(View):
-
+    """ Raw view
+    """
     def parse(self, data):
         return str(data)
 
 
 class ItemView(View):
+    """ Item view
 
+    """
     def __init__(self, key):
         self.key = key
 
@@ -20,6 +23,9 @@ class ItemView(View):
 
 
 class InfoView(View):
+    """ InfoView
+
+    """
 
     def __init__(self, key='description', with_group=False):
         self.key = key
@@ -33,6 +39,9 @@ class InfoView(View):
 
 
 class InfoController(Controller):
+    """ InfoController
+
+    """
 
     def identifier(self):
         return 'InfoController()'

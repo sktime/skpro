@@ -9,6 +9,15 @@ from .base import Controller, View
 
 
 class CrossValidationController(Controller):
+    """ CrossValidation controller
+
+    Parameters
+    ----------
+    data
+    loss_func
+    cv
+    tune
+    """
 
     def __init__(self, data, loss_func, cv=KFold(), tune=False):
         self.data = data
@@ -66,7 +75,13 @@ class CrossValidationController(Controller):
 
 
 class CrossValidationView(View):
+    """ Cross validation view
 
+    Parameters
+    ----------
+    with_tuning
+    with_ranks
+    """
     def __init__(self, with_tuning=False, with_ranks=True):
         self.with_tuning = with_tuning
         self.with_ranks = with_ranks

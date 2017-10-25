@@ -4,7 +4,7 @@ from sklearn.model_selection import cross_val_score as sklearn_cross_val_score
 
 def cross_val_score(estimator, X, y=None, groups=None, scoring=None, cv=None,
                     verbose=0, fit_params=None):
-    """Evaluate a score by cross-validation
+    """Evaluate a score using cross-validation
 
     Parameters
     ----------
@@ -38,11 +38,13 @@ def cross_val_score(estimator, X, y=None, groups=None, scoring=None, cv=None,
         The verbosity level.
     fit_params : dict, optional
         Parameters to pass to the fit method of the estimator.
+
     Returns
     -------
-    scores : array of ufloat, shape=(len(list(cv)),)
+    scores : numpy.array, shape=(len(list(cv)), 2)
         Array of scores of the estimator for each run of the cross validation
         with their corresponding uncertainty.
+
     See Also
     ---------
     :func:`skpro.metrics.make_scorer`:

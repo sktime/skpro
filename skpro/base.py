@@ -44,6 +44,14 @@ def _forward_meta(wrapper, f):
 
 def _generalize(f):
     """ Generalizes the signature to allow for the use with np.std() etc.
+
+    Parameters
+    ----------
+    f: The function to decorate
+
+    Returns
+    -------
+    Decorated function
     """
 
     def wrapper(self, *args, **kwargs):
@@ -57,6 +65,14 @@ def _vectorize(f):
 
     The wrapper vectorizes a interface function unless
     it is decorated with the vectorvalued decorator
+
+    Parameters
+    ----------
+    f: The function to decorate
+
+    Returns
+    -------
+    Decorated function
     """
     def wrapper(self, *args, **kwargs):
         # cache index
@@ -86,7 +102,7 @@ def _elementwise(f):
     """ Enables elementwise operations
 
     The wrapper implements two different modes of argument evaluation
-    for given p_1,...,p_k that represent the predicted distributions
+    for given p_1,..., p_k that represent the predicted distributions
     and and x_1,...,x_m that represent the values to evaluate them on.
 
     "elementwise" (default): Repeat the sequence of p_i until there are m,
@@ -95,6 +111,14 @@ def _elementwise(f):
 
     "batch": x_1, ..., x_m is evaluated on every distribution p_i
             resulting in a matrix m columns and k rows.
+
+    Parameters
+    ----------
+    f: The function to decorate
+
+    Returns
+    -------
+    Decorated function
     """
 
     def wrapper(self, x, *args, **kwargs):
@@ -143,6 +167,14 @@ def _cached(f):
     """ Enables caching
 
     Wrapper uses lru_cache to cache function result
+
+    Parameters
+    ----------
+    f: The function to decorate
+
+    Returns
+    -------
+    Decorated function
     """
 
     @functools.lru_cache()
@@ -153,19 +185,24 @@ def _cached(f):
 
 
 class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
-    """
-    Abstract base class for probabilistic prediction models
+    """ Abstract base class for probabilistic prediction models
+
+    Notes
+    -----
+    All probabilistic estimators should specify all the parameters
+    that can be set at the class level in their ``__init__``
+    as explicit keyword arguments (no ``*args`` or ``**kwargs``).
     """
 
     class ImplementsEnhancedInterface(abc.ABCMeta):
-        """
+        """ Meta-class for distribution interface
+
         Enhances the distribution interface behind the scenes
         with automatic caching and syntactic sugar for
         element-wise access of the distributions
         """
 
         def __init__(cls, name, bases, clsdict):
-
             for method in ['pdf', 'cdf']:
                 if method in clsdict:
                     setattr(cls, method, _elementwise(ensure_existence(clsdict[method])))
@@ -178,9 +215,21 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         """
         Abstract base class for the distribution interface
         returned by probabilistic estimators
+
+        Parameters
+        ----------
+        estimator: ``skpro.base.ProbabilisticEstimator``
+            Parent probabilistic estimator object
+        X: np.array
+            Features
+        selection: slice | int (optional)
+            Subset point selection of the features
+        mode: str
+            Interface mode ('elementwise' or 'batch')
         """
 
         def __init__(self, estimator, X, selection=slice(None), mode='elementwise'):
+
             self.estimator = estimator
             self._X = X
             self.index = slice(None)
@@ -208,6 +257,19 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             raise Exception('skpro distributions are readonly')
 
         def replicate(self, selection=None, mode=None):
+            """ Replicates the distribution object
+
+            Parameters
+            ----------
+            selection: None | slice | int (optional)
+                Subset point selection of the distribution copy
+            mode: str (optional)
+                Interface mode ('elementwise' or 'batch')
+
+            Returns
+            -------
+            ``skpro.base.ProbabilisticEstimator.Distribution``
+            """
             if selection is None:
                 selection = self.selection
 
@@ -290,25 +352,63 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
         @abc.abstractmethod
         def std(self):
+            """ Variance prediction
+
+            Returns
+            -------
+            The estimated standard deviation that corresponds to self.X
+            """
             raise NotImplementedError()
 
         def pdf(self, x):
+            """ Probability density function
+
+            Parameters
+            ----------
+            x
+
+            Returns
+            -------
+            mixed  Density function evaluated at x
+            """
             warnings.warn(self.__class__.__name__ + ' does not implement a pdf function', UserWarning)
 
         def cdf(self, x):
+            """ Cumulative density function
+
+            Parameters
+            ----------
+            x
+
+            Returns
+            -------
+            mixed Cumulative density function evaluated at x
+            """
             warnings.warn(self.__class__.__name__ + ' does not implement a cdf function', UserWarning)
 
-        def ppf(self, x):
+        def ppf(self, q, *args, **kwargs):
+            """ Percent point function (inverse of cdf — percentiles).
+
+            Parameters
+            ----------
+            q
+
+            Returns
+            -------
+            float
+            """
             warnings.warn(self.__class__.__name__ + ' does not implement a ppf function', UserWarning)
 
         def lp2(self):
             """
-            Implements the L2 norm of the PDF
+            Implements the Lp2 norm of the probability density function
 
             ..math::
             L^2 = \int PDF(x)^2 dx
 
-            :return:
+            Returns
+            -------
+            float: Lp2-norm of the density function
             """
             warnings.warn(self.__class__.__name__ +
                           ' does not implement a lp2 function, defaulting to numerical approximation', UserWarning)
@@ -346,15 +446,53 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
 
 class VendorInterface(metaclass=abc.ABCMeta):
+    """ Abstract base class for a vendor interface
+    """
 
     def on_fit(self, X, y):
+        """ Implements vendor fit procedure
+
+        Parameters
+        ----------
+        X : np.array
+            Training features
+        y : np.array
+            Training labels
+
+        Returns
+        -------
+        None
+        """
         pass
 
     def on_predict(self, X):
+        """ Implements vendor predict procedure
+
+        Parameters
+        ----------
+        X : np.array
+            Test features
+
+        Returns
+        -------
+        None
+        """
         pass
 
 
 class VendorEstimator(ProbabilisticEstimator):
+    """ VendorEstimator
+
+    ProbabilisticEstimator that interfaces a vendor using
+    a VendorInterface and Adapter.
+
+    Parameters
+    ----------
+    model: skpro.base.VendorInterface
+        Vendor interface
+    adapter: skpro.density.DensityAdapter
+        Density adapter
+    """
 
     class Distribution(ProbabilisticEstimator.Distribution,  metaclass=abc.ABCMeta):
 
@@ -374,6 +512,18 @@ class VendorEstimator(ProbabilisticEstimator):
         self.adapters_ = []
 
     def _check_model(self, model=None):
+        """ Checks the model
+
+        Checks if vendor interface is valid
+
+        Parameters
+        ----------
+        model: skpro.base.VendorInterface
+            Vendor interface
+        Returns
+        -------
+        skpro.base.VendorInterface
+        """
         if not issubclass(model.__class__, VendorInterface):
             raise ValueError('model has to be a VendorInterface'
                              '%s given.' % model.__class__)
@@ -381,7 +531,21 @@ class VendorEstimator(ProbabilisticEstimator):
         return model
 
     def _check_adapter(self, adapter):
+        """ Checks the adapter
 
+        Can be overwritten to implement checking procedures for a
+        density adapter that are applied during the object
+        initialisation.
+
+        Parameters
+        ----------
+        adapter: skpro.density.DensityAdapter
+            Adapter
+
+        Returns
+        -------
+        skpro.density.DensityAdapter
+        """
         return adapter
 
     def fit(self, X, y):
@@ -396,6 +560,15 @@ class VendorEstimator(ProbabilisticEstimator):
 
 
 class BayesianVendorInterface(VendorInterface):
+    """ Abstract base class for a Bayesian vendor
+
+    Notes
+    -----
+    Must implement the samples method that returns
+    Bayesian posterior samples. The sample method
+    should be cached using the ``functools.lru_cache``
+    decorator to increase performance
+    """
 
     @abc.abstractmethod
     @functools.lru_cache()
@@ -404,6 +577,12 @@ class BayesianVendorInterface(VendorInterface):
 
 
 class BayesianVendorEstimator(VendorEstimator):
+    """ Vendor estimator for Bayesian methods
+
+    ProbabilisticEstimator that interfaces a Bayesian vendor using
+    a BayesianVendorInterface and and sample-based Adapter.
+
+    """
 
     class Distribution(VendorEstimator.Distribution):
 

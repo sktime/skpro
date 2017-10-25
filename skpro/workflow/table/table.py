@@ -8,14 +8,34 @@ from ..cross_validation import CrossValidationView, CrossValidationController
 
 
 class Modifier(metaclass=abc.ABCMeta):
+    """ Abstract modifier baseclass
+
+    """
 
     @abc.abstractmethod
     def modify(self, raw, headers):
+        """ Modifies a raw table
 
+        Parameters
+        ----------
+        raw
+        headers
+
+        Returns
+        -------
+        Modified raw, headers
+        """
         return raw, headers
 
 
 class IdModifier(Modifier):
+    """ IdModifier
+
+    Parameters
+    ----------
+    start_with: int, default=1
+        Offset in ID count
+    """
 
     def __init__(self, start_with=1):
         self.start_with = start_with
@@ -30,6 +50,15 @@ class IdModifier(Modifier):
 
 
 class RankModifier(Modifier):
+    """ Rank modifier
+
+    Parameters
+    ----------
+    vertical
+    horizontal
+    aggregate
+    visible
+    """
 
     def __init__(self, vertical='score', horizontal='score', aggregate=False, visible=False):
         self.vertical = vertical
@@ -77,18 +106,6 @@ class RankModifier(Modifier):
         return result
 
     def modify(self, raw, headers):
-        """
-
-        Parameters
-        ----------
-        raw
-        headers
-
-        Returns
-        -------
-
-        """
-
         # Calculate horizontal ranks
         if self.horizontal:
             field = self.horizontal
@@ -150,6 +167,13 @@ class RankModifier(Modifier):
 
 
 class SortModifier(Modifier):
+    """ SortModifier
+
+    Parameters
+    ----------
+    key
+    reverse
+    """
 
     def __init__(self, key=None, reverse=False):
         if key is None:
@@ -174,6 +198,13 @@ def filter_modifier(modifier):
 
 
 class Table:
+    """ Table
+
+    Parameters
+    ----------
+    tasks
+    modifiers
+    """
 
     def __init__(self, tasks=None, modifiers=None):
         if tasks is None:
@@ -188,6 +219,17 @@ class Table:
         self.rendered_ = None
 
     def add(self, controller, view):
+        """ Add controllers
+
+        Parameters
+        ----------
+        controller
+        view
+
+        Returns
+        -------
+
+        """
         if not issubclass(controller.__class__, Controller):
             raise Exception('controller has to be subclass instance skpro.workflow.Controller')
 
@@ -200,16 +242,51 @@ class Table:
         return self
 
     def cv(self, data, loss_func, tune=False):
+        """
+
+        Parameters
+        ----------
+        data
+        loss_func
+        tune
+
+        Returns
+        -------
+
+        """
         return self.add(CrossValidationController(data, loss_func, tune=tune),
                  CrossValidationView())
 
     def info(self, with_group=False):
+        """
+
+        Parameters
+        ----------
+        with_group
+
+        Returns
+        -------
+
+        """
         return self.add(InfoController(), InfoView(with_group=with_group))
 
     def modify(self, modifier):
         self.modifiers.append(filter_modifier(modifier))
 
     def render(self, models, verbose=0, debug=False):
+        """ Render table
+
+        Parameters
+        ----------
+        models
+        verbose
+        debug
+
+        Returns
+        -------
+
+        """
+
         if len(self.tasks) == 0:
             raise Exception('The table is empty. You have to include tasks using add()')
 
@@ -267,7 +344,7 @@ class Table:
         return self.rendered_
 
     def print(self, models, fmt='pipe', with_headers=True, raw=False, return_only=False, verbose=1, debug=False):
-        """
+        """ Print table
 
         Parameters
         ----------

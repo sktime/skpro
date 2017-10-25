@@ -30,7 +30,7 @@ def ensure_existence(f):
 
     Returns
     -------
-    function f
+    Method f
     """
     if getattr(f, 'not_existing', False):
         raise NotImplementedError('The distribution has no ' + f.__name__ + ' function. '

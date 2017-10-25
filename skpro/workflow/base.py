@@ -6,6 +6,15 @@ from sklearn.base import clone
 
 
 class Model:
+    """ Model base class
+
+    Parameters
+    ----------
+    instance
+    tuning
+    group
+    database
+    """
 
     def __init__(self, instance, tuning=None, group=None, database=None):
         self.instance = clone(instance)
@@ -41,6 +50,12 @@ class Model:
 
 
 class Controller(metaclass=abc.ABCMeta):
+    """ Controller base class
+
+    Notes
+    -----
+    Must implement an identifier and run function
+    """
 
     @abc.abstractmethod
     def identifier(self):
@@ -52,7 +67,12 @@ class Controller(metaclass=abc.ABCMeta):
 
 
 class View(metaclass=abc.ABCMeta):
+    """ View base class
 
+    Notes
+    -----
+    Must implement the parse method
+    """
     def __repr__(self):
         return self.__class__.__name__
 

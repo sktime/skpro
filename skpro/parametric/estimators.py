@@ -3,6 +3,27 @@ from sklearn.base import BaseEstimator
 
 
 class Minimum(BaseEstimator):
+    """ Minimum estimator
+
+    Wrapping estimator that replaces predictions of the wrapped
+    estimator that fall below a specified minimum threshold
+    with the threshold itself.
+
+    Parameters
+    ----------
+    estimator: subclass of sklearn.base.BaseEstimator
+        Estimator which predicts shall be bounded by minimum threshold
+    minimum: float
+        Minimum boundary for the estimator's predictions
+
+    Properties
+    ----------
+    estimator : subclass of sklearn.base.BaseEstimator
+        Wrapped estimator
+    minimum : float
+        Minimum threshold
+
+    """
 
     def __init__(self, estimator, minimum=3):
         self.estimator = estimator
@@ -29,13 +50,22 @@ class Minimum(BaseEstimator):
 
 
 class Constant(BaseEstimator):
+    """ Constant estimator
+
+    Predicts predefinied constant
+
+    Parameters
+    ----------
+    constant: float | callable(X, y) | string: 'mean(y)', 'std(y)'
+        Specifies the constant. A callable receives the training data during
+        fit and should return a constant value. The string options provide
+        a shortcut for mean/std extraction from the features.
+    name: string (optional)
+        Optional description of the constant for the estimator string
+        representation. Defaults to str(constant).
+    """
 
     def __init__(self, constant=None, name=None):
-        """
-
-        :param constant: Constant value, or callable(X, y) returning a constant, or str 'mean(y)'|'std(y)'
-        :param name: Optional description
-        """
         self.constant = constant
         self.name = name
 
@@ -71,4 +101,3 @@ class Constant(BaseEstimator):
             return 'C(' + str(self.constant) + ')'
         else:
             return 'C(' + self.name + ')'
-

@@ -32,6 +32,12 @@ def log_error_pt(y_pred):
 
 
 class ResidualEstimator(BaseEstimator):
+    """ Residual estimator
+
+    Predicts residuals of an estimator using a scikit-learn estimator.
+
+    TODO: expand documentation
+    """
 
     def __init__(self, base_estimator, residual_estimator, fit_transform='squared_error', predict_transform=None):
         self.base_estimator = base_estimator

@@ -5,11 +5,29 @@ from ..base import BayesianVendorEstimator, BayesianVendorInterface
 
 
 class Pymc(BayesianVendorEstimator):
+    """ Pymc estimator
 
+    ProbabilisticEstimator to integrate PyMC3 models
+    """
     pass
 
 
 class PymcInterface(BayesianVendorInterface):
+    """ PyMC3 interface
+
+    Allows for the integration of PyMC3 models
+
+    Parameters
+    ----------
+    model_definition: callable(model, X, y)
+        Callable that defines a model using the
+        given PyMC3 ``model`` variable and
+        training features ``X`` as well as
+        and the labels ``y``.
+    samples_size: int (optional, default=500)
+        Number of samples to be drawn from the
+        posterior distribution
+    """
 
     def __init__(self, model_definition, sample_size=500):
         self.model_definition = model_definition

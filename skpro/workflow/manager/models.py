@@ -2,6 +2,8 @@ from skpro.workflow.base import Model
 
 
 class ModelManager:
+    """ Model manager
+    """
 
     def __init__(self):
         self.models = {}
