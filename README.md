@@ -11,19 +11,17 @@ The package offers a variety of features and specifically allows for
 - strategy optimization through hyperparamter tuning and ensemble methods (e.g. bagging)
 - workflow automation
 
-Read our [documentation](docs) or check out the [examples](examples) to learn more.
-
 List of [developers and contributors](AUTHORS.rst)
+
+### Documentation
+
+The full documentation is [available here](https://kiraly-group.github.io/skpro/).
 
 ### Installation
 
 Installation is easy using Python's package manager
 
     $ pip install skpro
-    
-### Documentation
-
-The full documentation is [available here](https://kiraly-group.github.io/skpro/).
 
 ### Contributing
 
