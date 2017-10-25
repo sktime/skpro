@@ -1,10 +1,10 @@
 User Guide
 **********
 
-This guide will give a short overview of the basic functions in ``skpro`` package.
+This guide will give a short overview of the basic functions of the ``skpro`` package.
 For further details you may explore the `API documentation <api/modules.html>`_.
 
-.. note:: skpro uses many of scikit-learn's building principles and conventions. If you aren't familiar with the scikit-learn package you might want to explore its `project documentation <http://scikit-learn.org/stable/tutorial/basic/tutorial.html>`_.
+.. note:: skpro uses many of scikit-learn's building principles and conventions. If you aren't familiar with the scikit-learn package you may like to explore its `project documentation <http://scikit-learn.org/stable/tutorial/basic/tutorial.html>`_.
 
 Overview
 --------
@@ -51,7 +51,7 @@ Probabilistic estimators work well with scikit-learn's ``Pipeline`` meta-estimat
 Bagging
 ~~~~~~~
 
-A bagging meta-estimator is currently in development. Check out the :doc:`skpro\.ensemble <api/modules>` module for a current preview.
+Like in sklearn, probabilistic estimators can be bagged using the meta-estimator ``BaggingRegressor``. Check out the :doc:`skpro\.ensemble <api/modules>` module to learn more.
 
 Probabilistic Estimators
 ------------------------
