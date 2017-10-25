@@ -17,7 +17,6 @@ loss = log_loss(y_test, y_pred, sample=True, return_std=True)
 print('Loss: %f+-%f' % loss)
 
 # Plot the performance
-
 from matplotlib import pyplot
 import numpy as np
 

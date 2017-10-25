@@ -1,16 +1,20 @@
 Introduction
 ************
 
-Probabilistic forecasting makes predictions in settings where even perfect prior knowledge does not allow for impeccable forecast and provides appropriate measures of the uncertainty that is associated with them. In a supervised context, probabilistic prediction problems have been tackled through various strategies in both the frequentist and the Bayesian domain.
+Probabilistic forecasting makes predictions in settings where even perfect prior knowledge does not allow for impeccable forecast and provides appropriate measures of the uncertainty that is associated with them. In a supervised context, probabilistic prediction problems have been tackled through various strategies in both the frequentist and the Bayesian domain. Today, a variety of learning algorithms are available that make predictions in form of probability distributions. However, it is hard to compare different prediction strategies of the different toolboxes in a fair and transparent workflow.
 
-``skpro`` presents a supervised domain-agnostic framework that allows for probabilistic modelling, namely the prediction of probability distributions for individual data points. The package is based on the popular machine learning library `scikit-learn`_ and is being developed open source under the direction of `Dr Franz Király`_; it is released under a :doc:`BSD license <license>`.
+``skpro`` is a supervised machine learning framework that allows for probabilistic forecasting within a unified interface that makes model assessment and comparison fair, domain-agnostic and approachable. It is based on the well-known `scikit-learn`_ library and provides integrations for popular prediction toolboxes such as `PyMC3 <https://github.com/pymc-devs/pymc3>`_.
+
+The software is being developed open source under the direction of `Dr Franz Király` and has been released under a :doc:`BSD license <license>`.
+
+
 
 Features
 ^^^^^^^^
 
 The package offers a variety of features and specifically allows for
 
-- the implementation of probabilistic prediction strategies in the supervised contexts
+- a unified implementation and handling of probabilistic prediction strategies in the supervised contexts
 - comparison of frequentist and Baysian prediction methods
 - strategy optimization through hyperparamter tuning and ensemble methods (e.g. bagging)
 - workflow automation
@@ -21,7 +25,7 @@ The package offers a variety of features and specifically allows for
 A motivating example
 ^^^^^^^^^^^^^^^^^^^^
 
-Let's have a look at a well-known, simple example to see what this is about: Boston Housing price prediction. The skpro specific lines are highlighted below.
+Let's have a look at the simple example of Boston Housing price prediction. The skpro specific lines are highlighted below.
 
 .. literalinclude:: ../examples/parametric/simple.py
     :language: python
