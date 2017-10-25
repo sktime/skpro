@@ -58,5 +58,4 @@ def test_empirical_density_adapter(x):
     assert abs(cdf - norm.cdf(x, loc=loc, scale=scale)) < 0.3
 
     # PDF
-    # pdf = adapter.pdf(x)
-    # assert pdf == 'NOT_EXISTING'
+    assert adapter.pdf.not_existing
