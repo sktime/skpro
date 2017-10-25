@@ -1,23 +1,31 @@
-# skpro
+![skpro](/docs/_static/logo/logo.png)
 
-Supervised learning for probabilistic prediction
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-## Supervised prediction of probabilities
+A supervised domain-agnostic framework that allows for probabilistic modelling, namely the prediction of probability distributions for individual data points.
 
-This repository hosts the development of the ``skpro`` package that extends ``scikit-learn`` with prediction of probability distributions in supervised contexts.
+The package offers a variety of features and specifically allows for
+
+- the implementation of probabilistic prediction strategies in the supervised contexts
+- comparison of frequentist and Baysian prediction methods
+- strategy optimization through hyperparamter tuning and ensemble methods (e.g. bagging)
+- workflow automation
 
 Read our [documentation](docs) or check out the [examples](examples) to learn more.
 
+List of [developers and contributors](AUTHORS.rst)
+
 ### Installation
 
-Please make sure you have all the [requirements](requirements.txt) installed:
+Installation is easy using Python's package manager
 
-    pip install -r requirements.txt
+    $ pip install skpro
+    
+### Documentation
 
-To install the latest package version step into the [skpro](skpro) path and run
+The full documentation is [available here](https://kiraly-group.github.io/skpro/).
 
-    python setup.py develop
+### Contributing
 
-## Contributing
+We welcome any contribution to the skpro project. Please read our [contribution guide](/CONTRIBUTING.md).
 
-Feel free to send pull requests!

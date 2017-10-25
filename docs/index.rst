@@ -1,6 +1,6 @@
-=====
-skpro
-=====
+.. figure:: _static/logo/logo.png
+   :width: 60%
+   :align: center
 
 Welcome to the documentation of **skpro** -- a domain-agnostic framework that allows for probabilistic modelling, namely the prediction of probability distributions, in supervised contexts.
 
