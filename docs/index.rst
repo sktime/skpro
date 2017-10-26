@@ -14,7 +14,11 @@ Contents
    Introduction <introduction>
    Installation <installation>
    User guide <user_guide>
+   Baseline strategies <baselines>
+   Parametric estimation <parametric>
+   Vendor integrations  <vendors>
    Workflow automation <workflow>
+   Extending and advance usage <advanced>
    API Reference <api/modules>
    Changelog <changes>
    Authors <authors>

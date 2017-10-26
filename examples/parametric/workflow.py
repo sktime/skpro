@@ -3,7 +3,7 @@ from sklearn.linear_model import LinearRegression
 
 from skpro.workflow.table import Table, IdModifier, SortModifier, RankModifier
 from skpro.workflow.cross_validation import CrossValidationController, CrossValidationView
-from skpro.metrics import log_loss, gneiting_loss, rank_probability_loss
+from skpro.metrics import log_loss, linearized_log_loss
 from skpro.workflow import Model
 from skpro.workflow.utils import InfoView, InfoController
 from skpro.workflow.manager import DataManager
@@ -18,7 +18,7 @@ tbl = Table()
 # Adding controllers displayed as columns
 tbl.add(InfoController(), InfoView())
 
-for loss_func in [gneiting_loss, rank_probability_loss, log_loss]:
+for loss_func in [linearized_log_loss, log_loss]:
     tbl.add(
         controller=CrossValidationController(data, loss_func=loss_func),
         view=CrossValidationView()

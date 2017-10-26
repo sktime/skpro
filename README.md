@@ -25,5 +25,5 @@ Installation is easy using Python's package manager
 
 ### Contributing
 
-We welcome any contribution to the skpro project. Please read our [contribution guide](/CONTRIBUTING.md).
+We welcome contributions to the skpro project. Please read our [contribution guide](/CONTRIBUTING.md).
 

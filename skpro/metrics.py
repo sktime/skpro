@@ -57,7 +57,7 @@ def make_scorer(score_func, greater_is_better=True, return_std=False, **kwargs):
     def scorer(estimator, X_test, y_test, return_std=return_std):
         sign = 1 if greater_is_better else -1
         y_pred = estimator.predict(X_test)
-        return sign * score_func(y_pred, y_test, return_std=return_std, **kwargs)
+        return sign * score_func(y_test, y_pred, return_std=return_std, **kwargs)
 
     return scorer
 
@@ -166,7 +166,9 @@ def rank_probability_loss(y_true, dist_pred, sample=True, return_std=False):
     """ Rank probability loss
 
     .. math::
-        L(F,y) = -int_-\infty^y F(x)^2 dx - int_y^\infty (1-F(x))^2 dx
+        L(F,y) = -\int_{-\infty}^{y} F(x)^2 dx - \int_{y}^{+\infty} (1-F(x))^2 dx
+
+    where :math:`F(x)` denotes the CDF of the predicted distribution
 
     Parameters
     ----------

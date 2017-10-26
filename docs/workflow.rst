@@ -4,7 +4,7 @@ Workflow automation
 Unlike scikit-learn, which only provides a loose library of validation components, skpro provides an object-oriented structure that standardizes the prediction workflows. The objective is to support efficient model management and fair model assessment in unified framework. After all, the user should only be concerned with the definition and development of models while leaving the tedious tasks of result aggregation to the framework.
 
 Model-view-controller structure
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 skpro's workflow framework is build up of three fundamental components: model, controller, view. The model object contains the actual prediction algorithm that was defined by the user (e.g. a probabilistic estimator object). It unifies and simplifies the management of learning algorithms. It allows to store information and configuration for the algorithm it contains, e.g. a name or a range of hyperparameters that should be optimized. In future, it might support saving of trained models for later use. Secondly, a controller represents an action or task that can be done with a model to obtain certain information. A scoring controller, for instance, might take a dataset and loss function and return the loss score of the model on this dataset. The controller can save the obtained data for later use. Finally, a view object takes what a controller returns to present it to the user. A scoring view, for example, could take a raw score value and format it in power mode. The separation of controller and view level is advantageous since controller tasks like the training of a model to obtain a score can be computationally expensive. Thus, a reformation of an output should not require the revaluation of the task. Moreover, if a view only displays a part of the information it yet useful to store the full information the controller returned.
 
@@ -13,12 +13,12 @@ skpro's workflow framework currently implements one major controller, the **Cros
 The model-view-controller structure (MVC) thus encapsulates a fundamental procedure in machine learning: perform a certain task with a certain model and display the results. Thanks to its unified API, the MVC building blocks can then be easily used for result aggregation and comparison.
 
 Result aggregation and comparison
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 
 At its current stage, the workflow framework support a simple way of results aggregation and comparison, namely a results table.
 
 Tables
-^^^^^^
+~~~~~~
 
 A table can be easily defined by providing controller-view-pairs as columns and models as rows. The framework will then evaluate the table cells by running the controller task for the respective models and render the results table using the specified views. Note that the evaluation of the controller tasks and the process of rendering the table is decoupled. It is therefore possible to access the “raw” table with all the information each controller returned and then render the table with the reduced information that is actually needed. Furthermore, the decoupling allows for manipulation or enhancement of the raw data before rendering. The raw table data can, for example, be sorted by the model performances.
 
@@ -35,3 +35,44 @@ The table below represents an example of such a rank sorted result table that is
 +-----+-------------------+--------------------------------+--------------------------------+
 | 3   | Example model 3   | (3) 28\ :math:`\pm`\ 3\*       | (3) 29\ :math:`\pm`\ 4\*       |
 +-----+-------------------+--------------------------------+--------------------------------+
+
+
+Code example
+------------
+
+The following example demonstrates a common validation workflow that compares
+Parametric estimation models:
+
+.. literalinclude:: ../examples/parametric/workflow.py
+    :language: python
+
++-----+-----+------------------------------+--------------------+---------------------+
+| #   | #   | Info                         | CrossValidation(da | CrossValidation(dat |
+|     |     |                              | ta=boston,         | a=boston,           |
+|     |     |                              | loss\_func=lineari | loss\_func=log\_los |
+|     |     |                              | zed\_log\_loss,    | s,                  |
+|     |     |                              | cv=KFold(3),       | cv=KFold(3),        |
+|     |     |                              | tune=False)        | tune=False)         |
++=====+=====+==============================+====================+=====================+
+| 1   | 1   | Model(norm(point=RandomFores | (1) 3.32+/-0.04    | (1) 3.30+/-0.04     |
+|     |     | tRegressor(),                |                    |                     |
+|     |     | std=C(std(y))))              |                    |                     |
++-----+-----+------------------------------+--------------------+---------------------+
+| 2   | 5   | Model(norm(point=C(mean(y)), | (2) 3.88+/-0.09    | (2) 3.88+/-0.09     |
+|     |     | std=C(std(y))))              |                    |                     |
++-----+-----+------------------------------+--------------------+---------------------+
+| 3   | 3   | Model(norm(point=LinearRegre | (3) 3.94+/-0.13    | (3) 4.25+/-0.29     |
+|     |     | ssion(),                     |                    |                     |
+|     |     | std=C(std(y))))              |                    |                     |
++-----+-----+------------------------------+--------------------+---------------------+
+| 4   | 2   | Model(norm(point=RandomFores | (4)                | (4) 4.6650+/-0.0015 |
+|     |     | tRegressor(),                | 4.6658+/-0.0016    |                     |
+|     |     | std=C(42)))                  |                    |                     |
++-----+-----+------------------------------+--------------------+---------------------+
+| 5   | 6   | Model(norm(point=C(mean(y)), | (5) 4.688+/-0.004  | (5) 4.688+/-0.004   |
+|     |     | std=C(42)))                  |                    |                     |
++-----+-----+------------------------------+--------------------+---------------------+
+| 6   | 4   | Model(norm(point=LinearRegre | (6) 4.704+/-0.012  | (6) 4.704+/-0.012   |
+|     |     | ssion(),                     |                    |                     |
+|     |     | std=C(42)))                  |                    |                     |
++-----+-----+------------------------------+--------------------+---------------------+

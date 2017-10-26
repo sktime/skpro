@@ -8,7 +8,6 @@ from skpro.workflow.manager import DataManager
 
 # Define the model using PyMC's syntax
 
-
 def pymc_linear_regression(model, X, y):
     """Defines a linear regression model in PyMC
 
@@ -45,6 +44,6 @@ data = DataManager('boston')
 y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
 print('Log loss: ', log_loss(data.y_test, y_pred, return_std=True))
 
-from matplotlib import pyplot
-pyplot.scatter(y_pred.point(), data.y_test)
-pyplot.show()
+# Plot the performance
+from utils import plot_performance
+plot_performance(data.y_test, y_pred)

@@ -6,9 +6,9 @@ Developers
 
 **Active contributors**
 
-* Franz Kiraly <f.kiraly@ucl.ac.uk> `fkiraly <https://github.com/fkiraly>`_: project manager and designated point of contact
-* Frithjof Gressmann `frthjf <https://github.com/frthjf>`_: principal developer and curator
-* Vitaly Davydov `iwitaly <https://github.com/iwitaly>`_: contributor
+* Franz Kiraly <f.kiraly@ucl.ac.uk> [`@fkiraly <https://github.com/fkiraly>`_]: project manager and designated point of contact
+* Frithjof Gressmann [`@frthjf <https://github.com/frthjf>`_]: principal developer and curator
+* Vitaly Davydov [`@iwitaly <https://github.com/iwitaly>`_]: contributor
 
 
 If you like to contribute, read our `contribution guide <https://github.com/kiraly-group/skpro/CONTRIBUTING.md>`_.

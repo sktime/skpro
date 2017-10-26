@@ -3,11 +3,9 @@ Introduction
 
 Probabilistic forecasting makes predictions in settings where even perfect prior knowledge does not allow for impeccable forecast and provides appropriate measures of the uncertainty that is associated with them. In a supervised context, probabilistic prediction problems have been tackled through various strategies in both the frequentist and the Bayesian domain. Today, a variety of learning algorithms are available that make predictions in form of probability distributions. However, it is hard to compare different prediction strategies of the different toolboxes in a fair and transparent workflow.
 
-``skpro`` is a supervised machine learning framework that allows for probabilistic forecasting within a unified interface that makes model assessment and comparison fair, domain-agnostic and approachable. It is based on the well-known `scikit-learn`_ library and provides integrations for popular prediction toolboxes such as `PyMC3 <https://github.com/pymc-devs/pymc3>`_.
+``skpro`` is a supervised machine learning framework that allows for probabilistic forecasting within a unified interface with the goal to make model assessment and comparison fair, domain-agnostic and approachable. It is based on the well-known `scikit-learn`_ library and provides integrations for popular prediction toolboxes such as `PyMC3 <https://github.com/pymc-devs/pymc3>`_.
 
-The software is being developed open source under the direction of `Dr Franz Király` and has been released under a :doc:`BSD license <license>`.
-
-
+The package is being developed open source under the direction of `Dr Franz Király` and has been released under a :doc:`BSD license <license>`.
 
 Features
 ^^^^^^^^
@@ -27,7 +25,7 @@ A motivating example
 
 Let's have a look at the simple example of Boston Housing price prediction. The skpro specific lines are highlighted below.
 
-.. literalinclude:: ../examples/parametric/simple.py
+.. literalinclude:: ../examples/simple.py
     :language: python
     :emphasize-lines: 4-5, 11-15
     :lines: 1-17
