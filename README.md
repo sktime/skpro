@@ -1,10 +1,8 @@
-<p align="center">
 ![skpro](/docs/_static/logo/logo.png)
-</p>
 
 <p align="center">
   <a href="https://travis-ci.com/kiraly-group/skpro"><img src="https://travis-ci.com/kiraly-group/skpro.svg?token=bwQYVkNKkUpai7AxgpfV&branch=master" alt="Build Status"></a>
-  <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause" alt="License"></a>
+  <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License"></a>
 </p>
 
 A supervised domain-agnostic framework that allows for probabilistic modelling, namely the prediction of probability distributions for individual data points.
