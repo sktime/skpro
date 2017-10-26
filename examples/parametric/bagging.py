@@ -11,7 +11,6 @@ def prediction(model, data):
 
 
 data = DataManager('boston')
-
 clf = DecisionTreeRegressor()
 
 baseline_prediction = prediction(
@@ -31,6 +30,5 @@ skpro_bagging_prediction = prediction(
 l1, l2 = loss(data.y_test, baseline_prediction), \
          loss(data.y_test, skpro_bagging_prediction)
 
-print(
-    l1, l2
-)
+print('Baseline: ', l1)
+print('Bagged model:', l2)
