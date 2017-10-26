@@ -6,3 +6,6 @@ pytest
 hypothesis[numpy]
 Sphinx
 sphinx_rtd_theme
+# optional dependencies
+uncertainties
+tabulate
