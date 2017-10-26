@@ -24,13 +24,13 @@ class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):
 
         def pdf(self, x):
             # Average the predicted PDFs
-            return np.sum(
-                [
+            arr = np.array([
                     d.pdf(x)
                     for distribution in self.distributions
                     for d in distribution
-                ]
-            ) / self.n_estimators
+            ])
+
+            return np.mean(arr, axis=0)
 
     def predict(self, X):
         """ Predict regression target for X.

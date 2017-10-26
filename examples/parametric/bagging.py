@@ -1,74 +1,36 @@
 from sklearn.tree import DecisionTreeRegressor
 
-from skpro.workflow.table import Table, IdModifier, SortModifier
-from skpro.workflow.cross_validation import CrossValidationController, CrossValidationView
-from skpro.metrics import log_loss, gneiting_loss
-from skpro.workflow import Model
-from skpro.ensemble import BaggingRegressor
-from skpro.workflow.utils import InfoView, InfoController
-from skpro.workflow.manager import DataManager
+from skpro.ensemble import BaggingRegressor as SkproBaggingRegressor
+from skpro.metrics import log_loss as loss
 from skpro.parametric import ParametricEstimator
-from skpro.parametric.estimators import Constant
+from skpro.workflow.manager import DataManager
+
+
+def prediction(model, data):
+    return model.fit(data.X_train, data.y_train).predict(data.X_test)
 
 
 data = DataManager('boston')
 
-if True:  # DEBUG
-    import numpy as np
-    from sklearn.model_selection import cross_val_score
+clf = DecisionTreeRegressor()
 
-    def evaluate(model):
-        model.fit(data.X_train, data.y_train)
-        y_pred = model.predict(data.X_test)
+baseline_prediction = prediction(
+    ParametricEstimator(point=clf),
+    data
+)
 
-        mse = np.sum((np.abs(y_pred - data.y_test))) / len(y_pred)
-        # print('MSE: ', mse)
+skpro_bagging_prediction = prediction(
+    SkproBaggingRegressor(
+        ParametricEstimator(point=clf),
+        n_estimators=10,
+        n_jobs=-1
+    ),
+    data
+)
 
-        scores = cross_val_score(model, data.X, data.y, cv=3)
+l1, l2 = loss(data.y_test, baseline_prediction), \
+         loss(data.y_test, skpro_bagging_prediction)
 
-        print('CV: %f+-%f' % (np.mean(scores), np.std(scores) / np.sqrt(len(scores))))
-
-
-    print('Without bagging: ')
-    model = DecisionTreeRegressor()
-    evaluate(model)
-
-    print('With bagging:')
-    from sklearn.ensemble import BaggingRegressor as SklearnBaggingRegressor
-    from sklearn.base import clone
-    bagged_model = SklearnBaggingRegressor(clone(model), n_estimators=50, bootstrap=True, oob_score=True) #, max_samples=0.5, max_features=0.5, bootstrap=False)
-
-    evaluate(model)
-
-    exit()
-
-tbl = Table()
-
-# Adding controllers displayed as columns
-tbl.add(InfoController(), InfoView())
-
-for loss_func in [gneiting_loss, log_loss]:
-    tbl.add(
-        controller=CrossValidationController(data, loss_func=loss_func),
-        view=CrossValidationView()
-    )
-
-# Sort by score in the last column, i.e. log_loss
-tbl.modify(SortModifier(key=lambda x: x[-1]['data']['score']))
-# Use ID modifier to display model numbers
-tbl.modify(IdModifier())
-
-# Compose the models displayed as rows
-models = []
-
-for point_estimator in [RandomForestRegressor()]:#, LinearRegression()]:
-    for std_estimator in [RandomForestRegressor(), Constant('mean(y)')]:
-        model = ParametricEstimator(point=point_estimator, std=std_estimator)
-        models.append(Model(model))
-        models.append(Model(
-            #BaggingRegressor(model, bootstrap=False, n_estimators=1)
-            BaggingRegressor(model, max_samples=0.1, max_features=0.1, bootstrap=False, n_estimators=100)
-        ))
-
-
-tbl.print(models)
+print(
+    l1, l2
+)
