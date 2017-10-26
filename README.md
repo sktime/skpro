@@ -1,8 +1,4 @@
-<p align="center">
-
 ![skpro](/docs/_static/logo/logo.png)
-
-</p>
 
 <p align="center">
   <a href="https://travis-ci.com/kiraly-group/skpro"><img src="https://travis-ci.com/kiraly-group/skpro.svg?token=bwQYVkNKkUpai7AxgpfV&branch=master" alt="Build Status"></a>
