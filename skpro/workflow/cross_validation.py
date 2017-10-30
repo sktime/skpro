@@ -51,10 +51,10 @@ class CrossValidationController(Controller):
             best_params = []
             loss_function = self.loss_func
 
-            def scorer(estimator, X_test, y_test):
+            def scorer(estimator, X_test, y_test, **kwargs):
                 y_pred = estimator.predict(X_test)
                 best_params.append(estimator.best_params_)
-                return loss_function(y_pred, y_test)
+                return loss_function(y_test, y_pred, **kwargs)
 
         scores = cross_val_score(
             clf,
