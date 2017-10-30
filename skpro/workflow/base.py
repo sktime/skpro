@@ -16,7 +16,7 @@ class Model:
     database
     """
 
-    def __init__(self, instance, tuning=None, group=None, database=None):
+    def __init__(self, instance, tuning=None, group=None, name=None, database=None):
         self.instance = clone(instance)
         self.group = group
         if database is None:
@@ -25,11 +25,14 @@ class Model:
         if isinstance(tuning, dict) and len(tuning) == 0:
             tuning = None
         self.tuning = tuning
+        self.name = name
 
     def __repr__(self):
         return 'Model(' + repr(self.instance) + ')'
 
     def __str__(self):
+        if isinstance(self.name, str):
+            return 'Model: ' + self.name
         return 'Model(' + str(self.instance) + ')'
 
     def __getitem__(self, item):

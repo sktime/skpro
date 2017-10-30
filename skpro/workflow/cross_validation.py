@@ -19,10 +19,12 @@ class CrossValidationController(Controller):
     tune
     """
 
-    def __init__(self, data, loss_func, cv=KFold(), tune=False):
+    def __init__(self, data, loss_func, cv=None, tune=False):
         self.data = data
         self.loss_func = loss_func
         self.tune = tune
+        if cv is None:
+            cv = KFold()
         self.cv = cv
 
     def identifier(self):
