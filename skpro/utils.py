@@ -37,3 +37,30 @@ def ensure_existence(f):
                                   'You may use an adapter that supports its approximation.')
 
     return f
+
+
+def to_percent(value, return_float=True):
+    """ Converts a number that represents a percentage into a percentage value
+
+    Args:
+        value: int/float
+            Number representing a percentage
+        return_float: bool
+            If true, float representing the percentage is returned
+
+    Returns: int/float
+        A percentage
+    """
+    def percent(p):
+        if return_float:
+            return float(p)
+        else:
+            return int(round(p * 100))
+
+    if isinstance(value, int):
+        value = float(value) / 100.
+
+    if value <= 0:
+        return percent(0)
+    else:
+        return percent(value)

@@ -39,13 +39,14 @@ class ResidualEstimator(BaseEstimator):
     TODO: expand documentation
     """
 
-    def __init__(self, base_estimator, residual_estimator, fit_transform='squared_error', predict_transform=None):
-        self.base_estimator = base_estimator
+    def __init__(self, residual_estimator, base_estimator='point', fit_transform='squared_error', predict_transform=None, filter_zero_variance=False):
         self.residual_estimator = residual_estimator
+        self.base_estimator = base_estimator
         self.fit_transform = fit_transform
         self.fit_transform_ = fit_transform
         self.predict_transform = predict_transform
         self.predict_transform_ = predict_transform
+        self.filter_zero_variance = filter_zero_variance
 
     def _resolve_transformer(self, tf, suffix):
         if isinstance(tf, str):
@@ -68,12 +69,15 @@ class ResidualEstimator(BaseEstimator):
         y_pred = self.estimator.estimators.predict(self.base_estimator, X)
 
         # protect against 0 variance
-        diff = y - y_pred
-        clean = diff != 0
+        if self.filter_zero_variance:
+            clean = (y - y_pred != 0)
+            if np.any(clean):
+                y = y[clean]
+                X = X[clean]
 
         # retrieve fitting vars
-        y_ = self.fit_transform_(y[clean], y_pred[clean])
-        self.residual_estimator.fit(X[clean], y_)
+        y_ = self.fit_transform_(y, y_pred)
+        self.residual_estimator.fit(X, y_)
 
         return self
 

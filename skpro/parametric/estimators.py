@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn.base import BaseEstimator
 
+from ..utils import to_percent
+
 
 class Minimum(BaseEstimator):
     """ Minimum estimator
@@ -13,8 +15,13 @@ class Minimum(BaseEstimator):
     ----------
     estimator: subclass of sklearn.base.BaseEstimator
         Estimator which predicts shall be bounded by minimum threshold
-    minimum: float
-        Minimum boundary for the estimator's predictions
+    minimum: float/int
+        Minimum boundary for the estimator's predictions. If relative=True
+        the minimum represent a percentage value
+    relative: bool
+        If true, minimum will be regarded as percentage value
+        and the cut-off threshold will be determined dynamically
+        during fitting as ``threshold = minimum * std(y)``
 
     Properties
     ----------
@@ -22,28 +29,39 @@ class Minimum(BaseEstimator):
         Wrapped estimator
     minimum : float
         Minimum threshold
-
+    relative: bool
+        If minimum is relative with regard to label variance
     """
 
-    def __init__(self, estimator, minimum=3):
-        self.estimator = estimator
-        self.minimum = minimum
+    def __init__(self, base_estimator, minimum=0.3, relative=True):
+        self.base_estimator = base_estimator
+        if relative:
+            self.minimum = to_percent(minimum)
+        else:
+            self.minimum = minimum
+        self.relative = relative
 
     def fit(self, X, y):
+        # Forward fitting to wrapped estimator
         if getattr(self, 'estimator', False):
-            self.estimator.estimator = self.estimator
-        self.estimator.fit(X, y)
+            self.base_estimator.estimator = self.estimator
+        self.base_estimator.fit(X, y)
+
+        # Compute absolute minimum
+        if self.relative:
+            self.minimum *= np.std(y)
 
         return self
 
     def predict(self, X):
-        prediction = self.estimator.predict(X)
+        # Apply cut-off
+        prediction = self.base_estimator.predict(X)
         prediction[prediction < self.minimum] = self.minimum
 
         return prediction
 
     def __str__(self, describer=str):
-        return 'Min(' + describer(self.estimator) + ', min=' + str(self.minimum) + ')'
+        return 'Min(' + describer(self.base_estimator) + ', min=' + str(self.minimum) + ')'
 
     def __repr__(self):
         return self.__str__(repr)
