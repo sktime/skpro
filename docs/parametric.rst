@@ -35,8 +35,8 @@ The following code example illustrates the resulting overall syntax that defines
         shape='norm',       # Distribution type
         point=Constant(42),        # Point estimator
             std=ResidualEstimator( # Variance estimator
-                'point',             # Base estimator
                 Constant('mean(y)'), # Residual estimator
+                'point',             # Base estimator
                 'abs_error'          # Calculation method
             )
     )

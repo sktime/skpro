@@ -50,7 +50,7 @@ def test_residual_prediction():
     baseline_model = ParametricEstimator(LinearRegression())
     model = ParametricEstimator(
         point=LinearRegression(),
-        std=ResidualEstimator('point', LinearRegression())
+        std=ResidualEstimator(LinearRegression())
     )
 
     baseline = baseline_model.fit(data.X_train, data.y_train).predict(data.X_test)
