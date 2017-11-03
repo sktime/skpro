@@ -1,7 +1,34 @@
+import urllib.request
+import hashlib
+import os
 import numpy as np
 
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_boston, load_diabetes
+
+
+def retrieve_data(url):
+    file_name = '/tmp/%s.dat' % hashlib.md5(str(url).encode('utf-8')).hexdigest()
+    if not os.path.isfile(file_name):
+        with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
+            data = response.read()
+            out_file.write(data)
+
+    return file_name
+
+
+def load_file(file, return_X_y=False):
+    data = np.loadtxt(file)
+
+    if return_X_y:
+        return data[:, :-1], data[:, -1:].ravel()
+    else:
+        return data
+
+
+def load_url(url, return_X_y=False):
+    file = retrieve_data(url)
+    return load_file(file, return_X_y)
 
 
 class DataManager:
@@ -13,7 +40,7 @@ class DataManager:
     Parameters
     ----------
     X : np.array | string
-        Features or 'boston', 'diabetes' to load sklearn datasets
+        Features or 'boston', 'diabetes' to load sklearn datasets, url of file
     y : np.array
         Labels
     split: float, default=0.2
@@ -37,12 +64,16 @@ class DataManager:
 
     def __init__(self, X=None, y=None, split=0.2, name=None, random_state=None):
         if isinstance(X, str):
-            # autoload sklearn datasets
+            # autoload sklearn datasets, urls and files
             name = X
-            if X.lower() == 'boston':
+            if name.lower() == 'boston':
                 X, y = load_boston(return_X_y=True)
-            elif X.lower() == 'diabetes':
+            elif name.lower() == 'diabetes':
                 X, y = load_diabetes(return_X_y=True)
+            elif name.startswith('http'):
+                X, y = load_url(name, return_X_y=True)
+            elif os.path.isfile(name):
+                X, y = load_file(name, return_X_y=True)
             else:
                 raise ValueError("'%s' is not a valid dataset" % X)
 

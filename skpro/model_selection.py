@@ -54,7 +54,13 @@ def cross_val_score(estimator, X, y=None, groups=None, scoring=None, cv=None,
     scores = []
 
     def cv_scoring(estimator, X, y):
-        score, std = scoring(estimator, X, y, return_std=True)
+        if scoring is None:
+            scorer = getattr(estimator, 'score')
+            if not callable(scorer):
+                raise NotImplementedError('The estimator does not offer a default scorer and no scorer was provided')
+            score, std = scorer(X, y, return_std=True)
+        else:
+            score, std = scoring(estimator, X, y, return_std=True)
         scores.append([score, std])
 
         return score

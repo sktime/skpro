@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 
 from sklearn.base import BaseEstimator, clone
-from .metrics import log_loss
+from .metrics import log_loss, make_scorer
 from .density import DensityAdapter, KernelDensityAdapter
 from .utils import ensure_existence
 
@@ -438,8 +438,8 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
         return self
 
-    def score(self, X, y):
-        return -1 * log_loss(y, self.predict(X), sample=True)
+    def score(self, X, y, sample=True, return_std=False):
+        return make_scorer(log_loss, greater_is_better=False)(self, X, y, sample=sample, return_std=return_std)
 
 
 ###############################################################################

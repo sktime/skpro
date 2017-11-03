@@ -51,10 +51,10 @@ class EstimatorManager:
 
             # make it accessible on the parent
             setattr(self.parent, name, selector)
-        elif isinstance(estimator, (int, float)):
-            # automatically wrap constants in Constant estimator
-            estimator = Constant(estimator)
         else:
+            if isinstance(estimator, (int, float)):
+                # automatically wrap constants in Constant estimator
+                estimator = Constant(estimator)
             # attach estimator
             setattr(estimator, 'estimator', self.parent)
             # make it accessible on the parent

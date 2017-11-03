@@ -24,7 +24,7 @@ def sample_loss(loss, return_std=False):
         return np.mean(loss)
 
 
-def make_scorer(score_func, greater_is_better=True, return_std=False, **kwargs):
+def make_scorer(score_func, greater_is_better=True):
     """Make a scorer from a performance metric or loss function.
 
     This factory function wraps scoring functions for use in GridSearchCV
@@ -42,9 +42,6 @@ def make_scorer(score_func, greater_is_better=True, return_std=False, **kwargs):
         or a loss function, meaning low is good. In the latter case, the
         scorer object will sign-flip the outcome of the score_func.
 
-    return_std: boolean, default=False
-        If true, the scorer returns a standard deviation
-
     **kwargs : additional arguments
         Additional parameters to be passed to score_func.
 
@@ -54,10 +51,14 @@ def make_scorer(score_func, greater_is_better=True, return_std=False, **kwargs):
         Callable object that returns a scalar score; greater is better.
     """
 
-    def scorer(estimator, X_test, y_test, return_std=return_std):
+    def scorer(estimator, X, y, sample=True, return_std=False):
         sign = 1 if greater_is_better else -1
-        y_pred = estimator.predict(X_test)
-        return sign * score_func(y_test, y_pred, return_std=return_std, **kwargs)
+        y_pred = estimator.predict(X)
+        score = score_func(y, y_pred, sample=sample, return_std=return_std)
+        if sample and return_std:
+            return sign * score[0], score[1]
+        else:
+            return sign * score
 
     return scorer
 
