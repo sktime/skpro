@@ -40,7 +40,7 @@ def ensure_existence(f):
 
 
 def to_percent(value, return_float=True):
-    """ Converts a number that represents a percentage into a percentage value
+    """ Converts values into a percent representation
 
     Args:
         value: int/float

@@ -1,11 +1,40 @@
 import numpy as np
 from uncertainties import ufloat
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.model_selection import KFold
 
 from ..model_selection import cross_val_score
 from ..metrics import make_scorer
 from .base import Controller, View
+
+
+def grid_optimizer(verbose=0, n_jobs=1):
+    def wrapper(model, search_space, scoring, cv):
+        return GridSearchCV(
+            estimator=model,
+            param_grid=search_space,
+            scoring=scoring,
+            cv=cv,
+            verbose=verbose,
+            n_jobs=n_jobs
+        )
+
+    return wrapper
+
+
+def random_optimizer(n_iter=10, verbose=0, n_jobs=1):
+    def wrapper(model, search_space, scoring, cv):
+        return RandomizedSearchCV(
+            estimator=model,
+            param_distributions=search_space,
+            scoring=scoring,
+            cv=cv,
+            n_iter=n_iter,
+            verbose=verbose,
+            n_jobs=n_jobs
+        )
+
+    return wrapper
 
 
 class CrossValidationController(Controller):
@@ -17,15 +46,21 @@ class CrossValidationController(Controller):
     loss_func
     cv
     tune
+    optimizer: optional callable(model, search_space, scoring, cv), default=None
+        Callable that returns an optimizer such as RandomizedSearchCV etc. that
+        will be used for the hyperparameter search.
     """
 
-    def __init__(self, data, loss_func, cv=None, tune=False):
+    def __init__(self, data, loss_func, cv=None, tune=False, optimizer=None):
         self.data = data
         self.loss_func = loss_func
-        self.tune = tune
         if cv is None:
             cv = KFold()
         self.cv = cv
+        self.tune = tune
+        if optimizer is None:
+            optimizer = grid_optimizer()
+        self.optimizer = optimizer
 
     def identifier(self):
         return 'CrossValidation(data=%s, loss_func=%s)' % (self.data.name, self.loss_func.__name__)
@@ -48,7 +83,12 @@ class CrossValidationController(Controller):
             best_params = None
             scorer = make_scorer(self.loss_func)
         else:
-            clf = GridSearchCV(model.instance, param_grid=tuning, scoring=make_scorer(self.loss_func, greater_is_better=False), verbose=0, cv=self.cv)
+            clf = self.optimizer(
+                model=model.instance,
+                search_space=tuning,
+                scoring=make_scorer(self.loss_func, greater_is_better=False),
+                cv=self.cv
+            )
 
             best_params = []
             loss_function = self.loss_func

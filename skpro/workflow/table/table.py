@@ -177,7 +177,13 @@ class SortModifier(Modifier):
 
     def __init__(self, key=None, reverse=False):
         if key is None:
-            key = lambda x: x[-1]['data']['score']
+            def key(x):
+                try:
+                    return x[-1]['data']['score']
+                except IndexError:
+                    return 0
+                except KeyError:
+                    return 0
         self.key = key
         self.reverse = reverse
 
@@ -241,7 +247,7 @@ class Table:
 
         return self
 
-    def cv(self, data, loss_func, tune=False, cv=None, with_tuning=False, with_ranks=True):
+    def cv(self, data, loss_func, tune=False, cv=None, optimizer=None, with_tuning=False, with_ranks=True):
         """
 
         Parameters
@@ -257,7 +263,7 @@ class Table:
         -------
 
         """
-        return self.add(CrossValidationController(data, loss_func, cv=cv, tune=tune),
+        return self.add(CrossValidationController(data, loss_func, cv=cv, tune=tune, optimizer=optimizer),
                  CrossValidationView(with_tuning=with_tuning, with_ranks=with_ranks))
 
     def info(self, with_group=False):
