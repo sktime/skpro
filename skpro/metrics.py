@@ -24,6 +24,21 @@ def sample_loss(loss, return_std=False):
         return np.mean(loss)
 
 
+class _Scorer:
+
+    def __init__(self, score_func, sign):
+        self._score_func = score_func
+        self._sign = sign
+
+    def __call__(self, estimator, X, y, sample=True, return_std=False):
+        y_pred = estimator.predict(X)
+        score = self._score_func(y, y_pred, sample=sample, return_std=return_std)
+        if sample and return_std:
+            return self._sign * score[0], score[1]
+        else:
+            return self._sign * score
+
+
 def make_scorer(score_func, greater_is_better=True):
     """Make a scorer from a performance metric or loss function.
 
@@ -50,17 +65,8 @@ def make_scorer(score_func, greater_is_better=True):
     scorer : callable
         Callable object that returns a scalar score; greater is better.
     """
-
-    def scorer(estimator, X, y, sample=True, return_std=False):
-        sign = 1 if greater_is_better else -1
-        y_pred = estimator.predict(X)
-        score = score_func(y, y_pred, sample=sample, return_std=return_std)
-        if sample and return_std:
-            return sign * score[0], score[1]
-        else:
-            return sign * score
-
-    return scorer
+    sign = 1 if greater_is_better else -1
+    return _Scorer(score_func, sign)
 
 
 def gneiting_loss(y_true, dist_pred, sample=True, return_std=False):

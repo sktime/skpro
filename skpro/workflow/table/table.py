@@ -247,7 +247,7 @@ class Table:
 
         return self
 
-    def cv(self, data, loss_func, tune=False, cv=None, optimizer=None, with_tuning=False, with_ranks=True):
+    def cv(self, data, loss_func, tune=False, cv=None, optimizer=None, display_tuning=False, with_ranks=True):
         """
 
         Parameters
@@ -264,7 +264,7 @@ class Table:
 
         """
         return self.add(CrossValidationController(data, loss_func, cv=cv, tune=tune, optimizer=optimizer),
-                 CrossValidationView(with_tuning=with_tuning, with_ranks=with_ranks))
+                 CrossValidationView(with_tuning=display_tuning, with_ranks=with_ranks))
 
     def info(self, with_group=False):
         """
