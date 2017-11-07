@@ -1,9 +1,28 @@
 import numpy as np
-from sklearn.model_selection import cross_val_score as sklearn_cross_val_score
+from sklearn.model_selection import cross_validate
+from sklearn.metrics.scorer import check_scoring
+
+
+class RetrievesScores:
+
+    def __init__(self, scorer, score=True, std=False):
+        self.scorer = scorer
+        self.score = score
+        self.std = std
+
+    def __call__(self, estimator, X, y):
+        score, std = self.scorer(estimator, X, y, return_std=True)
+
+        if self.score and self.std:
+            return score, std
+        elif self.std:
+            return std
+        else:
+            return score
 
 
 def cross_val_score(estimator, X, y=None, groups=None, scoring=None, cv=None,
-                    verbose=0, fit_params=None):
+                    n_jobs=1, verbose=0, fit_params=None, pre_dispatch='2*n_jobs'):
     """Evaluate a score using cross-validation
 
     Parameters
@@ -34,10 +53,29 @@ def cross_val_score(estimator, X, y=None, groups=None, scoring=None, cv=None,
         other cases, :class:`KFold` is used.
         Refer :ref:`User Guide <cross_validation>` for the various
         cross-validation strategies that can be used here.
+    n_jobs : integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
     verbose : integer, optional
         The verbosity level.
     fit_params : dict, optional
         Parameters to pass to the fit method of the estimator.
+    pre_dispatch : int, or string, optional
+        Controls the number of jobs that get dispatched during parallel
+        execution. Reducing this number can be useful to avoid an
+        explosion of memory consumption when more jobs get dispatched
+        than CPUs can process. This parameter can be:
+
+            - None, in which case all the jobs are immediately
+              created and spawned. Use this for lightweight and
+              fast-running jobs, to avoid delays due to on-demand
+              spawning of the jobs
+
+            - An int, giving the exact number of total jobs that are
+              spawned
+
+            - A string, giving an expression as a function of n_jobs,
+              as in '2*n_jobs'
 
     Returns
     -------
@@ -51,21 +89,35 @@ def cross_val_score(estimator, X, y=None, groups=None, scoring=None, cv=None,
         Make a scorer from a performance metric or loss function.
     """
 
-    scores = []
+    # To ensure multimetric format is not supported
+    scorer = check_scoring(estimator, scoring=scoring)
 
-    def cv_scoring(estimator, X, y):
-        if scoring is None:
-            scorer = getattr(estimator, 'score')
-            if not callable(scorer):
-                raise NotImplementedError('The estimator does not offer a default scorer and no scorer was provided')
-            score, std = scorer(X, y, return_std=True)
-        else:
-            score, std = scoring(estimator, X, y, return_std=True)
-        scores.append([score, std])
+    if n_jobs == 1:
+        # If we are not multiprocessing it's possible to
+        # use a wrapper function to retrieve the std values
+        test_scores = []
 
-        return score
+        def scoring_task(estimator, X, y):
+            score, std = scorer(estimator, X, y, return_std=True)
+            test_scores.append([score, std])
 
-    sklearn_cross_val_score(estimator, X, y, groups=groups, scoring=cv_scoring,
-                            cv=cv, verbose=verbose, fit_params=fit_params)
+            return score
+    else:
+        # We allow multiprocessing by passing in two scoring functions.
+        # That is far from ideal since we call the scorer twice,
+        # so any improvement is welcome
+        score_scorer = RetrievesScores(scorer, score=True, std=False)
+        std_scorer = RetrievesScores(scorer, score=False, std=True)
+        scoring_task = {'score': score_scorer, 'std': std_scorer}
 
-    return np.array(scores)
+    cv_results = cross_validate(estimator=estimator, X=X, y=y, groups=groups,
+                                scoring=scoring_task, cv=cv,
+                                return_train_score=False,
+                                n_jobs=n_jobs, verbose=verbose,
+                                fit_params=fit_params,
+                                pre_dispatch=pre_dispatch)
+
+    if n_jobs == 1:
+        return np.array(test_scores)
+    else:
+        return np.column_stack((cv_results['test_score'], cv_results['test_std']))
