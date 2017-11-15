@@ -1,8 +1,5 @@
 import numpy as np
-from scipy.stats import norm
 import utils
-
-from sklearn.linear_model import LinearRegression
 
 from skpro.workflow.manager import DataManager
 from skpro.baselines import DensityBaseline

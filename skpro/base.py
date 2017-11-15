@@ -308,9 +308,6 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
             # convert index to slice for consistent usage
             if isinstance(selection, int):
-                if selection > 40:
-                    a = 1
-
                 if selection >= len(self):
                     raise IndexError('Selection is out of bounds')
 
@@ -382,7 +379,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
             Returns
             -------
-            mixed Cumulative density function evaluated at x
+            mixed  Cumulative density function evaluated at x
             """
             warnings.warn(self.__class__.__name__ + ' does not implement a cdf function', UserWarning)
 
@@ -624,5 +621,3 @@ class BayesianVendorEstimator(VendorEstimator):
 
         # return predicted distribution object
         return super().predict(X)
-
-

@@ -45,5 +45,5 @@ y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
 print('Log loss: ', log_loss(data.y_test, y_pred, return_std=True))
 
 # Plot the performance
-from utils import plot_performance
+from ..utils import plot_performance
 plot_performance(data.y_test, y_pred)
