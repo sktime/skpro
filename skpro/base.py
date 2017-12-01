@@ -238,6 +238,9 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
                 mode = 'elementwise'
             self.mode = mode
 
+            if callable(getattr(self, '_init', None)):
+                self._init()
+
         @property
         def X(self):
             return self._X[self.selection, :][self.index]
@@ -493,20 +496,11 @@ class VendorEstimator(ProbabilisticEstimator):
 
     class Distribution(ProbabilisticEstimator.Distribution,  metaclass=abc.ABCMeta):
 
-        def cdf(self, x):
-            ensure_existence(self.estimator.adapters_[self.index].cdf)
-
-            return self.estimator.adapters_[self.index].cdf(x)
-
-        def pdf(self, x):
-            ensure_existence(self.estimator.adapters_[self.index].pdf)
-
-            return self.estimator.adapters_[self.index].pdf(x)
+        pass
 
     def __init__(self, model=None, adapter=None):
         self.model = self._check_model(model)
         self.adapter = self._check_adapter(adapter)
-        self.adapters_ = []
 
     def _check_model(self, model=None):
         """ Checks the model
@@ -583,13 +577,32 @@ class BayesianVendorEstimator(VendorEstimator):
 
     class Distribution(VendorEstimator.Distribution):
 
+        def _init(self):
+            # initialise adapter with samples
+            self.adapters_ = []
+            self.samples = self.estimator.model.samples()
+            for index in range(len(self.X)):
+                adapter = clone(self.estimator.adapter)
+                adapter(self.samples[index, :])
+                self.adapters_.append(adapter)
+
         @vectorvalued
         def point(self):
-            return self.estimator.model.samples().mean(axis=1)
+            return self.samples.mean(axis=1)
 
         @vectorvalued
         def std(self):
-            return self.estimator.model.samples().std(axis=1)
+            return self.samples.std(axis=1)
+
+        def cdf(self, x):
+            ensure_existence(self.adapters_[self.index].cdf)
+
+            return self.adapters_[self.index].cdf(x)
+
+        def pdf(self, x):
+            ensure_existence(self.adapters_[self.index].pdf)
+
+            return self.adapters_[self.index].pdf(x)
 
     def _check_model(self, model=None):
         if not issubclass(model.__class__, BayesianVendorInterface):
@@ -608,16 +621,3 @@ class BayesianVendorEstimator(VendorEstimator):
                             '%s given.' % adapter.__class__)
 
         return adapter
-
-    def predict(self, X):
-        self.model.on_predict(X)
-
-        # initialise adapter with samples
-        samples = self.model.samples()
-        for index in range(len(X)):
-            adapter = clone(self.adapter)
-            adapter(samples[index, :])
-            self.adapters_.append(adapter)
-
-        # return predicted distribution object
-        return super().predict(X)
