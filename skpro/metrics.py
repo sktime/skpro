@@ -173,7 +173,7 @@ def rank_probability_loss(y_true, dist_pred, sample=True, return_std=False):
     """ Rank probability loss
 
     .. math::
-        L(F,y) = -\int_{-\infty}^{y} F(x)^2 dx - \int_{y}^{+\infty} (1-F(x))^2 dx
+        L(F,y) = \int_{-\infty}^{y} F(x)^2 dx + \int_{y}^{+\infty} (1-F(x))^2 dx
 
     where :math:`F(x)` denotes the CDF of the predicted distribution
 

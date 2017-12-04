@@ -2,7 +2,8 @@ import pymc3 as pm
 
 from skpro.metrics import log_loss
 
-from skpro.vendors.pymc import Pymc, PymcInterface
+from skpro.base import BayesianVendorEstimator
+from skpro.vendors.pymc import PymcInterface
 from skpro.workflow.manager import DataManager
 
 
@@ -33,7 +34,7 @@ def pymc_linear_regression(model, X, y):
 
 # Plug the model definition into the PyMC interface
 
-model = Pymc(
+model = BayesianVendorEstimator(
     model=PymcInterface(model_definition=pymc_linear_regression)
 )
 

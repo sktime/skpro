@@ -1,15 +1,7 @@
 from theano import shared
 import pymc3 as pm
 
-from ..base import BayesianVendorEstimator, BayesianVendorInterface
-
-
-class Pymc(BayesianVendorEstimator):
-    """ Pymc estimator
-
-    ProbabilisticEstimator to integrate PyMC3 models
-    """
-    pass
+from ..base import BayesianVendorInterface
 
 
 class PymcInterface(BayesianVendorInterface):
