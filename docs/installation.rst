@@ -37,4 +37,4 @@ If you like to contribute to documentation please refer to our :doc:`contributio
 .. _pip: http://www.pip-installer.org/
 .. _uncertainties: http://pythonhosted.org/uncertainties/
 .. _tabulate: https://pypi.python.org/pypi/tabulate
-.. _public code repository: https://github.com/kiraly-group/skpro
+.. _public code repository: https://github.com/alan-turing-institute/skpro

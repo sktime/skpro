@@ -1,7 +1,7 @@
 ![skpro](/docs/_static/logo/logo.png)
 
 <p align="center">
-  <a href="https://travis-ci.com/kiraly-group/skpro"><img src="https://travis-ci.com/kiraly-group/skpro.svg?token=bwQYVkNKkUpai7AxgpfV&branch=master" alt="Build Status"></a>
+  <a href="https://travis-ci.com/alan-turing-institute/skpro"><img src="https://travis-ci.com/alan-turing-institute/skpro.svg?token=bwQYVkNKkUpai7AxgpfV&branch=master" alt="Build Status"></a>
   <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License"></a>
 </p>
 
@@ -18,7 +18,7 @@ List of [developers and contributors](AUTHORS.rst)
 
 ### Documentation
 
-The full documentation is [available here](https://kiraly-group.github.io/skpro/).
+The full documentation is [available here](https://alan-turing-institute.github.io/skpro/).
 
 ### Installation
 
