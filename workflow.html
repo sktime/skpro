@@ -1,0 +1,477 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Workflow automation &mdash; skpro 0.0.post0.dev52+ng8d5e7e2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="skpro 0.0.post0.dev52+ng8d5e7e2 documentation" href="index.html"/>
+        <link rel="next" title="Modules" href="api/modules.html"/>
+        <link rel="prev" title="Vendors integrations" href="vendors.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.post0.dev52+ng8d5e7e2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parametric.html">Parametric estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Workflow automation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#model-view-controller-structure">Model-view-controller structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#result-aggregation-and-comparison">Result aggregation and comparison</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tables">Tables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#code-example">Code example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Workflow automation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/workflow.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="workflow-automation">
+<h1>Workflow automation<a class="headerlink" href="#workflow-automation" title="Permalink to this headline">¶</a></h1>
+<p>Unlike scikit-learn, which only provides a loose library of validation components, skpro provides an object-oriented structure that standardizes the prediction workflows. The objective is to support efficient model management and fair model assessment in unified framework. After all, the user should only be concerned with the definition and development of models while leaving the tedious tasks of result aggregation to the framework.</p>
+<div class="section" id="model-view-controller-structure">
+<h2>Model-view-controller structure<a class="headerlink" href="#model-view-controller-structure" title="Permalink to this headline">¶</a></h2>
+<p>skpro’s workflow framework is build up of three fundamental components: model, controller, view. The model object contains the actual prediction algorithm that was defined by the user (e.g. a probabilistic estimator object). It unifies and simplifies the management of learning algorithms. It allows to store information and configuration for the algorithm it contains, e.g. a name or a range of hyperparameters that should be optimized. In future, it might support saving of trained models for later use. Secondly, a controller represents an action or task that can be done with a model to obtain certain information. A scoring controller, for instance, might take a dataset and loss function and return the loss score of the model on this dataset. The controller can save the obtained data for later use. Finally, a view object takes what a controller returns to present it to the user. A scoring view, for example, could take a raw score value and format it in power mode. The separation of controller and view level is advantageous since controller tasks like the training of a model to obtain a score can be computationally expensive. Thus, a reformation of an output should not require the revaluation of the task. Moreover, if a view only displays a part of the information it yet useful to store the full information the controller returned.</p>
+<p>skpro’s workflow framework currently implements one major controller, the <strong>Cross validation controller (CV)</strong>, and multiple views to display scores and model information. The CV controller encapsulates the common cross-validation procedure to assess models out-of-sample. It takes a dataset and loss function and returns the fold-losses as well as the overall loss with confidence interval for a given model. If the model specifies a range of hyperparameters for tuning, the controller automatically optimizes the hyperparamters in a nested cross-validation procedure and additionally returns the found best hyperparameters.</p>
+<p>The model-view-controller structure (MVC) thus encapsulates a fundamental procedure in machine learning: perform a certain task with a certain model and display the results. Thanks to its unified API, the MVC building blocks can then be easily used for result aggregation and comparison.</p>
+</div>
+<div class="section" id="result-aggregation-and-comparison">
+<h2>Result aggregation and comparison<a class="headerlink" href="#result-aggregation-and-comparison" title="Permalink to this headline">¶</a></h2>
+<p>At its current stage, the workflow framework support a simple way of results aggregation and comparison, namely a results table.</p>
+<div class="section" id="tables">
+<h3>Tables<a class="headerlink" href="#tables" title="Permalink to this headline">¶</a></h3>
+<p>A table can be easily defined by providing controller-view-pairs as columns and models as rows. The framework will then evaluate the table cells by running the controller task for the respective models and render the results table using the specified views. Note that the evaluation of the controller tasks and the process of rendering the table is decoupled. It is therefore possible to access the “raw” table with all the information each controller returned and then render the table with the reduced information that is actually needed. Furthermore, the decoupling allows for manipulation or enhancement of the raw data before rendering. The raw table data can, for example, be sorted by the model performances.</p>
+<p>Notably, the table supports so-called rank-sorting. Rank sorting is, for instance, useful if models are compared on different datasets and ought to be sorted by their overall performance. In this case, it is unsuitable to simply average the dataset’s performance scores since the value ranges might differ considerably between the different datasets. Instead, it is useful to rank the performances on each dataset and then average the model’s rank on each dataset to obtain the overall rank.</p>
+<p>The table below represents an example of such a rank sorted result table that is typically generated by the workflow framework: Models are listed in the rows of the table while the columns present the cross-validated performance of a certain dataset and loss function. The numbers in parentheses denote the model’s performance rank in the respective column. The models are sorted by the average model rank, displaying models with the best performances (that is the lowest losses) on top of the table.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="22%" />
+<col width="36%" />
+<col width="36%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">#</th>
+<th class="head">Model</th>
+<th class="head">CV(Dataset A, loss function)</th>
+<th class="head">CV(Dataset B, loss function)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>Example model 1</td>
+<td><ol class="first last arabic simple" start="2">
+<li>12<span class="math">\pm</span>1*</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple">
+<li>3<span class="math">\pm</span>2*</li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>Example model 2</td>
+<td><ol class="first last arabic simple">
+<li>5<span class="math">\pm</span>0.5*</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="2">
+<li>9<span class="math">\pm</span>1*</li>
+</ol>
+</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>Example model 3</td>
+<td><ol class="first last arabic simple" start="3">
+<li>28<span class="math">\pm</span>3*</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="3">
+<li>29<span class="math">\pm</span>4*</li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="code-example">
+<h2>Code example<a class="headerlink" href="#code-example" title="Permalink to this headline">¶</a></h2>
+<p>The following example demonstrates a common validation workflow that compares
+Parametric estimation models:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
+
+<span class="kn">from</span> <span class="nn">skpro.workflow.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">IdModifier</span><span class="p">,</span> <span class="n">SortModifier</span><span class="p">,</span> <span class="n">RankModifier</span>
+<span class="kn">from</span> <span class="nn">skpro.workflow.cross_validation</span> <span class="kn">import</span> <span class="n">CrossValidationController</span><span class="p">,</span> <span class="n">CrossValidationView</span>
+<span class="kn">from</span> <span class="nn">skpro.metrics</span> <span class="kn">import</span> <span class="n">log_loss</span><span class="p">,</span> <span class="n">linearized_log_loss</span>
+<span class="kn">from</span> <span class="nn">skpro.workflow</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">skpro.workflow.utils</span> <span class="kn">import</span> <span class="n">InfoView</span><span class="p">,</span> <span class="n">InfoController</span>
+<span class="kn">from</span> <span class="nn">skpro.workflow.manager</span> <span class="kn">import</span> <span class="n">DataManager</span>
+<span class="kn">from</span> <span class="nn">skpro.parametric</span> <span class="kn">import</span> <span class="n">ParametricEstimator</span>
+<span class="kn">from</span> <span class="nn">skpro.parametric.estimators</span> <span class="kn">import</span> <span class="n">Constant</span>
+
+<span class="c1"># Load the dataset</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="s1">&#39;boston&#39;</span><span class="p">)</span>
+
+<span class="n">tbl</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+
+<span class="c1"># Adding controllers displayed as columns</span>
+<span class="n">tbl</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">InfoController</span><span class="p">(),</span> <span class="n">InfoView</span><span class="p">())</span>
+
+<span class="k">for</span> <span class="n">loss_func</span> <span class="ow">in</span> <span class="p">[</span><span class="n">linearized_log_loss</span><span class="p">,</span> <span class="n">log_loss</span><span class="p">]:</span>
+    <span class="n">tbl</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+        <span class="n">controller</span><span class="o">=</span><span class="n">CrossValidationController</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">loss_func</span><span class="o">=</span><span class="n">loss_func</span><span class="p">),</span>
+        <span class="n">view</span><span class="o">=</span><span class="n">CrossValidationView</span><span class="p">()</span>
+    <span class="p">)</span>
+
+<span class="c1"># Rank results</span>
+<span class="n">tbl</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">RankModifier</span><span class="p">())</span>
+<span class="c1"># Sort by score in the last column, i.e. log_loss</span>
+<span class="n">tbl</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">SortModifier</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;score&#39;</span><span class="p">]))</span>
+<span class="c1"># Use ID modifier to display model numbers</span>
+<span class="n">tbl</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">IdModifier</span><span class="p">())</span>
+
+<span class="c1"># Compose the models displayed as rows</span>
+<span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">point_estimator</span> <span class="ow">in</span> <span class="p">[</span><span class="n">RandomForestRegressor</span><span class="p">(),</span> <span class="n">LinearRegression</span><span class="p">(),</span> <span class="n">Constant</span><span class="p">(</span><span class="s1">&#39;mean(y)&#39;</span><span class="p">)]:</span>
+    <span class="k">for</span> <span class="n">std_estimator</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Constant</span><span class="p">(</span><span class="s1">&#39;std(y)&#39;</span><span class="p">),</span> <span class="n">Constant</span><span class="p">(</span><span class="mi">42</span><span class="p">)]:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ParametricEstimator</span><span class="p">(</span><span class="n">point</span><span class="o">=</span><span class="n">point_estimator</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std_estimator</span><span class="p">)</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Model</span><span class="p">(</span><span class="n">model</span><span class="p">))</span>
+
+<span class="n">tbl</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="6%" />
+<col width="37%" />
+<col width="25%" />
+<col width="26%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">#</th>
+<th class="head">#</th>
+<th class="head">Info</th>
+<th class="head">CrossValidation(da
+ta=boston,
+loss_func=lineari
+zed_log_loss,
+cv=KFold(3),
+tune=False)</th>
+<th class="head">CrossValidation(dat
+a=boston,
+loss_func=log_los
+s,
+cv=KFold(3),
+tune=False)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>1</td>
+<td>Model(norm(point=RandomFores
+tRegressor(),
+std=C(std(y))))</td>
+<td><ol class="first last arabic simple">
+<li>3.32+/-0.04</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple">
+<li>3.30+/-0.04</li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>5</td>
+<td>Model(norm(point=C(mean(y)),
+std=C(std(y))))</td>
+<td><ol class="first last arabic simple" start="2">
+<li>3.88+/-0.09</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="2">
+<li>3.88+/-0.09</li>
+</ol>
+</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>3</td>
+<td>Model(norm(point=LinearRegre
+ssion(),
+std=C(std(y))))</td>
+<td><ol class="first last arabic simple" start="3">
+<li>3.94+/-0.13</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="3">
+<li>4.25+/-0.29</li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>2</td>
+<td>Model(norm(point=RandomFores
+tRegressor(),
+std=C(42)))</td>
+<td>(4)
+4.6658+/-0.0016</td>
+<td><ol class="first last arabic simple" start="4">
+<li>4.6650+/-0.0015</li>
+</ol>
+</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>6</td>
+<td>Model(norm(point=C(mean(y)),
+std=C(42)))</td>
+<td><ol class="first last arabic simple" start="5">
+<li>4.688+/-0.004</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="5">
+<li>4.688+/-0.004</li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td>4</td>
+<td>Model(norm(point=LinearRegre
+ssion(),
+std=C(42)))</td>
+<td><ol class="first last arabic simple" start="6">
+<li>4.704+/-0.012</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="6">
+<li>4.704+/-0.012</li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api/modules.html" class="btn btn-neutral float-right" title="Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="vendors.html" class="btn btn-neutral" title="Vendors integrations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.post0.dev52+ng8d5e7e2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

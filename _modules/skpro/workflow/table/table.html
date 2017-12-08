@@ -1,0 +1,637 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>skpro.workflow.table.table &mdash; skpro 0.0.post0.dev52+ng8d5e7e2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="skpro 0.0.post0.dev52+ng8d5e7e2 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.post0.dev52+ng8d5e7e2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../parametric.html">Parametric estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../workflow.html">Workflow automation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>skpro.workflow.table.table</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for skpro.workflow.table.table</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tabulate</span> <span class="k">import</span> <span class="n">tabulate</span>
+
+<span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">View</span><span class="p">,</span> <span class="n">Controller</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">ItemView</span><span class="p">,</span> <span class="n">InfoController</span><span class="p">,</span> <span class="n">InfoView</span>
+<span class="kn">from</span> <span class="nn">..cross_validation</span> <span class="k">import</span> <span class="n">CrossValidationView</span><span class="p">,</span> <span class="n">CrossValidationController</span>
+
+
+<div class="viewcode-block" id="Modifier"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.Modifier">[docs]</a><span class="k">class</span> <span class="nc">Modifier</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Abstract modifier baseclass</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Modifier.modify"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.Modifier.modify">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">modify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Modifies a raw table</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        raw</span>
+<span class="sd">        headers</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Modified raw, headers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">raw</span><span class="p">,</span> <span class="n">headers</span></div></div>
+
+
+<div class="viewcode-block" id="IdModifier"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.IdModifier">[docs]</a><span class="k">class</span> <span class="nc">IdModifier</span><span class="p">(</span><span class="n">Modifier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; IdModifier</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start_with: int, default=1</span>
+<span class="sd">        Offset in ID count</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_with</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_with</span> <span class="o">=</span> <span class="n">start_with</span>
+
+<div class="viewcode-block" id="IdModifier.modify"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.IdModifier.modify">[docs]</a>    <span class="k">def</span> <span class="nf">modify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">raw</span><span class="p">):</span>
+            <span class="n">raw</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_with</span> <span class="o">+</span> <span class="n">i</span><span class="p">},</span> <span class="s1">&#39;view&#39;</span><span class="p">:</span> <span class="n">ItemView</span><span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">)}]</span> <span class="o">+</span> <span class="n">row</span>
+
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">headers</span>
+
+        <span class="k">return</span> <span class="n">raw</span><span class="p">,</span> <span class="n">headers</span></div></div>
+
+
+<div class="viewcode-block" id="RankModifier"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.RankModifier">[docs]</a><span class="k">class</span> <span class="nc">RankModifier</span><span class="p">(</span><span class="n">Modifier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Rank modifier</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vertical</span>
+<span class="sd">    horizontal</span>
+<span class="sd">    aggregate</span>
+<span class="sd">    visible</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertical</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">horizontal</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">aggregate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vertical</span> <span class="o">=</span> <span class="n">vertical</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">horizontal</span> <span class="o">=</span> <span class="n">horizontal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregate</span> <span class="o">=</span> <span class="n">aggregate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">visible</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rendered_</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates a rank vector from a list</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        a : array-like</span>
+<span class="sd">            The list</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Rank vector</span>
+
+<span class="sd">        Additional Information</span>
+<span class="sd">        ----------------------</span>
+<span class="sd">        See https://stackoverflow.com/questions/3071415/efficient-method-to-calculate-the-rank-vector-of-a-list-in-python</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">rank_simple</span><span class="p">(</span><span class="n">vector</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vector</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="n">vector</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">)</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">ivec</span> <span class="o">=</span> <span class="n">rank_simple</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">svec</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">[</span><span class="n">rank</span><span class="p">]</span> <span class="k">for</span> <span class="n">rank</span> <span class="ow">in</span> <span class="n">ivec</span><span class="p">]</span>
+        <span class="n">sumranks</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">dupcount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">sumranks</span> <span class="o">+=</span> <span class="n">i</span>
+            <span class="n">dupcount</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">svec</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">svec</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+                <span class="n">averank</span> <span class="o">=</span> <span class="n">sumranks</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">dupcount</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">dupcount</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">ivec</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="n">averank</span>
+                <span class="n">sumranks</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">dupcount</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="RankModifier.modify"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.RankModifier.modify">[docs]</a>    <span class="k">def</span> <span class="nf">modify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+        <span class="c1"># Calculate horizontal ranks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">:</span>
+                <span class="n">sortable</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="nb">map</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]:</span>
+                        <span class="n">sortable</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">field</span><span class="p">])</span>
+                        <span class="nb">map</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">sortable</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">rank</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rank</span><span class="p">(</span><span class="n">sortable</span><span class="p">)):</span>
+                    <span class="nb">map</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;hrank&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rank</span>
+
+        <span class="c1"># Calculate vertical ranks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">sortable</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="nb">map</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">)):</span>
+                    <span class="n">cell</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">col</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]:</span>
+                        <span class="n">sortable</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">field</span><span class="p">])</span>
+                        <span class="nb">map</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">sortable</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">rank</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rank</span><span class="p">(</span><span class="n">sortable</span><span class="p">)):</span>
+                    <span class="nb">map</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;vrank&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rank</span>
+
+        <span class="c1"># Aggregate</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregate</span><span class="p">:</span>
+            <span class="c1"># vertical</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">:</span>
+                <span class="n">avg</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s1">&#39;vrank&#39;</span> <span class="ow">in</span> <span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]:</span>
+                        <span class="n">avg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;vrank&#39;</span><span class="p">])</span>
+
+                <span class="n">avg_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">avg</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">avg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;vrank&#39;</span><span class="p">:</span> <span class="n">avg_mean</span><span class="p">}</span>
+                <span class="p">})</span>
+
+            <span class="c1"># horizontal</span>
+            <span class="n">avgs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">avg</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">)):</span>
+                    <span class="n">cell</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">col</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="s1">&#39;hrank&#39;</span> <span class="ow">in</span> <span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]:</span>
+                        <span class="n">avg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;hrank&#39;</span><span class="p">])</span>
+                <span class="n">avg_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">avg</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">avg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">avgs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;hrank&#39;</span><span class="p">:</span> <span class="n">avg_mean</span><span class="p">}</span>
+                <span class="p">})</span>
+            <span class="n">raw</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avgs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">raw</span><span class="p">,</span> <span class="n">headers</span></div></div>
+
+
+<div class="viewcode-block" id="SortModifier"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.SortModifier">[docs]</a><span class="k">class</span> <span class="nc">SortModifier</span><span class="p">(</span><span class="n">Modifier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; SortModifier</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    key</span>
+<span class="sd">    reverse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">key</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;score&#39;</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="mi">0</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reverse</span> <span class="o">=</span> <span class="n">reverse</span>
+
+<div class="viewcode-block" id="SortModifier.modify"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.SortModifier.modify">[docs]</a>    <span class="k">def</span> <span class="nf">modify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+        <span class="n">sorted_raw</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reverse</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sorted_raw</span><span class="p">,</span> <span class="n">headers</span></div></div>
+
+
+<div class="viewcode-block" id="filter_modifier"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.filter_modifier">[docs]</a><span class="k">def</span> <span class="nf">filter_modifier</span><span class="p">(</span><span class="n">modifier</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">modifier</span> <span class="o">==</span> <span class="s1">&#39;rank&#39;</span> <span class="ow">or</span> <span class="n">modifier</span> <span class="o">==</span> <span class="s1">&#39;ranks&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">RankModifier</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">modifier</span> <span class="o">==</span> <span class="s1">&#39;id&#39;</span> <span class="ow">or</span> <span class="n">modifier</span> <span class="o">==</span> <span class="s1">&#39;ids&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">IdModifier</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">modifier</span> <span class="o">==</span> <span class="s1">&#39;sort&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SortModifier</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">modifier</span></div>
+
+
+<div class="viewcode-block" id="Table"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.Table">[docs]</a><span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Table</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tasks</span>
+<span class="sd">    modifiers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">modifiers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tasks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span> <span class="o">=</span> <span class="n">tasks</span>
+        <span class="k">if</span> <span class="n">modifiers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">modifiers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;rank&#39;</span><span class="p">,</span> <span class="s1">&#39;sort&#39;</span><span class="p">]</span>
+        <span class="c1"># resolve shorthands</span>
+        <span class="n">modifiers</span> <span class="o">=</span> <span class="p">[</span><span class="n">filter_modifier</span><span class="p">(</span><span class="n">modifier</span><span class="p">)</span> <span class="k">for</span> <span class="n">modifier</span> <span class="ow">in</span> <span class="n">modifiers</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">modifiers</span> <span class="o">=</span> <span class="n">modifiers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rendered_</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Table.add"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.Table.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add controllers</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        controller</span>
+<span class="sd">        view</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">controller</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">Controller</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;controller has to be subclass instance skpro.workflow.Controller&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">view</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">View</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;view has to be subclass instance of skpro.workflow.View&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">controller</span><span class="p">,</span> <span class="n">view</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rendered_</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Table.cv"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.Table.cv">[docs]</a>    <span class="k">def</span> <span class="nf">cv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">,</span> <span class="n">tune</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">display_tuning</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_ranks</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data</span>
+<span class="sd">        loss_func</span>
+<span class="sd">        tune</span>
+<span class="sd">        cv</span>
+<span class="sd">        with_tuning</span>
+<span class="sd">        with_ranks</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">CrossValidationController</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">loss_func</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">tune</span><span class="o">=</span><span class="n">tune</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">),</span>
+                 <span class="n">CrossValidationView</span><span class="p">(</span><span class="n">with_tuning</span><span class="o">=</span><span class="n">display_tuning</span><span class="p">,</span> <span class="n">with_ranks</span><span class="o">=</span><span class="n">with_ranks</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.info"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.Table.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_group</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        with_group</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">InfoController</span><span class="p">(),</span> <span class="n">InfoView</span><span class="p">(</span><span class="n">with_group</span><span class="o">=</span><span class="n">with_group</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.modify"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.Table.modify">[docs]</a>    <span class="k">def</span> <span class="nf">modify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modifier</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modifiers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filter_modifier</span><span class="p">(</span><span class="n">modifier</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.render"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.Table.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Render table</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        models</span>
+<span class="sd">        verbose</span>
+<span class="sd">        debug</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;The table is empty. You have to include tasks using add()&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Compose table</span>
+        <span class="n">raw_tbl</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">Model</span><span class="p">):</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Evaluating model </span><span class="si">%i</span><span class="s1">/</span><span class="si">%i</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span><span class="p">)))</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">controller</span><span class="p">,</span> <span class="n">view</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+                <span class="n">controller_id</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">identifier</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">debug</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">controller</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;Info&#39;</span><span class="p">:</span>
+                    <span class="n">model</span><span class="p">[</span><span class="n">controller_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">controller</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">model</span><span class="p">[</span><span class="n">controller_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;debug&#39;</span><span class="p">:</span> <span class="s1">&#39;debug&#39;</span><span class="p">}</span>
+                    <span class="n">view</span> <span class="o">=</span> <span class="n">ItemView</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Running &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">controller</span><span class="p">))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="n">controller_id</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">controller</span><span class="p">))</span>
+
+                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">model</span><span class="p">[</span><span class="n">controller_id</span><span class="p">],</span>
+                    <span class="s1">&#39;view&#39;</span><span class="p">:</span> <span class="n">view</span>
+                <span class="p">})</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">raw_tbl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+        <span class="c1"># Apply modifiers</span>
+        <span class="k">for</span> <span class="n">modifier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modifiers</span><span class="p">:</span>
+            <span class="n">raw_tbl</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">modifier</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">raw_tbl</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+
+        <span class="c1"># Parse raw table</span>
+        <span class="n">tbl</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">raw</span> <span class="ow">in</span> <span class="n">raw_tbl</span><span class="p">:</span>
+            <span class="n">tbl</span><span class="o">.</span><span class="n">append</span><span class="p">([</span>
+                <span class="n">cell</span><span class="p">[</span><span class="s1">&#39;view&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">raw</span> <span class="k">if</span> <span class="s1">&#39;view&#39;</span> <span class="ow">in</span> <span class="n">cell</span>
+            <span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rendered_</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;raw&#39;</span><span class="p">:</span> <span class="n">raw_tbl</span><span class="p">,</span>
+            <span class="s1">&#39;parsed&#39;</span><span class="p">:</span> <span class="n">tbl</span><span class="p">,</span>
+            <span class="s1">&#39;headers&#39;</span><span class="p">:</span> <span class="n">headers</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rendered_</span></div>
+
+<div class="viewcode-block" id="Table.print"><a class="viewcode-back" href="../../../../api/skpro.workflow.table.html#skpro.workflow.table.table.Table.print">[docs]</a>    <span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;pipe&#39;</span><span class="p">,</span> <span class="n">with_headers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Print table</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        models</span>
+<span class="sd">        fmt: string or list</span>
+<span class="sd">            None, &#39;pipe&#39;, &#39;latex&#39;</span>
+<span class="sd">        with_headers</span>
+<span class="sd">        raw</span>
+<span class="sd">        return_only</span>
+<span class="sd">        verbose</span>
+<span class="sd">        debug</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">with_headers</span><span class="p">:</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rendered_</span><span class="p">[</span><span class="s1">&#39;headers&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">raw</span><span class="p">:</span>
+            <span class="n">rendered</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rendered_</span><span class="p">[</span><span class="s1">&#39;raw&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rendered</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rendered_</span><span class="p">[</span><span class="s1">&#39;parsed&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">fmt</span> <span class="o">=</span> <span class="p">[</span><span class="n">fmt</span><span class="p">]</span>
+
+        <span class="n">tbl</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fmt</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="s1">&#39;raw&#39;</span><span class="p">:</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="s1">&#39;pipe&#39;</span>
+                <span class="n">rendered</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rendered_</span><span class="p">[</span><span class="s1">&#39;raw&#39;</span><span class="p">]</span>
+
+            <span class="n">tbl</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">tabulate</span><span class="p">(</span>
+                <span class="n">rendered</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+                <span class="n">tablefmt</span><span class="o">=</span><span class="n">f</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_only</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tbl</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'0.0.post0.dev52+ng8d5e7e2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

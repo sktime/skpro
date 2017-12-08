@@ -1,0 +1,22 @@
+skpro\.baselines package
+========================
+
+Submodules
+----------
+
+skpro\.baselines\.density module
+--------------------------------
+
+.. automodule:: skpro.baselines.density
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: skpro.baselines
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,333 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>skpro.parametric.residuals &mdash; skpro 0.0.post0.dev52+ng8d5e7e2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="skpro 0.0.post0.dev52+ng8d5e7e2 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.post0.dev52+ng8d5e7e2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../parametric.html">Parametric estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../workflow.html">Workflow automation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>skpro.parametric.residuals</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for skpro.parametric.residuals</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span>
+
+
+<div class="viewcode-block" id="identity"><a class="viewcode-back" href="../../../api/skpro.parametric.html#skpro.parametric.residuals.identity">[docs]</a><span class="k">def</span> <span class="nf">identity</span><span class="p">(</span><span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">y_pred</span></div>
+
+
+<div class="viewcode-block" id="squared_error_ft"><a class="viewcode-back" href="../../../api/skpro.parametric.html#skpro.parametric.residuals.squared_error_ft">[docs]</a><span class="k">def</span> <span class="nf">squared_error_ft</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="squared_error_pt"><a class="viewcode-back" href="../../../api/skpro.parametric.html#skpro.parametric.residuals.squared_error_pt">[docs]</a><span class="k">def</span> <span class="nf">squared_error_pt</span><span class="p">(</span><span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_pred</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="abs_error_ft"><a class="viewcode-back" href="../../../api/skpro.parametric.html#skpro.parametric.residuals.abs_error_ft">[docs]</a><span class="k">def</span> <span class="nf">abs_error_ft</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span></div>
+
+
+<span class="n">abs_error_pt</span> <span class="o">=</span> <span class="n">identity</span>
+
+
+<div class="viewcode-block" id="log_error_ft"><a class="viewcode-back" href="../../../api/skpro.parametric.html#skpro.parametric.residuals.log_error_ft">[docs]</a><span class="k">def</span> <span class="nf">log_error_ft</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span>
+    <span class="n">residuals</span><span class="p">[</span><span class="n">residuals</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="log_error_pt"><a class="viewcode-back" href="../../../api/skpro.parametric.html#skpro.parametric.residuals.log_error_pt">[docs]</a><span class="k">def</span> <span class="nf">log_error_pt</span><span class="p">(</span><span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResidualEstimator"><a class="viewcode-back" href="../../../api/skpro.parametric.html#skpro.parametric.residuals.ResidualEstimator">[docs]</a><span class="k">class</span> <span class="nc">ResidualEstimator</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Residual estimator</span>
+
+<span class="sd">    Predicts residuals of an estimator using a scikit-learn estimator.</span>
+
+<span class="sd">    TODO: expand documentation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">residual_estimator</span><span class="p">,</span> <span class="n">base_estimator</span><span class="o">=</span><span class="s1">&#39;point&#39;</span><span class="p">,</span> <span class="n">fit_transform</span><span class="o">=</span><span class="s1">&#39;squared_error&#39;</span><span class="p">,</span> <span class="n">predict_transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_zero_variance</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual_estimator</span> <span class="o">=</span> <span class="n">residual_estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_estimator</span> <span class="o">=</span> <span class="n">base_estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_transform</span> <span class="o">=</span> <span class="n">fit_transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_transform_</span> <span class="o">=</span> <span class="n">fit_transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predict_transform</span> <span class="o">=</span> <span class="n">predict_transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predict_transform_</span> <span class="o">=</span> <span class="n">predict_transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_zero_variance</span> <span class="o">=</span> <span class="n">filter_zero_variance</span>
+
+    <span class="k">def</span> <span class="nf">_resolve_transformer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="n">suffix</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tf</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">tf</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">tf</span> <span class="o">+</span> <span class="s1">&#39; is not a valid transformer&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_resolve_transformers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_transform_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_transformer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">,</span> <span class="s1">&#39;_ft&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predict_transform_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_transformer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predict_transform</span><span class="p">,</span> <span class="s1">&#39;_pt&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_transform_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">predict_transform_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_transformer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">,</span> <span class="s1">&#39;_pt&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResidualEstimator.fit"><a class="viewcode-back" href="../../../api/skpro.parametric.html#skpro.parametric.residuals.ResidualEstimator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_transformers</span><span class="p">()</span>
+
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">estimators</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+
+        <span class="c1"># protect against 0 variance</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_zero_variance</span><span class="p">:</span>
+            <span class="n">clean</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_pred</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">clean</span><span class="p">):</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">clean</span><span class="p">]</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">clean</span><span class="p">]</span>
+
+        <span class="c1"># retrieve fitting vars</span>
+        <span class="n">y_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_transform_</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual_estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y_</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="ResidualEstimator.predict"><a class="viewcode-back" href="../../../api/skpro.parametric.html#skpro.parametric.residuals.ResidualEstimator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="c1"># apply transformation</span>
+        <span class="n">y_pred_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_transform_</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">y_pred_</span></div>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;RE(&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_estimator</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span> \
+               <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residual_estimator</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;ResidualEstimator(&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_estimator</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span> \
+               <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">residual_estimator</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span></div>
+
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.0.post0.dev52+ng8d5e7e2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

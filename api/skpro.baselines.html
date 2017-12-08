@@ -1,0 +1,316 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>skpro.baselines package &mdash; skpro 0.0.post0.dev52+ng8d5e7e2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="skpro 0.0.post0.dev52+ng8d5e7e2 documentation" href="../index.html"/>
+        <link rel="up" title="skpro package" href="skpro.html"/>
+        <link rel="next" title="skpro.parametric package" href="skpro.parametric.html"/>
+        <link rel="prev" title="skpro package" href="skpro.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.post0.dev52+ng8d5e7e2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parametric.html">Parametric estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow.html">Workflow automation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="skpro.html">skpro package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="skpro.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">skpro.baselines package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="skpro.parametric.html">skpro.parametric package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="skpro.vendors.html">skpro.vendors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="skpro.workflow.html">skpro.workflow package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.base">skpro.base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.density">skpro.density module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.ensemble">skpro.ensemble module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.metrics">skpro.metrics module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.model_selection">skpro.model_selection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.utils">skpro.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">Modules</a> &raquo;</li>
+        
+          <li><a href="skpro.html">skpro package</a> &raquo;</li>
+        
+      <li>skpro.baselines package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/skpro.baselines.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="skpro-baselines-package">
+<h1>skpro.baselines package<a class="headerlink" href="#skpro-baselines-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-skpro.baselines.density">
+<span id="skpro-baselines-density-module"></span><h2>skpro.baselines.density module<a class="headerlink" href="#module-skpro.baselines.density" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="skpro.baselines.density.DensityBaseline">
+<em class="property">class </em><code class="descclassname">skpro.baselines.density.</code><code class="descname">DensityBaseline</code><span class="sig-paren">(</span><em>adapter=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/baselines/density.html#DensityBaseline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.baselines.density.DensityBaseline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="skpro.html#skpro.base.ProbabilisticEstimator" title="skpro.base.ProbabilisticEstimator"><code class="xref py py-class docutils literal"><span class="pre">skpro.base.ProbabilisticEstimator</span></code></a></p>
+<dl class="class">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution">
+<em class="property">class </em><code class="descname">Distribution</code><span class="sig-paren">(</span><em>estimator</em>, <em>X</em>, <em>selection=slice(None</em>, <em>None</em>, <em>None)</em>, <em>mode='elementwise'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/baselines/density.html#DensityBaseline.Distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">skpro.base.Distribution</span></code></p>
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution.cdf">
+<code class="descname">cdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.cdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution.pdf">
+<code class="descname">pdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.pdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution.point">
+<code class="descname">point</code><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.point" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution.std">
+<code class="descname">std</code><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.std" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/baselines/density.html#DensityBaseline.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-skpro.baselines">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-skpro.baselines" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="skpro.parametric.html" class="btn btn-neutral float-right" title="skpro.parametric package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="skpro.html" class="btn btn-neutral" title="skpro package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.0.post0.dev52+ng8d5e7e2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

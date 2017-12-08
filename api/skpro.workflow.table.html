@@ -1,0 +1,502 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>skpro.workflow.table package &mdash; skpro 0.0.post0.dev52+ng8d5e7e2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="skpro 0.0.post0.dev52+ng8d5e7e2 documentation" href="../index.html"/>
+        <link rel="up" title="skpro.workflow package" href="skpro.workflow.html"/>
+        <link rel="next" title="Changelog" href="../changes.html"/>
+        <link rel="prev" title="skpro.workflow.manager package" href="skpro.workflow.manager.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.post0.dev52+ng8d5e7e2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parametric.html">Parametric estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow.html">Workflow automation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="skpro.html">skpro package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="skpro.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="skpro.baselines.html">skpro.baselines package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="skpro.parametric.html">skpro.parametric package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="skpro.vendors.html">skpro.vendors package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="skpro.workflow.html">skpro.workflow package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.base">skpro.base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.density">skpro.density module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.ensemble">skpro.ensemble module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.metrics">skpro.metrics module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.model_selection">skpro.model_selection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.utils">skpro.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">Modules</a> &raquo;</li>
+        
+          <li><a href="skpro.html">skpro package</a> &raquo;</li>
+        
+          <li><a href="skpro.workflow.html">skpro.workflow package</a> &raquo;</li>
+        
+      <li>skpro.workflow.table package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/skpro.workflow.table.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="skpro-workflow-table-package">
+<h1>skpro.workflow.table package<a class="headerlink" href="#skpro-workflow-table-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-skpro.workflow.table.table">
+<span id="skpro-workflow-table-table-module"></span><h2>skpro.workflow.table.table module<a class="headerlink" href="#module-skpro.workflow.table.table" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="skpro.workflow.table.table.IdModifier">
+<em class="property">class </em><code class="descclassname">skpro.workflow.table.table.</code><code class="descname">IdModifier</code><span class="sig-paren">(</span><em>start_with=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#IdModifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.IdModifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#skpro.workflow.table.table.Modifier" title="skpro.workflow.table.table.Modifier"><code class="xref py py-class docutils literal"><span class="pre">skpro.workflow.table.table.Modifier</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>start_with</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><em>default=1</em>) – Offset in ID count</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="skpro.workflow.table.table.IdModifier.modify">
+<code class="descname">modify</code><span class="sig-paren">(</span><em>raw</em>, <em>headers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#IdModifier.modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.IdModifier.modify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="skpro.workflow.table.table.Modifier">
+<em class="property">class </em><code class="descclassname">skpro.workflow.table.table.</code><code class="descname">Modifier</code><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#Modifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.Modifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Abstract modifier baseclass</p>
+<dl class="method">
+<dt id="skpro.workflow.table.table.Modifier.modify">
+<code class="descname">modify</code><span class="sig-paren">(</span><em>raw</em>, <em>headers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#Modifier.modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.Modifier.modify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modifies a raw table</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>raw</strong> – </li>
+<li><strong>headers</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Modified raw, headers</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="skpro.workflow.table.table.RankModifier">
+<em class="property">class </em><code class="descclassname">skpro.workflow.table.table.</code><code class="descname">RankModifier</code><span class="sig-paren">(</span><em>vertical='score'</em>, <em>horizontal='score'</em>, <em>aggregate=False</em>, <em>visible=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#RankModifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.RankModifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#skpro.workflow.table.table.Modifier" title="skpro.workflow.table.table.Modifier"><code class="xref py py-class docutils literal"><span class="pre">skpro.workflow.table.table.Modifier</span></code></a></p>
+<p>Rank modifier</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vertical</strong> – </li>
+<li><strong>horizontal</strong> – </li>
+<li><strong>aggregate</strong> – </li>
+<li><strong>visible</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="skpro.workflow.table.table.RankModifier.modify">
+<code class="descname">modify</code><span class="sig-paren">(</span><em>raw</em>, <em>headers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#RankModifier.modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.RankModifier.modify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="skpro.workflow.table.table.SortModifier">
+<em class="property">class </em><code class="descclassname">skpro.workflow.table.table.</code><code class="descname">SortModifier</code><span class="sig-paren">(</span><em>key=None</em>, <em>reverse=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#SortModifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.SortModifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#skpro.workflow.table.table.Modifier" title="skpro.workflow.table.table.Modifier"><code class="xref py py-class docutils literal"><span class="pre">skpro.workflow.table.table.Modifier</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key</strong> – </li>
+<li><strong>reverse</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="skpro.workflow.table.table.SortModifier.modify">
+<code class="descname">modify</code><span class="sig-paren">(</span><em>raw</em>, <em>headers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#SortModifier.modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.SortModifier.modify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="skpro.workflow.table.table.Table">
+<em class="property">class </em><code class="descclassname">skpro.workflow.table.table.</code><code class="descname">Table</code><span class="sig-paren">(</span><em>tasks=None</em>, <em>modifiers=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.Table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>tasks</strong> – </li>
+<li><strong>modifiers</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="skpro.workflow.table.table.Table.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>controller</em>, <em>view</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#Table.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.Table.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add controllers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>controller</strong> – </li>
+<li><strong>view</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.workflow.table.table.Table.cv">
+<code class="descname">cv</code><span class="sig-paren">(</span><em>data</em>, <em>loss_func</em>, <em>tune=False</em>, <em>cv=None</em>, <em>optimizer=None</em>, <em>display_tuning=False</em>, <em>with_ranks=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#Table.cv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.Table.cv" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> – </li>
+<li><strong>loss_func</strong> – </li>
+<li><strong>tune</strong> – </li>
+<li><strong>cv</strong> – </li>
+<li><strong>with_tuning</strong> – </li>
+<li><strong>with_ranks</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.workflow.table.table.Table.info">
+<code class="descname">info</code><span class="sig-paren">(</span><em>with_group=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#Table.info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.Table.info" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>with_group</strong> – </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.workflow.table.table.Table.modify">
+<code class="descname">modify</code><span class="sig-paren">(</span><em>modifier</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#Table.modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.Table.modify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.workflow.table.table.Table.print">
+<code class="descname">print</code><span class="sig-paren">(</span><em>models</em>, <em>fmt='pipe'</em>, <em>with_headers=True</em>, <em>raw=False</em>, <em>return_only=False</em>, <em>verbose=1</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#Table.print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.Table.print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print table</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>models</strong> – </li>
+<li><strong>fmt</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/string.html#module-string" title="(in Python v3.6)"><em>string</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – None, ‘pipe’, ‘latex’</li>
+<li><strong>with_headers</strong> – </li>
+<li><strong>raw</strong> – </li>
+<li><strong>return_only</strong> – </li>
+<li><strong>verbose</strong> – </li>
+<li><strong>debug</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.workflow.table.table.Table.render">
+<code class="descname">render</code><span class="sig-paren">(</span><em>models</em>, <em>verbose=0</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#Table.render"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.Table.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render table</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>models</strong> – </li>
+<li><strong>verbose</strong> – </li>
+<li><strong>debug</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="skpro.workflow.table.table.filter_modifier">
+<code class="descclassname">skpro.workflow.table.table.</code><code class="descname">filter_modifier</code><span class="sig-paren">(</span><em>modifier</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/table/table.html#filter_modifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.table.table.filter_modifier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-skpro.workflow.table">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-skpro.workflow.table" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../changes.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="skpro.workflow.manager.html" class="btn btn-neutral" title="skpro.workflow.manager package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.0.post0.dev52+ng8d5e7e2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

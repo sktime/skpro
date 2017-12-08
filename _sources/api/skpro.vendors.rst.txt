@@ -1,0 +1,22 @@
+skpro\.vendors package
+======================
+
+Submodules
+----------
+
+skpro\.vendors\.pymc module
+---------------------------
+
+.. automodule:: skpro.vendors.pymc
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: skpro.vendors
+    :members:
+    :undoc-members:
+    :show-inheritance:

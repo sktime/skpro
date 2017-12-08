@@ -1,0 +1,356 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>skpro.model_selection &mdash; skpro 0.0.post0.dev52+ng8d5e7e2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="skpro 0.0.post0.dev52+ng8d5e7e2 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.post0.dev52+ng8d5e7e2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../parametric.html">Parametric estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../workflow.html">Workflow automation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>skpro.model_selection</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for skpro.model_selection</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">cross_validate</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics.scorer</span> <span class="k">import</span> <span class="n">check_scoring</span>
+
+
+<div class="viewcode-block" id="RetrievesScores"><a class="viewcode-back" href="../../api/skpro.html#skpro.model_selection.RetrievesScores">[docs]</a><span class="k">class</span> <span class="nc">RetrievesScores</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scorer</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scorer</span> <span class="o">=</span> <span class="n">scorer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">score</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std</span> <span class="o">=</span> <span class="n">std</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">score</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scorer</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">std</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">score</span><span class="p">,</span> <span class="n">std</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">std</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">std</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">score</span></div>
+
+
+<div class="viewcode-block" id="cross_val_score"><a class="viewcode-back" href="../../api/skpro.html#skpro.model_selection.cross_val_score">[docs]</a><span class="k">def</span> <span class="nf">cross_val_score</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fit_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pre_dispatch</span><span class="o">=</span><span class="s1">&#39;2*n_jobs&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaluate a score using cross-validation</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator : estimator object implementing &#39;fit&#39;</span>
+<span class="sd">        The object to use to fit the data.</span>
+<span class="sd">    X : array-like</span>
+<span class="sd">        The data to fit. Can be for example a list, or an array.</span>
+<span class="sd">    y : array-like, optional, default: None</span>
+<span class="sd">        The target variable to try to predict in the case of</span>
+<span class="sd">        supervised learning.</span>
+<span class="sd">    groups : array-like, with shape (n_samples,), optional</span>
+<span class="sd">        Group labels for the samples used while splitting the dataset into</span>
+<span class="sd">        train/test set.</span>
+<span class="sd">    scoring : string, callable or None, optional, default: None</span>
+<span class="sd">        A string (see model evaluation documentation) or</span>
+<span class="sd">        a scorer callable object / function with signature</span>
+<span class="sd">        ``scorer(estimator, X, y)``.</span>
+<span class="sd">    cv : int, cross-validation generator or an iterable, optional</span>
+<span class="sd">        Determines the cross-validation splitting strategy.</span>
+<span class="sd">        Possible inputs for cv are:</span>
+<span class="sd">        - None, to use the default 3-fold cross validation,</span>
+<span class="sd">        - integer, to specify the number of folds in a `(Stratified)KFold`,</span>
+<span class="sd">        - An object to be used as a cross-validation generator.</span>
+<span class="sd">        - An iterable yielding train, test splits.</span>
+<span class="sd">        For integer/None inputs, if the estimator is a classifier and ``y`` is</span>
+<span class="sd">        either binary or multiclass, :class:`StratifiedKFold` is used. In all</span>
+<span class="sd">        other cases, :class:`KFold` is used.</span>
+<span class="sd">        Refer :ref:`User Guide &lt;cross_validation&gt;` for the various</span>
+<span class="sd">        cross-validation strategies that can be used here.</span>
+<span class="sd">    n_jobs : integer, optional</span>
+<span class="sd">        The number of CPUs to use to do the computation. -1 means</span>
+<span class="sd">        &#39;all CPUs&#39;.</span>
+<span class="sd">    verbose : integer, optional</span>
+<span class="sd">        The verbosity level.</span>
+<span class="sd">    fit_params : dict, optional</span>
+<span class="sd">        Parameters to pass to the fit method of the estimator.</span>
+<span class="sd">    pre_dispatch : int, or string, optional</span>
+<span class="sd">        Controls the number of jobs that get dispatched during parallel</span>
+<span class="sd">        execution. Reducing this number can be useful to avoid an</span>
+<span class="sd">        explosion of memory consumption when more jobs get dispatched</span>
+<span class="sd">        than CPUs can process. This parameter can be:</span>
+
+<span class="sd">            - None, in which case all the jobs are immediately</span>
+<span class="sd">              created and spawned. Use this for lightweight and</span>
+<span class="sd">              fast-running jobs, to avoid delays due to on-demand</span>
+<span class="sd">              spawning of the jobs</span>
+
+<span class="sd">            - An int, giving the exact number of total jobs that are</span>
+<span class="sd">              spawned</span>
+
+<span class="sd">            - A string, giving an expression as a function of n_jobs,</span>
+<span class="sd">              as in &#39;2*n_jobs&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    scores : numpy.array, shape=(len(list(cv)), 2)</span>
+<span class="sd">        Array of scores of the estimator for each run of the cross validation</span>
+<span class="sd">        with their corresponding uncertainty.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    ---------</span>
+<span class="sd">    :func:`skpro.metrics.make_scorer`:</span>
+<span class="sd">        Make a scorer from a performance metric or loss function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># To ensure multimetric format is not supported</span>
+    <span class="n">scorer</span> <span class="o">=</span> <span class="n">check_scoring</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n_jobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># If we are not multiprocessing it&#39;s possible to</span>
+        <span class="c1"># use a wrapper function to retrieve the std values</span>
+        <span class="n">test_scores</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">def</span> <span class="nf">scoring_task</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+            <span class="n">score</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">scorer</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">test_scores</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">score</span><span class="p">,</span> <span class="n">std</span><span class="p">])</span>
+
+            <span class="k">return</span> <span class="n">score</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># We allow multiprocessing by passing in two scoring functions.</span>
+        <span class="c1"># That is far from ideal since we call the scorer twice,</span>
+        <span class="c1"># so any improvement is welcome</span>
+        <span class="n">score_scorer</span> <span class="o">=</span> <span class="n">RetrievesScores</span><span class="p">(</span><span class="n">scorer</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">std_scorer</span> <span class="o">=</span> <span class="n">RetrievesScores</span><span class="p">(</span><span class="n">scorer</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">scoring_task</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="n">score_scorer</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">:</span> <span class="n">std_scorer</span><span class="p">}</span>
+
+    <span class="n">cv_results</span> <span class="o">=</span> <span class="n">cross_validate</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span>
+                                <span class="n">scoring</span><span class="o">=</span><span class="n">scoring_task</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
+                                <span class="n">return_train_score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                <span class="n">fit_params</span><span class="o">=</span><span class="n">fit_params</span><span class="p">,</span>
+                                <span class="n">pre_dispatch</span><span class="o">=</span><span class="n">pre_dispatch</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n_jobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">test_scores</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">cv_results</span><span class="p">[</span><span class="s1">&#39;test_score&#39;</span><span class="p">],</span> <span class="n">cv_results</span><span class="p">[</span><span class="s1">&#39;test_std&#39;</span><span class="p">]))</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.0.post0.dev52+ng8d5e7e2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

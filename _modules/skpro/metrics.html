@@ -1,0 +1,452 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>skpro.metrics &mdash; skpro 0.0.post0.dev52+ng8d5e7e2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="skpro 0.0.post0.dev52+ng8d5e7e2 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.post0.dev52+ng8d5e7e2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../parametric.html">Parametric estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../workflow.html">Workflow automation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>skpro.metrics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for skpro.metrics</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="sample_loss"><a class="viewcode-back" href="../../api/skpro.html#skpro.metrics.sample_loss">[docs]</a><span class="k">def</span> <span class="nf">sample_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Averages the loss of a sample</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    loss: np.array</span>
+<span class="sd">        Loss sample</span>
+<span class="sd">    return_std: boolean, default=False</span>
+<span class="sd">        If true, the standard deviation of the</span>
+<span class="sd">        loss sample will be returned</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Sample loss (with standard deviation if ``return_std`` is True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">loss</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">return_std</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">loss</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_Scorer</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score_func</span><span class="p">,</span> <span class="n">sign</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_score_func</span> <span class="o">=</span> <span class="n">score_func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sign</span> <span class="o">=</span> <span class="n">sign</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_score_func</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="n">sample</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="n">return_std</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sample</span> <span class="ow">and</span> <span class="n">return_std</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sign</span> <span class="o">*</span> <span class="n">score</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">score</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sign</span> <span class="o">*</span> <span class="n">score</span>
+
+
+<div class="viewcode-block" id="make_scorer"><a class="viewcode-back" href="../../api/skpro.html#skpro.metrics.make_scorer">[docs]</a><span class="k">def</span> <span class="nf">make_scorer</span><span class="p">(</span><span class="n">score_func</span><span class="p">,</span> <span class="n">greater_is_better</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make a scorer from a performance metric or loss function.</span>
+
+<span class="sd">    This factory function wraps scoring functions for use in GridSearchCV</span>
+<span class="sd">    and cross_val_score. It takes a score function, such as ``log_loss``,</span>
+<span class="sd">    and returns a callable that scores an estimator&#39;s output.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    score_func : callable,</span>
+<span class="sd">        Score function (or loss function) with signature</span>
+<span class="sd">        ``score_func(y, y_pred, **kwargs)``.</span>
+
+<span class="sd">    greater_is_better : boolean, default=True</span>
+<span class="sd">        Whether score_func is a score function (default), meaning high is good,</span>
+<span class="sd">        or a loss function, meaning low is good. In the latter case, the</span>
+<span class="sd">        scorer object will sign-flip the outcome of the score_func.</span>
+
+<span class="sd">    **kwargs : additional arguments</span>
+<span class="sd">        Additional parameters to be passed to score_func.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    scorer : callable</span>
+<span class="sd">        Callable object that returns a scalar score; greater is better.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">greater_is_better</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="n">_Scorer</span><span class="p">(</span><span class="n">score_func</span><span class="p">,</span> <span class="n">sign</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gneiting_loss"><a class="viewcode-back" href="../../api/skpro.html#skpro.metrics.gneiting_loss">[docs]</a><span class="k">def</span> <span class="nf">gneiting_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">dist_pred</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Gneiting loss</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y_true: np.array</span>
+<span class="sd">        The true labels</span>
+<span class="sd">    dist_pred: ProbabilisticEstimator.Distribution</span>
+<span class="sd">        The predicted distribution</span>
+<span class="sd">    sample: boolean, default=True</span>
+<span class="sd">        If true, loss will be averaged across the sample</span>
+<span class="sd">    return_std: boolean, default=False</span>
+<span class="sd">        If true, the standard deviation of the</span>
+<span class="sd">        loss sample will be returned</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Loss (with standard deviation if ``return_std`` is True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lp2</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dist_pred</span><span class="p">,</span> <span class="s1">&#39;lp2&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">lp2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;The estimator does not provide an lp2 integration&#39;</span><span class="p">)</span>
+
+    <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dist_pred</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span> <span class="o">+</span> <span class="n">lp2</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">sample</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sample_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">return_std</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loss</span></div>
+
+
+<div class="viewcode-block" id="linearized_log_loss"><a class="viewcode-back" href="../../api/skpro.html#skpro.metrics.linearized_log_loss">[docs]</a><span class="k">def</span> <span class="nf">linearized_log_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">dist_pred</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Linearized log loss</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y_true: np.array</span>
+<span class="sd">        The true labels</span>
+<span class="sd">    dist_pred: ProbabilisticEstimator.Distribution</span>
+<span class="sd">        The predicted distribution</span>
+<span class="sd">    range: float</span>
+<span class="sd">        Threshold value of linearization</span>
+<span class="sd">    sample: boolean, default=True</span>
+<span class="sd">        If true, loss will be averaged across the sample</span>
+<span class="sd">    return_std: boolean, default=False</span>
+<span class="sd">        If true, the standard deviation of the</span>
+<span class="sd">        loss sample will be returned</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Loss (with standard deviation if ``return_std`` is True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pdf</span> <span class="o">=</span> <span class="n">dist_pred</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="nb">range</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="nb">range</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">range</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">pdf</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sample</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sample_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">return_std</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loss</span></div>
+
+
+<div class="viewcode-block" id="log_loss"><a class="viewcode-back" href="../../api/skpro.html#skpro.metrics.log_loss">[docs]</a><span class="k">def</span> <span class="nf">log_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">dist_pred</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Log loss</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y_true: np.array</span>
+<span class="sd">        The true labels</span>
+<span class="sd">    dist_pred: ProbabilisticEstimator.Distribution</span>
+<span class="sd">        The predicted distribution</span>
+<span class="sd">    sample: boolean, default=True</span>
+<span class="sd">        If true, loss will be averaged across the sample</span>
+<span class="sd">    return_std: boolean, default=False</span>
+<span class="sd">        If true, the standard deviation of the</span>
+<span class="sd">        loss sample will be returned</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Loss (with standard deviation if ``return_std`` is True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pdf</span> <span class="o">=</span> <span class="n">dist_pred</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pdf</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sample</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sample_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">return_std</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loss</span></div>
+
+
+<div class="viewcode-block" id="rank_probability_loss"><a class="viewcode-back" href="../../api/skpro.html#skpro.metrics.rank_probability_loss">[docs]</a><span class="k">def</span> <span class="nf">rank_probability_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">dist_pred</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Rank probability loss</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        L(F,y) = \int_{-\infty}^{y} F(x)^2 dx + \int_{y}^{+\infty} (1-F(x))^2 dx</span>
+
+<span class="sd">    where :math:`F(x)` denotes the CDF of the predicted distribution</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y_true: np.array</span>
+<span class="sd">        The true labels</span>
+<span class="sd">    dist_pred: ProbabilisticEstimator.Distribution</span>
+<span class="sd">        The predicted distribution</span>
+<span class="sd">    sample: boolean, default=True</span>
+<span class="sd">        If true, loss will be averaged across the sample</span>
+<span class="sd">    return_std: boolean, default=False</span>
+<span class="sd">        If true, the standard deviation of the</span>
+<span class="sd">        loss sample will be returned</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.array</span>
+<span class="sd">        Loss (with standard deviation if ``return_std`` is True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">term</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">one_minus</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">integrand</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">one_minus</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dist_pred</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">dist_pred</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">integrand</span>
+
+    <span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="k">import</span> <span class="n">quad</span> <span class="k">as</span> <span class="n">integrate</span>
+
+    <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="c1"># -int_ -\infty ^ y F(x)² dx</span>
+        <span class="o">-</span> <span class="n">integrate</span><span class="p">(</span><span class="n">term</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">y_true</span><span class="p">[</span><span class="n">index</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># – int_y ^\infty(1 - F(x))² dx</span>
+        <span class="o">-</span> <span class="n">integrate</span><span class="p">(</span><span class="n">term</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">one_minus</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">y_true</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dist_pred</span><span class="p">))</span>
+    <span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">sample</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">sample_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">return_std</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loss</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.0.post0.dev52+ng8d5e7e2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,525 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>skpro.parametric package &mdash; skpro 0.0.post0.dev52+ng8d5e7e2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="skpro 0.0.post0.dev52+ng8d5e7e2 documentation" href="../index.html"/>
+        <link rel="up" title="skpro package" href="skpro.html"/>
+        <link rel="next" title="skpro.vendors package" href="skpro.vendors.html"/>
+        <link rel="prev" title="skpro.baselines package" href="skpro.baselines.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.post0.dev52+ng8d5e7e2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parametric.html">Parametric estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../workflow.html">Workflow automation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="skpro.html">skpro package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="skpro.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="skpro.baselines.html">skpro.baselines package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">skpro.parametric package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="skpro.vendors.html">skpro.vendors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="skpro.workflow.html">skpro.workflow package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.base">skpro.base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.density">skpro.density module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.ensemble">skpro.ensemble module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.metrics">skpro.metrics module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.model_selection">skpro.model_selection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro.utils">skpro.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="skpro.html#module-skpro">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">Modules</a> &raquo;</li>
+        
+          <li><a href="skpro.html">skpro package</a> &raquo;</li>
+        
+      <li>skpro.parametric package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/skpro.parametric.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="skpro-parametric-package">
+<h1>skpro.parametric package<a class="headerlink" href="#skpro-parametric-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-skpro.parametric.estimators">
+<span id="skpro-parametric-estimators-module"></span><h2>skpro.parametric.estimators module<a class="headerlink" href="#module-skpro.parametric.estimators" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="skpro.parametric.estimators.Constant">
+<em class="property">class </em><code class="descclassname">skpro.parametric.estimators.</code><code class="descname">Constant</code><span class="sig-paren">(</span><em>constant=None</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/estimators.html#Constant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.estimators.Constant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v0.19.1)"><code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></a></p>
+<p>Constant estimator</p>
+<p>Predicts predefinied constant</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>constant</strong> (<em>float | callable</em><em>(</em><a class="reference internal" href="skpro.html#skpro.base.ProbabilisticEstimator.Distribution.X" title="skpro.base.ProbabilisticEstimator.Distribution.X"><em>X</em></a><em>, </em><a class="reference internal" href="skpro.workflow.manager.html#skpro.workflow.manager.data.DataManager.y" title="skpro.workflow.manager.data.DataManager.y"><em>y</em></a><em>) </em><em>| string: 'mean</em><em>(</em><a class="reference internal" href="skpro.workflow.manager.html#skpro.workflow.manager.data.DataManager.y" title="skpro.workflow.manager.data.DataManager.y"><em>y</em></a><em>)</em><em>'</em><em>, </em><em>'std</em><em>(</em><a class="reference internal" href="skpro.workflow.manager.html#skpro.workflow.manager.data.DataManager.y" title="skpro.workflow.manager.data.DataManager.y"><em>y</em></a><em>)</em><em>'</em><em> (</em><em>default: None</em><em>)</em>) – Specifies the constant. A callable receives the training data during
+fit and should return a constant value. The string options provide
+a shortcut for mean/std extraction from the features.</li>
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/string.html#module-string" title="(in Python v3.6)"><em>string</em></a><em> (</em><em>optional</em><em>)</em>) – Optional description of the constant for the estimator string
+representation. Defaults to str(constant).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="skpro.parametric.estimators.Constant.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/estimators.html#Constant.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.estimators.Constant.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.estimators.Constant.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/estimators.html#Constant.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.estimators.Constant.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="skpro.parametric.estimators.Minimum">
+<em class="property">class </em><code class="descclassname">skpro.parametric.estimators.</code><code class="descname">Minimum</code><span class="sig-paren">(</span><em>base_estimator</em>, <em>minimum=0.3</em>, <em>relative=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/estimators.html#Minimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.estimators.Minimum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v0.19.1)"><code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></a></p>
+<p>Minimum estimator</p>
+<p>Wrapping estimator that replaces predictions of the wrapped
+estimator that fall below a specified minimum threshold
+with the threshold itself.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>estimator</strong> (<em>subclass of sklearn.base.BaseEstimator</em>) – Estimator which predicts shall be bounded by minimum threshold</li>
+<li><strong>minimum</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Minimum boundary for the estimator’s predictions. If relative=True
+the minimum represent a percentage value</li>
+<li><strong>relative</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If true, minimum will be regarded as percentage value
+and the cut-off threshold will be determined dynamically
+during fitting as <code class="docutils literal"><span class="pre">threshold</span> <span class="pre">=</span> <span class="pre">minimum</span> <span class="pre">*</span> <span class="pre">std(y)</span></code></li>
+<li><strong>Properties</strong> – </li>
+<li><strong>----------</strong> – </li>
+<li><strong>estimator</strong> – Wrapped estimator</li>
+<li><strong>minimum</strong> – Minimum threshold</li>
+<li><strong>relative</strong> – If minimum is relative with regard to label variance</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="skpro.parametric.estimators.Minimum.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/estimators.html#Minimum.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.estimators.Minimum.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.estimators.Minimum.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/estimators.html#Minimum.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.estimators.Minimum.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-skpro.parametric.parametric">
+<span id="skpro-parametric-parametric-module"></span><h2>skpro.parametric.parametric module<a class="headerlink" href="#module-skpro.parametric.parametric" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="skpro.parametric.parametric.EstimatorManager">
+<em class="property">class </em><code class="descclassname">skpro.parametric.parametric.</code><code class="descname">EstimatorManager</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#EstimatorManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.EstimatorManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Helper class that simplifies the estimator management</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parent</strong> (<em>subclass of sklearn.base.BaseEstimator</em>) – Parent estimator object</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="skpro.parametric.parametric.EstimatorManager.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#EstimatorManager.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.EstimatorManager.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.parametric.EstimatorManager.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#EstimatorManager.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.EstimatorManager.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.parametric.EstimatorManager.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>name</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#EstimatorManager.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.EstimatorManager.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.parametric.EstimatorManager.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>name</em>, <em>estimator</em>, <em>selector=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#EstimatorManager.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.EstimatorManager.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers an estimator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Name of the estimator</li>
+<li><strong>estimator</strong> (<em>Estimator object | string name of a registered estimator</em>) – Instance of subclass of sklearn.base.BaseEstimator</li>
+<li><strong>selector</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#callable" title="(in Python v3.6)"><em>callable</em></a><em>(</em><em>estimator</em><em>, </em><a class="reference internal" href="skpro.html#skpro.base.ProbabilisticEstimator.Distribution.X" title="skpro.base.ProbabilisticEstimator.Distribution.X"><em>X</em></a><em>) </em><em>(</em><em>optional</em><em>)</em>) – Defines how a prediction should be retrieved from an estimator</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>bool</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">True on success</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.parametric.EstimatorManager.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>name</em>, <em>**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#EstimatorManager.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.EstimatorManager.set_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="skpro.parametric.parametric.ParametricEstimator">
+<em class="property">class </em><code class="descclassname">skpro.parametric.parametric.</code><code class="descname">ParametricEstimator</code><span class="sig-paren">(</span><em>point=None</em>, <em>std=None</em>, <em>point_std=None</em>, <em>shape='norm'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="skpro.html#skpro.base.ProbabilisticEstimator" title="skpro.base.ProbabilisticEstimator"><code class="xref py py-class docutils literal"><span class="pre">skpro.base.ProbabilisticEstimator</span></code></a></p>
+<dl class="class">
+<dt id="skpro.parametric.parametric.ParametricEstimator.Distribution">
+<em class="property">class </em><code class="descname">Distribution</code><span class="sig-paren">(</span><em>estimator</em>, <em>X</em>, <em>selection=slice(None</em>, <em>None</em>, <em>None)</em>, <em>mode='elementwise'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator.Distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">skpro.base.Distribution</span></code></p>
+<dl class="method">
+<dt id="skpro.parametric.parametric.ParametricEstimator.Distribution.cdf">
+<code class="descname">cdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution.cdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.parametric.parametric.ParametricEstimator.Distribution.lp2">
+<code class="descname">lp2</code><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution.lp2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.parametric.ParametricEstimator.Distribution.pdf">
+<code class="descname">pdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution.pdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.parametric.parametric.ParametricEstimator.Distribution.point">
+<code class="descname">point</code><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution.point" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.parametric.ParametricEstimator.Distribution.ppf">
+<code class="descname">ppf</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator.Distribution.ppf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution.ppf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.parametric.parametric.ParametricEstimator.Distribution.std">
+<code class="descname">std</code><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution.std" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.parametric.ParametricEstimator.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.parametric.ParametricEstimator.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.set_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-skpro.parametric.residuals">
+<span id="skpro-parametric-residuals-module"></span><h2>skpro.parametric.residuals module<a class="headerlink" href="#module-skpro.parametric.residuals" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="skpro.parametric.residuals.ResidualEstimator">
+<em class="property">class </em><code class="descclassname">skpro.parametric.residuals.</code><code class="descname">ResidualEstimator</code><span class="sig-paren">(</span><em>residual_estimator</em>, <em>base_estimator='point'</em>, <em>fit_transform='squared_error'</em>, <em>predict_transform=None</em>, <em>filter_zero_variance=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#ResidualEstimator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.ResidualEstimator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v0.19.1)"><code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></a></p>
+<p>Residual estimator</p>
+<p>Predicts residuals of an estimator using a scikit-learn estimator.</p>
+<p>TODO: expand documentation</p>
+<dl class="method">
+<dt id="skpro.parametric.residuals.ResidualEstimator.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#ResidualEstimator.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.ResidualEstimator.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.parametric.residuals.ResidualEstimator.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#ResidualEstimator.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.ResidualEstimator.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="skpro.parametric.residuals.abs_error_ft">
+<code class="descclassname">skpro.parametric.residuals.</code><code class="descname">abs_error_ft</code><span class="sig-paren">(</span><em>y</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#abs_error_ft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.abs_error_ft" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="skpro.parametric.residuals.abs_error_pt">
+<code class="descclassname">skpro.parametric.residuals.</code><code class="descname">abs_error_pt</code><span class="sig-paren">(</span><em>y_pred</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.parametric.residuals.abs_error_pt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="skpro.parametric.residuals.identity">
+<code class="descclassname">skpro.parametric.residuals.</code><code class="descname">identity</code><span class="sig-paren">(</span><em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#identity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.identity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="skpro.parametric.residuals.log_error_ft">
+<code class="descclassname">skpro.parametric.residuals.</code><code class="descname">log_error_ft</code><span class="sig-paren">(</span><em>y</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#log_error_ft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.log_error_ft" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="skpro.parametric.residuals.log_error_pt">
+<code class="descclassname">skpro.parametric.residuals.</code><code class="descname">log_error_pt</code><span class="sig-paren">(</span><em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#log_error_pt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.log_error_pt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="skpro.parametric.residuals.squared_error_ft">
+<code class="descclassname">skpro.parametric.residuals.</code><code class="descname">squared_error_ft</code><span class="sig-paren">(</span><em>y</em>, <em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#squared_error_ft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.squared_error_ft" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="skpro.parametric.residuals.squared_error_pt">
+<code class="descclassname">skpro.parametric.residuals.</code><code class="descname">squared_error_pt</code><span class="sig-paren">(</span><em>y_pred</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#squared_error_pt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.squared_error_pt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-skpro.parametric">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-skpro.parametric" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="skpro.vendors.html" class="btn btn-neutral float-right" title="skpro.vendors package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="skpro.baselines.html" class="btn btn-neutral" title="skpro.baselines package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.0.post0.dev52+ng8d5e7e2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

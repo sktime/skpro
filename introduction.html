@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Introduction &mdash; skpro 0.0.post0.dev52+ng8d5e7e2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="skpro 0.0.post0.dev52+ng8d5e7e2 documentation" href="index.html"/>
+        <link rel="next" title="Installation" href="installation.html"/>
+        <link rel="prev" title="Contents" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.post0.dev52+ng8d5e7e2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-motivating-example">A motivating example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parametric.html">Parametric estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Workflow automation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Introduction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/introduction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>Probabilistic forecasting makes predictions in settings where even perfect prior knowledge does not allow for impeccable forecast and provides appropriate measures of the uncertainty that is associated with them. In a supervised context, probabilistic prediction problems have been tackled through various strategies in both the frequentist and the Bayesian domain. Today, a variety of learning algorithms are available that make predictions in form of probability distributions. However, it is hard to compare different prediction strategies of the different toolboxes in a fair and transparent workflow.</p>
+<p><code class="docutils literal"><span class="pre">skpro</span></code> is a supervised machine learning framework that allows for probabilistic forecasting within a unified interface with the goal to make model assessment and comparison fair, domain-agnostic and approachable. It is based on the well-known <a class="reference external" href="http://scikit-learn.org/">scikit-learn</a> library and provides integrations for popular prediction toolboxes such as <a class="reference external" href="https://github.com/pymc-devs/pymc3">PyMC3</a>.</p>
+<p>The package is being developed open source under the direction of <cite>Dr Franz Király</cite> and has been released under a <a class="reference internal" href="license.html"><span class="doc">BSD license</span></a>.</p>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<p>The package offers a variety of features and specifically allows for</p>
+<ul class="simple">
+<li>a unified implementation and handling of probabilistic prediction strategies in the supervised contexts</li>
+<li>comparison of frequentist and Bayesian prediction methods</li>
+<li>strategy optimization through hyperparamter tuning and ensemble methods (e.g. bagging)</li>
+<li>workflow automation</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We are currently in public beta.</p>
+</div>
+</div>
+<div class="section" id="a-motivating-example">
+<h2>A motivating example<a class="headerlink" href="#a-motivating-example" title="Permalink to this headline">¶</a></h2>
+<p>Let’s have a look at the simple example of Boston Housing price prediction. The skpro specific lines are highlighted below.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.datasets.base</span> <span class="kn">import</span> <span class="n">load_boston</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="hll"><span class="kn">from</span> <span class="nn">skpro.baselines</span> <span class="kn">import</span> <span class="n">DensityBaseline</span>
+</span><span class="hll"><span class="kn">from</span> <span class="nn">skpro.metrics</span> <span class="kn">import</span> <span class="n">log_loss</span>
+</span>
+<span class="c1"># Load boston housing data</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_boston</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+<span class="hll"><span class="c1"># Train and predict on boston housing data using a baseline model</span>
+</span><span class="hll"><span class="n">y_pred</span> <span class="o">=</span> <span class="n">DensityBaseline</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>\
+</span><span class="hll">                          <span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+</span><span class="hll"><span class="c1"># Obtain the loss</span>
+</span><span class="hll"><span class="n">loss</span> <span class="o">=</span> <span class="n">log_loss</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Loss: </span><span class="si">%f</span><span class="s1">+-</span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">loss</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Loss</span><span class="p">:</span> <span class="mf">3.444260</span><span class="o">+-</span><span class="mf">0.062277</span>
+</pre></div>
+</div>
+<p>If you are familiar with scikit-learn you will recognise that we define and train a model on the boston housing dataset and obtain the test prediction <em>y_pred</em>. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values – nothing unexpected there.</p>
+<p>Crucially, however, the skpro model does not just return a list of numbers or point predictions here. Instead, <em>y_pred</em> is a probablistic prediction, i.e. it represents probability distributions for each individual data point.
+We can, for instance, obtain the distribution’s standard deviation or even its probability density function:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">deviation</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+<span class="n">density</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The skpro predictions are hence forecasts of a genuine probabilistic kind that are a primary interest for many real-world applications. Notable, this can include Bayesian as well as frequentist models using the same unified interface.</p>
+<p>To get a better understanding of our example prediction we can plot the predicted distributions (mean in blue, standard deviation in red) versus the correct labels (in green):</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/simple_example_plot.png"><img alt="_images/simple_example_plot.png" src="_images/simple_example_plot.png" style="width: 80%;" /></a>
+</div>
+<p>You can see that the employed baseline model predicted a constant distribution for each data point (specifically, it used the mean and the standard deviation of the training labels); the losses of each prediction point vary accordingly.</p>
+<p>Obviously, we ought to compare multiple models for gain meaningful insight into their performances. For this reason, skpro supports simplified and standardized prediction workflows for model assessment and comparison. The table below represents an example of a sorted result tables that can be easily generated by the workflow framework: Models are listed in the rows of the table while the columns present the cross-validated performance of a certain dataset and loss function. The numbers in parentheses denote the model’s performance rank in the respective column. The models are sorted by the average model rank, displaying models with the best performances (that is the lowest losses) on top of the table.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="22%" />
+<col width="36%" />
+<col width="36%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">#</th>
+<th class="head">Model</th>
+<th class="head">CV(Dataset A, loss function)</th>
+<th class="head">CV(Dataset B, loss function)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>Example model 1</td>
+<td><ol class="first last arabic simple" start="2">
+<li>12<span class="math">\pm</span>1*</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple">
+<li>3<span class="math">\pm</span>2*</li>
+</ol>
+</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>Example model 2</td>
+<td><ol class="first last arabic simple">
+<li>5<span class="math">\pm</span>0.5*</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="2">
+<li>9<span class="math">\pm</span>1*</li>
+</ol>
+</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>Example model 3</td>
+<td><ol class="first last arabic simple" start="3">
+<li>28<span class="math">\pm</span>3*</li>
+</ol>
+</td>
+<td><ol class="first last arabic simple" start="3">
+<li>29<span class="math">\pm</span>4*</li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+<p>skpro thus allows for reliable, fair and best-practice model assessment with minimal development overhead for the user while being agnostic of the domain and vendor of your models.</p>
+<p>Do you like what you see? Read the <a class="reference internal" href="installation.html"><span class="doc">installation instructions</span></a> or continue to the comprehensive <a class="reference internal" href="user_guide.html"><span class="doc">user guide</span></a> to learn more.</p>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Contents" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.post0.dev52+ng8d5e7e2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
