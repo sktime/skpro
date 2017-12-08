@@ -5,7 +5,7 @@ Probabilistic forecasting makes predictions in settings where even perfect prior
 
 ``skpro`` is a supervised machine learning framework that allows for probabilistic forecasting within a unified interface with the goal to make model assessment and comparison fair, domain-agnostic and approachable. It is based on the well-known `scikit-learn`_ library and provides integrations for popular prediction toolboxes such as `PyMC3 <https://github.com/pymc-devs/pymc3>`_.
 
-The package is being developed open source under the direction of `Dr Franz Király` and has been released under a :doc:`BSD license <license>`.
+The package is being developed open source under the direction of `Dr Franz Király <https://www.ucl.ac.uk/statistics/people/franz-kiraly>`_ and has been released under a :doc:`BSD license <license>`.
 
 Features
 ^^^^^^^^
@@ -45,7 +45,7 @@ The skpro predictions are hence forecasts of a genuine probabilistic kind that a
 To get a better understanding of our example prediction we can plot the predicted distributions (mean in blue, standard deviation in red) versus the correct labels (in green):
 
 .. figure:: _static/simple_example_plot.png
-   :align: center
+
    :width: 80%
 
 You can see that the employed baseline model predicted a constant distribution for each data point (specifically, it used the mean and the standard deviation of the training labels); the losses of each prediction point vary accordingly.
@@ -67,4 +67,3 @@ skpro thus allows for reliable, fair and best-practice model assessment with min
 Do you like what you see? Read the :doc:`installation instructions <installation>` or continue to the comprehensive :doc:`user guide <user_guide>` to learn more.
 
 .. _scikit-learn: http://scikit-learn.org/
-.. _Dr Franz Király: https://www.ucl.ac.uk/statistics/people/franz-kiraly
