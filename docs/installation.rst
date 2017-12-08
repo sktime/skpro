@@ -15,7 +15,7 @@ That's it. You are now ready to go. We recommend reading the :doc:`user guide <u
 Bleeding edge
 ^^^^^^^^^^^^^
 
-To test or develop new features you may want to install the latest package version from the master branch (bleeding edge installation).
+To test or develop new features you may want to install the latest package version from the development branch (bleeding edge installation).
 
 Clone the source from our `public code repository`_ on GitHub and change into the skpro directory. Make sure that all dependencies are installed: ::
 

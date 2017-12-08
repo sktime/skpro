@@ -56,15 +56,15 @@ Read the `scikit documentation <http://scikit-learn.org/stable/modules/grid_sear
 Pipelines
 ~~~~~~~~~
 
-Probabilistic estimators work well with scikit-learn's ``Pipeline`` meta-estimator that allows to combine multiple estimators into one. Read the `Pipeline documentation <http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html>`_ to learn more.
+Probabilistic estimators work well with scikit-learn's ``Pipeline`` meta-estimator that allows to combine multiple estimators into one. Read the `pipeline documentation <http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html>`_ to learn more.
 
 
-Bagging
-~~~~~~~
+Ensemble methods
+~~~~~~~~~~~~~~~~
 
-Like in sklearn, probabilistic estimators can be bagged using the meta-estimator ``BaggingRegressor``, for instance:
+The framework provides experimental support for ensemble methods. Currently, this includes bagging in a regression setting which is implemented by the ``BaggingRegressor`` estimator in the ensemble module. The meta-estimator fits base regressors (i.e. probabilistic estimators) on random subsets of the original dataset and then aggregates their individual predictions in a distribution interface to form a final prediction. The implementation is based on scikit's meta-estimator of the same name but introduces support for the probabilistic setting.
+
+The following example demonstrates the use of the bagging procedure; you may also read `scikit's documentation of the BaggingRegressor <http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html>`_ to learn more.
 
 .. literalinclude:: ../examples/parametric/bagging.py
     :language: python
-
-Check out the :doc:`skpro\.ensemble <api/modules>` module to learn more.

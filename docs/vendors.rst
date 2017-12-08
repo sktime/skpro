@@ -21,4 +21,4 @@ Please refer to PyMC3's own `project documentation <http://docs.pymc.io/index.ht
 Integrate other models
 ----------------------
 
-skpro's base classes provide scaffold to quickly integrate arbitrary models of the Bayesian or frequentist type. Please read the :doc:`advanced usage guide <advanced>` to learn more.
+skpro's base classes provide scaffold to quickly integrate arbitrary models of the Bayesian or frequentist type. Please read the documentation on :doc:`extension and model integration <extending>` to learn more.
