@@ -74,7 +74,7 @@ class Constant(BaseEstimator):
 
     Parameters
     ----------
-    constant: float | callable(X, y) | string: 'mean(y)', 'std(y)'
+    constant: float | callable(X, y) | string: 'mean(y)', 'std(y)' (default: None)
         Specifies the constant. A callable receives the training data during
         fit and should return a constant value. The string options provide
         a shortcut for mean/std extraction from the features.

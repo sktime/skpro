@@ -40,6 +40,13 @@ We can, for instance, obtain the distribution's standard deviation or even its p
     deviation = y_pred.std()
     density = y_pred.pdf(x)
 
+To get a better understanding of the prediction we can plot the predicted distributions (mean in blue, standard deviation in red) versus the correct labels (in green):
+
+.. figure:: _static/simple_example_plot.png
+   :width: 80%
+
+You can see that the used model predicted a constant distribution for each data point using the mean and the standard deviation of the training labels; the losses of each prediction point vary accordingly.
+
 The skpro predictions are hence forecasts of a genuine probabilistic kind that are a primary interest for many real-world applications.
 
 This is in a nutshell what skpro is about. Read the :doc:`installation instructions <installation>` or continue to the comprehensive :doc:`user guide <user_guide>` to learn more.
