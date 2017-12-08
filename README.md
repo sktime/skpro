@@ -1,7 +1,7 @@
 ![skpro](/docs/_static/logo/logo.png)
 
 <p align="center">
-  <a href="https://travis-ci.com/alan-turing-institute/skpro"><img src="https://travis-ci.com/alan-turing-institute/skpro.svg?token=bwQYVkNKkUpai7AxgpfV&branch=master" alt="Build Status"></a>
+  <a href="https://travis-ci.org/alan-turing-institute/skpro.svg?branch=master"><img src="https://travis-ci.com/alan-turing-institute/skpro.svg?token=bwQYVkNKkUpai7AxgpfV&branch=master" alt="Build Status"></a>
   <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License"></a>
 </p>
 
