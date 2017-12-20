@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introduction &mdash; skpro 1.0.0b1.post0.dev7+ngbb91a57 documentation</title>
+  <title>Introduction &mdash; skpro 1.0.0b1.post0.dev8+ngd198cd6 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev7+ngbb91a57 documentation" href="index.html"/>
+    <link rel="top" title="skpro 1.0.0b1.post0.dev8+ngd198cd6 documentation" href="index.html"/>
         <link rel="next" title="Installation" href="installation.html"/>
         <link rel="prev" title="Contents" href="index.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev7+ngbb91a57
+                1.0.0b1.post0.dev8+ngd198cd6
               </div>
             
           
@@ -180,9 +180,9 @@
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
 <p>The package offers a variety of features and specifically allows for</p>
 <ul class="simple">
-<li>a unified implementation and handling of probabilistic prediction strategies in the supervised contexts</li>
-<li>comparison of frequentist and Bayesian prediction methods</li>
+<li>a unified implementation and handling of supervised probabilistic prediction strategies</li>
 <li>strategy optimization through hyperparamter tuning and ensemble methods (e.g. bagging)</li>
+<li>comparison of frequentist and Bayesian prediction methods</li>
 <li>workflow automation</li>
 </ul>
 <div class="admonition note">
@@ -192,43 +192,52 @@
 </div>
 <div class="section" id="a-motivating-example">
 <h2>A motivating example<a class="headerlink" href="#a-motivating-example" title="Permalink to this headline">¶</a></h2>
-<p>Let’s have a look at the simple example of Boston Housing price prediction. The skpro specific lines are highlighted below.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.datasets.base</span> <span class="kn">import</span> <span class="n">load_boston</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
-
-<span class="hll"><span class="kn">from</span> <span class="nn">skpro.baselines</span> <span class="kn">import</span> <span class="n">DensityBaseline</span>
-</span><span class="hll"><span class="kn">from</span> <span class="nn">skpro.metrics</span> <span class="kn">import</span> <span class="n">log_loss</span>
-</span>
-<span class="c1"># Load boston housing data</span>
+<p>Let’s have a look at an example of Boston Housing price prediction (using sklearn’s <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html">boston data</a>).</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Load boston housing data</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_boston</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
-<span class="hll"><span class="c1"># Train and predict on boston housing data using a baseline model</span>
-</span><span class="hll"><span class="n">y_pred</span> <span class="o">=</span> <span class="n">DensityBaseline</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>\
-</span><span class="hll">                          <span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-</span><span class="hll"><span class="c1"># Obtain the loss</span>
-</span><span class="hll"><span class="n">loss</span> <span class="o">=</span> <span class="n">log_loss</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</span>
+<span class="c1"># Train and predict on boston housing data using a baseline model</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">DensityBaseline</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>\
+                          <span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="c1"># Obtain the loss</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">log_loss</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">return_std</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
 <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Loss: </span><span class="si">%f</span><span class="s1">+-</span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">loss</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Loss</span><span class="p">:</span> <span class="mf">3.444260</span><span class="o">+-</span><span class="mf">0.062277</span>
 </pre></div>
 </div>
-<p>If you are familiar with scikit-learn you will recognise that we define and train a model on the boston housing dataset and obtain the test prediction <em>y_pred</em>. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values – nothing unexpected there.</p>
-<p>Crucially, however, the skpro model does not just return a list of numbers or point predictions here. Instead, <em>y_pred</em> is a probablistic prediction, i.e. it represents probability distributions for each individual data point.
-We can, for instance, obtain the distribution’s standard deviation or even its probability density function:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">deviation</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
-<span class="n">density</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<p>If you are familiar with scikit-learn you will recognise that we define and train a model on the boston housing dataset and obtain the test prediction <code class="docutils literal"><span class="pre">y_pred</span></code>. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values – nothing unexpected there.</p>
+<p>Crucially, however, the skpro model does not just return a list of numbers or point predictions here. Instead, <code class="docutils literal"><span class="pre">y_pred</span></code> is a probablistic prediction, i.e. it represents probability distributions for each individual data point.
+We can, for instance, obtain the standard deviation of the predicted distribution that corresponds with the first (0th) test point (or any other test point distribution)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+<span class="go">8.79649064286</span>
 </pre></div>
 </div>
-<p>The skpro predictions are hence forecasts of a genuine probabilistic kind that are a primary interest for many real-world applications. Notable, this can include Bayesian as well as frequentist models using the same unified interface.</p>
+<p>Notably, the interface represents all distributional properties, including the density function, that can be easily evaluated for arbitrary arguments</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="go">0.00192808538756</span>
+</pre></div>
+</div>
+<p>Furthermore, it is possible to conveniently access the distributional properties in their vectorized form accross the test sample:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(152,)</span>
+</pre></div>
+</div>
+<p>The returned vector represent the standard deviations of each of the 152 predicted distributions that correspond to the 152 test points in the Boston data set. The prediction object also supports numpy’s elementwise operations:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(152,)</span>
+</pre></div>
+</div>
 <p>To get a better understanding of our example prediction we can plot the predicted distributions (mean in blue, standard deviation in red) versus the correct labels (in green):</p>
 <div class="figure">
-<img alt="_images/simple_example_plot.png" src="_images/simple_example_plot.png" />
+<a class="reference internal image-reference" href="_images/simple_example_plot.png"><img alt="_images/simple_example_plot.png" src="_images/simple_example_plot.png" style="width: 80%;" /></a>
 </div>
 <p>You can see that the employed baseline model predicted a constant distribution for each data point (specifically, it used the mean and the standard deviation of the training labels); the losses of each prediction point vary accordingly.</p>
-<p>Obviously, we ought to compare multiple models for gain meaningful insight into their performances. For this reason, skpro supports simplified and standardized prediction workflows for model assessment and comparison. The table below represents an example of a sorted result tables that can be easily generated by the workflow framework: Models are listed in the rows of the table while the columns present the cross-validated performance of a certain dataset and loss function. The numbers in parentheses denote the model’s performance rank in the respective column. The models are sorted by the average model rank, displaying models with the best performances (that is the lowest losses) on top of the table.</p>
+<p>The skpro predictions are hence forecasts of a genuine probabilistic kind that are a primary interest for many real-world applications. Notable, this can include Bayesian as well as frequentist models using the same unified and convenient interface.</p>
+<p>Obviously, we ought to compare multiple models for gain meaningful insight into their performances. For this reason, skpro supports simplified and standardized prediction workflows for model assessment and comparison. The table below represents an example of a sorted result tables that can be easily generated by the workflow framework: Models are listed in the rows of the table while the columns present the cross-validated performance of a certain dataset and loss function. The numbers before the loss denote the model’s performance rank in the respective column. The models are sorted by the average model rank, displaying models with the best performances (that is the lowest losses) on top of the table.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="6%" />
@@ -279,7 +288,47 @@ We can, for instance, obtain the distribution’s standard deviation or even its
 </tr>
 </tbody>
 </table>
-<p>skpro thus allows for reliable, fair and best-practice model assessment with minimal development overhead for the user while being agnostic of the domain and vendor of your models.</p>
+<p>Going back to the boston housing example, the code to produce such a model comparison can be composed in a few lines:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">tbl</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+
+<span class="c1"># Loads and represents the data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="s1">&#39;boston&#39;</span><span class="p">)</span>
+
+<span class="c1"># Adds a model information column</span>
+<span class="n">tbl</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+<span class="c1"># Defines the cross validation using the log_loss metric and grid hyperparameter search</span>
+<span class="n">tbl</span><span class="o">.</span><span class="n">cv</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">log_loss</span><span class="p">,</span> <span class="n">tune</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">grid_optimizer</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+<span class="c1"># Run the models against the workflow and print the results</span>
+<span class="n">tbl</span><span class="o">.</span><span class="k">print</span><span class="p">([</span>
+    <span class="c1"># Baseline ...</span>
+    <span class="n">Model</span><span class="p">(</span>
+        <span class="n">DensityBaseline</span><span class="p">()</span>
+    <span class="p">),</span>
+    <span class="c1"># ... and parametric composite model</span>
+    <span class="n">Model</span><span class="p">(</span>
+        <span class="n">ParametricEstimator</span><span class="p">(</span>
+            <span class="n">LinearRegression</span><span class="p">(),</span>
+            <span class="n">Constant</span><span class="p">(</span><span class="s1">&#39;std(y)&#39;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="c1"># ... which hyperparameter shall be optimized</span>
+        <span class="n">tuning</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;point__normalize&#39;</span><span class="p">:</span> <span class="p">[</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">]},</span>
+    <span class="p">)</span>
+<span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<span class="go">+-----+------------------------------------------------------+------------------------+</span>
+<span class="go">|   # | Model information                                    | CV(boston, log_loss)   |</span>
+<span class="go">+=====+======================================================+========================+</span>
+<span class="go">|   2 | Norm(point=LinearRegression(), std=Constant(std(y))) | (1) 4.25+/-0.29*       |</span>
+<span class="go">+-----+------------------------------------------------------+------------------------+</span>
+<span class="go">|   1 | DensityBaseline()                                    | (2) 4.28+/-0.18        |</span>
+<span class="go">+-----+------------------------------------------------------+------------------------+</span>
+</pre></div>
+</div>
+<p>The resulting table compares the composite prediction strategy against the baseline model and suggest that the model outperforms the baseline.</p>
+<p>In sum, skpro thus allows for reliable, fair and best-practice model assessment with minimal development overhead for the user while being agnostic of the domain and vendor of your models.</p>
 <p>Do you like what you see? Read the <a class="reference internal" href="installation.html"><span class="doc">installation instructions</span></a> or continue to the comprehensive <a class="reference internal" href="user_guide.html"><span class="doc">user guide</span></a> to learn more.</p>
 </div>
 </div>
@@ -328,7 +377,7 @@ We can, for instance, obtain the distribution’s standard deviation or even its
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.0b1.post0.dev7+ngbb91a57',
+            VERSION:'1.0.0b1.post0.dev8+ngd198cd6',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
