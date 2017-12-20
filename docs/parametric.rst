@@ -3,12 +3,18 @@ Composite parametric prediction
 
 The parametric estimator model or composite parametric strategy uses classical estimators to predict the defining parameters of continuous distributions. The idea is that the prediction of a normal distribution can be brought down to a prediction of its defining parameters mean :math:`\mu` and standard deviation :math:`\sigma` (or location :math:`\mu` and scale :math:`b` for a Laplacian distribution etc.). More general, classical prediction algorithms can be used to obtain *point* and *variance* estimates that are plugged into the definition of various distribution types (e.g. Normal, Laplace etc.) that are consequently regarded as probabilistic predictions. The appropriate distributional type can be determined based on the data, for instance, by choosing the type that minimizes the probabilistic loss for given point and variance estimate.
 
+Overview
+--------
+
 .. figure:: _static/parametric.png
    :width: 100%
 
    Overview of the parametric estimation strategy (base classes are annotated in the dashed boxes): The probabilistic parametric estimator takes classical estimators that predict the defining parameters (point and std) of the given distribution type (e.g. mean and standard deviation for the normal distribution). In particular, the residual estimator can be used for the std prediction since it takes another classical estimator to predict residuals or variances of the point prediction. To implement simple strategies, the module offers a constant estimator that produces pre-defined constant predictions.
 
 The composite parametric strategy is implemented by the :class:`.ParametricEstimator` object that currently supports two-parametric continuous distributions. It takes a point estimator (``point``), a variance estimator (``std``) and a parameter to define the assumed distribution form (e.g. ’norm’ or ’laplace’). During fitting (``fit(X, y)``) the parametric estimator automatically fits the provided point and variance estimators; accordingly, on prediction (``predict(X)``), it retrieves their estimations to compose the overall predicted distribution interface of the specified shape. The parametric model also supports combined estimation in which the same estimator instance is used to obtain both point and variance prediction. The combined estimator has to be passed to the optional ``point_std`` parameter while the point/std arguments can then be used to specify how point and variance prediction should be retrieved from it. Hence, the parametric estimator can be considered a function that maps the distribution interface onto the actual learning algorithms of the provided estimators.
+
+Estimators
+----------
 
 Since the implementation follows the estimator API of scikit-learn, it is generally possible to employ any of scikit-learn’s classical estimators as predictors. In fact, in this paradigm the same algorithm that is used to predict a housing price can be employed to obtain the point prediction which represents the mean of the predicted price distribution for the house. It is, however, an open question how the variance predictions that are understood to estimate the probabilistic uncertainty of these point predictions can be obtained.
 
@@ -27,6 +33,9 @@ In addition to the estimators in the scikit-learn library, the module provides a
         ),
         shape='norm'            # Distribution type
     )
+
+Example
+-------
 
 The extended example below shows the definition of a parametric model that uses a RandomForestRegressor as point estimator and the feature mean as variance predictor.
 
