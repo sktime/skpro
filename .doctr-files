@@ -1,3 +1,4 @@
+./_images/base_api.png
 ./_images/logo.png
 ./_images/overview.png
 ./_images/parametric.png
@@ -42,6 +43,7 @@
 ./_sources/vendors.rst.txt
 ./_sources/workflow.rst.txt
 ./_static/ajax-loader.gif
+./_static/base_api.png
 ./_static/basic.css
 ./_static/comment-bright.png
 ./_static/comment-close.png

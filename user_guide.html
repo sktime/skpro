@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>User Guide &mdash; skpro 1.0.0b1.post0.dev4+ng40cb86d documentation</title>
+  <title>User Guide &mdash; skpro 1.0.0b1.post0.dev5+ng94c1662 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev4+ng40cb86d documentation" href="index.html"/>
+    <link rel="top" title="skpro 1.0.0b1.post0.dev5+ng94c1662 documentation" href="index.html"/>
         <link rel="next" title="Baseline strategies" href="baselines.html"/>
         <link rel="prev" title="Installation" href="installation.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev4+ng40cb86d
+                1.0.0b1.post0.dev5+ng94c1662
               </div>
             
           
@@ -190,9 +190,8 @@ For further details you may explore the <a class="reference external" href="api/
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>The figure below gives an overview about central elements and concepts of skpro and how it extends the scikit-learn toolbox. To understand skpro, it is firstly helpful to quickly review scikit-learn’s classical prediction workflow, particularly its seminal <code class="docutils literal"><span class="pre">Estimator</span></code> object. In scikit-learn, an <code class="docutils literal"><span class="pre">Estimator</span></code> object represents a certain prediction strategy (e.g. Linear regression), that can be fitted using the <code class="docutils literal"><span class="pre">fit(X,</span> <span class="pre">y)</span></code> function. The fitted estimator can then be used to obtain the predictions on new data using the <code class="docutils literal"><span class="pre">predict(X)</span></code> method. Finally, the predicted values can be compared with the actual targets using one of the available classical loss functions.</p>
 <div class="figure" id="id1">
-<a class="reference internal image-reference" href="_images/overview.png"><img alt="_images/overview.png" src="_images/overview.png" style="width: 90%;" /></a>
-<p class="caption"><span class="caption-text">Overview of the skpro prediction framework and how it extends the <em>scikit-learn</em>
-package.</span></p>
+<a class="reference internal image-reference" href="_images/overview.png"><img alt="_images/overview.png" src="_images/overview.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Overview of the skpro API: All models are represented in as a probablistic estimator returning a distribution object that exhibits properties like the predicted density function etc. The user can define a workflow involving different models and datasets while the results of a model assessment is aggregated automatically.</span></p>
 </div>
 <p>skpro seeks to replicate this general pattern and introduces the <code class="docutils literal"><span class="pre">ProbabilisticEstimator</span></code> class that encapsulates the
 probabilistic prediction models. Like the <code class="docutils literal"><span class="pre">Estimator</span></code> class it offers a fit and predict method but returns a probability distribution as prediction (<code class="docutils literal"><span class="pre">Distribution</span></code> class). The returned distribution objects provide methods to obtain relevant distribution properties, for example the distribution’s probability density function (<code class="docutils literal"><span class="pre">y_pred.pdf(x)</span></code>).</p>
@@ -206,7 +205,11 @@ probabilistic prediction models. Like the <code class="docutils literal"><span c
 <li><a class="reference internal" href="parametric.html"><span class="doc">Parametric estimation</span></a>, that estimates parameters of the predicted distributions</li>
 <li><a class="reference internal" href="vendors.html"><span class="doc">integrations with other vendor packages</span></a> such as <code class="docutils literal"><span class="pre">PyMC3</span></code></li>
 </ul>
-<p>For a full documentation you may read the respective <a class="reference internal" href="api/modules.html"><span class="doc">module documention</span></a> but to understand the principles of the probabilistic estimators we recommend starting with the <a class="reference internal" href="parametric.html"><span class="doc">parametric estimation</span></a>.</p>
+<p>The figure below shows an overview of the skpro’s base API which implements the different prediction strategies. For a full documentation you may read the respective <a class="reference internal" href="api/modules.html"><span class="doc">module documention</span></a>.</p>
+<div class="figure" id="id2">
+<a class="reference internal image-reference" href="_images/base_api.png"><img alt="_images/base_api.png" src="_images/base_api.png" style="width: 95%;" /></a>
+<p class="caption"><span class="caption-text">Overview of the framework’s core API where abstract classes are denoted in italic font and inheritance and dependence are indicated by arrows: The seminal probabilistic estimator object directly inherits from scikit-learn’s base estimator object and thus implements the fit-predict logic that produce probabilistic predictions in form of a distribution object. A vendor estimator allows for the integration of 3rd party models such as the Bayesian PyMC prediction algorithms.</span></p>
+</div>
 </div>
 <div class="section" id="metrics">
 <h2>Metrics<a class="headerlink" href="#metrics" title="Permalink to this headline">¶</a></h2>
@@ -336,7 +339,7 @@ probabilistic prediction models. Like the <code class="docutils literal"><span c
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.0b1.post0.dev4+ng40cb86d',
+            VERSION:'1.0.0b1.post0.dev5+ng94c1662',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
