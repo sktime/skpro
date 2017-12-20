@@ -12,10 +12,9 @@ Overview
 The figure below gives an overview about central elements and concepts of skpro and how it extends the scikit-learn toolbox. To understand skpro, it is firstly helpful to quickly review scikit-learn’s classical prediction workflow, particularly its seminal ``Estimator`` object. In scikit-learn, an ``Estimator`` object represents a certain prediction strategy (e.g. Linear regression), that can be fitted using the ``fit(X, y)`` function. The fitted estimator can then be used to obtain the predictions on new data using the ``predict(X)`` method. Finally, the predicted values can be compared with the actual targets using one of the available classical loss functions.
 
 .. figure:: _static/overview.png
-   :width: 90%
+   :width: 100%
 
-   Overview of the skpro prediction framework and how it extends the *scikit-learn*
-   package.
+   Overview of the skpro API: All models are represented in as a probablistic estimator returning a distribution object that exhibits properties like the predicted density function etc. The user can define a workflow involving different models and datasets while the results of a model assessment is aggregated automatically.
 
 skpro seeks to replicate this general pattern and introduces the ``ProbabilisticEstimator`` class that encapsulates the
 probabilistic prediction models. Like the ``Estimator`` class it offers a fit and predict method but returns a probability distribution as prediction (``Distribution`` class). The returned distribution objects provide methods to obtain relevant distribution properties, for example the distribution's probability density function (``y_pred.pdf(x)``).
@@ -31,7 +30,12 @@ How can probabilistic prediction models be learned, specifically  strategies tha
 * :doc:`Parametric estimation <parametric>`, that estimates parameters of the predicted distributions
 * :doc:`integrations with other vendor packages <vendors>` such as ``PyMC3``
 
-For a full documentation you may read the respective :doc:`module documention <api/modules>` but to understand the principles of the probabilistic estimators we recommend starting with the :doc:`parametric estimation <parametric>`.
+The figure below shows an overview of the skpro's base API which implements the different prediction strategies. For a full documentation you may read the respective :doc:`module documention <api/modules>`.
+
+.. figure:: _static/base_api.png
+   :width: 95%
+
+   Overview of the framework’s core API where abstract classes are denoted in italic font and inheritance and dependence are indicated by arrows: The seminal probabilistic estimator object directly inherits from scikit-learn’s base estimator object and thus implements the fit-predict logic that produce probabilistic predictions in form of a distribution object. A vendor estimator allows for the integration of 3rd party models such as the Bayesian PyMC prediction algorithms.
 
 Metrics
 -------
@@ -68,3 +72,5 @@ The following example demonstrates the use of the bagging procedure; you may als
 
 .. literalinclude:: ../examples/parametric/bagging.py
     :language: python
+
+
