@@ -68,9 +68,18 @@ Ensemble methods
 
 The framework provides experimental support for ensemble methods. Currently, this includes bagging in a regression setting which is implemented by the ``BaggingRegressor`` estimator in the ensemble module. The meta-estimator fits base regressors (i.e. probabilistic estimators) on random subsets of the original dataset and then aggregates their individual predictions in a distribution interface to form a final prediction. The implementation is based on scikit's meta-estimator of the same name but introduces support for the probabilistic setting.
 
-The following example demonstrates the use of the bagging procedure; you may also read `scikit's documentation of the BaggingRegressor <http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html>`_ to learn more.
+The following example demonstrates the use of the bagging procedure:
 
 .. literalinclude:: ../examples/parametric/bagging.py
     :language: python
+
+To learn more, you may also read `scikit's documentation of the BaggingRegressor <http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html>`_.
+
+Where to go from here
+---------------------
+
+You may want to continue to read about advanced techniques, specifically about the :doc:`workflow automation <workflow>` and the :doc:`integration of custom models <extending>`.
+
+If you have question, feel free to open an issue on our `GitHub page <https://github.com/alan-turing-institute/skpro/issues>`_.
 
 
