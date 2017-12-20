@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>skpro.baselines package &mdash; skpro 1.0.0b1.post0.dev10+ng7958eb8 documentation</title>
+  <title>skpro.baselines package &mdash; skpro 1.0.0b1.post0.dev11+ng10c8d42 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev10+ng7958eb8 documentation" href="../index.html"/>
+    <link rel="top" title="skpro 1.0.0b1.post0.dev11+ng10c8d42 documentation" href="../index.html"/>
         <link rel="up" title="skpro package" href="skpro.html"/>
         <link rel="next" title="skpro.parametric package" href="skpro.parametric.html"/>
         <link rel="prev" title="skpro package" href="skpro.html"/> 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev10+ng7958eb8
+                1.0.0b1.post0.dev11+ng10c8d42
               </div>
             
           
@@ -207,10 +207,60 @@
 <dt id="skpro.baselines.density.DensityBaseline.Distribution">
 <em class="property">class </em><code class="descname">Distribution</code><span class="sig-paren">(</span><em>estimator</em>, <em>X</em>, <em>selection=slice(None</em>, <em>None</em>, <em>None)</em>, <em>mode='elementwise'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/baselines/density.html#DensityBaseline.Distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">skpro.base.Distribution</span></code></p>
+<dl class="attribute">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution.X">
+<code class="descname">X</code><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.X" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference of the test features that are ought to correspond
+with the predictive distribution represented by the interface.</p>
+<p>The interface methods (e.g. pdf) can use X to
+construct and exhibit the predictive distribution properties
+of the interface (e.g. construct the predicted pdf based on X)</p>
+<p>Note that X automatically reflects the feature point for which
+the interface is ought to represent the distributional
+prediction. For given M x n features, X will thus represent
+an 1 x n vector that provides the bases for the predicted
+distribution. However, if the <a class="reference internal" href="skpro.html#skpro.base.vectorvalued" title="skpro.base.vectorvalued"><code class="xref py py-func docutils literal"><span class="pre">vectorvalued()</span></code></a> decorator
+is applied X will represent the full M x n matrix for an
+efficient vectorized implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Getter:</th><td class="field-body">Returns the test features based on the current subset selection</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Setter:</th><td class="field-body">Sets the data reference</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="skpro.baselines.density.DensityBaseline.Distribution.cdf">
 <code class="descname">cdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.cdf" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution.lp2">
+<code class="descname">lp2</code><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.lp2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution.mean">
+<code class="descname">mean</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean prediction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">The mean prediction that corresponds to self.X</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="skpro.baselines.density.DensityBaseline.Distribution.pdf">
@@ -222,6 +272,48 @@
 <code class="descname">point</code><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.point" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution.ppf">
+<code class="descname">ppf</code><span class="sig-paren">(</span><em>q</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.ppf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Percent point function (inverse of cdf — percentiles).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.Distribution.replicate">
+<code class="descname">replicate</code><span class="sig-paren">(</span><em>selection=None</em>, <em>mode=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.replicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replicates the distribution object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>selection</strong> (<em>None | slice | int</em><em> (</em><em>optional</em><em>)</em>) – Subset point selection of the distribution copy</li>
+<li><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> (</em><em>optional</em><em>)</em>) – Interface mode (‘elementwise’ or ‘batch’)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">skpro.base.ProbabilisticEstimator.Distribution</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="skpro.baselines.density.DensityBaseline.Distribution.std">
 <code class="descname">std</code><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.Distribution.std" title="Permalink to this definition">¶</a></dt>
@@ -229,10 +321,122 @@
 
 </dd></dl>
 
+<dl class="class">
+<dt id="skpro.baselines.density.DensityBaseline.ImplementsEnhancedInterface">
+<em class="property">class </em><code class="descname">ImplementsEnhancedInterface</code><span class="sig-paren">(</span><em>name</em>, <em>bases</em>, <em>clsdict</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.ImplementsEnhancedInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/abc.html#abc.ABCMeta" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">abc.ABCMeta</span></code></a></p>
+<p>Meta-class for distribution interface</p>
+<p>Enhances the distribution interface behind the scenes
+with automatic caching and syntactic sugar for
+element-wise access of the distributions</p>
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.ImplementsEnhancedInterface.mro">
+<code class="descname">mro</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#skpro.baselines.density.DensityBaseline.ImplementsEnhancedInterface.mro" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a type’s method resolution order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.ImplementsEnhancedInterface.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>subclass</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.ImplementsEnhancedInterface.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a virtual subclass of an ABC.</p>
+<p>Returns the subclass, to allow usage as a class decorator.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="method">
 <dt id="skpro.baselines.density.DensityBaseline.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/baselines/density.html#DensityBaseline.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.fit" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predicts using the model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>{array-like</em><em>, </em><em>sparse matrix}</em><em>, </em><em>shape =</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Samples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns predicted distributions</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#skpro.baselines.density.DensityBaseline.Distribution" title="skpro.baselines.density.DensityBaseline.Distribution"><code class="xref py py-class docutils literal"><span class="pre">Distribution</span></code></a> interface representing n_samples predictions</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.score">
+<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample=True</em>, <em>return_std=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the log-loss score</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>np.array</em>) – Features</li>
+<li><strong>y</strong> (<em>np.array</em>) – Labels</li>
+<li><strong>sample</strong> (<em>boolean</em><em>, </em><em>default=True</em>) – If true, loss will be averaged across the sample</li>
+<li><strong>return_std</strong> (<em>boolean</em><em>, </em><em>default=False</em>) – If true, the standard deviation of the
+loss sample will be returned</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Log-loss score</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">mixed</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.baselines.density.DensityBaseline.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.baselines.density.DensityBaseline.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -286,7 +490,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.0.0b1.post0.dev10+ng7958eb8',
+            VERSION:'1.0.0b1.post0.dev11+ng10c8d42',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

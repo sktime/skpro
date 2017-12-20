@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>skpro package &mdash; skpro 1.0.0b1.post0.dev10+ng7958eb8 documentation</title>
+  <title>skpro package &mdash; skpro 1.0.0b1.post0.dev11+ng10c8d42 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev10+ng7958eb8 documentation" href="../index.html"/>
+    <link rel="top" title="skpro 1.0.0b1.post0.dev11+ng10c8d42 documentation" href="../index.html"/>
         <link rel="up" title="Modules" href="modules.html"/>
         <link rel="next" title="skpro.baselines package" href="skpro.baselines.html"/>
         <link rel="prev" title="Modules" href="modules.html"/> 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev10+ng7958eb8
+                1.0.0b1.post0.dev11+ng10c8d42
               </div>
             
           
@@ -259,10 +259,60 @@ a BayesianVendorInterface and and sample-based Adapter.</p>
 <dt id="skpro.base.BayesianVendorEstimator.Distribution">
 <em class="property">class </em><code class="descname">Distribution</code><span class="sig-paren">(</span><em>estimator</em>, <em>X</em>, <em>selection=slice(None</em>, <em>None</em>, <em>None)</em>, <em>mode='elementwise'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/base.html#BayesianVendorEstimator.Distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.Distribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">skpro.base.Distribution</span></code></p>
+<dl class="attribute">
+<dt id="skpro.base.BayesianVendorEstimator.Distribution.X">
+<code class="descname">X</code><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.Distribution.X" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference of the test features that are ought to correspond
+with the predictive distribution represented by the interface.</p>
+<p>The interface methods (e.g. pdf) can use X to
+construct and exhibit the predictive distribution properties
+of the interface (e.g. construct the predicted pdf based on X)</p>
+<p>Note that X automatically reflects the feature point for which
+the interface is ought to represent the distributional
+prediction. For given M x n features, X will thus represent
+an 1 x n vector that provides the bases for the predicted
+distribution. However, if the <a class="reference internal" href="#skpro.base.vectorvalued" title="skpro.base.vectorvalued"><code class="xref py py-func docutils literal"><span class="pre">vectorvalued()</span></code></a> decorator
+is applied X will represent the full M x n matrix for an
+efficient vectorized implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Getter:</th><td class="field-body">Returns the test features based on the current subset selection</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Setter:</th><td class="field-body">Sets the data reference</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="skpro.base.BayesianVendorEstimator.Distribution.cdf">
 <code class="descname">cdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/base.html#BayesianVendorEstimator.Distribution.cdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.Distribution.cdf" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.base.BayesianVendorEstimator.Distribution.lp2">
+<code class="descname">lp2</code><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.Distribution.lp2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.Distribution.mean">
+<code class="descname">mean</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.Distribution.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean prediction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">The mean prediction that corresponds to self.X</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="skpro.base.BayesianVendorEstimator.Distribution.pdf">
@@ -274,11 +324,189 @@ a BayesianVendorInterface and and sample-based Adapter.</p>
 <code class="descname">point</code><a class="reference internal" href="../_modules/skpro/base.html#BayesianVendorEstimator.Distribution.point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.Distribution.point" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.Distribution.ppf">
+<code class="descname">ppf</code><span class="sig-paren">(</span><em>q</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.Distribution.ppf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Percent point function (inverse of cdf — percentiles).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.Distribution.replicate">
+<code class="descname">replicate</code><span class="sig-paren">(</span><em>selection=None</em>, <em>mode=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.Distribution.replicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replicates the distribution object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>selection</strong> (<em>None | slice | int</em><em> (</em><em>optional</em><em>)</em>) – Subset point selection of the distribution copy</li>
+<li><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> (</em><em>optional</em><em>)</em>) – Interface mode (‘elementwise’ or ‘batch’)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">skpro.base.ProbabilisticEstimator.Distribution</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="skpro.base.BayesianVendorEstimator.Distribution.std">
 <code class="descname">std</code><a class="reference internal" href="../_modules/skpro/base.html#BayesianVendorEstimator.Distribution.std"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.Distribution.std" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="skpro.base.BayesianVendorEstimator.ImplementsEnhancedInterface">
+<em class="property">class </em><code class="descname">ImplementsEnhancedInterface</code><span class="sig-paren">(</span><em>name</em>, <em>bases</em>, <em>clsdict</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.ImplementsEnhancedInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/abc.html#abc.ABCMeta" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">abc.ABCMeta</span></code></a></p>
+<p>Meta-class for distribution interface</p>
+<p>Enhances the distribution interface behind the scenes
+with automatic caching and syntactic sugar for
+element-wise access of the distributions</p>
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.ImplementsEnhancedInterface.mro">
+<code class="descname">mro</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#skpro.base.BayesianVendorEstimator.ImplementsEnhancedInterface.mro" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a type’s method resolution order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.ImplementsEnhancedInterface.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>subclass</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.ImplementsEnhancedInterface.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a virtual subclass of an ABC.</p>
+<p>Returns the subclass, to allow usage as a class decorator.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits the vendor model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>numpy array</em><em> or </em><em>sparse matrix of shape</em><em> [</em><em>n_samples</em><em>,</em><em>n_features</em><em>]</em>) – Training data</li>
+<li><strong>y</strong> (<em>numpy array of shape</em><em> [</em><em>n_samples</em><em>, </em><em>n_targets</em><em>]</em>) – Target values. Will be cast to X’s dtype if necessary</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">returns an instance of self.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predicts using the vendor model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>{array-like</em><em>, </em><em>sparse matrix}</em><em>, </em><em>shape =</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Samples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns predicted distributions</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#skpro.base.BayesianVendorEstimator.Distribution" title="skpro.base.BayesianVendorEstimator.Distribution"><code class="xref py py-class docutils literal"><span class="pre">Distribution</span></code></a> interface representing n_samples predictions</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.score">
+<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample=True</em>, <em>return_std=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the log-loss score</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>np.array</em>) – Features</li>
+<li><strong>y</strong> (<em>np.array</em>) – Labels</li>
+<li><strong>sample</strong> (<em>boolean</em><em>, </em><em>default=True</em>) – If true, loss will be averaged across the sample</li>
+<li><strong>return_std</strong> (<em>boolean</em><em>, </em><em>default=False</em>) – If true, the standard deviation of the
+loss sample will be returned</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Log-loss score</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">mixed</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorEstimator.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorEstimator.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -293,10 +521,63 @@ a BayesianVendorInterface and and sample-based Adapter.</p>
 Bayesian posterior samples. The sample method
 should be cached using the <code class="docutils literal"><span class="pre">functools.lru_cache</span></code>
 decorator to increase performance</p>
+<dl class="method">
+<dt id="skpro.base.BayesianVendorInterface.on_fit">
+<code class="descname">on_fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorInterface.on_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements vendor fit procedure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>np.array</em>) – Training features</li>
+<li><strong>y</strong> (<em>np.array</em>) – Training labels</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.BayesianVendorInterface.on_predict">
+<code class="descname">on_predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.BayesianVendorInterface.on_predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements vendor predict procedure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>np.array</em>) – Test features</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="skpro.base.BayesianVendorInterface.samples">
 <code class="descname">samples</code><a class="reference internal" href="../_modules/skpro/base.html#BayesianVendorInterface.samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.BayesianVendorInterface.samples" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the predictive posterior samples</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Predictive posterior sample</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">np.array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -332,7 +613,31 @@ returned by probabilistic estimators</p>
 <dl class="attribute">
 <dt id="skpro.base.ProbabilisticEstimator.Distribution.X">
 <code class="descname">X</code><a class="headerlink" href="#skpro.base.ProbabilisticEstimator.Distribution.X" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Reference of the test features that are ought to correspond
+with the predictive distribution represented by the interface.</p>
+<p>The interface methods (e.g. pdf) can use X to
+construct and exhibit the predictive distribution properties
+of the interface (e.g. construct the predicted pdf based on X)</p>
+<p>Note that X automatically reflects the feature point for which
+the interface is ought to represent the distributional
+prediction. For given M x n features, X will thus represent
+an 1 x n vector that provides the bases for the predicted
+distribution. However, if the <a class="reference internal" href="#skpro.base.vectorvalued" title="skpro.base.vectorvalued"><code class="xref py py-func docutils literal"><span class="pre">vectorvalued()</span></code></a> decorator
+is applied X will represent the full M x n matrix for an
+efficient vectorized implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Getter:</th><td class="field-body">Returns the test features based on the current subset selection</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Setter:</th><td class="field-body">Sets the data reference</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="skpro.base.ProbabilisticEstimator.Distribution.cdf">
@@ -427,12 +732,63 @@ returned by probabilistic estimators</p>
 <p>Enhances the distribution interface behind the scenes
 with automatic caching and syntactic sugar for
 element-wise access of the distributions</p>
+<dl class="method">
+<dt id="skpro.base.ProbabilisticEstimator.ImplementsEnhancedInterface.mro">
+<code class="descname">mro</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#skpro.base.ProbabilisticEstimator.ImplementsEnhancedInterface.mro" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a type’s method resolution order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.ProbabilisticEstimator.ImplementsEnhancedInterface.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>subclass</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.ProbabilisticEstimator.ImplementsEnhancedInterface.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a virtual subclass of an ABC.</p>
+<p>Returns the subclass, to allow usage as a class decorator.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="method">
 <dt id="skpro.base.ProbabilisticEstimator.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/base.html#ProbabilisticEstimator.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.ProbabilisticEstimator.fit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fits the model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>numpy array</em><em> or </em><em>sparse matrix of shape</em><em> [</em><em>n_samples</em><em>,</em><em>n_features</em><em>]</em>) – Training data</li>
+<li><strong>y</strong> (<em>numpy array of shape</em><em> [</em><em>n_samples</em><em>, </em><em>n_targets</em><em>]</em>) – Target values. Will be cast to X’s dtype if necessary</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">returns an instance of self.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.ProbabilisticEstimator.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.ProbabilisticEstimator.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="skpro.base.ProbabilisticEstimator.name">
@@ -442,12 +798,67 @@ element-wise access of the distributions</p>
 <dl class="method">
 <dt id="skpro.base.ProbabilisticEstimator.predict">
 <code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/base.html#ProbabilisticEstimator.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.ProbabilisticEstimator.predict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Predicts using the model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>{array-like</em><em>, </em><em>sparse matrix}</em><em>, </em><em>shape =</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Samples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns predicted distributions</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#skpro.base.ProbabilisticEstimator.Distribution" title="skpro.base.ProbabilisticEstimator.Distribution"><code class="xref py py-class docutils literal"><span class="pre">Distribution</span></code></a> interface representing n_samples predictions</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="skpro.base.ProbabilisticEstimator.score">
 <code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample=True</em>, <em>return_std=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/base.html#ProbabilisticEstimator.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.ProbabilisticEstimator.score" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the log-loss score</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>np.array</em>) – Features</li>
+<li><strong>y</strong> (<em>np.array</em>) – Labels</li>
+<li><strong>sample</strong> (<em>boolean</em><em>, </em><em>default=True</em>) – If true, loss will be averaged across the sample</li>
+<li><strong>return_std</strong> (<em>boolean</em><em>, </em><em>default=False</em>) – If true, the standard deviation of the
+loss sample will be returned</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Log-loss score</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">mixed</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.ProbabilisticEstimator.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.ProbabilisticEstimator.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -473,17 +884,255 @@ a VendorInterface and Adapter.</p>
 <dt id="skpro.base.VendorEstimator.Distribution">
 <em class="property">class </em><code class="descname">Distribution</code><span class="sig-paren">(</span><em>estimator</em>, <em>X</em>, <em>selection=slice(None</em>, <em>None</em>, <em>None)</em>, <em>mode='elementwise'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/base.html#VendorEstimator.Distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">skpro.base.Distribution</span></code></p>
+<dl class="attribute">
+<dt id="skpro.base.VendorEstimator.Distribution.X">
+<code class="descname">X</code><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution.X" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference of the test features that are ought to correspond
+with the predictive distribution represented by the interface.</p>
+<p>The interface methods (e.g. pdf) can use X to
+construct and exhibit the predictive distribution properties
+of the interface (e.g. construct the predicted pdf based on X)</p>
+<p>Note that X automatically reflects the feature point for which
+the interface is ought to represent the distributional
+prediction. For given M x n features, X will thus represent
+an 1 x n vector that provides the bases for the predicted
+distribution. However, if the <a class="reference internal" href="#skpro.base.vectorvalued" title="skpro.base.vectorvalued"><code class="xref py py-func docutils literal"><span class="pre">vectorvalued()</span></code></a> decorator
+is applied X will represent the full M x n matrix for an
+efficient vectorized implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Getter:</th><td class="field-body">Returns the test features based on the current subset selection</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Setter:</th><td class="field-body">Sets the data reference</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.Distribution.cdf">
+<code class="descname">cdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution.cdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.base.VendorEstimator.Distribution.lp2">
+<code class="descname">lp2</code><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution.lp2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.Distribution.mean">
+<code class="descname">mean</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean prediction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">The mean prediction that corresponds to self.X</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.Distribution.pdf">
+<code class="descname">pdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution.pdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.base.VendorEstimator.Distribution.point">
+<code class="descname">point</code><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution.point" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.Distribution.ppf">
+<code class="descname">ppf</code><span class="sig-paren">(</span><em>q</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution.ppf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Percent point function (inverse of cdf — percentiles).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.Distribution.replicate">
+<code class="descname">replicate</code><span class="sig-paren">(</span><em>selection=None</em>, <em>mode=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution.replicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replicates the distribution object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>selection</strong> (<em>None | slice | int</em><em> (</em><em>optional</em><em>)</em>) – Subset point selection of the distribution copy</li>
+<li><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> (</em><em>optional</em><em>)</em>) – Interface mode (‘elementwise’ or ‘batch’)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">skpro.base.ProbabilisticEstimator.Distribution</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.base.VendorEstimator.Distribution.std">
+<code class="descname">std</code><a class="headerlink" href="#skpro.base.VendorEstimator.Distribution.std" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="skpro.base.VendorEstimator.ImplementsEnhancedInterface">
+<em class="property">class </em><code class="descname">ImplementsEnhancedInterface</code><span class="sig-paren">(</span><em>name</em>, <em>bases</em>, <em>clsdict</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.ImplementsEnhancedInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/abc.html#abc.ABCMeta" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">abc.ABCMeta</span></code></a></p>
+<p>Meta-class for distribution interface</p>
+<p>Enhances the distribution interface behind the scenes
+with automatic caching and syntactic sugar for
+element-wise access of the distributions</p>
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.ImplementsEnhancedInterface.mro">
+<code class="descname">mro</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#skpro.base.VendorEstimator.ImplementsEnhancedInterface.mro" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a type’s method resolution order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.ImplementsEnhancedInterface.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>subclass</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.ImplementsEnhancedInterface.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a virtual subclass of an ABC.</p>
+<p>Returns the subclass, to allow usage as a class decorator.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="method">
 <dt id="skpro.base.VendorEstimator.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/base.html#VendorEstimator.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.VendorEstimator.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits the vendor model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>numpy array</em><em> or </em><em>sparse matrix of shape</em><em> [</em><em>n_samples</em><em>,</em><em>n_features</em><em>]</em>) – Training data</li>
+<li><strong>y</strong> (<em>numpy array of shape</em><em> [</em><em>n_samples</em><em>, </em><em>n_targets</em><em>]</em>) – Target values. Will be cast to X’s dtype if necessary</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">returns an instance of self.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="skpro.base.VendorEstimator.predict">
 <code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/base.html#VendorEstimator.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.base.VendorEstimator.predict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Predicts using the vendor model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>{array-like</em><em>, </em><em>sparse matrix}</em><em>, </em><em>shape =</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Samples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns predicted distributions</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#skpro.base.VendorEstimator.Distribution" title="skpro.base.VendorEstimator.Distribution"><code class="xref py py-class docutils literal"><span class="pre">Distribution</span></code></a> interface representing n_samples predictions</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.score">
+<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample=True</em>, <em>return_std=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the log-loss score</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>np.array</em>) – Features</li>
+<li><strong>y</strong> (<em>np.array</em>) – Labels</li>
+<li><strong>sample</strong> (<em>boolean</em><em>, </em><em>default=True</em>) – If true, loss will be averaged across the sample</li>
+<li><strong>return_std</strong> (<em>boolean</em><em>, </em><em>default=False</em>) – If true, the standard deviation of the
+loss sample will be returned</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Log-loss score</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">mixed</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.base.VendorEstimator.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.base.VendorEstimator.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -583,6 +1232,25 @@ density cdf/pdf interface</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="skpro.density.DensityAdapter.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.density.DensityAdapter.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="skpro.density.DensityAdapter.pdf">
 <code class="descname">pdf</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/density.html#DensityAdapter.pdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.density.DensityAdapter.pdf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Probability density function</p>
@@ -595,6 +1263,26 @@ density cdf/pdf interface</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mixed  Density function evaluated at x</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.density.DensityAdapter.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.density.DensityAdapter.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
 </tr>
 </tbody>
 </table>
@@ -614,9 +1302,48 @@ to transform samples</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="skpro.density.EmpiricalDensityAdapter.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.density.EmpiricalDensityAdapter.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="skpro.density.EmpiricalDensityAdapter.pdf">
 <code class="descname">pdf</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/density.html#EmpiricalDensityAdapter.pdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.density.EmpiricalDensityAdapter.pdf" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.density.EmpiricalDensityAdapter.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.density.EmpiricalDensityAdapter.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -632,9 +1359,48 @@ to transform samples</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="skpro.density.KernelDensityAdapter.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.density.KernelDensityAdapter.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="skpro.density.KernelDensityAdapter.pdf">
 <code class="descname">pdf</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/density.html#KernelDensityAdapter.pdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.density.KernelDensityAdapter.pdf" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.density.KernelDensityAdapter.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.density.KernelDensityAdapter.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -693,6 +1459,61 @@ to transform samples</p>
 <dt id="skpro.ensemble.BaggingRegressor.Distribution">
 <em class="property">class </em><code class="descname">Distribution</code><span class="sig-paren">(</span><em>estimator</em>, <em>X</em>, <em>distributions</em>, <em>n_estimators</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/ensemble.html#BaggingRegressor.Distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">skpro.base.Distribution</span></code></p>
+<dl class="attribute">
+<dt id="skpro.ensemble.BaggingRegressor.Distribution.X">
+<code class="descname">X</code><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution.X" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference of the test features that are ought to correspond
+with the predictive distribution represented by the interface.</p>
+<p>The interface methods (e.g. pdf) can use X to
+construct and exhibit the predictive distribution properties
+of the interface (e.g. construct the predicted pdf based on X)</p>
+<p>Note that X automatically reflects the feature point for which
+the interface is ought to represent the distributional
+prediction. For given M x n features, X will thus represent
+an 1 x n vector that provides the bases for the predicted
+distribution. However, if the <a class="reference internal" href="#skpro.base.vectorvalued" title="skpro.base.vectorvalued"><code class="xref py py-func docutils literal"><span class="pre">vectorvalued()</span></code></a> decorator
+is applied X will represent the full M x n matrix for an
+efficient vectorized implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Getter:</th><td class="field-body">Returns the test features based on the current subset selection</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Setter:</th><td class="field-body">Sets the data reference</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.Distribution.cdf">
+<code class="descname">cdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution.cdf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.ensemble.BaggingRegressor.Distribution.lp2">
+<code class="descname">lp2</code><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution.lp2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.Distribution.mean">
+<code class="descname">mean</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean prediction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">The mean prediction that corresponds to self.X</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="skpro.ensemble.BaggingRegressor.Distribution.pdf">
 <code class="descname">pdf</code><span class="sig-paren">(</span><em>x</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution.pdf" title="Permalink to this definition">¶</a></dt>
@@ -703,12 +1524,145 @@ to transform samples</p>
 <code class="descname">point</code><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution.point" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.Distribution.ppf">
+<code class="descname">ppf</code><span class="sig-paren">(</span><em>q</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution.ppf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Percent point function (inverse of cdf — percentiles).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.Distribution.replicate">
+<code class="descname">replicate</code><span class="sig-paren">(</span><em>selection=None</em>, <em>mode=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution.replicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replicates the distribution object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>selection</strong> (<em>None | slice | int</em><em> (</em><em>optional</em><em>)</em>) – Subset point selection of the distribution copy</li>
+<li><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> (</em><em>optional</em><em>)</em>) – Interface mode (‘elementwise’ or ‘batch’)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">skpro.base.ProbabilisticEstimator.Distribution</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="skpro.ensemble.BaggingRegressor.Distribution.std">
 <code class="descname">std</code><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.Distribution.std" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
+
+<dl class="class">
+<dt id="skpro.ensemble.BaggingRegressor.ImplementsEnhancedInterface">
+<em class="property">class </em><code class="descname">ImplementsEnhancedInterface</code><span class="sig-paren">(</span><em>name</em>, <em>bases</em>, <em>clsdict</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.ImplementsEnhancedInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/abc.html#abc.ABCMeta" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">abc.ABCMeta</span></code></a></p>
+<p>Meta-class for distribution interface</p>
+<p>Enhances the distribution interface behind the scenes
+with automatic caching and syntactic sugar for
+element-wise access of the distributions</p>
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.ImplementsEnhancedInterface.mro">
+<code class="descname">mro</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#skpro.ensemble.BaggingRegressor.ImplementsEnhancedInterface.mro" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a type’s method resolution order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.ImplementsEnhancedInterface.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>subclass</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.ImplementsEnhancedInterface.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a virtual subclass of an ABC.</p>
+<p>Returns the subclass, to allow usage as a class decorator.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="skpro.ensemble.BaggingRegressor.estimators_samples_">
+<code class="descname">estimators_samples_</code><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.estimators_samples_" title="Permalink to this definition">¶</a></dt>
+<dd><p>The subset of drawn samples for each base estimator.</p>
+<p>Returns a dynamically generated list of boolean masks identifying
+the samples used for fitting each member of the ensemble, i.e.,
+the in-bag samples.</p>
+<p>Note: the list is re-created at each call to the property in order
+to reduce the object memory footprint by not storing the sampling
+data. Thus fetching the property may be slower than expected.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.fit" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Build a Bagging ensemble of estimators from the training</dt>
+<dd>set (X, y).</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>{array-like</em><em>, </em><em>sparse matrix} of shape =</em><em> [</em><em>n_samples</em><em>, </em><em>n_features</em><em>]</em>) – The training input samples. Sparse matrices are accepted only if
+they are supported by the base estimator.</li>
+<li><strong>y</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> [</em><em>n_samples</em><em>]</em>) – The target values (class labels in classification, real numbers in
+regression).</li>
+<li><strong>sample_weight</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> [</em><em>n_samples</em><em>] or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – Sample weights. If None, then samples are equally weighted.
+Note that this is supported only if the base estimator supports
+sample weighting.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong> – Returns self.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)">object</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="skpro.ensemble.BaggingRegressor.predict">
@@ -726,6 +1680,53 @@ they are supported by the base estimator.</td>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>y</strong> – The predicted bagged distributions.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">skpro.base.Distribution = [n_samples]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.score">
+<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample=True</em>, <em>return_std=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the log-loss score</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>np.array</em>) – Features</li>
+<li><strong>y</strong> (<em>np.array</em>) – Labels</li>
+<li><strong>sample</strong> (<em>boolean</em><em>, </em><em>default=True</em>) – If true, loss will be averaged across the sample</li>
+<li><strong>return_std</strong> (<em>boolean</em><em>, </em><em>default=False</em>) – If true, the standard deviation of the
+loss sample will be returned</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Log-loss score</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">mixed</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="skpro.ensemble.BaggingRegressor.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.ensemble.BaggingRegressor.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
 </tr>
 </tbody>
 </table>
@@ -1099,7 +2100,7 @@ If true, float representing the percentage is returned</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.0.0b1.post0.dev10+ng7958eb8',
+            VERSION:'1.0.0b1.post0.dev11+ng10c8d42',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -18,7 +18,10 @@
 ./_images/overview.png
 ./_images/parametric.png
 ./_images/simple_example_plot.png
+./_modules/abc.html
 ./_modules/index.html
+./_modules/sklearn/base.html
+./_modules/sklearn/ensemble/bagging.html
 ./_modules/skpro/base.html
 ./_modules/skpro/baselines/density.html
 ./_modules/skpro/density.html
