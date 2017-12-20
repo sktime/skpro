@@ -248,3 +248,8 @@ intersphinx_mapping = {
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable', None),
     'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
 }
+
+
+# -- Autodoc -----
+
+autodoc_default_flags = ['members', 'inherited-members', 'show-inheritance']

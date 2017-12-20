@@ -229,7 +229,6 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         """
 
         def __init__(self, estimator, X, selection=slice(None), mode='elementwise'):
-
             self.estimator = estimator
             self._X = X
             self.index = slice(None)
@@ -243,6 +242,26 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
         @property
         def X(self):
+            """
+            Reference of the test features that are ought to correspond
+            with the predictive distribution represented by the interface.
+
+            The interface methods (e.g. pdf) can use X to
+            construct and exhibit the predictive distribution properties
+            of the interface (e.g. construct the predicted pdf based on X)
+
+            Note that X automatically reflects the feature point for which
+            the interface is ought to represent the distributional
+            prediction. For given M x n features, X will thus represent
+            an 1 x n vector that provides the bases for the predicted
+            distribution. However, if the :func:`.vectorvalued` decorator
+            is applied X will represent the full M x n matrix for an
+            efficient vectorized implementation.
+
+            :getter: Returns the test features based on the current subset selection
+            :setter: Sets the data reference
+            :type: array
+            """
             return self._X[self.selection, :][self.index]
 
         @X.setter
@@ -440,14 +459,60 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         return cls.Distribution
 
     def predict(self, X):
+        """Predicts using the model
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        :class:`.Distribution` interface representing n_samples predictions
+            Returns predicted distributions
+        """
         return self._distribution()(self, X)
 
     def fit(self, X, y):
+        """
+        Fits the model
+
+        Parameters
+        ----------
+        X : numpy array or sparse matrix of shape [n_samples,n_features]
+            Training data
+        y : numpy array of shape [n_samples, n_targets]
+            Target values. Will be cast to X's dtype if necessary
+
+        Returns
+        -------
+        self : returns an instance of self.
+        """
         warnings.warn('The estimator doesn\'t implement a fit procedure', UserWarning)
 
         return self
 
     def score(self, X, y, sample=True, return_std=False):
+        """
+        Returns the log-loss score
+
+        Parameters
+        ----------
+            X:  np.array
+                Features
+            y:  np.array
+                Labels
+            sample: boolean, default=True
+                If true, loss will be averaged across the sample
+            return_std: boolean, default=False
+                If true, the standard deviation of the
+                loss sample will be returned
+
+        Returns
+        -------
+        mixed
+            Log-loss score
+        """
         return make_scorer(log_loss, greater_is_better=False)(self, X, y, sample=sample, return_std=return_std)
 
 
@@ -508,6 +573,15 @@ class VendorEstimator(ProbabilisticEstimator):
         pass
 
     def __init__(self, model=None, adapter=None):
+        """
+
+        Parameters
+        ----------
+        model : :class:`.VendorInterface`
+            The vendor model
+        adapter :class:`.DensityAdapter`
+            Used density adapter
+        """
         self.model = self._check_model(model)
         self.adapter = self._check_adapter(adapter)
 
@@ -549,11 +623,37 @@ class VendorEstimator(ProbabilisticEstimator):
         return adapter
 
     def fit(self, X, y):
+        """
+        Fits the vendor model
+
+        Parameters
+        ----------
+        X : numpy array or sparse matrix of shape [n_samples,n_features]
+            Training data
+        y : numpy array of shape [n_samples, n_targets]
+            Target values. Will be cast to X's dtype if necessary
+
+        Returns
+        -------
+        self : returns an instance of self.
+        """
         self.model.on_fit(X, y)
 
         return self
 
     def predict(self, X):
+        """Predicts using the vendor model
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        :class:`.Distribution` interface representing n_samples predictions
+            Returns predicted distributions
+        """
         self.model.on_predict(X)
 
         return super().predict(X)
@@ -573,6 +673,14 @@ class BayesianVendorInterface(VendorInterface):
     @abc.abstractmethod
     @functools.lru_cache()
     def samples(self):
+        """
+        Returns the predictive posterior samples
+
+        Returns
+        -------
+        np.array
+            Predictive posterior sample
+        """
         raise NotImplementedError()
 
 
@@ -604,11 +712,31 @@ class BayesianVendorEstimator(VendorEstimator):
             return self.samples.std(axis=1)
 
         def cdf(self, x):
+            """ Cumulative density function
+
+            Parameters
+            ----------
+            x
+
+            Returns
+            -------
+            mixed  Cumulative density function evaluated at x
+            """
             ensure_existence(self.adapters_[self.index].cdf)
 
             return self.adapters_[self.index].cdf(x)
 
         def pdf(self, x):
+            """ Probability density function
+
+            Parameters
+            ----------
+            x
+
+            Returns
+            -------
+            mixed  Density function evaluated at x
+            """
             ensure_existence(self.adapters_[self.index].pdf)
 
             return self.adapters_[self.index].pdf(x)

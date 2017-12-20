@@ -141,6 +141,16 @@ class ParametricEstimator(ProbabilisticEstimator):
             return self.estimator.estimators.predict('point', self.X)
 
         def pdf(self, x):
+            """ Probability density function
+
+            Parameters
+            ----------
+            x
+
+            Returns
+            -------
+            mixed  Density function evaluated at x
+            """
             return self.estimator.shape_.pdf(x, loc=self[self.index].point(), scale=self[self.index].std())
 
         def cdf(self, x):
