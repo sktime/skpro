@@ -15,10 +15,10 @@ Contents
    Installation <installation>
    User guide <user_guide>
    Baseline strategies <baselines>
-   Parametric estimation <parametric>
+   Composite parametric prediction <parametric>
    Vendor integrations  <vendors>
    Workflow automation <workflow>
-   Extending and advance usage <advanced>
+   Custom strategies <extending>
    API Reference <api/modules>
    Changelog <changes>
    Authors <authors>

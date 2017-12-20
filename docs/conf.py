@@ -100,6 +100,8 @@ exclude_patterns = ['_build']
 # output. They are ignored by default.
 # show_authors = False
 
+mathjax_path="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 

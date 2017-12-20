@@ -36,7 +36,7 @@ class ResidualEstimator(BaseEstimator):
 
     Predicts residuals of an estimator using a scikit-learn estimator.
 
-    TODO: expand documentation
+    Read more in the :ref:`User Guide <parametric>`.
     """
 
     def __init__(self, residual_estimator, base_estimator='point', fit_transform='squared_error', predict_transform=None, filter_zero_variance=False):

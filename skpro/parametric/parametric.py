@@ -122,6 +122,13 @@ class EstimatorManager:
 
 
 class ParametricEstimator(ProbabilisticEstimator):
+    """
+    Composite parametric prediction strategy.
+
+    Uses classical estimators to predict the defining parameters of continuous distributions.
+
+    Read more in the :ref:`User Guide <parametric>`.
+    """
 
     class Distribution(ProbabilisticEstimator.Distribution):
 
