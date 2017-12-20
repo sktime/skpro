@@ -350,6 +350,15 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             """
             raise NotImplementedError()
 
+        def mean(self, *args, **kwargs):
+            """ Mean prediction
+
+            Returns
+            -------
+            The mean prediction that corresponds to self.X
+            """
+            return self.point()
+
         @abc.abstractmethod
         def std(self):
             """ Variance prediction
