@@ -1,5 +1,6 @@
 ./_images/logo.png
 ./_images/overview.png
+./_images/parametric.png
 ./_images/simple_example_plot.png
 ./_modules/index.html
 ./_modules/skpro/base.html
@@ -68,6 +69,7 @@
 ./_static/logo/logo.png
 ./_static/minus.png
 ./_static/overview.png
+./_static/parametric.png
 ./_static/plus.png
 ./_static/pygments.css
 ./_static/searchtools.js
