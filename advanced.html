@@ -1,0 +1,328 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Meta-modelling API &mdash; skpro 1.0.0b1.post0.dev13+ng9e6dc85 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="skpro 1.0.0b1.post0.dev13+ng9e6dc85 documentation" href="index.html"/>
+        <link rel="next" title="Workflow automation" href="workflow.html"/>
+        <link rel="prev" title="Vendors integrations" href="vendors.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> skpro
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.0b1.post0.dev13+ng9e6dc85
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="baselines.html">Baseline strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parametric.html">Composite parametric prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vendors.html">Vendor integrations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Meta-modelling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hyperparamter-optimization">Hyperparamter optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pipelines">Pipelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ensemble-methods">Ensemble methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Workflow automation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extending.html">Custom strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">skpro</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Meta-modelling API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/advanced.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="meta-modelling-api">
+<h1>Meta-modelling API<a class="headerlink" href="#meta-modelling-api" title="Permalink to this headline">¶</a></h1>
+<p>Meta-modelling API concepts are required for a modular implementation of higher-order modelling features such as hyper-parameter optimization or ensemble methods. Following the principle of composition the meta-algorithms are implemented as modular compositions of the simpler algorithms. Technically, the meta-strategies are realised by meta-estimators that are estimator-like objects which perform certain methods with a given estimators. They hence take estimator type objects as some of their initializing inputs, and when initialized exhibit the fit-predict logic that implements the meta-algorithm when instantiated on the wrapped estimators.</p>
+<div class="section" id="hyperparamter-optimization">
+<h2>Hyperparamter optimization<a class="headerlink" href="#hyperparamter-optimization" title="Permalink to this headline">¶</a></h2>
+<p>The optimization of model hyperparameter, for instance, can be implemented using scikit’s grid or random search meta-estimators, for example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets.base</span> <span class="kn">import</span> <span class="n">load_boston</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+
+<span class="kn">from</span> <span class="nn">skpro.parametric</span> <span class="kn">import</span> <span class="n">ParametricEstimator</span>
+<span class="kn">from</span> <span class="nn">skpro.parametric.estimators</span> <span class="kn">import</span> <span class="n">Constant</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">ParametricEstimator</span><span class="p">(</span>
+    <span class="n">point</span><span class="o">=</span><span class="n">RandomForestRegressor</span><span class="p">(),</span>
+    <span class="n">std</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="s1">&#39;mean(y)&#39;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Initiate GridSearch meta-estimator</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;point__max_depth&#39;</span><span class="p">:</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">]}</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
+<span class="c1"># Optimize hyperparameters</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_boston</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Best score is </span><span class="si">%f</span><span class="s1"> for parameter: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">best_score_</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">best_params_</span><span class="p">))</span>
+<span class="c1"># &gt;&gt;&gt; Best score is -4.058729 for parameter: {&#39;point__max_depth&#39;: 15}</span>
+</pre></div>
+</div>
+<p>Read the <a class="reference external" href="http://scikit-learn.org/stable/modules/grid_search.html">scikit documentation</a> for more information.</p>
+</div>
+<div class="section" id="pipelines">
+<h2>Pipelines<a class="headerlink" href="#pipelines" title="Permalink to this headline">¶</a></h2>
+<p>Probabilistic estimators work well with scikit-learn’s <code class="docutils literal"><span class="pre">Pipeline</span></code> meta-estimator that allows to combine multiple estimators into one. Read the <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html">pipeline documentation</a> to learn more.</p>
+</div>
+<div class="section" id="ensemble-methods">
+<h2>Ensemble methods<a class="headerlink" href="#ensemble-methods" title="Permalink to this headline">¶</a></h2>
+<p>The framework provides experimental support for ensemble methods. Currently, this includes bagging in a regression setting which is implemented by the <code class="docutils literal"><span class="pre">BaggingRegressor</span></code> estimator in the ensemble module. The meta-estimator fits base regressors (i.e. probabilistic estimators) on random subsets of the original dataset and then aggregates their individual predictions in a distribution interface to form a final prediction. The implementation is based on scikit’s meta-estimator of the same name but introduces support for the probabilistic setting.</p>
+<p>The following example demonstrates the use of the bagging procedure:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeRegressor</span>
+
+<span class="kn">from</span> <span class="nn">skpro.ensemble</span> <span class="kn">import</span> <span class="n">BaggingRegressor</span> <span class="k">as</span> <span class="n">SkproBaggingRegressor</span>
+<span class="kn">from</span> <span class="nn">skpro.metrics</span> <span class="kn">import</span> <span class="n">log_loss</span> <span class="k">as</span> <span class="n">loss</span>
+<span class="kn">from</span> <span class="nn">skpro.parametric</span> <span class="kn">import</span> <span class="n">ParametricEstimator</span>
+<span class="kn">from</span> <span class="nn">skpro.workflow.manager</span> <span class="kn">import</span> <span class="n">DataManager</span>
+
+
+<span class="k">def</span> <span class="nf">prediction</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">X_train</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">X_test</span><span class="p">)</span>
+
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="s1">&#39;boston&#39;</span><span class="p">)</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span>
+
+<span class="n">baseline_prediction</span> <span class="o">=</span> <span class="n">prediction</span><span class="p">(</span>
+    <span class="n">ParametricEstimator</span><span class="p">(</span><span class="n">point</span><span class="o">=</span><span class="n">clf</span><span class="p">),</span>
+    <span class="n">data</span>
+<span class="p">)</span>
+
+<span class="n">skpro_bagging_prediction</span> <span class="o">=</span> <span class="n">prediction</span><span class="p">(</span>
+    <span class="n">SkproBaggingRegressor</span><span class="p">(</span>
+        <span class="n">ParametricEstimator</span><span class="p">(</span><span class="n">point</span><span class="o">=</span><span class="n">clf</span><span class="p">),</span>
+        <span class="n">n_estimators</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span>
+    <span class="p">),</span>
+    <span class="n">data</span>
+<span class="p">)</span>
+
+<span class="n">l1</span><span class="p">,</span> <span class="n">l2</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">y_test</span><span class="p">,</span> <span class="n">baseline_prediction</span><span class="p">),</span> \
+         <span class="n">loss</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">y_test</span><span class="p">,</span> <span class="n">skpro_bagging_prediction</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Baseline: &#39;</span><span class="p">,</span> <span class="n">l1</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Bagged model:&#39;</span><span class="p">,</span> <span class="n">l2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To learn more, you may also read <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html">scikit’s documentation of the BaggingRegressor</a>.</p>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="workflow.html" class="btn btn-neutral float-right" title="Workflow automation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="vendors.html" class="btn btn-neutral" title="Vendors integrations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, The Alan Turing Institute; University College London.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0.0b1.post0.dev13+ng9e6dc85',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

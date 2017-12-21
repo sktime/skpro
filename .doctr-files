@@ -39,6 +39,7 @@
 ./_modules/skpro/workflow/manager/models.html
 ./_modules/skpro/workflow/table/table.html
 ./_modules/skpro/workflow/utils.html
+./_sources/advanced.rst.txt
 ./_sources/api/modules.rst.txt
 ./_sources/api/skpro.baselines.rst.txt
 ./_sources/api/skpro.parametric.rst.txt
@@ -99,6 +100,7 @@
 ./_static/up-pressed.png
 ./_static/up.png
 ./_static/websupport.js
+./advanced.html
 ./api/modules.html
 ./api/skpro.baselines.html
 ./api/skpro.html

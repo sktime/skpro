@@ -1,7 +1,7 @@
 User Guide
 **********
 
-This guide will give a short overview of the basic functions of the ``skpro`` package.
+This guide will give an overview of the available modules and functionalities of the ``skpro`` package.
 For further details you may explore the `API documentation <api/modules.html>`_.
 
 .. note:: skpro uses many of scikit-learn's building principles and conventions. If you aren't familiar with the scikit-learn package you may read its  `basic tutorial <http://scikit-learn.org/stable/tutorial/basic/tutorial.html>`_.
@@ -21,10 +21,12 @@ probabilistic prediction models. Like the ``Estimator`` class it offers a fit an
 
 The predictions obtained from skpro's estimators are hence of a genuine probabilistic kind that represent predicted probability distributions for each data point. For example, if predictions for a vector ``X`` of length k are obtained, the returned ``y_pred`` object represents k predicted distributions. ``y_pred[i]`` therefore provides access to the point prediction (e.g. mean) of the i-th distribution, ``y_pred.std()`` will return a vector of length k that contains the standard deviations of the predicted distribution, and so forth. In many cases, such as plotting and error calculation, the distributions objects can thus be handled like scikit's commonly returned prediction vectors.
 
-Probabilistic Estimators
-------------------------
+To evaluate the accuracy of the predicted distributions, skpro provides probabilistic loss metrics. To calculate the loss between prediction and the true target values, you can choose from a variety of available functions in the ``skpro.metrics`` module. In the default setting, all loss functions return the averaged loss of the sample. If you'd like to obtain the point-wise loss instead, set ``sample=False``. You can also obtain the confidence interval of the loss by setting ``return_std`` to ``True``. For a detailed documentation of the metrics package read the :doc:`API documentation <api/modules>`.
 
-How can probabilistic prediction models be learned, specifically  strategies that predict probability distributions? skpro offers a variety of strategies, specifically:
+Available prediction strategies
+-------------------------------
+
+How can probabilistic prediction models be learned, specifically  strategies that predict probability distributions? skpro offers a variety of strategies both from the frequentist and Bayesian domain. Please continue to read about strategies of interest below:
 
 * :doc:`Baseline strategies <baselines>`, for instance a kernel density estimation on the labels
 * :doc:`Parametric estimation <parametric>`, that estimates parameters of the predicted distributions
@@ -37,48 +39,13 @@ The figure below shows an overview of the skpro's base API which implements the 
 
    Overview of the framework’s core API where abstract classes are denoted in italic font and inheritance and dependence are indicated by arrows: The seminal probabilistic estimator object directly inherits from scikit-learn’s base estimator object and thus implements the fit-predict logic that produce probabilistic predictions in form of a distribution object. A vendor estimator allows for the integration of 3rd party models such as the Bayesian PyMC prediction algorithms.
 
-Metrics
--------
-
-To evaluate the accuracy of the predicted distributions, skpro provides probabilistic loss metrics. To calculate the loss between prediction and the true target values, you can choose from a variety of available functions in the ``skpro.metrics`` module. In the default setting, all loss functions return the averaged loss of the sample. If you'd like to obtain the point-wise loss instead, set ``sample=False``. You can also obtain the confidence interval of the loss by setting ``return_std`` to ``True``. For a detailed documentation of the metrics package read the :doc:`API documentation <api/modules>`.
-
-Meta-estimators
+Advanced topics
 ---------------
 
-Meta-estimators are estimator-like objects that can be used to perform methods on given estimators. skpro's probabilistic estimators are widely compatible with the meta-estimators of scikit-learn or derived from the scikit library.
+As mentioned earlier, skpro comes with an advanced logic for :doc:`workflow automation <workflow>`. You may also want to read about :doc:`meta-modelling strategies <advanced>`  and the :doc:`integration of custom models <extending>`.
 
-Hyperparamter optimization
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The optimization of model hyperparameter, for instance, can be implemented using scikit's grid or random search meta-estimators, for example:
-
-.. literalinclude:: ../examples/parametric/hyperparameters.py
-    :language: python
-
-Read the `scikit documentation <http://scikit-learn.org/stable/modules/grid_search.html>`_ for more information.
-
-Pipelines
-~~~~~~~~~
-
-Probabilistic estimators work well with scikit-learn's ``Pipeline`` meta-estimator that allows to combine multiple estimators into one. Read the `pipeline documentation <http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html>`_ to learn more.
-
-
-Ensemble methods
-~~~~~~~~~~~~~~~~
-
-The framework provides experimental support for ensemble methods. Currently, this includes bagging in a regression setting which is implemented by the ``BaggingRegressor`` estimator in the ensemble module. The meta-estimator fits base regressors (i.e. probabilistic estimators) on random subsets of the original dataset and then aggregates their individual predictions in a distribution interface to form a final prediction. The implementation is based on scikit's meta-estimator of the same name but introduces support for the probabilistic setting.
-
-The following example demonstrates the use of the bagging procedure:
-
-.. literalinclude:: ../examples/parametric/bagging.py
-    :language: python
-
-To learn more, you may also read `scikit's documentation of the BaggingRegressor <http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingRegressor.html>`_.
-
-Where to go from here
----------------------
-
-You may want to continue to read about advanced techniques, specifically about the :doc:`workflow automation <workflow>` and the :doc:`integration of custom models <extending>`.
+Help and support
+----------------
 
 If you have question, feel free to open an issue on our `GitHub page <https://github.com/alan-turing-institute/skpro/issues>`_.
 
