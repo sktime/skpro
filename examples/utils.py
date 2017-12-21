@@ -8,8 +8,8 @@ def plot_performance(y_test, y_pred):
     fig, ax1 = pyplot.subplots()
 
     ax1.plot(y_test, y_test, 'g.', label=u'Optimum')
-    sigma = np.std(y_pred) / np.sqrt(len(y_pred))
-    ax1.errorbar(y_test, y_pred.point(), yerr=sigma, fmt='b.', label=u'Predictions', ecolor='r', elinewidth='0.5')
+    sigma = np.std(y_pred)
+    ax1.errorbar(y_test, y_pred.point(), yerr=sigma, label=u'Predictions', fmt='b.', ecolor='r', linewidth=0.5)
     ax1.set_ylabel('Predicted $y_{pred}$')
     ax1.set_xlabel('Correct label $y_{true}$')
     ax1.legend(loc='best')
