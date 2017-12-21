@@ -17,6 +17,7 @@ Contents
    Baseline strategies <baselines>
    Composite parametric prediction <parametric>
    Vendor integrations  <vendors>
+   Meta-modelling <advanced>
    Workflow automation <workflow>
    Custom strategies <extending>
    API Reference <api/modules>
