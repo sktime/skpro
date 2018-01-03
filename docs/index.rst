@@ -23,7 +23,7 @@ Contents
    API Reference <api/modules>
    Changelog <changes>
    Authors <authors>
-   Contributing <contributing>
+   Contributing & Citation <contributing>
    License <license>
 
 

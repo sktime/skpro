@@ -27,7 +27,10 @@ Installation is easy using Python's package manager
 
     $ pip install skpro
 
-### Contributing
+### Contributing & Citation
 
 We welcome contributions to the skpro project. Please read our [contribution guide](/CONTRIBUTING.md).
+
+If you use skpro in a scientific publication, we would appreciate [citations](CITATION.rst).
+
 
