@@ -9,5 +9,5 @@ Gressmann, F., Király, F. J., Mateen, B., & Oberhauser, H. (2018). Probabilisti
       url = {http://arxiv.org/abs/1801.00753},
       urldate = {2018-01-03},
       date = {2018-01-02},
-      author = {Gressmann, Frithjof and Király, Franz J. and Mateen, Bilal and Oberhauser, Harald}
+      author = {Gressmann, Frithjof and Kir{\'a}ly, Franz J. and Mateen, Bilal and Oberhauser, Harald}
     }
