@@ -4,7 +4,21 @@ from matplotlib import pyplot
 from skpro.metrics import log_loss
 
 
-def plot_performance(y_test, y_pred):
+def plot_performance(y_test, y_pred, filename=None):
+    """
+    Visualises the prediction performance
+
+    Parameters
+    ----------
+    y_test  Ground truth
+    y_pred  Predictions
+    filename    If string, figure will be saved to file
+
+    Returns
+    -------
+    Matplotlib plot
+    """
+
     fig, ax1 = pyplot.subplots()
 
     ax1.plot(y_test, y_test, 'g.', label=u'Optimum')
@@ -22,6 +36,7 @@ def plot_performance(y_test, y_pred):
     ax2.tick_params(colors='y')
     ax2.legend(loc=1)
 
-    pyplot.show()
-
-    # pyplot.savefig('../docs/_static/exported.png', transparent=True, bbox_inches='tight')
+    if not isinstance(filename, str):
+        pyplot.show()
+    else:
+        pyplot.savefig(filename, transparent=True, bbox_inches='tight')

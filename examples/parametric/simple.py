@@ -23,5 +23,7 @@ loss = log_loss(y_test, y_pred, sample=True, return_std=True)
 print('Loss: %f+-%f' % loss)
 
 # Plot the performance
-from utils import plot_performance
-plot_performance(y_test, y_pred)
+import sys
+sys.path.append('../')
+import utils
+utils.plot_performance(y_test, y_pred)
