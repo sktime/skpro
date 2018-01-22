@@ -17,6 +17,7 @@
 ./_images/math/e8eb12f9407362d0fc035a12094fcc7797dcb69a.png
 ./_images/overview.png
 ./_images/parametric.png
+./_images/pymc_example_plot.png
 ./_images/simple_example_plot.png
 ./_modules/abc.html
 ./_modules/index.html
@@ -93,6 +94,7 @@
 ./_static/parametric.png
 ./_static/plus.png
 ./_static/pygments.css
+./_static/pymc_example_plot.png
 ./_static/searchtools.js
 ./_static/simple_example_plot.png
 ./_static/underscore-1.3.1.js

@@ -8,7 +8,6 @@ Subpackages
 
     skpro.baselines
     skpro.parametric
-    skpro.vendors
     skpro.workflow
 
 Submodules
