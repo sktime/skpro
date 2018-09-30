@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>skpro.parametric package &mdash; skpro 1.0.0b1.post0.dev16+ng89b4307 documentation</title>
+  <title>skpro.parametric package &mdash; skpro 1.0.0b1.post0.dev20+ng54bbfd0 documentation</title>
   
 
   
@@ -24,28 +24,19 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev16+ng89b4307 documentation" href="../index.html"/>
-        <link rel="up" title="skpro package" href="skpro.html"/>
-        <link rel="next" title="skpro.workflow package" href="skpro.workflow.html"/>
-        <link rel="prev" title="skpro.baselines package" href="skpro.baselines.html"/> 
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="skpro.vendors package" href="skpro.vendors.html" />
+    <link rel="prev" title="skpro.baselines package" href="skpro.baselines.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -67,7 +58,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev16+ng89b4307
+                1.0.0b1.post0.dev20+ng54bbfd0
               </div>
             
           
@@ -106,6 +97,7 @@
 <li class="toctree-l3 current"><a class="reference internal" href="skpro.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="skpro.baselines.html">skpro.baselines package</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">skpro.parametric package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="skpro.vendors.html">skpro.vendors package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="skpro.workflow.html">skpro.workflow package</a></li>
 </ul>
 </li>
@@ -136,7 +128,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">skpro</a>
@@ -144,9 +136,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -202,7 +195,7 @@
 <dl class="class">
 <dt id="skpro.parametric.estimators.Constant">
 <em class="property">class </em><code class="descclassname">skpro.parametric.estimators.</code><code class="descname">Constant</code><span class="sig-paren">(</span><em>constant=None</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/estimators.html#Constant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.estimators.Constant" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v0.19.1)"><code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v0.20.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code></a></p>
 <p>Constant estimator</p>
 <p>Predicts predefinied constant</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -210,10 +203,10 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>constant</strong> (<em>float | callable</em><em>(</em><a class="reference internal" href="skpro.html#skpro.base.BayesianVendorEstimator.Distribution.X" title="skpro.base.BayesianVendorEstimator.Distribution.X"><em>X</em></a><em>, </em><a class="reference internal" href="skpro.workflow.manager.html#skpro.workflow.manager.data.DataManager.y" title="skpro.workflow.manager.data.DataManager.y"><em>y</em></a><em>) </em><em>| string: 'mean</em><em>(</em><a class="reference internal" href="skpro.workflow.manager.html#skpro.workflow.manager.data.DataManager.y" title="skpro.workflow.manager.data.DataManager.y"><em>y</em></a><em>)</em><em>'</em><em>, </em><em>'std</em><em>(</em><a class="reference internal" href="skpro.workflow.manager.html#skpro.workflow.manager.data.DataManager.y" title="skpro.workflow.manager.data.DataManager.y"><em>y</em></a><em>)</em><em>'</em><em> (</em><em>default: None</em><em>)</em>) – Specifies the constant. A callable receives the training data during
+<li><strong>constant</strong> (<em>float | callable</em><em>(</em><em>X</em><em>, </em><em>y</em><em>) </em><em>| string: 'mean</em><em>(</em><em>y</em><em>)</em><em>'</em><em>, </em><em>'std</em><em>(</em><em>y</em><em>)</em><em>'</em><em> (</em><em>default: None</em><em>)</em>) – Specifies the constant. A callable receives the training data during
 fit and should return a constant value. The string options provide
 a shortcut for mean/std extraction from the features.</li>
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/string.html#module-string" title="(in Python v3.6)"><em>string</em></a><em> (</em><em>optional</em><em>)</em>) – Optional description of the constant for the estimator string
+<li><strong>name</strong> (<em>string</em><em> (</em><em>optional</em><em>)</em>) – Optional description of the constant for the estimator string
 representation. Defaults to str(constant).</li>
 </ul>
 </td>
@@ -255,7 +248,7 @@ contained subobjects that are estimators.</td>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
 (such as pipelines). The latter have parameters of the form
-<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
 component of a nested object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -274,7 +267,7 @@ component of a nested object.</p>
 <dl class="class">
 <dt id="skpro.parametric.estimators.Minimum">
 <em class="property">class </em><code class="descclassname">skpro.parametric.estimators.</code><code class="descname">Minimum</code><span class="sig-paren">(</span><em>base_estimator</em>, <em>minimum=0.3</em>, <em>relative=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/estimators.html#Minimum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.estimators.Minimum" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v0.19.1)"><code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v0.20.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code></a></p>
 <p>Minimum estimator</p>
 <p>Wrapping estimator that replaces predictions of the wrapped
 estimator that fall below a specified minimum threshold
@@ -289,7 +282,7 @@ with the threshold itself.</p>
 the minimum represent a percentage value</li>
 <li><strong>relative</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If true, minimum will be regarded as percentage value
 and the cut-off threshold will be determined dynamically
-during fitting as <code class="docutils literal"><span class="pre">threshold</span> <span class="pre">=</span> <span class="pre">minimum</span> <span class="pre">*</span> <span class="pre">std(y)</span></code></li>
+during fitting as <code class="docutils literal notranslate"><span class="pre">threshold</span> <span class="pre">=</span> <span class="pre">minimum</span> <span class="pre">*</span> <span class="pre">std(y)</span></code></li>
 <li><strong>Properties</strong> – </li>
 <li><strong>----------</strong> – </li>
 <li><strong>estimator</strong> – Wrapped estimator</li>
@@ -335,7 +328,7 @@ contained subobjects that are estimators.</td>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
 (such as pipelines). The latter have parameters of the form
-<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
 component of a nested object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -357,7 +350,7 @@ component of a nested object.</p>
 <dl class="class">
 <dt id="skpro.parametric.parametric.EstimatorManager">
 <em class="property">class </em><code class="descclassname">skpro.parametric.parametric.</code><code class="descname">EstimatorManager</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#EstimatorManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.EstimatorManager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Helper class that simplifies the estimator management</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -393,7 +386,7 @@ component of a nested object.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Name of the estimator</li>
 <li><strong>estimator</strong> (<em>Estimator object | string name of a registered estimator</em>) – Instance of subclass of sklearn.base.BaseEstimator</li>
-<li><strong>selector</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#callable" title="(in Python v3.6)"><em>callable</em></a><em>(</em><em>estimator</em><em>, </em><a class="reference internal" href="skpro.html#skpro.base.BayesianVendorEstimator.Distribution.X" title="skpro.base.BayesianVendorEstimator.Distribution.X"><em>X</em></a><em>) </em><em>(</em><em>optional</em><em>)</em>) – Defines how a prediction should be retrieved from an estimator</li>
+<li><strong>selector</strong> (<em>callable</em><em>(</em><em>estimator</em><em>, </em><em>X</em><em>) </em><em>(</em><em>optional</em><em>)</em>) – Defines how a prediction should be retrieved from an estimator</li>
 </ul>
 </td>
 </tr>
@@ -417,14 +410,14 @@ component of a nested object.</p>
 <dl class="class">
 <dt id="skpro.parametric.parametric.ParametricEstimator">
 <em class="property">class </em><code class="descclassname">skpro.parametric.parametric.</code><code class="descname">ParametricEstimator</code><span class="sig-paren">(</span><em>point=None</em>, <em>std=None</em>, <em>point_std=None</em>, <em>shape='norm'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="skpro.html#skpro.base.ProbabilisticEstimator" title="skpro.base.ProbabilisticEstimator"><code class="xref py py-class docutils literal"><span class="pre">skpro.base.ProbabilisticEstimator</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="skpro.html#skpro.base.ProbabilisticEstimator" title="skpro.base.ProbabilisticEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">skpro.base.ProbabilisticEstimator</span></code></a></p>
 <p>Composite parametric prediction strategy.</p>
 <p>Uses classical estimators to predict the defining parameters of continuous distributions.</p>
 <p>Read more in the <span class="xref std std-ref">User Guide</span>.</p>
 <dl class="class">
 <dt id="skpro.parametric.parametric.ParametricEstimator.Distribution">
 <em class="property">class </em><code class="descname">Distribution</code><span class="sig-paren">(</span><em>estimator</em>, <em>X</em>, <em>selection=slice(None</em>, <em>None</em>, <em>None)</em>, <em>mode='elementwise'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator.Distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">skpro.base.Distribution</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">skpro.base.Distribution</span></code></p>
 <dl class="attribute">
 <dt id="skpro.parametric.parametric.ParametricEstimator.Distribution.X">
 <code class="descname">X</code><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution.X" title="Permalink to this definition">¶</a></dt>
@@ -437,7 +430,7 @@ of the interface (e.g. construct the predicted pdf based on X)</p>
 the interface is ought to represent the distributional
 prediction. For given M x n features, X will thus represent
 an 1 x n vector that provides the bases for the predicted
-distribution. However, if the <a class="reference internal" href="skpro.html#skpro.base.vectorvalued" title="skpro.base.vectorvalued"><code class="xref py py-func docutils literal"><span class="pre">vectorvalued()</span></code></a> decorator
+distribution. However, if the <a class="reference internal" href="skpro.html#skpro.base.vectorvalued" title="skpro.base.vectorvalued"><code class="xref py py-func docutils literal notranslate"><span class="pre">vectorvalued()</span></code></a> decorator
 is applied X will represent the full M x n matrix for an
 efficient vectorized implementation.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -493,7 +486,20 @@ efficient vectorized implementation.</p>
 <dl class="method">
 <dt id="skpro.parametric.parametric.ParametricEstimator.Distribution.ppf">
 <code class="descname">ppf</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator.Distribution.ppf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.Distribution.ppf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Percent point function (inverse of cdf — percentiles).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="skpro.parametric.parametric.ParametricEstimator.Distribution.replicate">
@@ -512,7 +518,7 @@ efficient vectorized implementation.</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">skpro.base.ProbabilisticEstimator.Distribution</span></code></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">skpro.base.ProbabilisticEstimator.Distribution</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -529,7 +535,7 @@ efficient vectorized implementation.</p>
 <dl class="class">
 <dt id="skpro.parametric.parametric.ParametricEstimator.ImplementsEnhancedInterface">
 <em class="property">class </em><code class="descname">ImplementsEnhancedInterface</code><span class="sig-paren">(</span><em>name</em>, <em>bases</em>, <em>clsdict</em><span class="sig-paren">)</span><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.ImplementsEnhancedInterface" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/abc.html#abc.ABCMeta" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">abc.ABCMeta</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/abc.html#abc.ABCMeta" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABCMeta</span></code></a></p>
 <p>Meta-class for distribution interface</p>
 <p>Enhances the distribution interface behind the scenes
 with automatic caching and syntactic sugar for
@@ -552,7 +558,26 @@ element-wise access of the distributions</p>
 <dl class="method">
 <dt id="skpro.parametric.parametric.ParametricEstimator.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.fit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fits the model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>numpy array</em><em> or </em><em>sparse matrix of shape</em><em> [</em><em>n_samples</em><em>,</em><em>n_features</em><em>]</em>) – Training data</li>
+<li><strong>y</strong> (<em>numpy array of shape</em><em> [</em><em>n_samples</em><em>, </em><em>n_targets</em><em>]</em>) – Target values. Will be cast to X’s dtype if necessary</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">returns an instance of self.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="skpro.parametric.parametric.ParametricEstimator.get_params">
@@ -590,7 +615,7 @@ contained subobjects that are estimators.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns predicted distributions</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#skpro.parametric.parametric.ParametricEstimator.Distribution" title="skpro.parametric.parametric.ParametricEstimator.Distribution"><code class="xref py py-class docutils literal"><span class="pre">Distribution</span></code></a> interface representing n_samples predictions</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#skpro.parametric.parametric.ParametricEstimator.Distribution" title="skpro.parametric.parametric.ParametricEstimator.Distribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">Distribution</span></code></a> interface representing n_samples predictions</td>
 </tr>
 </tbody>
 </table>
@@ -626,7 +651,22 @@ loss sample will be returned</li>
 <dl class="method">
 <dt id="skpro.parametric.parametric.ParametricEstimator.set_params">
 <code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/parametric.html#ParametricEstimator.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.parametric.ParametricEstimator.set_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -636,7 +676,7 @@ loss sample will be returned</li>
 <dl class="class">
 <dt id="skpro.parametric.residuals.ResidualEstimator">
 <em class="property">class </em><code class="descclassname">skpro.parametric.residuals.</code><code class="descname">ResidualEstimator</code><span class="sig-paren">(</span><em>residual_estimator</em>, <em>base_estimator='point'</em>, <em>fit_transform='squared_error'</em>, <em>predict_transform=None</em>, <em>filter_zero_variance=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/parametric/residuals.html#ResidualEstimator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.parametric.residuals.ResidualEstimator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v0.19.1)"><code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v0.20.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code></a></p>
 <p>Residual estimator</p>
 <p>Predicts residuals of an estimator using a scikit-learn estimator.</p>
 <p>Read more in the <span class="xref std std-ref">User Guide</span>.</p>
@@ -675,7 +715,7 @@ contained subobjects that are estimators.</td>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
 (such as pipelines). The latter have parameters of the form
-<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
 component of a nested object.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -734,15 +774,13 @@ component of a nested object.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="skpro.workflow.html" class="btn btn-neutral float-right" title="skpro.workflow package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="skpro.vendors.html" class="btn btn-neutral float-right" title="skpro.vendors package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="skpro.baselines.html" class="btn btn-neutral" title="skpro.baselines package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -758,7 +796,7 @@ component of a nested object.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -776,7 +814,8 @@ component of a nested object.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.0.0b1.post0.dev16+ng89b4307',
+            VERSION:'1.0.0b1.post0.dev20+ng54bbfd0',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -786,22 +825,17 @@ component of a nested object.</p>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Composite parametric prediction &mdash; skpro 1.0.0b1.post0.dev16+ng89b4307 documentation</title>
+  <title>Composite parametric prediction &mdash; skpro 1.0.0b1.post0.dev20+ng54bbfd0 documentation</title>
   
 
   
@@ -24,27 +24,19 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev16+ng89b4307 documentation" href="index.html"/>
-        <link rel="next" title="Vendors integrations" href="vendors.html"/>
-        <link rel="prev" title="Baseline strategies" href="baselines.html"/> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Vendors integrations" href="vendors.html" />
+    <link rel="prev" title="Baseline strategies" href="baselines.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +58,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev16+ng89b4307
+                1.0.0b1.post0.dev20+ng54bbfd0
               </div>
             
           
@@ -121,7 +113,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">skpro</a>
@@ -129,9 +121,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -175,21 +168,21 @@
             
   <div class="section" id="composite-parametric-prediction">
 <h1>Composite parametric prediction<a class="headerlink" href="#composite-parametric-prediction" title="Permalink to this headline">¶</a></h1>
-<p>The parametric estimator model or composite parametric strategy uses classical estimators to predict the defining parameters of continuous distributions. The idea is that the prediction of a normal distribution can be brought down to a prediction of its defining parameters mean <img class="math" src="_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> and standard deviation <img class="math" src="_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> (or location <img class="math" src="_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> and scale <img class="math" src="_images/math/5e87bf41a96deddf6cb485ff530f153f2590e9cc.png" alt="b"/> for a Laplacian distribution etc.). More general, classical prediction algorithms can be used to obtain <em>point</em> and <em>variance</em> estimates that are plugged into the definition of various distribution types (e.g. Normal, Laplace etc.) that are consequently regarded as probabilistic predictions. The appropriate distributional type can be determined based on the data, for instance, by choosing the type that minimizes the probabilistic loss for given point and variance estimate.</p>
+<p>The parametric estimator model or composite parametric strategy uses classical estimators to predict the defining parameters of continuous distributions. The idea is that the prediction of a normal distribution can be brought down to a prediction of its defining parameters mean <img class="math" src="_images/math/d79e8a2c7ce54906c2b25549da38bdbe02cf40d6.png" alt="\mu"/> and standard deviation <img class="math" src="_images/math/011e5790a6c33043ceadca81d9657dde6c61d769.png" alt="\sigma"/> (or location <img class="math" src="_images/math/d79e8a2c7ce54906c2b25549da38bdbe02cf40d6.png" alt="\mu"/> and scale <img class="math" src="_images/math/57c9d14bb082716df9000146882ce365335d08f1.png" alt="b"/> for a Laplacian distribution etc.). More general, classical prediction algorithms can be used to obtain <em>point</em> and <em>variance</em> estimates that are plugged into the definition of various distribution types (e.g. Normal, Laplace etc.) that are consequently regarded as probabilistic predictions. The appropriate distributional type can be determined based on the data, for instance, by choosing the type that minimizes the probabilistic loss for given point and variance estimate.</p>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <div class="figure" id="id1">
 <a class="reference internal image-reference" href="_images/parametric.png"><img alt="_images/parametric.png" src="_images/parametric.png" style="width: 100%;" /></a>
 <p class="caption"><span class="caption-text">Overview of the parametric estimation strategy (base classes are annotated in the dashed boxes): The probabilistic parametric estimator takes classical estimators that predict the defining parameters (point and std) of the given distribution type (e.g. mean and standard deviation for the normal distribution). In particular, the residual estimator can be used for the std prediction since it takes another classical estimator to predict residuals or variances of the point prediction. To implement simple strategies, the module offers a constant estimator that produces pre-defined constant predictions.</span></p>
 </div>
-<p>The composite parametric strategy is implemented by the <a class="reference internal" href="api/skpro.parametric.html#skpro.parametric.parametric.ParametricEstimator" title="skpro.parametric.parametric.ParametricEstimator"><code class="xref py py-class docutils literal"><span class="pre">ParametricEstimator</span></code></a> object that currently supports two-parametric continuous distributions. It takes a point estimator (<code class="docutils literal"><span class="pre">point</span></code>), a variance estimator (<code class="docutils literal"><span class="pre">std</span></code>) and a parameter to define the assumed distribution form (e.g. ’norm’ or ’laplace’). During fitting (<code class="docutils literal"><span class="pre">fit(X,</span> <span class="pre">y)</span></code>) the parametric estimator automatically fits the provided point and variance estimators; accordingly, on prediction (<code class="docutils literal"><span class="pre">predict(X)</span></code>), it retrieves their estimations to compose the overall predicted distribution interface of the specified shape. The parametric model also supports combined estimation in which the same estimator instance is used to obtain both point and variance prediction. The combined estimator has to be passed to the optional <code class="docutils literal"><span class="pre">point_std</span></code> parameter while the point/std arguments can then be used to specify how point and variance prediction should be retrieved from it. Hence, the parametric estimator can be considered a function that maps the distribution interface onto the actual learning algorithms of the provided estimators.</p>
+<p>The composite parametric strategy is implemented by the <a class="reference internal" href="api/skpro.parametric.html#skpro.parametric.parametric.ParametricEstimator" title="skpro.parametric.parametric.ParametricEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParametricEstimator</span></code></a> object that currently supports two-parametric continuous distributions. It takes a point estimator (<code class="docutils literal notranslate"><span class="pre">point</span></code>), a variance estimator (<code class="docutils literal notranslate"><span class="pre">std</span></code>) and a parameter to define the assumed distribution form (e.g. ’norm’ or ’laplace’). During fitting (<code class="docutils literal notranslate"><span class="pre">fit(X,</span> <span class="pre">y)</span></code>) the parametric estimator automatically fits the provided point and variance estimators; accordingly, on prediction (<code class="docutils literal notranslate"><span class="pre">predict(X)</span></code>), it retrieves their estimations to compose the overall predicted distribution interface of the specified shape. The parametric model also supports combined estimation in which the same estimator instance is used to obtain both point and variance prediction. The combined estimator has to be passed to the optional <code class="docutils literal notranslate"><span class="pre">point_std</span></code> parameter while the point/std arguments can then be used to specify how point and variance prediction should be retrieved from it. Hence, the parametric estimator can be considered a function that maps the distribution interface onto the actual learning algorithms of the provided estimators.</p>
 </div>
 <div class="section" id="estimators">
 <h2>Estimators<a class="headerlink" href="#estimators" title="Permalink to this headline">¶</a></h2>
 <p>Since the implementation follows the estimator API of scikit-learn, it is generally possible to employ any of scikit-learn’s classical estimators as predictors. In fact, in this paradigm the same algorithm that is used to predict a housing price can be employed to obtain the point prediction which represents the mean of the predicted price distribution for the house. It is, however, an open question how the variance predictions that are understood to estimate the probabilistic uncertainty of these point predictions can be obtained.</p>
-<p>An intuitive idea is to use the residuals of the point estimations, since they represent the magnitude of error committed during point prediction and hence suggest how correct or certain these predictions actually were. In the supervised setting, where the correct training labels <img class="math" src="_images/math/410a65f64e2a609a2a7f544ed72f0982b719807a.png" alt="y_i"/> are provided, we can easily obtain the absolute training residuals <img class="math" src="_images/math/a615538a447a82f0f1625c9ccba8699417eb01ab.png" alt="\varepsilon_{\text{train}, i} = |\hat{y}_i - y_i"/>| of the point predictions <img class="math" src="_images/math/e8eb12f9407362d0fc035a12094fcc7797dcb69a.png" alt="\hat{y}_i"/>. Since training and test data are assumed to be i.i.d. sampled from the same generative distribution, we can estimate the test residuals based on the training residuals. More precisely, we fit a residual model using the training features and the calculated training residuals (<img class="math" src="_images/math/33dfc32d00ebd5c5791c824010a155d9e5630b6f.png" alt="x_i"/>, <img class="math" src="_images/math/d4b70eda6bf71e905a4ffa55e7620478f9a8a1ec.png" alt="\varepsilon_{\text{train}, i}"/>). Using the trained residual model, we are then able to estimate the test residuals <img class="math" src="_images/math/92eaee88a7c8516a06248deb4ab5a0e7ca4ace96.png" alt="\hat{\varepsilon}_{\text{test}, j}"/> for given test features <img class="math" src="_images/math/5b638cedc08e7fd9ef143804d8896f53aaf0964d.png" alt="x_j^*"/>. Notably, the obtained residuals are the residuals of the distributional parameter estimation and not of the overall distribution estimate. It is, however, reasonable to assume that higher residuals in the prediction of the distribution’s parameter imply higher residuals of the overall distributional prediction. We thus regard <img class="math" src="_images/math/92eaee88a7c8516a06248deb4ab5a0e7ca4ace96.png" alt="\hat{\varepsilon}_{\text{test}, j}"/> as a prediction of the distribution’s deviation parameter (e.g.&nbsp;<img class="math" src="_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> in <img class="math" src="_images/math/3f29bf456a7ec9ddde83538f375d7b2a80b036a5.png" alt="\mathcal{N}(\mu, \sigma)"/>), that is the variance prediction of the overall strategy. Note that we calculated the absolute residuals to account for the non-negativity of the variance. Alternatively, the strategy can be modified by fitting the squared or logarithmic training residuals to the residual model and back transforming the estimated test residuals using the square root and exponential function respectively. Such a residuals transformations can, for instance, be useful to emphasize or depreciate larger residuals, e.g. the influence of outliers in the data. Additionally, the residual strategy involves two distinct estimators, the point and the residual estimator, which are not necessarily of the same type. One could, for example, use a linear regression to obtain the point predictions while choosing a more sophisticated strategy to model the residuals of that regression (again using scikit-learn-like classical estimators that are passed in as parameters). The residual estimation strategy is implemented by the <code class="docutils literal"><span class="pre">ResidualEstimator</span></code> (RE) object.</p>
-<p>In addition to the estimators in the scikit-learn library, the module provides a <code class="docutils literal"><span class="pre">Constant</span></code> (C) estimator that predicts a constant value which is pre-defined or calculated from the training data. The estimator is particularly useful for control strategies, e.g. a baseline that omits the training data features and makes an uninformed guess by calculating the constant mean of the dependent variable. With the given parametric API, classical estimators turn out be usable for the purposes of both point and residual prediction and consequently probabilistic prediction making. The following code example illustrates a resulting overall syntax that defines a baseline model using the parametric estimator. The predictions of such model would be normal distributions with mean <img class="math" src="_images/math/6cb1ac69a87a5103e3e96b528a44282a317cdc3c.png" alt="42"/> and a standard deviation that equals the mean of the absolute training residuals.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">baseline</span> <span class="o">=</span> <span class="n">ParametricEstimator</span><span class="p">(</span>
+<p>An intuitive idea is to use the residuals of the point estimations, since they represent the magnitude of error committed during point prediction and hence suggest how correct or certain these predictions actually were. In the supervised setting, where the correct training labels <img class="math" src="_images/math/07f6018e00c747406442bb3912e0209766fc9090.png" alt="y_i"/> are provided, we can easily obtain the absolute training residuals <img class="math" src="_images/math/6a18d34916a40a4f4313cfe7e9bb4db00d791763.png" alt="\varepsilon_{\text{train}, i} = |\hat{y}_i - y_i"/>| of the point predictions <img class="math" src="_images/math/112652306646f689de7cf20153b2d70601aec3e1.png" alt="\hat{y}_i"/>. Since training and test data are assumed to be i.i.d. sampled from the same generative distribution, we can estimate the test residuals based on the training residuals. More precisely, we fit a residual model using the training features and the calculated training residuals (<img class="math" src="_images/math/7720e563212e11bf72de255ab82c2a3b97c1a7f5.png" alt="x_i"/>, <img class="math" src="_images/math/578b69b948d27c413365573ab763a88fa6456fcf.png" alt="\varepsilon_{\text{train}, i}"/>). Using the trained residual model, we are then able to estimate the test residuals <img class="math" src="_images/math/1d71fb3b5cda9f1d2bfc4cf746facceb13fa93bd.png" alt="\hat{\varepsilon}_{\text{test}, j}"/> for given test features <img class="math" src="_images/math/6177da5cc5fb886b32b7a5491a13c0618478ba4a.png" alt="x_j^*"/>. Notably, the obtained residuals are the residuals of the distributional parameter estimation and not of the overall distribution estimate. It is, however, reasonable to assume that higher residuals in the prediction of the distribution’s parameter imply higher residuals of the overall distributional prediction. We thus regard <img class="math" src="_images/math/1d71fb3b5cda9f1d2bfc4cf746facceb13fa93bd.png" alt="\hat{\varepsilon}_{\text{test}, j}"/> as a prediction of the distribution’s deviation parameter (e.g.&nbsp;<img class="math" src="_images/math/011e5790a6c33043ceadca81d9657dde6c61d769.png" alt="\sigma"/> in <img class="math" src="_images/math/b5edd956a99b3221e08e164fc7fc45b1a436ca9a.png" alt="\mathcal{N}(\mu, \sigma)"/>), that is the variance prediction of the overall strategy. Note that we calculated the absolute residuals to account for the non-negativity of the variance. Alternatively, the strategy can be modified by fitting the squared or logarithmic training residuals to the residual model and back transforming the estimated test residuals using the square root and exponential function respectively. Such a residuals transformations can, for instance, be useful to emphasize or depreciate larger residuals, e.g. the influence of outliers in the data. Additionally, the residual strategy involves two distinct estimators, the point and the residual estimator, which are not necessarily of the same type. One could, for example, use a linear regression to obtain the point predictions while choosing a more sophisticated strategy to model the residuals of that regression (again using scikit-learn-like classical estimators that are passed in as parameters). The residual estimation strategy is implemented by the <code class="docutils literal notranslate"><span class="pre">ResidualEstimator</span></code> (RE) object.</p>
+<p>In addition to the estimators in the scikit-learn library, the module provides a <code class="docutils literal notranslate"><span class="pre">Constant</span></code> (C) estimator that predicts a constant value which is pre-defined or calculated from the training data. The estimator is particularly useful for control strategies, e.g. a baseline that omits the training data features and makes an uninformed guess by calculating the constant mean of the dependent variable. With the given parametric API, classical estimators turn out be usable for the purposes of both point and residual prediction and consequently probabilistic prediction making. The following code example illustrates a resulting overall syntax that defines a baseline model using the parametric estimator. The predictions of such model would be normal distributions with mean <img class="math" src="_images/math/f9ec3ea9534270de4bdff62abc2df03629646a1a.png" alt="42"/> and a standard deviation that equals the mean of the absolute training residuals.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">baseline</span> <span class="o">=</span> <span class="n">ParametricEstimator</span><span class="p">(</span>
     <span class="n">point</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="mi">42</span><span class="p">),</span>     <span class="c1"># Point estimator</span>
     <span class="n">std</span><span class="o">=</span><span class="n">ResidualEstimator</span><span class="p">(</span>  <span class="c1"># Variance estimator</span>
         <span class="s1">&#39;point&#39;</span><span class="p">,</span>            <span class="c1"># Base estimator</span>
@@ -204,7 +197,7 @@
 <div class="section" id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <p>The extended example below shows the definition of a parametric model that uses a RandomForestRegressor as point estimator and the feature mean as variance predictor.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
 <span class="kn">from</span> <span class="nn">sklearn.datasets.base</span> <span class="kn">import</span> <span class="n">load_boston</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
 
@@ -235,9 +228,7 @@
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -259,7 +250,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -277,7 +268,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.0b1.post0.dev16+ng89b4307',
+            VERSION:'1.0.0b1.post0.dev20+ng54bbfd0',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -287,22 +279,17 @@
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

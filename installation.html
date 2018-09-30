@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; skpro 1.0.0b1.post0.dev16+ng89b4307 documentation</title>
+  <title>Installation &mdash; skpro 1.0.0b1.post0.dev20+ng54bbfd0 documentation</title>
   
 
   
@@ -24,27 +24,19 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev16+ng89b4307 documentation" href="index.html"/>
-        <link rel="next" title="User Guide" href="user_guide.html"/>
-        <link rel="prev" title="Introduction" href="introduction.html"/> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User Guide" href="user_guide.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +58,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev16+ng89b4307
+                1.0.0b1.post0.dev20+ng54bbfd0
               </div>
             
           
@@ -119,7 +111,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">skpro</a>
@@ -127,9 +119,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -174,12 +167,12 @@
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>The installation of the latest stable version is easy using the python package manager <a class="reference external" href="http://www.pip-installer.org/">pip</a>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">skpro</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">skpro</span>
 </pre></div>
 </div>
-<p><code class="docutils literal"><span class="pre">skpro</span></code> depends on the <code class="docutils literal"><span class="pre">scikit-learn</span></code> package and its respective dependencies <code class="docutils literal"><span class="pre">numpy</span></code> and <code class="docutils literal"><span class="pre">scipy</span></code> which will be pulled in automatically during installation.
+<p><code class="docutils literal notranslate"><span class="pre">skpro</span></code> depends on the <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code> package and its respective dependencies <code class="docutils literal notranslate"><span class="pre">numpy</span></code> and <code class="docutils literal notranslate"><span class="pre">scipy</span></code> which will be pulled in automatically during installation.
 Furthermore, you may install optional package dependencies that enhance the workflow components (i.e. <a class="reference external" href="http://pythonhosted.org/uncertainties/">uncertainties</a> and <a class="reference external" href="https://pypi.python.org/pypi/tabulate">tabulate</a>).</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">skpro</span><span class="p">[</span><span class="n">workflow</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">skpro</span><span class="p">[</span><span class="n">workflow</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>That’s it. You are now ready to go. We recommend reading the <a class="reference internal" href="user_guide.html"><span class="doc">user guide</span></a> to get started.</p>
@@ -187,15 +180,15 @@ Furthermore, you may install optional package dependencies that enhance the work
 <h2>Bleeding edge<a class="headerlink" href="#bleeding-edge" title="Permalink to this headline">¶</a></h2>
 <p>To test or develop new features you may want to install the latest package version from the development branch (bleeding edge installation).</p>
 <p>Clone the source from our <a class="reference external" href="https://github.com/alan-turing-institute/skpro">public code repository</a> on GitHub and change into the skpro directory. Make sure that all dependencies are installed:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
 <p>Then run</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">develop</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">develop</span>
 </pre></div>
 </div>
 <p>to install the package into the activated Python environment. To build the documentation run</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">docs</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">docs</span>
 </pre></div>
 </div>
 <p>Note that bleeding edge installations are likely contain bugs are not recommended for productive environments.</p>
@@ -205,9 +198,7 @@ Furthermore, you may install optional package dependencies that enhance the work
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -229,7 +220,7 @@ Furthermore, you may install optional package dependencies that enhance the work
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -247,7 +238,8 @@ Furthermore, you may install optional package dependencies that enhance the work
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.0b1.post0.dev16+ng89b4307',
+            VERSION:'1.0.0b1.post0.dev20+ng54bbfd0',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -257,22 +249,17 @@ Furthermore, you may install optional package dependencies that enhance the work
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

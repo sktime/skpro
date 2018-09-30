@@ -1,11 +1,11 @@
-skpro\.workflow\.table package
-==============================
+skpro.workflow.table package
+============================
 
 Submodules
 ----------
 
-skpro\.workflow\.table\.table module
-------------------------------------
+skpro.workflow.table.table module
+---------------------------------
 
 .. automodule:: skpro.workflow.table.table
     :members:

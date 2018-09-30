@@ -1,5 +1,5 @@
-skpro\.workflow package
-=======================
+skpro.workflow package
+======================
 
 Subpackages
 -----------
@@ -12,24 +12,24 @@ Subpackages
 Submodules
 ----------
 
-skpro\.workflow\.base module
-----------------------------
+skpro.workflow.base module
+--------------------------
 
 .. automodule:: skpro.workflow.base
     :members:
     :undoc-members:
     :show-inheritance:
 
-skpro\.workflow\.cross\_validation module
------------------------------------------
+skpro.workflow.cross\_validation module
+---------------------------------------
 
 .. automodule:: skpro.workflow.cross_validation
     :members:
     :undoc-members:
     :show-inheritance:
 
-skpro\.workflow\.utils module
------------------------------
+skpro.workflow.utils module
+---------------------------
 
 .. automodule:: skpro.workflow.utils
     :members:

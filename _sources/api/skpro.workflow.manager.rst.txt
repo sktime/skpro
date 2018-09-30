@@ -1,19 +1,19 @@
-skpro\.workflow\.manager package
-================================
+skpro.workflow.manager package
+==============================
 
 Submodules
 ----------
 
-skpro\.workflow\.manager\.data module
--------------------------------------
+skpro.workflow.manager.data module
+----------------------------------
 
 .. automodule:: skpro.workflow.manager.data
     :members:
     :undoc-members:
     :show-inheritance:
 
-skpro\.workflow\.manager\.models module
----------------------------------------
+skpro.workflow.manager.models module
+------------------------------------
 
 .. automodule:: skpro.workflow.manager.models
     :members:

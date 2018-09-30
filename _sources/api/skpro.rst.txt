@@ -8,53 +8,54 @@ Subpackages
 
     skpro.baselines
     skpro.parametric
+    skpro.vendors
     skpro.workflow
 
 Submodules
 ----------
 
-skpro\.base module
-------------------
+skpro.base module
+-----------------
 
 .. automodule:: skpro.base
     :members:
     :undoc-members:
     :show-inheritance:
 
-skpro\.density module
----------------------
+skpro.density module
+--------------------
 
 .. automodule:: skpro.density
     :members:
     :undoc-members:
     :show-inheritance:
 
-skpro\.ensemble module
-----------------------
+skpro.ensemble module
+---------------------
 
 .. automodule:: skpro.ensemble
     :members:
     :undoc-members:
     :show-inheritance:
 
-skpro\.metrics module
----------------------
+skpro.metrics module
+--------------------
 
 .. automodule:: skpro.metrics
     :members:
     :undoc-members:
     :show-inheritance:
 
-skpro\.model\_selection module
-------------------------------
+skpro.model\_selection module
+-----------------------------
 
 .. automodule:: skpro.model_selection
     :members:
     :undoc-members:
     :show-inheritance:
 
-skpro\.utils module
--------------------
+skpro.utils module
+------------------
 
 .. automodule:: skpro.utils
     :members:

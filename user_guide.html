@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>User Guide &mdash; skpro 1.0.0b1.post0.dev16+ng89b4307 documentation</title>
+  <title>User Guide &mdash; skpro 1.0.0b1.post0.dev20+ng54bbfd0 documentation</title>
   
 
   
@@ -24,27 +24,19 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev16+ng89b4307 documentation" href="index.html"/>
-        <link rel="next" title="Baseline strategies" href="baselines.html"/>
-        <link rel="prev" title="Installation" href="installation.html"/> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Baseline strategies" href="baselines.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +58,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev16+ng89b4307
+                1.0.0b1.post0.dev20+ng54bbfd0
               </div>
             
           
@@ -122,7 +114,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">skpro</a>
@@ -130,9 +122,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -176,7 +169,7 @@
             
   <div class="section" id="user-guide">
 <h1>User Guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
-<p>This guide will give an overview of the available modules and functionalities of the <code class="docutils literal"><span class="pre">skpro</span></code> package.
+<p>This guide will give an overview of the available modules and functionalities of the <code class="docutils literal notranslate"><span class="pre">skpro</span></code> package.
 For further details you may explore the <a class="reference external" href="api/modules.html">API documentation</a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -184,15 +177,15 @@ For further details you may explore the <a class="reference external" href="api/
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>The figure below gives an overview about central elements and concepts of skpro and how it extends the scikit-learn toolbox. To understand skpro, it is firstly helpful to quickly review scikit-learn’s classical prediction workflow, particularly its seminal <code class="docutils literal"><span class="pre">Estimator</span></code> object. In scikit-learn, an <code class="docutils literal"><span class="pre">Estimator</span></code> object represents a certain prediction strategy (e.g. Linear regression), that can be fitted using the <code class="docutils literal"><span class="pre">fit(X,</span> <span class="pre">y)</span></code> function. The fitted estimator can then be used to obtain the predictions on new data using the <code class="docutils literal"><span class="pre">predict(X)</span></code> method. Finally, the predicted values can be compared with the actual targets using one of the available classical loss functions.</p>
+<p>The figure below gives an overview about central elements and concepts of skpro and how it extends the scikit-learn toolbox. To understand skpro, it is firstly helpful to quickly review scikit-learn’s classical prediction workflow, particularly its seminal <code class="docutils literal notranslate"><span class="pre">Estimator</span></code> object. In scikit-learn, an <code class="docutils literal notranslate"><span class="pre">Estimator</span></code> object represents a certain prediction strategy (e.g. Linear regression), that can be fitted using the <code class="docutils literal notranslate"><span class="pre">fit(X,</span> <span class="pre">y)</span></code> function. The fitted estimator can then be used to obtain the predictions on new data using the <code class="docutils literal notranslate"><span class="pre">predict(X)</span></code> method. Finally, the predicted values can be compared with the actual targets using one of the available classical loss functions.</p>
 <div class="figure" id="id1">
 <a class="reference internal image-reference" href="_images/overview.png"><img alt="_images/overview.png" src="_images/overview.png" style="width: 100%;" /></a>
 <p class="caption"><span class="caption-text">Overview of the skpro API: All models are represented in as a probablistic estimator returning a distribution object that exhibits properties like the predicted density function etc. The user can define a workflow involving different models and datasets while the results of a model assessment is aggregated automatically.</span></p>
 </div>
-<p>skpro seeks to replicate this general pattern and introduces the <code class="docutils literal"><span class="pre">ProbabilisticEstimator</span></code> class that encapsulates the
-probabilistic prediction models. Like the <code class="docutils literal"><span class="pre">Estimator</span></code> class it offers a fit and predict method but returns a probability distribution as prediction (<code class="docutils literal"><span class="pre">Distribution</span></code> class). The returned distribution objects provide methods to obtain relevant distribution properties, for example the distribution’s probability density function (<code class="docutils literal"><span class="pre">y_pred.pdf(x)</span></code>).</p>
-<p>The predictions obtained from skpro’s estimators are hence of a genuine probabilistic kind that represent predicted probability distributions for each data point. For example, if predictions for a vector <code class="docutils literal"><span class="pre">X</span></code> of length k are obtained, the returned <code class="docutils literal"><span class="pre">y_pred</span></code> object represents k predicted distributions. <code class="docutils literal"><span class="pre">y_pred[i]</span></code> therefore provides access to the point prediction (e.g. mean) of the i-th distribution, <code class="docutils literal"><span class="pre">y_pred.std()</span></code> will return a vector of length k that contains the standard deviations of the predicted distribution, and so forth. In many cases, such as plotting and error calculation, the distributions objects can thus be handled like scikit’s commonly returned prediction vectors.</p>
-<p>To evaluate the accuracy of the predicted distributions, skpro provides probabilistic loss metrics. To calculate the loss between prediction and the true target values, you can choose from a variety of available functions in the <code class="docutils literal"><span class="pre">skpro.metrics</span></code> module. In the default setting, all loss functions return the averaged loss of the sample. If you’d like to obtain the point-wise loss instead, set <code class="docutils literal"><span class="pre">sample=False</span></code>. You can also obtain the confidence interval of the loss by setting <code class="docutils literal"><span class="pre">return_std</span></code> to <code class="docutils literal"><span class="pre">True</span></code>. For a detailed documentation of the metrics package read the <a class="reference internal" href="api/modules.html"><span class="doc">API documentation</span></a>.</p>
+<p>skpro seeks to replicate this general pattern and introduces the <code class="docutils literal notranslate"><span class="pre">ProbabilisticEstimator</span></code> class that encapsulates the
+probabilistic prediction models. Like the <code class="docutils literal notranslate"><span class="pre">Estimator</span></code> class it offers a fit and predict method but returns a probability distribution as prediction (<code class="docutils literal notranslate"><span class="pre">Distribution</span></code> class). The returned distribution objects provide methods to obtain relevant distribution properties, for example the distribution’s probability density function (<code class="docutils literal notranslate"><span class="pre">y_pred.pdf(x)</span></code>).</p>
+<p>The predictions obtained from skpro’s estimators are hence of a genuine probabilistic kind that represent predicted probability distributions for each data point. For example, if predictions for a vector <code class="docutils literal notranslate"><span class="pre">X</span></code> of length k are obtained, the returned <code class="docutils literal notranslate"><span class="pre">y_pred</span></code> object represents k predicted distributions. <code class="docutils literal notranslate"><span class="pre">y_pred[i]</span></code> therefore provides access to the point prediction (e.g. mean) of the i-th distribution, <code class="docutils literal notranslate"><span class="pre">y_pred.std()</span></code> will return a vector of length k that contains the standard deviations of the predicted distribution, and so forth. In many cases, such as plotting and error calculation, the distributions objects can thus be handled like scikit’s commonly returned prediction vectors.</p>
+<p>To evaluate the accuracy of the predicted distributions, skpro provides probabilistic loss metrics. To calculate the loss between prediction and the true target values, you can choose from a variety of available functions in the <code class="docutils literal notranslate"><span class="pre">skpro.metrics</span></code> module. In the default setting, all loss functions return the averaged loss of the sample. If you’d like to obtain the point-wise loss instead, set <code class="docutils literal notranslate"><span class="pre">sample=False</span></code>. You can also obtain the confidence interval of the loss by setting <code class="docutils literal notranslate"><span class="pre">return_std</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code>. For a detailed documentation of the metrics package read the <a class="reference internal" href="api/modules.html"><span class="doc">API documentation</span></a>.</p>
 </div>
 <div class="section" id="available-prediction-strategies">
 <h2>Available prediction strategies<a class="headerlink" href="#available-prediction-strategies" title="Permalink to this headline">¶</a></h2>
@@ -200,7 +193,7 @@ probabilistic prediction models. Like the <code class="docutils literal"><span c
 <ul class="simple">
 <li><a class="reference internal" href="baselines.html"><span class="doc">Baseline strategies</span></a>, for instance a kernel density estimation on the labels</li>
 <li><a class="reference internal" href="parametric.html"><span class="doc">Parametric estimation</span></a>, that estimates parameters of the predicted distributions</li>
-<li><a class="reference internal" href="vendors.html"><span class="doc">integrations with other vendor packages</span></a> such as <code class="docutils literal"><span class="pre">PyMC3</span></code></li>
+<li><a class="reference internal" href="vendors.html"><span class="doc">integrations with other vendor packages</span></a> such as <code class="docutils literal notranslate"><span class="pre">PyMC3</span></code></li>
 </ul>
 <p>The figure below shows an overview of the skpro’s base API which implements the different prediction strategies. For a full documentation you may read the respective <a class="reference internal" href="api/modules.html"><span class="doc">module documention</span></a>.</p>
 <div class="figure" id="id2">
@@ -220,9 +213,7 @@ probabilistic prediction models. Like the <code class="docutils literal"><span c
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -244,7 +235,7 @@ probabilistic prediction models. Like the <code class="docutils literal"><span c
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -262,7 +253,8 @@ probabilistic prediction models. Like the <code class="docutils literal"><span c
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.0b1.post0.dev16+ng89b4307',
+            VERSION:'1.0.0b1.post0.dev20+ng54bbfd0',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -272,22 +264,17 @@ probabilistic prediction models. Like the <code class="docutils literal"><span c
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

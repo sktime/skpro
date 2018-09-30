@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Workflow automation &mdash; skpro 1.0.0b1.post0.dev16+ng89b4307 documentation</title>
+  <title>Workflow automation &mdash; skpro 1.0.0b1.post0.dev20+ng54bbfd0 documentation</title>
   
 
   
@@ -24,27 +24,19 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev16+ng89b4307 documentation" href="index.html"/>
-        <link rel="next" title="Integrating models" href="extending.html"/>
-        <link rel="prev" title="Meta-modelling API" href="advanced.html"/> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Integrating models" href="extending.html" />
+    <link rel="prev" title="Meta-modelling API" href="advanced.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +58,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev16+ng89b4307
+                1.0.0b1.post0.dev20+ng54bbfd0
               </div>
             
           
@@ -124,7 +116,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">skpro</a>
@@ -132,9 +124,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -211,33 +204,33 @@
 <tr class="row-even"><td>1</td>
 <td>Example model 1</td>
 <td><ol class="first last arabic simple" start="2">
-<li>12<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>1*</li>
+<li>12<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>1*</li>
 </ol>
 </td>
 <td><ol class="first last arabic simple">
-<li>3<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>2*</li>
+<li>3<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>2*</li>
 </ol>
 </td>
 </tr>
 <tr class="row-odd"><td>2</td>
 <td>Example model 2</td>
 <td><ol class="first last arabic simple">
-<li>5<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>0.5*</li>
+<li>5<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>0.5*</li>
 </ol>
 </td>
 <td><ol class="first last arabic simple" start="2">
-<li>9<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>1*</li>
+<li>9<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>1*</li>
 </ol>
 </td>
 </tr>
 <tr class="row-even"><td>3</td>
 <td>Example model 3</td>
 <td><ol class="first last arabic simple" start="3">
-<li>28<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>3*</li>
+<li>28<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>3*</li>
 </ol>
 </td>
 <td><ol class="first last arabic simple" start="3">
-<li>29<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>4*</li>
+<li>29<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>4*</li>
 </ol>
 </td>
 </tr>
@@ -249,7 +242,7 @@
 <h2>Code example<a class="headerlink" href="#code-example" title="Permalink to this headline">¶</a></h2>
 <p>The following example demonstrates a common validation workflow that compares
 Parametric estimation models:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
 
 <span class="kn">from</span> <span class="nn">skpro.workflow.table</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">IdModifier</span><span class="p">,</span> <span class="n">SortModifier</span><span class="p">,</span> <span class="n">RankModifier</span>
@@ -406,9 +399,7 @@ std=C(42)))</td>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -430,7 +421,7 @@ std=C(42)))</td>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -448,7 +439,8 @@ std=C(42)))</td>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.0b1.post0.dev16+ng89b4307',
+            VERSION:'1.0.0b1.post0.dev20+ng54bbfd0',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -458,22 +450,17 @@ std=C(42)))</td>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

@@ -1,11 +1,11 @@
-skpro\.vendors package
-======================
+skpro.vendors package
+=====================
 
 Submodules
 ----------
 
-skpro\.vendors\.pymc module
----------------------------
+skpro.vendors.pymc module
+-------------------------
 
 .. automodule:: skpro.vendors.pymc
     :members:

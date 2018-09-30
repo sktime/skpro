@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>sklearn.ensemble.bagging &mdash; skpro 1.0.0b1.post0.dev16+ng89b4307 documentation</title>
+  <title>sklearn.ensemble.bagging &mdash; skpro 1.0.0b1.post0.dev20+ng54bbfd0 documentation</title>
   
 
   
@@ -24,26 +24,17 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../../genindex.html"/>
-        <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev16+ng89b4307 documentation" href="../../../index.html"/>
-        <link rel="up" title="Module code" href="../../index.html"/> 
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
 
   
   <script src="../../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +56,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev16+ng89b4307
+                1.0.0b1.post0.dev20+ng54bbfd0
               </div>
             
           
@@ -115,7 +106,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">skpro</a>
@@ -123,9 +114,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -155,8 +147,6 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
-        
       </li>
     
   </ul>
@@ -178,23 +168,22 @@
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">numbers</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">BaseEnsemble</span><span class="p">,</span> <span class="n">_partition_estimators</span>
 <span class="kn">from</span> <span class="nn">..base</span> <span class="k">import</span> <span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">RegressorMixin</span>
-<span class="kn">from</span> <span class="nn">..externals.joblib</span> <span class="k">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
 <span class="kn">from</span> <span class="nn">..externals.six</span> <span class="k">import</span> <span class="n">with_metaclass</span>
 <span class="kn">from</span> <span class="nn">..externals.six.moves</span> <span class="k">import</span> <span class="nb">zip</span>
 <span class="kn">from</span> <span class="nn">..metrics</span> <span class="k">import</span> <span class="n">r2_score</span><span class="p">,</span> <span class="n">accuracy_score</span>
 <span class="kn">from</span> <span class="nn">..tree</span> <span class="k">import</span> <span class="n">DecisionTreeClassifier</span><span class="p">,</span> <span class="n">DecisionTreeRegressor</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">check_random_state</span><span class="p">,</span> <span class="n">check_X_y</span><span class="p">,</span> <span class="n">check_array</span><span class="p">,</span> <span class="n">column_or_1d</span>
-<span class="kn">from</span> <span class="nn">..utils.random</span> <span class="k">import</span> <span class="n">sample_without_replacement</span>
-<span class="kn">from</span> <span class="nn">..utils.validation</span> <span class="k">import</span> <span class="n">has_fit_parameter</span><span class="p">,</span> <span class="n">check_is_fitted</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">indices_to_mask</span><span class="p">,</span> <span class="n">check_consistent_length</span>
 <span class="kn">from</span> <span class="nn">..utils.metaestimators</span> <span class="k">import</span> <span class="n">if_delegate_has_method</span>
 <span class="kn">from</span> <span class="nn">..utils.multiclass</span> <span class="k">import</span> <span class="n">check_classification_targets</span>
-
-<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">BaseEnsemble</span><span class="p">,</span> <span class="n">_partition_estimators</span>
+<span class="kn">from</span> <span class="nn">..utils.random</span> <span class="k">import</span> <span class="n">sample_without_replacement</span>
+<span class="kn">from</span> <span class="nn">..utils.validation</span> <span class="k">import</span> <span class="n">has_fit_parameter</span><span class="p">,</span> <span class="n">check_is_fitted</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;BaggingClassifier&quot;</span><span class="p">,</span>
@@ -281,7 +270,6 @@
 
             <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">features</span><span class="p">],</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">curr_sample_weight</span><span class="p">)</span>
 
-        <span class="c1"># Draw samples, using a mask, and then fit</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">((</span><span class="n">X</span><span class="p">[</span><span class="n">indices</span><span class="p">])[:,</span> <span class="n">features</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">indices</span><span class="p">])</span>
 
@@ -373,7 +361,7 @@
                  <span class="n">bootstrap_features</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">oob_score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">warm_start</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">BaseBagging</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -412,7 +400,6 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        self : object</span>
-<span class="sd">            Returns self.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_samples</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">)</span>
 
@@ -445,12 +432,14 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        self : object</span>
-<span class="sd">            Returns self.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">random_state</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
 
-        <span class="c1"># Convert data</span>
-        <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">check_X_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">])</span>
+        <span class="c1"># Convert data (X is required to be 2d and indexable)</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">check_X_y</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">multi_output</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">sample_weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">sample_weight</span><span class="p">,</span> <span class="n">ensure_2d</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">check_consistent_length</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">)</span>
@@ -560,8 +549,10 @@
         <span class="sd">&quot;&quot;&quot;Calculate out of bag predictions and score.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_validate_y</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="c1"># Default implementation</span>
-        <span class="k">return</span> <span class="n">column_or_1d</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">column_or_1d</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">y</span>
 
     <span class="k">def</span> <span class="nf">_get_estimators_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Get drawn indices along both sample and feature axes</span>
@@ -580,7 +571,7 @@
     <span class="k">def</span> <span class="nf">estimators_samples_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;The subset of drawn samples for each base estimator.</span>
 
-<span class="sd">        Returns a dynamically generated list of boolean masks identifying</span>
+<span class="sd">        Returns a dynamically generated list of indices identifying</span>
 <span class="sd">        the samples used for fitting each member of the ensemble, i.e.,</span>
 <span class="sd">        the in-bag samples.</span>
 
@@ -588,12 +579,8 @@
 <span class="sd">        to reduce the object memory footprint by not storing the sampling</span>
 <span class="sd">        data. Thus fetching the property may be slower than expected.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sample_masks</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">sample_indices</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_estimators_indices</span><span class="p">():</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">indices_to_mask</span><span class="p">(</span><span class="n">sample_indices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_samples</span><span class="p">)</span>
-            <span class="n">sample_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">sample_masks</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">sample_indices</span>
+                <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">sample_indices</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_estimators_indices</span><span class="p">()]</span>
 
 
 <span class="k">class</span> <span class="nc">BaggingClassifier</span><span class="p">(</span><span class="n">BaseBagging</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
@@ -629,13 +616,15 @@
 
 <span class="sd">    max_samples : int or float, optional (default=1.0)</span>
 <span class="sd">        The number of samples to draw from X to train each base estimator.</span>
-<span class="sd">            - If int, then draw `max_samples` samples.</span>
-<span class="sd">            - If float, then draw `max_samples * X.shape[0]` samples.</span>
+
+<span class="sd">        - If int, then draw `max_samples` samples.</span>
+<span class="sd">        - If float, then draw `max_samples * X.shape[0]` samples.</span>
 
 <span class="sd">    max_features : int or float, optional (default=1.0)</span>
 <span class="sd">        The number of features to draw from X to train each base estimator.</span>
-<span class="sd">            - If int, then draw `max_features` features.</span>
-<span class="sd">            - If float, then draw `max_features * X.shape[1]` features.</span>
+
+<span class="sd">        - If int, then draw `max_features` features.</span>
+<span class="sd">        - If float, then draw `max_features * X.shape[1]` features.</span>
 
 <span class="sd">    bootstrap : boolean, optional (default=True)</span>
 <span class="sd">        Whether samples are drawn with replacement.</span>
@@ -643,21 +632,23 @@
 <span class="sd">    bootstrap_features : boolean, optional (default=False)</span>
 <span class="sd">        Whether features are drawn with replacement.</span>
 
-<span class="sd">    oob_score : bool</span>
+<span class="sd">    oob_score : bool, optional (default=False)</span>
 <span class="sd">        Whether to use out-of-bag samples to estimate</span>
 <span class="sd">        the generalization error.</span>
 
 <span class="sd">    warm_start : bool, optional (default=False)</span>
 <span class="sd">        When set to True, reuse the solution of the previous call to fit</span>
 <span class="sd">        and add more estimators to the ensemble, otherwise, just fit</span>
-<span class="sd">        a whole new ensemble.</span>
+<span class="sd">        a whole new ensemble. See :term:`the Glossary &lt;warm_start&gt;`.</span>
 
 <span class="sd">        .. versionadded:: 0.17</span>
 <span class="sd">           *warm_start* constructor parameter.</span>
 
-<span class="sd">    n_jobs : int, optional (default=1)</span>
+<span class="sd">    n_jobs : int or None, optional (default=None)</span>
 <span class="sd">        The number of jobs to run in parallel for both `fit` and `predict`.</span>
-<span class="sd">        If -1, then the number of jobs is set to the number of cores.</span>
+<span class="sd">        ``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.</span>
+<span class="sd">        ``-1`` means using all processors. See :term:`Glossary &lt;n_jobs&gt;`</span>
+<span class="sd">        for more details.</span>
 
 <span class="sd">    random_state : int, RandomState instance or None, optional (default=None)</span>
 <span class="sd">        If int, random_state is the seed used by the random number generator;</span>
@@ -666,7 +657,7 @@
 <span class="sd">        by `np.random`.</span>
 
 <span class="sd">    verbose : int, optional (default=0)</span>
-<span class="sd">        Controls the verbosity of the building process.</span>
+<span class="sd">        Controls the verbosity when fitting and predicting.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -678,7 +669,7 @@
 
 <span class="sd">    estimators_samples_ : list of arrays</span>
 <span class="sd">        The subset of drawn samples (i.e., the in-bag samples) for each base</span>
-<span class="sd">        estimator. Each subset is defined by a boolean mask.</span>
+<span class="sd">        estimator. Each subset is defined by an array of the indices selected.</span>
 
 <span class="sd">    estimators_features_ : list of arrays</span>
 <span class="sd">        The subset of drawn features for each base estimator.</span>
@@ -723,7 +714,7 @@
                  <span class="n">bootstrap_features</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">oob_score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">warm_start</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 
@@ -756,7 +747,7 @@
                                                 <span class="bp">self</span><span class="o">.</span><span class="n">estimators_samples_</span><span class="p">,</span>
                                                 <span class="bp">self</span><span class="o">.</span><span class="n">estimators_features_</span><span class="p">):</span>
             <span class="c1"># Create mask for OOB samples</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">samples</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">indices_to_mask</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
                 <span class="n">predictions</span><span class="p">[</span><span class="n">mask</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span>
@@ -837,7 +828,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;classes_&quot;</span><span class="p">)</span>
         <span class="c1"># Check data</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">])</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_</span> <span class="o">!=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Number of features of the model must &quot;</span>
@@ -884,7 +878,10 @@
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;classes_&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_estimator_</span><span class="p">,</span> <span class="s2">&quot;predict_log_proba&quot;</span><span class="p">):</span>
             <span class="c1"># Check data</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">])</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span>
+                <span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_</span> <span class="o">!=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Number of features of the model must &quot;</span>
@@ -939,7 +936,10 @@
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;classes_&quot;</span><span class="p">)</span>
 
         <span class="c1"># Check data</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">])</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_</span> <span class="o">!=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Number of features of the model must &quot;</span>
@@ -997,13 +997,15 @@
 
 <span class="sd">    max_samples : int or float, optional (default=1.0)</span>
 <span class="sd">        The number of samples to draw from X to train each base estimator.</span>
-<span class="sd">            - If int, then draw `max_samples` samples.</span>
-<span class="sd">            - If float, then draw `max_samples * X.shape[0]` samples.</span>
+
+<span class="sd">        - If int, then draw `max_samples` samples.</span>
+<span class="sd">        - If float, then draw `max_samples * X.shape[0]` samples.</span>
 
 <span class="sd">    max_features : int or float, optional (default=1.0)</span>
 <span class="sd">        The number of features to draw from X to train each base estimator.</span>
-<span class="sd">            - If int, then draw `max_features` features.</span>
-<span class="sd">            - If float, then draw `max_features * X.shape[1]` features.</span>
+
+<span class="sd">        - If int, then draw `max_features` features.</span>
+<span class="sd">        - If float, then draw `max_features * X.shape[1]` features.</span>
 
 <span class="sd">    bootstrap : boolean, optional (default=True)</span>
 <span class="sd">        Whether samples are drawn with replacement.</span>
@@ -1018,11 +1020,13 @@
 <span class="sd">    warm_start : bool, optional (default=False)</span>
 <span class="sd">        When set to True, reuse the solution of the previous call to fit</span>
 <span class="sd">        and add more estimators to the ensemble, otherwise, just fit</span>
-<span class="sd">        a whole new ensemble.</span>
+<span class="sd">        a whole new ensemble. See :term:`the Glossary &lt;warm_start&gt;`.</span>
 
-<span class="sd">    n_jobs : int, optional (default=1)</span>
+<span class="sd">    n_jobs : int or None, optional (default=None)</span>
 <span class="sd">        The number of jobs to run in parallel for both `fit` and `predict`.</span>
-<span class="sd">        If -1, then the number of jobs is set to the number of cores.</span>
+<span class="sd">        ``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.</span>
+<span class="sd">        ``-1`` means using all processors. See :term:`Glossary &lt;n_jobs&gt;`</span>
+<span class="sd">        for more details.</span>
 
 <span class="sd">    random_state : int, RandomState instance or None, optional (default=None)</span>
 <span class="sd">        If int, random_state is the seed used by the random number generator;</span>
@@ -1031,7 +1035,7 @@
 <span class="sd">        by `np.random`.</span>
 
 <span class="sd">    verbose : int, optional (default=0)</span>
-<span class="sd">        Controls the verbosity of the building process.</span>
+<span class="sd">        Controls the verbosity when fitting and predicting.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -1040,7 +1044,7 @@
 
 <span class="sd">    estimators_samples_ : list of arrays</span>
 <span class="sd">        The subset of drawn samples (i.e., the in-bag samples) for each base</span>
-<span class="sd">        estimator. Each subset is defined by a boolean mask.</span>
+<span class="sd">        estimator. Each subset is defined by an array of the indices selected.</span>
 
 <span class="sd">    estimators_features_ : list of arrays</span>
 <span class="sd">        The subset of drawn features for each base estimator.</span>
@@ -1080,7 +1084,7 @@
                  <span class="n">bootstrap_features</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">oob_score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">warm_start</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">BaggingRegressor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -1115,7 +1119,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;estimators_features_&quot;</span><span class="p">)</span>
         <span class="c1"># Check data</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">])</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">accept_sparse</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;csr&#39;</span><span class="p">,</span> <span class="s1">&#39;csc&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">force_all_finite</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
 
         <span class="c1"># Parallel loop</span>
         <span class="n">n_jobs</span><span class="p">,</span> <span class="n">n_estimators</span><span class="p">,</span> <span class="n">starts</span> <span class="o">=</span> <span class="n">_partition_estimators</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_estimators</span><span class="p">,</span>
@@ -1148,7 +1155,7 @@
                                                 <span class="bp">self</span><span class="o">.</span><span class="n">estimators_samples_</span><span class="p">,</span>
                                                 <span class="bp">self</span><span class="o">.</span><span class="n">estimators_features_</span><span class="p">):</span>
             <span class="c1"># Create mask for OOB samples</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">samples</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">indices_to_mask</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
 
             <span class="n">predictions</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">predict</span><span class="p">((</span><span class="n">X</span><span class="p">[</span><span class="n">mask</span><span class="p">,</span> <span class="p">:])[:,</span> <span class="n">features</span><span class="p">])</span>
             <span class="n">n_predictions</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -1166,9 +1173,7 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1181,7 +1186,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1199,7 +1204,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.0.0b1.post0.dev16+ng89b4307',
+            VERSION:'1.0.0b1.post0.dev20+ng54bbfd0',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1209,22 +1215,17 @@
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
-  
-  
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

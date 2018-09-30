@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>skpro.workflow.manager package &mdash; skpro 1.0.0b1.post0.dev16+ng89b4307 documentation</title>
+  <title>skpro.workflow.manager package &mdash; skpro 1.0.0b1.post0.dev20+ng54bbfd0 documentation</title>
   
 
   
@@ -24,28 +24,19 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev16+ng89b4307 documentation" href="../index.html"/>
-        <link rel="up" title="skpro.workflow package" href="skpro.workflow.html"/>
-        <link rel="next" title="skpro.workflow.table package" href="skpro.workflow.table.html"/>
-        <link rel="prev" title="skpro.workflow package" href="skpro.workflow.html"/> 
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="skpro.workflow.table package" href="skpro.workflow.table.html" />
+    <link rel="prev" title="skpro.workflow package" href="skpro.workflow.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -67,7 +58,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev16+ng89b4307
+                1.0.0b1.post0.dev20+ng54bbfd0
               </div>
             
           
@@ -106,6 +97,7 @@
 <li class="toctree-l3 current"><a class="reference internal" href="skpro.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="skpro.baselines.html">skpro.baselines package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="skpro.parametric.html">skpro.parametric package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="skpro.vendors.html">skpro.vendors package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="skpro.workflow.html">skpro.workflow package</a></li>
 </ul>
 </li>
@@ -136,7 +128,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">skpro</a>
@@ -144,9 +136,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -204,7 +197,7 @@
 <dl class="class">
 <dt id="skpro.workflow.manager.data.DataManager">
 <em class="property">class </em><code class="descclassname">skpro.workflow.manager.data.</code><code class="descname">DataManager</code><span class="sig-paren">(</span><em>X=None</em>, <em>y=None</em>, <em>split=0.2</em>, <em>name=None</em>, <em>random_state=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skpro/workflow/manager/data.html#DataManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.manager.data.DataManager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A helper to manage datasets more easily. Test/training split
 is carried out behind the scenes whenever new data is being
 assigned</p>
@@ -216,7 +209,7 @@ assigned</p>
 <li><strong>X</strong> (<em>np.array | string</em>) – Features or ‘boston’, ‘diabetes’ to load sklearn datasets, url of file</li>
 <li><strong>y</strong> (<em>np.array</em>) – Labels</li>
 <li><strong>split</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>, </em><em>default=0.2</em>) – Train/test split</li>
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/string.html#module-string" title="(in Python v3.6)"><em>string</em></a><em>, </em><em>default=None</em>) – Optional name to be used in the object representation</li>
+<li><strong>name</strong> (<em>string</em><em>, </em><em>default=None</em>) – Optional name to be used in the object representation</li>
 <li><strong>random_state</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><em>default=None</em>) – Optional random state to be used during split</li>
 </ul>
 </td>
@@ -226,25 +219,57 @@ assigned</p>
 <dl class="attribute">
 <dt id="skpro.workflow.manager.data.DataManager.X_train">
 <code class="descname">X_train</code><a class="headerlink" href="#skpro.workflow.manager.data.DataManager.X_train" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>np.array</em> – Training features</p>
+<dd><p>Training features</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">np.array</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="skpro.workflow.manager.data.DataManager.X_test">
 <code class="descname">X_test</code><a class="headerlink" href="#skpro.workflow.manager.data.DataManager.X_test" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>np.array</em> – Training labels</p>
+<dd><p>Training labels</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">np.array</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="skpro.workflow.manager.data.DataManager.y_train">
 <code class="descname">y_train</code><a class="headerlink" href="#skpro.workflow.manager.data.DataManager.y_train" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>np.array</em> – Test features</p>
+<dd><p>Test features</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">np.array</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="skpro.workflow.manager.data.DataManager.y_test">
 <code class="descname">y_test</code><a class="headerlink" href="#skpro.workflow.manager.data.DataManager.y_test" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>np.array</em> – Test labels</p>
+<dd><p>Test labels</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">np.array</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -280,7 +305,7 @@ assigned</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="skpro.html#skpro.base.BayesianVendorEstimator.Distribution.X" title="skpro.base.BayesianVendorEstimator.Distribution.X">X</a>, <a class="reference internal" href="#skpro.workflow.manager.data.DataManager.y" title="skpro.workflow.manager.data.DataManager.y">y</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">X, y</td>
 </tr>
 </tbody>
 </table>
@@ -332,7 +357,7 @@ assigned</p>
 <dl class="class">
 <dt id="skpro.workflow.manager.models.ModelManager">
 <em class="property">class </em><code class="descclassname">skpro.workflow.manager.models.</code><code class="descname">ModelManager</code><a class="reference internal" href="../_modules/skpro/workflow/manager/models.html#ModelManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#skpro.workflow.manager.models.ModelManager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Model manager</p>
 <dl class="method">
 <dt id="skpro.workflow.manager.models.ModelManager.all">
@@ -364,9 +389,7 @@ assigned</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -388,7 +411,7 @@ assigned</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -406,7 +429,8 @@ assigned</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.0.0b1.post0.dev16+ng89b4307',
+            VERSION:'1.0.0b1.post0.dev20+ng54bbfd0',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -416,22 +440,17 @@ assigned</p>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

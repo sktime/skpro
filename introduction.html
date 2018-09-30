@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introduction &mdash; skpro 1.0.0b1.post0.dev16+ng89b4307 documentation</title>
+  <title>Introduction &mdash; skpro 1.0.0b1.post0.dev20+ng54bbfd0 documentation</title>
   
 
   
@@ -24,27 +24,19 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="skpro 1.0.0b1.post0.dev16+ng89b4307 documentation" href="index.html"/>
-        <link rel="next" title="Installation" href="installation.html"/>
-        <link rel="prev" title="Contents" href="index.html"/> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="Contents" href="index.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +58,7 @@
             
             
               <div class="version">
-                1.0.0b1.post0.dev16+ng89b4307
+                1.0.0b1.post0.dev20+ng54bbfd0
               </div>
             
           
@@ -120,7 +112,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">skpro</a>
@@ -128,9 +120,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -175,7 +168,7 @@
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <p>Probabilistic forecasting makes predictions in settings where even perfect prior knowledge does not allow for impeccable forecast and provides appropriate measures of the uncertainty that is associated with them. In a supervised context, probabilistic prediction problems have been tackled through various strategies in both the frequentist and the Bayesian domain. Today, a variety of learning algorithms are available that make predictions in form of probability distributions. However, it is hard to compare different prediction strategies of the different toolboxes in a fair and transparent workflow.</p>
-<p><code class="docutils literal"><span class="pre">skpro</span></code> is a supervised machine learning framework that allows for probabilistic forecasting within a unified interface with the goal to make model assessment and comparison fair, domain-agnostic and approachable. It is based on the well-known <a class="reference external" href="http://scikit-learn.org/">scikit-learn</a> library and provides integrations for popular prediction toolboxes such as <a class="reference external" href="https://github.com/pymc-devs/pymc3">PyMC3</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">skpro</span></code> is a supervised machine learning framework that allows for probabilistic forecasting within a unified interface with the goal to make model assessment and comparison fair, domain-agnostic and approachable. It is based on the well-known <a class="reference external" href="http://scikit-learn.org/">scikit-learn</a> library and provides integrations for popular prediction toolboxes such as <a class="reference external" href="https://github.com/pymc-devs/pymc3">PyMC3</a>.</p>
 <p>The package is being developed open source under the direction of <a class="reference external" href="https://www.ucl.ac.uk/statistics/people/franz-kiraly">Dr Franz Király</a> and has been released under a <a class="reference internal" href="license.html"><span class="doc">BSD license</span></a>.</p>
 <div class="section" id="features">
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
@@ -194,7 +187,7 @@
 <div class="section" id="a-motivating-example">
 <h2>A motivating example<a class="headerlink" href="#a-motivating-example" title="Permalink to this headline">¶</a></h2>
 <p>Let’s have a look at an example of Boston Housing price prediction (using sklearn’s <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html">boston data</a>).</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Load boston housing data</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load boston housing data</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_boston</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
@@ -207,28 +200,28 @@
 <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Loss: </span><span class="si">%f</span><span class="s1">+-</span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">loss</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Loss</span><span class="p">:</span> <span class="mf">3.444260</span><span class="o">+-</span><span class="mf">0.062277</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Loss</span><span class="p">:</span> <span class="mf">3.444260</span><span class="o">+-</span><span class="mf">0.062277</span>
 </pre></div>
 </div>
-<p>If you are familiar with scikit-learn you will recognise that we define and train a model on the boston housing dataset and obtain the test prediction <code class="docutils literal"><span class="pre">y_pred</span></code>. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values – nothing unexpected there.</p>
-<p>Crucially, however, the skpro model does not just return a list of numbers or point predictions here. Instead, <code class="docutils literal"><span class="pre">y_pred</span></code> is a probablistic prediction, i.e. it represents probability distributions for each individual data point.
+<p>If you are familiar with scikit-learn you will recognise that we define and train a model on the boston housing dataset and obtain the test prediction <code class="docutils literal notranslate"><span class="pre">y_pred</span></code>. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values – nothing unexpected there.</p>
+<p>Crucially, however, the skpro model does not just return a list of numbers or point predictions here. Instead, <code class="docutils literal notranslate"><span class="pre">y_pred</span></code> is a probablistic prediction, i.e. it represents probability distributions for each individual data point.
 We can, for instance, obtain the standard deviation of the predicted distribution that corresponds with the first (0th) test point (or any other test point distribution)</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
 <span class="go">8.79649064286</span>
 </pre></div>
 </div>
 <p>Notably, the interface represents all distributional properties, including the density function, that can be easily evaluated for arbitrary arguments</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="go">0.00192808538756</span>
 </pre></div>
 </div>
 <p>Furthermore, it is possible to conveniently access the distributional properties in their vectorized form accross the test sample:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span>
 <span class="go">(152,)</span>
 </pre></div>
 </div>
 <p>The returned vector represent the standard deviations of each of the 152 predicted distributions that correspond to the 152 test points in the Boston data set. The prediction object also supports numpy’s elementwise operations:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
 <span class="go">(152,)</span>
 </pre></div>
 </div>
@@ -257,40 +250,40 @@ We can, for instance, obtain the standard deviation of the predicted distributio
 <tr class="row-even"><td>1</td>
 <td>Example model 1</td>
 <td><ol class="first last arabic simple" start="2">
-<li>12<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>1*</li>
+<li>12<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>1*</li>
 </ol>
 </td>
 <td><ol class="first last arabic simple">
-<li>3<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>2*</li>
+<li>3<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>2*</li>
 </ol>
 </td>
 </tr>
 <tr class="row-odd"><td>2</td>
 <td>Example model 2</td>
 <td><ol class="first last arabic simple">
-<li>5<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>0.5*</li>
+<li>5<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>0.5*</li>
 </ol>
 </td>
 <td><ol class="first last arabic simple" start="2">
-<li>9<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>1*</li>
+<li>9<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>1*</li>
 </ol>
 </td>
 </tr>
 <tr class="row-even"><td>3</td>
 <td>Example model 3</td>
 <td><ol class="first last arabic simple" start="3">
-<li>28<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>3*</li>
+<li>28<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>3*</li>
 </ol>
 </td>
 <td><ol class="first last arabic simple" start="3">
-<li>29<img class="math" src="_images/math/79db348018d3038efeba5653af973e3191a5f656.png" alt="\pm"/>4*</li>
+<li>29<img class="math" src="_images/math/50d6e780b5b859608e650113d8bb954183926a02.png" alt="\pm"/>4*</li>
 </ol>
 </td>
 </tr>
 </tbody>
 </table>
 <p>Going back to the boston housing example, the code to produce such a model comparison can be composed in a few lines:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">tbl</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tbl</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
 
 <span class="c1"># Loads and represents the data</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="s1">&#39;boston&#39;</span><span class="p">)</span>
@@ -318,7 +311,7 @@ We can, for instance, obtain the standard deviation of the predicted distributio
 <span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
 <span class="go">+-----+------------------------------------------------------+------------------------+</span>
 <span class="go">|   # | Model information                                    | CV(boston, log_loss)   |</span>
 <span class="go">+=====+======================================================+========================+</span>
@@ -336,9 +329,7 @@ We can, for instance, obtain the standard deviation of the predicted distributio
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -360,7 +351,7 @@ We can, for instance, obtain the standard deviation of the predicted distributio
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -378,7 +369,8 @@ We can, for instance, obtain the standard deviation of the predicted distributio
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.0b1.post0.dev16+ng89b4307',
+            VERSION:'1.0.0b1.post0.dev20+ng54bbfd0',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -388,22 +380,17 @@ We can, for instance, obtain the standard deviation of the predicted distributio
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
