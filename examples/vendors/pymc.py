@@ -49,4 +49,4 @@ print('Log loss: ', log_loss(data.y_test, y_pred, return_std=True))
 import sys
 sys.path.append('../')
 import utils
-utils.plot_performance(data.y_test, y_pred, '/home/frithjof/Code/Python/skpro/docs/_static/pymc_example_plot.png')
+utils.plot_performance(data.y_test, y_pred)
