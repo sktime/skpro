@@ -136,7 +136,11 @@ class KernelDensityAdapter(DensityAdapter):
         return integral
 
     def pdf(self, x):
-        return np.exp(self.estimator.score_samples(x))[0]
+        x = np.array(x)
+        try:
+            return np.exp(self.estimator.score_samples(x))[0]
+        except ValueError:
+            return np.exp(self.estimator.score_samples(x.reshape(-1, 1)))[0]
 
 
 class EmpiricalDensityAdapter(DensityAdapter):
