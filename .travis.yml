@@ -2,7 +2,7 @@ language: python
 python:
   - 3.6
 before_install:
-  - sudo apt-get -qq update && sudo apt-get install -y --no-install-recommends texlive-full python3-dev python3-tk
+  - sudo apt-get -qq update && sudo apt-get install -y --no-install-recommends texlive-full python3-dev python3-tk python3-setuptools
 install:
   - pip install -r requirements.txt
   - pip install -r test-requirements.txt
