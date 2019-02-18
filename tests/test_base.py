@@ -119,3 +119,13 @@ def test_numeric_emulation():
     assert float(y_pred_1[2]) == 20.
     assert int(y_pred_1[3]) == 30
 
+
+def test_numpy_compatibility():
+    estimator = EstimatorForTesting()
+
+    A = np.array([np.ones(3) * i for i in range(5)])
+    y_pred = estimator.predict(A)
+
+    assert np.mean(np.std(y_pred)) == 0.2
+
+    assert np.mean(np.mean(y_pred)) == 20
