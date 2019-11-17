@@ -5,7 +5,7 @@ from scipy.integrate import simps
 from sklearn.base import BaseEstimator
 from sklearn.neighbors import KernelDensity
 
-from .utils import not_existing
+import skpro.utils
 
 
 def ecdf(a):
@@ -168,6 +168,5 @@ class EmpiricalDensityAdapter(DensityAdapter):
     def cdf(self, x):
         return self.step_function_(x)
 
-    @not_existing
     def pdf(self, x):
         pass

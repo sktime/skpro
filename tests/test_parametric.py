@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.stats import norm
-import utils
 
 from sklearn.linear_model import LinearRegression
 
@@ -8,6 +7,8 @@ from skpro.workflow.manager import DataManager
 from skpro.parametric import ParametricEstimator
 from skpro.parametric.residuals import ResidualEstimator
 from skpro.metrics import linearized_log_loss
+
+from utils_tests import assert_close_prediction
 
 
 def test_baseline():
@@ -41,7 +42,7 @@ def test_simple_model():
     model = ParametricEstimator(LinearRegression(), LinearRegression())
     y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
 
-    utils.assert_close_prediction(y_pred.point(), data.y_test, within=0.5)
+    assert_close_prediction(y_pred.point(), data.y_test, within=0.5)
 
 
 def test_residual_prediction():

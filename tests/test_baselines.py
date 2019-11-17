@@ -1,5 +1,5 @@
 import numpy as np
-import utils
+import utils_tests
 
 from skpro.workflow.manager import DataManager
 from skpro.baselines import DensityBaseline
@@ -25,7 +25,11 @@ def test_density_baseline():
     assert isinstance(y_pred[i].cdf(x), float)
 
     # mean prediction is useful?
-    utils.assert_close_prediction(y_pred.point(), data.y_test, within=0.75)
+    assert_close_prediction(y_pred.point(), data.y_test, within=0.75)
 
     # loss calculation working?
     assert isinstance(linearized_log_loss(data.y_test, y_pred), float)
+    
+
+if __name__ == '__main__' :
+    test_density_baseline()

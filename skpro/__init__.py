@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pkg_resources
 
-import skpro.parametric
+import skpro.estimators
 import skpro.workflow
 
 try:
