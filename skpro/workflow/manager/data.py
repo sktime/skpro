@@ -62,7 +62,7 @@ class DataManager:
         Test labels
     """
 
-    def __init__(self, X=None, y=None, split=0.2, name=None, random_state=None):
+    def __init__(self, X=None, y=None, split=0.2, name=None, random_state=False):
         if isinstance(X, str):
             # autoload sklearn datasets, urls and files
             name = X

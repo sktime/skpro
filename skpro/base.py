@@ -1,185 +1,184 @@
 import abc
-import functools
-import warnings
+#import functools
 import numpy as np
 
 from sklearn.base import BaseEstimator
 
 
-def vectorvalued(f):
-    """ Decorates a distribution function to disable automatic vectorization.
-
-    Parameters
-    ----------
-    f: The function to decorate
-
-    Returns
-    -------
-    Decorated function
-    """
-    f.already_vectorized = True
-    return f
-
-
-def _forward_meta(wrapper, f):
-    """ Forward meta information from decorated method to decoration
-
-    Parameters
-    ----------
-    wrapper
-    f
-
-    Returns
-    -------
-    Method with meta information
-    """
-    wrapper.already_vectorized = getattr(f, 'already_vectorized', False)
-    wrapper.non_existing = getattr(f, 'not_existing', False)
-
-    return wrapper
-
-
-def _generalize(f):
-    """ Generalizes the signature to allow for the use with np.std() etc.
-
-    Parameters
-    ----------
-    f: The function to decorate
-
-    Returns
-    -------
-    Decorated function
-    """
-
-    def wrapper(self, *args, **kwargs):
-        return f(self)
-
-    return _forward_meta(wrapper, f)
-
-
-def _vectorize(f):
-    """ Enables automatic vectorization of a function
-
-    The wrapper vectorizes a interface function unless
-    it is decorated with the vectorvalued decorator
-
-    Parameters
-    ----------
-    f: The function to decorate
-
-    Returns
-    -------
-    Decorated function
-    """
-    def wrapper(self, *args, **kwargs):
-        # cache index
-        index_ = self.index
-        self.index = slice(None)
-
-        if getattr(f, 'already_vectorized', False):
-            result = f(self, *args, **kwargs)
-        else:
-            result = []
-            for index in range(len(self.X)):
-                self.index = index
-                result.append(f(self, *args, **kwargs))
-
-        # rollback index
-        self.index = index_
-
-        if len(result) > 1:
-            return np.array(result)
-        else:
-            return result[0]
-
-    return _forward_meta(wrapper, f)
-
-
-def _elementwise(f):
-    """ Enables elementwise operations
-
-    The wrapper implements two different modes of argument evaluation
-    for given p_1,..., p_k that represent the predicted distributions
-    and and x_1,...,x_m that represent the values to evaluate them on.
-
-    "elementwise" (default): Repeat the sequence of p_i until there are m,
-                            i.e., p_1,...,p_k,p_1,p_2,...,p_k,p_1,...,p_m'
-                            where m' is the remainder of dividing m by k.
-
-    "batch": x_1, ..., x_m is evaluated on every distribution p_i
-            resulting in a matrix m columns and k rows.
-
-    Parameters
-    ----------
-    f: The function to decorate
-
-    Returns
-    -------
-    Decorated function
-    """
-
-    def wrapper(self, x, *args, **kwargs):
-        if len(np.array(x).shape) > 1:
-            x = x.flatten()
-
-        # cache index
-        index_ = self.index
-        self.index = slice(None)
-
-        # disable elementwise mode if x is scalar
-        elementwise = (self.mode == 'elementwise' and len(np.array(x).shape) != 0)
-
-        if elementwise:
-            evaluations = len(x)
-        else:
-            evaluations = len(self.X)
-
-        # compose result
-        result = []
-        number_of_points = len(self.X)
-        for index in range(evaluations):
-            # set evaluation index and point
-            if elementwise:
-                self.index = index % number_of_points
-                at = x[index]
-            else:
-                self.index = index
-                at = x
-
-            # evaluate the function at this point
-            result.append(f(self, at, *args, **kwargs))
-
-        # rollback index
-        self.index = index_
-
-        if len(result) > 1:
-            return np.array(result)
-        else:
-            return result[0]
-
-    return _forward_meta(wrapper, f)
-
-
-def _cached(f):
-    """ Enables caching
-
-    Wrapper uses lru_cache to cache function result
-
-    Parameters
-    ----------
-    f: The function to decorate
-
-    Returns
-    -------
-    Decorated function
-    """
-
-    @functools.lru_cache()
-    def wrapper(self, *args, **kwargs):
-        return f(self, *args, **kwargs)
-
-    return _forward_meta(wrapper, f)
-
+#def vectorvalued(f):
+#    """ Decorates a distribution function to disable automatic vectorization.
+#
+#    Parameters
+#    ----------
+#    f: The function to decorate
+#
+#    Returns
+#    -------
+#    Decorated function
+#    """
+#    f.already_vectorized = True
+#    return f
+#
+#
+#def _forward_meta(wrapper, f):
+#    """ Forward meta information from decorated method to decoration
+#
+#    Parameters
+#    ----------
+#    wrapper
+#    f
+#
+#    Returns
+#    -------
+#    Method with meta information
+#    """
+#    wrapper.already_vectorized = getattr(f, 'already_vectorized', False)
+#    wrapper.non_existing = getattr(f, 'not_existing', False)
+#
+#    return wrapper
+#
+#
+#def _generalize(f):
+#    """ Generalizes the signature to allow for the use with np.std() etc.
+#
+#    Parameters
+#    ----------
+#    f: The function to decorate
+#
+#    Returns
+#    -------
+#    Decorated function
+#    """
+#
+#    def wrapper(self, *args, **kwargs):
+#        return f(self)
+#
+#    return _forward_meta(wrapper, f)
+#
+#
+#def _vectorize(f):
+#    """ Enables automatic vectorization of a function
+#
+#    The wrapper vectorizes a interface function unless
+#    it is decorated with the vectorvalued decorator
+#
+#    Parameters
+#    ----------
+#    f: The function to decorate
+#
+#    Returns
+#    -------
+#    Decorated function
+#    """
+#    def wrapper(self, *args, **kwargs):
+#        # cache index
+#        index_ = self.index
+#        self.index = slice(None)
+#
+#        if getattr(f, 'already_vectorized', False):
+#            result = f(self, *args, **kwargs)
+#        else:
+#            result = []
+#            for index in range(len(self.X)):
+#                self.index = index
+#                result.append(f(self, *args, **kwargs))
+#
+#        # rollback index
+#        self.index = index_
+#
+#        if len(result) > 1:
+#            return np.array(result)
+#        else:
+#            return result[0]
+#
+#    return _forward_meta(wrapper, f)
+#
+#
+#def _elementwise(f):
+#    """ Enables elementwise operations
+#
+#    The wrapper implements two different modes of argument evaluation
+#    for given p_1,..., p_k that represent the predicted distributions
+#    and and x_1,...,x_m that represent the values to evaluate them on.
+#
+#    "elementwise" (default): Repeat the sequence of p_i until there are m,
+#                            i.e., p_1,...,p_k,p_1,p_2,...,p_k,p_1,...,p_m'
+#                            where m' is the remainder of dividing m by k.
+#
+#    "batch": x_1, ..., x_m is evaluated on every distribution p_i
+#            resulting in a matrix m columns and k rows.
+#
+#    Parameters
+#    ----------
+#    f: The function to decorate
+#
+#    Returns
+#    -------
+#    Decorated function
+#    """
+#
+#    def wrapper(self, x, *args, **kwargs):
+#        if len(np.array(x).shape) > 1:
+#            x = x.flatten()
+#
+#        # cache index
+#        index_ = self.index
+#        self.index = slice(None)
+#
+#        # disable elementwise mode if x is scalar
+#        elementwise = (self.mode == 'elementwise' and len(np.array(x).shape) != 0)
+#
+#        if elementwise:
+#            evaluations = len(x)
+#        else:
+#            evaluations = len(self.X)
+#
+#        # compose result
+#        result = []
+#        number_of_points = len(self.X)
+#        for index in range(evaluations):
+#            # set evaluation index and point
+#            if elementwise:
+#                self.index = index % number_of_points
+#                at = x[index]
+#            else:
+#                self.index = index
+#                at = x
+#
+#            # evaluate the function at this point
+#            result.append(f(self, at, *args, **kwargs))
+#
+#        # rollback index
+#        self.index = index_
+#
+#        if len(result) > 1:
+#            return np.array(result)
+#        else:
+#            return result[0]
+#
+#    return _forward_meta(wrapper, f)
+#
+#
+#def _cached(f):
+#    """ Enables caching
+#
+#    Wrapper uses lru_cache to cache function result
+#
+#    Parameters
+#    ----------
+#    f: The function to decorate
+#
+#    Returns
+#    -------
+#    Decorated function
+#    """
+#
+#    @functools.lru_cache()
+#    def wrapper(self, *args, **kwargs):
+#        return f(self, *args, **kwargs)
+#
+#    return _forward_meta(wrapper, f)
+#
 
 class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
     """ Abstract base class for probabilistic prediction models
@@ -211,29 +210,29 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
     def __repr__(self):
         return '%s()' % self.__class__.__name__
-
-    @classmethod
-    def predict(self, X):
-
-        warnings.warn('The estimator doesn\'t implement a predict procedure', UserWarning)
     
-        return self.predict_proba().mean()
+
+    def predict(self, X):
+        distribution = self.predict_proba(X = X)
+        return distribution.mean()
     
     def predict_proba(self, X):
-
-        warnings.warn('The estimator doesn\'t implement a predict_proba procedure', UserWarning)
+        
+        raise ValueError('The estimator doesn\'t implement a predict_proba procedure')
         
         pass
 
-    def fit(self, X, y):
+    
 
-        warnings.warn('The estimator doesn\'t implement a fit procedure', UserWarning)
+
+    def fit(self, X, y):
+        raise ValueError('The estimator doesn\'t implement a fit procedure')
 
         return self
 
     def score(self, X, y, sample=True, return_std=False):
 
-        warnings.warn('The estimator doesn\'t implement a score procedure', UserWarning)
+        raise ValueError('The estimator doesn\'t implement a score procedure')
         
         pass
 

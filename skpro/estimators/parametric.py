@@ -2,8 +2,8 @@ from sklearn.utils.validation import check_X_y
 import scipy.sparse as sp
 
 from skpro.base import ProbabilisticEstimator
+from skpro.distributions.marginal_distribution import NormalDistribution
 from skpro.estimators.residuals import ResidualEstimator
-import skrpo.distributions.distribution as d
 
 
 class ParametricEstimator(ProbabilisticEstimator):
@@ -16,13 +16,13 @@ class ParametricEstimator(ProbabilisticEstimator):
     """
     
     def __init__(self, mean_estimator, residuals_estimator, 
-                 distribution = d.NormalDistribution(), copy_X=True):
+                 distribution = NormalDistribution(), copy_X=True):
         
         if not isinstance(residuals_estimator, ResidualEstimator):
-              raise ValueError("residual estimator is not recognized as a 'ResidualEstimator' object")
+            self.residuals_estimator = ResidualEstimator(residuals_estimator)
+        else : self.residuals_estimator = residuals_estimator
         
         self.mean_estimator = mean_estimator
-        self.residuals_estimator = residuals_estimator
         self.distribution = distribution
         self.copy_X= copy_X
         
@@ -39,14 +39,14 @@ class ParametricEstimator(ProbabilisticEstimator):
                 X = X.copy(order='K')
 
         self.mean_estimator.fit(X, y, sample_weight)
-        self.residual_estimator.linkToEstimator(self.mean_estimator)
-        self.residual_estimator.fit(X, y)
+        self.residuals_estimator.linkToEstimator(self.mean_estimator)
+        self.residuals_estimator.fit(X, y, sample_weight)
         
         return self
     
     
     def predict_proba(self, X):
-        
+
         allowed_distribution = ("normal", "laplace")
         if self.distribution.name() not in allowed_distribution:
             raise ValueError("Unknown strategy type: %s, expected one of %s."
@@ -60,7 +60,7 @@ class ParametricEstimator(ProbabilisticEstimator):
 
         return type(self.distribution)(
                 self.mean_estimator.predict(X),
-                self.residual_estimator.predict(X)
+                self.residuals_estimator.predict(X)
                 )
     
 
