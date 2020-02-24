@@ -1,43 +1,54 @@
 import numpy as np
+from scipy.stats import norm
 
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_boston
 
 from skpro.workflow.manager import DataManager
-from skpro.estimators import ParametricEstimator
-#from skpro.estimators.residuals import ResidualEstimator
-#from skpro.metrics import linearized_log_loss
+from skpro.baselines.classical_baselines import ClassicalBaseline
 
-from utils_tests import assert_close_prediction
+from skpro.estimators.parametric import ParametricEstimator
+from skpro.estimators.residuals import ResidualEstimator
+
+from skpro.metrics.proba_loss_cont import LogLossClipped
+from skpro.metrics.proba_scorer import ProbabilisticScorer
 
 
-#def test_baseline():
-    #data = DataManager('boston')
+def test_dummy_prediction():
+   
+    data = DataManager('boston')
 
-    #model = ParametricEstimator()
-    #y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
+    model = ClassicalBaseline()
+    model.fit(data.X_train, data.y_train)
+    y_pred = model.predict_proba(data.X_test)
 
-    #mu = np.mean(data.y_train)
-    #sigma = np.std(data.y_train)
+    mu = np.mean(data.y_train)
+    sigma = np.std(data.y_train)
 
     # is the dummy prediction working?
-    #assert (y_pred.point() == np.ones((len(data.X_test))) * mu).all()
-    #assert (y_pred.std() == np.ones((len(data.X_test))) * sigma).all()
+    assert (y_pred.point() == np.ones((len(data.X_test))) * mu).all()
+    assert (y_pred.std() == np.ones((len(data.X_test))) * sigma).all()
 
     # does subsetting work?
-    #assert len(y_pred[1:3].point()) == 2
-    #assert len(y_pred[1:3].lp2()) == 2
+    assert len(y_pred[1:2]) == 2
+    assert y_pred[1:3].point() == 3 * [mu]
 
     # pdf, cdf?
-    #x = np.random.randint(0, 10)
-    #i = np.random.randint(0, len(data.X_test) - 1)
+    x = np.random.randint(0, 10)
+    i = np.random.randint(0, len(data.X_test) - 1)
 
-    #assert y_pred[i].pdf(x) == norm.pdf(x, mu, sigma)
-    #assert y_pred[i].cdf(x) == norm.cdf(x, mu, sigma)
+    rtol = 1e-05
+    atol = 1e-08
+
+    assert np.allclose(y_pred[i].pdf(x), norm.pdf(x, mu, sigma), rtol, atol)
+    assert np.allclose(y_pred[i].cdf(x), norm.cdf(x, mu, sigma), rtol, atol)
 
 
 def test_static_linear_mean_prediction():
+    
+    rtol = 1e-05
+    atol = 1e-08
     
     X, y = load_boston(return_X_y=True)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.2, random_state= False)
@@ -62,33 +73,37 @@ def test_static_linear_mean_prediction():
                    27.26856352, 19.29492159, 28.62304496, 19.17978838, 18.97185995, 37.82397662,
                    39.22012647, 23.71261106, 24.93076217, 15.88545417, 26.09845751, 16.68819641,
                    15.83515991, 13.10775597, 24.71583588, 31.25165267, 22.16640989, 20.25087212,
-                   0.59025319, 25.44217132, 15.57178328, 17.93719475, 25.30588844, 22.3732326 ]
+                   0.59025319, 25.44217132, 15.57178328, 17.93719475, 25.30588844, 22.3732326]
 
-    assert_close_prediction(prediction , static_pred, within=10**-8)
+    assert(np.allclose(prediction , static_pred, rtol, atol))
     
-    
+
+   
+ 
 def test_residual_prediction():
-    data = DataManager('boston')
 
-    #baseline_model = ParametricEstimator(LinearRegression())
-   #model = ParametricEstimator(
-        #point=LinearRegression(),
-        #std=ResidualEstimator(LinearRegression())
-    #)
+     data = DataManager('boston')
+     
+     residualModel = ResidualEstimator(estimator = LinearRegression(), minWrapActive = True, minWrapValue = 2**4)
+     model = ParametricEstimator(LinearRegression(), residualModel)
+     model.fit(data.X_train, data.y_train)
+  
+     baseline =  ClassicalBaseline(LinearRegression()).fit(data.X_train, data.y_train)
 
-    #baseline = baseline_model.fit(data.X_train, data.y_train).predict(data.X_test)
-    #y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
+     score = ProbabilisticScorer(LogLossClipped())
+     baseline_loss = score(baseline, data.X_test, data.y_test)
+     y_pred_loss = score(model, data.X_test, data.y_test)
 
-    #baseline_loss = linearized_log_loss(data.y_test, baseline)
-    #y_pred_loss = linearized_log_loss(data.y_test, y_pred)
+     assert baseline_loss > y_pred_loss
 
-    #assert baseline_loss > y_pred_loss
+
     
     
 if __name__ == "__main__":
-   # test_baseline()
+
+    test_dummy_prediction()
     test_static_linear_mean_prediction()
-    #test_residual_prediction()
+    test_residual_prediction()
     
     
     

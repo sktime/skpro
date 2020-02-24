@@ -5,8 +5,6 @@ from scipy.integrate import simps
 from sklearn.base import BaseEstimator
 from sklearn.neighbors import KernelDensity
 
-import skpro.utils
-
 
 def ecdf(a):
     """ Returns the empirical distribution function of a sample

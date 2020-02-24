@@ -1,5 +1,4 @@
 
-
 def not_existing(f):
     """
     Decorates an interface method to declare it theoretically non existent

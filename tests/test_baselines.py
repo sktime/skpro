@@ -6,6 +6,7 @@ from skpro.baselines import DensityBaseline
 from skpro.metrics import linearized_log_loss
 
 
+
 def test_density_baseline():
     data = DataManager('boston')
 

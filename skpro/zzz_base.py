@@ -332,8 +332,7 @@ class VendorEstimator(ProbabilisticEstimator):
         Can be overwritten to implement checking procedures for a
         density adapter that are applied during the object
         initialisation.
-
-        Parameters
+         Parameters
         ----------
         adapter: skpro.density.DensityAdapter
             Adapter
