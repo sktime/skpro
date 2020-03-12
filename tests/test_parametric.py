@@ -2,18 +2,81 @@ import numpy as np
 from scipy.stats import norm
 
 from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
+
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_boston
+from sklearn.base import clone
 
 from skpro.workflow.manager import DataManager
 from skpro.baselines.classical_baselines import ClassicalBaseline
 
+from skpro.distributions.distribution_normal import Normal
 from skpro.estimators.parametric import ParametricEstimator
-from skpro.estimators.residuals import ResidualEstimator
+from skpro.estimators.residuals import ResidualEstimator, ClippedResidualEstimator
+from skpro.estimators.clipped import ClippedEstimator
 
 from skpro.metrics.proba_loss_cont import LogLossClipped
 from skpro.metrics.proba_scorer import ProbabilisticScorer
 
+
+def test_get_params():
+
+    #test instantiation with residuals get_params functionality
+    residual = ResidualEstimator(LinearRegression())
+    model = ParametricEstimator(DecisionTreeRegressor(), residual)
+    params = model.get_params(deep = False)
+
+    assert(params['copy_X']== True)
+    assert(params['distribution'] == Normal())
+    assert(isinstance(params['mean_estimator'], DecisionTreeRegressor))
+    
+    assert(isinstance(params['dispersion_estimator'], ResidualEstimator))
+    assert(isinstance(params['dispersion_estimator'].mean_estimator, DecisionTreeRegressor))
+    assert(isinstance(params['dispersion_estimator'].base_estimator, LinearRegression))
+    
+    
+    #test default instantiation get_params functionality (with default - ClippedResidualEstimator)
+    m2 = ParametricEstimator(LinearRegression(), LinearRegression())
+    p2 = m2.get_params(deep = False)
+
+    assert(p2['copy_X']== True)
+    assert(p2['distribution'] == Normal())
+    assert(isinstance(p2['mean_estimator'], LinearRegression))
+    assert(isinstance(p2['dispersion_estimator'], ClippedResidualEstimator))
+    
+    assert(isinstance(p2['dispersion_estimator'].mean_estimator, LinearRegression))
+    assert(isinstance(p2['dispersion_estimator'].base_estimator, ClippedEstimator))
+    assert(isinstance(p2['dispersion_estimator'].base_estimator.clipped_estimator, LinearRegression))
+    
+
+def test_get_clone():
+
+    #test get_params functionality
+    residual = ResidualEstimator(LinearRegression())
+    model = ParametricEstimator(DecisionTreeRegressor(), residual)
+
+    #test sci-learn estimator deep copy (to be used for ensemble)
+    copy = clone(model)
+    assert(copy.copy_X == True)
+    assert(copy.distribution == Normal())
+    assert(isinstance(copy.mean_estimator, DecisionTreeRegressor))
+    
+    assert(isinstance(copy.dispersion_estimator, ResidualEstimator))
+    assert(isinstance(copy.dispersion_estimator.mean_estimator, DecisionTreeRegressor))
+    assert(isinstance(copy.dispersion_estimator.base_estimator, LinearRegression))
+
+    #test default instantiation get_params functionality (with default - ClippedResidualEstimator)
+    m2 = ParametricEstimator(LinearRegression(), LinearRegression())
+    copy2 = clone(m2)
+    assert(copy2.copy_X == True)
+    assert(copy2.distribution == Normal())
+    assert(isinstance(copy2.mean_estimator, LinearRegression))
+    assert(isinstance(copy2.dispersion_estimator, ClippedResidualEstimator))
+    
+    assert(isinstance(copy2.dispersion_estimator.mean_estimator, LinearRegression))
+    assert(isinstance(copy2.dispersion_estimator.base_estimator, ClippedEstimator))
+    assert(isinstance(copy2.dispersion_estimator.base_estimator.clipped_estimator, LinearRegression))
 
 def test_dummy_prediction():
    
@@ -29,10 +92,6 @@ def test_dummy_prediction():
     # is the dummy prediction working?
     assert (y_pred.point() == np.ones((len(data.X_test))) * mu).all()
     assert (y_pred.std() == np.ones((len(data.X_test))) * sigma).all()
-
-    # does subsetting work?
-    assert len(y_pred[1:2]) == 2
-    assert y_pred[1:3].point() == 3 * [mu]
 
     # pdf, cdf?
     x = np.random.randint(0, 10)
@@ -77,14 +136,13 @@ def test_static_linear_mean_prediction():
 
     assert(np.allclose(prediction , static_pred, rtol, atol))
     
-
    
  
 def test_residual_prediction():
 
      data = DataManager('boston')
      
-     residualModel = ResidualEstimator(estimator = LinearRegression(), minWrapActive = True, minWrapValue = 2**4)
+     residualModel = ClippedResidualEstimator(clipped_base_estimator = LinearRegression(), minimum = 2**4)
      model = ParametricEstimator(LinearRegression(), residualModel)
      model.fit(data.X_train, data.y_train)
   
@@ -96,11 +154,11 @@ def test_residual_prediction():
 
      assert baseline_loss > y_pred_loss
 
-
-    
+  
     
 if __name__ == "__main__":
-
+    test_get_params()
+    test_get_clone()
     test_dummy_prediction()
     test_static_linear_mean_prediction()
     test_residual_prediction()

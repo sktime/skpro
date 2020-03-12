@@ -2,52 +2,15 @@ import abc
 
 import numpy as np
 from scipy.integrate import simps
-from sklearn.base import BaseEstimator
 from sklearn.neighbors import KernelDensity
 
-
-def ecdf(a):
-    """ Returns the empirical distribution function of a sample
-
-    Parameters
-    ----------
-    a: array
-        Input array representing a sample
-
-    Returns
-    -------
-    array xs   Empirical cdf of the input sample
-    array ys
-    """
-    xs = np.sort(np.array(a))
-    ys = np.arange(1, len(xs) + 1) / float(len(xs))
-
-    return xs, ys
+from skpro.distributions.distribution_base import DistributionBase, distType, Mode
+from skpro.distributions.component.support import NulleSupport
+from skpro.distributions.component.variate import VariateInfos
+from skpro.utils import utils
 
 
-def step_function(xs, ys):
-    """
-    Returns a step function from x-y pair sample
-
-    Parameters
-    ----------
-    xs  x values
-    ys  corresponding y values
-
-    Returns
-    -------
-    function A step function
-    """
-
-    def func(x):
-        index = np.searchsorted(xs, x)
-        index = len(ys) - 1 if index >= len(ys) else index
-        return ys[index]
-
-    return func
-
-
-class DensityAdapter(BaseEstimator, metaclass=abc.ABCMeta):
+class DensityAdapter(DistributionBase, metaclass=abc.ABCMeta):
     """
     Abtract base class for density adapter
     that transform an input into an
@@ -64,35 +27,7 @@ class DensityAdapter(BaseEstimator, metaclass=abc.ABCMeta):
         mixed inlet Input for the adapter transformation
         """
         raise NotImplementedError()
-
-    @abc.abstractmethod
-    def pdf(self, x):
-        """ Probability density function
-
-        Parameters
-        ----------
-        x
-
-        Returns
-        -------
-        mixed  Density function evaluated at x
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def cdf(self, x):
-        """ Cumulative density function
-
-        Parameters
-        ----------
-        x
-
-        Returns
-        -------
-        mixed Cumulative density function evaluated at x
-        """
-        raise NotImplementedError()
-
+        
 
 class KernelDensityAdapter(DensityAdapter):
     """
@@ -100,8 +35,17 @@ class KernelDensityAdapter(DensityAdapter):
     to transform samples
     """
 
-    def __init__(self, estimator=KernelDensity()):
+    def __init__(self, estimator = None, bandwidth=0.2, cdf_grid_size = 1000, **kwargs):
+        if estimator is None : 
+            estimator = KernelDensity(bandwidth=bandwidth, **kwargs)
         self.estimator = estimator
+        self.cdf_grid_size = cdf_grid_size
+        
+        super().__init__('KernelDensityAdapter', 
+             dtype = distType.CONTINUOUS, vectorSize = 1,
+             variateComponent = VariateInfos(),
+             support = NulleSupport(), mode = Mode.BATCH)
+        
 
     def __call__(self, sample):
         """
@@ -109,36 +53,60 @@ class KernelDensityAdapter(DensityAdapter):
 
         Parameters
         ----------
-        np.array(M) inlet: Sample of length M
+        sample : np.array inlet, shape = (n_samples, 1)
         """
-
+        
+        if len(sample.shape) > 1 :
+            raise ValueError('Empircal adapter only implemented for 1.dim sample')
+        
         # fit kernel density estimator
-        self._min_sample = min(sample)
-        self._max_sample = max(sample)
-        self._std_sample = np.std(sample)
-
+        self.minus_inf = min(sample) - 10 * np.std(sample)
         self.estimator.fit(sample[:, np.newaxis])
 
-    def cdf(self, x):
-        a = 10
-        grid_size = 1000
 
-        minus_inf = self._min_sample - a * self._std_sample
+    def cdf_imp(self, X):
+        """pdf
+         
+         Parameters
+         ----------
+         X : array-like, shape = (n_samples, 1)
+            Test samples
 
-        step = (x - minus_inf) / grid_size
-        grid = np.arange(minus_inf, x, step)
+         Returns
+         -------
+         pdf output : ndarray of float
+            shape = (n_samples, 1) 
+         """
+        X = np.array(X)
+        if(len(X.shape) > 1): raise ValueError('empirical adapter only implemented for 1.dim sample')
 
-        pdf_estimation = np.exp(self.estimator.score_samples(grid.reshape(-1, 1)))
-        integral = simps(y=pdf_estimation, dx=step)
+        if(utils.dim(X) == 1):
+            grid_size = 1000
+            step = (X - self.minus_inf) / grid_size
+            grid = np.arange(self.minus_inf, X, step)
+            pdf_estimation = np.exp(self.estimator.score_samples(grid.reshape(-1, 1)))
+            return simps(y=pdf_estimation, dx=step)
 
-        return integral
+        else: return np.array([self.cdf_imp(x) for x in X])
 
-    def pdf(self, x):
-        x = np.array(x)
-        try:
-            return np.exp(self.estimator.score_samples(x))[0]
-        except ValueError:
-            return np.exp(self.estimator.score_samples(x.reshape(-1, 1)))[0]
+
+    def pdf_imp(self, X):
+        """cdf
+         
+         Parameters
+         ----------
+         X : array-like, shape = (n_samples, 1)
+            Test samples
+
+         Returns
+         -------
+         pdf output : ndarray of float
+            shape = (n_samples, 1)
+        """
+        
+        X = np.array(X)
+        if(len(X.shape) > 1): raise ValueError('empirical adapter only implemented for 1.dim sample')
+        return np.exp(self.estimator.score_samples(X[:, np.newaxis]))
 
 
 class EmpiricalDensityAdapter(DensityAdapter):
@@ -147,10 +115,19 @@ class EmpiricalDensityAdapter(DensityAdapter):
     to transform samples
     """
 
-    def __init__(self):
+    def __init__(self, bandwidth=0.2):
         self.xs_ = None
-        self.ys_ = None
-        self.step_function_ = None
+        self.n_ = None
+        self.cfunction_ = None
+        self.bandwidth_ = bandwidth
+       
+        super().__init__('EmpiricalDensityAdapter', 
+             dtype =  distType.CONTINUOUS, vectorSize = 1,
+             variateComponent = VariateInfos(),
+             support = NulleSupport(), 
+             mode = Mode.BATCH
+        )
+        
 
     def __call__(self, sample):
         """
@@ -158,13 +135,57 @@ class EmpiricalDensityAdapter(DensityAdapter):
 
         Parameters
         ----------
-        np.array(M) inlet: Bayesian sample of length M
+        sample : np.array inlet, shape = (n_samples, 1)
         """
-        self.xs_, self.ys_ = ecdf(sample)
-        self.step_function_ = step_function(self.xs_, self.ys_)
+        if len(sample.shape) > 1 :
+            raise ValueError('Empircal adapter only implemented for 1.dim sample')
+        
+        self.xs_ = np.sort(np.array(sample))
+        self.n_ = len(self.xs_)
+        
+        def func(x):
+            index = np.searchsorted(self.xs_, x, side = 'right')
+            return index
+        
+        self.cfunction_ = func
 
-    def cdf(self, x):
-        return self.step_function_(x)
+    
+    def cdf_imp(self, X):
+         """pdf
+         
+         Parameters
+         ----------
+         X : array-like, shape = (n_samples, 1)
+            Test samples
 
-    def pdf(self, x):
-        pass
+         Returns
+         -------
+         pdf output : ndarray of float
+            shape = (n_samples, 1) 
+         """
+         X = np.array(X)
+         if(len(X.shape) > 1): raise ValueError('empirical adapter only implemented for 1.dim sample')
+         return self.cfunction_(X) /self.n_
+
+    
+    
+    def pdf_imp(self, X):
+        """pdf
+         
+         Parameters
+         ----------
+         X : array-like, shape = (n_samples, 1)
+            Test samples
+
+         Returns
+         -------
+         pdf output : ndarray of float
+            shape = (n_samples, 1)
+        """
+        X = np.array(X)
+        if(len(X.shape) > 1): raise ValueError('empirical adapter only implemented for 1.dim sample')
+        
+        w_ = self.bandwidth_ * 0.5
+        num = self.cfunction_(X + w_) - self.cfunction_(X - w_)
+        out = num/(self.bandwidth_ * self.n_)
+        return out

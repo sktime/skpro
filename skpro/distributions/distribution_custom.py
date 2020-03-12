@@ -3,7 +3,7 @@ from skpro.distributions.component.support import NulleSupport
 
 
 
-class CustomContinuousDistribution(DistributionBase) :
+class CustomDistribution(DistributionBase) :
      """Customized distribution class :
         The pdf and cdf can be defined dynamically by the user (using lambda functions)
 

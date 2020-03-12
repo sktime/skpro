@@ -15,10 +15,10 @@ class VariateInfos :
         univariate = 1
         multivariate = 2
 
-    def __init__(self, form =  variateEnum.univariate, size = None):
-        self.form_ = form
+    def __init__(self, size = 1):
         self.size_ = size
         
-        if(self.form_ is self.variateEnum.univariate) :
-            self.size_ = 1
+        self.form_ = self.variateEnum.univariate
+        if(self.size_ > 1) : self.form_ = self.variateEnum.multivariate
+
         

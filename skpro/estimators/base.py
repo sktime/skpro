@@ -13,7 +13,8 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
     that can be set at the class level in their ``__init__``
     as explicit keyword arguments (no ``*args`` or ``**kwargs``).
     """
-    
+
+
     def __init__(self):
             if callable(getattr(self, '_init', None)):
                 self._init()
@@ -51,7 +52,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         return distribution.point()
     
 
-    
+    @abc.abstractmethod
     def predict_proba(self, X):
         """probabilistic prediction method. Return a (vectorized) predicted distribution object
         [Abstract method] : must be instantiated in the concrete sub
@@ -67,12 +68,11 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
          skpro distribution object, (eventually vectorized)
             
         """
-        raise ValueError('The estimator doesn\'t implement a predict_proba procedure')
-        
-        pass
+        raise NotImplementedError()
 
 
 
+    @abc.abstractmethod
     def fit(self, X, y, sample_weight=None):
         """Fit the model according to the given training data.
         [Abstract method] : must be instantiated in the concrete sub
@@ -90,10 +90,9 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         -------
         self : object
         """
-        raise ValueError('The estimator doesn\'t implement a fit procedure')
+        raise NotImplementedError()
 
         return self
-
 
 
     def score(self, X, y, sample=True, return_std=False):
@@ -114,6 +113,6 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         score : float
         """
         
-        raise ValueError('The estimator doesn\'t implement a score procedure')
+        raise NotImplementedError()
         
         pass

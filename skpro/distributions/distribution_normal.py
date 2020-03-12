@@ -1,6 +1,6 @@
 import numpy as np
 
-from skpro.distributions.utils import utils
+from skpro.utils import utils
 from skpro.distributions.distribution_base import DistributionBase, distType
 from skpro.distributions.component.support import  RealContinuousSupport
 
@@ -8,7 +8,7 @@ from scipy import special
 
  
 
-class NormalDistribution(DistributionBase) :
+class Normal(DistributionBase) :
      """Base class for the univariate normal distribution
 
         Parameters
@@ -97,8 +97,8 @@ class NormalDistribution(DistributionBase) :
 
          """
          
-         loc = self.get_cached_param('loc')
-         scale = self.get_cached_param('scale')
+         loc = np.array(self.get_param('loc'))
+         scale = np.array(self.get_param('scale'))
 
          m_ = utils.dim(loc)
          n_ = utils.dim(X)
@@ -129,10 +129,9 @@ class NormalDistribution(DistributionBase) :
                     (n_samples) in [ELEMENT-WISE-MODE]
 
          """
-         
-
-         loc = self.get_cached_param('loc')
-         scale = self.get_cached_param('scale')
+    
+         loc = np.array(self.get_param('loc'))
+         scale = np.array(self.get_param('scale'))
 
          m_ = utils.dim(loc)
          n_ = utils.dim(X)
@@ -156,9 +155,8 @@ class NormalDistribution(DistributionBase) :
             shape = (m_distribution_size)
 
          """
-         
-         
-         scale = self.get_cached_param('scale')
+
+         scale = np.array(self.get_param('scale'))
          out = 1/(2**scale*np.sqrt(np.pi))
          
          return out

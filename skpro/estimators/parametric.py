@@ -2,9 +2,10 @@ import scipy.sparse as sp
 
 from sklearn.utils.validation import check_X_y
 
-from skpro.distributions.distribution_normal import NormalDistribution
+from skpro.distributions.distribution_normal import Normal
 from skpro.estimators.base import ProbabilisticEstimator
-from skpro.estimators.residuals import ResidualEstimator
+from skpro.estimators.residuals import BaseResidualEstimator, ClippedResidualEstimator
+#from skpro.estimators.
 
 
 class ParametricEstimator(ProbabilisticEstimator):
@@ -41,22 +42,27 @@ class ParametricEstimator(ProbabilisticEstimator):
     """
     
     def __init__(self, mean_estimator, dispersion_estimator, 
-                 distribution = NormalDistribution(), residuals_strategy = True, copy_X=True):
+                 distribution = Normal(), residuals_strategy = True, copy_X=True):
         
-        if isinstance(dispersion_estimator, ResidualEstimator) :
-            self.dispersion_estimator_ = dispersion_estimator
+        if isinstance(dispersion_estimator, BaseResidualEstimator) :
+            self.dispersion_estimator = dispersion_estimator
             residuals_strategy = True
             
         elif(residuals_strategy):
-            self.dispersion_estimator_ =  ResidualEstimator(dispersion_estimator)
-            
-        else :
-            self.dispersion_estimator_ = dispersion_estimator
+            #clippedEstimator = ClippedEstimator(dispersion_estimator, minimum = 0.0, relative = False) 
+            self.dispersion_estimator =  ClippedResidualEstimator(dispersion_estimator)
+        else : self.dispersion_estimator = dispersion_estimator
 
-        self.mean_estimator_ = mean_estimator
-        self.distribution_ = distribution
-        self.copy_X_ = copy_X
-        self.residuals_strategy_ = residuals_strategy
+        self.mean_estimator = mean_estimator
+        self.distribution = distribution
+        self.copy_X = copy_X
+        self.residuals_strategy = residuals_strategy
+        
+        if(self.residuals_strategy):
+            if not isinstance(self.dispersion_estimator, BaseResidualEstimator):
+                raise ValueError("dispersion estimator must be of BaseResidualEstimator type for residuals stratigies")
+
+            self.dispersion_estimator(self.mean_estimator)
         
     
     def fit(self, X, y, sample_weight=None):
@@ -90,18 +96,15 @@ class ParametricEstimator(ProbabilisticEstimator):
         X, y = check_X_y(X, y, accept_sparse=['csr', 'csc', 'coo'],
                          y_numeric=True, multi_output=True)
         
-        if self.copy_X_ :
+        if self.copy_X :
+            
             if sp.issparse(X):
                 X = X.copy()
             else:
                 X = X.copy(order='K')
 
-        self.mean_estimator_.fit(X, y, sample_weight)
-        
-        if(self.residuals_strategy_):
-            self.dispersion_estimator_.accept(self.mean_estimator_)
-            
-        self.dispersion_estimator_.fit(X, y, sample_weight)
+        self.mean_estimator.fit(X, y, sample_weight)
+        self.dispersion_estimator.fit(X, y, sample_weight)
         
         return self
     
@@ -130,30 +133,25 @@ class ParametricEstimator(ProbabilisticEstimator):
         """
 
         allowed_distribution = ("normal", "laplace")
-        if self.distribution_.name() not in allowed_distribution:
+        if self.distribution.name() not in allowed_distribution:
             raise ValueError("Unknown strategy type: %s, expected one of %s."
-                             % (self.distribution_.name(), allowed_distribution))
+                             % (self.distribution.name(), allowed_distribution))
 
-        if self.copy_X_ :
+        if self.copy_X :
             if sp.issparse(X):
                 X = X.copy()
             else:
                 X = X.copy(order='K')
         
-        dispersionPrediction = self.dispersion_estimator_.predict(X)
+        dispersionPrediction = self.dispersion_estimator.predict(X)
         
-        if(not hasattr( self.distribution_, "varianceToScale")):
+        if(not hasattr( self.distribution, "varianceToScale")):
                 raise ValueError("No 'varianceToScale' class.method implemented for : %s distribution"
-                             % (self.distribution_.name()))
+                             % (self.distribution.name()))
         
-        scale = type(self.distribution_).varianceToScale(dispersionPrediction)
+        scale = type(self.distribution).varianceToScale(dispersionPrediction)
 
-        return type(self.distribution_)(
-                self.mean_estimator_.predict(X),
+        return type(self.distribution)(
+                self.mean_estimator.predict(X),
                 scale
                 )
-    
-
-    def __repr__(self):
-        return self.__str__(repr)
-

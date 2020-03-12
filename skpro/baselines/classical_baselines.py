@@ -1,14 +1,12 @@
 
 from skpro.estimators.parametric import ParametricEstimator
-from skpro.distributions.distribution_normal import NormalDistribution
+from skpro.distributions.distribution_normal import Normal
 from skpro.baselines.dummy_regressor import DummyRegressor
-
-
 
 
 class ConstantUninformedBaseline(ParametricEstimator) :
     
-    def __init__(self, constant = (42, 42), distribution = NormalDistribution(), copy_X=True):
+    def __init__(self, constant = (42, 42), distribution = Normal(), copy_X=True):
         
         if(isinstance(constant, tuple)):
             cmean = constant[0]
@@ -25,10 +23,9 @@ class ConstantUninformedBaseline(ParametricEstimator) :
           )
         
 
-
 class ClassicalBaseline(ParametricEstimator) :
     
-    def __init__(self, mean_estimator = DummyRegressor('mean'), distribution = NormalDistribution(), residuals_strategy = False, copy_X=True):
+    def __init__(self, mean_estimator = DummyRegressor('mean'), distribution = Normal(), residuals_strategy = False, copy_X=True):
        super().__init__(
                mean_estimator, 
                dispersion_estimator = DummyRegressor('variance'), 

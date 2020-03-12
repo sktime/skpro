@@ -1,3 +1,4 @@
+import abc
 
 class BasicStatsMixin():
     """Mixin class for all the distribution class
@@ -9,18 +10,22 @@ class BasicStatsMixin():
     to be then instanciated in the concrete distribution sub-classes
      
     """
-    
+    @abc.abstractmethod
     def point(self):
-        raise ValueError('mean function not implemented')
+        raise NotImplementedError()
 
+    @abc.abstractmethod
     def mean(self):
-        raise ValueError('mean function not implemented')
+        raise NotImplementedError()
 
+    @abc.abstractmethod
     def variance(self):
-        raise ValueError('variance function not implemented')
-        
+        raise NotImplementedError()
+  
+    @abc.abstractmethod      
     def std(self):
-        raise ValueError('variance function not implemented')
-    
+        raise NotImplementedError()
+        
+    @abc.abstractmethod   
     def mode(self):
-        raise ValueError('mode function not implemented')
+        raise NotImplementedError()

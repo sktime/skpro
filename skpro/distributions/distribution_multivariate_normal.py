@@ -30,24 +30,25 @@ class MultiVariateNormal(DistributionBase) :
          if not isinstance(loc, list):
               raise ValueError('parameter [loc] is not sized correctly, a list is expected')
 
-         tmp = np.array(loc).shape
+         loc_size_ = np.array(loc).shape
          
-         if(len(tmp) == 1):
-             dimension = tmp[0]
+         if(len(loc_size_) == 1):
+             dimension = loc_size_[0]
              size = 1
-             self.cov = CovarianceMatrix(cov, frozen = True)
+             self.cov = CovarianceMatrix(cov, freeze = True)
          else :
-             dimension = tmp[1]
-             size = tmp[0]
-             self.cov = [CovarianceMatrix(c, frozen = True) for c in cov]
+             dimension = loc_size_[1]
+             size = loc_size_[0]
+             self.cov = [CovarianceMatrix(c, freeze = True) for c in cov]
 
          self.loc = loc
 
          super().__init__('multivariate.normal', 
              distType.CONTINUOUS, 
              vectorSize = size, 
-             variateComponent = VariateInfos(form = VariateInfos.variateEnum.multivariate, size = dimension),
-             support = RealContinuousSupport())
+             variateComponent = VariateInfos(dimension),
+             support = RealContinuousSupport()
+          )
     
     
      def point(self):
@@ -79,8 +80,8 @@ class MultiVariateNormal(DistributionBase) :
             
          """
 
-         loc = self.get_cached_param('loc')
-         cov = self.get_cached_param('cov')
+         loc = np.array(self.get_param('loc'))
+         cov = np.array(self.get_param('cov'))
          
          #check dimension
          if not isinstance(X, list):
@@ -105,8 +106,7 @@ class MultiVariateNormal(DistributionBase) :
          #process the cache of the cov
          if(m_ == 1) : cov = [cov.item()]
          
-         for c in cov : c.eig_decompo()  
-         logdet = np.array([c.logdet_ for c in cov])
+         logdet = np.array([c.logdet() for c in cov])
          log2pi = np.log(2 * np.pi)
          
          # compute the vectorized mean difference (i.e. x - loc in (n_ x m_) )

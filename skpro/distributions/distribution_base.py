@@ -1,16 +1,15 @@
 import abc
-import numpy as np
 
+import numpy as np
 from enum import Enum
 from sklearn.base import BaseEstimator
 
 from skpro.distributions.component.support import NulleSupport
-from skpro.distributions.component.parameters_frame import parametersFrame
 from skpro.distributions.component.variate import VariateInfos
 
 from skpro.distributions.basic_stats import BasicStatsMixin
 from skpro.distributions.dpqr import DPQRMixin
-from skpro.distributions.utils import utils
+from skpro.utils import utils
 
 
 class distType(Enum):
@@ -66,7 +65,9 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
     """
       
 
-    def __init__(self, name, dtype = distType.UNDEFINED, vectorSize = 1, 
+    def __init__(self, name, 
+                 dtype = distType.UNDEFINED, 
+                 vectorSize = 1, 
                  variateComponent = VariateInfos(), 
                  support = NulleSupport(),
                  mode = Mode.BATCH
@@ -79,16 +80,12 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
         self.vectorSize_ = vectorSize
         self.variateComponent_ = variateComponent
         self.support_ = support
-        self.paramsFrame_ = parametersFrame()
         
-        if type(mode) is not Mode :
-            mode = Mode.ELEMENT_WISE
-        
+        if type(mode) is not Mode : mode = Mode.ELEMENT_WISE
         self.mode_ = mode
 
-        self._register()
-        
-        
+
+  
     #member accessor
     def name(self):
         return self.name_
@@ -135,36 +132,6 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
         
 
     
-    def _register(self):
-        """process the passed distribution arguments (obtained from 'get_params()') 
-           into a 'parameterFrame' object that serves as the main parameters container for access (skpro.distributions.component.parametersFrame)
-           It then stores it in the 'paramsFrame_' member
-        """
- 
-        self.__checkInit()
-
-        if self.vectorSize() > 1 :
-            self.paramsFrame_.setData(self.get_params())
-
-        else : 
-            # if the vector size is 1 :
-            #convert the dict of scalar into a dict of list
-            dic = {}
-            for key, val in self.get_params().items() :
-                dic[key] = [val]
-
-            self.paramsFrame_.setData(dic)
-
-            
-    def __checkInit(self):  
-
-        if (self.vectorSize_ is None or self.vectorSize_ < 1):
-             raise ValueError('"vectorSize" attribute must be none zero before parameters registration')
-
-        elif (self.variateSize() is None or self.variateSize() < 1):
-             raise ValueError('"variateSize" attribute must be none zero before parameters registration')
-            
-       
     def get_params(self, index = None, deep=True):
         """overriden implementation of the scikit-learn 'BaseEstimator'. 
         If the distribution is vectorized, passing an index enables to return a dictionary of parameters 
@@ -176,18 +143,30 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
         index : integer
              index of the distribution whose parameters are returned
              
+        deep : boolean, optional
+            If True, will return the parameters for this estimator and
+            contained subobjects that are estimators.
+      
          Returns
          -------
             ``parameters dictionary of the type {string, values}``
         """
         
         if index is None :
-            return super(DistributionBase, self).get_params(deep)
+            out = dict()
 
-        return self.paramsFrame_.getSubset(index)
+            for key in self._get_param_names():
+                value = getattr(self, key, None)
+                out[key] = value
+            
+            if(deep): out = DistributionBase.__addDeepAttributes(out)
+            return out
+
+        else : 
+            return self.__getitemParams(index, deep)
 
 
-    def get_cached_param(self, key):
+    def get_param(self, key):
         """ private method that return a list containing the keyed parameter. 
         If the distribution is vectorized it will only operates for the distribution subset indexed by 'cached_index'.
             
@@ -211,7 +190,56 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
         if not isinstance(key, str):
              raise ValueError('key index must be a parameter string')
 
-        return np.array(self.paramsFrame_.getParameter(key)[self.cached_index_])
+        #return self.paramsFrame_.getParameter(key)[self.cached_index_]
+        out = self.get_params(deep = False)[key]
+        
+        if(utils.dim(out) == 1) : 
+            return out
+        else :
+            return out[self.cached_index_]
+    
+    
+    def __getitemParams(self, index = None, deep = 'False'):
+
+        out = dict()
+        
+        for key, value in self.get_params(deep = False).items() :
+            if(utils.dim(value) == 1) : out[key] = value
+            else : out[key] = value[index]
+            
+        if deep : out = DistributionBase.__addDeepAttributes(out)
+        
+        return out
+        
+    
+    @staticmethod
+    def __addDeepAttributes(dic):
+        for key, value in dic.items() :
+            if hasattr(value, 'get_params'):
+                deep_items = value.get_params().items()
+                dic.update((key + '__' + k, val) for k, val in deep_items)
+
+            elif isinstance(value, list) and hasattr(value[0], 'get_params'):
+                for idx,item in enumerate(value) :
+                    deep_items = item.get_params().items()
+                    dic.update((key + '_' + str(idx) + '_' + k, val) for k, val in deep_items)
+            
+            return dic
+        
+    @staticmethod
+    def distributionsType(distributions):
+        
+        if not (isinstance(distributions, list) or isinstance(distributions, np.ndarray)) : 
+            raise ValueError('arg list is expected')
+        if not all(isinstance(d, DistributionBase) for d in distributions):
+            raise ValueError('a list of distribution is expected')
+
+        if  all(d.dtype_ == distributions[0].dtype_ for d in distributions) :
+            return distributions[0].dtype_
+        else :
+            return distType.UNDEFINED
+
+        
     
     
     def elementWiseDecorator(self, fn):
@@ -259,7 +287,6 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
     
 
 
-
     def __getitem__(self, index  = None):
             """Returns a subset of the distribution object
            
@@ -284,23 +311,34 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
                 if selection >= len(self):
                     raise IndexError('Selection is out of bounds')
 
-                #selection = slice(selection, selection)
+                selection = slice(selection, selection)
 
             # check for out of bounds subsets
-            if isinstance(index, slice) and index.stop >= len(self):
+            if isinstance(index, slice) and index.stop > len(self):
                 raise IndexError('Selection is out of bounds')
 
             # create subset replication
-            replication = self.__class__(**self.paramsFrame_.getSubset(selection))
+            replication = self.__class__(**self.__getitemParams(index))
             replication.reset()
 
             return replication
-        
-    
-    def __len__(self):
-            return self.vectorSize()
 
+
+
+    def __len__(self):
+        return self.vectorSize()
     
+    
+    def __eq__(self, other): 
+        if not isinstance(other, self.__class__):
+            raise ValueError('cannot compare different distribution')
+
+        for key, value in self.get_params(deep = False).items() :
+            if not (hasattr(other, key) and getattr(other, key, None) == value) :
+                return False
+        return True
+        
+
 
     # interface methods
     def pdf(self, X):
@@ -409,7 +447,6 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
         """
 
         return self.squared_norm_imp()
-    
 
         
         
