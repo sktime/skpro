@@ -141,7 +141,7 @@ def test_static_linear_mean_prediction():
 def test_residual_prediction():
 
      data = DataManager('boston')
-     
+
      residualModel = ClippedResidualEstimator(clipped_base_estimator = LinearRegression(), minimum = 2**4)
      model = ParametricEstimator(LinearRegression(), residualModel)
      model.fit(data.X_train, data.y_train)

@@ -3,12 +3,11 @@ import numpy as np
 from skpro.utils import utils
 from skpro.distributions.distribution_base import DistributionBase, distType
 from skpro.distributions.component.support import  RealContinuousSupport
-
+from skpro.distributions.location_scale import LocationScaleMixin
 from scipy import special
 
- 
 
-class Normal(DistributionBase) :
+class Normal(DistributionBase, LocationScaleMixin) :
      """Base class for the univariate normal distribution
 
         Parameters
@@ -24,8 +23,7 @@ class Normal(DistributionBase) :
         loc and scale list must be of same size
 
         """
-    
-    
+
      def __init__(self, loc = 0.0, scale = 1.0):
         
         self.loc = loc
@@ -57,8 +55,7 @@ class Normal(DistributionBase) :
      def mode(self):
         return self.loc
 
-    
-    
+
      @classmethod    
      def varianceToScale(cls, variance):
          """Mapping of the distribution variance to the 'scale' parameter used in the __init__ method
@@ -74,11 +71,10 @@ class Normal(DistributionBase) :
          Returns
          -------
          Mapped 'scale' parameter : array of float
-         
-
          """
          
          return np.sqrt(variance)
+
 
 
      def pdf_imp(self, X):

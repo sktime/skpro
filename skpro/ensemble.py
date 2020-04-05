@@ -9,6 +9,7 @@ from skpro.distributions.component.variate import VariateInfos
 from skpro.estimators.base import ProbabilisticEstimator
 from skpro.utils import utils
 
+
 class BaggedDistribution(DistributionBase):
     
     def __init__(self, distributions):

@@ -199,7 +199,7 @@ def test_custom_distribution():
     assert (n.cdf(0.25) == 0.25)
 
 
-
+    
 if __name__ == "__main__":
      test_univariate_parameterization()
      test_subsetting()
@@ -208,6 +208,7 @@ if __name__ == "__main__":
      test_multivariate_function_dpqr()
      test_mixture_distribution()
      test_custom_distribution()
+
 
      
      

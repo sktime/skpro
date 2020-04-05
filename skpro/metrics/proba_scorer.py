@@ -22,7 +22,7 @@ class ProbabilisticScorer :
         self.loss_func = loss
 
 
-    def __call__(self, estimator, X, y, mode = 'average', return_scores = False):
+    def __call__(self, estimator, X, y, mode = 'mean', return_scores = False):
         """ () operator override that returns the total loss of the estimator according to the selected mode
         
            Parameters
@@ -37,8 +37,8 @@ class ProbabilisticScorer :
             Test targets
             
            mode : string
-                 specify the mode of output : 1. 'average' return the average total loss [by default]
-                 2. 'absolute' return the total absolute loss
+                 specify the mode of output : 1. 'mean' return the mean loss [by default]
+                 2. 'total' return the total loss
                      
            return_scores : boolean
                  specify wether the vector of losses should be added as second output 
@@ -58,8 +58,8 @@ class ProbabilisticScorer :
         if not isinstance(estimator, ProbabilisticEstimator):
             raise ValueError("estimator is not a probabilistic estimator")
         
-        if not mode in ['average', 'absolute']:
-            mode = 'average'
+        if not mode in ['mean', 'total']:
+            mode = 'mean'
 
         y_proba = estimator.predict_proba(X)
         y_proba.setMode(Mode.ELEMENT_WISE)

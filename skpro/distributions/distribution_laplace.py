@@ -3,9 +3,10 @@ import numpy as np
 from skpro.utils import utils
 from skpro.distributions.distribution_base import DistributionBase, distType
 from skpro.distributions.component.support import  RealContinuousSupport
+from skpro.distributions.location_scale import LocationScaleMixin
 
 
-class Laplace(DistributionBase) :
+class Laplace(DistributionBase, LocationScaleMixin) :
      """Base class for the univariate Laplace distribution
 
        Parameters

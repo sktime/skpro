@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 import abc
 from sklearn.base import BaseEstimator
@@ -93,26 +92,3 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
         return self
-
-
-    def score(self, X, y, sample=True, return_std=False):
-        """Returns the score of the model on the data X
-        [Abstract method] : must be instantiated in the concrete sub
-
-        Parameters
-        ----------
-        {array-like, sparse matrix}, shape (n_samples, n_features)
-            Training vector, where n_samples is the number of samples and
-            n_features is the number of features.
-        
-        y : array-like, shape (n_samples,)
-            Target vector relative to X.
-
-        Returns
-        -------
-        score : float
-        """
-        
-        raise NotImplementedError()
-        
-        pass

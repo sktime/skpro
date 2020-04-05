@@ -2,13 +2,14 @@ import scipy.sparse as sp
 
 from sklearn.utils.validation import check_X_y
 
-from skpro.distributions.distribution_normal import Normal
 from skpro.estimators.base import ProbabilisticEstimator
+from skpro.estimators.score import DefaultScoreMixin
+from skpro.distributions.distribution_normal import Normal
+from skpro.distributions.location_scale import LocationScaleMixin
 from skpro.estimators.residuals import BaseResidualEstimator, ClippedResidualEstimator
-#from skpro.estimators.
 
 
-class ParametricEstimator(ProbabilisticEstimator):
+class ParametricEstimator(ProbabilisticEstimator, DefaultScoreMixin):
     """
     Composite parametric prediction strategy.
     Uses classical estimators to predict the defining parameters of continuous distributions.
@@ -49,7 +50,6 @@ class ParametricEstimator(ProbabilisticEstimator):
             residuals_strategy = True
             
         elif(residuals_strategy):
-            #clippedEstimator = ClippedEstimator(dispersion_estimator, minimum = 0.0, relative = False) 
             self.dispersion_estimator =  ClippedResidualEstimator(dispersion_estimator)
         else : self.dispersion_estimator = dispersion_estimator
 
@@ -131,11 +131,9 @@ class ParametricEstimator(ProbabilisticEstimator):
         
             
         """
-
-        allowed_distribution = ("normal", "laplace")
-        if self.distribution.name() not in allowed_distribution:
-            raise ValueError("Unknown strategy type: %s, expected one of %s."
-                             % (self.distribution.name(), allowed_distribution))
+        
+        if not isinstance(self.distribution, LocationScaleMixin):
+            raise ValueError("Unknown strategy type : expected a location_scale distribution")
 
         if self.copy_X :
             if sp.issparse(X):
@@ -145,9 +143,9 @@ class ParametricEstimator(ProbabilisticEstimator):
         
         dispersionPrediction = self.dispersion_estimator.predict(X)
         
-        if(not hasattr( self.distribution, "varianceToScale")):
-                raise ValueError("No 'varianceToScale' class.method implemented for : %s distribution"
-                             % (self.distribution.name()))
+        #if(not hasattr(self.distribution, "varianceToScale")):
+                #raise ValueError("No 'varianceToScale' class.method implemented for : %s distribution"
+                            # % (self.distribution.name()))
         
         scale = type(self.distribution).varianceToScale(dispersionPrediction)
 
