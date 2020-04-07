@@ -133,11 +133,17 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
 
     
     def get_params(self, index = None, deep=True):
-        """overriden implementation of the scikit-learn 'BaseEstimator'. 
+        """override the scikit-learn 'get_params' implementation. 
+       
         If the distribution is vectorized, passing an index enables to return a dictionary of parameters 
-        for the indexed distribution only. If no index is set then the super() implementation of get_params() is called 
+        for the indexed distribution set only. If no index is set then the super() implementation of get_params() is called 
         (i.e. returning all set parameters).
-
+        
+        The override vs scikit-learn is necessary :
+            -> to get an indexed version of it if needed (since the distribution are here vectorized)
+            -> for the deep functionality to also work with list of estimators (as parameters and not just simple estimators). 
+               which is needed for mixture
+            
         Parameters
         ----------
         index : integer
@@ -152,22 +158,23 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
             ``parameters dictionary of the type {string, values}``
         """
         
-        if index is None :
-            out = dict()
+        out = dict()
 
-            for key in self._get_param_names():
-                value = getattr(self, key, None)
+        #duplicate sk.learn implementation
+        for key in self._get_param_names():
+            value = getattr(self, key, None)
+            if(utils.dim(value) == 1) or (index is None) : 
                 out[key] = value
+            else :
+                out[key] = value[index]
             
-            if(deep): out = DistributionBase.__addDeepAttributes(out)
-            return out
-
-        else : 
-            return self.__getitemParams(index, deep)
+        #deep call method
+        if(deep): out = DistributionBase.__addDeepAttributes(out)
+        return out
 
 
     def get_param(self, key):
-        """ private method that return a list containing the keyed parameter. 
+        """ private method that return a list containing the keyed parameter ('string') accross distributions. 
         If the distribution is vectorized it will only operates for the distribution subset indexed by 'cached_index'.
             
         Parameters
@@ -177,7 +184,7 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
              
          Returns
          -------
-            ``parameters list for the distribution indexed by "cached_index"
+            ``parameters list for the distribution indexed by the "cached_index"
             
          Note
          -------
@@ -190,30 +197,30 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
         if not isinstance(key, str):
              raise ValueError('key index must be a parameter string')
 
-        #return self.paramsFrame_.getParameter(key)[self.cached_index_]
+
         out = self.get_params(deep = False)[key]
         
         if(utils.dim(out) == 1) : 
             return out
         else :
             return out[self.cached_index_]
-    
-    
-    def __getitemParams(self, index = None, deep = 'False'):
 
-        out = dict()
-        
-        for key, value in self.get_params(deep = False).items() :
-            if(utils.dim(value) == 1) : out[key] = value
-            else : out[key] = value[index]
-            
-        if deep : out = DistributionBase.__addDeepAttributes(out)
-        
-        return out
-        
+
     
     @staticmethod
     def __addDeepAttributes(dic):
+        """ take a dictionnary of parameters. Add the parameters of the deep items 
+         (i.e. distribution or list of distributions)
+            
+        Parameters
+        ----------
+        dic : ``parameters dictionary of the type {string, values}``
+             
+        Returns
+        -------
+            ````same dictionary of the type {string, values}``
+            
+        """
         for key, value in dic.items() :
             if hasattr(value, 'get_params'):
                 deep_items = value.get_params().items()
@@ -225,6 +232,8 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
                     dic.update((key + '_' + str(idx) + '_' + k, val) for k, val in deep_items)
             
             return dic
+        
+        
         
     @staticmethod
     def distributionsType(distributions):
@@ -318,7 +327,7 @@ class DistributionBase(BaseEstimator, BasicStatsMixin, DPQRMixin, metaclass=abc.
                 raise IndexError('Selection is out of bounds')
 
             # create subset replication
-            replication = self.__class__(**self.__getitemParams(index))
+            replication = self.__class__(**self.get_params(index))
             replication.reset()
 
             return replication
