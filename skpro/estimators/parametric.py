@@ -142,11 +142,7 @@ class ParametricEstimator(ProbabilisticEstimator, DefaultScoreMixin):
                 X = X.copy(order='K')
         
         dispersionPrediction = self.dispersion_estimator.predict(X)
-        
-        #if(not hasattr(self.distribution, "varianceToScale")):
-                #raise ValueError("No 'varianceToScale' class.method implemented for : %s distribution"
-                            # % (self.distribution.name()))
-        
+
         scale = type(self.distribution).varianceToScale(dispersionPrediction)
 
         return type(self.distribution)(
