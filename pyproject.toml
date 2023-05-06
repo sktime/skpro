@@ -1,7 +1,7 @@
 [project]
-name = "sktime"
-version = "0.18.0"
-description = "A unified framework for machine learning with time series"
+name = "skpro"
+version = "2.0.0"
+description = "A unified framework for probability distributions and probabilistic supervised regression"
 authors = [
     {name = "skpro developers", email = "sktime.toolbox@gmail.com"},
     {name = "Franz Király"},
