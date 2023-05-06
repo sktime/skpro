@@ -28,7 +28,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Look into replacing this with pre-commit.ci
   code-quality:
     runs-on: ubuntu-latest
     steps:
