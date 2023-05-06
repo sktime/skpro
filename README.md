@@ -1,4 +1,4 @@
-**CAUTION: the skpro package is currently undergoing major refactoring and should not be used in deployment.**
+**CAUTION: the skpro package is currently undergoing major rearchitecting and should not be used in deployment.**
 
 If you want to contribute, kindly contact the `sktime` developers in the probabilistic forecasting workstream.
 
