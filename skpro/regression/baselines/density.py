@@ -1,8 +1,9 @@
-import numpy as np
+if False:
+    import numpy as np
 
-from ..base import ProbabilisticEstimator, vectorvalued
-from ..density import DensityAdapter, KernelDensityAdapter
-from ..utils import ensure_existence
+    from ..base import ProbabilisticEstimator, vectorvalued
+    from ..density import DensityAdapter, KernelDensityAdapter
+    from ..utils import ensure_existence
 
 
 class DensityBaseline(ProbabilisticEstimator):

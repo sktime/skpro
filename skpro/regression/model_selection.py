@@ -1,6 +1,7 @@
-import numpy as np
-from sklearn.model_selection import cross_validate
-from sklearn.metrics.scorer import check_scoring
+if False:
+    import numpy as np
+    from sklearn.model_selection import cross_validate
+    from sklearn.metrics.scorer import check_scoring
 
 
 class RetrievesScores:

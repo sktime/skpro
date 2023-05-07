@@ -8,7 +8,7 @@
 # todo: uncomment the following line, enter authors' GitHub IDs
 # __author__ = [authorGitHubID, anotherAuthorGitHubID]
 
-from skpro.base import BaseProbaRegressor
+from skpro.regression.base import BaseProbaRegressor
 
 # todo: add any necessary imports here
 

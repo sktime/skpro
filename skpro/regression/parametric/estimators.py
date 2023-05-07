@@ -1,7 +1,8 @@
-import numpy as np
-from sklearn.base import BaseEstimator
+if False:
+    import numpy as np
+    from sklearn.base import BaseEstimator
 
-from ..utils import to_percent
+    from ..utils import to_percent
 
 
 class Minimum(BaseEstimator):

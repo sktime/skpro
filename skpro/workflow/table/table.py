@@ -1,10 +1,11 @@
-import abc
-import numpy as np
-from tabulate import tabulate
+if False:
+    import abc
+    import numpy as np
+    from tabulate import tabulate
 
-from ..base import Model, View, Controller
-from ..utils import ItemView, InfoController, InfoView
-from ..cross_validation import CrossValidationView, CrossValidationController
+    from ..base import Model, View, Controller
+    from ..utils import ItemView, InfoController, InfoView
+    from ..cross_validation import CrossValidationView, CrossValidationController
 
 
 class Modifier(metaclass=abc.ABCMeta):

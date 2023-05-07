@@ -1,10 +1,11 @@
-import numpy as np
+if False:
+    import numpy as np
 
-from sklearn.ensemble import BaggingRegressor as BaseBaggingRegressor
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils import check_array
+    from sklearn.ensemble import BaggingRegressor as BaseBaggingRegressor
+    from sklearn.utils.validation import check_is_fitted
+    from sklearn.utils import check_array
 
-from .base import ProbabilisticEstimator
+    from .base import ProbabilisticEstimator
 
 
 class BaggingRegressor(BaseBaggingRegressor, ProbabilisticEstimator):

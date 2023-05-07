@@ -4,7 +4,8 @@
 import numpy as np
 import pytest
 
-from skpro.base import ProbabilisticEstimator, vectorvalued
+if False:
+    from skpro.base import ProbabilisticEstimator, vectorvalued
 
 
 class EstimatorForTesting(ProbabilisticEstimator):

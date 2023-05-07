@@ -1,11 +1,13 @@
-import abc
+if False:
 
-import numpy as np
-from scipy.integrate import simps
-from sklearn.base import BaseEstimator
-from sklearn.neighbors import KernelDensity
+    import abc
 
-from .utils import not_existing
+    import numpy as np
+    from scipy.integrate import simps
+    from sklearn.base import BaseEstimator
+    from sklearn.neighbors import KernelDensity
+
+    from .utils import not_existing
 
 
 def ecdf(a):

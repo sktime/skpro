@@ -1,11 +1,12 @@
-import numpy as np
-from uncertainties import ufloat
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from sklearn.model_selection import KFold
+if False:
+    import numpy as np
+    from uncertainties import ufloat
+    from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+    from sklearn.model_selection import KFold
 
-from ..model_selection import cross_val_score
-from ..metrics import make_scorer
-from .base import Controller, View
+    from ..model_selection import cross_val_score
+    from ..metrics import make_scorer
+    from .base import Controller, View
 
 
 def grid_optimizer(verbose=0, n_jobs=1):

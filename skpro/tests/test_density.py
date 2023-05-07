@@ -1,12 +1,13 @@
-import numpy as np
-from hypothesis import given
-from hypothesis.extra.numpy import arrays
-from hypothesis.strategies import floats
-from scipy.stats import norm
+if False:
+    import numpy as np
+    from hypothesis import given
+    from hypothesis.extra.numpy import arrays
+    from hypothesis.strategies import floats
+    from scipy.stats import norm
 
-from skpro.density import ecdf, KernelDensityAdapter, EmpiricalDensityAdapter
+    from skpro.density import ecdf, KernelDensityAdapter, EmpiricalDensityAdapter
 
-np.random.seed(1)
+    np.random.seed(1)
 
 
 @given(arrays(np.float, 10, elements=floats(0, 100)))

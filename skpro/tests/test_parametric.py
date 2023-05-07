@@ -4,10 +4,11 @@ import utils
 
 from sklearn.linear_model import LinearRegression
 
-from skpro.workflow.manager import DataManager
-from skpro.parametric import ParametricEstimator
-from skpro.parametric.residuals import ResidualEstimator
-from skpro.metrics import linearized_log_loss
+if False:
+    from skpro.workflow.manager import DataManager
+    from skpro.parametric import ParametricEstimator
+    from skpro.parametric.residuals import ResidualEstimator
+    from skpro.metrics import linearized_log_loss
 
 
 def test_baseline():

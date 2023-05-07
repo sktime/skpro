@@ -1,10 +1,11 @@
-import numpy as np
-import scipy.stats
-from sklearn.externals import six
-import collections
+if False:
+    import numpy as np
+    import scipy.stats
+    from sklearn.externals import six
+    import collections
 
-from ..base import ProbabilisticEstimator, vectorvalued
-from ..parametric.estimators import Constant
+    from ..base import ProbabilisticEstimator, vectorvalued
+    from ..parametric.estimators import Constant
 
 
 class EstimatorManager:

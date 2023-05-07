@@ -1,1 +1,2 @@
-from .parametric import ParametricEstimator
+if False:
+    from .parametric import ParametricEstimator
