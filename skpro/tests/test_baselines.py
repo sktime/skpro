@@ -1,11 +1,9 @@
 import numpy as np
 
-if False:
-    import utils
-
-    from skpro.workflow.manager import DataManager
-    from skpro.baselines import DensityBaseline
-    from skpro.metrics import linearized_log_loss
+from skpro.workflow.manager import DataManager
+from skpro.baselines import DensityBaseline
+from skpro.metrics import linearized_log_loss
+import skpro.tests.utils
 
 
 def test_density_baseline():

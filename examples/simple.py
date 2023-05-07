@@ -17,5 +17,5 @@ loss = log_loss(y_test, y_pred, sample=True, return_std=True)
 print('Loss: %f+-%f' % loss)
 
 # Plot performance
-import utils
+import skpro.examples.utils
 utils.plot_performance(y_test, y_pred)

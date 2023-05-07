@@ -25,5 +25,5 @@ print('Loss: %f+-%f' % loss)
 # Plot the performance
 import sys
 sys.path.append('../')
-import utils
+import skpro.examples.utils
 utils.plot_performance(y_test, y_pred)

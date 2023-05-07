@@ -48,5 +48,5 @@ print('Log loss: ', log_loss(data.y_test, y_pred, return_std=True))
 # Plot the performance
 import sys
 sys.path.append('../')
-import utils
+import skpro.examples.utils
 utils.plot_performance(data.y_test, y_pred)

@@ -2,6 +2,7 @@
 """Base class and template for regressors and transformers."""
 from skbase.base import BaseEstimator as _BaseEstimator
 from skbase.base import BaseMetaEstimator as _BaseMetaEstimator
+from skbase.base import BaseObject as _BaseObject
 
 
 class _CommonTags:
@@ -13,7 +14,11 @@ class _CommonTags:
     _tags = {"estimator_type": "estimator"}
 
 
-class BaseEstimator(_CommonTags, _BaseEstimator):
+class BaseObject(_CommonTags, _BaseObject):
+    """Base class for fittable objects."""
+
+
+class BaseEstimator(_CommonTags, _BaseEstimator, BaseObject):
     """Base class for fittable objects."""
 
 
