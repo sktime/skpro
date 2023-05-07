@@ -1,8 +1,7 @@
 import pytest
 
-if False:
-    from skpro.base import BayesianVendorEstimator
-    from skpro.vendors.pymc import PymcInterface
+from skpro.base.old_base import BayesianVendorEstimator
+from skpro.regression.vendors.pymc import PymcInterface
 
 
 def test_construct_estimator():

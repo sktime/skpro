@@ -2,9 +2,8 @@
 """Base class for probabilistic regression."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
-from skbase.testing.utils._dependencies import _check_estimator_deps
-
 from skpro.base import BaseEstimator
+from skpro.utils.validation._dependencies import _check_estimator_deps
 
 
 class BaseProbaRegressor(BaseEstimator):

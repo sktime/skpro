@@ -1,7 +1,8 @@
-from theano import shared
-import pymc3 as pm
+if False:
+    from theano import shared
+    import pymc3 as pm
 
-from ..base import BayesianVendorInterface
+from skpro.base.old_base import BayesianVendorInterface
 
 
 class PymcInterface(BayesianVendorInterface):
