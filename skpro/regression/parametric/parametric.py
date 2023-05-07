@@ -4,8 +4,8 @@ if False:
     from sklearn.externals import six
     import collections
 
-    from ..base import ProbabilisticEstimator, vectorvalued
-    from ..parametric.estimators import Constant
+from skpro.base.old_base import ProbabilisticEstimator, vectorvalued
+from skpro.regression.parametric.estimators import Constant
 
 
 class EstimatorManager:

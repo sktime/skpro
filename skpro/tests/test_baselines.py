@@ -1,7 +1,8 @@
 import numpy as np
-import utils
 
 if False:
+    import utils
+
     from skpro.workflow.manager import DataManager
     from skpro.baselines import DensityBaseline
     from skpro.metrics import linearized_log_loss

@@ -1,9 +1,8 @@
-if False:
-    import numpy as np
+import numpy as np
 
-    from ..base import ProbabilisticEstimator, vectorvalued
-    from ..density import DensityAdapter, KernelDensityAdapter
-    from ..utils import ensure_existence
+from skpro.base.old_base import ProbabilisticEstimator, vectorvalued
+from skpro.regression.density import DensityAdapter, KernelDensityAdapter
+from skpro.utils.utils import ensure_existence
 
 
 class DensityBaseline(ProbabilisticEstimator):
