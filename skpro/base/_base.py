@@ -18,7 +18,7 @@ class BaseObject(_CommonTags, _BaseObject):
     """Base class for fittable objects."""
 
 
-class BaseEstimator(_CommonTags, _BaseEstimator, BaseObject):
+class BaseEstimator(_CommonTags, _BaseEstimator):
     """Base class for fittable objects."""
 
 
