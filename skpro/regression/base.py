@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """Base class for probabilistic regression."""
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+
+from skbase.testing.utils._dependencies import _check_estimator_deps
+
 from skpro.base import BaseEstimator
 
 
@@ -7,6 +11,14 @@ class BaseProbaRegressor(BaseEstimator):
     """Base class for probabilistic supervised regressors."""
 
     _tags = {"estimator_type": "regressor"}
+
+    def __init__(self, index=None, columns=None):
+
+        self.index = index
+        self.columns = columns
+
+        super(BaseProbaRegressor, self).__init__()
+        _check_estimator_deps(self)
 
     def fit(self, X, y):
         """Fit regressor to training data.
@@ -97,7 +109,6 @@ class BaseProbaRegressor(BaseEstimator):
             labels predicted for `X`
         """
         raise NotImplementedError
-
 
     def predict_proba(self, X):
         """Predict distribution over labels for data from features.

@@ -11,8 +11,9 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
-from sktime.base import BaseObject
-from sktime.utils.validation._dependencies import _check_estimator_deps
+from skbase.testing.utils._dependencies import _check_estimator_deps
+
+from skpro.base import BaseObject
 
 
 class BaseDistribution(BaseObject):

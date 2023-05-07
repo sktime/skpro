@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.special import erf, erfinv
 
-from sktime.proba.base import BaseDistribution
+from skpro.distributions.base import BaseDistribution
 
 
 class Normal(BaseDistribution):
