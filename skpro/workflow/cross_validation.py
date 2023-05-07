@@ -6,7 +6,8 @@ if False:
 
     from ..model_selection import cross_val_score
     from ..metrics import make_scorer
-    from .base import Controller, View
+
+from .base import Controller, View
 
 
 def grid_optimizer(verbose=0, n_jobs=1):

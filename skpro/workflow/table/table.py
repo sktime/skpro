@@ -1,5 +1,6 @@
+import abc
+
 if False:
-    import abc
     import numpy as np
     from tabulate import tabulate
 
