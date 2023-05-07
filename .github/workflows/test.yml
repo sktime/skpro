@@ -47,7 +47,6 @@ jobs:
         shell: bash
 
   run-tests-no-extras:
-    needs: code-quality
     strategy:
       fail-fast: false
       matrix:
