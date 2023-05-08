@@ -1,9 +1,9 @@
 import numpy as np
 
 from skpro.workflow.manager import DataManager
-from skpro.baselines import DensityBaseline
+from skpro.regression.baselines import DensityBaseline
 from skpro.metrics import linearized_log_loss
-import skpro.tests.utils
+import skpro.tests.utils as utils
 
 
 def test_density_baseline():

@@ -4,10 +4,10 @@ from scipy.stats import norm
 from sklearn.linear_model import LinearRegression
 
 from skpro.workflow.manager import DataManager
-from skpro.regression.parametric import ParametricEstimator
+from skpro.regression.parametric.parametric import ParametricEstimator
 from skpro.regression.parametric.residuals import ResidualEstimator
 from skpro.metrics.metrics import linearized_log_loss
-import skpro.tests.utils
+import skpro.tests.utils as utils
 
 
 def test_baseline():
