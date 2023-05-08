@@ -1,8 +1,8 @@
-if False:
-    import numpy as np
-    import scipy.stats
-    from sklearn.externals import six
-    import collections
+
+import numpy as np
+import scipy.stats
+from sklearn.externals import six
+import collections
 
 from skpro.base.old_base import ProbabilisticEstimator, vectorvalued
 from skpro.regression.parametric.estimators import Constant

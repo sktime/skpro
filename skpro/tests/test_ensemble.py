@@ -4,11 +4,10 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR
 
-if False:
-    from skpro.ensemble import BaggingRegressor as SkproBaggingRegressor
-    from skpro.metrics import log_loss as loss
-    from skpro.parametric import ParametricEstimator
-    from skpro.workflow.manager import DataManager
+from skpro.regression.ensemble import BaggingRegressor as SkproBaggingRegressor
+from skpro.metrics.metrics import log_loss as loss
+from skpro.regression.parametric.parametric import ParametricEstimator
+from skpro.workflow.manager import DataManager
 
 
 def prediction(model, data):

@@ -2,7 +2,7 @@ import numpy as np
 
 from skpro.workflow.manager import DataManager
 from skpro.regression.baselines import DensityBaseline
-from skpro.metrics import linearized_log_loss
+from skpro.metrics.metrics import linearized_log_loss
 import skpro.tests.utils as utils
 
 
