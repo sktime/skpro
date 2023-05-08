@@ -28,7 +28,7 @@ class PackageConfig:
         "capabilities:approx",
         "capabilities:exact",
         "distr:measuretype",
-    ],
+    ]
 
 
 class TestAllObjects(PackageConfig, _TestAllObjects):
