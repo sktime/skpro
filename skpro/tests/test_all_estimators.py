@@ -25,6 +25,9 @@ class PackageConfig:
         "python_dependencies",
         "capability:multioutput",
         "capability:missing",
+        "capabilities:approx",
+        "capabilities:exact",
+        "distr:measuretype",
     ],
 
 

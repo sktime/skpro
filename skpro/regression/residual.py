@@ -57,6 +57,7 @@ class ResidualDouble(BaseProbaRegressor):
     >>> reg_proba = ResidualDouble(reg_mean, reg_resid)
     >>>
     >>> reg_proba.fit(X, y)
+    ResidualDouble(...)
     >>> y_pred_mean = reg_proba.predict(X)
     >>> y_pred_proba = reg_proba.predict_proba(X)
     """
