@@ -2,6 +2,8 @@
 """Base class for probabilistic regression."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
+import pandas as pd
+
 from skpro.base import BaseEstimator
 from skpro.utils.validation._dependencies import _check_estimator_deps
 
@@ -9,7 +11,11 @@ from skpro.utils.validation._dependencies import _check_estimator_deps
 class BaseProbaRegressor(BaseEstimator):
     """Base class for probabilistic supervised regressors."""
 
-    _tags = {"estimator_type": "regressor"}
+    _tags = {
+        "estimator_type": "regressor",
+        "capability:multivariate": False,
+        "capability:missing": True,
+    }
 
     def __init__(self, index=None, columns=None):
 
@@ -178,9 +184,11 @@ class BaseProbaRegressor(BaseEstimator):
             )
         # if not, remember columns
         else:
-            self._X_columns = self._X_columns
+            self._X_columns = X.columns
 
         return X
 
     def _check_y(self, y):
+        if isinstance(y, pd.Series):
+            y = pd.DataFrame(y)
         return y

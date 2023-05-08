@@ -40,12 +40,7 @@ class ClassName(BaseProbaRegressor):
 
     # todo: fill out estimator tags here
     #  tags are inherited from parent class if they are not set
-    # todo: define the forecaster scitype by setting the tags
-    #  the "forecaster scitype" is determined by the tags
-    #   scitype:y - the expected input scitype of y - univariate or multivariate or both
-    #  when changing scitype:y to multivariate or both:
-    #   y_inner_mtype should be changed to pd.DataFrame
-    # other tags are "safe defaults" which can usually be left as-is
+    # tags inherited from base are "safe defaults" which can usually be left as-is
     _tags = {}
 
     # todo: fill init
