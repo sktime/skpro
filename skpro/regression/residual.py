@@ -99,7 +99,7 @@ class ResidualDouble(BaseProbaRegressor):
         est_r = self.estimator_resid_
 
         self._y_cols = y.columns
-        y = y.values
+        y = y.values.flatten()
 
         est.fit(X, y)
         resids = y - est.predict(X)
