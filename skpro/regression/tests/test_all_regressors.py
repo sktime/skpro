@@ -2,6 +2,7 @@
 """Automated tests based on the skbase test suite template."""
 from skbase.testing import BaseFixtureGenerator, QuickTester
 
+from skpro.distributions.base import BaseDistribution
 from skpro.regression.base import BaseProbaRegressor
 from skpro.tests.test_all_estimators import PackageConfig
 
@@ -28,7 +29,12 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
 
         object_instance.fit(X_train, y_train)
         y_pred = object_instance.predict(X_test)
+        y_pred_proba = object_instance.predict_proba(X_test)
 
         assert isinstance(y_pred, pd.DataFrame)
+        assert (y_pred.index == X_test.index).all()
+        assert (y_pred.columns == y_train.columns).all()
+
+        assert isinstance(y_pred_proba, BaseDistribution)
         assert (y_pred.index == X_test.index).all()
         assert (y_pred.columns == y_train.columns).all()
