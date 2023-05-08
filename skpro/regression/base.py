@@ -13,7 +13,7 @@ class BaseProbaRegressor(BaseEstimator):
 
     _tags = {
         "estimator_type": "regressor",
-        "capability:multivariate": False,
+        "capability:multioutput": False,
         "capability:missing": True,
     }
 
