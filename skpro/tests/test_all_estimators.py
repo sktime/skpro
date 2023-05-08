@@ -19,7 +19,7 @@ class PackageConfig:
 
     # list of valid tags
     # expected type: list of str, str are tag names
-    valid_tags = ["estimator_type", "regressor_type", "transformer_type"]
+    valid_tags = ["estimator_type", "python_version", "python_dependencies"],
 
 
 class TestAllObjects(PackageConfig, _TestAllObjects):
