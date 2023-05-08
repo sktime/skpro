@@ -1,7 +1,8 @@
 
 import numpy as np
 import scipy.stats
-from sklearn.externals import six
+if False:
+    from sklearn.externals import six
 import collections
 
 from skpro.base.old_base import ProbabilisticEstimator, vectorvalued
