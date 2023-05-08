@@ -25,7 +25,7 @@ class Normal(BaseDistribution):
 
     Example
     -------
-    >>> from sktime.proba.normal import Normal
+    >>> from skpro.distributions.normal import Normal
 
     >>> n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1)
     """

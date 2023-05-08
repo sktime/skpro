@@ -4,6 +4,8 @@
 
 __author__ = ["fkiraly"]
 
+import pandas as pd
+
 from sklearn import clone
 
 from skpro.regression.base import BaseProbaRegressor
@@ -132,6 +134,7 @@ class ResidualDouble(BaseProbaRegressor):
         est = self.estimator_
 
         y_pred = est.predict(X)
+        y_pred = pd.DataFrame(y_pred, columns=self._y_cols, index=X.index)
 
         return y_pred
 
