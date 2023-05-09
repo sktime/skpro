@@ -46,5 +46,3 @@ class PymcInterface(BayesianVendorInterface):
 
     def samples(self):
         return self.ppc_['y_pred'].T
-
-

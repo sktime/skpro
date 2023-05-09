@@ -4,6 +4,7 @@ from skpro.base.old_base import BayesianVendorEstimator
 from skpro.regression.vendors.pymc import PymcInterface
 
 
+@pytest.mark.skip(reason="avoiding pymc3 dependency for now")
 def test_construct_estimator():
 
     with pytest.raises(ValueError):
