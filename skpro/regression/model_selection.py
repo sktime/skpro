@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 from sklearn.model_selection import cross_validate
+
 # from sklearn.metrics.scorer import check_scoring
 
 
 class RetrievesScores:
-
     def __init__(self, scorer, score=True, std=False):
         self.scorer = scorer
         self.score = score
@@ -21,8 +22,18 @@ class RetrievesScores:
             return score
 
 
-def cross_val_score(estimator, X, y=None, groups=None, scoring=None, cv=None,
-                    n_jobs=1, verbose=0, fit_params=None, pre_dispatch='2*n_jobs'):
+def cross_val_score(
+    estimator,
+    X,
+    y=None,
+    groups=None,
+    scoring=None,
+    cv=None,
+    n_jobs=1,
+    verbose=0,
+    fit_params=None,
+    pre_dispatch="2*n_jobs",
+):
     """Evaluate a score using cross-validation
 
     Parameters
@@ -102,22 +113,30 @@ def cross_val_score(estimator, X, y=None, groups=None, scoring=None, cv=None,
             test_scores.append([score, std])
 
             return score
+
     else:
         # We allow multiprocessing by passing in two scoring functions.
         # That is far from ideal since we call the scorer twice,
         # so any improvement is welcome
         score_scorer = RetrievesScores(scorer, score=True, std=False)
         std_scorer = RetrievesScores(scorer, score=False, std=True)
-        scoring_task = {'score': score_scorer, 'std': std_scorer}
+        scoring_task = {"score": score_scorer, "std": std_scorer}
 
-    cv_results = cross_validate(estimator=estimator, X=X, y=y, groups=groups,
-                                scoring=scoring_task, cv=cv,
-                                return_train_score=False,
-                                n_jobs=n_jobs, verbose=verbose,
-                                fit_params=fit_params,
-                                pre_dispatch=pre_dispatch)
+    cv_results = cross_validate(
+        estimator=estimator,
+        X=X,
+        y=y,
+        groups=groups,
+        scoring=scoring_task,
+        cv=cv,
+        return_train_score=False,
+        n_jobs=n_jobs,
+        verbose=verbose,
+        fit_params=fit_params,
+        pre_dispatch=pre_dispatch,
+    )
 
     if n_jobs == 1:
         return np.array(test_scores)
     else:
-        return np.column_stack((cv_results['test_score'], cv_results['test_std']))
+        return np.column_stack((cv_results["test_score"], cv_results["test_std"]))

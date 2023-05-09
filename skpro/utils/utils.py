@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 
 def not_existing(f):
@@ -18,7 +19,7 @@ def not_existing(f):
 
 
 def ensure_existence(f):
-    """ Ensures that method is not marked as non_existent
+    """Ensures that method is not marked as non_existent
 
     Parameters
     ----------
@@ -32,15 +33,17 @@ def ensure_existence(f):
     -------
     Method f
     """
-    if getattr(f, 'not_existing', False):
-        raise NotImplementedError('The distribution has no ' + f.__name__ + ' function. '
-                                  'You may use an adapter that supports its approximation.')
+    if getattr(f, "not_existing", False):
+        raise NotImplementedError(
+            "The distribution has no " + f.__name__ + " function. "
+            "You may use an adapter that supports its approximation."
+        )
 
     return f
 
 
 def to_percent(value, return_float=True):
-    """ Converts values into a percent representation
+    """Converts values into a percent representation
 
     Args:
         value: int/float
@@ -51,6 +54,7 @@ def to_percent(value, return_float=True):
     Returns: int/float
         A percentage
     """
+
     def percent(p):
         if return_float:
             return float(p)
@@ -58,7 +62,7 @@ def to_percent(value, return_float=True):
             return int(round(p * 100))
 
     if isinstance(value, int):
-        value = float(value) / 100.
+        value = float(value) / 100.0
 
     if value <= 0:
         return percent(0)

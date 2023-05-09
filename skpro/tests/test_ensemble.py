@@ -1,13 +1,13 @@
+# -*- coding: utf-8 -*-
 import pytest
-
 from sklearn.ensemble import BaggingRegressor as ClassicBaggingRegressor
-from sklearn.metrics import mean_squared_error as mse
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error as mse
 from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor
 
-from skpro.regression.ensemble import BaggingRegressor as SkproBaggingRegressor
 from skpro.metrics.metrics import log_loss as loss
+from skpro.regression.ensemble import BaggingRegressor as SkproBaggingRegressor
 from skpro.regression.parametric.parametric import ParametricEstimator
 from skpro.workflow.manager import DataManager
 
@@ -18,18 +18,13 @@ def prediction(model, data):
 
 @pytest.mark.skip(reason="loss assert fails sporadically")
 def test_bagging_wrapper():
-    data = DataManager('boston')
+    data = DataManager("boston")
 
     # Run classic sklearn bagging mechanism to ensure we have
     # the correct parameters in place
     baseline_classic = prediction(DecisionTreeRegressor(), data)
 
-    bagged_classic = prediction(
-        ClassicBaggingRegressor(
-            DecisionTreeRegressor()
-        ),
-        data
-    )
+    bagged_classic = prediction(ClassicBaggingRegressor(DecisionTreeRegressor()), data)
     #
     # # Does the bagging reduce the loss?
     assert mse(data.y_test, baseline_classic) > mse(data.y_test, bagged_classic)

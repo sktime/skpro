@@ -1,22 +1,21 @@
+# -*- coding: utf-8 -*-
 import abc
 
 if False:
     import numpy as np
     from tabulate import tabulate
 
-    from ..base import Model, View, Controller
-    from ..utils import ItemView, InfoController, InfoView
-    from ..cross_validation import CrossValidationView, CrossValidationController
+    from ..base import Controller, Model, View
+    from ..cross_validation import CrossValidationController, CrossValidationView
+    from ..utils import InfoController, InfoView, ItemView
 
 
 class Modifier(metaclass=abc.ABCMeta):
-    """ Abstract modifier baseclass
-
-    """
+    """Abstract modifier baseclass"""
 
     @abc.abstractmethod
     def modify(self, raw, headers):
-        """ Modifies a raw table
+        """Modifies a raw table
 
         Parameters
         ----------
@@ -31,7 +30,7 @@ class Modifier(metaclass=abc.ABCMeta):
 
 
 class IdModifier(Modifier):
-    """ IdModifier
+    """IdModifier
 
     Parameters
     ----------
@@ -44,15 +43,17 @@ class IdModifier(Modifier):
 
     def modify(self, raw, headers):
         for i, row in enumerate(raw):
-            raw[i] = [{'data': {'index': self.start_with + i}, 'view': ItemView('index')}] + row
+            raw[i] = [
+                {"data": {"index": self.start_with + i}, "view": ItemView("index")}
+            ] + row
 
-        headers = ['#'] + headers
+        headers = ["#"] + headers
 
         return raw, headers
 
 
 class RankModifier(Modifier):
-    """ Rank modifier
+    """Rank modifier
 
     Parameters
     ----------
@@ -62,7 +63,9 @@ class RankModifier(Modifier):
     visible
     """
 
-    def __init__(self, vertical='score', horizontal='score', aggregate=False, visible=False):
+    def __init__(
+        self, vertical="score", horizontal="score", aggregate=False, visible=False
+    ):
         self.vertical = vertical
         self.horizontal = horizontal
         self.aggregate = aggregate
@@ -86,6 +89,7 @@ class RankModifier(Modifier):
         ----------------------
         See https://stackoverflow.com/questions/3071415/efficient-method-to-calculate-the-rank-vector-of-a-list-in-python
         """
+
         def rank_simple(vector):
             return sorted(range(len(vector)), key=vector.__getitem__)
 
@@ -115,12 +119,12 @@ class RankModifier(Modifier):
                 sortable = []
                 map = {}
                 for i, cell in enumerate(row):
-                    if field in cell['data']:
-                        sortable.append(cell['data'][field])
-                        map[len(sortable) - 1] = cell['data']
+                    if field in cell["data"]:
+                        sortable.append(cell["data"][field])
+                        map[len(sortable) - 1] = cell["data"]
 
                 for k, rank in enumerate(self._rank(sortable)):
-                    map[k]['hrank'] = rank
+                    map[k]["hrank"] = rank
 
         # Calculate vertical ranks
         if self.vertical:
@@ -130,12 +134,12 @@ class RankModifier(Modifier):
                 map = {}
                 for i in range(len(raw)):
                     cell = raw[i][col]
-                    if field in cell['data']:
-                        sortable.append(cell['data'][field])
-                        map[len(sortable) - 1] = cell['data']
+                    if field in cell["data"]:
+                        sortable.append(cell["data"][field])
+                        map[len(sortable) - 1] = cell["data"]
 
                 for k, rank in enumerate(self._rank(sortable)):
-                    map[k]['vrank'] = rank
+                    map[k]["vrank"] = rank
 
         # Aggregate
         if self.aggregate:
@@ -143,13 +147,11 @@ class RankModifier(Modifier):
             for row in raw:
                 avg = []
                 for cell in row:
-                    if 'vrank' in cell['data']:
-                        avg.append(cell['data']['vrank'])
+                    if "vrank" in cell["data"]:
+                        avg.append(cell["data"]["vrank"])
 
                 avg_mean = np.mean(avg) if len(avg) > 0 else 0
-                row.append({
-                    'data': {'vrank': avg_mean}
-                })
+                row.append({"data": {"vrank": avg_mean}})
 
             # horizontal
             avgs = []
@@ -157,19 +159,17 @@ class RankModifier(Modifier):
                 avg = []
                 for i in range(len(raw)):
                     cell = raw[i][col]
-                    if 'hrank' in cell['data']:
-                        avg.append(cell['data']['hrank'])
+                    if "hrank" in cell["data"]:
+                        avg.append(cell["data"]["hrank"])
                 avg_mean = np.mean(avg) if len(avg) > 0 else 0
-                avgs.append({
-                    'data': {'hrank': avg_mean}
-                })
+                avgs.append({"data": {"hrank": avg_mean}})
             raw.append(avgs)
 
         return raw, headers
 
 
 class SortModifier(Modifier):
-    """ SortModifier
+    """SortModifier
 
     Parameters
     ----------
@@ -179,13 +179,15 @@ class SortModifier(Modifier):
 
     def __init__(self, key=None, reverse=False):
         if key is None:
+
             def key(x):
                 try:
-                    return x[-1]['data']['score']
+                    return x[-1]["data"]["score"]
                 except IndexError:
                     return 0
                 except KeyError:
                     return 0
+
         self.key = key
         self.reverse = reverse
 
@@ -195,18 +197,18 @@ class SortModifier(Modifier):
 
 
 def filter_modifier(modifier):
-    if modifier == 'rank' or modifier == 'ranks':
+    if modifier == "rank" or modifier == "ranks":
         return RankModifier()
-    elif modifier == 'id' or modifier == 'ids':
+    elif modifier == "id" or modifier == "ids":
         return IdModifier()
-    elif modifier == 'sort':
+    elif modifier == "sort":
         return SortModifier()
     else:
         return modifier
 
 
 class Table:
-    """ Table
+    """Table
 
     Parameters
     ----------
@@ -219,7 +221,7 @@ class Table:
             tasks = []
         self.tasks = tasks
         if modifiers is None:
-            modifiers = ['id', 'rank', 'sort']
+            modifiers = ["id", "rank", "sort"]
         # resolve shorthands
         modifiers = [filter_modifier(modifier) for modifier in modifiers]
 
@@ -227,7 +229,7 @@ class Table:
         self.rendered_ = None
 
     def add(self, controller, view):
-        """ Add controllers
+        """Add controllers
 
         Parameters
         ----------
@@ -239,17 +241,28 @@ class Table:
 
         """
         if not issubclass(controller.__class__, Controller):
-            raise Exception('controller has to be subclass instance skpro.workflow.Controller')
+            raise Exception(
+                "controller has to be subclass instance skpro.workflow.Controller"
+            )
 
         if not issubclass(view.__class__, View):
-            raise Exception('view has to be subclass instance of skpro.workflow.View')
+            raise Exception("view has to be subclass instance of skpro.workflow.View")
 
         self.tasks.append((controller, view))
         self.rendered_ = None
 
         return self
 
-    def cv(self, data, loss_func, tune=False, cv=None, optimizer=None, display_tuning=False, with_ranks=True):
+    def cv(
+        self,
+        data,
+        loss_func,
+        tune=False,
+        cv=None,
+        optimizer=None,
+        display_tuning=False,
+        with_ranks=True,
+    ):
         """
 
         Parameters
@@ -265,8 +278,12 @@ class Table:
         -------
 
         """
-        return self.add(CrossValidationController(data, loss_func, cv=cv, tune=tune, optimizer=optimizer),
-                 CrossValidationView(with_tuning=display_tuning, with_ranks=with_ranks))
+        return self.add(
+            CrossValidationController(
+                data, loss_func, cv=cv, tune=tune, optimizer=optimizer
+            ),
+            CrossValidationView(with_tuning=display_tuning, with_ranks=with_ranks),
+        )
 
     def info(self, with_group=False):
         """
@@ -285,7 +302,7 @@ class Table:
         self.modifiers.append(filter_modifier(modifier))
 
     def render(self, models, verbose=0, debug=False):
-        """ Render table
+        """Render table
 
         Parameters
         ----------
@@ -299,7 +316,7 @@ class Table:
         """
 
         if len(self.tasks) == 0:
-            raise Exception('The table is empty. You have to include tasks using add()')
+            raise Exception("The table is empty. You have to include tasks using add()")
 
         # Compose table
         raw_tbl = []
@@ -310,27 +327,24 @@ class Table:
                 model = Model(model)
 
             if verbose > 1:
-                print('Evaluating model %i/%i: %s' % (i + 1, len(models), str(model)))
+                print("Evaluating model %i/%i: %s" % (i + 1, len(models), str(model)))
             row = []
             for controller, view in self.tasks:
                 controller_id = controller.identifier()
-                if not debug or str(controller) == 'Info':
+                if not debug or str(controller) == "Info":
                     model[controller_id] = controller.run(model)
                 else:
-                    model[controller_id] = {'debug': 'debug'}
-                    view = ItemView('debug')
+                    model[controller_id] = {"debug": "debug"}
+                    view = ItemView("debug")
 
                 if verbose > 2:
-                    print('Running ' + str(controller))
+                    print("Running " + str(controller))
                     print(model[controller_id])
 
                 if i == 0:
                     headers.append(str(controller))
 
-                row.append({
-                    'data': model[controller_id],
-                    'view': view
-                })
+                row.append({"data": model[controller_id], "view": view})
             i += 1
             raw_tbl.append(row)
 
@@ -341,21 +355,25 @@ class Table:
         # Parse raw table
         tbl = []
         for raw in raw_tbl:
-            tbl.append([
-                cell['view'].parse(cell['data'])
-                for cell in raw if 'view' in cell
-            ])
+            tbl.append(
+                [cell["view"].parse(cell["data"]) for cell in raw if "view" in cell]
+            )
 
-        self.rendered_ = {
-            'raw': raw_tbl,
-            'parsed': tbl,
-            'headers': headers
-        }
+        self.rendered_ = {"raw": raw_tbl, "parsed": tbl, "headers": headers}
 
         return self.rendered_
 
-    def print(self, models, fmt='pipe', with_headers=True, raw=False, return_only=False, verbose=1, debug=False):
-        """ Print table
+    def print(
+        self,
+        models,
+        fmt="pipe",
+        with_headers=True,
+        raw=False,
+        return_only=False,
+        verbose=1,
+        debug=False,
+    ):
+        """Print table
 
         Parameters
         ----------
@@ -376,29 +394,33 @@ class Table:
         self.render(models, verbose=verbose, debug=debug)
 
         if with_headers:
-            headers = self.rendered_['headers']
+            headers = self.rendered_["headers"]
         else:
             headers = []
 
         if raw:
-            rendered = self.rendered_['raw']
+            rendered = self.rendered_["raw"]
         else:
-            rendered = self.rendered_['parsed']
+            rendered = self.rendered_["parsed"]
 
         if isinstance(fmt, str):
             fmt = [fmt]
 
-        tbl = ''
+        tbl = ""
         for f in fmt:
-            if f == 'raw':
-                f = 'pipe'
-                rendered = self.rendered_['raw']
+            if f == "raw":
+                f = "pipe"
+                rendered = self.rendered_["raw"]
 
-            tbl += '\n' + tabulate(
-                rendered,
-                headers=headers,
-                tablefmt=f,
-            ) + '\n'
+            tbl += (
+                "\n"
+                + tabulate(
+                    rendered,
+                    headers=headers,
+                    tablefmt=f,
+                )
+                + "\n"
+            )
 
         if not return_only:
             print(tbl)

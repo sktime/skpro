@@ -1,13 +1,14 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 
-from skpro.workflow.manager import DataManager
-from skpro.regression.baselines import DensityBaseline
-from skpro.metrics.metrics import linearized_log_loss
 import skpro.tests.utils as utils
+from skpro.metrics.metrics import linearized_log_loss
+from skpro.regression.baselines import DensityBaseline
+from skpro.workflow.manager import DataManager
 
 
 def test_density_baseline():
-    data = DataManager('boston')
+    data = DataManager("boston")
 
     model = DensityBaseline()
     y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)

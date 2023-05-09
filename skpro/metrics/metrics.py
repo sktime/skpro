@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 
 
 def sample_loss(loss, return_std=False):
-    """ Averages the loss of a sample
+    """Averages the loss of a sample
 
     Parameters
     ----------
@@ -25,7 +26,6 @@ def sample_loss(loss, return_std=False):
 
 
 class _Scorer:
-
     def __init__(self, score_func, sign):
         self._score_func = score_func
         self._sign = sign
@@ -70,7 +70,7 @@ def make_scorer(score_func, greater_is_better=True):
 
 
 def gneiting_loss(y_true, dist_pred, sample=True, return_std=False):
-    """ Gneiting loss
+    """Gneiting loss
 
     Parameters
     ----------
@@ -89,9 +89,9 @@ def gneiting_loss(y_true, dist_pred, sample=True, return_std=False):
     np.array
         Loss (with standard deviation if ``return_std`` is True)
     """
-    lp2 = getattr(dist_pred, 'lp2', False)
+    lp2 = getattr(dist_pred, "lp2", False)
     if not lp2:
-        raise Exception('The estimator does not provide an lp2 integration')
+        raise Exception("The estimator does not provide an lp2 integration")
 
     loss = -2 * dist_pred.pdf(y_true) + lp2()
 
@@ -102,7 +102,7 @@ def gneiting_loss(y_true, dist_pred, sample=True, return_std=False):
 
 
 def linearized_log_loss(y_true, dist_pred, range=1e-10, sample=True, return_std=False):
-    """ Linearized log loss
+    """Linearized log loss
 
     Parameters
     ----------
@@ -141,7 +141,7 @@ def linearized_log_loss(y_true, dist_pred, range=1e-10, sample=True, return_std=
 
 
 def log_loss(y_true, dist_pred, sample=True, return_std=False):
-    """ Log loss
+    """Log loss
 
     Parameters
     ----------
@@ -170,7 +170,7 @@ def log_loss(y_true, dist_pred, sample=True, return_std=False):
 
 
 def rank_probability_loss(y_true, dist_pred, sample=True, return_std=False):
-    """ Rank probability loss
+    """Rank probability loss
 
     .. math::
         L(F,y) = \int_{-\infty}^{y} F(x)^2 dx + \int_{y}^{+\infty} (1-F(x))^2 dx
@@ -194,6 +194,7 @@ def rank_probability_loss(y_true, dist_pred, sample=True, return_std=False):
     np.array
         Loss (with standard deviation if ``return_std`` is True)
     """
+
     def term(index, one_minus=False):
         def integrand(x):
             if one_minus:
@@ -205,13 +206,15 @@ def rank_probability_loss(y_true, dist_pred, sample=True, return_std=False):
 
     from scipy.integrate import quad as integrate
 
-    loss = -1 * np.array([
-        # -int_ -\infty ^ y F(x)² dx
-        - integrate(term(index), -np.inf, y_true[index])[0]
-        # – int_y ^\infty(1 - F(x))² dx
-        - integrate(term(index, one_minus=True), y_true[index], np.inf)[0]
-        for index in range(len(dist_pred))
-    ])
+    loss = -1 * np.array(
+        [
+            # -int_ -\infty ^ y F(x)² dx
+            -integrate(term(index), -np.inf, y_true[index])[0]
+            # – int_y ^\infty(1 - F(x))² dx
+            - integrate(term(index, one_minus=True), y_true[index], np.inf)[0]
+            for index in range(len(dist_pred))
+        ]
+    )
 
     if sample:
         return sample_loss(loss, return_std)

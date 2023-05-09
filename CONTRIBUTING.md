@@ -16,7 +16,7 @@
 
 #### **Do you intend to add a new feature or change an existing one?**
 
-* Suggest your change in an issue and offer to implement the feature. 
+* Suggest your change in an issue and offer to implement the feature.
 
 * Wait for positive feedback in order to avoid double work (maybe your idea is already in development).
 
@@ -29,7 +29,7 @@
 #### **Do you want to contribute to the skpro documentation?**
 
 * Please send PR that propose changes to the docs directory
- 
+
 skpro is a team effort. We encourage you to pitch in and join us!
 
 Thanks! :heart: :heart: :heart:

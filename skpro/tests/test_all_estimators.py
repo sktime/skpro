@@ -5,7 +5,6 @@ import types
 from inspect import getfullargspec, signature
 
 import numpy as np
-
 from skbase.testing import TestAllObjects as _TestAllObjects
 from skbase.testing.utils.inspect import _get_args
 

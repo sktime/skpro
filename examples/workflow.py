@@ -1,18 +1,19 @@
+# -*- coding: utf-8 -*-
 from sklearn.linear_model import LinearRegression
 
-from skpro.workflow.table import Table
+from skpro.baselines import DensityBaseline
 from skpro.metrics import log_loss
-from skpro.workflow import Model
-from skpro.workflow.manager import DataManager
-from skpro.workflow.cross_validation import grid_optimizer
 from skpro.parametric import ParametricEstimator
 from skpro.parametric.estimators import Constant
-from skpro.baselines import DensityBaseline
+from skpro.workflow import Model
+from skpro.workflow.cross_validation import grid_optimizer
+from skpro.workflow.manager import DataManager
+from skpro.workflow.table import Table
 
 tbl = Table()
 
 # Loads and represents the data
-data = DataManager('boston')
+data = DataManager("boston")
 
 # Adds a model information column
 tbl.info()
@@ -20,18 +21,15 @@ tbl.info()
 tbl.cv(data, log_loss, tune=True, optimizer=grid_optimizer(n_jobs=-1, verbose=0))
 
 # Run the models against the workflow and print the results
-tbl.print([
-    # Baseline ...
-    Model(
-        DensityBaseline()
-    ),
-    # ... and parametric composite model
-    Model(
-        ParametricEstimator(
-            LinearRegression(),
-            Constant('std(y)')
+tbl.print(
+    [
+        # Baseline ...
+        Model(DensityBaseline()),
+        # ... and parametric composite model
+        Model(
+            ParametricEstimator(LinearRegression(), Constant("std(y)")),
+            # ... which hyperparameter shall be optimized
+            tuning={"point__normalize": [True, False]},
         ),
-        # ... which hyperparameter shall be optimized
-        tuning={'point__normalize': [True, False]},
-    )
-])
+    ]
+)

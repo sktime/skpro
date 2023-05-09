@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 
 from skpro.base.old_base import ProbabilisticEstimator, vectorvalued
@@ -6,16 +7,14 @@ from skpro.utils.utils import ensure_existence
 
 
 class DensityBaseline(ProbabilisticEstimator):
-
     class Distribution(ProbabilisticEstimator.Distribution):
-
         @vectorvalued
         def point(self):
-            return np.ones((len(self.X), )) * self.estimator.training_mean_
+            return np.ones((len(self.X),)) * self.estimator.training_mean_
 
         @vectorvalued
         def std(self):
-            return np.ones((len(self.X), )) * self.estimator.training_std_
+            return np.ones((len(self.X),)) * self.estimator.training_std_
 
         def cdf(self, x):
             ensure_existence(self.estimator.adapter.cdf)
@@ -32,8 +31,10 @@ class DensityBaseline(ProbabilisticEstimator):
             adapter = KernelDensityAdapter()
 
         if not issubclass(adapter.__class__, DensityAdapter):
-            raise ValueError('adapter has to be a subclass of skpro.density.DensityAdapter'
-                             '%s given.' % adapter.__class__)
+            raise ValueError(
+                "adapter has to be a subclass of skpro.density.DensityAdapter"
+                "%s given." % adapter.__class__
+            )
 
         self.adapter = adapter
         self.training_mean_ = None

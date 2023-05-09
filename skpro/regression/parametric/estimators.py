@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import numpy as np
 from sklearn.base import BaseEstimator
@@ -6,7 +7,7 @@ from skpro.utils.utils import to_percent
 
 
 class Minimum(BaseEstimator):
-    """ Minimum estimator
+    """Minimum estimator
 
     Wrapping estimator that replaces predictions of the wrapped
     estimator that fall below a specified minimum threshold
@@ -44,7 +45,7 @@ class Minimum(BaseEstimator):
 
     def fit(self, X, y):
         # Forward fitting to wrapped estimator
-        if getattr(self, 'estimator', False):
+        if getattr(self, "estimator", False):
             self.base_estimator.estimator = self.estimator
         self.base_estimator.fit(X, y)
 
@@ -62,14 +63,16 @@ class Minimum(BaseEstimator):
         return prediction
 
     def __str__(self, describer=str):
-        return 'Min(' + describer(self.base_estimator) + ', min=' + str(self.minimum) + ')'
+        return (
+            "Min(" + describer(self.base_estimator) + ", min=" + str(self.minimum) + ")"
+        )
 
     def __repr__(self):
         return self.__str__(repr)
 
 
 class Constant(BaseEstimator):
-    """ Constant estimator
+    """Constant estimator
 
     Predicts predefinied constant
 
@@ -96,12 +99,12 @@ class Constant(BaseEstimator):
         # resolve str shorthands
         if isinstance(self.constant, str):
             self.name = self.constant
-            if self.constant == 'mean(y)':
+            if self.constant == "mean(y)":
                 self.constant = np.mean(y)
-            elif self.constant == 'std(y)':
+            elif self.constant == "std(y)":
                 self.constant = np.std(y)
             else:
-                raise ValueError(self.constant + ' is not a valid function')
+                raise ValueError(self.constant + " is not a valid function")
 
         # if no constant was provided we use the y value
         if self.constant is None:
@@ -117,6 +120,6 @@ class Constant(BaseEstimator):
 
     def __repr__(self):
         if self.name is None:
-            return 'C(' + str(self.constant) + ')'
+            return "C(" + str(self.constant) + ")"
         else:
-            return 'C(' + self.name + ')'
+            return "C(" + self.name + ")"

@@ -8,7 +8,6 @@ from skpro.base.old_base import ProbabilisticEstimator, vectorvalued
 
 
 class EstimatorForTesting(ProbabilisticEstimator):
-
     def __init__(self):
         self.debug = dict()
 
@@ -19,29 +18,28 @@ class EstimatorForTesting(ProbabilisticEstimator):
         self.debug[key] += 1
 
     class Distribution(ProbabilisticEstimator.Distribution):
-
         def point(self):
-            self.estimator.debug_count('point')
-            return self.X[0]*10
+            self.estimator.debug_count("point")
+            return self.X[0] * 10
 
         @vectorvalued
         def std(self):
-            self.estimator.debug_count('std')
+            self.estimator.debug_count("std")
             # returns a vector rather than a point
-            return self.X[:, 0]/10
+            return self.X[:, 0] / 10
 
         def pdf(self, x):
-            self.estimator.debug_count('pdf')
-            return -self.X[0]*x
+            self.estimator.debug_count("pdf")
+            return -self.X[0] * x
 
         def lp2(self):
             x = 1
-            return self[self.index].pdf(x)**2
+            return self[self.index].pdf(x) ** 2
 
 
 def test_distribution_bracket_notation():
     estimator = EstimatorForTesting()
-    X = np.array([np.ones(3)*i for i in range(5)])
+    X = np.array([np.ones(3) * i for i in range(5)])
     y_pred = estimator.predict(X)
 
     # probabilistic estimator?
@@ -60,33 +58,38 @@ def test_distribution_bracket_notation():
     # MODE: elementwise
 
     # 0-dim, one dist, one point
-    assert y_pred[2].pdf(1) == -2.
-    assert y_pred[3].pdf(2) == -6.
+    assert y_pred[2].pdf(1) == -2.0
+    assert y_pred[3].pdf(2) == -6.0
     # 0-dim, more dist than points
-    np.testing.assert_array_equal(y_pred[1:4].pdf(7), np.array([-7., -14., -21.]))
+    np.testing.assert_array_equal(y_pred[1:4].pdf(7), np.array([-7.0, -14.0, -21.0]))
 
     # 1-dim, one dist, many points
-    np.testing.assert_array_equal(y_pred[2].pdf(x), np.ones((5)) * -8.)
+    np.testing.assert_array_equal(y_pred[2].pdf(x), np.ones((5)) * -8.0)
     # 1-dim, less dist than points
-    np.testing.assert_array_equal(y_pred[2:4].pdf(x), np.array([ -8., -12.,  -8., -12.,  -8.]))
+    np.testing.assert_array_equal(
+        y_pred[2:4].pdf(x), np.array([-8.0, -12.0, -8.0, -12.0, -8.0])
+    )
     # 1-dim, equal
-    np.testing.assert_array_equal(y_pred[2:4].pdf(x[:2]), np.array([-8., -12.]))
+    np.testing.assert_array_equal(y_pred[2:4].pdf(x[:2]), np.array([-8.0, -12.0]))
 
     # MODE: batch
 
     # 0-dim, one dist, one point
-    assert y_pred[2, 'batch'].pdf(1) == -2.
-    assert y_pred[3, 'batch'].pdf(2) == -6.
+    assert y_pred[2, "batch"].pdf(1) == -2.0
+    assert y_pred[3, "batch"].pdf(2) == -6.0
     # 0-dim, more dist than points
-    np.testing.assert_array_equal(y_pred[1:4, 'batch'].pdf(7), np.array([-7., -14., -21.]))
+    np.testing.assert_array_equal(
+        y_pred[1:4, "batch"].pdf(7), np.array([-7.0, -14.0, -21.0])
+    )
 
     # 1-dim, one dist, many points
-    np.testing.assert_array_equal(y_pred[2, 'batch'].pdf(x), np.ones((5)) * -8.)
+    np.testing.assert_array_equal(y_pred[2, "batch"].pdf(x), np.ones((5)) * -8.0)
     # 1-dim, less dist than points
-    np.testing.assert_array_equal(y_pred[2:4, 'batch'].pdf(x),
-                                  [np.ones((5)) * -8., np.ones((5)) * -12.])
+    np.testing.assert_array_equal(
+        y_pred[2:4, "batch"].pdf(x), [np.ones((5)) * -8.0, np.ones((5)) * -12.0]
+    )
     # full batch notation
-    np.testing.assert_array_equal(y_pred['batch'].pdf(1), -np.arange(5))
+    np.testing.assert_array_equal(y_pred["batch"].pdf(1), -np.arange(5))
 
 
 def test_interface_vectorization():
@@ -116,7 +119,7 @@ def test_numeric_emulation():
         float(y_pred_1)
 
     # type conversion
-    assert float(y_pred_1[2]) == 20.
+    assert float(y_pred_1[2]) == 20.0
     assert int(y_pred_1[3]) == 30
 
 

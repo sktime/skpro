@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 if False:
     from theano import shared
     import pymc3 as pm
@@ -6,7 +7,7 @@ from skpro.base.old_base import BayesianVendorInterface
 
 
 class PymcInterface(BayesianVendorInterface):
-    """ PyMC3 interface
+    """PyMC3 interface
 
     Allows for the integration of PyMC3 models
 
@@ -42,7 +43,9 @@ class PymcInterface(BayesianVendorInterface):
         # Update the theano shared variable with test data
         self.X_.set_value(X)
         # Running PPC will use the updated values and do the prediction
-        self.ppc_ = pm.sample_ppc(self.trace_, model=self.model_, samples=self.sample_size)
+        self.ppc_ = pm.sample_ppc(
+            self.trace_, model=self.model_, samples=self.sample_size
+        )
 
     def samples(self):
-        return self.ppc_['y_pred'].T
+        return self.ppc_["y_pred"].T

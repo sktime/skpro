@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import abc
 
@@ -10,7 +11,7 @@ from skpro.utils.utils import not_existing
 
 
 def ecdf(a):
-    """ Returns the empirical distribution function of a sample
+    """Returns the empirical distribution function of a sample
 
     Parameters
     ----------
@@ -70,7 +71,7 @@ class DensityAdapter(BaseEstimator, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def pdf(self, x):
-        """ Probability density function
+        """Probability density function
 
         Parameters
         ----------
@@ -84,7 +85,7 @@ class DensityAdapter(BaseEstimator, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def cdf(self, x):
-        """ Cumulative density function
+        """Cumulative density function
 
         Parameters
         ----------

@@ -19,7 +19,6 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
     def test_input_output_contract(self, object_instance):
         """Tests that y output is pd.DataFrame and has same columns as y."""
         import pandas as pd
-
         from sklearn.datasets import load_diabetes
         from sklearn.model_selection import train_test_split
 

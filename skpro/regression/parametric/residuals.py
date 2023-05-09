@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 from sklearn.base import BaseEstimator
 
@@ -32,14 +33,21 @@ def log_error_pt(y_pred):
 
 
 class ResidualEstimator(BaseEstimator):
-    """ Residual estimator
+    """Residual estimator
 
     Predicts residuals of an estimator using a scikit-learn estimator.
 
     Read more in the :ref:`User Guide <parametric>`.
     """
 
-    def __init__(self, residual_estimator, base_estimator='point', fit_transform='squared_error', predict_transform=None, filter_zero_variance=False):
+    def __init__(
+        self,
+        residual_estimator,
+        base_estimator="point",
+        fit_transform="squared_error",
+        predict_transform=None,
+        filter_zero_variance=False,
+    ):
         self.residual_estimator = residual_estimator
         self.base_estimator = base_estimator
         self.fit_transform = fit_transform
@@ -53,15 +61,19 @@ class ResidualEstimator(BaseEstimator):
             try:
                 return globals()[tf + suffix]
             except:
-                raise ValueError(tf + ' is not a valid transformer')
+                raise ValueError(tf + " is not a valid transformer")
         else:
             return None
 
     def _resolve_transformers(self):
-        self.fit_transform_ = self._resolve_transformer(self.fit_transform, '_ft')
-        self.predict_transform_ = self._resolve_transformer(self.predict_transform, '_pt')
+        self.fit_transform_ = self._resolve_transformer(self.fit_transform, "_ft")
+        self.predict_transform_ = self._resolve_transformer(
+            self.predict_transform, "_pt"
+        )
         if self.predict_transform_ is None:
-            self.predict_transform_ = self._resolve_transformer(self.fit_transform, '_pt')
+            self.predict_transform_ = self._resolve_transformer(
+                self.fit_transform, "_pt"
+            )
 
     def fit(self, X, y):
         self._resolve_transformers()
@@ -70,7 +82,7 @@ class ResidualEstimator(BaseEstimator):
 
         # protect against 0 variance
         if self.filter_zero_variance:
-            clean = (y - y_pred != 0)
+            clean = y - y_pred != 0
             if np.any(clean):
                 y = y[clean]
                 X = X[clean]
@@ -90,11 +102,23 @@ class ResidualEstimator(BaseEstimator):
         return y_pred_
 
     def __str__(self):
-        return 'RE(' + str(self.base_estimator) + ', ' \
-               + str(self.residual_estimator) + ', ' + str(self.fit_transform) + ')'
+        return (
+            "RE("
+            + str(self.base_estimator)
+            + ", "
+            + str(self.residual_estimator)
+            + ", "
+            + str(self.fit_transform)
+            + ")"
+        )
 
     def __repr__(self):
-        return 'ResidualEstimator(' + str(self.base_estimator) + ', ' \
-               + repr(self.residual_estimator) + ', ' + repr(self.fit_transform) + ')'
-
-
+        return (
+            "ResidualEstimator("
+            + str(self.base_estimator)
+            + ", "
+            + repr(self.residual_estimator)
+            + ", "
+            + repr(self.fit_transform)
+            + ")"
+        )

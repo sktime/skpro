@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from sklearn.tree import DecisionTreeRegressor
 
 from skpro.ensemble import BaggingRegressor as SkproBaggingRegressor
@@ -10,25 +11,19 @@ def prediction(model, data):
     return model.fit(data.X_train, data.y_train).predict(data.X_test)
 
 
-data = DataManager('boston')
+data = DataManager("boston")
 clf = DecisionTreeRegressor()
 
-baseline_prediction = prediction(
-    ParametricEstimator(point=clf),
-    data
-)
+baseline_prediction = prediction(ParametricEstimator(point=clf), data)
 
 skpro_bagging_prediction = prediction(
-    SkproBaggingRegressor(
-        ParametricEstimator(point=clf),
-        n_estimators=10,
-        n_jobs=-1
-    ),
-    data
+    SkproBaggingRegressor(ParametricEstimator(point=clf), n_estimators=10, n_jobs=-1),
+    data,
 )
 
-l1, l2 = loss(data.y_test, baseline_prediction), \
-         loss(data.y_test, skpro_bagging_prediction)
+l1, l2 = loss(data.y_test, baseline_prediction), loss(
+    data.y_test, skpro_bagging_prediction
+)
 
-print('Baseline: ', l1)
-print('Bagged model:', l2)
+print("Baseline: ", l1)
+print("Bagged model:", l2)

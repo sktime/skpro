@@ -5,11 +5,10 @@
 __author__ = ["fkiraly"]
 
 import pandas as pd
-
 from sklearn import clone
 
-from skpro.regression.base import BaseProbaRegressor
 from skpro.distributions.normal import Normal
+from skpro.regression.base import BaseProbaRegressor
 
 
 class ResidualDouble(BaseProbaRegressor):

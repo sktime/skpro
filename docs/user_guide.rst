@@ -48,5 +48,3 @@ Help and support
 ----------------
 
 If you have question, feel free to open an issue on our `GitHub page <https://github.com/alan-turing-institute/skpro/issues>`_.
-
-

@@ -1,1 +1,2 @@
-from .table import Table, IdModifier, RankModifier, SortModifier, Modifier
+# -*- coding: utf-8 -*-
+from .table import IdModifier, Modifier, RankModifier, SortModifier, Table

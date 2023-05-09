@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 from skpro.workflow.base import Model
 
 
 class ModelManager:
-    """ Model manager
-    """
+    """Model manager"""
 
     def __init__(self):
         self.models = {}
@@ -31,7 +31,7 @@ class ModelManager:
         return [v.clone() for v in self.models.values()]
 
     def info(self):
-        print('Total number of registered models: %i\n' % len(self.models))
+        print("Total number of registered models: %i\n" % len(self.models))
 
         for k, v in self.models.items():
             print(k, str(v))

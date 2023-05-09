@@ -1,18 +1,18 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import pytest
 from scipy.stats import norm
-
 from sklearn.linear_model import LinearRegression
 
-from skpro.workflow.manager import DataManager
+import skpro.tests.utils as utils
+from skpro.metrics.metrics import linearized_log_loss
 from skpro.regression.parametric.parametric import ParametricEstimator
 from skpro.regression.parametric.residuals import ResidualEstimator
-from skpro.metrics.metrics import linearized_log_loss
-import skpro.tests.utils as utils
+from skpro.workflow.manager import DataManager
 
 
 def test_baseline():
-    data = DataManager('boston')
+    data = DataManager("boston")
 
     model = ParametricEstimator()
     y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
@@ -37,7 +37,7 @@ def test_baseline():
 
 
 def test_simple_model():
-    data = DataManager('boston')
+    data = DataManager("boston")
 
     model = ParametricEstimator(LinearRegression(), LinearRegression())
     y_pred = model.fit(data.X_train, data.y_train).predict(data.X_test)
@@ -47,12 +47,11 @@ def test_simple_model():
 
 @pytest.mark.skip(reason="loss assert fails sporadically")
 def test_residual_prediction():
-    data = DataManager('boston')
+    data = DataManager("boston")
 
     baseline_model = ParametricEstimator(LinearRegression())
     model = ParametricEstimator(
-        point=LinearRegression(),
-        std=ResidualEstimator(LinearRegression())
+        point=LinearRegression(), std=ResidualEstimator(LinearRegression())
     )
 
     baseline = baseline_model.fit(data.X_train, data.y_train).predict(data.X_test)

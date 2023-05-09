@@ -7,6 +7,6 @@
     Read more about conftest.py under:
     https://pytest.org/latest/plugins.html
 """
-from __future__ import print_function, absolute_import, division
+from __future__ import absolute_import, division, print_function
 
 import pytest

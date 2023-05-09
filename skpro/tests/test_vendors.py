@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pytest
 
 from skpro.base.old_base import BayesianVendorEstimator

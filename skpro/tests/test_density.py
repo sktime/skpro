@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 if False:
     import numpy as np
     from hypothesis import given
@@ -5,10 +6,9 @@ if False:
     from hypothesis.strategies import floats
     from scipy.stats import norm
 
-    from skpro.density import ecdf, KernelDensityAdapter, EmpiricalDensityAdapter
+    from skpro.density import EmpiricalDensityAdapter, KernelDensityAdapter, ecdf
 
     np.random.seed(1)
-
 
     @given(arrays(np.float, 10, elements=floats(0, 100)))
     def test_ecdf_from_sample(sample):
@@ -19,7 +19,6 @@ if False:
 
         # is it monotone?
         assert np.array_equal(ys, sorted(ys))
-
 
     @given(floats(-10, 10))
     def test_kernel_density_adapter(x):
@@ -40,7 +39,6 @@ if False:
         cdf = adapter.cdf(x)
         assert isinstance(cdf, np.float)
         assert abs(cdf - norm.cdf(x, loc=5, scale=10)) < 0.3
-
 
     @given(floats(-10, 10))
     def test_empirical_density_adapter(x):
