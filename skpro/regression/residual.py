@@ -62,7 +62,7 @@ class ResidualDouble(BaseProbaRegressor):
     >>> y_pred_proba = reg_proba.predict_proba(X)
     """
 
-    _tags = {}
+    _tags = {"capability:missing": True}
 
     def __init__(self, estimator, estimator_resid=None, min_scale=1e-10):
 
