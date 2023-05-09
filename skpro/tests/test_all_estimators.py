@@ -27,15 +27,22 @@ class PackageConfig:
     # list of valid tags
     # expected type: list of str, str are tag names
     valid_tags = [
+        # all estimators
         "reserved_params",
         "estimator_type",
         "python_version",
         "python_dependencies",
+        # BaseProbaRegressor
         "capability:multioutput",
         "capability:missing",
+        # BaseDistribution
         "capabilities:approx",
         "capabilities:exact",
         "distr:measuretype",
+        "approx_mean_spl",  # sample size used in MC estimates of mean
+        "approx_var_spl",  # sample size used in MC estimates of var
+        "approx_energy_spl",  # sample size used in MC estimates of energy
+        "approx_spl",  # sample size used in other MC estimates
     ]
 
 
@@ -128,3 +135,47 @@ class TestAllObjects(PackageConfig, _TestAllObjects):
                     assert param_value is param.default, param.name
                 else:
                     assert param_value == param.default, param.name
+
+    # same here, reserved_params need to be dealt with
+    def test_set_params_sklearn(self, object_class):
+        """Check that set_params works correctly, mirrors sklearn check_set_params.
+
+        Instead of the "fuzz values" in sklearn's check_set_params,
+        we use the other test parameter settings (which are assumed valid).
+        This guarantees settings which play along with the __init__ content.
+        """
+        from skbase.testing.utils.deep_equals import deep_equals
+
+        estimator = object_class.create_test_instance()
+        test_params = object_class.get_test_params()
+        if not isinstance(test_params, list):
+            test_params = [test_params]
+
+        reserved_params = object_class.get_class_tag(
+            "reserved_params", tag_value_default=[]
+        )
+
+        for params in test_params:
+            # we construct the full parameter set for params
+            # params may only have parameters that are deviating from defaults
+            # in order to set non-default parameters back to defaults
+            params_full = object_class.get_param_defaults()
+            params_full.update(params)
+
+            msg = f"set_params of {object_class.__name__} does not return self"
+            est_after_set = estimator.set_params(**params_full)
+            assert est_after_set is estimator, msg
+
+            def unreserved(params):
+                return {p: v for p, v in params.items() if p not in reserved_params}
+
+            est_params = estimator.get_params(deep=False)
+            is_equal, equals_msg = deep_equals(
+                unreserved(est_params), unreserved(params_full), return_msg=True
+            )
+            msg = (
+                f"get_params result of {object_class.__name__} (x) does not match "
+                f"what was passed to set_params (y). "
+                f"Reason for discrepancy: {equals_msg}"
+            )
+            assert is_equal, msg
