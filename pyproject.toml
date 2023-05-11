@@ -89,12 +89,12 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://www.skpro.ml"
+Homepage = "https://github.com/sktime/skpro"
 Repository = "https://github.com/sktime/skpro"
-Documentation = "https://www.skpro.ml"
+Documentation = "https://github.com/sktime/skpro"
 Download = "https://pypi.org/project/skpro/#files"
-"API Reference" = "https://www.skpro.ml"
-"Release Notes" = "https://www.skpro.ml"
+"API Reference" = "https://github.com/sktime/skpro"
+"Release Notes" = "https://github.com/sktime/skpro"
 
 [project.license]
 file = "LICENSE"
