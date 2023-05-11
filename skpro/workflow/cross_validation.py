@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
+
 if False:
     import numpy as np
     from uncertainties import ufloat

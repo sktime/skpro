@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
 
 import numpy as np
 from sklearn.ensemble import BaggingRegressor as BaseBaggingRegressor

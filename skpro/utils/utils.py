@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
 
 
 def not_existing(f):

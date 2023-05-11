@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
+
 from .base import Controller, View
 
 

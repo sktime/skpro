@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
 from sklearn.tree import DecisionTreeRegressor
 
 from skpro.ensemble import BaggingRegressor as SkproBaggingRegressor

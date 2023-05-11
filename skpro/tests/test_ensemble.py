@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
+
 import pytest
 from sklearn.ensemble import BaggingRegressor as ClassicBaggingRegressor
 from sklearn.linear_model import LinearRegression

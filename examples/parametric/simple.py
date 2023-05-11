@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
 from sklearn.datasets.base import load_boston
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split

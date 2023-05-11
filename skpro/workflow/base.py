@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
+
 import abc
 import hashlib
 import json

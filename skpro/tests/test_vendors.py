@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
+
 import pytest
 
 from skpro.base.old_base import BayesianVendorEstimator

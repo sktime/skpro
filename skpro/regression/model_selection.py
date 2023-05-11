@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
+
 import numpy as np
 from sklearn.model_selection import cross_validate
 
