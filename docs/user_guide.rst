@@ -47,4 +47,4 @@ As mentioned earlier, skpro comes with an advanced logic for :doc:`workflow auto
 Help and support
 ----------------
 
-If you have question, feel free to open an issue on our `GitHub page <https://github.com/alan-turing-institute/skpro/issues>`_.
+If you have question, feel free to open an issue on our `GitHub page <https://github.com/sktime/skpro/issues>`_.

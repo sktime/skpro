@@ -19,7 +19,7 @@ The following example of a Bayesian Linear Regression demonstrates the PyMC3 int
 
 >>> Log loss:  (3.0523741768448449, 0.1443656210555945)
 
-As usual, we can visualise the performance using the `helper <https://github.com/alan-turing-institute/skpro/blob/master/examples/utils.py>`_ ``plot_performance(data.y_test, y_pred)``:
+As usual, we can visualise the performance using the `helper <https://github.com/sktime/skpro/blob/master/examples/utils.py>`_ ``plot_performance(data.y_test, y_pred)``:
 
 .. figure:: _static/pymc_example_plot.png
    :width: 80%
