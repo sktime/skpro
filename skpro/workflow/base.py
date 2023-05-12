@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
+
 import abc
 import hashlib
 import json
@@ -6,7 +9,7 @@ from sklearn.base import clone
 
 
 class Model:
-    """ Model base class
+    """Model base class
 
     Parameters
     ----------
@@ -28,12 +31,12 @@ class Model:
         self.name = name
 
     def __repr__(self):
-        return 'Model(' + repr(self.instance) + ')'
+        return "Model(" + repr(self.instance) + ")"
 
     def __str__(self):
         if isinstance(self.name, str):
-            return 'Model: ' + self.name
-        return 'Model(' + str(self.instance) + ')'
+            return "Model: " + self.name
+        return "Model(" + str(self.instance) + ")"
 
     def __getitem__(self, item):
         return self.database[item]
@@ -49,11 +52,11 @@ class Model:
         if with_tuning:
             s += json.dumps(self.tuning, sort_keys=True)
 
-        return hashlib.md5(s.encode('utf-8')).hexdigest()
+        return hashlib.md5(s.encode("utf-8")).hexdigest()
 
 
 class Controller(metaclass=abc.ABCMeta):
-    """ Controller base class
+    """Controller base class
 
     Notes
     -----
@@ -70,12 +73,13 @@ class Controller(metaclass=abc.ABCMeta):
 
 
 class View(metaclass=abc.ABCMeta):
-    """ View base class
+    """View base class
 
     Notes
     -----
     Must implement the parse method
     """
+
     def __repr__(self):
         return self.__class__.__name__
 

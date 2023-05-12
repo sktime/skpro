@@ -11,7 +11,7 @@ Developers
 * Vitaly Davydov [`@iwitaly <https://github.com/iwitaly>`_]: contributor
 
 
-If you like to contribute, read our `contribution guide <https://github.com/alan-turing-institute/skpro/CONTRIBUTING.md>`_.
+If you like to contribute, read our `contribution guide <https://github.com/sktime/skpro/CONTRIBUTING.md>`_.
 
-.. _public code repository: https://github.com/alan-turing-institute/skpro
+.. _public code repository: https://github.com/sktime/skpro
 .. _Dr Franz Király: https://www.ucl.ac.uk/statistics/people/franz-kiraly

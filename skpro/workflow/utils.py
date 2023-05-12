@@ -1,17 +1,19 @@
+# -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
+
 from .base import Controller, View
 
 
 class RawView(View):
-    """ Raw view
-    """
+    """Raw view"""
+
     def parse(self, data):
         return str(data)
 
 
 class ItemView(View):
-    """ Item view
+    """Item view"""
 
-    """
     def __init__(self, key):
         self.key = key
 
@@ -23,38 +25,34 @@ class ItemView(View):
 
 
 class InfoView(View):
-    """ InfoView
+    """InfoView"""
 
-    """
-
-    def __init__(self, key='description', with_group=False):
+    def __init__(self, key="description", with_group=False):
         self.key = key
         self.with_group = with_group
 
     def parse(self, data):
         if self.with_group:
-            return '%s [%s]' % (data[self.key], data['group'])
+            return "%s [%s]" % (data[self.key], data["group"])
 
         return data[self.key]
 
 
 class InfoController(Controller):
-    """ InfoController
-
-    """
+    """InfoController"""
 
     def identifier(self):
-        return 'InfoController()'
+        return "InfoController()"
 
     def __repr__(self):
-        return 'InfoController()'
+        return "InfoController()"
 
     def __str__(self):
-        return 'Info'
+        return "Info"
 
     def run(self, model):
         return {
-            'description': str(model).replace('\n           ', ''),
-            'repr': repr(model),
-            'group': getattr(model, 'group', 'None')
+            "description": str(model).replace("\n           ", ""),
+            "repr": repr(model),
+            "group": getattr(model, "group", "None"),
         }

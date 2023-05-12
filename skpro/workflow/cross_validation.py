@@ -1,10 +1,15 @@
-import numpy as np
-from uncertainties import ufloat
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from sklearn.model_selection import KFold
+# -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
 
-from ..model_selection import cross_val_score
-from ..metrics import make_scorer
+if False:
+    import numpy as np
+    from uncertainties import ufloat
+    from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+    from sklearn.model_selection import KFold
+
+    from ..model_selection import cross_val_score
+    from ..metrics import make_scorer
+
 from .base import Controller, View
 
 
@@ -16,7 +21,7 @@ def grid_optimizer(verbose=0, n_jobs=1):
             scoring=scoring,
             cv=cv,
             verbose=verbose,
-            n_jobs=n_jobs
+            n_jobs=n_jobs,
         )
 
     return wrapper
@@ -31,14 +36,14 @@ def random_optimizer(n_iter=10, verbose=0, n_jobs=1):
             cv=cv,
             n_iter=n_iter,
             verbose=verbose,
-            n_jobs=n_jobs
+            n_jobs=n_jobs,
         )
 
     return wrapper
 
 
 class CrossValidationController(Controller):
-    """ CrossValidation controller
+    """CrossValidation controller
 
     Parameters
     ----------
@@ -63,13 +68,21 @@ class CrossValidationController(Controller):
         self.optimizer = optimizer
 
     def identifier(self):
-        return 'CrossValidation(data=%s, loss_func=%s)' % (self.data.name, self.loss_func.__name__)
+        return "CrossValidation(data=%s, loss_func=%s)" % (
+            self.data.name,
+            self.loss_func.__name__,
+        )
 
     def __repr__(self):
-        return 'CrossValidation(data=%s, loss_func=%s, cv=%s, tune=%s)' % (self.data.name, self.loss_func.__name__, repr(self.cv), str(self.tune))
+        return "CrossValidation(data=%s, loss_func=%s, cv=%s, tune=%s)" % (
+            self.data.name,
+            self.loss_func.__name__,
+            repr(self.cv),
+            str(self.tune),
+        )
 
     def description(self):
-        return 'CV(%s, %s)' % (self.data.name, self.loss_func.__name__)
+        return "CV(%s, %s)" % (self.data.name, self.loss_func.__name__)
 
     def run(self, model):
 
@@ -87,7 +100,7 @@ class CrossValidationController(Controller):
                 model=model.instance,
                 search_space=tuning,
                 scoring=make_scorer(self.loss_func, greater_is_better=False),
-                cv=self.cv
+                cv=self.cv,
             )
 
             best_params = []
@@ -99,61 +112,58 @@ class CrossValidationController(Controller):
                 return loss_function(y_test, y_pred, **kwargs)
 
         scores = cross_val_score(
-            clf,
-            self.data.X,
-            self.data.y,
-            scoring=scorer,
-            cv=self.cv
+            clf, self.data.X, self.data.y, scoring=scorer, cv=self.cv
         )
 
         score = ufloat(np.mean(scores[:, 0]), np.mean(scores[:, 1]))
 
         return {
-            'score': score,
-            'scores': scores,
-            'tuning': tuning,
-            'best_params': best_params
+            "score": score,
+            "scores": scores,
+            "tuning": tuning,
+            "best_params": best_params,
         }
 
 
 class CrossValidationView(View):
-    """ Cross validation view
+    """Cross validation view
 
     Parameters
     ----------
     with_tuning
     with_ranks
     """
+
     def __init__(self, with_tuning=False, with_ranks=True):
         self.with_tuning = with_tuning
         self.with_ranks = with_ranks
 
     def parse(self, data):
-        result = str(data['score'])
+        result = str(data["score"])
 
-        if data['tuning'] is not None:
+        if data["tuning"] is not None:
             if self.with_tuning:
-                best = data['best_params'][0]
-                tuning = ''
-                comma = ''
-                for k, v in data['tuning'].items():
-                    tuning += comma + k + ': '
-                    comma = '; '
+                best = data["best_params"][0]
+                tuning = ""
+                comma = ""
+                for k, v in data["tuning"].items():
+                    tuning += comma + k + ": "
+                    comma = "; "
 
-                    sep = ''
+                    sep = ""
                     for e in v:
-                        t = '%s'
+                        t = "%s"
                         if e == best[k]:
-                            t = '**%s**'
+                            t = "**%s**"
 
                         tuning += sep + (t % e)
-                        sep = ', '
+                        sep = ", "
 
-                result += '* (%s)' % tuning
+                result += "* (%s)" % tuning
             else:
-                result += '*'
+                result += "*"
 
-        if self.with_ranks and 'vrank' in data:
-            result = '(%i) ' % data['vrank'] + result
+        if self.with_ranks and "vrank" in data:
+            result = "(%i) " % data["vrank"] + result
 
         return result

@@ -1,16 +1,19 @@
-import urllib.request
+# -*- coding: utf-8 -*-
+# LEGACY MODULE - TODO: remove or refactor
+
 import hashlib
 import os
-import numpy as np
+import urllib.request
 
-from sklearn.model_selection import train_test_split
+import numpy as np
 from sklearn.datasets import load_boston, load_diabetes
+from sklearn.model_selection import train_test_split
 
 
 def retrieve_data(url):
-    file_name = '/tmp/%s.dat' % hashlib.md5(str(url).encode('utf-8')).hexdigest()
+    file_name = "/tmp/%s.dat" % hashlib.md5(str(url).encode("utf-8")).hexdigest()
     if not os.path.isfile(file_name):
-        with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
+        with urllib.request.urlopen(url) as response, open(file_name, "wb") as out_file:
             data = response.read()
             out_file.write(data)
 
@@ -66,11 +69,11 @@ class DataManager:
         if isinstance(X, str):
             # autoload sklearn datasets, urls and files
             name = X
-            if name.lower() == 'boston':
+            if name.lower() == "boston":
                 X, y = load_boston(return_X_y=True)
-            elif name.lower() == 'diabetes':
+            elif name.lower() == "diabetes":
                 X, y = load_diabetes(return_X_y=True)
-            elif name.startswith('http'):
+            elif name.startswith("http"):
                 X, y = load_url(name, return_X_y=True)
             elif os.path.isfile(name):
                 X, y = load_file(name, return_X_y=True)
@@ -87,10 +90,10 @@ class DataManager:
         self.y_test = None
         self.X = X
         self.y = y
-        self.name = name if isinstance(name, str) else 'Unnamed'
+        self.name = name if isinstance(name, str) else "Unnamed"
 
     def data(self, copy=True):
-        """ Returns the data
+        """Returns the data
 
         Parameters
         ----------
@@ -112,7 +115,7 @@ class DataManager:
             return False
 
     def clone(self):
-        """ Clones the data manager
+        """Clones the data manager
 
         Returns
         -------
@@ -132,14 +135,11 @@ class DataManager:
             return
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            self._X,
-            self._y,
-            test_size=self.split,
-            random_state=self.random_state
+            self._X, self._y, test_size=self.split, random_state=self.random_state
         )
 
     def shuffle(self, random_state=None):
-        """ Shuffles the data
+        """Shuffles the data
 
         Parameters
         ----------

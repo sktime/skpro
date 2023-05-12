@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import pkg_resources
+"""skpro."""
 
-import skpro.parametric
-import skpro.workflow
+__version__ = "2.0.0"
 
-try:
-    __version__ = pkg_resources.get_distribution(__name__).version
-except:
-    __version__ = 'unknown'
+__all__ = ["show_versions"]
+
+from skpro.utils._maint._show_versions import show_versions
