@@ -1,6 +1,6 @@
 **CAUTION: the skpro package is currently undergoing major rearchitecting and should not be used in deployment.**
 
-If you want to contribute, kindly contact the `sktime` developers in the probabilistic forecasting workstream.
+If you find this package interesting and would like to contribute, kindly contact the `sktime` developers in the [skpro & probabilistic forecasting workstream on discord](https://discord.com/channels/1075852648688930887/1106258090568986644).
 
 ![skpro](/docs/_static/logo/logo.png)
 
