@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Non-suite tests for probability distribution objects."""
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+# adapted from sktime
 
 __author__ = ["fkiraly"]
-
-import pytest
 
 
 def test_proba_example():

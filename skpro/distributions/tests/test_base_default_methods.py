@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Test class for default methods.
 
 This is not for direct use, but for testing whether the defaulting in various
@@ -9,6 +8,8 @@ Testing works via TestAllDistributions which discovers the classes in
 here, executes the public methods in interface conformance tests,
 which in turn triggers the fallback defaults.
 """
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+# adapted from sktime
 
 __author__ = ["fkiraly"]
 

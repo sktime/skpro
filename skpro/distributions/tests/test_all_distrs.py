@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Tests for BaseDistribution API points."""
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+# adapted from sktime
 
 __author__ = ["fkiraly"]
 
