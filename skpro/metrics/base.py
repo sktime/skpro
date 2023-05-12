@@ -46,7 +46,7 @@ class BaseProbaMetric(BaseObject):
     def __init__(self, multioutput="uniform_average", score_average=True):
         self.multioutput = multioutput
         self.score_average = score_average
-        super().__init__(multioutput=multioutput)
+        super(BaseProbaMetric, self).__init__()
 
     def __call__(self, y_true, y_pred, **kwargs):
         """Calculate metric value using underlying metric function.
