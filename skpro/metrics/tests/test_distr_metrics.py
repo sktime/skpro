@@ -5,8 +5,8 @@ import warnings
 import pandas as pd
 import pytest
 
-from skpro.metrics._classes import CRPS, LogLoss
 from skpro.distributions import Normal
+from skpro.metrics._classes import CRPS, LogLoss
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
