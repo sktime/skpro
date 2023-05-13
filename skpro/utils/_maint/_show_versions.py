@@ -47,7 +47,6 @@ DEFAULT_DEPS_TO_SHOW = [
     "matplotlib",
     "joblib",
     "numba",
-    "pymc3",
     "tabulate",
     "uncertainties",
 ]

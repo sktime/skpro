@@ -53,7 +53,7 @@ dependencies = [
 all_extras = [
     "attrs",
     "matplotlib>=3.3.2",
-    "pymc3",
+    "pymc3; python_version > '3.7'",
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
