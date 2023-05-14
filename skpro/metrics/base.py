@@ -11,7 +11,7 @@ from pandas.api.types import is_numeric_dtype
 from sklearn.utils import check_array, check_consistent_length
 
 from skpro.base import BaseObject
-from skpro.metrics._coerce import _coerce_to_scalar
+from skpro.metrics._coerce import _coerce_to_df, _coerce_to_scalar
 
 __author__ = ["fkiraly", "euanenticott-shell"]
 
@@ -309,7 +309,7 @@ class BaseProbaMetric(BaseObject):
         #     to_type=inner_y_pred_mtype,
         #     as_scitype="Proba",
         # )
-        y_pred_inner = y_pred
+        y_pred_inner = _coerce_to_df(y_pred)
 
         if inner_y_pred_mtype == "pred_interval":
             if 0.0 in y_pred_inner.columns.get_level_values(1):
@@ -436,6 +436,7 @@ class BaseDistrMetric(BaseProbaMetric):
         multivariate = self.multivariate
 
         # y_true = convert_to(y_true, to_type=PANDAS_DF_MTYPES)
+        y_true = _coerce_to_df(y_true)
 
         if multivariate:
             res = self._evaluate_by_index(
