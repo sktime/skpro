@@ -58,7 +58,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install .[binder, dev]
+          python -m pip install .[binder,dev]
       - name: Run example notebooks
         run: build_tools/run_examples.sh
         shell: bash
