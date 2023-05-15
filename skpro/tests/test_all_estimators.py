@@ -35,13 +35,15 @@ class PackageConfig:
         "capability:multioutput",
         "capability:missing",
         # BaseDistribution
-        "capabilities:approx",
-        "capabilities:exact",
-        "distr:measuretype",
-        "approx_mean_spl",  # sample size used in MC estimates of mean
-        "approx_var_spl",  # sample size used in MC estimates of var
-        "approx_energy_spl",  # sample size used in MC estimates of energy
-        "approx_spl",  # sample size used in other MC estimates
+        "capabilities:approx",  # list of str, methods of distr that are approximate
+        "capabilities:exact",  # list of str, methods of distr that are num. exact
+        "distr:measuretype",  # str, "continuous", "discrete", or "mixed"
+        "approx_mean_spl",  # int, sample size used in MC estimates of mean
+        "approx_var_spl",  # int, sample size used in MC estimates of var
+        "approx_energy_spl",  # int, sample size used in MC estimates of energy
+        "approx_spl",  # int, sample size used in other MC estimates
+        "scitype:y_pred",  # str, expected input type for y_pred in performance metric
+        "lower_is_better",  # bool, whether lower (True) or higher (False) is better
     ]
 
 
