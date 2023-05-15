@@ -2,7 +2,7 @@
 
 If you find this package interesting and would like to contribute, kindly contact the `sktime` developers in the [skpro & probabilistic forecasting workstream on discord](https://discord.com/channels/1075852648688930887/1106258090568986644).
 
-![skpro](/docs/_static/logo/logo.png)
+![skpro](/docs/_static/logo/skpro-banner.png)
 
 <p align="center">
   <a href="https://badge.fury.io/py/skpro"><img src="https://badge.fury.io/py/skpro.svg" alt="PyPI version" height="18"></a>
