@@ -293,6 +293,11 @@ class BaseProbaMetric(BaseObject):
     def _check_ys(self, y_true, y_pred, multioutput):
         if multioutput is None:
             multioutput = self.multioutput
+
+        # commented out as this was using sktime's data container system
+        # which is not (yet?) available in skbase
+        # keeping the code for now, todo would be to adapt or build an skpro local
+        #
         # valid, msg, metadata = check_is_scitype(
         #     y_pred, scitype="Proba", return_metadata=True, var_name="y_pred"
         # )
@@ -303,12 +308,16 @@ class BaseProbaMetric(BaseObject):
         # y_pred_mtype = metadata["mtype"]
         inner_y_pred_mtype = self.get_tag("scitype:y_pred")
 
+        # same, also part of sktime data container system
+        # todo: adapt or replace
+        #
         # y_pred_inner = convert(
         #     y_pred,
         #     from_type=y_pred_mtype,
         #     to_type=inner_y_pred_mtype,
         #     as_scitype="Proba",
         # )
+        # for now, simple coercion:
         y_pred_inner = _coerce_to_df(y_pred)
 
         if inner_y_pred_mtype == "pred_interval":
