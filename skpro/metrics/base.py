@@ -159,8 +159,12 @@ class BaseProbaMetric(BaseObject):
             out_df = pd.DataFrame(index_df.mean(axis=0)).T
             out_df.columns = index_df.columns
             return out_df
-        except RecursionError:
-            RecursionError("Must implement one of _evaluate or _evaluate_by_index")
+        except RecursionError as _err:
+            msg = (
+                f"{type(self).__name__} must implement one of"
+                "_evaluate or _evaluate_by_index, but none of the two was implemented"
+            )
+            raise RecursionError(msg) from _err
 
     def evaluate_by_index(self, y_true, y_pred, multioutput=None, **kwargs):
         """Return the metric evaluated at each time point.
