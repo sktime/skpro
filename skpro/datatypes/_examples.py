@@ -27,16 +27,24 @@ from skpro.datatypes._proba import (
     example_dict_metadata_Proba,
     example_dict_Proba,
 )
+from skpro.datatypes._table import (
+    example_dict_lossy_Table,
+    example_dict_metadata_Table,
+    example_dict_Table,
+)
 
 # pool example_dict-s
 example_dict = dict()
 example_dict.update(example_dict_Proba)
+example_dict.update(example_dict_Table)
 
 example_dict_lossy = dict()
 example_dict_lossy.update(example_dict_lossy_Proba)
+example_dict_lossy.update(example_dict_lossy_Table)
 
 example_dict_metadata = dict()
 example_dict_metadata.update(example_dict_metadata_Proba)
+example_dict_metadata.update(example_dict_metadata_Table)
 
 
 def get_examples(
