@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for probabilistic quantiles."""
+"""Tests for probabilistic quantile and interval metrics."""
 # import warnings
 
 # import numpy as np
