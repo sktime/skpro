@@ -183,7 +183,7 @@ class BaseProbaRegressor(BaseEstimator):
 
         return pred_dist
 
-    def predict_interval(self, X=None, coverage=0.90,):
+    def predict_interval(self, X=None, coverage=0.90):
         """Compute/return interval predictions.
 
         If coverage is iterable, multiple intervals will be calculated.
