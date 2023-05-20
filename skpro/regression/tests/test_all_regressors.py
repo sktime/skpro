@@ -153,4 +153,4 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
 
         # check predict_quantiles output contract
         pred_q = regressor.predict_quantiles(X_test, alpha)
-        self._check_predict_intervals(pred_q, X_test, y_train, alpha)
+        self._check_predict_quantiles(pred_q, X_test, y_train, alpha)
