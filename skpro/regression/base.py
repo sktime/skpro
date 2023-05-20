@@ -328,7 +328,7 @@ class BaseProbaRegressor(BaseEstimator):
         quantiles = self._predict_quantiles(X=X_inner, alpha=alpha)
         return quantiles
 
-    def _predict_quantiles(self, fh, X, alpha):
+    def _predict_quantiles(self, X, alpha):
         """Compute/return prediction quantiles for a forecast.
 
         private _predict_quantiles containing the core logic,
