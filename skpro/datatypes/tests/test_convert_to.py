@@ -12,7 +12,7 @@ from skpro.datatypes._examples import get_examples
 #   easy to change in case the strings change
 SCITYPES = ["Proba", "Table"]
 MTYPES_PROBA = ["pred_interval", "pred_quantiles"]
-MTYPES_TABLE = ["pd_DataFrame_Table", "pd_Series_Table", "numpy2D"]
+MTYPES_TABLE = ["list_of_dict", "pd_Series_Table", "numpy2D"]
 
 
 def test_convert_to_simple():
