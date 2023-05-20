@@ -86,6 +86,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
             mtype="pred_quantiles",
             scitype="Proba",
             return_metadata=True,
+            var_name="predict_quantiles return",
         )  # type: ignore
         assert valid, msg
 
@@ -109,7 +110,11 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         """Check expected interval prediction output."""
         # check expected type
         valid, msg, _ = check_is_mtype(
-            pred_ints, mtype="pred_interval", scitype="Proba", return_metadata=True
+            pred_ints,
+            mtype="pred_interval",
+            scitype="Proba",
+            return_metadata=True,
+            var_name="predict_interval return",
         )  # type: ignore
         assert valid, msg
 
