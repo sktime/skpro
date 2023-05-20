@@ -76,7 +76,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
 
         assert isinstance(y_pred_var, pd.DataFrame)
         assert (y_pred_var.index == X_test.index).all()
-        assert (y_pred_var.columns == X_test.columns).all()
+        assert (y_pred_var.columns == y_train.columns).all()
 
     def _check_predict_quantiles(self, pred_quantiles, X_test, y_train, alpha):
         """Check expected quantile prediction output."""
