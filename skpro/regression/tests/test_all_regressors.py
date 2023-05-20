@@ -2,7 +2,6 @@
 """Automated tests based on the skbase test suite template."""
 import pandas as pd
 import pytest
-
 from skbase.testing import BaseFixtureGenerator, QuickTester
 
 from skpro.datatypes import check_is_mtype, check_raise
