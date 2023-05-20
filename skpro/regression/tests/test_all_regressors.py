@@ -97,7 +97,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         expected_quantiles = [alpha] if isinstance(alpha, float) else alpha
         expected = pd.MultiIndex.from_product([expected_columns, expected_quantiles])
 
-        found = pred_quantiles.columns.to_flat_index()
+        found = pred_quantiles.columns
         msg = (
             "columns of returned quantile prediction DataFrame do not"
             f"match up with expected columns. Expected: {expected},"
@@ -123,7 +123,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
             [expected_columns, expected_coverages, ["lower", "upper"]]
         )
 
-        found = pred_ints.columns.to_flat_index()
+        found = pred_ints.columns
         msg = (
             "columns of returned prediction interval DataFrame do not"
             f"match up with expected columns. Expected: {expected},"
