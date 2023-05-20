@@ -148,9 +148,9 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         regressor.fit(X_train, y_train)
 
         # check predict_interval output contract
-        pred_ints = regressor.predict_interval(X_test)
+        pred_ints = regressor.predict_interval(X_test, alpha)
         self._check_predict_intervals(pred_ints, X_test, y_train, alpha)
 
         # check predict_quantiles output contract
-        pred_q = regressor.predict_quantiles(X_test)
+        pred_q = regressor.predict_quantiles(X_test, alpha)
         self._check_predict_intervals(pred_q, X_test, y_train, alpha)
