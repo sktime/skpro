@@ -391,7 +391,7 @@ class BaseProbaRegressor(BaseEstimator):
 
         elif implements_proba:
 
-            pred_proba = self.predict_proba(X=X, legacy_interface=False)
+            pred_proba = self.predict_proba(X=X)
             pred_int = pred_proba.quantile(alpha=alpha)
 
         return pred_int
