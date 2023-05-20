@@ -60,14 +60,15 @@ def convert_pred_interval_to_quantiles(y_pred, inplace=False):
     ----------
     y_pred : pd.DataFrame
         Column has multi-index: first level is variable name from y in fit,
-            second level coverage fractions for which intervals were computed.
-                in the same order as in input `coverage`.
-            Third level is string "lower" or "upper", for lower/upper interval end.
-        Row index is fh. Entries are forecasts of lower/upper interval end,
-            for var in col index, at nominal coverage in selencond col index,
-            lower/upper depending on third col index, for the row index.
-            Upper/lower interval end forecasts are equivalent to
-            quantile forecasts at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
+        second level coverage fractions for which intervals were computed.
+        in the same order as in input `coverage`.
+        Third level is string "lower" or "upper", for lower/upper interval end.
+        Row index is arbitrary.
+        Entries are lower/upper interval predictions,
+        for var in col index, at nominal coverage in selencond col index,
+        lower/upper depending on third col index, for the row index.
+        Upper/lower interval end predictions are equivalent to
+        quantile predictions  at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
     inplace : bool, optional, default=False
         whether to copy the input data frame (False), or modify (True)
 
@@ -75,9 +76,10 @@ def convert_pred_interval_to_quantiles(y_pred, inplace=False):
     -------
     y_pred : pd.DataFrame
         Column has multi-index: first level is variable name from y in fit,
-            second level being the values of alpha passed to the function.
-        Row index is fh. Entries are quantile forecasts, for var in col index,
-            at quantile probability in second col index, for the row index.
+        second level being the values of alpha passed to the function.
+        Row index is same as of y_pred.
+        Entries are quantile predictions, for var in col index,
+        at quantile probability in second col index, for the row index.
     """
     if not inplace:
         y_pred = y_pred.copy()
@@ -123,9 +125,10 @@ def convert_pred_quantiles_to_interval(y_pred, inplace=False):
     ----------
     y_pred : pd.DataFrame
         Column has multi-index: first level is variable name from y in fit,
-            second level being the values of alpha passed to the function.
-        Row index is fh. Entries are quantile forecasts, for var in col index,
-            at quantile probability in second col index, for the row index.
+        second level being the values of alpha passed to the function.
+        Row index is arbitrary.
+        Entries are quantile predictions, for var in col index,
+        at quantile probability in second col index, for the row index.
     inplace : bool, optional, default=False
         whether to copy the input data frame (False), or modify (True)
 
@@ -133,14 +136,15 @@ def convert_pred_quantiles_to_interval(y_pred, inplace=False):
     -------
     y_pred : pd.DataFrame
         Column has multi-index: first level is variable name from y in fit,
-            second level coverage fractions for which intervals were computed.
-                in the same order as in input `coverage`.
-            Third level is string "lower" or "upper", for lower/upper interval end.
-        Row index is fh. Entries are forecasts of lower/upper interval end,
-            for var in col index, at nominal coverage in selencond col index,
-            lower/upper depending on third col index, for the row index.
-            Upper/lower interval end forecasts are equivalent to
-            quantile forecasts at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
+        second level coverage fractions for which intervals were computed.
+        in the same order as in input `coverage`.
+        Third level is string "lower" or "upper", for lower/upper interval end.
+        Row index is same as of y_pred.
+        Entries are lower/upper interval predictions,
+        for var in col index, at nominal coverage in selencond col index,
+        lower/upper depending on third col index, for the row index.
+        Upper/lower interval end predictions are equivalent to
+        quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
     """
     if not inplace:
         y_pred = y_pred.copy()

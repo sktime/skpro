@@ -269,7 +269,7 @@ class BaseProbaRegressor(BaseEstimator):
             #  this uses symmetric predictive intervals
             alphas.extend([0.5 - 0.5 * float(c), 0.5 + 0.5 * float(c)])
 
-        # compute quantile forecasts corresponding to upper/lower
+        # compute quantile predictions corresponding to upper/lower
         pred_int = self._predict_quantiles(X=X, alpha=alphas)
 
         # change the column labels (multiindex) to the format for intervals
@@ -329,7 +329,7 @@ class BaseProbaRegressor(BaseEstimator):
         return quantiles
 
     def _predict_quantiles(self, X, alpha):
-        """Compute/return prediction quantiles for a forecast.
+        """Compute/return quantile predictions.
 
         private _predict_quantiles containing the core logic,
             called from predict_quantiles and default _predict_interval
@@ -365,7 +365,7 @@ class BaseProbaRegressor(BaseEstimator):
                 #  this uses symmetric predictive intervals:
                 coverage = abs(1 - 2 * a)
 
-                # compute quantile forecasts corresponding to upper/lower
+                # compute quantile predictions corresponding to upper/lower
                 pred_a = self._predict_interval(X=X, coverage=[coverage])
                 pred_int = pd.concat([pred_int, pred_a], axis=1)
 

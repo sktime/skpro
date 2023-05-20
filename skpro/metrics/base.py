@@ -17,11 +17,7 @@ __author__ = ["fkiraly", "euanenticott-shell"]
 
 
 class BaseProbaMetric(BaseObject):
-    """Base class for probabilistic forecasting error metrics in sktime.
-
-    Extends sktime's BaseMetric to the forecasting interface. Forecasting error
-    metrics measure the error (loss) between forecasts and true values. Lower
-    values are better.
+    """Base class for probabilistic supervised error metrics in sktime.
 
     Parameters
     ----------

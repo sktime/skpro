@@ -113,7 +113,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         )  # type: ignore
         assert valid, msg
 
-        # check index (also checks forecasting horizon is more than one element)
+        # check index
         assert (pred_ints.index == X_test.index).all()
 
         # check columns

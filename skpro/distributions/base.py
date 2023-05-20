@@ -396,7 +396,7 @@ class BaseDistribution(BaseObject):
         The `ppf` method also computes quantiles, but broadcasts differently, in
         `numpy` style closer to `tensorflow`.
         In contrast, this `quantile` method broadcasts
-        as forecaster `predict_quantiles`, i.e., columns first.
+        as ``sktime`` forecaster `predict_quantiles`, i.e., columns first.
 
         Parameters
         ----------
