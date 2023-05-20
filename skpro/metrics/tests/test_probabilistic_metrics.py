@@ -55,11 +55,13 @@
 # quantile_pred_uni_s = f_uni.predict_quantiles(fh=fh_uni, alpha=[0.5])
 # interval_pred_uni_s = f_uni.predict_interval(fh=fh_uni, coverage=0.9)
 # quantile_pred_uni_m = f_uni.predict_quantiles(fh=fh_uni, alpha=[0.05, 0.5, 0.95])
-# interval_pred_uni_m = f_uni.predict_interval(fh=fh_uni, coverage=[0.7, 0.8, 0.9, 0.99])
+# interval_pred_uni_m =
+# f_uni.predict_interval(fh=fh_uni, coverage=[0.7, 0.8, 0.9, 0.99])
 
 # quantile_pred_multi_s = f_multi.predict_quantiles(fh=fh_multi, alpha=[0.5])
 # interval_pred_multi_s = f_multi.predict_interval(fh=fh_multi, coverage=0.9)
-# quantile_pred_multi_m = f_multi.predict_quantiles(fh=fh_multi, alpha=[0.05, 0.5, 0.95])
+# quantile_pred_multi_m =
+# f_multi.predict_quantiles(fh=fh_multi, alpha=[0.05, 0.5, 0.95])
 # interval_pred_multi_m = f_multi.predict_interval(
 #     fh=fh_multi, coverage=[0.7, 0.8, 0.9, 0.99]
 # )

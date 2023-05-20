@@ -35,10 +35,6 @@ from skpro.datatypes._table import check_dict_Table
 
 # pool convert_dict-s
 check_dict = dict()
-check_dict.update(check_dict_Series)
-check_dict.update(check_dict_Panel)
-check_dict.update(check_dict_Hierarchical)
-check_dict.update(check_dict_Alignment)
 check_dict.update(check_dict_Table)
 check_dict.update(check_dict_Proba)
 

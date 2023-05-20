@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 
 from skpro.base import BaseEstimator
-from skpro.datatypes import convert
 from skpro.utils.validation._dependencies import _check_estimator_deps
 
 
