@@ -72,6 +72,7 @@ import pandas as pd
 
 from skpro.datatypes._check import mtype as infer_mtype
 from skpro.datatypes._proba import convert_dict_Proba
+from skpro.datatypes._registry import mtype_to_scitype
 from skpro.datatypes._table import convert_dict_Table
 
 # pool convert_dict-s and infer_mtype_dict-s
