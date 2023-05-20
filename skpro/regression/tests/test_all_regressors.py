@@ -22,7 +22,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
     object_type_filter = BaseProbaRegressor
 
     def test_input_output_contract(self, object_instance):
-        """Tests that y output of predict methods is as specified."""
+        """Tests that output of predict methods is as specified."""
         import pandas as pd
         from sklearn.datasets import load_diabetes
         from sklearn.model_selection import train_test_split
@@ -135,6 +135,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         "alpha", TEST_ALPHAS, ids=[f"alpha={a}" for a in TEST_ALPHAS]
     )
     def test_pred_quantiles_interval(self, object_instance, alpha):
+        """Test predict_interval and predict_quantiles output with different alpha."""
         import pandas as pd
         from sklearn.datasets import load_diabetes
         from sklearn.model_selection import train_test_split
