@@ -35,5 +35,9 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         assert (y_pred.columns == y_train.columns).all()
 
         assert isinstance(y_pred_proba, BaseDistribution)
-        assert (y_pred.index == X_test.index).all()
-        assert (y_pred.columns == y_train.columns).all()
+        assert (y_pred_proba.index == X_test.index).all()
+        assert (y_pred_proba.columns == y_train.columns).all()
+        assert y_pred_proba.shape == y_test.shape
+
+        assert isinstance(y_pred_proba.sample(), pd.DataFrame)
+        assert y_pred_proba.sample().shape == y_test.shape

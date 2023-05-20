@@ -162,6 +162,8 @@ class ResidualDouble(BaseProbaRegressor):
         min_scale = self.min_scale
 
         y_pred_loc = est.predict(X)
+        y_pred_loc = y_pred_loc.reshape(-1, 1)
+
         y_pred_scale = est_r.predict(X)
         y_pred_scale = y_pred_scale.clip(min=min_scale)
         y_pred_scale = y_pred_scale.reshape(-1, 1)
