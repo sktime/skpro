@@ -520,7 +520,7 @@ class BaseProbaRegressor(BaseEstimator):
             y = pd.DataFrame(y)
         return y
 
-    def _check_alpha(alpha, name="alpha"):
+    def _check_alpha(self, alpha, name="alpha"):
         """Check that quantile or confidence level value, or list of values, is valid.
 
         Checks:
