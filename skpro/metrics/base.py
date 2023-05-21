@@ -406,6 +406,8 @@ class BaseDistrMetric(BaseProbaMetric):
         out_df = pd.DataFrame(index_df.mean(axis=0)).T
         out_df.columns = index_df.columns
 
+        if multioutput == "uniform_average" and not multivariate:
+            out_df = out_df.mean(axis=1)
         if multioutput == "uniform_average" or multivariate:
             out = _coerce_to_scalar(out_df)
         else:
