@@ -19,7 +19,7 @@ normal_dists = [Normal]
 @pytest.mark.parametrize("metric", DISTR_METRICS)
 @pytest.mark.parametrize("multivariate", [True, False])
 @pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average"])
-def test_distr_evaluate(normal, metric, multivariate,multioutput):
+def test_distr_evaluate(normal, metric, multivariate, multioutput):
     """Test expected output of evaluate functions."""
     y_pred = normal.create_test_instance()
     y_true = y_pred.sample()
