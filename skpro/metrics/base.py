@@ -395,18 +395,22 @@ class BaseDistrMetric(BaseProbaMetric):
         Returns
         -------
         loss : float or 1-column pd.DataFrame with calculated metric value(s)
-            float if multioutput = "uniform_average"
+            float if multioutput = "uniform_average" or multivariate = True
+            1-column df if multioutput = "raw_values" and metric is not multivariate
             metric is always averaged (arithmetic) over rows
         """
         multioutput = self.multioutput
+        multivariate = self.multivariate
 
         index_df = self.evaluate_by_index(y_true, y_pred)
         out_df = pd.DataFrame(index_df.mean(axis=0)).T
         out_df.columns = index_df.columns
 
-        if multioutput == "uniform_average":
-            out_df = _coerce_to_scalar(out_df)
-        return out_df
+        if multioutput == "uniform_average" or multivariate:
+            out = _coerce_to_scalar(out_df)
+        else:
+            out = _coerce_to_df(out_df)
+        return out
 
     def evaluate_by_index(self, y_true, y_pred, **kwargs):
         """Evaluate the metric by instance index (row).
