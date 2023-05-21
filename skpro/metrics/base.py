@@ -302,14 +302,10 @@ class BaseProbaMetric(BaseObject):
             as_scitype="Proba",
         )
 
-        y_pred_inner = _coerce_to_df(y_pred)
-
         if inner_y_pred_mtype == "pred_interval":
             if 0.0 in y_pred_inner.columns.get_level_values(1):
                 for var in y_pred_inner.columns.get_level_values(0):
                     y_pred_inner[var, 0.0, "upper"] = y_pred_inner[var, 0.0, "lower"]
-
-        y_pred_inner.sort_index(axis=1, level=[0, 1], inplace=True)
 
         y_true, y_pred, multioutput = self._check_consistent_input(
             y_true, y_pred, multioutput
