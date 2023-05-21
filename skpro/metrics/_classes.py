@@ -36,16 +36,14 @@ class PinballLoss(BaseProbaMetric):
         self.metric_args = {"alpha": self._alpha}
         super().__init__(multioutput=multioutput, score_average=score_average)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
-        """Logic for finding the metric evaluated at each index.
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+        """Evaluate the desired metric on given inputs.
 
-        y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
-            (fh, n_outputs) where fh is the forecasting horizon
-            Ground truth (correct) target value`s.
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
+            Ground truth (correct) target values.
 
-        y_pred : pd.Series, pd.DataFrame or np.array of shape (fh,) or  \
-            (fh, n_outputs)  where fh is the forecasting horizon
-            Forecasted values.
+        y_pred : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
+            Predicted values.
 
         multioutput : string "uniform_average" or "raw_values"
             Determines how multioutput results will be treated.
@@ -117,7 +115,7 @@ class EmpiricalCoverage(BaseProbaMetric):
         self.multioutput = multioutput
         super().__init__(score_average=score_average, multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
@@ -184,7 +182,7 @@ class ConstraintViolation(BaseProbaMetric):
         self.multioutput = multioutput
         super().__init__(score_average=score_average, multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
@@ -262,7 +260,7 @@ class LogLoss(BaseDistrMetric):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         res = -y_pred.log_pdf(y_true)
         # replace this by multivariate log_pdf once distr implements
         # i.e., pass multivariate on to log_pdf
@@ -310,7 +308,7 @@ class SquaredDistrLoss(BaseDistrMetric):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         res = -2 * y_pred.log_pdf(y_true) + y_pred.pdfnorm(a=2)
         # replace this by multivariate log_pdf once distr implements
         # i.e., pass multivariate on to log_pdf
@@ -356,6 +354,6 @@ class CRPS(BaseDistrMetric):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         # CRPS(d, y) = E_X,Y as d [abs(Y-y) - 0.5 abs(X-Y)]
         return y_pred.energy(y_true) - y_pred.energy() / 2

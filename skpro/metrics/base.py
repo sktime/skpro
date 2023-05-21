@@ -11,6 +11,7 @@ from pandas.api.types import is_numeric_dtype
 from sklearn.utils import check_array, check_consistent_length
 
 from skpro.base import BaseObject
+from skpro.datatypes import check_is_scitype, convert, convert_to
 from skpro.metrics._coerce import _coerce_to_df, _coerce_to_scalar
 
 __author__ = ["fkiraly", "euanenticott-shell"]
@@ -49,12 +50,12 @@ class BaseProbaMetric(BaseObject):
 
         Parameters
         ----------
-        y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
-                (fh, n_outputs) where fh is the forecasting horizon
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
             Ground truth (correct) target values.
 
         y_pred : return object of probabilistic predictition method scitype:y_pred
-            must be at fh and for variables equal to those in y_true.
+            must have same index and columns as y_true
+            Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
         Returns
         -------
@@ -69,22 +70,19 @@ class BaseProbaMetric(BaseObject):
             if score_average = True,
                 entries will be averaged over quantiles/interval column
         """
-        return self.evaluate(y_true, y_pred, multioutput=self.multioutput, **kwargs)
+        return self.evaluate(y_true, y_pred, **kwargs)
 
-    def evaluate(self, y_true, y_pred, multioutput=None, **kwargs):
-        """Evaluate the desired metric on given inputs.
+    def evaluate(self, y_true, y_pred, **kwargs):
+        """Evaluate the metric on given inputs.
 
         Parameters
         ----------
-        y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
-                (fh, n_outputs) where fh is the forecasting horizon
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
             Ground truth (correct) target values.
 
         y_pred : return object of probabilistic predictition method scitype:y_pred
-            must be at fh and for variables equal to those in y_true
-
-        multioutput : string "uniform_average" or "raw_values" determines how\
-            multioutput results will be treated.
+            must have same index and columns as y_true
+            Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
         Returns
         -------
@@ -101,7 +99,7 @@ class BaseProbaMetric(BaseObject):
         """
         # Input checks and conversions
         y_true_inner, y_pred_inner, multioutput = self._check_ys(
-            y_true, y_pred, multioutput
+            y_true, y_pred, self.multioutput
         )
 
         # Don't want to include scores for 0 width intervals, makes no sense
@@ -129,21 +127,19 @@ class BaseProbaMetric(BaseObject):
 
         return out
 
-    def _evaluate(self, y_true, y_pred, multioutput, **kwargs):
-        """Evaluate the desired metric on given inputs.
+    def _evaluate(self, y_true, y_pred, **kwargs):
+        """Evaluate the metric on given inputs.
+
+        Private _evaluate, called by public evaluate.
 
         Parameters
         ----------
-        y_true : pd.DataFrame or of shape (fh,) or \
-                (fh, n_outputs) where fh is the forecasting horizon
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
             Ground truth (correct) target values.
 
-        y_pred : pd.DataFrame of shape (fh,) or  \
-                (fh, n_outputs)  where fh is the forecasting horizon
-            Forecasted values.
-
-        multioutput : string "uniform_average" or "raw_values" determines how\
-            multioutput results will be treated.
+        y_pred : return object of probabilistic predictition method scitype:y_pred
+            must have same index and columns as y_true
+            Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
         Returns
         -------
@@ -151,7 +147,7 @@ class BaseProbaMetric(BaseObject):
         """
         # Default implementation relies on implementation of evaluate_by_index
         try:
-            index_df = self._evaluate_by_index(y_true, y_pred, multioutput)
+            index_df = self._evaluate_by_index(y_true, y_pred)
             out_df = pd.DataFrame(index_df.mean(axis=0)).T
             out_df.columns = index_df.columns
             return out_df
@@ -162,20 +158,17 @@ class BaseProbaMetric(BaseObject):
             )
             raise RecursionError(msg) from _err
 
-    def evaluate_by_index(self, y_true, y_pred, multioutput=None, **kwargs):
-        """Return the metric evaluated at each time point.
+    def evaluate_by_index(self, y_true, y_pred, **kwargs):
+        """Evaluate the metric by instance index (row).
 
         Parameters
         ----------
-        y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
-                (fh, n_outputs) where fh is the forecasting horizon
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
             Ground truth (correct) target values.
 
         y_pred : return object of probabilistic predictition method scitype:y_pred
-            must be at fh and for variables equal to those in y_true
-
-        multioutput : string "uniform_average" or "raw_values" determines how\
-            multioutput results will be treated.
+            must have same index and columns as y_true
+            Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
         Returns
         -------
@@ -192,7 +185,7 @@ class BaseProbaMetric(BaseObject):
         """
         # Input checks and conversions
         y_true_inner, y_pred_inner, multioutput = self._check_ys(
-            y_true, y_pred, multioutput
+            y_true, y_pred, self.multioutput
         )
 
         # Don't want to include scores for 0 width intervals, makes no sense
@@ -204,7 +197,7 @@ class BaseProbaMetric(BaseObject):
             )
 
         # pass to inner function
-        out = self._evaluate_by_index(y_true_inner, y_pred_inner, multioutput, **kwargs)
+        out = self._evaluate_by_index(y_true_inner, y_pred_inner, **kwargs)
 
         if self.score_average and multioutput == "uniform_average":
             out = out.mean(axis=1)  # average over all
@@ -217,34 +210,32 @@ class BaseProbaMetric(BaseObject):
 
         return out
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
-        """Logic for finding the metric evaluated at each index.
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+        """Evaluate the metric by instance index (row).
+
+        Private _evaluate_by_index, called by public evaluate_by_index.
 
         By default this uses _evaluate to find jackknifed pseudosamples. This
         estimates the error at each of the time points.
 
         Parameters
         ----------
-        y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
-            (fh, n_outputs) where fh is the forecasting horizon
-        Ground truth (correct) target values.
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
+            Ground truth (correct) target values.
 
-        y_pred : pd.Series, pd.DataFrame or np.array of shape (fh,) or  \
-            (fh, n_outputs)  where fh is the forecasting horizon
-            Forecasted values.
-
-        multioutput : string "uniform_average" or "raw_values" determines how \
-            multioutput results will be treated.
+        y_pred : return object of probabilistic predictition method scitype:y_pred
+            must have same index and columns as y_true
+            Predicted values, i-th row is prediction for i-th row of ``y_true``.
         """
         n = y_true.shape[0]
         out_series = pd.Series(index=y_pred.index)
         try:
-            x_bar = self.evaluate(y_true, y_pred, multioutput, **kwargs)
+            x_bar = self.evaluate(y_true, y_pred, self.multioutput, **kwargs)
             for i in range(n):
                 out_series[i] = n * x_bar - (n - 1) * self.evaluate(
                     np.vstack((y_true[:i, :], y_true[i + 1 :, :])),  # noqa
                     np.vstack((y_pred[:i, :], y_pred[i + 1 :, :])),  # noqa
-                    multioutput,
+                    self.multioutput,
                     **kwargs,
                 )
             return out_series
@@ -294,30 +285,23 @@ class BaseProbaMetric(BaseObject):
         if multioutput is None:
             multioutput = self.multioutput
 
-        # commented out as this was using sktime's data container system
-        # which is not (yet?) available in skbase
-        # keeping the code for now, todo would be to adapt or build an skpro local
-        #
-        # valid, msg, metadata = check_is_scitype(
-        #     y_pred, scitype="Proba", return_metadata=True, var_name="y_pred"
-        # )
+        valid, msg, metadata = check_is_scitype(
+            y_pred, scitype="Proba", return_metadata=True, var_name="y_pred"
+        )
 
-        # if not valid:
-        #     raise TypeError(msg)
+        if not valid:
+            raise TypeError(msg)
 
-        # y_pred_mtype = metadata["mtype"]
+        y_pred_mtype = metadata["mtype"]
         inner_y_pred_mtype = self.get_tag("scitype:y_pred")
 
-        # same, also part of sktime data container system
-        # todo: adapt or replace
-        #
-        # y_pred_inner = convert(
-        #     y_pred,
-        #     from_type=y_pred_mtype,
-        #     to_type=inner_y_pred_mtype,
-        #     as_scitype="Proba",
-        # )
-        # for now, simple coercion:
+        y_pred_inner = convert(
+            y_pred,
+            from_type=y_pred_mtype,
+            to_type=inner_y_pred_mtype,
+            as_scitype="Proba",
+        )
+
         y_pred_inner = _coerce_to_df(y_pred)
 
         if inner_y_pred_mtype == "pred_interval":
@@ -400,27 +384,26 @@ class BaseDistrMetric(BaseProbaMetric):
         "lower_is_better": True,
     }
 
-    def evaluate(self, y_true, y_pred, multioutput=None, **kwargs):
-        """Evaluate the desired metric on given inputs.
+    def evaluate(self, y_true, y_pred, **kwargs):
+        """Evaluate the  metric on given inputs.
 
         Parameters
         ----------
-        y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
-                (fh, n_outputs) where fh is the forecasting horizon
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
             Ground truth (correct) target values.
 
         y_pred : return object of probabilistic predictition method scitype:y_pred
-            must be at fh and for variables equal to those in y_true
-
-        multioutput : string "uniform_average" or "raw_values" determines how\
-            multioutput results will be treated.
+            must have same index and columns as y_true
+            Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
         Returns
         -------
         loss : float or 1-column pd.DataFrame with calculated metric value(s)
             float if multioutput = "uniform_average"
-            metric is always averaged (arithmetic) over fh values
+            metric is always averaged (arithmetic) over rows
         """
+        multioutput = self.multioutput
+
         index_df = self.evaluate_by_index(y_true, y_pred, multioutput)
         out_df = pd.DataFrame(index_df.mean(axis=0)).T
         out_df.columns = index_df.columns
@@ -429,22 +412,26 @@ class BaseDistrMetric(BaseProbaMetric):
             out_df = _coerce_to_scalar(out_df)
         return out_df
 
-    def evaluate_by_index(
-        self, y_true, y_pred, multioutput="uniform_average", **kwargs
-    ):
-        """Logic for finding the metric evaluated at each index.
+    def evaluate_by_index(self, y_true, y_pred, **kwargs):
+        """Evaluate the metric by instance index (row).
 
-        y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
-            (fh, n_outputs) where fh is the forecasting horizon
+        Parameters
+        ----------
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
             Ground truth (correct) target values.
 
         y_pred : sktime BaseDistribution of same shape as y_true
             Predictive distribution.
             Must have same index and columns as y_true.
         """
-        multivariate = self.multivariate
+        multioutput = self.multioutput
 
-        # y_true = convert_to(y_true, to_type=PANDAS_DF_MTYPES)
+        if hasattr(self, "multivariate"):
+            multivariate = self.multivariate
+        else:
+            multivariate = False
+
+        y_true = convert_to(y_true, to_type="pd_DataFrame_Table", as_scitype="Table")
         y_true = _coerce_to_df(y_true)
 
         if multivariate:
