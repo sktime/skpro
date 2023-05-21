@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 """Tests for probabilistic quantile and interval metrics."""
-import warnings
-
-import numpy as np
 import pandas as pd
 import pytest
-
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
-from skpro.regression.residual import ResidualDouble
 from skpro.metrics._classes import ConstraintViolation, EmpiricalCoverage, PinballLoss
+from skpro.regression.residual import ResidualDouble
 
 quantile_metrics = [
     PinballLoss,
