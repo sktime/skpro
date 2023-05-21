@@ -66,7 +66,7 @@ interval_pred_multi_m = pd.concat([interval_pred_multi_m, interval_pred_uni_m], 
 
 y_test2 = y_test.copy()
 y_test2.columns = ["foo"]
-y_test_multi = pd.concate([y_test2, y_test], axis=1)
+y_test_multi = pd.concat([y_test2, y_test], axis=1)
 
 # replace this end
 #
