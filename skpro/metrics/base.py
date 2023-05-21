@@ -404,7 +404,7 @@ class BaseDistrMetric(BaseProbaMetric):
         """
         multioutput = self.multioutput
 
-        index_df = self.evaluate_by_index(y_true, y_pred, multioutput)
+        index_df = self.evaluate_by_index(y_true, y_pred)
         out_df = pd.DataFrame(index_df.mean(axis=0)).T
         out_df.columns = index_df.columns
 
