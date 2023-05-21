@@ -111,7 +111,7 @@ class BaseProbaMetric(BaseObject):
             )
 
         # pass to inner function
-        out = self._evaluate(y_true_inner, y_pred_inner, multioutput, **kwargs)
+        out = self._evaluate(y_true_inner, y_pred_inner, **kwargs)
 
         if self.score_average and multioutput == "uniform_average":
             out = float(out.mean(axis=1))  # average over all
