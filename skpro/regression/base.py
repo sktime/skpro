@@ -2,6 +2,7 @@
 """Base class for probabilistic regression."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
+import numpy as np
 import pandas as pd
 
 from skpro.base import BaseEstimator
@@ -158,7 +159,333 @@ class BaseProbaRegressor(BaseEstimator):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        raise NotImplementedError
+        # default behaviour is implemented if one of the following three is implemented
+        implements_interval = self._has_implementation_of("_predict_interval")
+        implements_quantiles = self._has_implementation_of("_predict_quantiles")
+        implements_var = self._has_implementation_of("_predict_var")
+        can_do_proba = implements_interval or implements_quantiles or implements_var
+
+        if not can_do_proba:
+            raise NotImplementedError
+
+        # if any of the above are implemented, predict_var will have a default
+        #   we use predict_var to get scale, and predict to get location
+        pred_var = self.predict_var(X=X)
+        pred_std = np.sqrt(pred_var)
+        pred_mean = self.predict(X=X)
+
+        from skpro.distributions.normal import Normal
+
+        index = pred_mean.index
+        columns = pred_mean.columns
+        pred_dist = Normal(mu=pred_mean, sigma=pred_std, index=index, columns=columns)
+
+        return pred_dist
+
+    def predict_interval(self, X=None, coverage=0.90):
+        """Compute/return interval predictions.
+
+        If coverage is iterable, multiple intervals will be calculated.
+
+        State required:
+            Requires state to be "fitted".
+
+        Accesses in self:
+            Fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+        coverage : float or list of float of unique values, optional (default=0.90)
+           nominal coverage(s) of predictive interval(s)
+
+        Returns
+        -------
+        pred_int : pd.DataFrame
+            Column has multi-index: first level is variable name from ``y`` in fit,
+            second level coverage fractions for which intervals were computed,
+            in the same order as in input `coverage`.
+            Third level is string "lower" or "upper", for lower/upper interval end.
+            Row index is equal to row index of ``X``.
+            Entries are lower/upper bounds of interval predictions,
+            for var in col index, at nominal coverage in second col index,
+            lower/upper depending on third col index, for the row index.
+            Upper/lower interval end are equivalent to
+            quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
+        """
+        # check that self is fitted, if not raise exception
+        self.check_is_fitted()
+
+        # check alpha and coerce to list
+        coverage = self._check_alpha(coverage, name="coverage")
+
+        # check and convert X
+        X_inner = self._check_X(X=X)
+
+        # pass to inner _predict_interval
+        pred_int = self._predict_interval(X=X_inner, coverage=coverage)
+        return pred_int
+
+    def _predict_interval(self, X=None, coverage=0.90):
+        """Compute/return interval predictions.
+
+        private _predict_interval containing the core logic,
+            called from predict_interval and default _predict_quantiles
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+        coverage : guaranteed list of float of unique values, optional (default=0.90)
+           nominal coverage(s) of predictive interval(s)
+
+        Returns
+        -------
+        pred_int : pd.DataFrame
+            Column has multi-index: first level is variable name from ``y`` in fit,
+            second level coverage fractions for which intervals were computed,
+            in the same order as in input `coverage`.
+            Third level is string "lower" or "upper", for lower/upper interval end.
+            Row index is equal to row index of ``X``.
+            Entries are lower/upper bounds of interval predictions,
+            for var in col index, at nominal coverage in second col index,
+            lower/upper depending on third col index, for the row index.
+            Upper/lower interval end are equivalent to
+            quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
+        """
+        implements_quantiles = self._has_implementation_of("_predict_quantiles")
+        implements_proba = self._has_implementation_of("_predict_proba")
+        can_do_proba = implements_quantiles or implements_proba
+
+        if not can_do_proba:
+            raise NotImplementedError
+
+        # we default to _predict_quantiles if that is implemented or _predict_proba
+        # since _predict_quantiles will default to _predict_proba if it is not
+        alphas = []
+        for c in coverage:
+            # compute quantiles corresponding to prediction interval coverage
+            #  this uses symmetric predictive intervals
+            alphas.extend([0.5 - 0.5 * float(c), 0.5 + 0.5 * float(c)])
+
+        # compute quantile predictions corresponding to upper/lower
+        pred_int = self._predict_quantiles(X=X, alpha=alphas)
+
+        # change the column labels (multiindex) to the format for intervals
+        # idx returned by _predict_quantiles is
+        #   2-level MultiIndex with variable names, alpha
+        idx = pred_int.columns
+        # variable names (unique, in same order)
+        var_names = idx.get_level_values(0).unique()
+        # idx returned by _predict_interval should be
+        #   3-level MultiIndex with variable names, coverage, lower/upper
+        int_idx = pd.MultiIndex.from_product([var_names, coverage, ["lower", "upper"]])
+        pred_int.columns = int_idx
+
+        return pred_int
+
+    def predict_quantiles(self, X=None, alpha=None):
+        """Compute/return quantile predictions.
+
+        If alpha is iterable, multiple quantiles will be calculated.
+
+        State required:
+            Requires state to be "fitted".
+
+        Accesses in self:
+            Fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+        alpha : float or list of float of unique values, optional (default=[0.05, 0.95])
+            A probability or list of, at which quantile predictions are computed.
+
+        Returns
+        -------
+        quantiles : pd.DataFrame
+            Column has multi-index: first level is variable name from ``y`` in fit,
+            second level being the values of alpha passed to the function.
+            Row index is equal to row index of ``X``.
+            Entries are quantile predictions, for var in col index,
+            at quantile probability in second col index, for the row index.
+        """
+        # check that self is fitted, if not raise exception
+        self.check_is_fitted()
+
+        # default alpha
+        if alpha is None:
+            alpha = [0.05, 0.95]
+        # check alpha and coerce to list
+        alpha = self._check_alpha(alpha, name="alpha")
+
+        # input check and conversion for X
+        X_inner = self._check_X(X=X)
+
+        # pass to inner _predict_quantiles
+        quantiles = self._predict_quantiles(X=X_inner, alpha=alpha)
+        return quantiles
+
+    def _predict_quantiles(self, X, alpha):
+        """Compute/return quantile predictions.
+
+        private _predict_quantiles containing the core logic,
+            called from predict_quantiles and default _predict_interval
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+        alpha : guaranteed list of float, optional (default=[0.5])
+            A list of probabilities at which quantile predictions are computed.
+
+        Returns
+        -------
+        quantiles : pd.DataFrame
+            Column has multi-index: first level is variable name from ``y`` in fit,
+                second level being the values of alpha passed to the function.
+            Row index is equal to row index of ``X``.
+            Entries are quantile predictions, for var in col index,
+                at quantile probability in second col index, for the row index.
+        """
+        implements_interval = self._has_implementation_of("_predict_interval")
+        implements_proba = self._has_implementation_of("_predict_proba")
+        can_do_proba = implements_interval or implements_proba
+
+        if not can_do_proba:
+            raise NotImplementedError
+
+        if implements_interval:
+
+            pred_int = pd.DataFrame()
+            for a in alpha:
+                # compute quantiles corresponding to prediction interval coverage
+                #  this uses symmetric predictive intervals:
+                coverage = abs(1 - 2 * a)
+
+                # compute quantile predictions corresponding to upper/lower
+                pred_a = self._predict_interval(X=X, coverage=[coverage])
+                pred_int = pd.concat([pred_int, pred_a], axis=1)
+
+            # now we need to subset to lower/upper depending
+            #   on whether alpha was < 0.5 or >= 0.5
+            #   this formula gives the integer column indices giving lower/upper
+            col_selector_int = (np.array(alpha) >= 0.5) + 2 * np.arange(len(alpha))
+            col_selector_bool = np.isin(np.arange(2 * len(alpha)), col_selector_int)
+            num_var = len(pred_int.columns.get_level_values(0).unique())
+            col_selector_bool = np.tile(col_selector_bool, num_var)
+
+            pred_int = pred_int.iloc[:, col_selector_bool]
+            # change the column labels (multiindex) to the format for intervals
+            # idx returned by _predict_interval is
+            #   3-level MultiIndex with variable names, coverage, lower/upper
+            idx = pred_int.columns
+            # variable names (unique, in same order)
+            var_names = idx.get_level_values(0).unique()
+            # idx returned by _predict_quantiles should be
+            #   is 2-level MultiIndex with variable names, alpha
+            int_idx = pd.MultiIndex.from_product([var_names, alpha])
+            pred_int.columns = int_idx
+
+        elif implements_proba:
+
+            pred_proba = self.predict_proba(X=X)
+            pred_int = pred_proba.quantile(alpha=alpha)
+
+        return pred_int
+
+    def predict_var(self, X=None):
+        """Compute/return variance predictions.
+
+        State required:
+            Requires state to be "fitted".
+
+        Accesses in self:
+            Fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+
+        Returns
+        -------
+        pred_var : pd.DataFrame
+            Column names are exactly those of ``y`` passed in ``fit``.
+            Row index is equal to row index of ``X``.
+            Entries are variance prediction, for var in col index.
+            A variance prediction for given variable and fh index is a predicted
+            variance for that variable and index, given observed data.
+        """
+        # check that self is fitted, if not raise exception
+        self.check_is_fitted()
+
+        # check and convert X
+        X_inner = self._check_X(X=X)
+
+        # pass to inner _predict_interval
+        pred_var = self._predict_var(X=X_inner)
+        return pred_var
+
+    def _predict_var(self, fh=None, X=None, cov=False):
+        """Compute/return variance predictions.
+
+        private _predict_var containing the core logic, called from predict_var
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+
+        Returns
+        -------
+        pred_var : pd.DataFrame
+            Column names are exactly those of ``y`` passed in ``fit``.
+            Row index is equal to row index of ``X``.
+            Entries are variance prediction, for var in col index.
+            A variance prediction for given variable and fh index is a predicted
+            variance for that variable and index, given observed data.
+        """
+        from scipy.stats import norm
+
+        # default behaviour is implemented if one of the following three is implemented
+        implements_interval = self._has_implementation_of("_predict_interval")
+        implements_quantiles = self._has_implementation_of("_predict_quantiles")
+        implements_proba = self._has_implementation_of("_predict_proba")
+        can_do_proba = implements_interval or implements_quantiles or implements_proba
+
+        if not can_do_proba:
+            raise NotImplementedError
+
+        if implements_proba:
+            pred_proba = self._predict_proba(X=X)
+            pred_var = pred_proba.var()
+            return pred_var
+
+        # if has one of interval/quantile predictions implemented:
+        #   we get quantile prediction for first and third quartile
+        #   return variance of normal distribution with that first and third quartile
+        if implements_interval or implements_quantiles:
+            pred_int = self._predict_interval(fh=fh, X=X, coverage=[0.5])
+            var_names = pred_int.columns.get_level_values(0).unique()
+            vars_dict = {}
+            for i in var_names:
+                pred_int_i = pred_int[i].copy()
+                # compute inter-quartile range (IQR), as pd.Series
+                iqr_i = pred_int_i.iloc[:, 1] - pred_int_i.iloc[:, 0]
+                # dividing by IQR of normal gives std of normal with same IQR
+                std_i = iqr_i / (2 * norm.ppf(0.75))
+                # and squaring gives variance (pd.Series)
+                var_i = std_i**2
+                vars_dict[i] = var_i
+
+            # put together to pd.DataFrame
+            #   the indices and column names are already correct
+            pred_var = pd.DataFrame(vars_dict)
+
+        return pred_var
 
     def _check_X_y(self, X, y):
 
@@ -192,3 +519,50 @@ class BaseProbaRegressor(BaseEstimator):
         if isinstance(y, pd.Series):
             y = pd.DataFrame(y)
         return y
+
+    def _check_alpha(self, alpha, name="alpha"):
+        """Check that quantile or confidence level value, or list of values, is valid.
+
+        Checks:
+        alpha must be a float, or list of float, all in the open interval (0, 1).
+        values in alpha must be unique.
+
+        Parameters
+        ----------
+        alpha : float, list of float
+        name : str, optional, default="alpha"
+            the name reference to alpha displayed in the error message
+
+        Returns
+        -------
+        alpha coerced to a list, i.e.: [alpha], if alpha was a float; alpha otherwise
+
+        Raises
+        ------
+        ValueError
+            If alpha (float) or any value in alpha (list) is outside the range (0, 1).
+            If values in alpha (list) are non-unique.
+        """
+        # check type
+        if isinstance(alpha, list):
+            if not all(isinstance(a, float) for a in alpha):
+                raise ValueError(
+                    "When `alpha` is passed as a list, it must be a list of floats"
+                )
+
+        elif isinstance(alpha, float):
+            alpha = [alpha]  # make iterable
+
+        # check range
+        for a in alpha:
+            if not 0 < a < 1:
+                raise ValueError(
+                    f"values in {name} must lie in the open interval (0, 1), "
+                    f"but found value: {a}."
+                )
+
+        # check uniqueness
+        if len(set(alpha)) < len(alpha):
+            raise ValueError(f"values in {name} must be unique, but found duplicates")
+
+        return alpha

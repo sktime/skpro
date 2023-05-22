@@ -396,7 +396,7 @@ class BaseDistribution(BaseObject):
         The `ppf` method also computes quantiles, but broadcasts differently, in
         `numpy` style closer to `tensorflow`.
         In contrast, this `quantile` method broadcasts
-        as forecaster `predict_quantiles`, i.e., columns first.
+        as ``sktime`` forecaster `predict_quantiles`, i.e., columns first.
 
         Parameters
         ----------
@@ -423,7 +423,9 @@ class BaseDistribution(BaseObject):
 
         qres = pd.concat(qdfs, axis=1, keys=alpha)
         qres = qres.reorder_levels([1, 0], axis=1)
-        quantiles = qres.sort_index(axis=1)
+
+        cols = pd.MultiIndex.from_product([self.columns, alpha])
+        quantiles = qres.loc[:, cols]
         return quantiles
 
     def sample(self, n_samples=None):
