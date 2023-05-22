@@ -41,5 +41,4 @@ __all__ = [
     "scitype_to_mtype",
     "SCITYPE_LIST",
     "SCITYPE_REGISTER",
-    "update_data",
 ]
