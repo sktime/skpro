@@ -159,7 +159,7 @@ def convert(
         # this "elif" is here for clarity, to cover all three values
         pass
     else:
-        raise ValueeError(
+        raise ValueError(
             "bug: unrechable condition error, store_behaviour has unexpected value"
         )
 
