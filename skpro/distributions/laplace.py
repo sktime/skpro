@@ -67,6 +67,37 @@ class Laplace(BaseDistribution):
         bc = np.broadcast_arrays(*to_broadcast)
         return bc[0], bc[1]
 
+    def energy(self, x=None):
+        r"""Energy of self, w.r.t. self or a constant frame x.
+
+        Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
+
+        If `x` is `None`, returns :math:`\mathbb{E}[|X-Y|]` (per row), "self-energy".
+        If `x` is passed, returns :math:`\mathbb{E}[|X-x|]` (per row), "energy wrt x".
+
+        Parameters
+        ----------
+        x : None or pd.DataFrame, optional, default=None
+            if pd.DataFrame, must have same rows and columns as `self`
+
+        Returns
+        -------
+        pd.DataFrame with same rows as `self`, single column `"energy"`
+        each row contains one float, self-energy/energy as described above.
+        """
+        if x is None:
+            sc_arr = self._scale
+            energy_arr = np.sum(sc_arr, axis=1) * (-3 / 4)
+            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
+        else:
+            d = self.loc[x.index, x.columns]
+            mu_arr, sc_arr = d.mu, d.scale
+            y_arr = np.abs((x.values - mu_arr) / sc_arr)
+            c_arr = y_arr - np.exp(-y_arr)
+            energy_arr = np.sum(sc_arr * c_arr, axis=1)
+            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
+        return energy
+
     def mean(self):
         r"""Return expected value of the distribution.
 
