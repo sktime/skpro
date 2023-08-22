@@ -150,7 +150,7 @@ class Laplace(BaseDistribution):
     def ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
         d = self.loc[p.index, p.columns]
-        sgn_arr = np.sign(p.values - d.mu)
+        sgn_arr = np.sign(p.values - 0.5)
         icdf_arr = d.mu - d.scale * sgn_arr * np.log(1 - 2 * np.abs(p.values - 0.5))
         return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
 
