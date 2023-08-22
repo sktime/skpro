@@ -92,7 +92,7 @@ class Laplace(BaseDistribution):
             d = self.loc[x.index, x.columns]
             mu_arr, sc_arr = d.mu, d.scale
             y_arr = np.abs((x.values - mu_arr) / sc_arr)
-            c_arr = y_arr - np.exp(-y_arr)
+            c_arr = y_arr + np.exp(-y_arr)
             energy_arr = np.sum(sc_arr * c_arr, axis=1)
             energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
         return energy
