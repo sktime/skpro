@@ -24,7 +24,7 @@ class Laplace(BaseDistribution):
 
     Example
     -------
-    >>> from skpro.distributions.normal import Normal
+    >>> from skpro.distributions.normal import Laplace
 
     >>> n = Laplace(mu=[[0, 1], [2, 3], [4, 5]], scale=1)
     """
