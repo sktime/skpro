@@ -86,7 +86,7 @@ class Laplace(BaseDistribution):
         """
         if x is None:
             sc_arr = self._scale
-            energy_arr = np.sum(sc_arr, axis=1) * (-3 / 4)
+            energy_arr = np.sum(sc_arr, axis=1) * 1.5
             energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
         else:
             d = self.loc[x.index, x.columns]
