@@ -29,7 +29,7 @@ class Empirical(BaseDistribution):
     Example
     -------
     >>> import pandas as pd
-    >>> from sktime.proba.empirical import Empirical
+    >>> from skpro.distributions.empirical import Empirical
 
     >>> spl_idx = pd.MultiIndex.from_product(
     ...     [[0, 1], [0, 1, 2]], names=["sample", "time"]
