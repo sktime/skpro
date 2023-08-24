@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for BaseDistribution API points."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
