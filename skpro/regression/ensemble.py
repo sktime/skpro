@@ -152,14 +152,11 @@ class BaggingRegressor(BaseProbaRegressor):
             inst_ix_i = inst_ix[row_ss]
             col_ix_i = _random_ss_ix(col_ix, size=n_features_, replace=bootstrap_ft)
 
-            # if we bootstrap, we need to take care to ensure the
-            # indices end up unique
-            Xi = X.loc[inst_ix_i, col_ix_i]
-            Xi = Xi.reset_index(drop=True)
-
+            # store column subset for use in predict
             self.cols_ += [col_ix_i]
-            if bootstrap_ft:
-                Xi.columns = pd.RangeIndex(len(col_ix_i))
+
+            Xi = _subs_cols(X.loc[inst_ix_i], col_ix_i, reset_cols=bootstrap_ft)
+            Xi = Xi.reset_index(drop=True)
 
             yi = y.loc[inst_ix_i].reset_index(drop=True)
 
@@ -186,7 +183,9 @@ class BaggingRegressor(BaseProbaRegressor):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        Xis = [X.loc[:, col_ix_i] for col_ix_i in self.cols_]
+        reset_cols = self.bootstrap_features
+        Xis = [_subs_cols(X, col_ix_i, reset_cols) for col_ix_i in self.cols_]
+
         y_probas = [est.predict_proba(Xi) for est, Xi in zip(self.estimators_, Xis)]
 
         y_proba = Mixture(y_probas)
@@ -236,3 +235,9 @@ def _random_ss_ix(ix, size, replace=True):
     a = range(len(ix))
     ixs = ix[np.random.choice(a, size=size, replace=replace)]
     return ixs
+
+def _subs_cols(df, col_ix, reset_cols=False):
+    df_subset = df.loc[:, col_ix]
+    if reset_cols:
+        df_subset.columns = pd.RangeIndex(len(df.columns))
+    return df_subset
