@@ -76,7 +76,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
-        return self._average(self, "mean")
+        return self._average("mean")
 
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
