@@ -284,7 +284,7 @@ class BaseDistribution(BaseObject):
                     while opt_fun(right_bd) < 0:
                         right_bd *= 10
                     result.loc[ix, col] = bisect(
-                        opt_fun, -left_bd, right_bd, maxiter=max_iter
+                        opt_fun, left_bd, right_bd, maxiter=max_iter
                     )
             return result
 
