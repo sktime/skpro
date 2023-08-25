@@ -172,6 +172,6 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         dists = [("normal1", normal1), ("normal2", normal2)]
 
-        params1 = {"distributions": dists1}
+        params1 = {"distributions": dists}
         params2 = {"distributions": dists, "weights": [0.3, 0.7]}
         return [params1, params2]
