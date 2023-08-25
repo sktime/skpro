@@ -65,6 +65,23 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
+    def _iloc(self, rowidx=None, colidx=None):
+
+        dists = self._distributions
+        weights = self.weights
+
+        dists_subset = [(x[0], x[1].iloc(rowidx, colidx)) for x in dists]
+
+        index_subset = dists_subset[0][1].index
+        columns_subset = dists_subset[0][1].columns
+
+        return Mixture(
+            distributions=dists_subset,
+            weights=weights,
+            index=index_subset,
+            columns=columns_subset,
+        )
+
     def mean(self):
         r"""Return expected value of the distribution.
 
