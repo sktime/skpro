@@ -44,6 +44,8 @@ class PackageConfig:
         "approx_spl",  # int, sample size used in other MC estimates
         "scitype:y_pred",  # str, expected input type for y_pred in performance metric
         "lower_is_better",  # bool, whether lower (True) or higher (False) is better
+        # BaseMetaObject reserved tags
+        "named_object_parameters",  # name of component list attribute for meta-objects
     ]
 
 
