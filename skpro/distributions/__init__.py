@@ -10,5 +10,5 @@ __all__ = [
 ]
 
 from skpro.distributions.laplace import Laplace
-from skpro.distributions.normal import Mixture
+from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
