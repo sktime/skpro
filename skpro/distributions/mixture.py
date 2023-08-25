@@ -93,7 +93,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         var_mean = self._average("var")
         mixture_mean = self._average("mean")
 
-        means = [d.mu() for _, d in self._distributions]
+        means = [d.mean() for _, d in self._distributions]
         mean_var = [(m - mixture_mean) ** 2 for m in means]
         var_mean_var = self._average_df(mean_var, weights=weights)
 
