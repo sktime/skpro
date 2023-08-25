@@ -242,5 +242,5 @@ def _subs_cols(df, col_ix, reset_cols=False):
     """Subset columns of a DataFrame, with potential resetting of column index."""
     df_subset = df.loc[:, col_ix]
     if reset_cols:
-        df_subset.columns = pd.RangeIndex(len(df.columns))
+        df_subset.columns = pd.RangeIndex(len(df_subset.columns))
     return df_subset
