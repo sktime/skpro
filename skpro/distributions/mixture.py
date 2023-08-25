@@ -70,7 +70,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         dists = self._distributions
         weights = self.weights
 
-        dists_subset = [(x[0], x[1].iloc(rowidx, colidx)) for x in dists]
+        dists_subset = [(x[0], x[1].iloc[rowidx, colidx]) for x in dists]
 
         index_subset = dists_subset[0][1].index
         columns_subset = dists_subset[0][1].columns
