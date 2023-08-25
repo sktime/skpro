@@ -1,4 +1,4 @@
-"""Bagging time series classifiers."""
+"""Bagging probabilistic regressors."""
 
 __author__ = ["fkiraly"]
 __all__ = ["BaggingRegressor"]
@@ -15,7 +15,7 @@ from skpro.regression.base import BaseProbaRegressor
 class BaggingRegressor(BaseProbaRegressor):
     """Bagging ensemble of probabilistic regresesors.
 
-    Fits ``n_estimators`` clones of a classifier on
+    Fits ``n_estimators`` clones of an skpro regressor on
     datasets which are instance sub-samples and/or variable sub-samples.
 
     On ``predict_proba``, the mixture of probabilistic predictions is returned.
@@ -40,8 +40,6 @@ class BaggingRegressor(BaseProbaRegressor):
         The number of features/variables drawn from ``X`` in ``fit`` to train each clone
         If int, then indicates number of instances precisely
         If float, interpreted as a fraction, and rounded by ``ceil``
-        Note: if n_features=1, BaggingClassifier turns a univariate classifier into
-        a multivariate classifier (as slices seen by ``estimator`` are all univariate).
     bootstrap : boolean, default=True
         whether samples/instances are drawn with replacement (True) or not (False)
     bootstrap_features : boolean, default=False
@@ -59,18 +57,22 @@ class BaggingRegressor(BaseProbaRegressor):
 
     Examples
     --------
-    >>> from sktime.classification.ensemble import BaggingClassifier
-    >>> from sktime.classification.kernel_based import RocketClassifier
-    >>> from sktime.datasets import load_unit_test
-    >>> X_train, y_train = load_unit_test(split="train") # doctest: +SKIP
-    >>> X_test, y_test = load_unit_test(split="test") # doctest: +SKIP
-    >>> clf = BaggingClassifier(
-    ...     RocketClassifier(num_kernels=100),
-    ...     n_estimators=10,
-    ... ) # doctest: +SKIP
-    >>> clf.fit(X_train, y_train) # doctest: +SKIP
-    BaggingClassifier(...)
-    >>> y_pred = clf.predict(X_test) # doctest: +SKIP
+    >>> from skpro.regression.ensemble import BaggingRegressor
+    >>> from skpro.regression.residual import ResidualDouble
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>>
+    >>> reg_mean = LinearRegression()
+    >>> reg_proba = ResidualDouble(reg_mean)
+    >>>
+    >>> ens = BaggingRegressor(reg_proba, n_estimators=10)
+    >>> ens.fit(X_train, y_train)
+    BaggingRegressor(...)
+    >>> y_pred = clf.predict(X_test)
     """
 
     _tags = {"capability:missing": True}
