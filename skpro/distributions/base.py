@@ -266,7 +266,7 @@ class BaseDistribution(BaseObject):
             result = pd.DataFrame(index=p.index, columns=p.columns, dtype="float")
             for ix in p.index:
                 for col in p.columns:
-                    d_ix = self.loc[ix, col]
+                    d_ix = self.loc[[ix], [col]]
                     p_ix = p.loc[ix, col]
 
                     def opt_fun(x):
