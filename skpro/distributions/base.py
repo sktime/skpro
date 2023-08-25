@@ -271,6 +271,7 @@ class BaseDistribution(BaseObject):
                     def opt_fun(x):
                         """Optimization function, to find x s.t. cdf(x) = p_ix."""
                         return d_ix.cdf(x).values[0][0] - p_ix
+
                     left_bd = -1e6
                     right_bd = 1e6
                     while opt_fun(left_bd) > 0:
