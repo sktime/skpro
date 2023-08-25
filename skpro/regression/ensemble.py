@@ -232,11 +232,14 @@ class BaggingRegressor(BaseProbaRegressor):
 
 
 def _random_ss_ix(ix, size, replace=True):
+    """Randomly uniformly sample indices from a list of indices."""
     a = range(len(ix))
     ixs = ix[np.random.choice(a, size=size, replace=replace)]
     return ixs
 
+
 def _subs_cols(df, col_ix, reset_cols=False):
+    """Subset columns of a DataFrame, with potential resetting of column index."""
     df_subset = df.loc[:, col_ix]
     if reset_cols:
         df_subset.columns = pd.RangeIndex(len(df.columns))
