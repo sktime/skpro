@@ -26,7 +26,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
     Example
     -------
-    >>> from skpro.distributions.mixtures import Mixture
+    >>> from skpro.distributions.mixture import Mixture
 
     >>> n1 = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1)
     >>> n2 = Normal(mu=3, sigma=2, index=n1.index, columns=n1.columns)
