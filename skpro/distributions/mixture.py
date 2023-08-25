@@ -36,7 +36,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:approx": ["pdfnorm", "energy", "ppf"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf"],
         "distr:measuretype": "mixed",
         "named_object_parameters": "_distributions",
