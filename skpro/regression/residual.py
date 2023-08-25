@@ -132,7 +132,7 @@ class ResidualDouble(BaseProbaRegressor):
             labels predicted for `X`
         """
         est = self.estimator_
-
+        raise ValueError("break for diagnosing tests")
         y_pred = est.predict(X)
         y_pred = pd.DataFrame(y_pred, columns=self._y_cols, index=X.index)
 

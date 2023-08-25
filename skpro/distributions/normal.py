@@ -107,6 +107,7 @@ class Normal(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
+        raise ValueError("break for diagnosing tests")
         mean_arr = self._mu
         return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
 
@@ -121,6 +122,7 @@ class Normal(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
+        raise ValueError("break for diagnosing tests")
         sd_arr = self._sigma
         return pd.DataFrame(sd_arr, index=self.index, columns=self.columns) ** 2
 

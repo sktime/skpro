@@ -76,6 +76,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
+        raise ValueError("break for diagnosing tests")
         return self._average("mean")
 
     def var(self):
