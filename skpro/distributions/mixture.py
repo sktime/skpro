@@ -52,7 +52,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         n_dists = len(self._distributions)
 
         if weights is None:
-            self._weights = np.ones(n_dists) / len(n_dists)
+            self._weights = np.ones(n_dists) / n_dists
         else:
             self._weights = np.array(weights) / np.sum(weights)
 
