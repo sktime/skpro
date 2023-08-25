@@ -42,8 +42,11 @@ class PackageConfig:
         "approx_var_spl",  # int, sample size used in MC estimates of var
         "approx_energy_spl",  # int, sample size used in MC estimates of energy
         "approx_spl",  # int, sample size used in other MC estimates
+        "bisect_iter",  # max iters for bisection method in ppf
         "scitype:y_pred",  # str, expected input type for y_pred in performance metric
         "lower_is_better",  # bool, whether lower (True) or higher (False) is better
+        # BaseMetaObject reserved tags
+        "named_object_parameters",  # name of component list attribute for meta-objects
     ]
 
 
