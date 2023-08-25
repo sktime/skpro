@@ -36,7 +36,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:approx": ["pdfnorm", "energy", "ppf"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf"],
         "distr:measuretype": "mixed",
         "named_object_parameters": "_distributions",
@@ -64,6 +64,23 @@ class Mixture(BaseMetaObject, BaseDistribution):
             columns = self._distributions[0][1].columns
 
         super().__init__(index=index, columns=columns)
+
+    def _iloc(self, rowidx=None, colidx=None):
+
+        dists = self._distributions
+        weights = self.weights
+
+        dists_subset = [(x[0], x[1].iloc[rowidx, colidx]) for x in dists]
+
+        index_subset = dists_subset[0][1].index
+        columns_subset = dists_subset[0][1].columns
+
+        return Mixture(
+            distributions=dists_subset,
+            weights=weights,
+            index=index_subset,
+            columns=columns_subset,
+        )
 
     def mean(self):
         r"""Return expected value of the distribution.
@@ -93,7 +110,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         var_mean = self._average("var")
         mixture_mean = self._average("mean")
 
-        means = [d.mu() for _, d in self._distributions]
+        means = [d.mean() for _, d in self._distributions]
         mean_var = [(m - mixture_mean) ** 2 for m in means]
         var_mean_var = self._average_df(mean_var, weights=weights)
 
@@ -112,8 +129,10 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
     def _average_df(self, df_list, weights=None):
         """Average a list of `pd.DataFrame` objects, with weights."""
-        if weights is None:
+        if weights is None and hasattr(self, "_weights"):
             weights = self._weights
+        elif weights is None:
+            weights = np.ones(len(df_list)) / len(df_list)
 
         n_df = len(df_list)
         df_weighted = [df * w for df, w in zip(df_list, weights)]
@@ -159,7 +178,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         if n_samples is None:
             return samples[0]
         else:
-            return pd.concat(samples, axis=1, keys=range(N))
+            return pd.concat(samples, axis=0, keys=range(N))
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -169,7 +188,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         index = pd.RangeIndex(3)
         columns = pd.Index(["a", "b"])
         normal1 = Normal(mu=0, sigma=1, index=index, columns=columns)
-        normal2 = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1)
+        normal2 = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=columns)
 
         dists = [("normal1", normal1), ("normal2", normal2)]
 

@@ -12,6 +12,7 @@ from skbase.testing import BaseFixtureGenerator, QuickTester
 
 from skpro.datatypes import check_is_mtype
 from skpro.distributions.base import BaseDistribution
+from skpro.tests.test_all_estimators import PackageConfig
 
 
 class DistributionFixtureGenerator(BaseFixtureGenerator):
@@ -56,7 +57,7 @@ METHODS_P = ["ppf"]
 METHODS_ROWWISE = ["energy"]  # results in one column
 
 
-class TestAllDistributions(DistributionFixtureGenerator, QuickTester):
+class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTester):
     """Module level tests for all sktime parameter fitters."""
 
     def test_sample(self, object_instance):

@@ -28,6 +28,7 @@ class BaseDistribution(BaseObject):
         "approx_var_spl": 1000,  # sample size used in MC estimates of var
         "approx_energy_spl": 1000,  # sample size used in MC estimates of energy
         "approx_spl": 1000,  # sample size used in other MC estimates
+        "bisect_iter": 1000,  # max iters for bisection method in ppf
     }
 
     def __init__(self, index=None, columns=None):
@@ -92,9 +93,12 @@ class BaseDistribution(BaseObject):
 
         subset_param_dict = {}
         for param, val in params.items():
-            arr = np.array(val)
-            if len(arr.shape) == 0:
-                subset_param_dict
+            if val is not None:
+                arr = np.array(val)
+            else:
+                arr = None
+            # if len(arr.shape) == 0:
+            # do nothing with arr
             if len(arr.shape) >= 1 and rowidx is not None:
                 arr = arr[rowidx]
             if len(arr.shape) >= 2 and colidx is not None:
@@ -252,6 +256,38 @@ class BaseDistribution(BaseObject):
 
     def ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
+        if self._has_implementation_of("cdf"):
+            from scipy.optimize import bisect
+
+            max_iter = self.get_tag("bisect_iter")
+            approx_method = (
+                "by using the bisection method (scipy.optimize.bisect) on "
+                f"the cdf, at {max_iter} maximum iterations"
+            )
+            warn(self._method_error_msg("cdf", fill_in=approx_method))
+
+            result = pd.DataFrame(index=p.index, columns=p.columns, dtype="float")
+            for ix in p.index:
+                for col in p.columns:
+                    d_ix = self.loc[[ix], [col]]
+                    p_ix = p.loc[ix, col]
+
+                    def opt_fun(x):
+                        """Optimization function, to find x s.t. cdf(x) = p_ix."""
+                        x = pd.DataFrame(x, index=[ix], columns=[col])  # noqa: B023
+                        return d_ix.cdf(x).values[0][0] - p_ix  # noqa: B023
+
+                    left_bd = -1e6
+                    right_bd = 1e6
+                    while opt_fun(left_bd) > 0:
+                        left_bd *= 10
+                    while opt_fun(right_bd) < 0:
+                        right_bd *= 10
+                    result.loc[ix, col] = bisect(
+                        opt_fun, left_bd, right_bd, maxiter=max_iter
+                    )
+            return result
+
         raise NotImplementedError(self._method_error_msg("ppf", "error"))
 
     def energy(self, x=None):
