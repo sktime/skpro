@@ -99,7 +99,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         return var_mean + var_mean_var
 
     def _average(self, method, x=None, weights=None):
-
+        """Average a method over the mixture components."""
         if x is None:
             args = ()
         else:
@@ -110,7 +110,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         return self._average_df(vals, weights=weights)
 
     def _average_df(self, df_list, weights=None):
-
+        """Average a list of `pd.DataFrame` objects, with weights."""
         if weights is None:
             weights = self._weights
 
