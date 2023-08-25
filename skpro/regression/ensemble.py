@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Bagging probabilistic regressors."""
 
 __author__ = ["fkiraly"]
