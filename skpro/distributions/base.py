@@ -274,7 +274,7 @@ class BaseDistribution(BaseObject):
 
                     def opt_fun(x):
                         """Optimization function, to find x s.t. cdf(x) = p_ix."""
-                        x = pd.DataFrame(x, index=[ix], columns=[col])
+                        x = pd.DataFrame(x, index=[ix], columns=[col])  # noqa: B023
                         return d_ix.cdf(x).values[0][0] - p_ix  # noqa: B023
 
                     left_bd = -1e6
