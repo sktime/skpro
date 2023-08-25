@@ -73,7 +73,7 @@ class BaggingRegressor(BaseProbaRegressor):
     >>> ens = BaggingRegressor(reg_proba, n_estimators=10)
     >>> ens.fit(X_train, y_train)
     BaggingRegressor(...)
-    >>> y_pred = clf.predict(X_test)
+    >>> y_pred = ens.predict(X_test)
     """
 
     _tags = {"capability:missing": True}
@@ -143,22 +143,26 @@ class BaggingRegressor(BaseProbaRegressor):
             n_features_ = n_features
 
         self.estimators_ = []
+        self.cols_ = []
+
         for _i in range(n_estimators):
             esti = estimator.clone()
             row_iloc = pd.RangeIndex(n)
             row_ss = _random_ss_ix(row_iloc, size=n_samples_, replace=bootstrap)
             inst_ix_i = inst_ix[row_ss]
             col_ix_i = _random_ss_ix(col_ix, size=n_features_, replace=bootstrap_ft)
+
             # if we bootstrap, we need to take care to ensure the
             # indices end up unique
-
             Xi = X.loc[inst_ix_i, col_ix_i]
             Xi = Xi.reset_index(drop=True)
 
+            self.cols_ += [col_ix_i]
             if bootstrap_ft:
                 Xi.columns = pd.RangeIndex(len(col_ix_i))
 
-            yi = y[row_ss]
+            yi = y.loc[inst_ix_i].reset_index(drop=True)
+
             self.estimators_ += [esti.fit(Xi, yi)]
 
         return self
@@ -182,7 +186,8 @@ class BaggingRegressor(BaseProbaRegressor):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        y_probas = [est.predict_proba(X) for est in self.estimators_]
+        Xis = [X.loc[:, col_ix_i] for col_ix_i in self.cols_]
+        y_probas = [est.predict_proba(Xi) for est, Xi in zip(self.estimators_, Xis)]
 
         y_proba = Mixture(y_probas)
 
