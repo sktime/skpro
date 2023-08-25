@@ -112,8 +112,10 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
     def _average_df(self, df_list, weights=None):
         """Average a list of `pd.DataFrame` objects, with weights."""
-        if weights is None:
+        if weights is None and hasattr(self, "_weights"):
             weights = self._weights
+        elif weights is None:
+            weights = np.ones(len(df_list)) / len(df_list)
 
         n_df = len(df_list)
         df_weighted = [df * w for df, w in zip(df_list, weights)]
@@ -169,7 +171,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         index = pd.RangeIndex(3)
         columns = pd.Index(["a", "b"])
         normal1 = Normal(mu=0, sigma=1, index=index, columns=columns)
-        normal2 = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1)
+        normal2 = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=columns)
 
         dists = [("normal1", normal1), ("normal2", normal2)]
 
