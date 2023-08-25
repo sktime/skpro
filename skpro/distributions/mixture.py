@@ -161,7 +161,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         if n_samples is None:
             return samples[0]
         else:
-            return pd.concat(samples, axis=1, keys=range(N))
+            return pd.concat(samples, axis=0, keys=range(N))
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
