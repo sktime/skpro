@@ -140,7 +140,7 @@ def evaluate(
     >>> y = pd.DataFrame(y)  # skpro assumes y is pd.DataFrame
 
     >>> estimator = ResidualDouble(LinearRegression())
-    >>> cv = KFold(n_splits=3, random_state=42)
+    >>> cv = KFold(n_splits=3)
     >>> crps = CRPS()
 
     >>> results = evaluate(estimator=estimator, X=X, y=y, cv=cv, scoring=crps)

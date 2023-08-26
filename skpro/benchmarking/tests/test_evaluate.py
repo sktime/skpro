@@ -59,7 +59,7 @@ def _get_pred_method(scoring):
 
 
 CVs = [
-    KFold(n_splits=3, random_state=42),
+    KFold(n_splits=3),
     ShuffleSplit(n_splits=3, test_size=0.5, random_state=42),
 ]
 
