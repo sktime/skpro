@@ -59,7 +59,7 @@ def test_evaluate_common_configs(cv, scoring, backend):
     if backend == "dask" and not _check_soft_dependencies("dask", severity="none"):
         return None
 
-    X, y = load_diabetes(return_X_y=True)
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
     y = pd.DataFrame(y)
     estimator = ResidualDouble(LinearRegression())
 
