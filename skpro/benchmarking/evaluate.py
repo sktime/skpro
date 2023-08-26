@@ -272,7 +272,7 @@ def evaluate(
                 y_test,
                 **_evaluate_fold_kwargs,
             )
-            for X_train, X_test, y_train, y_test in enumerate(xy_splits)
+            for X_train, X_test, y_train, y_test in xy_splits
         )
         results = pd.concat(results)
 
