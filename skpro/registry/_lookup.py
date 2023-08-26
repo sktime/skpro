@@ -327,7 +327,7 @@ def _check_object_types(object_types):
             f"{repr(object_type)}"
         )
 
-    for i, object_type in enumerate(object_types):
+    for object_type in object_types:
         if not isinstance(object_type, (type, str)):
             raise ValueError(
                 "Please specify `object_types` as a list of str or " "types."
