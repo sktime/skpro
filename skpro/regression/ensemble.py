@@ -73,7 +73,7 @@ class BaggingRegressor(BaseProbaRegressor):
     >>> ens = BaggingRegressor(reg_proba, n_estimators=10)
     >>> ens.fit(X_train, y_train)
     BaggingRegressor(...)
-    >>> y_pred = ens.predict(X_test)
+    >>> y_pred = ens.predict_proba(X_test)
     """
 
     _tags = {"capability:missing": True}
