@@ -159,7 +159,7 @@ class _DelegatedProbaRegressor(BaseProbaRegressor):
         estimator = self._get_delegate()
         return estimator.predict_var(X=X, cov=cov)
 
-    def _predict_proba(self, fh, X, marginal):
+    def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
 
         State required:
@@ -179,7 +179,7 @@ class _DelegatedProbaRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         estimator = self._get_delegate()
-        return estimator.predict_proba(fh=fh, X=X, marginal=marginal)
+        return estimator.predict_proba(X=X)
 
     def _get_fitted_params(self):
         """Get fitted parameters.
