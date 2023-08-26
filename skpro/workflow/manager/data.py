@@ -6,7 +6,7 @@ import os
 import urllib.request
 
 import numpy as np
-from sklearn.datasets import load_boston, load_diabetes
+from sklearn.datasets import load_diabetes, load_diabetes
 from sklearn.model_selection import train_test_split
 
 
@@ -70,7 +70,7 @@ class DataManager:
             # autoload sklearn datasets, urls and files
             name = X
             if name.lower() == "boston":
-                X, y = load_boston(return_X_y=True)
+                X, y = load_diabetes(return_X_y=True)
             elif name.lower() == "diabetes":
                 X, y = load_diabetes(return_X_y=True)
             elif name.startswith("http"):

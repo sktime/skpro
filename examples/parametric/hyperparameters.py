@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # LEGACY MODULE - TODO: remove or refactor
-from sklearn.datasets.base import load_boston
+from sklearn.datasets.base import load_diabetes
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 
@@ -14,7 +14,7 @@ parameters = {"point__max_depth": [None, 5, 10, 15]}
 clf = GridSearchCV(model, parameters)
 
 # Optimize hyperparameters
-X, y = load_boston(return_X_y=True)
+X, y = load_diabetes(return_X_y=True)
 clf.fit(X, y)
 
 print("Best score is %f for parameter: %s" % (clf.best_score_, clf.best_params_))
