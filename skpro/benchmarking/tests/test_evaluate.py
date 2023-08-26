@@ -25,7 +25,7 @@ def _check_evaluate_output(out, cv, y, scoring):
     # Check column names.
     assert set(out.columns) == {
         "fit_time",
-        "len_y_pred",
+        "len_y_train",
         "pred_time",
         f"test_{scoring.name}",
     }
@@ -38,7 +38,7 @@ def _check_evaluate_output(out, cv, y, scoring):
     assert np.all(out.filter(like="_time") >= 0)
 
     # Check training set sizes
-    assert np.all(out["len_y_pred"] > 0)
+    assert np.all(out["len_y_train"] > 0)
 
 
 CVs = [
