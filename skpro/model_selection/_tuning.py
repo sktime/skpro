@@ -566,9 +566,9 @@ class RandomizedSearchCV(BaseGridSearch):
     ...     cv=cv,
     ...     scoring=CRPS(),
     ... )
-    >>> rscv.fit(y)
+    >>> rscv.fit(X_train, y_train)
     RandomizedSearchCV(...)
-    >>> y_pred = gscv.predict()
+    >>> y_pred = gscv.predict(X_test)
     """
 
     def __init__(
