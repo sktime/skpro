@@ -13,6 +13,7 @@ from skbase.testing import BaseFixtureGenerator, QuickTester
 from skpro.datatypes import check_is_mtype
 from skpro.distributions.base import BaseDistribution
 from skpro.tests.test_all_estimators import PackageConfig
+from skpro.utils.index import random_ss_ix
 
 
 class DistributionFixtureGenerator(BaseFixtureGenerator):
@@ -149,6 +150,40 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
 
         res = d.quantile(q)
         _check_quantile_output(res, q)
+
+    @pytest.mark.parametrize("subset_row", [True, False])
+    @pytest.mark.parametrize("subset_col", [True, False])
+    def test_subsetting(self, object_instance, subset_row, subset_col):
+        """Test subsetting of distribution."""
+        d = object_instance
+
+        if subset_row:
+            ix_loc = random_ss_ix(d.index, 3)
+            ix_iloc = d.index.get_indexer(ix_loc)
+        else:
+            ix_loc = d.index
+            ix_iloc = pd.RangeIndex(len(d.index))
+
+        if subset_col:
+            iy_loc = random_ss_ix(d.columns, 1)
+            iy_iloc = d.columns.get_indexer(iy_loc)
+        else:
+            iy_loc = d.columns
+            iy_iloc = pd.RangeIndex(len(d.columns))
+
+        res_loc = d.loc[ix_loc, iy_loc]
+
+        assert isinstance(res_loc, type(d))
+        assert res_loc.shape == (len(ix_loc), len(iy_loc))
+        assert (res_loc.index == ix_loc).all()
+        assert (res_loc.columns == iy_loc).all()
+
+        res_iloc = d.iloc[ix_iloc, iy_iloc]
+
+        assert isinstance(res_iloc, type(d))
+        assert res_iloc.shape == (len(ix_iloc), len(iy_iloc))
+        assert (res_iloc.index == ix_loc).all()
+        assert (res_iloc.columns == iy_loc).all()
 
 
 def _check_output_format(res, dist, method):
