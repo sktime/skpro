@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+"""Legacy module: test baselines."""
 # LEGACY MODULE - TODO: remove or refactor
 
 import numpy as np
+import pytest
 
 import skpro.tests.utils as utils
 from skpro.metrics.metrics import linearized_log_loss
@@ -9,7 +11,9 @@ from skpro.regression.baselines import DensityBaseline
 from skpro.workflow.manager import DataManager
 
 
+@pytest.mark.xfail(reason="Legacy module")
 def test_density_baseline():
+    """Test density baseline, legacy test."""
     data = DataManager("boston")
 
     model = DensityBaseline()

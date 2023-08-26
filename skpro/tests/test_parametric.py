@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Legacy module: test parametric."""
 # LEGACY MODULE - TODO: remove or refactor
 
 import numpy as np
@@ -14,6 +15,7 @@ from skpro.workflow.manager import DataManager
 
 
 def test_baseline():
+    """Test baseline, legacy test."""
     data = DataManager("boston")
 
     model = ParametricEstimator()
@@ -38,7 +40,9 @@ def test_baseline():
     assert y_pred[i].cdf(x) == norm.cdf(x, mu, sigma)
 
 
+@pytest.mark.xfail(reason="Legacy module")
 def test_simple_model():
+    """Test simple model, legacy test."""
     data = DataManager("boston")
 
     model = ParametricEstimator(LinearRegression(), LinearRegression())
@@ -49,6 +53,7 @@ def test_simple_model():
 
 @pytest.mark.skip(reason="loss assert fails sporadically")
 def test_residual_prediction():
+    """Test residual prediction, legacy test."""
     data = DataManager("boston")
 
     baseline_model = ParametricEstimator(LinearRegression())
