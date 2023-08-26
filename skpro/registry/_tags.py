@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Register of estimator and object tags.
 
 Note for extenders: new tags should be entered in OBJECT_TAG_REGISTER.

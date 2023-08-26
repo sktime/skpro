@@ -1,4 +1,4 @@
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# -*- coding: utf-8 -*-
 """Registry lookup methods.
 
 This module exports the following methods for registry lookup:
@@ -6,6 +6,8 @@ This module exports the following methods for registry lookup:
 all_objects(object_types, filter_tags)
     lookup and filtering of objects
 """
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+# based on the sktime module of same name
 
 __author__ = ["fkiraly"]
 # all_objects is based on the sklearn utility all_estimators
