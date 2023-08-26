@@ -6,7 +6,6 @@ __all__ = ["BootstrapRegressor"]
 
 import numpy as np
 import pandas as pd
-
 from sklearn import clone
 
 from skpro.distributions.empirical import Empirical
