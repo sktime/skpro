@@ -60,6 +60,7 @@ def test_evaluate_common_configs(cv, scoring, backend):
         return None
 
     X, y = load_diabetes(return_X_y=True)
+    y = pd.DataFrame(y)
     estimator = ResidualDouble(LinearRegression())
 
     out = evaluate(
