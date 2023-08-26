@@ -92,7 +92,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         if shuffled:
             d = _shuffle_distr(d)
 
-        res = getattr(object_instance, method)()
+        res = getattr(d, method)()
 
         _check_output_format(res, d, method)
 
@@ -109,7 +109,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             d = _shuffle_distr(d)
 
         x = d.sample()
-        res = getattr(object_instance, method)(x)
+        res = getattr(d, method)(x)
 
         _check_output_format(res, d, method)
 
