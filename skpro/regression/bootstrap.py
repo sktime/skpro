@@ -62,7 +62,7 @@ class BootstrapRegressor(BaseProbaRegressor):
     >>>
     >>> reg_proba = BootstrapRegressor(reg_tabular)
     >>> reg_proba.fit(X_train, y_train)
-    BaggingRegressor(...)
+    BootstrapRegressor(...)
     >>> y_pred = reg_proba.predict_proba(X_test)
     """
 
