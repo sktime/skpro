@@ -18,22 +18,8 @@ from pathlib import Path
 import pandas as pd
 from skbase.lookup import all_objects as _all_objects
 
-from sktime.base import BaseEstimator
-from sktime.registry._base_classes import (
-    BASE_CLASS_LIST,
-    BASE_CLASS_LOOKUP,
-    TRANSFORMER_MIXIN_LIST,
-)
-from sktime.registry._tags import OBJECT_TAG_REGISTER
-
-VALID_TRANSFORMER_TYPES = tuple(TRANSFORMER_MIXIN_LIST)
-VALID_ESTIMATOR_BASE_TYPES = tuple(BASE_CLASS_LIST)
-
-VALID_ESTIMATOR_TYPES = (
-    BaseEstimator,
-    *VALID_ESTIMATOR_BASE_TYPES,
-    *VALID_TRANSFORMER_TYPES,
-)
+from skpro.base import BaseObject
+from skpro.registry._tags import OBJECT_TAG_REGISTER
 
 
 def all_objects(
@@ -136,35 +122,38 @@ def all_objects(
         "tests",
         "setup",
         "contrib",
-        "benchmarking",
         "utils",
         "all",
-        "plotting",
     )
 
     result = []
-    ROOT = str(Path(__file__).parent.parent)  # sktime package root directory
+    ROOT = str(Path(__file__).parent.parent)  # skpro package root directory
+
+    if isinstance(filter_tags, str):
+        filter_tags = {filter_tags: True}
+    filter_tags = filter_tags.copy() if filter_tags else None
 
     if object_types:
-        clsses = _check_object_types(object_types)
-        if not isinstance(object_types, list):
-            object_types = [object_types]
-        CLASS_LOOKUP = {x: y for x, y in zip(object_types, clsses)}
-    else:
-        CLASS_LOOKUP = None
+        if filter_tags and "object_type" not in filter_tags.keys():
+            object_tag_filter = {}
+        else:
+            object_tag_filter = {"object_type": object_types}
+        if filter_tags:
+            filter_tags.update(object_tag_filter)
+        else:
+            filter_tags = object_tag_filter
 
     result = _all_objects(
-        object_types=object_types,
+        object_types=BaseObject,
         filter_tags=filter_tags,
         exclude_objects=exclude_objects,
         return_names=return_names,
         as_dataframe=as_dataframe,
         return_tags=return_tags,
         suppress_import_stdout=suppress_import_stdout,
-        package_name="sktime",
+        package_name="skpro",
         path=ROOT,
         modules_to_ignore=MODULES_TO_IGNORE,
-        class_lookup=CLASS_LOOKUP,
     )
 
     return result
@@ -267,14 +256,10 @@ def all_tags(
     ----------
     object_types: string, list of string, optional (default=None)
         Which kind of objects should be returned.
-        - If None, no filter is applied and all objects are returned.
-        - Possible values are 'classifier', 'regressor', 'transformer' and
-        'forecaster' to get objects only of these specific types, or a list of
-        these to get the objects that fit at least one of the types.
+        If None, no filter is applied and all objects are returned.
     as_dataframe: bool, optional (default=False)
-                if False, return is as described below;
-                if True, return is converted into a pandas.DataFrame for pretty
-                display
+        if False, return is as described below;
+        if True, return is converted into a pandas.DataFrame for pretty display
 
     Returns
     -------
@@ -330,26 +315,9 @@ def _check_object_types(object_types):
     if not isinstance(object_types, list):
         object_types = [object_types]  # make iterable
 
-    def _get_err_msg(object_type):
-        return (
-            f"Parameter `object_type` must be None, a string or a list of "
-            f"strings. Valid string values are: "
-            f"{tuple(BASE_CLASS_LOOKUP.keys())}, but found: "
-            f"{repr(object_type)}"
-        )
-
     for i, object_type in enumerate(object_types):
         if not isinstance(object_type, (type, str)):
             raise ValueError(
                 "Please specify `object_types` as a list of str or " "types."
             )
-        if isinstance(object_type, str):
-            if object_type not in BASE_CLASS_LOOKUP.keys():
-                raise ValueError(_get_err_msg(object_type))
-            object_type = BASE_CLASS_LOOKUP[object_type]
-            object_types[i] = object_type
-        elif isinstance(object_type, type):
-            pass
-        else:
-            raise ValueError(_get_err_msg(object_type))
     return object_types
