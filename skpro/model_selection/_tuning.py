@@ -343,6 +343,7 @@ class GridSearchCV(BaseGridSearch):
     >>> gscv.fit(X_train, y_train)
     GridSearchCV(...)
     >>> y_pred = gscv.predict(X_test)
+    >>> y_pred_proba = gscv.predict_proba(X_test)
     """
 
     def __init__(
@@ -569,6 +570,7 @@ class RandomizedSearchCV(BaseGridSearch):
     >>> rscv.fit(X_train, y_train)
     RandomizedSearchCV(...)
     >>> y_pred = rscv.predict(X_test)
+    >>> y_pred_proba = rscv.predict_proba(X_test)
     """
 
     def __init__(
