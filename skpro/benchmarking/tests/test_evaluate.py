@@ -13,7 +13,7 @@ from sklearn.datasets import load_diabetes
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import KFold, ShuffleSplit
 
-from skpro.benchmarking import evaluate
+from skpro.benchmarking.evaluate import evaluate
 from skpro.metrics import CRPS, EmpiricalCoverage, LogLoss, PinballLoss
 from skpro.regression.residual import ResidualDouble
 from skpro.utils.validation._dependencies import _check_soft_dependencies
