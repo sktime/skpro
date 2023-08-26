@@ -3,10 +3,8 @@
 # LEGACY MODULE - TODO: remove or refactor
 
 import numpy as np
-import pytest
 
 
-@pytest.mark.xfail(reason="Legacy module")
 def assert_close_prediction(y_hat, y_true, fraction=0.75, within=0.25):
     """Check that defined fraction of predictions lies in a certain tolerance.
 
