@@ -20,7 +20,7 @@ from pathlib import Path
 import pandas as pd
 from skbase.lookup import all_objects as _all_objects
 
-from skpro.base import BaseObject, BaseEstimator
+from skpro.base import BaseEstimator, BaseObject
 from skpro.registry._tags import OBJECT_TAG_REGISTER
 
 VALID_OBJECT_TYPE_STRINGS = set([x[1] for x in OBJECT_TAG_REGISTER])
@@ -114,9 +114,13 @@ def all_objects(
     >>> # return a complete list of objects as pd.Dataframe
     >>> all_objects(as_dataframe=True)
     >>> # return all probabilistic regressors by filtering for object type
-    >>> all_objects("regressor_proba")
+    >>> all_objects("regressor_proba", as_dataframe=True)
     >>> # return all regressors which handle missing data in the input by tag filtering
-    >>> all_objects("regressor_proba", filter_tags={"capability:missing": True})
+    >>> all_objects(
+    ...     "regressor_proba",
+    ...     filter_tags={"capability:missing": True},
+    ...     as_dataframe=True
+    ... )
 
     References
     ----------
