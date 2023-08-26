@@ -466,7 +466,7 @@ class GridSearchCV(BaseGridSearch):
         }
 
         params2 = {
-            "estimator": ResidualDouble(LinearRegression),
+            "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=4),
             "param_grid": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
@@ -646,7 +646,7 @@ class RandomizedSearchCV(BaseGridSearch):
         }
 
         params2 = {
-            "estimator": ResidualDouble(LinearRegression),
+            "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=4),
             "param_distributions": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
