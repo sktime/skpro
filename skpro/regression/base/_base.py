@@ -227,7 +227,7 @@ class BaseProbaRegressor(BaseEstimator):
         pred_int = self._predict_interval(X=X_inner, coverage=coverage)
         return pred_int
 
-    def _predict_interval(self, X=None, coverage=0.90):
+    def _predict_interval(self, X, coverage):
         """Compute/return interval predictions.
 
         private _predict_interval containing the core logic,
@@ -237,7 +237,7 @@ class BaseProbaRegressor(BaseEstimator):
         ----------
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
-        coverage : guaranteed list of float of unique values, optional (default=0.90)
+        coverage : guaranteed list of float of unique values
            nominal coverage(s) of predictive interval(s)
 
         Returns
@@ -338,7 +338,7 @@ class BaseProbaRegressor(BaseEstimator):
         ----------
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
-        alpha : guaranteed list of float, optional (default=[0.5])
+        alpha : guaranteed list of float
             A list of probabilities at which quantile predictions are computed.
 
         Returns
@@ -429,7 +429,7 @@ class BaseProbaRegressor(BaseEstimator):
         pred_var = self._predict_var(X=X_inner)
         return pred_var
 
-    def _predict_var(self, fh=None, X=None, cov=False):
+    def _predict_var(self, X):
         """Compute/return variance predictions.
 
         private _predict_var containing the core logic, called from predict_var
@@ -468,7 +468,7 @@ class BaseProbaRegressor(BaseEstimator):
         #   we get quantile prediction for first and third quartile
         #   return variance of normal distribution with that first and third quartile
         if implements_interval or implements_quantiles:
-            pred_int = self._predict_interval(fh=fh, X=X, coverage=[0.5])
+            pred_int = self._predict_interval(X=X, coverage=[0.5])
             var_names = pred_int.columns.get_level_values(0).unique()
             vars_dict = {}
             for i in var_names:
