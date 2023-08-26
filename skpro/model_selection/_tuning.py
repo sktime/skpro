@@ -317,65 +317,32 @@ class GridSearchCV(BaseGridSearch):
 
     Examples
     --------
-    >>> from skpro.datasets import load_shampoo_sales
-    >>> from skpro.forecasting.model_selection import (
-    ...     ExpandingWindowSplitter,
-    ...     ForecastingGridSearchCV,
-    ...     ExpandingWindowSplitter)
-    >>> from skpro.forecasting.naive import Naiveestimator
-    >>> y = load_shampoo_sales()
-    >>> fh = [1,2,3]
-    >>> cv = ExpandingWindowSplitter(fh=fh)
-    >>> estimator = Naiveestimator()
-    >>> param_grid = {"strategy" : ["last", "mean", "drift"]}
-    >>> gscv = ForecastingGridSearchCV(
+    >>> import pandas as pd
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from sklearn.model_selection import KFold, ShuffleSplit, train_test_split
+
+    >>> from skpro.metrics import CRPS
+    >>> from skpro.model_selection import GridSearchCV
+    >>> from skpro.regression.residual import ResidualDouble
+
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> y = pd.DataFrame(y)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+    >>> cv = KFold(n_splits=3)
+
+    >>> estimator = ResidualDouble(LinearRegression())
+    >>> param_grid = {"estimator__fit_intercept" : [True, False]}
+    >>> gscv = GridSearchCV(
     ...     estimator=estimator,
     ...     param_grid=param_grid,
-    ...     cv=cv)
-    >>> gscv.fit(y)
-    ForecastingGridSearchCV(...)
-    >>> y_pred = gscv.predict(fh)
-
-        Advanced model meta-tuning (model selection) with multiple estimators
-        together with hyper-parametertuning at same time using sklearn notation:
-
-    >>> from skpro.datasets import load_shampoo_sales
-    >>> from skpro.forecasting.exp_smoothing import ExponentialSmoothing
-    >>> from skpro.forecasting.naive import Naiveestimator
-    >>> from skpro.forecasting.model_selection import ExpandingWindowSplitter
-    >>> from skpro.forecasting.model_selection import ForecastingGridSearchCV
-    >>> from skpro.forecasting.compose import TransformedTargetestimator
-    >>> from skpro.forecasting.theta import Thetaestimator
-    >>> from skpro.transformations.series.impute import Imputer
-    >>> y = load_shampoo_sales()
-    >>> pipe = TransformedTargetestimator(steps=[
-    ...     ("imputer", Imputer()),
-    ...     ("estimator", Naiveestimator())])
-    >>> cv = ExpandingWindowSplitter(
-    ...     initial_window=24,
-    ...     step_length=12,
-    ...     fh=[1,2,3])
-    >>> gscv = ForecastingGridSearchCV(
-    ...     estimator=pipe,
-    ...     param_grid=[{
-    ...         "estimator": [Naiveestimator(sp=12)],
-    ...         "estimator__strategy": ["drift", "last", "mean"],
-    ...     },
-    ...     {
-    ...         "imputer__method": ["mean", "drift"],
-    ...         "estimator": [Thetaestimator(sp=12)],
-    ...     },
-    ...     {
-    ...         "imputer__method": ["mean", "median"],
-    ...         "estimator": [ExponentialSmoothing(sp=12)],
-    ...         "estimator__trend": ["add", "mul"],
-    ...     },
-    ...     ],
     ...     cv=cv,
-    ...     n_jobs=-1)  # doctest: +SKIP
-    >>> gscv.fit(y)  # doctest: +SKIP
-    ForecastingGridSearchCV(...)
-    >>> y_pred = gscv.predict(fh=[1,2,3])  # doctest: +SKIP
+    ...     scoring=CRPS(),
+    ... )
+    >>> gscv.fit(X_train, y_train)
+    GridSearchCV(...)
+    >>> y_pred = gscv.predict(X_test)
     """
 
     def __init__(
@@ -573,6 +540,35 @@ class RandomizedSearchCV(BaseGridSearch):
     n_best_scores_: list of float
         The scores of n_best_estimators_ sorted from best to worst
         score of estimators
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from sklearn.model_selection import KFold, ShuffleSplit, train_test_split
+
+    >>> from skpro.metrics import CRPS
+    >>> from skpro.model_selection import RandomizedSearchCV
+    >>> from skpro.regression.residual import ResidualDouble
+
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> y = pd.DataFrame(y)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+    >>> cv = KFold(n_splits=3)
+
+    >>> estimator = ResidualDouble(LinearRegression())
+    >>> param_distributions = {"estimator__fit_intercept" : [True, False]}
+    >>> rscv = RandomizedSearchCV(
+    ...     estimator=estimator,
+    ...     param_distributions=param_distributions,
+    ...     cv=cv,
+    ...     scoring=CRPS(),
+    ... )
+    >>> rscv.fit(y)
+    RandomizedSearchCV(...)
+    >>> y_pred = gscv.predict()
     """
 
     def __init__(
