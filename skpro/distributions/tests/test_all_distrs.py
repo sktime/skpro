@@ -61,9 +61,13 @@ METHODS_ROWWISE = ["energy"]  # results in one column
 class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTester):
     """Module level tests for all sktime parameter fitters."""
 
-    def test_sample(self, object_instance):
+    @pytest.mark.parametrize("shuffled", [False, True])
+    def test_sample(self, object_instance, shuffled):
         """Test sample expected return."""
         d = object_instance
+
+        if shuffled:
+            d = _shuffle_distr(d)
 
         res = d.sample()
 
@@ -77,36 +81,50 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         assert (res_panel.index == dummy_panel.index).all()
         assert (res_panel.columns == dummy_panel.columns).all()
 
+    @pytest.mark.parametrize("shuffled", [False, True])
     @pytest.mark.parametrize("method", METHODS_SCALAR, ids=METHODS_SCALAR)
-    def test_methods_scalar(self, object_instance, method):
+    def test_methods_scalar(self, object_instance, method, shuffled):
         """Test expected return of scalar methods."""
         if not _has_capability(object_instance, method):
             return None
 
         d = object_instance
-        res = getattr(object_instance, method)()
+        if shuffled:
+            d = _shuffle_distr(d)
+
+        res = getattr(d, method)()
 
         _check_output_format(res, d, method)
 
+    @pytest.mark.parametrize("shuffled", [False, True])
     @pytest.mark.parametrize("method", METHODS_X, ids=METHODS_X)
-    def test_methods_x(self, object_instance, method):
+    def test_methods_x(self, object_instance, method, shuffled):
         """Test expected return of methods that take sample-like argument."""
         if not _has_capability(object_instance, method):
             return None
 
         d = object_instance
+
+        if shuffled:
+            d = _shuffle_distr(d)
+
         x = d.sample()
-        res = getattr(object_instance, method)(x)
+        res = getattr(d, method)(x)
 
         _check_output_format(res, d, method)
 
+    @pytest.mark.parametrize("shuffled", [False, True])
     @pytest.mark.parametrize("method", METHODS_P, ids=METHODS_P)
-    def test_methods_p(self, object_instance, method):
+    def test_methods_p(self, object_instance, method, shuffled):
         """Test expected return of methods that take percentage-like argument."""
         if not _has_capability(object_instance, method):
             return None
 
         d = object_instance
+
+        if shuffled:
+            d = _shuffle_distr(d)
+
         np_unif = np.random.uniform(size=d.shape)
         p = pd.DataFrame(np_unif, index=d.index, columns=d.columns)
         res = getattr(object_instance, method)(p)
@@ -181,3 +199,9 @@ def _check_output_format(res, dist, method):
 
     if method in METHODS_SCALAR_POS or method in METHODS_X_POS:
         assert (res >= 0).all().all()
+
+
+def _shuffle_distr(d):
+    """Shuffle distribution row index."""
+    shuffled_index = pd.DataFrame(d.index).sample(frac=1).index
+    return d.loc[shuffled_index]
