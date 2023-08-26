@@ -20,7 +20,7 @@ from pathlib import Path
 import pandas as pd
 from skbase.lookup import all_objects as _all_objects
 
-from skpro.base import BaseObject
+from skpro.base import BaseObject, BaseEstimator
 from skpro.registry._tags import OBJECT_TAG_REGISTER
 
 VALID_OBJECT_TYPE_STRINGS = set([x[1] for x in OBJECT_TAG_REGISTER])
@@ -149,7 +149,7 @@ def all_objects(
             filter_tags = object_tag_filter
 
     result = _all_objects(
-        object_types=BaseObject,
+        object_types=[BaseObject, BaseEstimator],
         filter_tags=filter_tags,
         exclude_objects=exclude_objects,
         return_names=return_names,
