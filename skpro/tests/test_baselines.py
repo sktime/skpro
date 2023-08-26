@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Legacy module: test baselines."""
 # LEGACY MODULE - TODO: remove or refactor
 
 import numpy as np
@@ -12,6 +13,7 @@ from skpro.workflow.manager import DataManager
 
 @pytest.mark.xfail(reason="Legacy module")
 def test_density_baseline():
+    """Test density baseline, legacy test."""
     data = DataManager("boston")
 
     model = DensityBaseline()
