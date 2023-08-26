@@ -110,17 +110,18 @@ def all_objects(
 
     Examples
     --------
-    >>> from sktime.registry import all_objects
+    >>> from skpro.registry import all_objects
     >>> # return a complete list of objects as pd.Dataframe
     >>> all_objects(as_dataframe=True)
-    >>> # return all forecasters by filtering for object type
-    >>> all_objects("forecaster")
-    >>> # return all forecasters which handle missing data in the input by tag filtering
-    >>> all_objects("forecaster", filter_tags={"handles-missing-data": True})
+    >>> # return all probabilistic regressors by filtering for object type
+    >>> all_objects("regressor_proba")
+    >>> # return all regressors which handle missing data in the input by tag filtering
+    >>> all_objects("regressor_proba", filter_tags={""capability:missing"": True})
 
     References
     ----------
-    Modified version from scikit-learn's `all_objects()`.
+    Adapted version of sktime's ``all_estimators``,
+    which is an evolution of scikit-learn's ``all_estimators``
     """
     MODULES_TO_IGNORE = (
         "tests",

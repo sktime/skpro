@@ -13,8 +13,8 @@ class BaseProbaRegressor(BaseEstimator):
     """Base class for probabilistic supervised regressors."""
 
     _tags = {
-        "object_type": "regressor_proba",  # type of object, e.g., 'distribution'
-        "estimator_type": "regressor_proba",
+        "object_type": "regressor_proba",  # type of object, e.g., "distribution"
+        "estimator_type": "regressor_proba",  # type of estimator, e.g., "regressor"
         "capability:multioutput": False,
         "capability:missing": True,
     }
