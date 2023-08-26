@@ -128,6 +128,40 @@ class Empirical(BaseDistribution):
                 res.loc[ix, col] = func(spl=spl_t, weights=weights_t, x=x_t, **params)
         return res.convert_dtypes()
 
+    def _iloc(self, rowidx=None, colidx=None):
+
+        index = self.index
+        columns = self.columns
+        weights = self.weights
+
+        spl_subset = self.spl
+
+        if rowidx is not None:
+            rowidx_loc = index[rowidx]
+            # subset multiindex to rowidx by last level
+            spl_subset = self.spl.loc[(slice(None), rowidx_loc), :]
+            if weights is not None:
+                weights_subset = weights.loc[(slice(None), rowidx_loc)]
+            else:
+                weights_subset = None
+            subs_rowidx = index[rowidx]
+        else:
+            subs_rowidx = index
+
+        if colidx is not None:
+            spl_subset = spl_subset.iloc[:, colidx]
+            subs_colidx = columns[colidx]
+        else:
+            subs_colidx = columns
+
+        return Empirical(
+            spl_subset,
+            weights=weights_subset,
+            time_indep=self.time_indep,
+            index=subs_rowidx,
+            columns=subs_colidx,
+        )
+
     def energy(self, x=None):
         r"""Energy of self, w.r.t. self or a constant frame x.
 
@@ -163,9 +197,9 @@ class Empirical(BaseDistribution):
         """
         spl = self.spl
         if self.weights is None:
-            mean_df = spl.groupby(level=-1).mean()
+            mean_df = spl.groupby(level=-1, sort=False).mean()
         else:
-            mean_df = spl.groupby(level=-1).apply(
+            mean_df = spl.groupby(level=-1, sort=False).apply(
                 lambda x: np.average(x, weights=self.weights.loc[x.index], axis=0)
             )
             mean_df = pd.DataFrame(mean_df.tolist(), index=mean_df.index)
@@ -187,11 +221,11 @@ class Empirical(BaseDistribution):
         spl = self.spl
         N = self._N
         if self.weights is None:
-            var_df = spl.groupby(level=-1).var(ddof=0)
+            var_df = spl.groupby(level=-1, sort=False).var(ddof=0)
         else:
             mean = self.mean()
             means = pd.concat([mean] * N, axis=0, keys=self._spl_instances)
-            var_df = spl.groupby(level=-1).apply(
+            var_df = spl.groupby(level=-1, sort=False).apply(
                 lambda x: np.average(
                     (x - means.loc[x.index]) ** 2,
                     weights=self.weights.loc[x.index],

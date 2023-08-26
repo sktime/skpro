@@ -13,6 +13,7 @@ from skbase.testing import BaseFixtureGenerator, QuickTester
 from skpro.datatypes import check_is_mtype
 from skpro.distributions.base import BaseDistribution
 from skpro.tests.test_all_estimators import PackageConfig
+from skpro.utils.index import random_ss_ix
 
 
 class DistributionFixtureGenerator(BaseFixtureGenerator):
@@ -60,9 +61,13 @@ METHODS_ROWWISE = ["energy"]  # results in one column
 class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTester):
     """Module level tests for all sktime parameter fitters."""
 
-    def test_sample(self, object_instance):
+    @pytest.mark.parametrize("shuffled", [False, True])
+    def test_sample(self, object_instance, shuffled):
         """Test sample expected return."""
         d = object_instance
+
+        if shuffled:
+            d = _shuffle_distr(d)
 
         res = d.sample()
 
@@ -76,36 +81,50 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         assert (res_panel.index == dummy_panel.index).all()
         assert (res_panel.columns == dummy_panel.columns).all()
 
+    @pytest.mark.parametrize("shuffled", [False, True])
     @pytest.mark.parametrize("method", METHODS_SCALAR, ids=METHODS_SCALAR)
-    def test_methods_scalar(self, object_instance, method):
+    def test_methods_scalar(self, object_instance, method, shuffled):
         """Test expected return of scalar methods."""
         if not _has_capability(object_instance, method):
             return None
 
         d = object_instance
-        res = getattr(object_instance, method)()
+        if shuffled:
+            d = _shuffle_distr(d)
+
+        res = getattr(d, method)()
 
         _check_output_format(res, d, method)
 
+    @pytest.mark.parametrize("shuffled", [False, True])
     @pytest.mark.parametrize("method", METHODS_X, ids=METHODS_X)
-    def test_methods_x(self, object_instance, method):
+    def test_methods_x(self, object_instance, method, shuffled):
         """Test expected return of methods that take sample-like argument."""
         if not _has_capability(object_instance, method):
             return None
 
         d = object_instance
+
+        if shuffled:
+            d = _shuffle_distr(d)
+
         x = d.sample()
-        res = getattr(object_instance, method)(x)
+        res = getattr(d, method)(x)
 
         _check_output_format(res, d, method)
 
+    @pytest.mark.parametrize("shuffled", [False, True])
     @pytest.mark.parametrize("method", METHODS_P, ids=METHODS_P)
-    def test_methods_p(self, object_instance, method):
+    def test_methods_p(self, object_instance, method, shuffled):
         """Test expected return of methods that take percentage-like argument."""
         if not _has_capability(object_instance, method):
             return None
 
         d = object_instance
+
+        if shuffled:
+            d = _shuffle_distr(d)
+
         np_unif = np.random.uniform(size=d.shape)
         p = pd.DataFrame(np_unif, index=d.index, columns=d.columns)
         res = getattr(object_instance, method)(p)
@@ -132,6 +151,40 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         res = d.quantile(q)
         _check_quantile_output(res, q)
 
+    @pytest.mark.parametrize("subset_row", [True, False])
+    @pytest.mark.parametrize("subset_col", [True, False])
+    def test_subsetting(self, object_instance, subset_row, subset_col):
+        """Test subsetting of distribution."""
+        d = object_instance
+
+        if subset_row:
+            ix_loc = random_ss_ix(d.index, 3)
+            ix_iloc = d.index.get_indexer(ix_loc)
+        else:
+            ix_loc = d.index
+            ix_iloc = pd.RangeIndex(len(d.index))
+
+        if subset_col:
+            iy_loc = random_ss_ix(d.columns, 1)
+            iy_iloc = d.columns.get_indexer(iy_loc)
+        else:
+            iy_loc = d.columns
+            iy_iloc = pd.RangeIndex(len(d.columns))
+
+        res_loc = d.loc[ix_loc, iy_loc]
+
+        assert isinstance(res_loc, type(d))
+        assert res_loc.shape == (len(ix_loc), len(iy_loc))
+        assert (res_loc.index == ix_loc).all()
+        assert (res_loc.columns == iy_loc).all()
+
+        res_iloc = d.iloc[ix_iloc, iy_iloc]
+
+        assert isinstance(res_iloc, type(d))
+        assert res_iloc.shape == (len(ix_iloc), len(iy_iloc))
+        assert (res_iloc.index == ix_loc).all()
+        assert (res_iloc.columns == iy_loc).all()
+
 
 def _check_output_format(res, dist, method):
     """Check output format expectations for BaseDistribution tests."""
@@ -146,3 +199,9 @@ def _check_output_format(res, dist, method):
 
     if method in METHODS_SCALAR_POS or method in METHODS_X_POS:
         assert (res >= 0).all().all()
+
+
+def _shuffle_distr(d):
+    """Shuffle distribution row index."""
+    shuffled_index = pd.DataFrame(d.index).sample(frac=1).index
+    return d.loc[shuffled_index]
