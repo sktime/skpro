@@ -116,7 +116,7 @@ def all_objects(
     >>> # return all probabilistic regressors by filtering for object type
     >>> all_objects("regressor_proba")
     >>> # return all regressors which handle missing data in the input by tag filtering
-    >>> all_objects("regressor_proba", filter_tags={""capability:missing"": True})
+    >>> all_objects("regressor_proba", filter_tags={"capability:missing": True})
 
     References
     ----------
