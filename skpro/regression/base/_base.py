@@ -115,7 +115,15 @@ class BaseProbaRegressor(BaseEstimator):
         y : pandas DataFrame, same length as `X`
             labels predicted for `X`
         """
-        raise NotImplementedError
+        implements_proba = self._has_implementation_of("_predict_proba")
+
+        if not implements_proba:
+            raise NotImplementedError
+
+        if implements_proba:
+            pred_proba = self._predict_proba(X=X)
+            pred_mean = pred_proba.mean()
+            return pred_mean
 
     def predict_proba(self, X):
         """Predict distribution over labels for data from features.
