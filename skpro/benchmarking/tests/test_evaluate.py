@@ -41,6 +41,23 @@ def _check_evaluate_output(out, cv, y, scoring):
     assert np.all(out["len_y_train"] > 0)
 
 
+def _get_pred_method(scoring):
+    """Get the prediction method for a given scoring function."""
+    pred_type = {
+        "pred_quantiles": "predict_quantiles",
+        "pred_interval": "predict_interval",
+        "pred_proba": "predict_proba",
+        None: "predict",
+    }
+
+    if hasattr(scoring, "get_tag"):
+        scitype = scoring.get_tag("scitype:y_pred", raise_error=False)
+    else:
+        scitype = None
+
+    return pred_type[scitype]
+
+
 CVs = [
     KFold(n_splits=3),
     ShuffleSplit(n_splits=3, test_size=0.5),
@@ -61,6 +78,8 @@ def test_evaluate_common_configs(cv, scoring, backend):
     X, y = load_diabetes(return_X_y=True, as_frame=True)
     y = pd.DataFrame(y)
     estimator = ResidualDouble(LinearRegression())
+
+    scoring = scoring()
 
     out = evaluate(
         estimator=estimator,
@@ -83,6 +102,9 @@ def test_evaluate_common_configs(cv, scoring, backend):
         X_test, y_test = X.iloc[test], y.iloc[test]
         est = estimator.clone()
         est.fit(X_train, y_train)
-        expected[i] = scoring(y_test, est.predict(X_test), y_train=y_train)
+
+        pred_method = _get_pred_method(scoring)
+        y_pred = getattr(est, pred_method)(X_test)
+        expected[i] = scoring(y_test, y_pred, y_train=y_train)
 
     np.testing.assert_array_equal(actual, expected)
