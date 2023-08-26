@@ -6,7 +6,7 @@ import os
 import urllib.request
 
 import numpy as np
-from sklearn.datasets import load_diabetes, load_diabetes
+from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
 
