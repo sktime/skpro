@@ -3,7 +3,7 @@ from random import randint
 
 import numpy as np
 from scipy.stats import norm
-from sklearn.datasets.base import load_boston
+from sklearn.datasets.base import load_diabetes
 from sklearn.model_selection import train_test_split
 
 from skpro.base import ProbabilisticEstimator
@@ -50,7 +50,7 @@ class MyCustomModel(ProbabilisticEstimator):
 # Use custom model
 model = MyCustomModel()
 
-X, y = load_boston(return_X_y=True)
+X, y = load_diabetes(return_X_y=True)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 y_pred = model.fit(X_train, y_train).predict(X_test)
 print("Loss: %f+-%f" % log_loss(y_test, y_pred, return_std=True))

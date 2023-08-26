@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # LEGACY MODULE - TODO: remove or refactor
-from sklearn.datasets.base import load_boston
+from sklearn.datasets.base import load_diabetes
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 
@@ -14,7 +14,7 @@ model = ParametricEstimator(
 )
 
 # Train and predict on boston housing data
-X, y = load_boston(return_X_y=True)
+X, y = load_diabetes(return_X_y=True)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 y_pred = model.fit(X_train, y_train).predict(X_test)
 
