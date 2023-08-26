@@ -252,7 +252,7 @@ class BaseDistribution(BaseObject):
         spl = self.sample(N)
         ind = splx <= spl
 
-        return ind.groupby(level=1).mean()
+        return ind.groupby(level=1, sort=False).mean()
 
     def ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
@@ -332,7 +332,8 @@ class BaseDistribution(BaseObject):
 
         # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx, sply
         spl = splx - sply
-        energy = spl.apply(np.linalg.norm, axis=1, ord=1).groupby(level=1).mean()
+        energy = spl.apply(np.linalg.norm, axis=1, ord=1)
+        energy = energy.groupby(level=1, sort=False).mean()
         energy = pd.DataFrame(energy, index=self.index, columns=["energy"])
         return energy
 
@@ -355,7 +356,7 @@ class BaseDistribution(BaseObject):
         warn(self._method_error_msg("mean", fill_in=approx_method))
 
         spl = self.sample(approx_spl_size)
-        return spl.groupby(level=1).mean()
+        return spl.groupby(level=1, sort=False).mean()
 
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
@@ -378,7 +379,7 @@ class BaseDistribution(BaseObject):
         spl1 = self.sample(approx_spl_size)
         spl2 = self.sample(approx_spl_size)
         spl = (spl1 - spl2) ** 2
-        return spl.groupby(level=1).mean()
+        return spl.groupby(level=1, sort=False).mean()
 
     def pdfnorm(self, a=2):
         r"""a-norm of pdf, defaults to 2-norm.
@@ -410,7 +411,7 @@ class BaseDistribution(BaseObject):
 
         # uses formula int p(x)^a dx = E[p(X)^{a-1}], and MC approximates the RHS
         spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
-        return pd.concat(spl, axis=0).groupby(level=1).mean()
+        return pd.concat(spl, axis=0).groupby(level=1, sort=False).mean()
 
     def _coerce_to_self_index_df(self, x):
         x = np.array(x)
