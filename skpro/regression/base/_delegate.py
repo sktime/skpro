@@ -1,3 +1,4 @@
++# -*- coding: utf-8 -*-
 """Delegator mixin that delegates all methods to wrapped regressor.
 
 Useful for building estimators where all but one or a few methods are delegated. For
