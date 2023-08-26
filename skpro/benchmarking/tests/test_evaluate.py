@@ -9,18 +9,12 @@ __author__ = ["fkiraly"]
 import numpy as np
 import pandas as pd
 import pytest
-
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import KFold, ShuffleSplit
 
 from skpro.benchmarking import evaluate
-from skpro.metrics import (
-    CRPS,
-    EmpiricalCoverage,
-    LogLoss,
-    PinballLoss,
-)
+from skpro.metrics import CRPS, EmpiricalCoverage, LogLoss, PinballLoss
 from skpro.regression.residual import ResidualDouble
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
@@ -59,9 +53,7 @@ METRICS = [CRPS, EmpiricalCoverage, LogLoss, PinballLoss]
 @pytest.mark.parametrize("cv", CVs)
 @pytest.mark.parametrize("scoring", METRICS)
 @pytest.mark.parametrize("backend", [None, "dask", "loky", "threading"])
-def test_evaluate_common_configs(
-    cv, scoring, backend
-):
+def test_evaluate_common_configs(cv, scoring, backend):
     """Test evaluate common configs."""
     # skip test for dask backend if dask is not installed
     if backend == "dask" and not _check_soft_dependencies("dask", severity="none"):
