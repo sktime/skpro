@@ -568,7 +568,7 @@ class RandomizedSearchCV(BaseGridSearch):
     ... )
     >>> rscv.fit(X_train, y_train)
     RandomizedSearchCV(...)
-    >>> y_pred = gscv.predict(X_test)
+    >>> y_pred = rscv.predict(X_test)
     """
 
     def __init__(
