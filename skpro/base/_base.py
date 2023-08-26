@@ -13,6 +13,11 @@ class _CommonTags:
 
     _tags = {"estimator_type": "estimator"}
 
+    @property
+    def name(self):
+        """Return the name of the object or estimator."""
+        return self.__class__.__name__
+
 
 class BaseObject(_CommonTags, _BaseObject):
     """Base class for fittable objects."""
