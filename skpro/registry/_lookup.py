@@ -21,6 +21,8 @@ from skbase.lookup import all_objects as _all_objects
 from skpro.base import BaseObject
 from skpro.registry._tags import OBJECT_TAG_REGISTER
 
+VALID_OBJECT_TYPE_STRINGS = set([x[1] for x in OBJECT_TAG_REGISTER])
+
 
 def all_objects(
     object_types=None,
@@ -315,9 +317,20 @@ def _check_object_types(object_types):
     if not isinstance(object_types, list):
         object_types = [object_types]  # make iterable
 
+    def _get_err_msg(object_type):
+        return (
+            f"Parameter `object_type` must be None, a string or a list of "
+            f"strings. Valid string values are: "
+            f"{tuple(VALID_OBJECT_TYPE_STRINGS)}, but found: "
+            f"{repr(object_type)}"
+        )
+
     for i, object_type in enumerate(object_types):
         if not isinstance(object_type, (type, str)):
             raise ValueError(
                 "Please specify `object_types` as a list of str or " "types."
             )
+        if isinstance(object_type, str):
+            if object_type not in VALID_OBJECT_TYPE_STRINGS:
+                raise ValueError(_get_err_msg(object_type))
     return object_types
