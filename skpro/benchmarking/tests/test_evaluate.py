@@ -59,8 +59,8 @@ def _get_pred_method(scoring):
 
 
 CVs = [
-    KFold(n_splits=3),
-    ShuffleSplit(n_splits=3, test_size=0.5),
+    KFold(n_splits=3, random_state=42),
+    ShuffleSplit(n_splits=3, test_size=0.5, random_state=42),
 ]
 
 METRICS = [CRPS, EmpiricalCoverage, LogLoss, PinballLoss]
@@ -97,7 +97,7 @@ def test_evaluate_common_configs(cv, scoring, backend):
     n_splits = cv.get_n_splits(X)
     expected = np.empty(n_splits)
 
-    for i, (train, test) in enumerate(cv.split(X)):
+    for i, (train, test) in enumerate(cv.split(y)):
         X_train, y_train = X.iloc[train], y.iloc[train]
         X_test, y_test = X.iloc[test], y.iloc[test]
         est = estimator.clone()
