@@ -155,12 +155,14 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
 
         res_loc = d.loc[ix_loc, iy_loc]
 
+        assert isinstance(res_loc, type(d))
         assert res_loc.shape == (len(ix_loc), len(iy_loc))
         assert (res_loc.index == ix_loc).all()
         assert (res_loc.columns == iy_loc).all()
 
         res_iloc = d.iloc[ix_iloc, iy_iloc]
 
+        assert isinstance(res_iloc, type(d))
         assert res_iloc.shape == (len(ix_iloc), len(iy_iloc))
         assert (res_iloc.index == ix_loc).all()
         assert (res_iloc.columns == iy_loc).all()
