@@ -128,47 +128,22 @@ def evaluate(
 
     Examples
     --------
-        The type of evaluation that is done by `evaluate` depends on metrics in
-        param `scoring`. Default is `MeanAbsolutePercentageError`.
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from sklearn.model_selection import KFold
 
-    >>> from sktime.datasets import load_airline
-    >>> from sktime.forecasting.model_evaluation import evaluate
-    >>> from sktime.forecasting.model_selection import ExpandingWindowSplitter
-    >>> from sktime.forecasting.naive import Naiveestimator
-    >>> y = load_airline()[:24]
-    >>> estimator = Naiveestimator(strategy="mean", sp=3)
-    >>> cv = ExpandingWindowSplitter(initial_window=12, step_length=6, fh=[1, 2, 3])
-    >>> results = evaluate(estimator=estimator, y=y, cv=cv)
+    >>> from skpro.benchmarking.evaluate import evaluate
+    >>> from skpro.metrics import CRPS
+    >>> from skpro.regression.residual import ResidualDouble
 
-        Optionally, users may select other metrics that can be supplied
-        by `scoring` argument. These can be forecast metrics of any kind,
-        i.e., point forecast metrics, interval metrics, quantile forecast metrics.
-        https://www.sktime.net/en/stable/api_reference/performance_metrics.html?highlight=metrics
-        To evaluate estimators using a specific metric, provide them to the scoring arg.
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> y = pd.DataFrame(y)  # skpro assumes y is pd.DataFrame
 
-    >>> from sktime.performance_metrics.forecasting import MeanAbsoluteError
-    >>> loss = MeanAbsoluteError()
-    >>> results = evaluate(estimator=estimator, y=y, cv=cv, scoring=loss)
+    >>> estimator = ResidualDouble(LinearRegression())
+    >>> cv = KFold(n_splits=3, random_state=42)
+    >>> crps = CRPS()
 
-        Optionally, users can provide a list of metrics to `scoring` argument.
-
-    >>> from sktime.performance_metrics.forecasting import MeanSquaredError
-    >>> results = evaluate(
-    ...     estimator=estimator,
-    ...     y=y,
-    ...     cv=cv,
-    ...     scoring=[MeanSquaredError(square_root=True), MeanAbsoluteError()],
-    ... )
-
-        An example of an interval metric is the `PinballLoss`.
-        It can be used with all probabilistic estimators.
-
-    >>> from sktime.forecasting.naive import NaiveVariance
-    >>> from sktime.performance_metrics.forecasting.probabilistic import PinballLoss
-    >>> loss = PinballLoss()
-    >>> estimator = Naiveestimator(strategy="drift")
-    >>> results = evaluate(estimator=NaiveVariance(estimator),
-    ... y=y, cv=cv, scoring=loss)
+    >>> results = evaluate(estimator=estimator, X=X, y=y, cv=cv, scoring=crps)
     """
     if backend == "dask" and not _check_soft_dependencies("dask", severity="none"):
         raise RuntimeError(
