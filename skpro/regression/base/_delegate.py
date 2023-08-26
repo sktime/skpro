@@ -137,7 +137,7 @@ class _DelegatedProbaRegressor(BaseProbaRegressor):
         estimator = self._get_delegate()
         return estimator.predict_interval(X=X, coverage=coverage)
 
-    def _predict_var(self, X, cov):
+    def _predict_var(self, X):
         """Compute/return variance predictions.
 
         private _predict_var containing the core logic, called from predict_var
@@ -157,7 +157,7 @@ class _DelegatedProbaRegressor(BaseProbaRegressor):
             variance for that variable and index, given observed data.
         """
         estimator = self._get_delegate()
-        return estimator.predict_var(X=X, cov=cov)
+        return estimator.predict_var(X=X)
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
