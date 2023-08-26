@@ -168,5 +168,5 @@ def _check_output_format(res, dist, method):
 
 def _shuffle_distr(d):
     """Shuffle distribution row index."""
-    shuffled_index = d.index.sample(frac=1)
+    shuffled_index = pd.DataFrame(d.index).sample(frac=1).index
     return d.loc[shuffled_index]
