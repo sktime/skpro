@@ -27,7 +27,7 @@ class TDistribution(BaseDistribution):
 
     Example
     -------
-    >>> from sktime.proba.t import TDistribution
+    >>> from skpro.distriutions.t import TDistribution
 
     >>> n = TDistribution(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, df=10)
     """
