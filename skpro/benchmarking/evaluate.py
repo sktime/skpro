@@ -71,14 +71,14 @@ def evaluate(
     Parameters
     ----------
     estimator : skpro BaseProbaRegressor descendant (concrete estimator)
-        sktime estimator to benchmark
+        skpro estimator to benchmark
     cv : sklearn splitter
         determines split of ``X`` and ``y`` into test and train folds
     X : pandas DataFrame
         Feature instances to use in evaluation experiment
     y : pd.DataFrame, must be same length as X
         Labels to used in the evaluation experiment
-    scoring : subclass of sktime.performance_metrics.BaseMetric or list of same,
+    scoring : subclass of skpro.performance_metrics.BaseMetric or list of same,
         default=None. Used to get a score function that takes y_pred and y_test
         arguments and accept y_train as keyword argument.
         If None, then uses scoring = MeanAbsolutePercentageError(symmetric=True).

@@ -59,7 +59,7 @@ METHODS_ROWWISE = ["energy"]  # results in one column
 
 
 class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTester):
-    """Module level tests for all sktime parameter fitters."""
+    """Module level tests for all skpro parameter fitters."""
 
     @pytest.mark.parametrize("shuffled", [False, True])
     def test_sample(self, object_instance, shuffled):

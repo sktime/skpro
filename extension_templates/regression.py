@@ -2,7 +2,7 @@
 """Extension template for regressors."""
 # todo: write an informative docstring for the file or module, remove the above
 # todo: add an appropriate copyright notice for your estimator
-#       estimators contributed to sktime should have the copyright notice at the top
+#       estimators contributed to skpro should have the copyright notice at the top
 #       estimators of your own do not need to have permissive or BSD-3 copyright
 
 # todo: uncomment the following line, enter authors' GitHub IDs
@@ -12,7 +12,7 @@ from skpro.regression.base import BaseProbaRegressor
 
 # todo: add any necessary imports here
 
-# todo: if any imports are sktime soft dependencies:
+# todo: if any imports are skpro soft dependencies:
 # make sure to fill in the "python_dependencies" tag with the package import name
 
 
@@ -179,7 +179,7 @@ class ClassName(BaseProbaRegressor):
         #
         # this can, if required, use:
         #   class properties (e.g., inherited); parent class test case
-        #   imported objects such as estimators from sktime or sklearn
+        #   imported objects such as estimators from skpro or sklearn
         # important: all such imports should be *inside get_test_params*, not at the top
         #            since imports are used only at testing time
         #

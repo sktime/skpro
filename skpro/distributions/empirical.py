@@ -11,7 +11,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Empirical(BaseDistribution):
-    """Empirical distribution (sktime native).
+    """Empirical distribution (skpro native).
 
     Parameters
     ----------

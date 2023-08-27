@@ -18,7 +18,7 @@ __author__ = ["fkiraly", "euanenticott-shell"]
 
 
 class BaseProbaMetric(BaseObject):
-    """Base class for probabilistic supervised error metrics in sktime.
+    """Base class for probabilistic supervised error metrics in skpro.
 
     Parameters
     ----------
@@ -423,7 +423,7 @@ class BaseDistrMetric(BaseProbaMetric):
         y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
             Ground truth (correct) target values.
 
-        y_pred : sktime BaseDistribution of same shape as y_true
+        y_pred : skpro BaseDistribution of same shape as y_true
             Predictive distribution.
             Must have same index and columns as y_true.
         """

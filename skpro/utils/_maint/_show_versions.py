@@ -59,7 +59,7 @@ def _get_deps_info(deps=None):
     Parameters
     ----------
     deps : optional, list of strings with import names
-        if None, behaves as deps = ["sktime"]
+        if None, behaves as deps = ["skpro"]
 
     Returns
     -------
@@ -69,7 +69,7 @@ def _get_deps_info(deps=None):
         of the import as present in the current python environment
     """
     if deps is None:
-        deps = ["sktime"]
+        deps = ["skpro"]
 
     def get_version(module):
         return module.__version__
@@ -91,7 +91,7 @@ def _get_deps_info(deps=None):
 
 
 def show_versions():
-    """Print python version, OS version, sktime version, selected dependency versions.
+    """Print python version, OS version, skpro version, selected dependency versions.
 
     Pretty prints:
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Normal/Gaussian probability distribution."""
 
 __author__ = ["fkiraly"]
@@ -12,7 +12,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Normal(BaseDistribution):
-    """Normal distribution (sktime native).
+    """Normal distribution (skpro native).
 
     Parameters
     ----------
