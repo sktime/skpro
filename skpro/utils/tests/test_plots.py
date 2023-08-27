@@ -1,9 +1,11 @@
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# -*- coding: utf-8 -*-
 """Test functionality of time series plotting functions."""
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 import pytest
 
 from skpro.utils.validation._dependencies import _check_soft_dependencies
+
 
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
