@@ -171,6 +171,12 @@ OBJECT_TAG_REGISTER = [
         "str",
         "name of component list attribute for meta-objects",
     ),
+    (
+        "fitted_named_object_parameters",
+        "estimator",
+        "str",
+        "name of fitted component list attribute for meta-objects",
+    ),
 ]
 
 OBJECT_TAG_TABLE = pd.DataFrame(OBJECT_TAG_REGISTER)
