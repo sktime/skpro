@@ -1,5 +1,6 @@
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# -*- coding: utf-8 -*-
 """Student's t-distribution."""
+# copyright: skprodevelopers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["Alex-JG3"]
 
