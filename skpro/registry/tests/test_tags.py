@@ -13,7 +13,11 @@ def test_tag_register_type():
         assert len(tag) == 4
         assert isinstance(tag[0], str)
         assert isinstance(tag[1], str)
-        assert isinstance(tag[2], (str, list))
-        if isinstance(tag[2], list):
-            assert all(isinstance(t, str) for t in tag[2])
+        assert isinstance(tag[2], (str, tuple))
+        if isinstance(tag[2], tuple):
+            assert len(tag[2]) == 2
+            assert isinstance(tag[2][0], str)
+            assert isinstance(tag[2][1], (list, str))
+            if isinstance(tag[2][1], list):
+                assert all(isinstance(x, str) for x in tag[2][1])
         assert isinstance(tag[3], str)
