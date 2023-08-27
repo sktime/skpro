@@ -4,6 +4,7 @@
 
 __author__ = ["fkiraly"]
 
+import numpy as np
 import pandas as pd
 from sklearn import clone
 
@@ -104,7 +105,7 @@ class ResidualDouble(BaseProbaRegressor):
         y = y.values.flatten()
 
         est.fit(X, y)
-        resids = y - est.predict(X)
+        resids = np.abs(y - est.predict(X))
 
         resids = resids.flatten()
 
