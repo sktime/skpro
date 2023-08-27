@@ -27,6 +27,31 @@ class BaseProbaRegressor(BaseEstimator):
         super(BaseProbaRegressor, self).__init__()
         _check_estimator_deps(self)
 
+    def __rmul__(self, other):
+        """Magic * method, return (left) concatenated Pipeline.
+
+        Implemented for `other` being a transformer, otherwise returns `NotImplemented`.
+
+        Parameters
+        ----------
+        other: `sklearn` transformer, must follow `sklearn` API
+            otherwise, `NotImplemented` is returned
+
+        Returns
+        -------
+        Pipeline object,
+            concatenation of `other` (first) with `self` (last).
+            not nested, contains only non-Pipeline `skpro` steps
+        """
+        from skpro.regression.compose._pipeline import Pipeline
+
+        # we wrap self in a pipeline, and concatenate with the other
+        #   the TransformedTargetForecaster does the rest, e.g., dispatch on other
+        if hasattr(other, "transform"):
+            return other * Pipeline([self])
+        else:
+            return NotImplemented
+
     def fit(self, X, y):
         """Fit regressor to training data.
 
