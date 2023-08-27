@@ -290,7 +290,8 @@ class Pipeline(_Pipeline):
     >>> reg_mean = LinearRegression()
     >>> reg_proba = ResidualDouble(reg_mean)
 
-        Example 1: string/estimator pairs
+    Example 1: string/estimator pairs
+
     >>> pipe = Pipeline(steps=[
     ...     ("imputer", Imputer()),
     ...     ("scaler", MinMaxScaler()),
@@ -301,17 +302,19 @@ class Pipeline(_Pipeline):
     >>> y_pred = pipe.predict(X=X_test)
     >>> y_pred_proba = pipe.predict_proba(X=X_test)
 
-        Example 2: without strings
+    Example 2: without strings
+
     >>> pipe = Pipeline([
     ...     Imputer(),
     ...     MinMaxScaler(),
     ...     ("regressor", reg_proba),
     ... ])
 
-        Example 3: using the dunder method
+    Example 3: using the dunder method
+    (requires bracketing as sklearn does not support dunders)
 
     >>> reg_proba = ResidualDouble(reg_mean)
-    >>> pipe = Imputer() * MinMaxScaler() * reg_proba
+    >>> pipe = Imputer() * (MinMaxScaler() * reg_proba)
     """
 
     _tags = {
