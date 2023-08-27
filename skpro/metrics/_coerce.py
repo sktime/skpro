@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Output coercion utilities for metric classes."""
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
 import pandas as pd

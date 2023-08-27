@@ -206,7 +206,7 @@ def _get_return_tags(object, return_tags):
 
     Parameters
     ----------
-    object:  Baseobject, an sktime object
+    object: BaseObject, an skpro object
     return_tags: list of str,
         names of tags to get values for the object
 
@@ -224,7 +224,7 @@ def _check_tag_cond(object, filter_tags=None, as_dataframe=True):
 
     Parameters
     ----------
-    object: Baseobject, an sktime object
+    object: BaseObject, an skpro object
     filter_tags: dict of (str or list of str), default=None
         subsets the returned objects as follows:
             each key/value pair is statement in "and"/conjunction
@@ -257,7 +257,7 @@ def all_tags(
     object_types=None,
     as_dataframe=False,
 ):
-    """Get a list of all tags from sktime.
+    """Get a list of all tags from skpro.
 
     Retrieves tags directly from `_tags`, offers filtering functionality.
 
