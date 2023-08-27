@@ -211,9 +211,7 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
         ]
         params1 = {"steps": STEPS1}
 
-        params2 = {
-            "steps": [StandardScaler(), regressor]
-        }
+        params2 = {"steps": [StandardScaler(), regressor]}
 
         return [params1, params2]
 
