@@ -32,21 +32,21 @@ def plot_crossplot_interval(y_test, y_pred, coverage=None, ax=None):
 
     Example
     -------
-    >>> from skpro.utils.plotting import plot_crossplot_interval
-    >>> from skpro.regression.residual import ResidualDouble
-    >>> from sklearn.ensemble import RandomForestRegressor
-    >>> from sklearn.linear_model import LinearRegression
-    >>> from sklearn.datasets import load_diabetes
+    >>> from skpro.utils.plotting import plot_crossplot_interval  # doctest: +SKIP
+    >>> from skpro.regression.residual import ResidualDouble  # doctest: +SKIP
+    >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
+    >>> from sklearn.linear_model import LinearRegression  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
     >>>
-    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
-    >>> reg_mean = LinearRegression()
-    >>> reg_resid = RandomForestRegressor()
-    >>> reg_proba = ResidualDouble(reg_mean, reg_resid)
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> reg_mean = LinearRegression()  # doctest: +SKIP
+    >>> reg_resid = RandomForestRegressor()  # doctest: +SKIP
+    >>> reg_proba = ResidualDouble(reg_mean, reg_resid)  # doctest: +SKIP
     >>>
-    >>> reg_proba.fit(X, y)
+    >>> reg_proba.fit(X, y)  # doctest: +SKIP
     ResidualDouble(...)
-    >>> y_pred = reg_proba.predict_proba(X)
-    >>> plot_crossplot_interval(y, y_pred)
+    >>> y_pred = reg_proba.predict_proba(X)  # doctest: +SKIP
+    >>> plot_crossplot_interval(y, y_pred)  # doctest: +SKIP
     """
     _check_soft_dependencies("matplotlib")
 
@@ -108,21 +108,21 @@ def plot_crossplot_std(y_test, y_pred, ax=None):
 
     Example
     -------
-    >>> from skpro.utils.plotting import plot_crossplot_std
-    >>> from skpro.regression.residual import ResidualDouble
-    >>> from sklearn.ensemble import RandomForestRegressor
-    >>> from sklearn.linear_model import LinearRegression
-    >>> from sklearn.datasets import load_diabetes
+    >>> from skpro.utils.plotting import plot_crossplot_std  # doctest: +SKIP
+    >>> from skpro.regression.residual import ResidualDouble  # doctest: +SKIP
+    >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
+    >>> from sklearn.linear_model import LinearRegression  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
     >>>
-    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
-    >>> reg_mean = LinearRegression()
-    >>> reg_resid = RandomForestRegressor()
-    >>> reg_proba = ResidualDouble(reg_mean, reg_resid)
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> reg_mean = LinearRegression()  # doctest: +SKIP
+    >>> reg_resid = RandomForestRegressor()  # doctest: +SKIP
+    >>> reg_proba = ResidualDouble(reg_mean, reg_resid)  # doctest: +SKIP
     >>>
-    >>> reg_proba.fit(X, y)
+    >>> reg_proba.fit(X, y)  # doctest: +SKIP
     ResidualDouble(...)
-    >>> y_pred = reg_proba.predict_proba(X)
-    >>> plot_crossplot_std(y, y_pred)
+    >>> y_pred = reg_proba.predict_proba(X)  # doctest: +SKIP
+    >>> plot_crossplot_std(y, y_pred)  # doctest: +SKIP
     """
     _check_soft_dependencies("matplotlib")
 
