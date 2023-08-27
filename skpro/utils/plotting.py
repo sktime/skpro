@@ -206,7 +206,7 @@ def plot_crossplot_loss(y_true, y_pred, metric, ax=None):
     >>> reg_proba.fit(X, y)  # doctest: +SKIP
     ResidualDouble(...)
     >>> y_pred = reg_proba.predict_proba(X)  # doctest: +SKIP
-    >>> crps_metric = CRPS()
+    >>> crps_metric = CRPS()  # doctest: +SKIP
     >>> plot_crossplot_loss(y, y_pred, crps_metric)  # doctest: +SKIP
     """
     _check_soft_dependencies("matplotlib")
