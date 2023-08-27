@@ -5,13 +5,21 @@ import pandas as pd
 
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
+__authors__ = ["fkiraly", "frthjf"]
 
-def plot_crossplot_interval(y_test, y_pred, coverage=None, ax=None):
+
+def plot_crossplot_interval(y_true, y_pred, coverage=None, ax=None):
     """Probabilistic cross-plot for regression, truth vs prediction interval.
+
+    Plots:
+
+    * x-axis: ground truth value
+    * y-axis: median predictive value, with error bars being
+      the prediction interval at symmetric coverage ``coverage``
 
     Parameters
     ----------
-    y_test : array-like, [n_samples, n_targets]
+    y_true : array-like, [n_samples, n_targets]
         Ground truth values
     y_pred : skpro distribution, or predict_interval return, [n_samples, n_targets]
         symmetric prediction intervals are obtained
@@ -70,9 +78,9 @@ def plot_crossplot_interval(y_test, y_pred, coverage=None, ax=None):
     if ax is None:
         _, ax = pyplot.subplots()
 
-    ax.plot(y_test, y_test, "g.", label="Optimum")
+    ax.plot(y_true, y_true, "g.", label="Optimum")
     ax.errorbar(
-        y_test.values,
+        y_true.values,
         y_mid,
         yerr=y_bars,
         label="Predictions",
@@ -80,19 +88,25 @@ def plot_crossplot_interval(y_test, y_pred, coverage=None, ax=None):
         ecolor="r",
         linewidth=0.5,
     )
-    ax.set_ylabel("Predicted $y_{pred}$")
-    ax.set_xlabel("Correct label $y_{true}$")
+    ax.set_ylabel(r"Prediction interval $\widehat{y}_i$")
+    ax.set_xlabel(r"Correct label $y_i$")
     ax.legend(loc="best")
 
     return ax
 
 
-def plot_crossplot_std(y_test, y_pred, ax=None):
-    """Probabilistic cross-plot for regression, error vs predictive standard deviation.
+def plot_crossplot_std(y_true, y_pred, ax=None):
+    r"""Probabilistic cross-plot for regression, error vs predictive standard deviation.
+
+    Plots:
+
+    * x-axis: absolute error samples $|y_i - \widehat{y}_i.\mu|$
+    * y-axis: predictive standard deviation $\widehat{y}_i.\sigma$,
+      of the prediction $\widehat{y}_i$ corresponding to $y_i$
 
     Parameters
     ----------
-    y_test : array-like, [n_samples, n_targets]
+    y_true : array-like, [n_samples, n_targets]
         Ground truth values
     y_pred : skpro distribution, or predict_var return, [n_samples, n_targets]
         Predicted values
@@ -137,12 +151,86 @@ def plot_crossplot_std(y_test, y_pred, ax=None):
         _, ax = pyplot.subplots()
 
     ax.plot(
-        np.abs(y_pred.mean().values.flatten() - y_test.values.flatten()),
+        np.abs(y_pred.mean().values.flatten() - y_true.values.flatten()),
         y_std.values.flatten(),
         "b.",
     )
-    ax.set_ylabel("Predictive variance of $y_{pred}$")
-    ax.set_xlabel("Absolute error $|y_{true} - y_{pred}|$")
+    ax.set_ylabel(r"Predictive variance of $\widehat{y}_i$")
+    ax.set_xlabel(r"Absolute errors $|y_i - \widehat{y}_i|$")
     # ax.legend(loc="best")
+
+    return ax
+
+
+def plot_crossplot_loss(y_true, y_pred, metric, ax=None):
+    r"""Cross-loss-plot for probabilistic regression.
+
+    Plots:
+
+    * x-axis: ground truth values $y_i$
+    * y-axis: loss of the prediction $\widehat{y}_i$ corresponding to $y_i$,
+      as calculated by ``metric.evaluate_by_index``
+
+    Parameters
+    ----------
+    y_true : array-like, [n_samples, n_targets]
+        Ground truth values
+    y_pred : skpro distribution, or predict_var return, [n_samples, n_targets]
+        Predicted values
+    metric : skpro metric
+        Metric to calculate the loss
+    ax : matplotlib axes, optional
+        Axes to plot on, if None, a new figure is created and returned
+
+    Returns
+    -------
+    ax : matplotlib axes
+        Axes containing the plot
+        If ax was None, a new figure is created and returned
+        If ax was not None, the same ax is returned with plot added
+
+    Example
+    -------
+    >>> from skpro.utils.plotting import plot_crossplot_loss  # doctest: +SKIP
+    >>> from skpro.metrics import CRPS  # doctest: +SKIP
+    >>> from skpro.regression.residual import ResidualDouble  # doctest: +SKIP
+    >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
+    >>> from sklearn.linear_model import LinearRegression  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> reg_mean = LinearRegression()  # doctest: +SKIP
+    >>> reg_resid = RandomForestRegressor()  # doctest: +SKIP
+    >>> reg_proba = ResidualDouble(reg_mean, reg_resid)  # doctest: +SKIP
+    >>>
+    >>> reg_proba.fit(X, y)  # doctest: +SKIP
+    ResidualDouble(...)
+    >>> y_pred = reg_proba.predict_proba(X)  # doctest: +SKIP
+    >>> crps_metric = CRPS()
+    >>> plot_crossplot_loss(y, y_pred, crps_metric)  # doctest: +SKIP
+    """
+    _check_soft_dependencies("matplotlib")
+
+    from matplotlib import pyplot
+
+    losses = metric.evaluate_by_index(y_true, y_pred)
+    loss_vals = losses.values.flatten()
+    total_loss = np.mean(loss_vals).round(2)
+    total_loss_std = np.std(loss_vals) / np.sqrt(len(loss_vals))
+    total_loss_std = total_loss_std.round(2)
+
+    overall = f"{total_loss} +/- {total_loss_std} sterr of mean"
+
+    if ax is None:
+        _, ax = pyplot.subplots()
+
+    ax.plot(y_true, losses, "y_")
+
+    ax.set_title(f"mean {metric.name}: {overall}")
+
+    ax.set_xlabel(r"Correct label $y_i$")
+    ax.set_ylabel(metric.name + r"($y_i$, $\widehat{y}_i$)")
+
+    ax.tick_params(colors="y")
 
     return ax
