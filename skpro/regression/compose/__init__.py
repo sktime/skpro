@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Composition and pipelines for probabilistic supervised regression."""
 
 from skpro.regression.compose._pipeline import Pipeline

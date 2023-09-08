@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # LEGACY MODULE - TODO: remove or refactor
 
 from skpro.workflow.base import Model

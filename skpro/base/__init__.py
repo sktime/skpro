@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Base module with base classes BaseObject, BaseEstimator."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 

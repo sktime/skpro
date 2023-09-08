@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Base class for probabilistic regression."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
@@ -20,11 +19,10 @@ class BaseProbaRegressor(BaseEstimator):
     }
 
     def __init__(self, index=None, columns=None):
-
         self.index = index
         self.columns = columns
 
-        super(BaseProbaRegressor, self).__init__()
+        super().__init__()
         _check_estimator_deps(self)
 
     def __rmul__(self, other):
@@ -392,7 +390,6 @@ class BaseProbaRegressor(BaseEstimator):
             raise NotImplementedError
 
         if implements_interval:
-
             pred_int = pd.DataFrame()
             for a in alpha:
                 # compute quantiles corresponding to prediction interval coverage
@@ -424,7 +421,6 @@ class BaseProbaRegressor(BaseEstimator):
             pred_int.columns = int_idx
 
         elif implements_proba:
-
             pred_proba = self.predict_proba(X=X)
             pred_int = pred_proba.quantile(alpha=alpha)
 
@@ -522,7 +518,6 @@ class BaseProbaRegressor(BaseEstimator):
         return pred_var
 
     def _check_X_y(self, X, y):
-
         X = self._check_X(X)
         y = self._check_y(y)
 

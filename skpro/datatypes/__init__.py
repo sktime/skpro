@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Module exports: data type definitions, checks, validation, fixtures, converters."""
 # this module has been adapted from sktime
 # it is largely copy-pasting the Proba and Table parts

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Registry and lookup functionality."""
 
 from skpro.registry._lookup import all_objects

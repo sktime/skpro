@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Test functionality of time series plotting functions."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 

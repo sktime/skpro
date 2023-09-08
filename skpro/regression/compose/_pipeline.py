@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Implements pipelines for probabilistic supervised regression."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # based on sktime pipelines

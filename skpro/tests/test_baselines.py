@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Legacy module: test baselines."""
 # LEGACY MODULE - TODO: remove or refactor
 
