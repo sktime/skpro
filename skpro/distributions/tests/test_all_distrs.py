@@ -3,7 +3,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
-__author__ = ["fkiraly"]
+__author__ = ["fkiraly", "Alex-JG3"]
 
 import numpy as np
 import pandas as pd
