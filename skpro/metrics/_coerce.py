@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Output coercion utilities for metric classes."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime

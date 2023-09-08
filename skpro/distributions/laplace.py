@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Laplace probability distribution."""
 
@@ -36,7 +35,6 @@ class Laplace(BaseDistribution):
     }
 
     def __init__(self, mu, scale, index=None, columns=None):
-
         self.mu = mu
         self.scale = scale
         self.index = index

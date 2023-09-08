@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Utility functions for plotting."""
 import numpy as np
 import pandas as pd

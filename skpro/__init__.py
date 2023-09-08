@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """skpro."""
 
 __version__ = "2.0.0"

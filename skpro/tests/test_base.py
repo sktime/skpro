@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # LEGACY MODULE - TODO: remove or refactor
 
 import numpy as np

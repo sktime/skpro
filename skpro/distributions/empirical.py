@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Empirical distribution."""
 
@@ -129,7 +128,6 @@ class Empirical(BaseDistribution):
         return res.convert_dtypes()
 
     def _iloc(self, rowidx=None, colidx=None):
-
         index = self.index
         columns = self.columns
         weights = self.weights
