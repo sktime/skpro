@@ -186,7 +186,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         assert (res_iloc.columns == iy_loc).all()
 
     def test_log_pdf_and_pdf(self, object_instance):
-        """Test that the log of the pdf and log_pdf function are similar"""
+        """Test that the log of the pdf and log_pdf function are similar."""
         d = object_instance
         capabilities_exact = d.get_tags()["capabilities:exact"]
 
@@ -198,7 +198,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         assert np.allclose(np.log(pdf), log_pdf)
 
     def test_ppf_and_cdf(self, object_instance):
-        """Test that the ppf is the inverse of the cdf"""
+        """Test that the ppf is the inverse of the cdf."""
         d = object_instance
         capabilities_exact = d.get_tags()["capabilities:exact"]
 
