@@ -36,7 +36,6 @@ class Normal(BaseDistribution):
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
-
         self.mu = mu
         self.sigma = sigma
         self.index = index
@@ -54,7 +53,7 @@ class Normal(BaseDistribution):
         if columns is None:
             columns = pd.RangeIndex(shape[1])
 
-        super(Normal, self).__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns)
 
     def energy(self, x=None):
         r"""Energy of self, w.r.t. self or a constant frame x.

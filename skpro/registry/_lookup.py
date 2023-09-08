@@ -22,7 +22,7 @@ from skbase.lookup import all_objects as _all_objects
 from skpro.base import BaseEstimator, BaseObject
 from skpro.registry._tags import OBJECT_TAG_REGISTER
 
-VALID_OBJECT_TYPE_STRINGS = set([x[1] for x in OBJECT_TAG_REGISTER])
+VALID_OBJECT_TYPE_STRINGS = {x[1] for x in OBJECT_TAG_REGISTER}
 
 
 def all_objects(

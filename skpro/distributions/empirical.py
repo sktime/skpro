@@ -128,7 +128,6 @@ class Empirical(BaseDistribution):
         return res.convert_dtypes()
 
     def _iloc(self, rowidx=None, colidx=None):
-
         index = self.index
         columns = self.columns
         weights = self.weights
