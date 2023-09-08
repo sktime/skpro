@@ -75,7 +75,6 @@ class ResidualDouble(BaseProbaRegressor):
     distr_type : str or BaseDistribution, default = "Normal"
         type of distribution to predict
         str options are "Normal", "Laplace", "Cauchy", "t"
-        if BaseDistribution, must be a subclass of skpro.base.BaseDistribution
     distr_loc_scale_name : tuple of length two, default = ("loc", "scale")
         names of the parameters in the distribution to use for location and scale
         if ``distr_type`` is a string, this is overridden to the correct parameters
