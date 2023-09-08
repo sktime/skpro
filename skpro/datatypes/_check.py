@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Machine type checkers for scitypes.
 

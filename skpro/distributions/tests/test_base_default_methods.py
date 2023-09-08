@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Test class for default methods.
 
 This is not for direct use, but for testing whether the defaulting in various

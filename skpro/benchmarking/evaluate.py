@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Utility for benchmark evaluation of probabilistic regression models."""
 # based on the sktime utility of the same name

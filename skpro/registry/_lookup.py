@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Registry lookup methods.
 
 This module exports the following methods for registry lookup:

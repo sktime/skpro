@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Extension template for regressors."""
 # todo: write an informative docstring for the file or module, remove the above
 # todo: add an appropriate copyright notice for your estimator
