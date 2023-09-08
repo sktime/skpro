@@ -318,12 +318,12 @@ class ResidualDouble(BaseProbaRegressor):
             from skpro.distributions.laplace import Laplace
 
             distr_type = Laplace
-            distr_loc_scale_name = ("mean", "scale")
+            distr_loc_scale_name = ("mu", "scale")
         elif distr_type in ["Cauchy", "t"]:
             from skpro.distributions.t import TDistribution
 
             distr_type = TDistribution
-            distr_loc_scale_name = ("mean", "sd")
+            distr_loc_scale_name = ("mu", "sigma")
 
         # collate all parameters for the distribution constructor
         # distribution params, if passed
