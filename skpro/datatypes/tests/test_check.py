@@ -309,7 +309,6 @@ def test_check_negative(scitype, mtype):
     for i in range(n_fixtures):
         # if mtype is not ambiguous, other mtypes are negative examples
         for wrong_mtype in list(set(mtypes).difference({mtype})):
-
             # retrieve fixture for checking
             fixture_wrong_type = fixtures[wrong_mtype].get(i)
 

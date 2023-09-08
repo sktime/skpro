@@ -581,7 +581,6 @@ class _BaseTFDistribution(BaseDistribution):
     }
 
     def __init__(self, index=None, columns=None, distr=None):
-
         self.distr = distr
 
         super().__init__(index=index, columns=columns)
