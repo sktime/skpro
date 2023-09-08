@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Residual regression - one regressor for mean, one for scale."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
@@ -132,7 +131,6 @@ class ResidualDouble(BaseProbaRegressor):
         cv=None,
         min_scale=1e-10,
     ):
-
         self.estimator = estimator
         self.estimator_resid = estimator_resid
         self.residual_trafo = residual_trafo
@@ -143,7 +141,7 @@ class ResidualDouble(BaseProbaRegressor):
         self.cv = cv
         self.min_scale = min_scale
 
-        super(ResidualDouble, self).__init__()
+        super().__init__()
 
         self.estimator_ = clone(estimator)
 
@@ -333,7 +331,8 @@ class ResidualDouble(BaseProbaRegressor):
         params.update(ix)
         # location and scale
         loc_scale = {
-            distr_loc_scale_name[0]: y_pred_loc, distr_loc_scale_name[1]: y_pred_scale
+            distr_loc_scale_name[0]: y_pred_loc,
+            distr_loc_scale_name[1]: y_pred_scale,
         }
         params.update(loc_scale)
 
