@@ -21,14 +21,11 @@ class ResidualDouble(BaseProbaRegressor):
 
     Parameters
     ----------
-    estimator : skpro estimator, BaseProbaRegressor descendant
+    estimator : sklearn regressor
         estimator predicting the mean or location
-    estimator_resid : skpro estimator, BaseProbaRegressor descendant, optional
+    estimator_resid : sklearn regressor
         estimator predicting the scale of the residual
         default = sklearn DummyRegressor(strategy="mean")
-
-    TODO - add
-    estimator_resid : skpro estimator or dict of estimators with str keys
     residual_trafo : str, or transformer, default="absolute"
         determines the labels predicted by ``estimator_resid``
         absolute = absolute residuals
@@ -42,7 +39,8 @@ class ResidualDouble(BaseProbaRegressor):
         if passed, will be used to obtain out-of-sample residuals according to cv
         instead of in-sample residuals in ``fit`` of this estimator
     min_scale : float, default=1e-10
-        minimum scale parameter if ``estimator_resid`` is an estimator (not dict)
+        minimum scale parameter. If smaller scale parameter is predicted by
+        ``estimator_resid``, will be clipped to this value
 
     Example
     -------
