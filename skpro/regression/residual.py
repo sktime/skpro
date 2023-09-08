@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 from sklearn import clone
 
-from skpro.distributions.normal import Normal
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -30,9 +29,20 @@ class ResidualDouble(BaseProbaRegressor):
         determines the labels predicted by ``estimator_resid``
         absolute = absolute residuals
         squared = squared residuals
+        if transformer, applies fit_transform to batch of signed residuals
     distr_type : str or BaseDistribution, default = "Normal"
         type of distribution to predict
         str options are "Normal", "Laplace", "Cauchy", "t"
+        if BaseDistribution, must be a subclass of skpro.base.BaseDistribution
+    distr_loc_scale_name : tuple of length two, default = ("loc", "scale")
+        names of the parameters in the distribution to use for location and scale
+        if ``distr_type`` is a string, this is overridden to the correct parameters
+        if ``distr_type`` is a BaseDistribution, this is used to determine the
+        location and scale parameters that the predictions are passed to
+    distr_params : dict, default = {}
+        parameters to pass to the distribution
+        must be valid parameters of ``distr_type``, if ``BaseDistribution``
+        must be default or dict with key ``df``, if ``t`` distribution
     use_y_pred : bool, default=False
         whether to use the predicted location in predicting the scale of the residual
     cv : optional, sklearn cv splitter, default = None
@@ -62,10 +72,27 @@ class ResidualDouble(BaseProbaRegressor):
 
     _tags = {"capability:missing": True}
 
-    def __init__(self, estimator, estimator_resid=None, min_scale=1e-10):
+    def __init__(
+        self,
+        estimator,
+        estimator_resid=None,
+        residual_trafo="absolute",
+        distr_type="Normal",
+        distr_loc_scale_name=None,
+        distr_params=None,
+        use_y_pred=False,
+        cv=None,
+        min_scale=1e-10,
+    ):
 
         self.estimator = estimator
         self.estimator_resid = estimator_resid
+        self.residual_trafo = residual_trafo
+        self.distr_type = distr_type
+        self.distr_loc_scale_name = distr_loc_scale_name
+        self.distr_params = distr_params
+        self.use_y_pred = use_y_pred
+        self.cv = cv
         self.min_scale = min_scale
 
         super(ResidualDouble, self).__init__()
@@ -78,6 +105,36 @@ class ResidualDouble(BaseProbaRegressor):
             self.estimator_resid_ = DummyRegressor(strategy="mean")
         else:
             self.estimator_resid_ = clone(estimator_resid)
+
+    def _predict_residuals_cv(self, X, y, cv, est):
+        """Predict out-of-sample residuals for y from X using cv.
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pandas DataFrame, must be same length as X
+            labels to fit regressor to
+        cv : sklearn cv splitter
+            cv splitter to use for out-of-sample predictions
+
+        Returns
+        -------
+        y_pred : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
+            labels predicted for `X`
+        """
+        est = self.estimator_resid
+        method = "predict"
+        y_pred = y.copy()
+
+        for tr_idx, tt_idx in cv.split(X):
+            X_train = X.iloc[tr_idx]
+            X_test = X.iloc[tt_idx]
+            y_train = y[tr_idx]
+            fitted_est = clone(est).fit(X_train, y_train)
+            y_pred[tt_idx] = getattr(fitted_est, method)(X_test)
+
+        return y_pred
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -98,16 +155,35 @@ class ResidualDouble(BaseProbaRegressor):
         """
         est = self.estimator_
         est_r = self.estimator_resid_
+        residual_trafo = self.residual_trafo
+        cv = self.cv
+        use_y_pred = self.use_y_pred
 
         self._y_cols = y.columns
         y = y.values.flatten()
 
         est.fit(X, y)
-        resids = np.abs(y - est.predict(X))
+
+        if cv is None:
+            y_pred = est.predict(X)
+        else:
+            y_pred = self._predict_residuals_cv(X, y, cv, est)
+
+        if residual_trafo == "absolute":
+            resids = np.abs(y - y_pred)
+        elif residual_trafo == "squared":
+            resids = (y - y_pred) ** 2
+        else:
+            resids = residual_trafo.fit_transform(y - y_pred)
 
         resids = resids.flatten()
 
-        est_r.fit(X, resids)
+        if use_y_pred:
+            X_r = pd.concat([X, y_pred], axis=1)
+        else:
+            X_r = X
+
+        est_r.fit(X_r, resids)
 
         return self
 
@@ -158,19 +234,63 @@ class ResidualDouble(BaseProbaRegressor):
         """
         est = self.estimator_
         est_r = self.estimator_resid_
+        use_y_pred = self.use_y_pred
+        distr_type = self.distr_type
+        distr_loc_scale_name = self.distr_loc_scale_name
+        distr_params = self.distr_params
         min_scale = self.min_scale
 
+        if distr_params is None:
+            distr_params = {}
+
+        # predict location - this is the same as in _predict
         y_pred_loc = est.predict(X)
         y_pred_loc = y_pred_loc.reshape(-1, 1)
 
-        y_pred_scale = est_r.predict(X)
+        # predict scale
+        # if use_y_pred, use predicted location as feature
+        if use_y_pred:
+            X_r = pd.concat([X, y_pred_loc], axis=1)
+        # if not use_y_pred, use only original features
+        else:
+            X_r = X
+
+        y_pred_scale = est_r.predict(X_r)
         y_pred_scale = y_pred_scale.clip(min=min_scale)
         y_pred_scale = y_pred_scale.reshape(-1, 1)
 
-        y_pred = Normal(
-            mu=y_pred_loc, sigma=y_pred_scale, index=X.index, columns=self._y_cols
-        )
+        # create distribution with predicted scale and location
+        # we deal with string distr_types by getting class and param names
+        if distr_type == "Normal":
+            from skpro.distributions.normal import Normal
 
+            distr_type = Normal
+            distr_loc_scale_name = ("mu", "sigma")
+        elif distr_type == "Laplace":
+            from skpro.distributions.laplace import Laplace
+
+            distr_type = Laplace
+            distr_loc_scale_name = ("mean", "scale")
+        elif distr_type in ["Cauchy", "t"]:
+            from skpro.distributions.t import TDistribution
+
+            distr_type = TDistribution
+            distr_loc_scale_name = ("mean", "sd")
+
+        # collate all parameters for the distribution constructor
+        # distribution params, if passed
+        params = distr_params
+        # row/column index
+        ix = {"index": X.index, "columns": self._y_cols}
+        params.update(ix)
+        # location and scale
+        loc_scale = {
+            distr_loc_scale_name[0]: y_pred_loc, distr_loc_scale_name[1]: y_pred_scale
+        }
+        params.update(loc_scale)
+
+        # create distribution and return
+        y_pred = distr_type(**params)
         return y_pred
 
     @classmethod
@@ -193,12 +313,25 @@ class ResidualDouble(BaseProbaRegressor):
         """
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.linear_model import LinearRegression
+        from sklearn.model_selection import KFold
 
         params1 = {"estimator": RandomForestRegressor()}
         params2 = {
             "estimator": LinearRegression(),
             "estimator_resid": RandomForestRegressor(),
             "min_scale": 1e-7,
+            "residual_trafo": "squared",
+            "use_y_pred": True,
+            "distr_type": "Laplace",
+        }
+        params3 = {
+            "estimator": LinearRegression(),
+            "estimator_resid": RandomForestRegressor(),
+            "min_scale": 1e-6,
+            "use_y_pred": True,
+            "distr_type": "t",
+            "distr_params": {"df": 3},
+            "cv": KFold(n_splits=3),
         }
 
-        return [params1, params2]
+        return [params1, params2, params3]
