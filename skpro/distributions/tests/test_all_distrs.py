@@ -223,6 +223,13 @@ def _check_output_format(res, dist, method):
     if method in METHODS_SCALAR_POS or method in METHODS_X_POS:
         assert (res >= 0).all().all()
 
+    if isinstance(res, pd.DataFrame):
+        assert res.apply(pd.api.types.is_numeric_dtype).all()
+    elif isinstance(res, pd.Series):
+        assert pd.api.types.is_numeric_dtype(res)
+    else:
+        raise TypeError("res must be a pandas DataFrame or Series.")
+
 
 def _shuffle_distr(d):
     """Shuffle distribution row index."""
