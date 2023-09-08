@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # LEGACY MODULE - TODO: remove or refactor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Automated tests based on the skbase test suite template."""
 import numbers
 import types

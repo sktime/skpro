@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Tests for evaluate utility."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # based on the sktime tests of the same name

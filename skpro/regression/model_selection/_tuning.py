@@ -322,7 +322,7 @@ class GridSearchCV(BaseGridSearch):
     >>> from sklearn.model_selection import KFold, ShuffleSplit, train_test_split
 
     >>> from skpro.metrics import CRPS
-    >>> from skpro.model_selection import GridSearchCV
+    >>> from skpro.regression.model_selection import GridSearchCV
     >>> from skpro.regression.residual import ResidualDouble
 
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
@@ -549,7 +549,7 @@ class RandomizedSearchCV(BaseGridSearch):
     >>> from sklearn.model_selection import KFold, ShuffleSplit, train_test_split
 
     >>> from skpro.metrics import CRPS
-    >>> from skpro.model_selection import RandomizedSearchCV
+    >>> from skpro.regression.model_selection import RandomizedSearchCV
     >>> from skpro.regression.residual import ResidualDouble
 
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)

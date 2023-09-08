@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Probabilistic regression by bootstrap."""
 
 __author__ = ["fkiraly"]
