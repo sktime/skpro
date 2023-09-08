@@ -225,7 +225,8 @@ class ResidualDouble(BaseProbaRegressor):
         resids = resids.flatten()
 
         if use_y_pred:
-            X_r = pd.concat([X, y_pred], axis=1)
+            y_ix = {"index": X.index, "columns": self._y_cols}
+            X_r = pd.concat([X, pd.DataFrame(y_pred, **y_ix)], axis=1)
         else:
             X_r = X
 
@@ -296,7 +297,8 @@ class ResidualDouble(BaseProbaRegressor):
         # predict scale
         # if use_y_pred, use predicted location as feature
         if use_y_pred:
-            X_r = pd.concat([X, y_pred_loc], axis=1)
+            y_ix = {"index": X.index, "columns": self._y_cols}
+            X_r = pd.concat([X, pd.DataFrame(y_pred_loc, **y_ix)], axis=1)
         # if not use_y_pred, use only original features
         else:
             X_r = X
