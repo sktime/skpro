@@ -129,7 +129,6 @@ class Empirical(BaseDistribution):
         return res.apply(pd.to_numeric)
 
     def _iloc(self, rowidx=None, colidx=None):
-
         index = self.index
         columns = self.columns
         weights = self.weights
