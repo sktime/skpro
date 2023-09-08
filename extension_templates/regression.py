@@ -54,8 +54,8 @@ class ClassName(BaseProbaRegressor):
         self.paramname = paramname
         self.paramname2 = "paramname2default"
 
-        # todo: change "ClassName" to the name of the class
-        super(ClassName, self).__init__()
+        # leave this as is
+        super().__init__()
 
         # todo: optional, parameter checking logic (if applicable) should happen here
         # if writes derived values to self, should *not* overwrite self.parama etc

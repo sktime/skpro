@@ -17,7 +17,6 @@ PANDAS_MTYPES = ["pd.DataFrame", "pd.Series", "pd-multiindex", "pd_multiindex_hi
 
 
 def _split(X, y, train, test):
-
     # split data according to cv
     X_train, X_test = X.iloc[train], X.iloc[test]
 

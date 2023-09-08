@@ -43,7 +43,6 @@ convert_dict = dict()
 
 
 def convert_identity(obj, store=None):
-
     return obj
 
 
@@ -108,7 +107,6 @@ def convert_pred_interval_to_quantiles(y_pred, inplace=False):
 
 
 def convert_interval_to_quantiles(obj: pd.DataFrame, store=None) -> pd.DataFrame:
-
     return convert_pred_interval_to_quantiles(y_pred=obj)
 
 
@@ -168,7 +166,6 @@ def convert_pred_quantiles_to_interval(y_pred, inplace=False):
 
 
 def convert_quantiles_to_interval(obj: pd.DataFrame, store=None) -> pd.DataFrame:
-
     return convert_pred_quantiles_to_interval(y_pred=obj)
 
 

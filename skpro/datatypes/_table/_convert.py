@@ -44,7 +44,6 @@ convert_dict = dict()
 
 
 def convert_identity(obj, store=None):
-
     return obj
 
 
@@ -54,7 +53,6 @@ for tp in MTYPE_LIST_TABLE:
 
 
 def convert_1D_to_2D_numpy_as_Table(obj: np.ndarray, store=None) -> np.ndarray:
-
     if not isinstance(obj, np.ndarray):
         raise TypeError("input must be a np.ndarray")
 
@@ -70,7 +68,6 @@ convert_dict[("numpy1D", "numpy2D", "Table")] = convert_1D_to_2D_numpy_as_Table
 
 
 def convert_2D_to_1D_numpy_as_Table(obj: np.ndarray, store=None) -> np.ndarray:
-
     if not isinstance(obj, np.ndarray):
         raise TypeError("input must be a np.ndarray")
 
@@ -86,7 +83,6 @@ convert_dict[("numpy2D", "numpy1D", "Table")] = convert_2D_to_1D_numpy_as_Table
 
 
 def convert_df_to_2Dnp_as_Table(obj: pd.DataFrame, store=None) -> np.ndarray:
-
     if not isinstance(obj, pd.DataFrame):
         raise TypeError("input must be a pd.DataFrame")
 
@@ -100,7 +96,6 @@ convert_dict[("pd_DataFrame_Table", "numpy2D", "Table")] = convert_df_to_2Dnp_as
 
 
 def convert_df_to_1Dnp_as_Table(obj: pd.DataFrame, store=None) -> np.ndarray:
-
     return convert_df_to_2Dnp_as_Table(obj=obj, store=store).flatten()
 
 
@@ -108,7 +103,6 @@ convert_dict[("pd_DataFrame_Table", "numpy1D", "Table")] = convert_df_to_1Dnp_as
 
 
 def convert_2Dnp_to_df_as_Table(obj: np.ndarray, store=None) -> pd.DataFrame:
-
     if not isinstance(obj, np.ndarray) and len(obj.shape) != 2:
         raise TypeError("input must be a 2D np.ndarray")
 
@@ -131,7 +125,6 @@ convert_dict[("numpy2D", "pd_DataFrame_Table", "Table")] = convert_2Dnp_to_df_as
 
 
 def convert_1Dnp_to_df_as_Table(obj: np.ndarray, store=None) -> pd.DataFrame:
-
     if not isinstance(obj, np.ndarray) and len(obj.shape) != 1:
         raise TypeError("input must be a 1D np.ndarray")
 
@@ -153,7 +146,6 @@ convert_dict[("numpy1D", "pd_DataFrame_Table", "Table")] = convert_1Dnp_to_df_as
 
 
 def convert_s_to_df_as_table(obj: pd.Series, store=None) -> pd.DataFrame:
-
     if not isinstance(obj, pd.Series):
         raise TypeError("input must be a pd.Series")
 
@@ -175,7 +167,6 @@ convert_dict[
 
 
 def convert_df_to_s_as_table(obj: pd.DataFrame, store=None) -> pd.Series:
-
     if not isinstance(obj, pd.DataFrame):
         raise TypeError("input is not a pd.DataFrame")
 
@@ -197,7 +188,6 @@ convert_dict[
 
 
 def convert_list_of_dict_to_df_as_table(obj: list, store=None) -> pd.DataFrame:
-
     if not isinstance(obj, list):
         raise TypeError("input must be a list of dict")
 
@@ -222,7 +212,6 @@ convert_dict[
 
 
 def convert_df_to_list_of_dict_as_table(obj: pd.DataFrame, store=None) -> list:
-
     if not isinstance(obj, pd.DataFrame):
         raise TypeError("input is not a pd.DataFrame")
 
