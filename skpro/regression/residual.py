@@ -14,9 +14,51 @@ from skpro.regression.base import BaseProbaRegressor
 class ResidualDouble(BaseProbaRegressor):
     """Residual double regressor.
 
-    One regressor predicting the mean, and one the deviation from the mean.
+    Make a parametric probabilistic prediction using two tabular regressors, with
+    one tabular regressor predicting the mean, and one the deviation from the mean.
 
-    TODO - math description
+    The mean is predicted by ``estimator``. The residual is predicted by
+    ``estimator_resid``. The residual is transformed by ``residual_trafo``.
+    The predicted mean and residual are passed to a distribution specified by
+    ``distr_type``, and possibly ``distr_params``, ``distr_loc_scale_name``.
+
+    The residuals predicted on the training data are used to fit
+    ``estimator_resid``. If ``cv`` is passed, the residuals are out-of-sample
+    according to ``cv``, otherwise in-sample.
+
+    ``use_y_pred`` determines whether the predicted mean is used as a feature
+    in predicting the residual.
+
+    A formal description of the algorithm follows.
+
+    In ``fit``, given training data ``X``, ``y``:
+
+    1. Fit clone ``estimator_`` of ``estimator`` to predict ``y`` from ``X``,
+       i.e., ``fit(X, y)``.
+    2. Predict mean label ``y_pred`` for ``X`` using a clone of ``estimator``.
+       If ``cv`` is ``None``, this is via plain ``estimator.predict(X)``.
+       If ``cv`` is not ``None``, out-of-sample predictions are obtained via ``cv``.
+       In this case, indices not appearing in ``cv`` are predicted in-sample.
+    3. Compute residual ``resid`` as ``residual_trafo(y - y_pred)``.
+       If ``residual_trafo`` is a transformer, ``residual_trafo.fit_transform`` is used.
+    4. Fit clone ``estimator_resid_`` of ``estimator_resid``
+       to predict ``resid`` from ``X``, i.e., ``fit(X, resid)``.
+       If ``use_y_pred`` is ``True``, ``y_pred`` is used as a feature in predicting.
+
+    In ``predict``, given test data ``X``:
+
+    1. Predict mean label ``y_pred`` for ``X`` using ``estimator_.predict(X)``.
+    2. Return ``y_pred``.
+
+    In ``predict_proba``, given test data ``X``:
+
+    1. Predict mean label ``y_pred`` for ``X`` using ``estimator_.predict(X)``.
+    2. Predict residual ``resid`` for ``X`` using ``estimator_resid_.predict(X)``.
+       If ``use_y_pred`` is ``True``, ``y_pred`` is used as a feature in predicting.
+    3. Predict distribution ``y_pred_proba`` for ``X`` as follows:
+       The location parameter is ``y_pred``. The scale parameter is ``resid``.
+       Further parameters can be specified via ``distr_params``.
+    4. Return ``y_pred_proba``.
 
     Parameters
     ----------
@@ -51,6 +93,13 @@ class ResidualDouble(BaseProbaRegressor):
     min_scale : float, default=1e-10
         minimum scale parameter. If smaller scale parameter is predicted by
         ``estimator_resid``, will be clipped to this value
+
+    Attributes
+    ----------
+    estimator_ : sklearn regressor, clone of ``estimator``
+        fitted estimator predicting the mean or location
+    estimator_resid_ : sklearn regressor, clone of ``estimator_resid``
+        fitted estimator predicting the scale of the residual
 
     Example
     -------
