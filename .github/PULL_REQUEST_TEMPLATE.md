@@ -1,6 +1,6 @@
 <!--
 Thanks for contributing a pull request! Please ensure you have taken a look
-at our contribution guide: https://skbase.readthedocs.io/en/latest/contribute.html
+at our contribution guide: https://skpro.readthedocs.io/en/latest/contribute.html
 -->
 
 #### Reference Issues/PRs
@@ -15,27 +15,27 @@ is merged. See https://github.com/blog/1506-closing-issues-via-pull-requests
 
 #### What does this implement/fix? Explain your changes.
 <!--
-A clear and concise description of what you have implemented. Remember to implement
-unit tests and docstrings if your pull request commits code to the repository.
+A clear and concise description of what you have implemented.
 -->
 
 #### Does your contribution introduce a new dependency? If yes, which one?
 
 <!--
-If your contribution requires a new dependency please indicate why it is necessary.
-skbase seeks to mimimize dependencies to make it easy to use skbase in a variety
-of environments and contexts.
+If your contribution does add a new core dependency, we may suggest to initially develop your contribution in a separate companion package in https://github.com/sktime/ to keep external dependencies of the core skpro package to a minimum.
 -->
 
 #### What should a reviewer concentrate their feedback on?
 
-<!-- This section is particularly useful if you have a pull request that is still in development.
-You can guide the reviews to focus on the parts that are ready for their comments.
-We suggest using bullets (indicated by * or -) and filled checkboxes [x] here -->
+<!-- This section is particularly useful if you have a pull request that is still in development. You can guide the reviews to focus on the parts that are ready for their comments. We suggest using bullets (indicated by * or -) and filled checkboxes [x] here -->
+
+#### Did you add any tests for the change?
+
+<!-- This section is useful if you have added a test in addition to the existing ones. This will ensure that further changes to these files won't introduce the same kind of bug. It is considered good practice to add tests with newly added code to enforce the fact that the code actually works. This will reduce the chance of introducing logical bugs.
+-->
 
 #### Any other comments?
 <!--
-Is there any other information the reviewer should know?
+Please be aware that we are a loose team of volunteers so patience is necessary; assistance handling other issues is very welcome. We value all user contributions, no matter how minor they are. If we are slow to review, either the pull request needs some benchmarking, tinkering, convincing, etc. or more likely the reviewers are simply busy. In either case, we ask for your understanding during the review process.
 -->
 
 #### PR checklist
@@ -44,15 +44,16 @@ Please go through the checklist below. Please feel free to remove points if they
 -->
 
 ##### For all contributions
-- [ ] I've reviewed the project documentation on [contributing](https://skbase.readthedocs.io/en/latest/contribute.html)
-- [ ] I've added myself to the [list of contributors](https://github.com/sktime/skbase/blob/main/.all-contributorsrc).
-- [ ] The PR title starts with either [ENH], [CI/CD], [MNT], [DOC], or [BUG] indicating whether
-  the PR topic is related to enhancement, CI/CD, maintenance, documentation, or a bug.
+- [ ] I've added myself to the [list of contributors](https://github.com/sktime/skpro/blob/main/CONTRIBUTORS.md) with any new badges I've earned :-)
+  How to: add yourself to the [all-contributors file](https://github.com/sktime/skpro/blob/main/.all-contributorsrc) in the `skpro` root directory (not the `CONTRIBUTORS.md`). Common badges: `code` - fixing a bug, or adding code logic. `doc` - writing or improving documentation or docstrings. `bug` - reporting or diagnosing a bug (get this plus `code` if you also fixed the bug in the PR).`maintenance` - CI, test framework, release.
+  See here for [full badge reference](https://allcontributors.org/docs/en/emoji-key)
+- [ ] The PR title starts with either [ENH], [MNT], [DOC], or [BUG]. [BUG] - bugfix, [MNT] - CI, test framework, [ENH] - adding or improving code, [DOC] - writing or improving documentation or docstrings.
 
-##### For code contributions
-- [ ] Unit tests have been added covering code functionality
-- [ ] Appropriate docstrings have been added (see [documentation standards](https://skbase.readthedocs.io/en/latest/contribute/development/developer_guide/creating_docs.html))
-- [ ] New public functionality has been added to the API Reference
+##### For new estimators
+- [ ] I've added the estimator to the API reference - in `docs/source/api_reference/taskname.rst`, follow the pattern.
+- [ ] I've added one or more illustrative usage examples to the docstring, in a pydocstyle compliant `Examples` section.
+- [ ] If the estimator relies on a soft dependency, I've set the `python_dependencies` tag and ensured
+  dependency isolation, see the [estimator dependencies guide](https://www.sktime.net/en/latest/developer_guide/dependencies.html#adding-a-soft-dependency).
 
 
 <!--
