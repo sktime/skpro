@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Mixture distribution."""
 
@@ -43,7 +42,6 @@ class Mixture(BaseMetaObject, BaseDistribution):
     }
 
     def __init__(self, distributions, weights=None, index=None, columns=None):
-
         self.distributions = distributions
         self.weights = weights
         self.index = index
@@ -66,7 +64,6 @@ class Mixture(BaseMetaObject, BaseDistribution):
         super().__init__(index=index, columns=columns)
 
     def _iloc(self, rowidx=None, colidx=None):
-
         dists = self._distributions
         weights = self.weights
 

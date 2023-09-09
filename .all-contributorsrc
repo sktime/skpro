@@ -1,0 +1,91 @@
+{
+  "projectName": "skpro",
+  "projectOwner": "skpro",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "commitConvention": "none",
+  "files": [
+    "CONTRIBUTORS.md"
+  ],
+  "imageSize": 100,
+  "contributorsPerLine": 9,
+  "contributorsSortAlphabetically": true,
+  "badgeTemplate": "[![All Contributors](https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg)](#contributors)",
+  "skipCi": true,
+  "contributors": [
+    {
+      "login": "fkiraly",
+      "name": "Franz Kiraly",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/7985502?v=4",
+      "profile": "https://github.com/fkiraly",
+      "contributions": [
+        "bug",
+        "business",
+        "code",
+        "doc",
+        "design",
+        "example",
+        "financial",
+        "fundingFinding",
+        "ideas",
+        "maintenance",
+        "mentoring",
+        "projectManagement",
+        "review",
+        "talk",
+        "test",
+        "tutorial"
+      ]
+    },
+    {
+      "login": "Frithjof Gressmann",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5411942?v=4",
+      "profile": "https://github.com/frthjf",
+      "contributions": [
+        "bug",
+        "code",
+        "doc",
+        "design",
+        "example",
+        "ideas",
+        "maintenance",
+        "review",
+        "talk",
+        "test",
+        "tutorial"
+      ]
+    },
+    {
+      "login": "iwitaly",
+      "name": "Vitaly Davydov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2273226?v=4",
+      "profile": "https://github.com/iwitaly",
+        "contributions": [
+            "code",
+            "doc",
+            "maintenance",
+            "review"
+        ]
+    },
+    {
+      "login": "yarnabrina",
+      "name": "Anirban Ray",
+      "avatar_url": "https://avatars.githubusercontent.com/u/39331844?v=4",
+      "profile": "https://github.com/yarnabrina",
+        "contributions": [
+            "code",
+            "maintenance"
+        ]
+    },
+    {
+      "login": "Alex-JG3",
+      "name": "Alex",
+      "avatar_url": "https://avatars.githubusercontent.com/u/49785867?v=4",
+      "profile": "https://github.com/Alex-JG3",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    }
+  ]
+}

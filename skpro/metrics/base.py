@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Base classes for probabilistic metrics."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
@@ -18,7 +17,7 @@ __author__ = ["fkiraly", "euanenticott-shell"]
 
 
 class BaseProbaMetric(BaseObject):
-    """Base class for probabilistic supervised error metrics in sktime.
+    """Base class for probabilistic supervised error metrics in skpro.
 
     Parameters
     ----------
@@ -35,6 +34,7 @@ class BaseProbaMetric(BaseObject):
     """
 
     _tags = {
+        "object_type": "metric",  # type of object
         "reserved_params": ["multioutput", "score_average"],
         "scitype:y_pred": "pred_proba",
         "lower_is_better": True,
@@ -43,7 +43,7 @@ class BaseProbaMetric(BaseObject):
     def __init__(self, multioutput="uniform_average", score_average=True):
         self.multioutput = multioutput
         self.score_average = score_average
-        super(BaseProbaMetric, self).__init__()
+        super().__init__()
 
     def __call__(self, y_true, y_pred, **kwargs):
         """Calculate metric value using underlying metric function.
@@ -316,7 +316,7 @@ class BaseProbaMetric(BaseObject):
     def _get_alpha_from(self, y_pred):
         """Fetch the alphas present in y_pred."""
         alphas = np.unique(list(y_pred.columns.get_level_values(1)))
-        if not all(((alphas > 0) & (alphas < 1))):
+        if not all((alphas > 0) & (alphas < 1)):
             raise ValueError("Alpha must be between 0 and 1.")
 
         return alphas
@@ -332,7 +332,7 @@ class BaseProbaMetric(BaseObject):
         if not isinstance(alpha, np.ndarray):
             alpha = np.asarray(alpha)
 
-        if not all(((alpha > 0) & (alpha < 1))):
+        if not all((alpha > 0) & (alpha < 1)):
             raise ValueError("Alpha must be between 0 and 1.")
 
         return alpha
@@ -422,7 +422,7 @@ class BaseDistrMetric(BaseProbaMetric):
         y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
             Ground truth (correct) target values.
 
-        y_pred : sktime BaseDistribution of same shape as y_true
+        y_pred : skpro BaseDistribution of same shape as y_true
             Predictive distribution.
             Must have same index and columns as y_true.
         """

@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Machine type checkers for scitypes.
 
 Exports
@@ -41,7 +40,7 @@ check_dict.update(check_dict_Proba)
 
 def _check_scitype_valid(scitype: str = None):
     """Check validity of scitype."""
-    valid_scitypes = list(set([x[1] for x in check_dict.keys()]))
+    valid_scitypes = list({x[1] for x in check_dict.keys()})
 
     if not isinstance(scitype, str):
         raise TypeError(f"scitype should be a str but found {type(scitype)}")

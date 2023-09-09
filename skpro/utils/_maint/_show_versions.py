@@ -1,5 +1,4 @@
 #!/usr/bin/env python3 -u
-# -*- coding: utf-8 -*-
 # License: BSD 3 clause
 
 """Utility methods to print system info for debugging.
@@ -59,7 +58,7 @@ def _get_deps_info(deps=None):
     Parameters
     ----------
     deps : optional, list of strings with import names
-        if None, behaves as deps = ["sktime"]
+        if None, behaves as deps = ["skpro"]
 
     Returns
     -------
@@ -69,7 +68,7 @@ def _get_deps_info(deps=None):
         of the import as present in the current python environment
     """
     if deps is None:
-        deps = ["sktime"]
+        deps = ["skpro"]
 
     def get_version(module):
         return module.__version__
@@ -91,7 +90,7 @@ def _get_deps_info(deps=None):
 
 
 def show_versions():
-    """Print python version, OS version, sktime version, selected dependency versions.
+    """Print python version, OS version, skpro version, selected dependency versions.
 
     Pretty prints:
 
@@ -110,8 +109,8 @@ def show_versions():
 
     print("\nSystem:")  # noqa: T001, T201
     for k, stat in sys_info.items():
-        print("{k:>10}: {stat}".format(k=k, stat=stat))  # noqa: T001, T201
+        print(f"{k:>10}: {stat}")  # noqa: T001, T201
 
     print("\nPython dependencies:")  # noqa: T001, T201
     for k, stat in deps_info.items():
-        print("{k:>13}: {stat}".format(k=k, stat=stat))  # noqa: T001, T201
+        print(f"{k:>13}: {stat}")  # noqa: T001, T201

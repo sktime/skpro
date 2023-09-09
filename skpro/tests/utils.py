@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
+"""Legacy module: test utils."""
 # LEGACY MODULE - TODO: remove or refactor
 
 import numpy as np
 
 
 def assert_close_prediction(y_hat, y_true, fraction=0.75, within=0.25):
-    """
-    Asserts whether defined fraction of predictions lies in a certain tolerance
+    """Check that defined fraction of predictions lies in a certain tolerance.
+
     Parameters
     ----------
     y_hat   Predictions

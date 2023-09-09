@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Base classes for probability distribution objects."""
 
 __author__ = ["fkiraly"]
@@ -20,6 +19,7 @@ class BaseDistribution(BaseObject):
 
     # default tag values - these typically make the "safest" assumption
     _tags = {
+        "object_type": "distribution",  # type of object, e.g., 'distribution'
         "python_version": None,  # PEP 440 python version specifier to limit versions
         "python_dependencies": None,  # string or str list of pkg soft dependencies
         "reserved_params": ["index", "columns"],
@@ -32,11 +32,10 @@ class BaseDistribution(BaseObject):
     }
 
     def __init__(self, index=None, columns=None):
-
         self.index = index
         self.columns = columns
 
-        super(BaseDistribution, self).__init__()
+        super().__init__()
         _check_estimator_deps(self)
 
     @property
@@ -88,7 +87,6 @@ class BaseDistribution(BaseObject):
         return self._iloc(rowidx=row_iloc, colidx=col_iloc)
 
     def _subset_params(self, rowidx, colidx):
-
         params = self._get_dist_params()
 
         subset_param_dict = {}
@@ -130,7 +128,6 @@ class BaseDistribution(BaseObject):
         )
 
     def _get_dist_params(self):
-
         params = self.get_params(deep=False)
         paramnames = params.keys()
         reserved_names = ["index", "columns"]
@@ -165,6 +162,43 @@ class BaseDistribution(BaseObject):
             return msg_approx
         else:
             return msg
+
+    def _get_bc_params(self, *args, dtype=None):
+        """Fully broadcast tuple of parameters given param shapes and index, columns.
+
+        Parameters
+        ----------
+        args : float, int, array of floats, or array of ints (1D or 2D)
+            Distribution parameters that are to be made broadcastable. If no positional
+            arguments are provided, all parameters of `self` are used except for `index`
+            and `columns`.
+        dtype : str, optional
+            broadcasted arrays are cast to all have datatype `dtype`. If None, then no
+            datatype casting is done.
+
+        Returns
+        -------
+        Tuple of float or integer arrays
+            Each element of the tuple represents a different broadcastable distribution
+            parameter.
+        """
+        number_of_params = len(args)
+        if number_of_params == 0:
+            # Handle case where no positional arguments are provided
+            params = self.get_params()
+            params.pop("index")
+            params.pop("columns")
+            args = tuple(params.values())
+            number_of_params = len(args)
+
+        if hasattr(self, "index") and self.index is not None:
+            args += (self.index.to_numpy().reshape(-1, 1),)
+        if hasattr(self, "columns") and self.columns is not None:
+            args += (self.columns.to_numpy(),)
+        bc = np.broadcast_arrays(*args)
+        if dtype is not None:
+            bc = [array.astype(dtype) for array in bc]
+        return bc[:number_of_params]
 
     def pdf(self, x):
         r"""Probability density function.
@@ -252,7 +286,7 @@ class BaseDistribution(BaseObject):
         spl = self.sample(N)
         ind = splx <= spl
 
-        return ind.groupby(level=1).mean()
+        return ind.groupby(level=1, sort=False).mean()
 
     def ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
@@ -332,7 +366,8 @@ class BaseDistribution(BaseObject):
 
         # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx, sply
         spl = splx - sply
-        energy = spl.apply(np.linalg.norm, axis=1, ord=1).groupby(level=1).mean()
+        energy = spl.apply(np.linalg.norm, axis=1, ord=1)
+        energy = energy.groupby(level=1, sort=False).mean()
         energy = pd.DataFrame(energy, index=self.index, columns=["energy"])
         return energy
 
@@ -355,7 +390,7 @@ class BaseDistribution(BaseObject):
         warn(self._method_error_msg("mean", fill_in=approx_method))
 
         spl = self.sample(approx_spl_size)
-        return spl.groupby(level=1).mean()
+        return spl.groupby(level=1, sort=False).mean()
 
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
@@ -378,7 +413,7 @@ class BaseDistribution(BaseObject):
         spl1 = self.sample(approx_spl_size)
         spl2 = self.sample(approx_spl_size)
         spl = (spl1 - spl2) ** 2
-        return spl.groupby(level=1).mean()
+        return spl.groupby(level=1, sort=False).mean()
 
     def pdfnorm(self, a=2):
         r"""a-norm of pdf, defaults to 2-norm.
@@ -410,7 +445,7 @@ class BaseDistribution(BaseObject):
 
         # uses formula int p(x)^a dx = E[p(X)^{a-1}], and MC approximates the RHS
         spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
-        return pd.concat(spl, axis=0).groupby(level=1).mean()
+        return pd.concat(spl, axis=0).groupby(level=1, sort=False).mean()
 
     def _coerce_to_self_index_df(self, x):
         x = np.array(x)
@@ -546,13 +581,11 @@ class _BaseTFDistribution(BaseDistribution):
     }
 
     def __init__(self, index=None, columns=None, distr=None):
-
         self.distr = distr
 
-        super(_BaseTFDistribution, self).__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns)
 
     def __str__(self):
-
         return self.to_str()
 
     def pdf(self, x):

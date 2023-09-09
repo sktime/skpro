@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Common private utilities for checkers and converters."""
 
 __author__ = ["fkiraly"]

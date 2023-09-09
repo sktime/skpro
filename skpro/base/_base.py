@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Base class and template for regressors and transformers."""
 from skbase.base import BaseEstimator as _BaseEstimator
 from skbase.base import BaseMetaEstimator as _BaseMetaEstimator
@@ -12,6 +11,11 @@ class _CommonTags:
     _config = {}
 
     _tags = {"estimator_type": "estimator"}
+
+    @property
+    def name(self):
+        """Return the name of the object or estimator."""
+        return self.__class__.__name__
 
 
 class BaseObject(_CommonTags, _BaseObject):

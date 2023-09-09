@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Utility to check soft dependency imports, and raise warnings or errors."""
 
 __author__ = ["fkiraly", "mloning"]
@@ -89,7 +88,6 @@ def _check_soft_dependencies(
         raise TypeError("obj must be a class, an object, a str, or None")
 
     for package in packages:
-
         try:
             req = Requirement(package)
         except InvalidRequirement:
@@ -122,20 +120,20 @@ def _check_soft_dependencies(
             if obj is None:
                 msg = (
                     f"{e}. '{package}' is a soft dependency and not included in the "
-                    f"base sktime installation. Please run: `pip install {package}` to "
+                    f"base skpro installation. Please run: `pip install {package}` to "
                     f"install the {package} package. "
                     f"To install all soft dependencies, run: `pip install "
-                    f"sktime[all_extras]`"
+                    f"skpro[all_extras]`"
                 )
             else:
                 msg = (
                     f"{class_name} requires package '{package}' to be present "
                     f"in the python environment, but '{package}' was not found. "
                     f"'{package}' is a soft dependency and not included in the base "
-                    f"sktime installation. Please run: `pip install {package}` to "
+                    f"skpro installation. Please run: `pip install {package}` to "
                     f"install the {package} package. "
                     f"To install all soft dependencies, run: `pip install "
-                    f"sktime[all_extras]`"
+                    f"skpro[all_extras]`"
                 )
             if severity == "error":
                 raise ModuleNotFoundError(msg) from e
@@ -162,7 +160,7 @@ def _check_soft_dependencies(
             )
             if obj is not None:
                 msg = msg + (
-                    f"This version requirement is not one by sktime, but specific "
+                    f"This version requirement is not one by skpro, but specific "
                     f"to the module, class or object with name {obj}."
                 )
 
@@ -190,7 +188,7 @@ def _check_python_version(obj, package=None, msg=None, severity="error"):
 
     Parameters
     ----------
-    obj : sktime estimator, BaseObject descendant
+    obj : skpro estimator, BaseObject descendant
         used to check python version
     package : str, default = None
         if given, will be used in error message as package name
@@ -268,7 +266,7 @@ def _check_estimator_deps(obj, msg=None, severity="error"):
 
     Parameters
     ----------
-    obj : `sktime` object, `BaseObject` descendant, or list/tuple thereof
+    obj : `skpro` object, `BaseObject` descendant, or list/tuple thereof
         object(s) that this function checks compatibility of, with the python env
     msg : str, optional, default = default message (msg below)
         error message to be returned in the `ModuleNotFoundError`, overrides default

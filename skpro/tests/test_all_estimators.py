@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Automated tests based on the skbase test suite template."""
 import numbers
 import types
@@ -7,6 +6,8 @@ from inspect import getfullargspec, signature
 import numpy as np
 from skbase.testing import TestAllObjects as _TestAllObjects
 from skbase.testing.utils.inspect import _get_args
+
+from skpro.registry import OBJECT_TAG_LIST
 
 
 class PackageConfig:
@@ -25,29 +26,7 @@ class PackageConfig:
 
     # list of valid tags
     # expected type: list of str, str are tag names
-    valid_tags = [
-        # all estimators
-        "reserved_params",
-        "estimator_type",
-        "python_version",
-        "python_dependencies",
-        # BaseProbaRegressor
-        "capability:multioutput",
-        "capability:missing",
-        # BaseDistribution
-        "capabilities:approx",  # list of str, methods of distr that are approximate
-        "capabilities:exact",  # list of str, methods of distr that are num. exact
-        "distr:measuretype",  # str, "continuous", "discrete", or "mixed"
-        "approx_mean_spl",  # int, sample size used in MC estimates of mean
-        "approx_var_spl",  # int, sample size used in MC estimates of var
-        "approx_energy_spl",  # int, sample size used in MC estimates of energy
-        "approx_spl",  # int, sample size used in other MC estimates
-        "bisect_iter",  # max iters for bisection method in ppf
-        "scitype:y_pred",  # str, expected input type for y_pred in performance metric
-        "lower_is_better",  # bool, whether lower (True) or higher (False) is better
-        # BaseMetaObject reserved tags
-        "named_object_parameters",  # name of component list attribute for meta-objects
-    ]
+    valid_tags = OBJECT_TAG_LIST
 
 
 class TestAllObjects(PackageConfig, _TestAllObjects):

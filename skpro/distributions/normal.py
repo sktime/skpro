@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Normal/Gaussian probability distribution."""
 
 __author__ = ["fkiraly"]
@@ -12,7 +11,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Normal(BaseDistribution):
-    """Normal distribution (sktime native).
+    """Normal distribution (skpro native).
 
     Parameters
     ----------
@@ -37,7 +36,6 @@ class Normal(BaseDistribution):
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
-
         self.mu = mu
         self.sigma = sigma
         self.index = index
@@ -46,7 +44,7 @@ class Normal(BaseDistribution):
         # todo: untangle index handling
         # and broadcast of parameters.
         # move this functionality to the base class
-        self._mu, self._sigma = self._get_bc_params()
+        self._mu, self._sigma = self._get_bc_params(self.mu, self.sigma)
         shape = self._mu.shape
 
         if index is None:
@@ -55,17 +53,7 @@ class Normal(BaseDistribution):
         if columns is None:
             columns = pd.RangeIndex(shape[1])
 
-        super(Normal, self).__init__(index=index, columns=columns)
-
-    def _get_bc_params(self):
-        """Fully broadcast parameters of self, given param shapes and index, columns."""
-        to_broadcast = [self.mu, self.sigma]
-        if hasattr(self, "index") and self.index is not None:
-            to_broadcast += [self.index.to_numpy().reshape(-1, 1)]
-        if hasattr(self, "columns") and self.columns is not None:
-            to_broadcast += [self.columns.to_numpy()]
-        bc = np.broadcast_arrays(*to_broadcast)
-        return bc[0], bc[1]
+        super().__init__(index=index, columns=columns)
 
     def energy(self, x=None):
         r"""Energy of self, w.r.t. self or a constant frame x.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Tests for probabilistic quantile and interval metrics."""
 import pandas as pd
 import pytest

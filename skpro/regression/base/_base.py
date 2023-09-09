@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Base class for probabilistic regression."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
@@ -13,18 +12,43 @@ class BaseProbaRegressor(BaseEstimator):
     """Base class for probabilistic supervised regressors."""
 
     _tags = {
-        "estimator_type": "regressor",
+        "object_type": "regressor_proba",  # type of object, e.g., "distribution"
+        "estimator_type": "regressor_proba",  # type of estimator, e.g., "regressor"
         "capability:multioutput": False,
         "capability:missing": True,
     }
 
     def __init__(self, index=None, columns=None):
-
         self.index = index
         self.columns = columns
 
-        super(BaseProbaRegressor, self).__init__()
+        super().__init__()
         _check_estimator_deps(self)
+
+    def __rmul__(self, other):
+        """Magic * method, return (left) concatenated Pipeline.
+
+        Implemented for `other` being a transformer, otherwise returns `NotImplemented`.
+
+        Parameters
+        ----------
+        other: `sklearn` transformer, must follow `sklearn` API
+            otherwise, `NotImplemented` is returned
+
+        Returns
+        -------
+        Pipeline object,
+            concatenation of `other` (first) with `self` (last).
+            not nested, contains only non-Pipeline `skpro` steps
+        """
+        from skpro.regression.compose._pipeline import Pipeline
+
+        # we wrap self in a pipeline, and concatenate with the other
+        #   the TransformedTargetForecaster does the rest, e.g., dispatch on other
+        if hasattr(other, "transform"):
+            return other * Pipeline([self])
+        else:
+            return NotImplemented
 
     def fit(self, X, y):
         """Fit regressor to training data.
@@ -114,7 +138,20 @@ class BaseProbaRegressor(BaseEstimator):
         y : pandas DataFrame, same length as `X`
             labels predicted for `X`
         """
-        return self._predict_proba(X=X).mean()
+        implements_interval = self._has_implementation_of("_predict_interval")
+        implements_quantiles = self._has_implementation_of("_predict_quantiles")
+        implements_var = self._has_implementation_of("_predict_var")
+        implements_proba = self._has_implementation_of("_predict_proba")
+
+        can_do_proba = implements_interval or implements_quantiles or implements_var
+        can_do_proba = can_do_proba or implements_proba
+
+        if not can_do_proba:
+            raise NotImplementedError
+
+        pred_proba = self._predict_proba(X=X)
+        pred_mean = pred_proba.mean()
+        return pred_mean
 
     def predict_proba(self, X):
         """Predict distribution over labels for data from features.
@@ -227,7 +264,7 @@ class BaseProbaRegressor(BaseEstimator):
         pred_int = self._predict_interval(X=X_inner, coverage=coverage)
         return pred_int
 
-    def _predict_interval(self, X=None, coverage=0.90):
+    def _predict_interval(self, X, coverage):
         """Compute/return interval predictions.
 
         private _predict_interval containing the core logic,
@@ -237,7 +274,7 @@ class BaseProbaRegressor(BaseEstimator):
         ----------
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
-        coverage : guaranteed list of float of unique values, optional (default=0.90)
+        coverage : guaranteed list of float of unique values
            nominal coverage(s) of predictive interval(s)
 
         Returns
@@ -338,7 +375,7 @@ class BaseProbaRegressor(BaseEstimator):
         ----------
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
-        alpha : guaranteed list of float, optional (default=[0.5])
+        alpha : guaranteed list of float
             A list of probabilities at which quantile predictions are computed.
 
         Returns
@@ -358,7 +395,6 @@ class BaseProbaRegressor(BaseEstimator):
             raise NotImplementedError
 
         if implements_interval:
-
             pred_int = pd.DataFrame()
             for a in alpha:
                 # compute quantiles corresponding to prediction interval coverage
@@ -390,7 +426,6 @@ class BaseProbaRegressor(BaseEstimator):
             pred_int.columns = int_idx
 
         elif implements_proba:
-
             pred_proba = self.predict_proba(X=X)
             pred_int = pred_proba.quantile(alpha=alpha)
 
@@ -429,7 +464,7 @@ class BaseProbaRegressor(BaseEstimator):
         pred_var = self._predict_var(X=X_inner)
         return pred_var
 
-    def _predict_var(self, fh=None, X=None, cov=False):
+    def _predict_var(self, X):
         """Compute/return variance predictions.
 
         private _predict_var containing the core logic, called from predict_var
@@ -468,7 +503,7 @@ class BaseProbaRegressor(BaseEstimator):
         #   we get quantile prediction for first and third quartile
         #   return variance of normal distribution with that first and third quartile
         if implements_interval or implements_quantiles:
-            pred_int = self._predict_interval(fh=fh, X=X, coverage=[0.5])
+            pred_int = self._predict_interval(X=X, coverage=[0.5])
             var_names = pred_int.columns.get_level_values(0).unique()
             vars_dict = {}
             for i in var_names:
@@ -488,7 +523,6 @@ class BaseProbaRegressor(BaseEstimator):
         return pred_var
 
     def _check_X_y(self, X, y):
-
         X = self._check_X(X)
         y = self._check_y(y)
 
