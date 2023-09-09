@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Tuning and model selection."""
 
 __all__ = ["GridSearchCV", "RandomizedSearchCV"]

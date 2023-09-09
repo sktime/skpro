@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Non-suite tests for probability distribution objects."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime

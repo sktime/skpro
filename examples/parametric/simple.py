@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # LEGACY MODULE - TODO: remove or refactor
 from sklearn.datasets.base import load_diabetes
 from sklearn.ensemble import RandomForestRegressor

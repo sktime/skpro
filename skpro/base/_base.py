@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Base class and template for regressors and transformers."""
 from skbase.base import BaseEstimator as _BaseEstimator
 from skbase.base import BaseMetaEstimator as _BaseMetaEstimator

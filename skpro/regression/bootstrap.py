@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Probabilistic regression by bootstrap."""
 
 __author__ = ["fkiraly"]
@@ -26,7 +25,7 @@ class BootstrapRegressor(BaseProbaRegressor):
     and whether sampling is with or without replacement.
 
     Direct generalization of ``sklearn``'s ``BaggingClassifier``
-    to the probabilistic regrsesion task.
+    to the probabilistic regression task.
 
     Parameters
     ----------
