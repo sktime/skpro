@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Student's t-distribution."""
 # copyright: skprodevelopers, BSD-3-Clause License (see LICENSE file)
 
@@ -16,9 +15,9 @@ class TDistribution(BaseDistribution):
 
     Parameters
     ----------
-    mean : float or array of float (1D or 2D)
+    mu : float or array of float (1D or 2D)
         mean of the t-distribution distribution
-    sd : float or array of float (1D or 2D), must be positive
+    sigma : float or array of float (1D or 2D), must be positive
         standard deviation of the t-distribution distribution
     df : float or array of float (1D or 2D), must be positive
         Degrees of freedom of the t-distribution

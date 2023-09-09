@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Tests for tag register an tag functionality."""
 
 from skpro.registry._tags import OBJECT_TAG_REGISTER

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Validation utilities."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 

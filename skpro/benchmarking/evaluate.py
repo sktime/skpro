@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Utility for benchmark evaluation of probabilistic regression models."""
 # based on the sktime utility of the same name
@@ -18,7 +17,6 @@ PANDAS_MTYPES = ["pd.DataFrame", "pd.Series", "pd-multiindex", "pd_multiindex_hi
 
 
 def _split(X, y, train, test):
-
     # split data according to cv
     X_train, X_test = X.iloc[train], X.iloc[test]
 

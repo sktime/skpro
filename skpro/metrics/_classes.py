@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Concrete performance metrics for probabilistic supervised regression."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
