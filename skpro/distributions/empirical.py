@@ -124,8 +124,8 @@ class Empirical(BaseDistribution):
                     x_t = x.loc[ix, col]
                 else:
                     x_t = x
-                res.loc[ix, col] = func(spl=spl_t, weights=weights_t, x=x_t, **params)
-        return res.convert_dtypes()
+                res.at[ix, col] = func(spl=spl_t, weights=weights_t, x=x_t, **params)
+        return res.apply(pd.to_numeric)
 
     def _iloc(self, rowidx=None, colidx=None):
         index = self.index

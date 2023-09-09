@@ -2,7 +2,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
-__author__ = ["fkiraly"]
+__author__ = ["fkiraly", "Alex-JG3"]
 
 import numpy as np
 import pandas as pd
@@ -184,6 +184,29 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         assert (res_iloc.index == ix_loc).all()
         assert (res_iloc.columns == iy_loc).all()
 
+    def test_log_pdf_and_pdf(self, object_instance):
+        """Test that the log of the pdf and log_pdf function are similar."""
+        d = object_instance
+        capabilities_exact = d.get_tags()["capabilities:exact"]
+
+        if "log_pdf" not in capabilities_exact or "pdf" not in capabilities_exact:
+            return
+        x = d.sample()
+        pdf = d.pdf(x)
+        log_pdf = d.log_pdf(x)
+        assert np.allclose(np.log(pdf), log_pdf)
+
+    def test_ppf_and_cdf(self, object_instance):
+        """Test that the ppf is the inverse of the cdf."""
+        d = object_instance
+        capabilities_exact = d.get_tags()["capabilities:exact"]
+
+        if "ppf" not in capabilities_exact or "cdf" not in capabilities_exact:
+            return
+        x = d.sample()
+        x_approx = d.ppf(d.cdf(x))
+        assert np.allclose(x.values, x_approx.values)
+
 
 def _check_output_format(res, dist, method):
     """Check output format expectations for BaseDistribution tests."""
@@ -198,6 +221,13 @@ def _check_output_format(res, dist, method):
 
     if method in METHODS_SCALAR_POS or method in METHODS_X_POS:
         assert (res >= 0).all().all()
+
+    if isinstance(res, pd.DataFrame):
+        assert res.apply(pd.api.types.is_numeric_dtype).all()
+    elif isinstance(res, pd.Series):
+        assert pd.api.types.is_numeric_dtype(res)
+    else:
+        raise TypeError("res must be a pandas DataFrame or Series.")
 
 
 def _shuffle_distr(d):
