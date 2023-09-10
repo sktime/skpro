@@ -305,7 +305,6 @@ class LinearizedLogLoss(BaseDistrMetric):
         super().__init__(multioutput=multioutput)
 
     def _evaluate_by_index(self, y_true, y_pred, **kwargs):
-
         range = self.range
 
         pdf = y_pred.pdf(y_true)
