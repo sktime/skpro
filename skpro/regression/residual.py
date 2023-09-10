@@ -169,7 +169,7 @@ class ResidualDouble(BaseProbaRegressor):
         y_pred : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        est = self.estimator_resid
+        est = self.estimator_resid_
         method = "predict"
         y_pred = y.copy()
 
@@ -382,5 +382,6 @@ class ResidualDouble(BaseProbaRegressor):
             "distr_params": {"df": 3},
             "cv": KFold(n_splits=3),
         }
+        params4 = {"estimator": RandomForestRegressor(), "cv": KFold(n_splits=3)}
 
-        return [params1, params2, params3]
+        return [params1, params2, params3, params4]
