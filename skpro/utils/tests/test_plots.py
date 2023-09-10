@@ -61,6 +61,9 @@ def test_plot_crossplot_std():
 
     plot_crossplot_std(y, y_pred)
 
+    y_pred_var = reg_proba.predict_var(X)
+    plot_crossplot_std(y, y_pred_var)
+
 
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
