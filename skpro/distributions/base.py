@@ -269,7 +269,11 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
-            return self.pdf(x=x).map(np.log)
+            pdf_res = self.pdf(x=x)
+            if hasattr(pdf_res, "map"):
+                return pdf_res.map(np.log)
+            else:
+                return pdf_res.applymap(np.log)
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
 
