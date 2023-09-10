@@ -179,7 +179,7 @@ def _cached(f):
     Decorated function
     """
 
-    @functools.lru_cache()
+    @functools.lru_cache
     def wrapper(self, *args, **kwargs):
         return f(self, *args, **kwargs)
 
@@ -449,8 +449,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             )
 
         def lp2(self):
-            """
-            Implements the Lp2 norm of the probability density function
+            r"""Implements the Lp2 norm of the probability density function.
 
             ..math::
             L^2 = \int PDF(x)^2 dx
@@ -698,7 +697,7 @@ class BayesianVendorInterface(VendorInterface):
     """
 
     @abc.abstractmethod
-    @functools.lru_cache()
+    @functools.lru_cache
     def samples(self):
         """
         Returns the predictive posterior samples

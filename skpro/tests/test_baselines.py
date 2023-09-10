@@ -20,8 +20,8 @@ def test_density_baseline():
     # median prediction working?
     mu = np.mean(data.y_train)
     sigma = np.std(data.y_train)
-    assert (y_pred.point() == np.ones((len(data.X_test))) * mu).all()
-    assert (y_pred.std() == np.ones((len(data.X_test))) * sigma).all()
+    assert (y_pred.point() == np.ones(len(data.X_test)) * mu).all()
+    assert (y_pred.std() == np.ones(len(data.X_test)) * sigma).all()
 
     # pdf, cdf working?
     x = np.random.randint(0, 10)
