@@ -1,4 +1,5 @@
-# LEGACY MODULE - TODO: remove or refactor
+"""LEGACY MODULE - TODO: remove or refactor."""
+
 import abc
 import functools
 import warnings
@@ -11,7 +12,7 @@ from skpro.utils.utils import ensure_existence
 
 
 def vectorvalued(f):
-    """Decorates a distribution function to disable automatic vectorization.
+    """Decorate a distribution function to disable automatic vectorization.
 
     Parameters
     ----------
@@ -26,7 +27,7 @@ def vectorvalued(f):
 
 
 def _forward_meta(wrapper, f):
-    """Forward meta information from decorated method to decoration
+    """Forward meta information from decorated method to decoration.
 
     Parameters
     ----------
@@ -44,7 +45,7 @@ def _forward_meta(wrapper, f):
 
 
 def _generalize(f):
-    """Generalizes the signature to allow for the use with np.std() etc.
+    """Generalize the signature to allow for the use with np.std() etc.
 
     Parameters
     ----------
@@ -62,7 +63,7 @@ def _generalize(f):
 
 
 def _vectorize(f):
-    """Enables automatic vectorization of a function
+    """Enable automatic vectorization of a function.
 
     The wrapper vectorizes a interface function unless
     it is decorated with the vectorvalued decorator
@@ -101,7 +102,7 @@ def _vectorize(f):
 
 
 def _elementwise(f):
-    """Enables elementwise operations
+    """Enable elementwise operations.
 
     The wrapper implements two different modes of argument evaluation
     for given p_1,..., p_k that represent the predicted distributions
@@ -166,7 +167,7 @@ def _elementwise(f):
 
 
 def _cached(f):
-    """Enables caching
+    """Enable caching.
 
     Wrapper uses lru_cache to cache function result
 
@@ -187,7 +188,7 @@ def _cached(f):
 
 
 class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
-    """Abstract base class for probabilistic prediction models
+    """Abstract base class for probabilistic prediction models.
 
     Notes
     -----
@@ -197,7 +198,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
     """
 
     class ImplementsEnhancedInterface(abc.ABCMeta):
-        """Meta-class for distribution interface
+        """Meta-class for distribution interface.
 
         Enhances the distribution interface behind the scenes
         with automatic caching and syntactic sugar for
@@ -222,9 +223,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
                     )
 
     class Distribution(metaclass=ImplementsEnhancedInterface):
-        """
-        Abstract base class for the distribution interface
-        returned by probabilistic estimators
+        """Abstract base class for the distributions returned by estimators.
 
         Parameters
         ----------
@@ -252,7 +251,8 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
         @property
         def X(self):
-            """
+            """Test features.
+
             Reference of the test features that are ought to correspond
             with the predictive distribution represented by the interface.
 
@@ -279,17 +279,20 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             self._X = value
 
         def __len__(self):
+            """Return the number of distributions represented by the interface."""
             shape = self.X.shape
             return shape[0] if len(shape) > 1 else 1
 
         def __setitem__(self, key, value):
+            """Set a subset of the distribution object."""
             raise Exception("skpro distributions are readonly")
 
         def __delitem__(self, key):
+            """Delete a subset of the distribution object."""
             raise Exception("skpro distributions are readonly")
 
         def replicate(self, selection=None, mode=None):
-            """Replicates the distribution object
+            """Replicatesthe distribution object.
 
             Parameters
             ----------
@@ -311,7 +314,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             return self.__class__(self.estimator, self._X, selection, mode)
 
         def __getitem__(self, key):
-            """Returns a subset of the distribution object
+            """Return a subset of the distribution object.
 
             Parameters
             ----------
@@ -322,7 +325,6 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             -------
             ``skpro.base.ProbabilisticEstimator.Distribution``
             """
-
             # cache index
             index_ = self.index
             self.index = slice(None)
@@ -358,6 +360,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             return replication
 
         def __point__(self, name):
+            """Point prediction."""
             if len(self) > 1:
                 raise TypeError(
                     "Multiple distributions can not be converted to " + name
@@ -366,14 +369,16 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             return self.point()
 
         def __float__(self):
+            """Float prediction."""
             return float(self.__point__("float"))
 
         def __int__(self):
+            """Int prediction."""
             return int(self.__point__("int"))
 
         @abc.abstractmethod
         def point(self):
-            """Point prediction
+            """Point prediction.
 
             Returns
             -------
@@ -382,7 +387,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             raise NotImplementedError()
 
         def mean(self, *args, **kwargs):
-            """Mean prediction
+            """Mean prediction.
 
             Returns
             -------
@@ -392,7 +397,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
         @abc.abstractmethod
         def std(self):
-            """Variance prediction
+            """Variance prediction.
 
             Returns
             -------
@@ -401,7 +406,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             raise NotImplementedError()
 
         def pdf(self, x):
-            """Probability density function
+            """Probability density function.
 
             Parameters
             ----------
@@ -417,7 +422,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             )
 
         def cdf(self, x):
-            """Cumulative density function
+            """Cumulative density function.
 
             Parameters
             ----------
@@ -449,7 +454,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             )
 
         def lp2(self):
-            r"""Implements the Lp2 norm of the probability density function.
+            r"""Compute Lp2 norm of the probability density function.
 
             ..math::
             L^2 = \int PDF(x)^2 dx
@@ -459,8 +464,9 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             float: Lp2-norm of the density function
             """
             warnings.warn(
-                self.__class__.__name__
-                + " does not implement a lp2 function, defaulting to numerical approximation",
+                f"{self.__class__.__name__} "
+                "does not implement a lp2 function, "
+                "defaulting to numerical approximation",
                 UserWarning,
             )
 
@@ -470,12 +476,15 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             return integrate(lambda x: self[self.index].pdf(x) ** 2, -np.inf, np.inf)[0]
 
     def name(self):
+        """Return the name of the estimator."""
         return self.__class__.__name__
 
     def __str__(self):
+        """Return the name of the estimator."""
         return "%s()" % self.__class__.__name__
 
     def __repr__(self):
+        """Return the repr of the estimator."""
         return "%s()" % self.__class__.__name__
 
     @classmethod
@@ -483,7 +492,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         return cls.Distribution
 
     def predict(self, X):
-        """Predicts using the model
+        """Predict using the model.
 
         Parameters
         ----------
@@ -498,8 +507,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         return self._distribution()(self, X)
 
     def fit(self, X, y):
-        """
-        Fits the model
+        """Fit the model.
 
         Parameters
         ----------
@@ -517,8 +525,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         return self
 
     def score(self, X, y, sample=True, return_std=False):
-        """
-        Returns the log-loss score
+        """Return the log-loss score.
 
         Parameters
         ----------
@@ -546,10 +553,10 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 
 
 class VendorInterface(metaclass=abc.ABCMeta):
-    """Abstract base class for a vendor interface"""
+    """Abstract base class for a vendor interface."""
 
     def on_fit(self, X, y):
-        """Implements vendor fit procedure
+        """Vendor fit procedure.
 
         Parameters
         ----------
@@ -565,7 +572,7 @@ class VendorInterface(metaclass=abc.ABCMeta):
         pass
 
     def on_predict(self, X):
-        """Implements vendor predict procedure
+        """Vendor predict procedure.
 
         Parameters
         ----------
@@ -580,7 +587,7 @@ class VendorInterface(metaclass=abc.ABCMeta):
 
 
 class VendorEstimator(ProbabilisticEstimator):
-    """VendorEstimator
+    """VendorEstimator.
 
     ProbabilisticEstimator that interfaces a vendor using
     a VendorInterface and Adapter.
@@ -594,11 +601,12 @@ class VendorEstimator(ProbabilisticEstimator):
     """
 
     class Distribution(ProbabilisticEstimator.Distribution, metaclass=abc.ABCMeta):
+        """Distribution class returned by VendorEstimator.predict(X)."""
 
         pass
 
     def __init__(self, model=None, adapter=None):
-        """
+        """Construct self.
 
         Parameters
         ----------
@@ -611,7 +619,7 @@ class VendorEstimator(ProbabilisticEstimator):
         self.adapter = self._check_adapter(adapter)
 
     def _check_model(self, model=None):
-        """Checks the model
+        """Check the model.
 
         Checks if vendor interface is valid
 
@@ -631,7 +639,7 @@ class VendorEstimator(ProbabilisticEstimator):
         return model
 
     def _check_adapter(self, adapter):
-        """Checks the adapter
+        """Check the adapter.
 
         Can be overwritten to implement checking procedures for a
         density adapter that are applied during the object
@@ -649,8 +657,7 @@ class VendorEstimator(ProbabilisticEstimator):
         return adapter
 
     def fit(self, X, y):
-        """
-        Fits the vendor model
+        """Fit the vendor model.
 
         Parameters
         ----------
@@ -668,7 +675,7 @@ class VendorEstimator(ProbabilisticEstimator):
         return self
 
     def predict(self, X):
-        """Predicts using the vendor model
+        """Predict using the vendor model.
 
         Parameters
         ----------
@@ -686,7 +693,7 @@ class VendorEstimator(ProbabilisticEstimator):
 
 
 class BayesianVendorInterface(VendorInterface):
-    """Abstract base class for a Bayesian vendor
+    """Abstract base class for a Bayesian vendor.
 
     Notes
     -----
@@ -699,8 +706,7 @@ class BayesianVendorInterface(VendorInterface):
     @abc.abstractmethod
     @functools.lru_cache
     def samples(self):
-        """
-        Returns the predictive posterior samples
+        """Return the predictive posterior samples.
 
         Returns
         -------
@@ -711,7 +717,7 @@ class BayesianVendorInterface(VendorInterface):
 
 
 class BayesianVendorEstimator(VendorEstimator):
-    """Vendor estimator for Bayesian methods
+    """Vendor estimator for Bayesian methods.
 
     ProbabilisticEstimator that interfaces a Bayesian vendor using
     a BayesianVendorInterface and and sample-based Adapter.
@@ -719,6 +725,8 @@ class BayesianVendorEstimator(VendorEstimator):
     """
 
     class Distribution(VendorEstimator.Distribution):
+        """Distribution class returned by BayesianVendorEstimator.predict(X)."""
+
         def _init(self):
             # initialise adapter with samples
             self.adapters_ = []
@@ -730,14 +738,16 @@ class BayesianVendorEstimator(VendorEstimator):
 
         @vectorvalued
         def point(self):
+            """Point prediction."""
             return self.samples.mean(axis=1)
 
         @vectorvalued
         def std(self):
+            """Std prediction."""
             return self.samples.std(axis=1)
 
         def cdf(self, x):
-            """Cumulative density function
+            """Cumulative density function.
 
             Parameters
             ----------
@@ -752,7 +762,7 @@ class BayesianVendorEstimator(VendorEstimator):
             return self.adapters_[self.index].cdf(x)
 
         def pdf(self, x):
-            """Probability density function
+            """Probability density function.
 
             Parameters
             ----------
