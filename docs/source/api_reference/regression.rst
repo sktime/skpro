@@ -73,4 +73,3 @@ Base
     :template: class.rst
 
     BaseProbaRegressor
-
