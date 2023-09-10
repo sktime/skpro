@@ -119,7 +119,7 @@ class BootstrapRegressor(BaseProbaRegressor):
             Xi = X.loc[inst_ix_i]
             Xi = Xi.reset_index(drop=True)
 
-            yi = y.loc[inst_ix_i].reset_index(drop=True)
+            yi = y.loc[inst_ix_i].values.flatten()
 
             self.estimators_ += [esti.fit(Xi, yi)]
 
