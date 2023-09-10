@@ -59,7 +59,7 @@ def plot_crossplot_interval(y_true, y_pred, coverage=None, ax=None):
 
     from matplotlib import pyplot
 
-    if hasattr(y_pred, "quantile"):
+    if hasattr(y_pred, "quantile") and not isinstance(y_pred, pd.DataFrame):
         if coverage is None:
             coverage = 0.9
         quantile_pts = [0.5 - coverage / 2, 0.5, 0.5 + coverage / 2]
@@ -154,7 +154,7 @@ def plot_crossplot_std(y_true, y_pred, ax=None):
         y_std.values.flatten(),
         "b.",
     )
-    ax.set_ylabel(r"Predictive variance of $\widehat{y}_i$")
+    ax.set_ylabel(r"Predictive standard deviation of $\widehat{y}_i$")
     ax.set_xlabel(r"Absolute errors $|y_i - \widehat{y}_i|$")
     # ax.legend(loc="best")
 
