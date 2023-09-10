@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+"""LEGACY MODULE - TODO: remove or refactor."""
 import numpy as np
 
 
 def sample_loss(loss, return_std=False):
-    """Averages the loss of a sample
+    """Averages the loss of a sample.
 
     Parameters
     ----------
@@ -70,7 +70,7 @@ def make_scorer(score_func, greater_is_better=True):
 
 
 def gneiting_loss(y_true, dist_pred, sample=True, return_std=False):
-    """Gneiting loss
+    """Gneiting loss.
 
     Parameters
     ----------
@@ -102,7 +102,7 @@ def gneiting_loss(y_true, dist_pred, sample=True, return_std=False):
 
 
 def linearized_log_loss(y_true, dist_pred, range=1e-10, sample=True, return_std=False):
-    """Linearized log loss
+    """Linearized log loss.
 
     Parameters
     ----------
@@ -141,7 +141,7 @@ def linearized_log_loss(y_true, dist_pred, range=1e-10, sample=True, return_std=
 
 
 def log_loss(y_true, dist_pred, sample=True, return_std=False):
-    """Log loss
+    """Log loss.
 
     Parameters
     ----------
@@ -170,7 +170,7 @@ def log_loss(y_true, dist_pred, sample=True, return_std=False):
 
 
 def rank_probability_loss(y_true, dist_pred, sample=True, return_std=False):
-    """Rank probability loss
+    r"""Rank probability loss.
 
     .. math::
         L(F,y) = \int_{-\infty}^{y} F(x)^2 dx + \int_{y}^{+\infty} (1-F(x))^2 dx

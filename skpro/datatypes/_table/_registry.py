@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*-
+"""Registry of mtypes for Table scitype.
+
+See datatypes._registry for API.
+"""
 
 import pandas as pd
 
