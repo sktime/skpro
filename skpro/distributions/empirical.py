@@ -145,6 +145,7 @@ class Empirical(BaseDistribution):
             subs_rowidx = index[rowidx]
         else:
             subs_rowidx = index
+            weights_subset = weights
 
         if colidx is not None:
             spl_subset = spl_subset.iloc[:, colidx]
