@@ -6,7 +6,6 @@ import warnings
 import numpy as np
 from sklearn.base import BaseEstimator, clone
 
-from skpro.metrics.metrics import log_loss, make_scorer
 from skpro.regression.density import DensityAdapter, KernelDensityAdapter
 from skpro.utils.utils import ensure_existence
 

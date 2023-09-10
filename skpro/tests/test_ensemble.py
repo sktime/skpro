@@ -7,7 +7,6 @@ from sklearn.metrics import mean_squared_error as mse
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
 
-from skpro.metrics.metrics import log_loss as loss
 from skpro.regression.ensemble import BaggingRegressor as SkproBaggingRegressor
 from skpro.regression.parametric.parametric import ParametricEstimator
 from skpro.workflow.manager import DataManager
