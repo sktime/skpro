@@ -275,7 +275,8 @@ class LinearizedLogLoss(BaseDistrMetric):
     For a predictive distribution :math:`d` with pdf :math:`p_d`
     and a ground truth value :math:`y`, the linearized logarithmic loss is
     defined as :math:`L(y, d) := -\log p_d(y)` if :math:`p_d(y) \geq r`,
-    and :math:`L(y, d) := -\log p_d(r) + 1 - \frac{1}{r} p_d(r) (y-r)` otherwise.
+    and :math:`L(y, d) := -\log p_d(r) + 1 - \frac{1}{r} p_d(r)` otherwise,
+    where :math:`r` is the range of linearization parameter, `range` below.
 
     `evaluate` computes the average test sample loss.
     `evaluate_by_index` produces the loss sample by test data point
