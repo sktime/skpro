@@ -10,6 +10,7 @@ __all__ = [
     "ConstraintViolation",
     "CRPS",
     "LogLoss",
+    "SquaredDistrLoss",
 ]
 
 from skpro.metrics._classes import (
@@ -18,4 +19,5 @@ from skpro.metrics._classes import (
     EmpiricalCoverage,
     LogLoss,
     PinballLoss,
+    SquaredDistrLoss,
 )
