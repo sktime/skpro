@@ -116,9 +116,9 @@ class BaseProbaMetric(BaseObject):
         if self.score_average and multioutput == "uniform_average":
             out = out.mean(axis=1).iloc[0]  # average over all
         if self.score_average and multioutput == "raw_values":
-            out = out.T.groupby(level=0).mean()  # average over scores
+            out = out.T.groupby(level=0).T.mean()  # average over scores
         if not self.score_average and multioutput == "uniform_average":
-            out = out.T.groupby(level=1).mean()  # average over variables
+            out = out.T.groupby(level=1).T.mean()  # average over variables
         if not self.score_average and multioutput == "raw_values":
             out = out  # don't average
 
@@ -202,9 +202,9 @@ class BaseProbaMetric(BaseObject):
         if self.score_average and multioutput == "uniform_average":
             out = out.mean(axis=1)  # average over all
         if self.score_average and multioutput == "raw_values":
-            out = out.T.groupby(level=0).mean()  # average over scores
+            out = out.T.groupby(level=0).T.mean()  # average over scores
         if not self.score_average and multioutput == "uniform_average":
-            out = out.T.groupby(level=1).mean()  # average over variables
+            out = out.T.groupby(level=1).T.mean()  # average over variables
         if not self.score_average and multioutput == "raw_values":
             out = out  # don't average
 
