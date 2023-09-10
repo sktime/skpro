@@ -237,7 +237,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             Interface mode ('elementwise' or 'batch')
         """
 
-        def __init__(self, estimator, X, selection=slice(None), mode="elementwise"):
+        def __init__(self, estimator, X, selection=slice(None), mode="elementwise"):  # noqa
             self.estimator = estimator
             self._X = X
             self.index = slice(None)
@@ -416,7 +416,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             -------
             mixed  Density function evaluated at x
             """
-            warnings.warn(
+            warnings.warn(  # noqa
                 self.__class__.__name__ + " does not implement a pdf function",
                 UserWarning,
             )
@@ -432,7 +432,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             -------
             mixed  Cumulative density function evaluated at x
             """
-            warnings.warn(
+            warnings.warn(  # noqa
                 self.__class__.__name__ + " does not implement a cdf function",
                 UserWarning,
             )
@@ -448,7 +448,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             -------
             float
             """
-            warnings.warn(
+            warnings.warn(  # noqa
                 self.__class__.__name__ + " does not implement a ppf function",
                 UserWarning,
             )
@@ -463,7 +463,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             -------
             float: Lp2-norm of the density function
             """
-            warnings.warn(
+            warnings.warn(  # noqa
                 f"{self.__class__.__name__} "
                 "does not implement a lp2 function, "
                 "defaulting to numerical approximation",
@@ -520,7 +520,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         -------
         self : returns an instance of self.
         """
-        warnings.warn("The estimator doesn't implement a fit procedure", UserWarning)
+        warnings.warn("The estimator doesn't implement a fit procedure", UserWarning)  # noqa
 
         return self
 
@@ -544,7 +544,7 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         mixed
             Log-loss score
         """
-        return make_scorer(log_loss, greater_is_better=False)(
+        return make_scorer(log_loss, greater_is_better=False)(  # noqa
             self, X, y, sample=sample, return_std=return_std
         )
 
@@ -552,10 +552,10 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
 ###############################################################################
 
 
-class VendorInterface(metaclass=abc.ABCMeta):
+class VendorInterface(metaclass=abc.ABCMeta):  # noqa
     """Abstract base class for a vendor interface."""
 
-    def on_fit(self, X, y):
+    def on_fit(self, X, y):  # noqa
         """Vendor fit procedure.
 
         Parameters
@@ -571,7 +571,7 @@ class VendorInterface(metaclass=abc.ABCMeta):
         """
         pass
 
-    def on_predict(self, X):
+    def on_predict(self, X):  # noqa
         """Vendor predict procedure.
 
         Parameters
@@ -704,7 +704,7 @@ class BayesianVendorInterface(VendorInterface):
     """
 
     @abc.abstractmethod
-    @functools.lru_cache
+    @functools.lru_cache  # noqa
     def samples(self):
         """Return the predictive posterior samples.
 
