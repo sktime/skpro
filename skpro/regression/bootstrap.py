@@ -9,6 +9,7 @@ from sklearn import clone
 
 from skpro.distributions.empirical import Empirical
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.numpy import flatten_to_1D_if_colvector
 
 
 class BootstrapRegressor(BaseProbaRegressor):
@@ -120,8 +121,7 @@ class BootstrapRegressor(BaseProbaRegressor):
             Xi = Xi.reset_index(drop=True)
 
             yi = y.loc[inst_ix_i].values
-            if len(yi.shape) > 1 and yi.shape[1] == 1:
-                yi = yi.flatten()
+            yi = flatten_to_1D_if_colvector(yi)
 
             self.estimators_ += [esti.fit(Xi, yi)]
 
