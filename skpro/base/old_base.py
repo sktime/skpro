@@ -237,7 +237,9 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
             Interface mode ('elementwise' or 'batch')
         """
 
-        def __init__(self, estimator, X, selection=slice(None), mode="elementwise"):  # noqa
+        def __init__(  # noqa
+            self, estimator, X, selection=slice(None), mode="elementwise"  # noqa
+        ):  # noqa
             self.estimator = estimator
             self._X = X
             self.index = slice(None)
@@ -520,9 +522,11 @@ class ProbabilisticEstimator(BaseEstimator, metaclass=abc.ABCMeta):
         -------
         self : returns an instance of self.
         """
-        warnings.warn("The estimator doesn't implement a fit procedure", UserWarning)  # noqa
+        warnings.warn(  # noqa
+            "The estimator doesn't implement a fit procedure", UserWarning  # noqa
+        )  # noqa
 
-        return self
+        return self  # noqa
 
     def score(self, X, y, sample=True, return_std=False):
         """Return the log-loss score.
