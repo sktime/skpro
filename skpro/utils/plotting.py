@@ -154,7 +154,7 @@ def plot_crossplot_std(y_true, y_pred, ax=None):
         y_std.values.flatten(),
         "b.",
     )
-    ax.set_ylabel(r"Predictive variance of $\widehat{y}_i$")
+    ax.set_ylabel(r"Predictive standard deviation of $\widehat{y}_i$")
     ax.set_xlabel(r"Absolute errors $|y_i - \widehat{y}_i|$")
     # ax.legend(loc="best")
 
