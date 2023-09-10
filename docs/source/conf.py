@@ -22,14 +22,13 @@ import skpro
 env_rtd = os.environ.get("READTHEDOCS")
 # Check if on Read the docs
 if not env_rtd == "True":
-    print("Not on ReadTheDocs")
     sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 
 current_year = datetime.datetime.now().year
 project = "skpro"
-copyright = f"{current_year} (BSD-3-Clause License)"
+project_copyright = f"2017 - {current_year} (BSD-3-Clause License)"
 author = "skpro Developers"
 
 
