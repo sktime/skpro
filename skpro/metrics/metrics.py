@@ -1,4 +1,4 @@
-# LEGACY MODULE - TODO: remove or refactor
+"""LEGACY MODULE - TODO: remove or refactor."""
 import numpy as np
 
 
