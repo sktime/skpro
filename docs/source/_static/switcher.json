@@ -1,0 +1,12 @@
+[
+  {
+    "name": "dev",
+    "version": "latest",
+    "url": "https://skpro.readthedocs.io/en/latest/"
+  },
+  {
+    "name": "2.0.0",
+    "version": "v2.0.0",
+    "url": "https://skpro.readthedocs.io/en/v2.0.0/"
+  }
+]
