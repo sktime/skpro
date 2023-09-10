@@ -11,12 +11,17 @@ as a `scikit-learn`_ like python package for probabilistic supervised regression
 Franz Király research group continued to be focused on ``sktime``.
 
 In 2022, ``sktime``'s base module was turned into a separate package,
-`skbase`_, intended as a workbench to allow easy templating and creation of 
+`skbase`_, intended as a workbench to allow easy templating and creation of
 `scikit-learn`-likes.
 
 Using the templating scaffold of ``skbase``, ``skpro`` was finally revived
 in 2023 by Franz Király, Frithjof Gressmann, and an anonymous contributor with
-GitHub handle ``Alex-JG3``.
+GitHub handle ``Alex-JG3``, built upon a fully rearchitectured, ``skbase`` reliant API,
+as version 2.0.0.
+
+The joint base interface enables mutual compabitibilty between ``skpro``, ``sklearn``,
+and ``sktime``, with ``skpro`` probabilistic regressors being potential components used
+for probabilistic forecasting.
 
 Development is supported by members of the ``sktime`` project,
 new core developers and the broader community (see
