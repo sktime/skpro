@@ -270,6 +270,8 @@ class BaseDistribution(BaseObject):
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
             pdf_res = self.pdf(x=x)
+            # safe deprecation of applymap, renamed to map in pandas 2 versions
+            # this if/else ensures compatibility with a wider range of pandas versions
             if hasattr(pdf_res, "map"):
                 return pdf_res.map(np.log)
             else:
