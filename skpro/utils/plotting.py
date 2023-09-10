@@ -141,8 +141,10 @@ def plot_crossplot_std(y_true, y_pred, ax=None):
 
     from matplotlib import pyplot
 
-    if hasattr(y_pred, "_tags"):
+    if hasattr(y_pred, "_tags") and not isinstance(y_pred, pd.DataFrame):
         y_var = y_pred.var()
+    else:
+        y_var = y_pred
 
     y_std = np.sqrt(y_var)
 
