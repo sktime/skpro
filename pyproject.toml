@@ -51,8 +51,9 @@ dependencies = [
 [project.optional-dependencies]
 all_extras = [
     "attrs",
+    "distfit",
     "matplotlib>=3.3.2",
-    "pymc3; python_version > '3.7'",
+    "ngboost",
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
