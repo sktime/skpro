@@ -129,5 +129,3 @@ TODO - community pointers
 ## :wave: Citation
 
 To cite `skpro`` in a scientific publication, see [citations](CITATION.rst).
-
-
