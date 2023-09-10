@@ -298,5 +298,5 @@ Generated using nbsphinx_. The Jupyter notebook can be found here_.
 intersphinx_mapping = {
     "python": (f"https://docs.python.org/{sys.version_info.major}", None),
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
-    "sktime": ("https://www.sktime.org/en/stable/", None),
+    "sktime": ("https://www.sktime.net/en/stable/", None),
 }
