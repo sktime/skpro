@@ -14,10 +14,12 @@ that reuse these design patterns.
 
    get_started
    users
+   installation
    api_reference
-   contribute
+   get_involved
+   developer_guide
    about
-   changelog
+   examples
 
 From here, you can navigate to:
 

@@ -12,7 +12,7 @@ get stuck, please don't hesitate to chat with us or raise an issue.
    :hidden:
 
    contribute/how_to_contribute
-   contribute/development
+   developer_guide
    contribute/team
    contribute/code_of_conduct
 
@@ -33,14 +33,14 @@ get stuck, please don't hesitate to chat with us or raise an issue.
 
             Contribute
 
-    .. grid-item-card:: Development
+    .. grid-item-card:: Developer guide
         :text-align: center
 
         Help develop ``skpro``.
 
         +++
 
-        .. button-ref:: contribute/development
+        .. button-ref:: developer_guide
             :color: primary
             :click-parent:
             :expand:
