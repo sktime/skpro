@@ -82,20 +82,6 @@ From here, you can navigate to:
 
             Get Involved
 
-    .. grid-item-card:: About
-        :text-align: center
-
-        Learn more about ``skpro``.
-
-        +++
-
-        .. button-ref:: about
-            :color: primary
-            :click-parent:
-            :expand:
-
-            Learn More
-
     .. grid-item-card:: Changelog
         :text-align: center
 
@@ -109,3 +95,17 @@ From here, you can navigate to:
             :expand:
 
             Changelog
+
+    .. grid-item-card:: About
+        :text-align: center
+
+        Learn more about ``skpro``.
+
+        +++
+
+        .. button-ref:: about
+            :color: primary
+            :click-parent:
+            :expand:
+
+            Learn More

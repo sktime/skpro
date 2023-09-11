@@ -11,7 +11,6 @@ get stuck, please don't hesitate to chat with us or raise an issue.
    :maxdepth: 1
    :hidden:
 
-   contribute/how_to_contribute
    developer_guide
    contribute/team
    contribute/code_of_conduct
