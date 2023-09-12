@@ -4,12 +4,6 @@ If you find this package interesting and would like to contribute, kindly contac
 
 ![skpro](/docs/_static/logo/skpro-banner.png)
 
-<p align="center">
-  <a href="https://badge.fury.io/py/skpro"><img src="https://badge.fury.io/py/skpro.svg" alt="PyPI version" height="18"></a>
-  <a href="https://travis-ci.org/sktime/skpro"><img src="https://travis-ci.org/sktime/skpro.svg?branch=master" alt="Build Status"></a>
-  <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License"></a>
-</p>
-
 `skpro` is a library for supervised probabilistic prediction in python.
 It provides `scikit-learn`-like, `scikit-base` compatible interfaces to:
 
