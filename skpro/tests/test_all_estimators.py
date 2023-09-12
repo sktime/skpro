@@ -1,13 +1,18 @@
 """Automated tests based on the skbase test suite template."""
 import numbers
 import types
+from copy import deepcopy
 from inspect import getfullargspec, signature
 
+import joblib
 import numpy as np
+import pandas as pd
 from skbase.testing import TestAllObjects as _TestAllObjects
 from skbase.testing.utils.inspect import _get_args
+from skbase.utils import deep_equals
 
 from skpro.registry import OBJECT_TAG_LIST
+from skpro.utils.random_state import set_random_state
 
 
 class PackageConfig:
@@ -162,3 +167,78 @@ class TestAllObjects(PackageConfig, _TestAllObjects):
                 f"Reason for discrepancy: {equals_msg}"
             )
             assert is_equal, msg
+
+
+class TestAllEstimators(PackageConfig, _TestAllObjects):
+    """Package level tests for all sktime estimators, i.e., objects with fit."""
+
+    def test_fit_updates_state(self, object_instance, scenario):
+        """Check fit/update state change."""
+        # Check that fit updates the is-fitted states
+        attrs = ["_is_fitted", "is_fitted"]
+
+        estimator = object_instance
+        object_class = type(object_instance)
+
+        msg = (
+            f"{object_class.__name__}.__init__ should call "
+            f"super({object_class.__name__}, self).__init__, "
+            "but that does not seem to be the case. Please ensure to call the "
+            f"parent class's constructor in {object_class.__name__}.__init__"
+        )
+        assert hasattr(estimator, "_is_fitted"), msg
+
+        # Check is_fitted attribute is set correctly to False before fit, at init
+        for attr in attrs:
+            assert not getattr(
+                estimator, attr
+            ), f"Estimator: {estimator} does not initiate attribute: {attr} to False"
+
+        fitted_estimator = scenario.run(object_instance, method_sequence=["fit"])
+
+        # Check is_fitted attributes are updated correctly to True after calling fit
+        for attr in attrs:
+            assert getattr(
+                fitted_estimator, attr
+            ), f"Estimator: {estimator} does not update attribute: {attr} during fit"
+
+    def test_fit_returns_self(self, object_instance, scenario):
+        """Check that fit returns self."""
+        fit_return = scenario.run(object_instance, method_sequence=["fit"])
+        assert (
+            fit_return is object_instance
+        ), f"Estimator: {object_instance} does not return self when calling fit"
+
+    def test_fit_does_not_overwrite_hyper_params(self, object_instance, scenario):
+        """Check that we do not overwrite hyper-parameters in fit."""
+        estimator = object_instance
+        set_random_state(estimator)
+
+        # Make a physical copy of the original estimator parameters before fitting.
+        params = estimator.get_params()
+        original_params = deepcopy(params)
+
+        # Fit the model
+        fitted_est = scenario.run(object_instance, method_sequence=["fit"])
+
+        # Compare the state of the model parameters with the original parameters
+        new_params = fitted_est.get_params()
+        for param_name, original_value in original_params.items():
+            new_value = new_params[param_name]
+
+            # We should never change or mutate the internal state of input
+            # parameters by default. To check this we use the joblib.hash function
+            # that introspects recursively any subobjects to compute a checksum.
+            # The only exception to this rule of immutable constructor parameters
+            # is possible RandomState instance but in this check we explicitly
+            # fixed the random_state params recursively to be integer seeds.
+            msg = (
+                "Estimator %s should not change or mutate "
+                " the parameter %s from %s to %s during fit."
+                % (estimator.__class__.__name__, param_name, original_value, new_value)
+            )
+            # joblib.hash has problems with pandas objects, so we use deep_equals then
+            if isinstance(original_value, (pd.DataFrame, pd.Series)):
+                assert deep_equals(new_value, original_value), msg
+            else:
+                assert joblib.hash(new_value) == joblib.hash(original_value), msg
