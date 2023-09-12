@@ -33,13 +33,13 @@ code snippets below.
 
         .. code-block:: bash
 
-           pip install scikit-base
+           pip install skpro
 
     .. tab-item:: PyPi (all dependencies)
 
         .. code-block:: bash
 
-           pip install scikit-base[all_extras]
+           pip install skpro[all_extras]
 
     .. tab-item:: Conda
 
