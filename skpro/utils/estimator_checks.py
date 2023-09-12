@@ -120,7 +120,7 @@ def check_estimator(
     testclass_dict["distribution"] = TestAllDistributions
 
     results = TestAllObjects().run_tests(
-        estimator=estimator,
+        object=estimator,
         raise_exceptions=raise_exceptions,
         tests_to_run=tests_to_run,
         fixtures_to_run=fixtures_to_run,
