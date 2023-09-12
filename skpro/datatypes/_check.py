@@ -23,8 +23,6 @@ __all__ = [
     "mtype",
 ]
 
-from typing import List, Union
-
 import numpy as np
 
 from skpro.datatypes._common import _metadata_requested, _ret
@@ -80,7 +78,7 @@ def _coerce_list_of_str(obj, var_name="obj"):
 
 def check_is_mtype(
     obj,
-    mtype: Union[str, List[str]],
+    mtype,
     scitype: str = None,
     return_metadata=False,
     var_name="obj",
@@ -237,11 +235,7 @@ def check_raise(obj, mtype: str, scitype: str = None, var_name: str = "input"):
         raise TypeError(msg)
 
 
-def mtype(
-    obj,
-    as_scitype: Union[str, List[str]] = None,
-    exclude_mtypes=AMBIGUOUS_MTYPES,
-):
+def mtype(obj, as_scitype=None, exclude_mtypes=AMBIGUOUS_MTYPES):
     """Infer the mtype of an object considered as a specific scitype.
 
     Parameters
@@ -320,7 +314,7 @@ def mtype(
 
 def check_is_scitype(
     obj,
-    scitype: Union[str, List[str]],
+    scitype,
     return_metadata=False,
     var_name="obj",
     exclude_mtypes=AMBIGUOUS_MTYPES,
