@@ -135,7 +135,7 @@ def check_estimator(
         else:
             return isinstance(obj, BaseEstimator)
 
-    # commented out for now - 
+    # commented out for now - add when TestAllEstimators is added
     # if is_estimator(estimator):
     #     results_estimator = TestAllEstimators().run_tests(
     #         estimator=estimator,
