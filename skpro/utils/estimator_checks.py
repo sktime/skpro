@@ -120,7 +120,7 @@ def check_estimator(
     testclass_dict["distribution"] = TestAllDistributions
 
     results = TestAllObjects().run_tests(
-        object=estimator,
+        obj=estimator,
         raise_exceptions=raise_exceptions,
         tests_to_run=tests_to_run,
         fixtures_to_run=fixtures_to_run,
@@ -138,7 +138,7 @@ def check_estimator(
     # commented out for now - add when TestAllEstimators is added
     # if is_estimator(estimator):
     #     results_estimator = TestAllEstimators().run_tests(
-    #         object=estimator,
+    #         obj=estimator,
     #         raise_exceptions=raise_exceptions,
     #         tests_to_run=tests_to_run,
     #         fixtures_to_run=fixtures_to_run,
