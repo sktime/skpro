@@ -1,4 +1,4 @@
-**CAUTION: the skpro package is currently undergoing major rearchitecting and should not be used in deployment.**
+**NOTE: for historical reasons, version numbers of maturing versions start at 2.0.0.**
 
 If you find this package interesting and would like to contribute, kindly contact the `sktime` developers in the [skpro & probabilistic forecasting workstream on discord](https://discord.com/channels/1075852648688930887/1106258090568986644).
 
@@ -17,11 +17,38 @@ It provides `scikit-learn`-like, `scikit-base` compatible interfaces to:
 * **performance metrics to evaluate probabilistic predictions**, e.g., pinball loss, empirical coverage, CRPS
 * **reductions** to turn non-probabilistic, `scikit-learn` regressors into probabilistic `skpro` regressors, such as bootstrap or conformal
 * tools for building **pipelines and composite machine learning models**, including tuning via probabilistic performance metrics
-* symbolic an lazy **probability distributions** with a value domain of `pandas.DataFrame`-s and a `pandas`-like interface
+* symbolic and lazy **probability distributions** with a value domain of `pandas.DataFrame`-s and a `pandas`-like interface
+
+
+| Overview | |
+|---|---|
+| **CI/CD** | [![github-actions](https://img.shields.io/github/actions/workflow/status/sktime/sktime/wheels.yml?logo=github)](https://github.com/sktime/skpro/actions/workflows/wheels.yml) [![!codecov](https://img.shields.io/codecov/c/github/sktime/skpro?label=codecov&logo=codecov)](https://codecov.io/gh/sktime/skpro) [![readthedocs](https://img.shields.io/readthedocs/skpro?logo=readthedocs)](https://skpro.readthedocs.io/en/latest/) [![platform](https://img.shields.io/conda/pn/conda-forge/skpro)](https://github.com/sktime/skpro) |
+| **Code** |  [![!pypi](https://img.shields.io/pypi/v/skpro?color=orange)](https://pypi.org/project/skpro/) [![!conda](https://img.shields.io/conda/vn/conda-forge/skpro)](https://anaconda.org/conda-forge/skpro) [![!python-versions](https://img.shields.io/pypi/pyversions/skpro)](https://www.python.org/) [![!black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sktime/skpro/main?filepath=examples) |
+| **Community** | [![!discord](https://img.shields.io/static/v1?logo=discord&label=discord&message=chat&color=lightgreen)](https://discord.com/invite/54ACzaFsn7) [![!slack](https://img.shields.io/static/v1?logo=linkedin&label=LinkedIn&message=news&color=lightblue)](https://www.linkedin.com/company/scikit-time/) [![!youtube](https://img.shields.io/static/v1?logo=youtube&label=YouTube&message=tutorials&color=red)](https://www.youtube.com/playlist?list=PLKs3UgGjlWHqNzu0LEOeLKvnjvvest2d0) |
 
 ## :books: Documentation
 
-TODO - TO BE ADDED
+
+| Documentation              |                                                                |
+| -------------------------- | -------------------------------------------------------------- |
+| :star: **[Tutorials]**        | New to skpro? Here's everything you need to know!              |
+| :clipboard: **[Binder Notebooks]** | Example notebooks to play with in your browser.              |
+| :woman_technologist: **[User Guides]**      | How to use skpro and its features.                             |
+| :scissors: **[Extension Templates]** | How to build your own estimator using skpro's API.            |
+| :control_knobs: **[API Reference]**      | The detailed reference for skpro's API.                        |
+| :hammer_and_wrench: **[Changelog]**          | Changes and version history.                                   |
+| :deciduous_tree: **[Roadmap]**          | skpro's software and community development plan.                                   |
+| :pencil: **[Related Software]**          | A list of related software. |
+
+[tutorials]: https://skpro.readthedocs.io/en/latest/tutorials.html
+[binder notebooks]: https://mybinder.org/v2/gh/sktime/skpro/main?filepath=examples
+[user guides]: https://skpro.readthedocs.io/en/latest/user_guide.html
+[extension templates]: https://github.com/sktime/skpro/tree/main/extension_templates
+[api reference]: https://skpro.readthedocs.io/en/latest/api_reference.html
+[changelog]: https://skpro.readthedocs.io/en/latest/changelog.html
+[roadmap]: https://skpro.readthedocs.io/en/latest/roadmap.html
+[related software]: https://skpro.readthedocs.io/en/latest/related_software.html
+
 
 ## :speech_balloon: Where to ask questions
 
