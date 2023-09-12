@@ -202,7 +202,7 @@ html_theme_options = {
     },
     "header_links_before_dropdown": 6,
 }
-
+html_logo = "images/skpro-banner.png"
 html_context = {
     "github_user": "sktime",
     "github_repo": "skpro",
