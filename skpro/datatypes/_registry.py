@@ -1,4 +1,5 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+# based on sktime datatypes registry
 """Registry of mtypes and scitypes.
 
 Note for extenders: new mtypes for an existing scitypes

@@ -7,9 +7,11 @@ __all__ = [
     "Laplace",
     "Mixture",
     "Normal",
+    "TDistribution",
 ]
 
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
+from skpro.distributions.t import TDistribution
