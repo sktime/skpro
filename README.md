@@ -173,4 +173,4 @@ specification: all kinds of contributions are welcome - not just code.
 
 ## :wave: Citation
 
-To cite `skpro`` in a scientific publication, see [citations](CITATION.rst).
+To cite `skpro` in a scientific publication, see [citations](CITATION.rst).
