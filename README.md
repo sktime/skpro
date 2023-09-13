@@ -2,17 +2,14 @@
 
 **NOTE: for historical reasons, version numbers of maturing versions start at 2.0.0.**
 
-If you find this package interesting and would like to contribute, kindly contact the `sktime` developers in the [skpro & probabilistic forecasting workstream on discord](https://discord.com/channels/1075852648688930887/1106258090568986644).
-
 `skpro` is a library for supervised probabilistic prediction in python.
 It provides `scikit-learn`-like, `scikit-base` compatible interfaces to:
 
-* tabular **supervised regressors with probabilistic prediction modes** - interval, quantile and distribution predictions
-* **performance metrics to evaluate probabilistic predictions**, e.g., pinball loss, empirical coverage, CRPS
-* **reductions** to turn non-probabilistic, `scikit-learn` regressors into probabilistic `skpro` regressors, such as bootstrap or conformal
-* tools for building **pipelines and composite machine learning models**, including tuning via probabilistic performance metrics
-* symbolic and lazy **probability distributions** with a value domain of `pandas.DataFrame`-s and a `pandas`-like interface
-
+* tabular **supervised regressors for probabilistic prediction** - interval, quantile and distribution predictions
+* **metrics to evaluate probabilistic predictions**, e.g., pinball loss, empirical coverage, CRPS
+* **reductions** to turn `scikit-learn` regressors into probabilistic `skpro` regressors, such as bootstrap or conformal
+* building **pipelines and composite models**, including tuning via probabilistic performance metrics
+* symbolic **probability distributions** with value domain of `pandas.DataFrame`-s and `pandas`-like interface
 
 | Overview | |
 |---|---|
