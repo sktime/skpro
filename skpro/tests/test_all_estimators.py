@@ -49,7 +49,7 @@ class BaseFixtureGenerator:
         return obj_list
 
 
-class TestAllObjects(PackageConfig, _TestAllObjects):
+class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
     """Generic tests for all objects in the mini package."""
 
     # override this due to reserved_params index, columns, in the BaseDistribution class
