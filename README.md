@@ -1,8 +1,8 @@
+<a href="https://skpro.readthedocs.io/en/latest"><img src="https://github.com/sktime/skpro/blob/main/docs/source/images/skpro-banner.svg" width="175" align="right" /></a>
+
 **NOTE: for historical reasons, version numbers of maturing versions start at 2.0.0.**
 
 If you find this package interesting and would like to contribute, kindly contact the `sktime` developers in the [skpro & probabilistic forecasting workstream on discord](https://discord.com/channels/1075852648688930887/1106258090568986644).
-
-![skpro](/docs/_static/logo/skpro-banner.png)
 
 `skpro` is a library for supervised probabilistic prediction in python.
 It provides `scikit-learn`-like, `scikit-base` compatible interfaces to:
