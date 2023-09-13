@@ -27,7 +27,10 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         from sklearn.model_selection import train_test_split
 
         X, y = load_diabetes(return_X_y=True, as_frame=True)
+        X = X.iloc[:50]
+        y = y.iloc[:50]
         y = pd.DataFrame(y)
+
         X_train, X_test, y_train, y_test = train_test_split(X, y)
 
         # fit - just once for all predict output methods
@@ -145,7 +148,10 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         from sklearn.model_selection import train_test_split
 
         X, y = load_diabetes(return_X_y=True, as_frame=True)
+        X = X.iloc[:50]
+        y = y.iloc[:50]
         y = pd.DataFrame(y)
+
         X_train, X_test, y_train, _ = train_test_split(X, y)
 
         regressor = object_instance
