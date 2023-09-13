@@ -144,9 +144,31 @@ metric(y_test, y_pred_proba)
 
 ## :wave: How to get involved
 
-We welcome contributions to the skpro project. Please read our [contribution guide](/CONTRIBUTING.md).
+There are many ways to get involved with development of `skpro`, which is
+developed by the `sktime` community.
+We follow the [all-contributors](https://github.com/all-contributors/all-contributors)
+specification: all kinds of contributions are welcome - not just code.
 
-TODO - community pointers
+| Documentation              |                                                                |
+| -------------------------- | --------------------------------------------------------------        |
+| :gift_heart: **[Contribute]**        | How to contribute to skpro.          |
+| :school_satchel:  **[Mentoring]** | New to open source? Apply to our mentoring program! |
+| :date: **[Meetings]** | Join our discussions, tutorials, workshops, and sprints! |
+| :woman_mechanic:  **[Developer Guides]**      | How to further develop the skpro code base.                             |
+| :medal_sports: **[Contributors]** | A list of all contributors. |
+| :raising_hand: **[Roles]** | An overview of our core community roles. |
+| :money_with_wings: **[Donate]** | Fund sktime and skpro maintenance and development. |
+| :classical_building: **[Governance]** | How and by whom decisions are made in sktime's community.   |
+
+[contribute]: https://skpro.readthedocs.io/en/latest/get_involved/contributing.html
+[donate]: https://opencollective.com/sktime
+[developer guides]: https://skpro.readthedocs.io/en/latest/developer_guide.html
+[contributors]: https://github.com/sktime/skpro/blob/main/CONTRIBUTORS.md
+[governance]: https://www.sktime.net/en/latest/get_involved/governance.html
+[mentoring]: https://github.com/sktime/mentoring
+[meetings]: https://calendar.google.com/calendar/u/0/embed?src=sktime.toolbox@gmail.com&ctz=UTC
+[roles]: https://www.sktime.net/en/latest/about/team.html
+
 
 ## :wave: Citation
 
