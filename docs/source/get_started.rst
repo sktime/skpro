@@ -17,6 +17,6 @@ Installation
 * operating systems Mac OS X, Unix-like OS, Windows 8.1 and higher
 * installation via ``PyPi`` or ``conda``
 
-Please see the :ref:`installation <installation>` guide for step-by-step instructions on the package installation.
+Please see the :ref:`installation <full_install>` guide for step-by-step instructions on the package installation.
 
 .. _scikit-learn: https://scikit-learn.org/stable/index.html

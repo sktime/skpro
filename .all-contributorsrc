@@ -60,22 +60,22 @@
       "name": "Vitaly Davydov",
       "avatar_url": "https://avatars.githubusercontent.com/u/2273226?v=4",
       "profile": "https://github.com/iwitaly",
-        "contributions": [
-            "code",
-            "doc",
-            "maintenance",
-            "review"
-        ]
+      "contributions": [
+          "code",
+          "doc",
+          "maintenance",
+          "review"
+      ]
     },
     {
       "login": "yarnabrina",
       "name": "Anirban Ray",
       "avatar_url": "https://avatars.githubusercontent.com/u/39331844?v=4",
       "profile": "https://github.com/yarnabrina",
-        "contributions": [
-            "code",
-            "maintenance"
-        ]
+      "contributions": [
+          "code",
+          "maintenance"
+      ]
     },
     {
       "login": "Alex-JG3",
@@ -83,8 +83,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/49785867?v=4",
       "profile": "https://github.com/Alex-JG3",
       "contributions": [
+        "bug",
         "code",
-        "ideas"
+        "ideas",
+        "review"
       ]
     }
   ]

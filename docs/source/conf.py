@@ -164,10 +164,6 @@ if not version_match or version_match.isdigit():
         version_match = "v" + release
 
 html_theme_options = {
-    "logo": {
-        "text": "skpro",
-        "alt_text": "skpro",
-    },
     "icon_links": [
         {
             "name": "GitHub",
@@ -202,7 +198,7 @@ html_theme_options = {
     },
     "header_links_before_dropdown": 6,
 }
-
+html_logo = "images/skpro-banner.png"
 html_context = {
     "github_user": "sktime",
     "github_repo": "skpro",

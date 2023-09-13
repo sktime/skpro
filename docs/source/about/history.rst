@@ -15,7 +15,7 @@ In 2022-23, ``sktime``'s base module was turned into a separate package,
 `scikit-learn`-likes.
 
 Using the templating scaffold of ``skbase``, ``skpro`` was finally revived
-in 2023 by Franz Király, Frithjof Gressmann, and Alex Gregory,
+in 2023 by Franz Király, Frithjof Gressmann, Anirban Ray, and Alex Gregory,
 built upon a fully rearchitectured, ``skbase`` reliant API,
 as version 2.0.0.
 

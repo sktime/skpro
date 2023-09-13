@@ -12,7 +12,12 @@ from skbase.testing.utils.inspect import _get_args
 from skbase.utils import deep_equals
 
 from skpro.registry import OBJECT_TAG_LIST
+from skpro.utils.git_diff import is_class_changed
 from skpro.utils.random_state import set_random_state
+
+# whether to test only estimators from modules that are changed w.r.t. main
+# default is False, can be set to True by pytest --only_changed_modules True flag
+ONLY_CHANGED_MODULES = False
 
 
 class PackageConfig:
@@ -34,7 +39,22 @@ class PackageConfig:
     valid_tags = OBJECT_TAG_LIST
 
 
-class TestAllObjects(PackageConfig, _TestAllObjects):
+class BaseFixtureGenerator:
+    """Base class for fixture generation, overrides skbase object retrieval."""
+
+    def _all_objects(self):
+        """Retrieve list of all object classes of type self.object_type_filter."""
+        obj_list = super()._all_objects()
+
+        # this setting ensures that only estimators are tested that have changed
+        # in the sense that any line in the module is different from main
+        if ONLY_CHANGED_MODULES:
+            obj_list = [obj for obj in obj_list if is_class_changed(obj)]
+
+        return obj_list
+
+
+class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
     """Generic tests for all objects in the mini package."""
 
     # override this due to reserved_params index, columns, in the BaseDistribution class
