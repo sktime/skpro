@@ -8,12 +8,11 @@ Documentation
    :maxdepth: 1
    :hidden:
 
-   user_documentation/installation
-   user_documentation/tutorials
-   user_documentation/user_guide
-   user_documentation/glossary
-   user_documentation/changelog
-   user_documentation/related_software
+   installation
+   tutorials
+   user_guide
+   changelog
+   related_software
 
 
 .. grid:: 1 2 2 2
@@ -22,11 +21,11 @@ Documentation
     .. grid-item-card:: Installation
         :text-align: center
 
-        Install ``skbase``.
+        Install ``skpro``.
 
         +++
 
-        .. button-ref:: user_documentation/installation
+        .. button-ref:: installation
             :color: primary
             :click-parent:
             :expand:
@@ -40,7 +39,7 @@ Documentation
 
         +++
 
-        .. button-ref:: user_documentation/tutorials
+        .. button-ref:: tutorials
             :color: primary
             :click-parent:
             :expand:
@@ -50,30 +49,16 @@ Documentation
     .. grid-item-card:: User Guide
         :text-align: center
 
-        Learn about using ``skbase``.
+        Learn about using ``skpro``.
 
         +++
 
-        .. button-ref:: user_documentation/user_guide
+        .. button-ref:: user_guide
             :color: primary
             :click-parent:
             :expand:
 
             User Guide
-
-    .. grid-item-card:: Glossary
-        :text-align: center
-
-        Understand common terminology.
-
-        +++
-
-        .. button-ref:: user_documentation/glossary
-            :color: primary
-            :click-parent:
-            :expand:
-
-            Glossary
 
     .. grid-item-card:: Changelog
         :text-align: center
@@ -82,7 +67,7 @@ Documentation
 
         +++
 
-        .. button-ref:: user_documentation/changelog
+        .. button-ref:: changelog
             :color: primary
             :click-parent:
             :expand:
@@ -92,11 +77,11 @@ Documentation
     .. grid-item-card:: Related Software
         :text-align: center
 
-        Explore software related to ``skbase``.
+        Explore software related to ``skpro``.
 
         +++
 
-        .. button-ref:: user_documentation/related_software
+        .. button-ref:: related_software
             :color: primary
             :click-parent:
             :expand:
