@@ -1,4 +1,4 @@
-<a href="https://skpro.readthedocs.io/en/latest"><img src="https://github.com/sktime/skpro/blob/main/docs/source/images/skpro-banner.svg" width="175" align="right" /></a>
+<a href="https://skpro.readthedocs.io/en/latest"><img src="https://github.com/sktime/skpro/blob/main/docs/source/images/skpro-banner.png" width="175" align="right" /></a>
 
 **NOTE: for historical reasons, version numbers of maturing versions start at 2.0.0.**
 
