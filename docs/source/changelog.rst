@@ -14,25 +14,16 @@ You can also subscribe to ``skpro``'s
 
 For planned changes and upcoming releases, see our :ref:`roadmap`.
 
-[2.0.0] - 2023-09-1X
+[2.0.0] - 2023-09-13
 ====================
 
-Re-release of ``skpro``, newly rearchitected using ``skbase``.
+Re-release of ``skpro``, newly rearchitected using ``skbase``!
 
-Highlights
-----------
+Try out ``skpro v2`` on `Binder <https://mybinder.org/v2/gh/sktime/skpro/main?filepath=examples>`_!
 
-Enhancements
-------------
+Contributions, bug reports, and feature requests are welcome on the `issue tracker <https://github.com/sktime/skpro/issues>`_
 
-Fixes
------
-
-Documentation
--------------
-
-Maintenance
------------
+or on the `community Discord <https://discord.com/invite/54ACzaFsn7>`_.
 
 Contributors
 ------------
