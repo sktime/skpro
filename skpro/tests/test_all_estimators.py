@@ -10,7 +10,6 @@ from skbase.testing.utils.inspect import _get_args
 from skpro.registry import OBJECT_TAG_LIST
 from skpro.utils.git_diff import is_class_changed
 
-
 # whether to test only estimators from modules that are changed w.r.t. main
 # default is False, can be set to True by pytest --only_changed_modules True flag
 ONLY_CHANGED_MODULES = False
