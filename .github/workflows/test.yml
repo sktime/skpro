@@ -93,6 +93,9 @@ jobs:
       - name: Show dependencies
         run: python -m pip list
 
+      - name: Show available branches
+        run: git branch -a
+
       - name: Run tests
         run: make test
 
@@ -128,6 +131,9 @@ jobs:
 
       - name: Show dependencies
         run: python -m pip list
+
+      - name: Show available branches
+        run: git branch -a
 
       - name: Run tests
         run: make test
