@@ -58,7 +58,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install .[binder,dev]
+          python -m pip install .[all_extras,binder,dev]
       - name: Run example notebooks
         run: build_tools/run_examples.sh
         shell: bash
@@ -72,7 +72,11 @@ jobs:
         os: [ubuntu-20.04, windows-latest, macOS-11]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - run: git remote set-branches origin 'main'
+
+      - run: git fetch --depth 1
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -89,6 +93,9 @@ jobs:
       - name: Show dependencies
         run: python -m pip list
 
+      - name: Show available branches
+        run: git branch -a
+
       - name: Run tests
         run: make test
 
@@ -104,7 +111,11 @@ jobs:
         os: [ubuntu-20.04, windows-latest, macOS-11]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - run: git remote set-branches origin 'main'
+
+      - run: git fetch --depth 1
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -120,6 +131,9 @@ jobs:
 
       - name: Show dependencies
         run: python -m pip list
+
+      - name: Show available branches
+        run: git branch -a
 
       - name: Run tests
         run: make test

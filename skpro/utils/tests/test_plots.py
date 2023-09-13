@@ -27,9 +27,13 @@ def test_plot_crossplot_interval():
     reg_proba = ResidualDouble(reg_mean, reg_resid)
 
     reg_proba.fit(X, y)
-    y_pred = reg_proba.predict_proba(X)
+    y_pred_proba = reg_proba.predict_proba(X)
 
-    plot_crossplot_interval(y, y_pred)
+    plot_crossplot_interval(y, y_pred_proba, coverage=0.8)
+    plot_crossplot_interval(y, y_pred_proba)
+
+    y_pred_interval = reg_proba.predict_interval(X, coverage=0.7)
+    plot_crossplot_interval(y, y_pred_interval)
 
 
 @pytest.mark.skipif(
@@ -56,6 +60,9 @@ def test_plot_crossplot_std():
     y_pred = reg_proba.predict_proba(X)
 
     plot_crossplot_std(y, y_pred)
+
+    y_pred_var = reg_proba.predict_var(X)
+    plot_crossplot_std(y, y_pred_var)
 
 
 @pytest.mark.skipif(

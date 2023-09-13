@@ -8,6 +8,7 @@ import pandas as pd
 from sklearn import clone
 
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.numpy import flatten_to_1D_if_colvector
 
 
 class ResidualDouble(BaseProbaRegressor):
@@ -169,7 +170,7 @@ class ResidualDouble(BaseProbaRegressor):
         y_pred : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        est = self.estimator_resid
+        est = self.estimator_resid_
         method = "predict"
         y_pred = y.copy()
 
@@ -206,7 +207,10 @@ class ResidualDouble(BaseProbaRegressor):
         use_y_pred = self.use_y_pred
 
         self._y_cols = y.columns
-        y = y.values.flatten()
+        y = y.values
+
+        # flatten column vector to 1D array to avoid sklearn complaints
+        y = flatten_to_1D_if_colvector(y)
 
         est.fit(X, y)
 
@@ -222,7 +226,7 @@ class ResidualDouble(BaseProbaRegressor):
         else:
             resids = residual_trafo.fit_transform(y - y_pred)
 
-        resids = resids.flatten()
+        resids = flatten_to_1D_if_colvector(resids)
 
         if use_y_pred:
             y_ix = {"index": X.index, "columns": self._y_cols}
@@ -287,12 +291,14 @@ class ResidualDouble(BaseProbaRegressor):
         distr_params = self.distr_params
         min_scale = self.min_scale
 
+        n_cols = len(self._y_cols)
+
         if distr_params is None:
             distr_params = {}
 
         # predict location - this is the same as in _predict
         y_pred_loc = est.predict(X)
-        y_pred_loc = y_pred_loc.reshape(-1, 1)
+        y_pred_loc = y_pred_loc.reshape(-1, n_cols)
 
         # predict scale
         # if use_y_pred, use predicted location as feature
@@ -305,7 +311,7 @@ class ResidualDouble(BaseProbaRegressor):
 
         y_pred_scale = est_r.predict(X_r)
         y_pred_scale = y_pred_scale.clip(min=min_scale)
-        y_pred_scale = y_pred_scale.reshape(-1, 1)
+        y_pred_scale = y_pred_scale.reshape(-1, n_cols)
 
         # create distribution with predicted scale and location
         # we deal with string distr_types by getting class and param names
@@ -382,5 +388,6 @@ class ResidualDouble(BaseProbaRegressor):
             "distr_params": {"df": 3},
             "cv": KFold(n_splits=3),
         }
+        params4 = {"estimator": RandomForestRegressor(), "cv": KFold(n_splits=3)}
 
-        return [params1, params2, params3]
+        return [params1, params2, params3, params4]

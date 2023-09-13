@@ -145,6 +145,7 @@ class Empirical(BaseDistribution):
             subs_rowidx = index[rowidx]
         else:
             subs_rowidx = index
+            weights_subset = weights
 
         if colidx is not None:
             spl_subset = spl_subset.iloc[:, colidx]
@@ -367,7 +368,7 @@ def _energy_np(spl, x=None, weights=None, assume_sorted=False):
 
     if x is None:
         cum_fwd = np.cumsum(weights[:-1])
-        cum_back = np.cumsum(weights[1::-1])[::-1]
+        cum_back = np.cumsum(weights[1:][::-1])[::-1]
         energy = 2 * np.sum(cum_fwd * cum_back * spl_diff)
     else:
         spl_diff = np.abs(spl - x)
