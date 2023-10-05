@@ -3,12 +3,12 @@
 __all__ = ["MultipleQuantileRegressor"]
 __author__ = ["Ram0nB"]
 
-import pandas as pd
 import numpy as np
-
-from skpro.regression.base import BaseProbaRegressor
+import pandas as pd
 from joblib import Parallel, delayed
 from sklearn.base import clone
+
+from skpro.regression.base import BaseProbaRegressor
 
 
 class MultipleQuantileRegressor(BaseProbaRegressor):
@@ -21,19 +21,19 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    mean_regressor : Sklearn compatible regressor
+    mean_regressor : Sklearn compatible regressor, optional
         Tabular mean regressor for predict.
-    quantile_regressor : Sklearn compatible quantile regressor
+    quantile_regressor : Sklearn compatible quantile regressor, optional
         Tabular quantile regressor. In fit, for every alpha a clone of
         quantile_regressor is made whereafte the alpha parameter
         quantile_regressor_alpha_param is set using the set_params method.
         Subsequently, all regressors are fitted.
-    quantile_regressor_alpha_param : str
+    quantile_regressor_alpha_param : str, optional
         Parameter name that sets the quantile probability
         level for the quantile_regressor.
-    alpha : list with float
+    alpha : list with float, optional
         A list of probabilities. For each probability, a quantile_regressor will be fit.
-    n_jobs : None or int
+    n_jobs : int, optional
         The number of jobs to run in parallel for fit, predict_quantile and
         predict_interval. -1 means using all processors.
     sort_quantiles : bool
@@ -43,7 +43,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         the quantile_regressor. To resolve this issue, the quantiles for
         all predictions per row index will be sorted if sort_quantiles=True. This
         methodology will never lead to a higher quantile loss and solves the quantile
-        crossing problem [1].
+        crossing problem [1]_.
 
     [1] Victor Chernozhukov, Iván Fernández-Val, and Alfred Galichon. Quantile and
         probability curves without crossing. Econometrica, 78(3):1093–1125, 2010.
@@ -329,7 +329,8 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from sklearn.linear_model import QuantileRegressor, LinearRegression
+        from sklearn.linear_model import LinearRegression, QuantileRegressor
+
         from skpro.regression.tests.test_all_regressors import TEST_ALPHAS
 
         # extract all alpha values from TEST_ALPHAS
