@@ -90,8 +90,8 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
 
         # this setting ensures that only estimators are tested that have changed
         # in the sense that any line in the module is different from main
-        # if ONLY_CHANGED_MODULES:
-        #     obj_list = [obj for obj in obj_list if is_class_changed(obj)]
+        if ONLY_CHANGED_MODULES:
+            obj_list = [obj for obj in obj_list if is_class_changed(obj)]
 
         return obj_list
 
