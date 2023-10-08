@@ -11,7 +11,7 @@ from skbase.testing import TestAllObjects as _TestAllObjects
 from skbase.testing.utils.inspect import _get_args
 from skbase.utils import deep_equals
 
-from skpro.registry import OBJECT_TAG_LIST
+from skpro.registry import OBJECT_TAG_LIST, all_objects
 from skpro.tests.scenarios.scenarios_getter import retrieve_scenarios
 from skpro.utils.git_diff import is_class_changed
 from skpro.utils.random_state import set_random_state
@@ -80,7 +80,12 @@ class BaseFixtureGenerator:
 
     def _all_objects(self):
         """Retrieve list of all object classes of type self.object_type_filter."""
-        obj_list = super()._all_objects()
+        obj_list = all_objects(
+            object_types=getattr(self, "object_type_filter", None),
+            return_names=False,
+            exclude_estimators=self.exclude_objects,
+            package_name=self.package_name,
+        )
 
         # this setting ensures that only estimators are tested that have changed
         # in the sense that any line in the module is different from main
