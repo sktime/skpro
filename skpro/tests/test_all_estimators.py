@@ -104,10 +104,10 @@ class BaseFixtureGenerator:
         scenario: instance of TestScenario
             ranges over all scenarios returned by retrieve_scenarios
         """
-        if "estimator_class" in kwargs.keys():
-            obj = kwargs["estimator_class"]
-        elif "estimator_instance" in kwargs.keys():
-            obj = kwargs["estimator_instance"]
+        if "object_class" in kwargs.keys():
+            obj = kwargs["object_class"]
+        elif "object_instance" in kwargs.keys():
+            obj = kwargs["object_instance"]
         else:
             return []
 
