@@ -5,6 +5,11 @@
     "url": "https://skpro.readthedocs.io/en/latest/"
   },
   {
+    "name": "2.0.1",
+    "version": "v2.0.1",
+    "url": "https://skpro.readthedocs.io/en/v2.0.1/"
+  }
+  {
     "name": "2.0.0",
     "version": "v2.0.0",
     "url": "https://skpro.readthedocs.io/en/v2.0.0/"
