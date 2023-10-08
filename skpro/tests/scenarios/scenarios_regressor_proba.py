@@ -13,7 +13,7 @@ from skpro.base import BaseObject
 from skpro.tests.scenarios.scenarios import TestScenario
 
 
-class ProbaRegressorTestScenario(TestScenario, BaseObject):
+class _ProbaRegressorTestScenario(TestScenario, BaseObject):
     """Generic test scenario for classifiers."""
 
     def get_args(self, key, obj=None, deepcopy_args=True):
@@ -91,7 +91,7 @@ def _get_Xy_traintest():
 X_train, X_test, y_train, y_test = _get_Xy_traintest()
 
 
-class ProbaRegressorBasic(ProbaRegressorTestScenario):
+class ProbaRegressorBasic(_ProbaRegressorTestScenario):
     """Fit/predict with univariate panel X, numpy3D mtype, and labels y."""
 
     _tags = {

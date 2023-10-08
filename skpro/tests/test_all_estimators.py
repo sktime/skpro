@@ -78,13 +78,13 @@ class BaseFixtureGenerator:
         applicable for estimator_class or estimator_instance
     """
 
+    # overrides object retrieval in scikit-base
     def _all_objects(self):
         """Retrieve list of all object classes of type self.object_type_filter."""
         obj_list = all_objects(
             object_types=getattr(self, "object_type_filter", None),
             return_names=False,
-            exclude_estimators=self.exclude_objects,
-            package_name=self.package_name,
+            exclude_objects=self.exclude_objects,
         )
 
         # this setting ensures that only estimators are tested that have changed
