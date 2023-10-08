@@ -62,7 +62,8 @@ class TestScenario:
         else:
             if not hasattr(self, "args"):
                 raise RuntimeError(
-                    "args must either be given to __init__ or set in a child class"
+                    f"{self.__class__.__name__} (scenario class) failed to construct, "
+                    "args must either be given to __init__ or set as an attribute"
                 )
             _check_dict_of_dict(self.args)
 
