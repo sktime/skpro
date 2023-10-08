@@ -61,7 +61,7 @@ class _ProbaRegressorTestScenario(TestScenario, BaseObject):
                 return obj.get_tag(tag_name)
 
         # applicable only if object is a BaseProbaRegressor
-        if not get_tag("object_type") == "regressor_proba":
+        if not get_tag(obj, "object_type") == "regressor_proba":
             return False
 
         # if X has missing data, applicable only if can handle missing data

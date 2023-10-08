@@ -7,7 +7,10 @@ from inspect import getfullargspec, signature
 import joblib
 import numpy as np
 import pandas as pd
-from skbase.testing import TestAllObjects as _TestAllObjects
+from skbase.testing import (
+    BaseFixtureGenerator as _BaseFixtureGenerator,
+    TestAllObjects as _TestAllObjects,
+)
 from skbase.testing.utils.inspect import _get_args
 from skbase.utils import deep_equals
 
@@ -40,7 +43,7 @@ class PackageConfig:
     valid_tags = OBJECT_TAG_LIST
 
 
-class BaseFixtureGenerator:
+class BaseFixtureGenerator(_BaseFixtureGenerator):
     """Fixture generator for base testing functionality in sktime.
 
     Test classes inheriting from this and not overriding pytest_generate_tests
@@ -279,7 +282,7 @@ class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
             assert is_equal, msg
 
 
-class TestAllEstimators(PackageConfig, _TestAllObjects):
+class TestAllEstimators(PackageConfig, BaseFixtureGenerator):
     """Package level tests for all sktime estimators, i.e., objects with fit."""
 
     def test_fit_updates_state(self, object_instance, scenario):
