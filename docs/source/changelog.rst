@@ -14,6 +14,12 @@ You can also subscribe to ``skpro``'s
 
 For planned changes and upcoming releases, see our :ref:`roadmap`.
 
+[2.1.0] - 2023-10-09
+====================
+
+Python 3.12 compatibility release.
+
+
 [2.0.1] - 2023-10-08
 ====================
 
