@@ -99,9 +99,9 @@ def plot_crossplot_std(y_true, y_pred, ax=None):
 
     Plots:
 
-    * x-axis: absolute error samples $|y_i - \widehat{y}_i.\mu|$
-    * y-axis: predictive standard deviation $\widehat{y}_i.\sigma$,
-      of the prediction $\widehat{y}_i$ corresponding to $y_i$
+    * x-axis: absolute error samples :math:`|y_i - \widehat{y}_i.\mu|`
+    * y-axis: predictive standard deviation :math:`\widehat{y}_i.\sigma`,
+      of the prediction :math:`\widehat{y}_i` corresponding to :math:`y_i`
 
     Parameters
     ----------
@@ -168,8 +168,9 @@ def plot_crossplot_loss(y_true, y_pred, metric, ax=None):
 
     Plots:
 
-    * x-axis: ground truth values $y_i$
-    * y-axis: loss of the prediction $\widehat{y}_i$ corresponding to $y_i$,
+    * x-axis: ground truth values :math:`y_i`
+    * y-axis: loss of the prediction :math:`\widehat{y}_i`
+      corresponding to :math:`y_i`,
       as calculated by ``metric.evaluate_by_index``
 
     Parameters
