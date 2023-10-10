@@ -339,8 +339,8 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from sklearn.linear_model import LinearRegression, QuantileRegressor
         from sklearn.ensemble import GradientBoostingRegressor
+        from sklearn.linear_model import LinearRegression, QuantileRegressor
 
         from skpro.regression.tests.test_all_regressors import TEST_ALPHAS
 
