@@ -14,39 +14,54 @@ from skpro.regression.base import BaseProbaRegressor
 class MultipleQuantileRegressor(BaseProbaRegressor):
     """Multiple quantile regressor.
 
-    For quantile regression, often more than one quantile probability is of interest.
-    Therefore, this multiple quantile regressor wraps multiple quantile regressors for
-    multiple quantile probabilities. After fitting, all quantile regressors can be used
-    to construct a quantile/interval prediction for multiple quantile probabilities.
+    A tabular quantile regressor typically regresses a single probability level,
+    however, often more than one quantile probability is of interest. Therefore, this
+    multiple quantile regressor wraps multiple quantile regressors for multiple quantile
+    probabilities so that each probability has one corresponding regressor. After
+    fitting, all quantile regressors can be used to make probabilistic predictions.
+
+    In `fit`, for every probability in alpha, the quantile_regressor is cloned and the
+    probability is set. Subsequently all regressors are fitted.
+
+    For every desired probability in the probabilistic prediction methods, the fitted
+    regressor that is closest to the desired probability is selected to make the
+    corresponding prediction.
 
     Parameters
     ----------
-    mean_regressor : Sklearn compatible regressor, optional
-        Tabular mean regressor for predict.
-    quantile_regressor : Sklearn compatible quantile regressor, optional
-        Tabular quantile regressor. In fit, for every alpha a clone of
-        quantile_regressor is made whereafte the alpha parameter
-        quantile_regressor_alpha_param is set using the set_params method.
-        Subsequently, all regressors are fitted.
-    quantile_regressor_alpha_param : str, optional
-        Parameter name that sets the quantile probability
-        level for the quantile_regressor.
-    alpha : list with float, optional
+    mean_regressor : Sklearn compatible regressor or None, default=None
+        Tabular mean regressor for `predict`. Can't predict mean if not provided.
+    quantile_regressor : Sklearn compatible quantile regressor or None, default=None
+        Tabular quantile regressor for `predict_quantiles`, `predict_interval` and
+        `predict_proba`. Can't do probabilistic prediction if not provided.
+    alpha_name : str or None, default=None
+        Alpha parameter name that sets the quantile probability level for the
+        quantile_regressor. Can't do probabilistic prediction if not provided.
+    alpha : list with float or None, default=None
         A list of probabilities. For each probability, a quantile_regressor will be fit.
-    n_jobs : int, optional
-        The number of jobs to run in parallel for fit, predict_quantile and
-        predict_interval. -1 means using all processors.
-    sort_quantiles : bool
+        Can't do probabilistic prediction if not provided.
+    n_jobs : int or None, default=None
+        The number of jobs to run in parallel for `fit`, `predict_quantiles`,
+        `predict_interval` and `predict_proba`. -1 means using all processors, -2 means
+        using all except one processors and None means no parallelization.
+    sort_quantiles : bool, default=False
         For the quantile estimates, the lack of monotinicity can be a problem caused by
         the crossing of quantiles, also known as the quantile crossing problem. This can
         happen because each quantile is predicted by a single independent instance of
-        the quantile_regressor. To resolve this issue, the quantiles for
-        all predictions per row index will be sorted if sort_quantiles=True. This
-        methodology will never lead to a higher quantile loss and solves the quantile
-        crossing problem [1]_.
+        the quantile_regressor. To resolve this issue, the quantiles for all predictions
+        per row index will be sorted if sort_quantiles=True. This methodology will never
+        lead to a higher quantile loss and solves the quantile crossing problem [1]_.
 
+    Attributes
+    ----------
+    regressors_ : dict
+        All fitted regressors.
+        The keys are the probabilities in alpha and "mean" for the mean.
+
+    References
+    ----------
     [1] Victor Chernozhukov, Iván Fernández-Val, and Alfred Galichon. Quantile and
-        probability curves without crossing. Econometrica, 78(3):1093–1125, 2010.
+        probability curves without crossing. Econometrica, 78(3):1093-1125, 2010.
 
     Examples
     --------
@@ -60,7 +75,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     >>> mqr = MultipleQuantileRegressor(
     ...     mean_regressor=LinearRegression(),
     ...     quantile_regressor=QuantileRegressor(solver="highs"),
-    ...     quantile_regressor_alpha_param="quantile",
+    ...     alpha_name="quantile",
     ...     alpha=alpha,
     ...     n_jobs=-1,
     ... )
@@ -77,37 +92,28 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         self,
         mean_regressor=None,
         quantile_regressor=None,
-        quantile_regressor_alpha_param=None,
+        alpha_name=None,
         alpha=None,
         n_jobs=None,
         sort_quantiles=False,
     ):
         self.mean_regressor = mean_regressor
         self.quantile_regressor = quantile_regressor
-        self.quantile_regressor_alpha_param = quantile_regressor_alpha_param
+        self.alpha_name = alpha_name
         self.alpha = alpha
         self.n_jobs = n_jobs
         self.sort_quantiles = sort_quantiles
 
         # input checks
-        no_quantile_reg = False
-        if (
-            quantile_regressor is None
-            or quantile_regressor_alpha_param is None
-            or alpha is None
-        ):
-            no_quantile_reg = True
+        self._no_mean_reg = True if mean_regressor is None else False
+        self._no_quantile_reg = False
+        if quantile_regressor is None or alpha_name is None or alpha is None:
+            self._no_quantile_reg = True
         elif isinstance(alpha, list):
             if len(alpha) == 0:
-                no_quantile_reg = True
+                self._no_quantile_reg = True
 
-        no_mean_reg = False
-        if mean_regressor is None:
-            no_mean_reg = True
-
-        self._no_quantile_reg = no_quantile_reg
-        self._no_mean_reg = no_mean_reg
-        if no_quantile_reg and no_mean_reg:
+        if self._no_quantile_reg and self._no_mean_reg:
             raise ValueError(
                 "Can't predict: parameters for mean and quantile "
                 "regressors not provided"
@@ -123,9 +129,9 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         Parameters
         ----------
-        X : pandas DataFrame or array-like
+        X : pandas DataFrame
             feature instances to fit regressor to
-        y : pandas DataFrame, Series or array-like, must be same length as X
+        y : pandas DataFrame, Series, must be same length as X
             labels to fit regressor to
 
         Returns
@@ -137,9 +143,9 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         regressors = [clone(self.mean_regressor)] if not self._no_mean_reg else []
         for a in self.alpha:
             q_est = clone(self.quantile_regressor)
-            q_est = q_est.set_params(**{self.quantile_regressor_alpha_param: a})
+            q_est = q_est.set_params(**{self.alpha_name: a})
             q_est_p = q_est.get_params()
-            if q_est_p[self.quantile_regressor_alpha_param] != a:
+            if q_est_p[self.alpha_name] != a:
                 raise ValueError("Can't set alpha for quantile regressor.")
             else:
                 regressors.append(q_est)
@@ -148,8 +154,8 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         def _fit_regressor(X, y, regressor):
             return regressor.fit(X=X, y=y)
 
-        X_fit = np.array(X)
-        y_fit = np.array(y)
+        X_fit = X.values
+        y_fit = y.values
         fitted_regressors = Parallel(n_jobs=self.n_jobs)(
             delayed(_fit_regressor)(X_fit, y_fit, regressor) for regressor in regressors
         )
@@ -162,14 +168,8 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             regressors_[a] = fitted_regressors[i]
         self.regressors_ = regressors_
 
-        # write varname to self
-        if isinstance(y, pd.DataFrame):
-            # "capability:multioutput": False -> 1 column
-            self._y_varname = y.columns[0]
-        elif isinstance(y, pd.Series):
-            self._y_varname = y.name
-        else:
-            self._y_varname = 0
+        # write varname to self ("capability:multioutput": False -> 1 column)
+        self._y_varname = y.columns[0]
 
         return self
 
@@ -184,7 +184,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         Parameters
         ----------
-        X : pandas DataFrame or array-like, must have same columns as X in `fit`
+        X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
 
         Returns
@@ -196,14 +196,13 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             raise ValueError("Can't predict: no mean_regressor provided")
 
         # predict
-        X_pred = np.array(X)
+        X_pred = X.values
         preds = self.regressors_["mean"].predict(X_pred)
 
         # format predictions as DataFrame
         preds = np.array(preds).flatten()
         preds = pd.DataFrame(preds, columns=[self._y_varname])
-        if isinstance(X, (pd.DataFrame, pd.Series)):
-            preds.index = X.index
+        preds.index = X.index
 
         return preds
 
@@ -215,7 +214,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         Parameters
         ----------
-        X : pandas DataFrame or array-like, must have same columns as X in `fit`
+        X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
         alpha : guaranteed list of float
             A list of probabilities at which quantile predictions are computed.
@@ -231,16 +230,15 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         """
         if self._no_quantile_reg:
             raise ValueError(
-                "Can't predict: no quantile_regressor, quantile_regressor_alpha_param "
+                "Can't predict: no quantile_regressor, alpha_name "
                 "or alpha provided when instantiated"
             )
 
-        # check that we have regressors for alpha
-        if not np.in1d(alpha, self.alpha).any():
-            raise ValueError(
-                "No regressor(s) for provided alpha. Fitted alpha: "
-                f"{self.alpha}. Provided alpha: {alpha}."
-            )
+        # per a in alpha, list fitted regressor that is nearest to a
+        regressors = []
+        for a in alpha:
+            nearest_fitted_a = min(self.alpha, key=lambda p: abs(p - a))
+            regressors.append(self.regressors_[nearest_fitted_a])
 
         # predict
         def _predict_quantile(X, regressor):
@@ -248,8 +246,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             pred = np.array(pred).flatten()
             return pred
 
-        X_pred = np.array(X)
-        regressors = [self.regressors_[a] for a in alpha]
+        X_pred = X.values
         preds = Parallel(n_jobs=self.n_jobs)(
             delayed(_predict_quantile)(X_pred, regressor) for regressor in regressors
         )
@@ -257,8 +254,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         # format predictions as DataFrame
         preds = pd.DataFrame(np.transpose(preds))
         preds.columns = pd.MultiIndex.from_product([[self._y_varname], alpha])
-        if isinstance(X, (pd.DataFrame, pd.Series)):
-            preds.index = X.index
+        preds.index = X.index
 
         # solve quantile crossing problem
         if self.sort_quantiles:
@@ -268,53 +264,19 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         return preds
 
-    def get_params(self, deep=True):
-        """Get a dict of parameters values for this object.
+    def _predict_proba_util(self, X):
+        # bespoke predict proba util function
 
-        Parameters
-        ----------
-        deep : bool, default=True
-            Whether to return parameters of components.
+        # predict
+        preds = self._predict_quantiles(X, self.alpha)
 
-            * If True, will return a dict of parameter name : value for this object,
-              including parameters of components (= BaseObject-valued parameters).
-            * If False, will return a dict of parameter name : value for this object,
-              but not include parameters of components.
+        # reformat:
+        # row multiindex: (alpha, X.index)
+        # column index as y in fit
+        preds = preds.stack(level=1).swaplevel(0, 1)
+        preds.index = preds.index.set_names(names="alpha", level=0)
 
-        Returns
-        -------
-        params : dict with str-valued keys
-            Dictionary of parameters, paramname : paramvalue
-            keys-value pairs include:
-
-            * always: all parameters of this object, as via `get_param_names`
-              values are parameter value for that key, of this object
-              values are always identical to values passed at construction
-            * if `deep=True`, also contains keys/value pairs of component parameters
-              parameters of components are indexed as `[componentname]__[paramname]`
-              all parameters of `componentname` appear as `paramname` with its value
-            * if `deep=True`, also contains arbitrary levels of component recursion,
-              e.g., `[componentname]__[componentcomponentname]__[paramname]`, etc
-        """
-        params = super().get_params(deep=deep)
-        # remove quantile_regressor_alpha_param from params
-        # managed by self, so removal prevents user confusion
-        params.pop(f"quantile_regressor__{self.quantile_regressor_alpha_param}", None)
-        return params
-
-    def _check_X(self, X):
-        # also allow array-like X
-        if isinstance(X, (pd.DataFrame, pd.Series)):
-            return super()._check_X(X)
-        else:
-            return np.array(X)
-
-    def _check_y(self, y):
-        # also allow array-like y
-        if isinstance(y, (pd.DataFrame, pd.Series)):
-            return super()._check_y(y)
-        else:
-            return np.array(y)
+        return preds
 
     @classmethod
     def get_test_params(cls):
@@ -330,6 +292,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
         from sklearn.linear_model import LinearRegression, QuantileRegressor
+        from sklearn.ensemble import GradientBoostingRegressor
 
         from skpro.regression.tests.test_all_regressors import TEST_ALPHAS
 
@@ -350,13 +313,23 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         alpha += coverage_alpha
         alpha = sorted(list(set(alpha)))
 
-        params = {
-            "mean_regressor": LinearRegression(),
-            "quantile_regressor": QuantileRegressor(solver="highs"),
-            "quantile_regressor_alpha_param": "quantile",
-            "alpha": alpha,
-            "n_jobs": -1,
-            "sort_quantiles": True,
-        }
+        params = [
+            {
+                "mean_regressor": LinearRegression(),
+                "quantile_regressor": QuantileRegressor(solver="highs"),
+                "alpha_name": "quantile",
+                "alpha": alpha,
+                "n_jobs": -1,
+                "sort_quantiles": True,
+            },
+            {
+                "mean_regressor": GradientBoostingRegressor(),
+                "quantile_regressor": GradientBoostingRegressor(loss="quantile"),
+                "alpha_name": "alpha",
+                "alpha": alpha,
+                "n_jobs": -1,
+                "sort_quantiles": True,
+            },
+        ]
 
         return params
