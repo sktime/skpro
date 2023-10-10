@@ -138,6 +138,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
+        self._y_columns = y.columns
 
         # clone, set alpha and list all regressors
         regressors = [clone(self.mean_regressor)] if not self._no_mean_reg else []
@@ -277,6 +278,53 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         preds.index = preds.index.set_names(names="alpha", level=0)
 
         return preds
+
+    def _predict_proba(self, X):
+        """Predict distribution over labels for data from features.
+
+        State required:
+            Requires state to be "fitted".
+
+        Accesses in self:
+            Fitted model attributes ending in "_"
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+
+        Returns
+        -------
+        y : skpro BaseDistribution, same length as `X`
+            labels predicted for `X`
+        """
+        from skpro.distributions import Empirical
+
+        index = X.index
+        columns = self._y_columns
+
+        empirical_spl = self._predict_proba_util(X)
+
+        alpha_np = np.array(self.alpha)
+        alpha_diff = np.diff(alpha_np)
+        alpha_diff2 = np.repeat(alpha_diff, 2) / 2
+        weight_double = np.concatenate([[alpha_np[0]], alpha_diff2, [1 - alpha_np[-1]]])
+        weight_double2 = weight_double.reshape(-1, 2)
+        weights = weight_double2.sum(axis=1)
+
+        weights_df = pd.DataFrame(index=empirical_spl.index, columns=["weights"])
+        alpha = empirical_spl.index.get_level_values("alpha").unique()
+        for i, a in enumerate(alpha):
+            weights_df.loc[a, "weights"] = weights[i]
+
+        y_pred_proba = Empirical(
+            empirical_spl,
+            weights=weights_df["weights"],
+            index=index,
+            columns=columns,
+        )
+
+        return y_pred_proba
 
     @classmethod
     def get_test_params(cls):
