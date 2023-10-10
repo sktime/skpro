@@ -1,4 +1,4 @@
-"""Multiple quantile regression"""
+"""Multiple quantile regression."""
 
 __all__ = ["MultipleQuantileRegressor"]
 __author__ = ["Ram0nB"]
