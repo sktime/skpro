@@ -164,7 +164,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             regressors_[a] = fitted_regressors[i]
         self.regressors_ = regressors_
 
-        # write cols and varname to self ("capability:multioutput": False -> 1 column)
+        # write varname to self ("capability:multioutput": False -> 1 column)
         self._y_varname = y.columns[0]
 
         return self
