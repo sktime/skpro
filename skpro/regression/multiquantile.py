@@ -24,26 +24,28 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     probability is set. Subsequently all regressors are fitted.
 
     For every desired probability in the probabilistic prediction methods, the fitted
-    regressor that is closest to the desired probability is selected to make the
-    corresponding prediction.
+    quantile regressor that is nearest to the desired probability is selected to make
+    the corresponding prediction. For example, the `predict_proba` method returns an
+    empirical distribution with supports from the quantile predictions. For quantile
+    probabilities that are not fitted, the support from the nearest fitted probability
+    is used.
 
     Parameters
     ----------
+    quantile_regressor : Sklearn compatible quantile regressor
+        Tabular quantile regressor for probabilistic prediction methods.
+    alpha_name : str
+        Alpha parameter name that sets the quantile probability level for the
+        quantile_regressor.
+    alpha : list with float
+        A list of probabilities in the open interval (0, 1).
+        For each probability, a quantile_regressor will be fit.
     mean_regressor : Sklearn compatible regressor or None, default=None
         Tabular mean regressor for `predict`. Can't predict mean if not provided.
-    quantile_regressor : Sklearn compatible quantile regressor or None, default=None
-        Tabular quantile regressor for `predict_quantiles`, `predict_interval` and
-        `predict_proba`. Can't do probabilistic prediction if not provided.
-    alpha_name : str or None, default=None
-        Alpha parameter name that sets the quantile probability level for the
-        quantile_regressor. Can't do probabilistic prediction if not provided.
-    alpha : list with float or None, default=None
-        A list of probabilities. For each probability, a quantile_regressor will be fit.
-        Can't do probabilistic prediction if not provided.
     n_jobs : int or None, default=None
-        The number of jobs to run in parallel for `fit`, `predict_quantiles`,
-        `predict_interval` and `predict_proba`. -1 means using all processors, -2 means
-        using all except one processors and None means no parallelization.
+        The number of jobs to run in parallel for `fit` and all probabilistic prediction
+        methods. -1 means using all processors, -2 means using all except one processors
+        and None means no parallelization.
     sort_quantiles : bool, default=False
         For the quantile estimates, the lack of monotinicity can be a problem caused by
         the crossing of quantiles, also known as the quantile crossing problem. This can
@@ -90,33 +92,28 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
     def __init__(
         self,
+        quantile_regressor,
+        alpha_name,
+        alpha,
         mean_regressor=None,
-        quantile_regressor=None,
-        alpha_name=None,
-        alpha=None,
         n_jobs=None,
         sort_quantiles=False,
     ):
-        self.mean_regressor = mean_regressor
         self.quantile_regressor = quantile_regressor
         self.alpha_name = alpha_name
         self.alpha = alpha
+        self.mean_regressor = mean_regressor
         self.n_jobs = n_jobs
         self.sort_quantiles = sort_quantiles
 
         # input checks
         self._no_mean_reg = True if mean_regressor is None else False
-        self._no_quantile_reg = False
-        if quantile_regressor is None or alpha_name is None or alpha is None:
-            self._no_quantile_reg = True
-        elif isinstance(alpha, list):
-            if len(alpha) == 0:
-                self._no_quantile_reg = True
-
-        if self._no_quantile_reg and self._no_mean_reg:
+        if len(alpha) == 0:
+            raise ValueError("at least one value in alpha is required.")
+        elif np.amin(alpha) <= 0 or np.amax(alpha) >= 1:
             raise ValueError(
-                "Can't predict: parameters for mean and quantile "
-                "regressors not provided"
+                "values in alpha must lie in the open interval (0, 1), "
+                f"but found alpha: {alpha}."
             )
 
         super().__init__()
@@ -138,8 +135,6 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        self._y_columns = y.columns
-
         # clone, set alpha and list all regressors
         regressors = [clone(self.mean_regressor)] if not self._no_mean_reg else []
         for a in self.alpha:
@@ -156,7 +151,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             return regressor.fit(X=X, y=y)
 
         X_fit = X.values
-        y_fit = y.values
+        y_fit = y.values.flatten()
         fitted_regressors = Parallel(n_jobs=self.n_jobs)(
             delayed(_fit_regressor)(X_fit, y_fit, regressor) for regressor in regressors
         )
@@ -169,7 +164,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             regressors_[a] = fitted_regressors[i]
         self.regressors_ = regressors_
 
-        # write varname to self ("capability:multioutput": False -> 1 column)
+        # write cols and varname to self ("capability:multioutput": False -> 1 column)
         self._y_varname = y.columns[0]
 
         return self
@@ -194,7 +189,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         if self._no_mean_reg:
-            raise ValueError("Can't predict: no mean_regressor provided")
+            raise ValueError("can't predict: no mean_regressor provided.")
 
         # predict
         X_pred = X.values
@@ -229,12 +224,6 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             Entries are quantile predictions, for var in col index,
                 at quantile probability in second col index, for the row index.
         """
-        if self._no_quantile_reg:
-            raise ValueError(
-                "Can't predict: no quantile_regressor, alpha_name "
-                "or alpha provided when instantiated"
-            )
-
         # per a in alpha, list fitted regressor that is nearest to a
         regressors = []
         for a in alpha:
@@ -265,20 +254,6 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         return preds
 
-    def _predict_proba_util(self, X):
-        # bespoke predict proba util function
-
-        # predict
-        preds = self._predict_quantiles(X, self.alpha)
-
-        # reformat:
-        # row multiindex: (alpha, X.index)
-        # column index as y in fit
-        preds = preds.stack(level=1).swaplevel(0, 1)
-        preds.index = preds.index.set_names(names="alpha", level=0)
-
-        return preds
-
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
 
@@ -300,11 +275,16 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         """
         from skpro.distributions import Empirical
 
-        index = X.index
-        columns = self._y_columns
+        # get quantile prediction for all fitted quantile regressors
+        quantile_preds = self._predict_quantiles(X, self.alpha)
 
-        empirical_spl = self._predict_proba_util(X)
+        # format as emprical sample for empirical distr
+        # row multiindex: (alpha, X.index)
+        # column index  : as y in fit
+        empirical_spl = quantile_preds.stack(level=1).swaplevel(0, 1)
 
+        # obtain alpha weights for empirical distr such that we take the nearest
+        # available quantile prob (the cum weights match the chosen quantile prob)
         alpha_np = np.array(self.alpha)
         alpha_diff = np.diff(alpha_np)
         alpha_diff2 = np.repeat(alpha_diff, 2) / 2
@@ -312,16 +292,16 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         weight_double2 = weight_double.reshape(-1, 2)
         weights = weight_double2.sum(axis=1)
 
-        weights_df = pd.DataFrame(index=empirical_spl.index, columns=["weights"])
-        alpha = empirical_spl.index.get_level_values("alpha").unique()
-        for i, a in enumerate(alpha):
-            weights_df.loc[a, "weights"] = weights[i]
+        # obtain weights per emprical sample
+        empirical_spl_weights = pd.Series(index=empirical_spl.index)
+        for i, a in enumerate(self.alpha):
+            empirical_spl_weights.loc[a] = weights[i]
 
         y_pred_proba = Empirical(
             empirical_spl,
-            weights=weights_df["weights"],
-            index=index,
-            columns=columns,
+            weights=empirical_spl_weights,
+            index=X.index,
+            columns=[self._y_varname],
         )
 
         return y_pred_proba
