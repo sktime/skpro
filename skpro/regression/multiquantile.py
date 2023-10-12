@@ -23,11 +23,17 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     In `fit`, for every probability in alpha, the quantile_regressor is cloned and the
     probability is set. Subsequently all regressors are fitted.
 
-    For every desired probability in the probabilistic prediction methods, the fitted
-    quantile regressor that is nearest to the desired probability is selected to make
-    the corresponding prediction. For example, the `predict_proba` method returns an
-    empirical distribution with supports from the quantile predictions. For quantile
-    probabilities that are not fitted, the support from the nearest fitted probability
+    For every desired quantile probability in the probabilistic prediction methods, the 
+    fitted quantile regressor that is nearest to the desired quantile probability is 
+    selected to make the corresponding prediction. This is done as follows: we have a 
+    list of fitted quantile probabilities (init alpha) :math:`\alpha = [\alpha_1, 
+    \alpha_2, \ldots, \alpha_n]` and a list of desired quantile probabilities (predict 
+    alpha) :math:`\alpha = [\alpha_1, \alpha_2, \ldots, \alpha_n]`. The selected 
+    quantile regressor's quantile probability for :math:`\alpha'_j` is given by: 
+    :math:`\hat{\alpha}_j = \underset{\alpha_i \in \alpha}{\mathrm{argmin}}\ | \alpha'_j
+    - \alpha_i |`. For example, the `predict_proba` method returns an empirical 
+    distribution with supports from the quantile predictions. For the quantile 
+    probabilities that are not fitted, the support from the nearest fitted probability 
     is used.
 
     Parameters
@@ -62,8 +68,8 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
     References
     ----------
-    [1] Victor Chernozhukov, Iván Fernández-Val, and Alfred Galichon. Quantile and
-        probability curves without crossing. Econometrica, 78(3):1093-1125, 2010.
+    .. [1] Victor Chernozhukov, Iván Fernández-Val, and Alfred Galichon. Quantile and
+       probability curves without crossing. Econometrica, 78(3):1093-1125, 2010.
 
     Examples
     --------
@@ -226,7 +232,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         """
         # per a in alpha, list fitted regressor that is nearest to a
         regressors = []
-        for a in alpha:
+        for a in sorted(alpha):
             nearest_fitted_a = min(self.alpha, key=lambda p: abs(p - a))
             regressors.append(self.regressors_[nearest_fitted_a])
 
@@ -243,7 +249,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         # format predictions as DataFrame
         preds = pd.DataFrame(np.transpose(preds))
-        preds.columns = pd.MultiIndex.from_product([[self._y_varname], alpha])
+        preds.columns = pd.MultiIndex.from_product([[self._y_varname], sorted(alpha)])
         preds.index = X.index
 
         # solve quantile crossing problem
@@ -285,7 +291,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         # obtain alpha weights for empirical distr such that we take the nearest
         # available quantile prob (the cum weights match the chosen quantile prob)
-        alpha_np = np.array(self.alpha)
+        alpha_np = np.array(sorted(self.alpha))
         alpha_diff = np.diff(alpha_np)
         alpha_diff2 = np.repeat(alpha_diff, 2) / 2
         weight_double = np.concatenate([[alpha_np[0]], alpha_diff2, [1 - alpha_np[-1]]])
@@ -294,7 +300,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         # obtain weights per emprical sample
         empirical_spl_weights = pd.Series(index=empirical_spl.index)
-        for i, a in enumerate(self.alpha):
+        for i, a in enumerate(sorted(self.alpha)):
             empirical_spl_weights.loc[a] = weights[i]
 
         y_pred_proba = Empirical(
