@@ -12,7 +12,7 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class MultipleQuantileRegressor(BaseProbaRegressor):
-    """Multiple quantile regressor.
+    r"""Multiple quantile regressor.
 
     A tabular quantile regressor typically regresses a single probability level,
     however, often more than one quantile probability is of interest. Therefore, this
