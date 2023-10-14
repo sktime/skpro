@@ -23,18 +23,21 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     In `fit`, for every probability in alpha, the quantile_regressor is cloned and the
     probability is set. Subsequently all regressors are fitted.
 
-    For every desired quantile probability in the probabilistic prediction methods, the 
-    fitted quantile regressor that is nearest to the desired quantile probability is 
-    selected to make the corresponding prediction. This is done as follows: we have a 
-    list of fitted quantile probabilities (init alpha) :math:`\alpha = [\alpha_1, 
-    \alpha_2, \ldots, \alpha_n]` and a list of desired quantile probabilities (predict 
-    alpha) :math:`\alpha = [\alpha_1, \alpha_2, \ldots, \alpha_n]`. The selected 
-    quantile regressor's quantile probability for :math:`\alpha'_j` is given by: 
-    :math:`\hat{\alpha}_j = \underset{\alpha_i \in \alpha}{\mathrm{argmin}}\ | \alpha'_j
-    - \alpha_i |`. For example, the `predict_proba` method returns an empirical 
-    distribution with supports from the quantile predictions. For the quantile 
-    probabilities that are not fitted, the support from the nearest fitted probability 
-    is used.
+    In probabilistic predict-like methods, if predictions of a quantile are requested,
+    the fitted quantile regressor that is nearest to the desired quantile probability
+    is used for the prediction, of the requested quantile.
+
+    For instance, let :math:`\alpha = [\alpha_1, \alpha_2, \ldots, \alpha_n]`
+    be the `alpha` provided to `__init__`, and
+    let :math:`\alpha' = [\alpha'_1, \alpha'_2, \ldots, \alpha'_m]` be the quantiles
+    requested in `predict_quantile`.
+    Then, we use quantile regressors at quantiles :math:`\hat{\alpha}_j`,
+    :math:`\hat{\alpha}_j := \underset{i = 1 \dots n}{\mathrm{argmin}}\ | \alpha'_j
+    - \alpha_i |` to make quantile predictions.
+
+    Consistently, the `predict_proba` method returns an empirical
+    distribution with supports at quantile points corresponding to `alpha`,
+    and weights corresponding to the nearest quantile regressor.
 
     Parameters
     ----------
