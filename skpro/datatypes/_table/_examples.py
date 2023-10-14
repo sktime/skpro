@@ -58,7 +58,7 @@ list_of_dict = [{"a": 1.0}, {"a": 4.0}, {"a": 0.5}, {"a": -3.0}]
 example_dict[("list_of_dict", "Table", 0)] = list_of_dict
 example_dict_lossy[("list_of_dict", "Table", 0)] = False
 
-if _check_soft_dependencies("polars", severity="none"):
+if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
     example_dict[("polars_eager_table", "Table", 0)] = pl.DataFrame(df)
@@ -103,7 +103,7 @@ list_of_dict = [
 example_dict[("list_of_dict", "Table", 1)] = list_of_dict
 example_dict_lossy[("list_of_dict", "Table", 1)] = False
 
-if _check_soft_dependencies("polars", severity="none"):
+if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
     example_dict[("polars_eager_table", "Table", 1)] = pl.DataFrame(df)

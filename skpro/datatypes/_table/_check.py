@@ -214,7 +214,7 @@ def check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
 check_dict[("list_of_dict", "Table")] = check_list_of_dict_table
 
 
-if _check_soft_dependencies("polars", severity="none"):
+if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     from skpro.datatypes._adapter.polars import check_polars_frame
 
     def check_polars_table(obj, return_metadata=False, var_name="obj"):

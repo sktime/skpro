@@ -237,7 +237,7 @@ _extend_conversions(
 )
 
 
-if _check_soft_dependencies("polars", severity="none"):
+if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
     def convert_polars_to_pandas(obj, store=None):
