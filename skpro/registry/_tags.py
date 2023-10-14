@@ -95,6 +95,18 @@ OBJECT_TAG_REGISTER = [
         "bool",
         "whether estimator supports missing values",
     ),
+    (
+        "X_inner_mtype",
+        "regressor_proba",
+        ("list", "str"),
+        "which machine type(s) is the internal _fit/_predict able to deal with?",
+    ),
+    (
+        "y_inner_mtype",
+        "regressor_proba",
+        ("list", "str"),
+        "which machine type(s) is the internal _fit/_predict able to deal with?",
+    ),
     # ----------------
     # BaseDistribution
     # ----------------
