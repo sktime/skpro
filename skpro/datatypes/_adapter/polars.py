@@ -1,8 +1,5 @@
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Common utilities for polars based data containers."""
-from functools import reduce
-from operator import mul
-
 from skpro.datatypes._common import _req
 from skpro.datatypes._common import _ret as ret
 
@@ -26,11 +23,14 @@ def check_polars_frame(obj, return_metadata=False, var_name="obj", lazy=False):
 
     # we now know obj is a polars DataFrame or LazyFrame
     if _req("is_empty", return_metadata):
-        metadata["is_empty"] = reduce(mul, obj.shape, 1) < 1
+        metadata["is_empty"] = obj.width < 1
     if _req("is_univariate", return_metadata):
-        metadata["is_univariate"] = obj.shape[1] == 1
+        metadata["is_univariate"] = obj.width == 1
     if _req("n_instances", return_metadata):
-        metadata["n_instances"] = obj.shape[0]
+        if hasattr(obj, "height"):
+            metadata["n_instances"] = obj.height
+        else:
+            metadata["n_instances"] = "NA"
 
     # check if there are any nans
     #   compute only if needed
