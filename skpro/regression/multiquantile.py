@@ -252,15 +252,20 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         )
 
         # format predictions as DataFrame
-        preds = pd.DataFrame(np.transpose(preds))
-        preds.columns = pd.MultiIndex.from_product([[self._y_varname], sorted(alpha)])
-        preds.index = X.index
+        y_cols = [self._y_varname]
+        columns_sorted = pd.MultiIndex.from_product([y_cols, sorted(alpha)])
+        columns = pd.MultiIndex.from_product([y_cols, alpha])
+        index = X.index
+        preds = pd.DataFrame(np.transpose(preds), columns=columns_sorted, index=index)
 
         # solve quantile crossing problem
         if self.sort_quantiles:
             preds = preds.apply(
                 lambda row: row.sort_values().values, axis=1, result_type="broadcast"
             )
+
+        # sort columns in the order of alpha requested
+        preds = preds.reindex(columns=columns)
 
         return preds
 
