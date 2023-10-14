@@ -538,7 +538,7 @@ class BaseProbaRegressor(BaseEstimator):
         X, X_metadata = self._check_X(X)
         y, y_metadata = self._check_y(y)
 
-        len_X = X_metadata["n_insntances"]
+        len_X = X_metadata["n_instances"]
         len_y = y_metadata["n_instances"]
 
         # input check X vs y
@@ -551,6 +551,7 @@ class BaseProbaRegressor(BaseEstimator):
         return X, y
 
     def _check_X(self, X):
+        # input validity check for X
         valid, msg, metadata = check_is_mtype(
             X, ALLOWED_MTYPES, "Table", return_metadata=["n_instances"], var_name="X"
         )
@@ -559,6 +560,7 @@ class BaseProbaRegressor(BaseEstimator):
         if not valid:
             raise TypeError(msg)
 
+        # convert X to X_inner_mtype
         X_inner_mtype = self.get_tag("X_inner_mtype")
         X = convert(
             obj=X,
@@ -583,6 +585,7 @@ class BaseProbaRegressor(BaseEstimator):
         return X, metadata
 
     def _check_y(self, y):
+        # input validity check for y
         valid, msg, metadata = check_is_mtype(
             y, ALLOWED_MTYPES, "Table", return_metadata=["n_instances"], var_name="y"
         )
@@ -591,6 +594,7 @@ class BaseProbaRegressor(BaseEstimator):
         if not valid:
             raise TypeError(msg)
 
+        # convert y to y_inner_mtype
         y_inner_mtype = self.get_tag("y_inner_mtype")
         y = convert(
             obj=y,
