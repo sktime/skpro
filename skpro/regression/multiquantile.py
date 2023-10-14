@@ -30,7 +30,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     For instance, let :math:`\alpha = [\alpha_1, \alpha_2, \ldots, \alpha_n]`
     be the `alpha` provided to `__init__`, and
     let :math:`\alpha' = [\alpha'_1, \alpha'_2, \ldots, \alpha'_m]` be the quantiles
-    requested in `predict_quantile`.
+    requested in `predict_quantiles`.
     Then, we use quantile regressors at quantiles :math:`\hat{\alpha}_j`,
     :math:`\hat{\alpha}_j := \underset{i = 1 \dots n}{\mathrm{argmin}}\ | \alpha'_j
     - \alpha_i |` to make quantile predictions.
