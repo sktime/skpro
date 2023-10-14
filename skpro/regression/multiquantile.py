@@ -31,9 +31,10 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     be the `alpha` provided to `__init__`, and
     let :math:`\alpha' = [\alpha'_1, \alpha'_2, \ldots, \alpha'_m]` be the quantiles
     requested in `predict_quantiles`.
-    Then, we use quantile regressors at quantiles :math:`\hat{\alpha}_j`,
+    Then, we use the fitted quantile regressor at quantile :math:`\hat{\alpha}_j`,
     :math:`\hat{\alpha}_j := \underset{i = 1 \dots n}{\mathrm{argmin}}\ | \alpha'_j
-    - \alpha_i |` to make quantile predictions.
+    - \alpha_i |` to make the quantile prediction for the requested quantile
+    probability :math:`\alpha'_j`.
 
     Consistently, the `predict_proba` method returns an empirical
     distribution with supports at quantile points corresponding to `alpha`,
