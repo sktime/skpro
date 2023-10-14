@@ -8,7 +8,6 @@ from skpro.base import BaseEstimator
 from skpro.datatypes import check_is_mtype, convert
 from skpro.utils.validation._dependencies import _check_estimator_deps
 
-
 # allowed input mtypes
 ALLOWED_MTYPES = [
     "pd_DataFrame_Table",
