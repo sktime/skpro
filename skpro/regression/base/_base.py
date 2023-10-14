@@ -559,6 +559,15 @@ class BaseProbaRegressor(BaseEstimator):
         if not valid:
             raise TypeError(msg)
 
+        X_inner_mtype = self.get_tag("X_inner_mtype")
+        X = convert(
+            obj=X,
+            from_type=metadata["mtype"],
+            to_type=X_inner_mtype,
+            as_scitype="Table",
+            store=self._X_converter_store,
+        )
+
         # if we have seen X before, check against columns
         if hasattr(self, "_X_columns") and hasattr(X, "columns"):
             if not (X.columns == self._X_columns).all():
@@ -582,13 +591,12 @@ class BaseProbaRegressor(BaseEstimator):
         if not valid:
             raise TypeError(msg)
 
-        y_inner_mtype = self.get_tag("X_inner_mtype")
+        y_inner_mtype = self.get_tag("y_inner_mtype")
         y = convert(
             obj=y,
             from_type=metadata["mtype"],
             to_type=y_inner_mtype,
             as_scitype="Table",
-            store=self._X_converter_store,
         )
 
         return y, metadata
