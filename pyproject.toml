@@ -55,6 +55,7 @@ all_extras = [
     "distfit",
     "matplotlib>=3.3.2",
     "ngboost",
+    "polars<0.20.0",
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",

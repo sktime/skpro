@@ -40,6 +40,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.datatypes._common import _req, _ret
+from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 check_dict = dict()
 
@@ -211,3 +212,27 @@ def check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
 
 
 check_dict[("list_of_dict", "Table")] = check_list_of_dict_table
+
+
+if _check_soft_dependencies("polars", severity="none"):
+    from skpro.datatypes._adapter.polars import check_polars_frame
+
+    def check_polars_table(obj, return_metadata=False, var_name="obj"):
+        return check_polars_frame(
+            obj=obj,
+            return_metadata=return_metadata,
+            var_name=var_name,
+            lazy=False,
+        )
+
+    check_dict[("polars_eager_table", "Table")] = check_polars_table
+
+    def check_polars_table_lazy(obj, return_metadata=False, var_name="obj"):
+        return check_polars_frame(
+            obj=obj,
+            return_metadata=return_metadata,
+            var_name=var_name,
+            lazy=True,
+        )
+
+    check_dict[("polars_lazy_table", "Table")] = check_polars_table_lazy
