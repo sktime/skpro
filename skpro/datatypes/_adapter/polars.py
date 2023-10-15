@@ -35,7 +35,10 @@ def check_polars_frame(obj, return_metadata=False, var_name="obj", lazy=False):
     # check if there are any nans
     #   compute only if needed
     if _req("has_nans", return_metadata):
-        hasnan = obj.null_count().sum(axis=1).to_numpy()[0] > 0
-        metadata["has_nans"] = hasnan
+        if isinstance(obj, pl.LazyFrame):
+            metadata["has_nans"] = "NA"
+        else:
+            hasnan = obj.null_count().sum(axis=1).to_numpy()[0] > 0
+            metadata["has_nans"] = hasnan
 
     return ret(True, None, metadata, return_metadata)
