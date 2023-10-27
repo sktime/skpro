@@ -7,6 +7,7 @@ Objects compared can have one of the following valid types:
     polars.DataFrame, polars.LazyFrame
 """
 from skbase.utils.deep_equals._common import _make_ret
+from skbase.utils.deep_equals._deep_equals import deep_equals as _deep_equals
 
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
@@ -69,7 +70,7 @@ def deep_equals(x, y, return_msg=False, plugins=None):
     else:
         plugins_inner = plugins_default
 
-    res = deep_equals(x, y, return_msg=return_msg, plugins=plugins_inner)
+    res = _deep_equals(x, y, return_msg=return_msg, plugins=plugins_inner)
     return res
 
 
