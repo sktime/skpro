@@ -10,10 +10,10 @@ import pandas as pd
 from skbase.testing import BaseFixtureGenerator as _BaseFixtureGenerator
 from skbase.testing import TestAllObjects as _TestAllObjects
 from skbase.testing.utils.inspect import _get_args
-from skbase.utils import deep_equals
 
 from skpro.registry import OBJECT_TAG_LIST, all_objects
 from skpro.tests.scenarios.scenarios_getter import retrieve_scenarios
+from skpro.utils.deep_equals import deep_equals
 from skpro.utils.git_diff import is_class_changed
 from skpro.utils.random_state import set_random_state
 
@@ -244,7 +244,7 @@ class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
         we use the other test parameter settings (which are assumed valid).
         This guarantees settings which play along with the __init__ content.
         """
-        from skbase.utils.deep_equals import deep_equals
+        from skpro.utils.deep_equals import deep_equals
 
         estimator = object_class.create_test_instance()
         test_params = object_class.get_test_params()
