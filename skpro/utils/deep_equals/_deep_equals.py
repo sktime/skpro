@@ -4,6 +4,7 @@ Objects compared can have one of the following valid types:
     types compatible with != comparison
     pd.Series, pd.DataFrame, np.ndarray
     lists, tuples, or dicts of a valid type (recursive)
+    polars.DataFrame, polars.LazyFrame
 """
 from skbase.utils.deep_equals._common import _make_ret
 
@@ -56,6 +57,7 @@ def deep_equals(x, y, return_msg=False, plugins=None):
             [key] - if dict: value at key is not equal
             [colname] - if pandas.DataFrame: column with name colname is not equal
             != - call to generic != returns False
+            .polars_equals - .frame_equal of polars returns False
     """
     # call deep_equals_custom with default plugins
     plugins_default = [
@@ -86,10 +88,10 @@ def _polars_equals_plugin(x, y, return_msg=False):
 
     # compare pl.DataFrame
     if isinstance(x, pl.DataFrame):
-        return ret(x.frame_equal(y))
+        return ret(x.frame_equal(y), ".polars_equals")
 
     # compare pl.LazyFrame
     if isinstance(x, pl.LazyFrame):
-        return ret(x.collect().frame_equal(y.collect()))
+        return ret(x.collect().frame_equal(y.collect()), ".polars_equals")
 
     return None
