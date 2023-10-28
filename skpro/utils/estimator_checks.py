@@ -155,7 +155,7 @@ def check_estimator(
 
     if scitype_of_estimator in testclass_dict.keys():
         results_scitype = testclass_dict[scitype_of_estimator]().run_tests(
-            estimator=estimator,
+            obj=estimator,
             raise_exceptions=raise_exceptions,
             tests_to_run=tests_to_run,
             fixtures_to_run=fixtures_to_run,
