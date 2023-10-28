@@ -130,7 +130,13 @@ class ClassName(BaseProbaRegressor):
         # same length as X, same columns as y in fit
         return y_pred
 
-    # todo: implement this, mandatory
+    # todo: implement at least one of the probabilistic prediction methods
+    # _predict_proba, _predict_interval, _predict_quantiles
+    # if one is implemented, the other two are filled in by default
+    # implementation of _predict_proba is preferred, if possible
+    #
+    # CAVEAT: if not implemented, _predict_proba assumes normal distribution
+    # this can be inconsistent with _predict_interval or _predict_quantiles
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
 
@@ -147,10 +153,117 @@ class ClassName(BaseProbaRegressor):
 
         Returns
         -------
-        y : skpro BaseDistribution, same length as `X`
+        y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        raise NotImplementedError
+        # if implementing _predict_proba (otherwise delete this method)
+        # todo: adapt the following by filling in logic to produce prediction values
+
+        # boilerplate code to create correct output index
+        index = X.index
+        y_index = self._y_index  # index from y in fit, not automatically stored
+        columns = y_index
+
+        # values = logic to produce prediction values
+        # replace this import by the distribution you are using
+        # the distribution type can be conditional, e.g., data or parameter dependent
+        from skpro.distributions import SomeDistribution
+
+        values = None  # fill in values
+        y_pred = SomeDistribution(values, index=index, columns=columns)
+
+        return y_pred
+
+    # todo: implement at least one of the probabilistic prediction methods, see above
+    # delete the methods that are not implemented and filled by default
+    def _predict_interval(self, X, coverage):
+        """Compute/return interval predictions.
+
+        private _predict_interval containing the core logic,
+            called from predict_interval and default _predict_quantiles
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+        coverage : guaranteed list of float of unique values
+           nominal coverage(s) of predictive interval(s)
+
+        Returns
+        -------
+        pred_int : pd.DataFrame
+            Column has multi-index: first level is variable name from ``y`` in fit,
+            second level coverage fractions for which intervals were computed,
+            in the same order as in input `coverage`.
+            Third level is string "lower" or "upper", for lower/upper interval end.
+            Row index is equal to row index of ``X``.
+            Entries are lower/upper bounds of interval predictions,
+            for var in col index, at nominal coverage in second col index,
+            lower/upper depending on third col index, for the row index.
+            Upper/lower interval end are equivalent to
+            quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
+        """
+        # if implementing _predict_interval (otherwise delete this method)
+        # todo: adapt the following by filling in logic to produce prediction values
+
+        # boilerplate code to create correct pandas output index
+        # only if using pandas, for other mtypes, use appropriate data structure
+        import pandas as pd
+
+        index = X.index
+        y_index = self._y_index  # index from y in fit, not automatically stored
+        columns = pd.MultiIndex.from_product(
+            [y_index, coverage, ["lower", "upper"]],
+        )
+
+        # values = logic to produce prediction values
+        values = None  # fill in values
+        pred_int = pd.DataFrame(values, index=index, columns=columns)
+
+        return pred_int
+
+    # todo: implement at least one of the probabilistic prediction methods, see above
+    # delete the methods that are not implemented and filled by default
+    def _predict_quantiles(self, X, alpha):
+        """Compute/return quantile predictions.
+
+        private _predict_quantiles containing the core logic,
+            called from predict_quantiles and default _predict_interval
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+        alpha : guaranteed list of float
+            A list of probabilities at which quantile predictions are computed.
+
+        Returns
+        -------
+        quantiles : pd.DataFrame
+            Column has multi-index: first level is variable name from ``y`` in fit,
+                second level being the values of alpha passed to the function.
+            Row index is equal to row index of ``X``.
+            Entries are quantile predictions, for var in col index,
+                at quantile probability in second col index, for the row index.
+        """
+        # if implementing _predict_quantiles (otherwise delete this method)
+        # todo: adapt the following by filling in logic to produce prediction values
+
+        # boilerplate code to create correct pandas output index
+        # only if using pandas, for other mtypes, use appropriate data structure
+        import pandas as pd
+
+        index = X.index
+        y_index = self._y_index  # index from y in fit, not automatically stored
+        columns = pd.MultiIndex.from_product(
+            [y_index, alpha],
+        )
+
+        # values = logic to produce prediction values
+        values = None  # fill in values
+        quantiles = pd.DataFrame(values, index=index, columns=columns)
+
+        return quantiles
 
     # todo: return default parameters, so that a test instance can be created
     #   required for automated unit and integration testing of estimator
