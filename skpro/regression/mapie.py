@@ -272,7 +272,7 @@ class MapieRegressor(BaseProbaRegressor):
         cov_arr = np.array(coverage)
         mapie_alpha = 1 - cov_arr
 
-        mapie_pred_int = self.estimator_mapie_.predict(X, alpha=mapie_alpha)
+        mapie_pred_int = self.estimator_mapie_.predict(X, alpha=mapie_alpha)[1]
 
         index = X.index
         columns = pd.MultiIndex.from_product(
