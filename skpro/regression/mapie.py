@@ -12,7 +12,8 @@ from skpro.regression.base import BaseProbaRegressor
 class MapieRegressor(BaseProbaRegressor):
     """MAPIE probabilistic regressor, conformity score based prediction intervals.
 
-    Direct interface to ``mapie.regression.regression.MapieRegressor``.
+    Direct interface to ``mapie.regression.regression.MapieRegressor`` from the
+    ``mapie`` package.
 
     Uses jackknife+ to estimate prediction intervals on a per-sample basis.
 
@@ -141,6 +142,24 @@ class MapieRegressor(BaseProbaRegressor):
 
     conformity_scores_: ArrayLike of shape (n_samples_train,)
         Conformity scores between ``y_train`` and ``y_pred``.
+
+    Example
+    -------
+    >>> from skpro.regression.mapie import MapieRegressor  # doctest: +SKIP
+    >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
+    >>>
+    >>> reg_tabular = RandomForestRegressor()  # doctest: +SKIP
+    >>>
+    >>> reg_proba = MapieRegressor(reg_tabular)  # doctest: +SKIP
+    >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
+    MapieRegressor(...)
+    >>> y_pred_int = reg_proba.predict_interval(X_test)  # doctest: +SKIP
+    >>> y_pred_dist = reg_proba.predict_proba(X_test)  # doctest: +SKIP
     """
 
     _tags = {
@@ -207,8 +226,10 @@ class MapieRegressor(BaseProbaRegressor):
         params = {k: v for k, v in params.items() if k in PARAMS_TO_FORWARD}
         mapie_est_ = MapieRegressor(**params)
 
-        mapie_est_.fit(X, y)
         self._y_cols = y.columns
+        if len(y.columns) == 1:
+            y = y.to_numpy().flatten()
+        mapie_est_.fit(X, y)
 
         self.estimator_mapie_ = mapie_est_
 
