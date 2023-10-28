@@ -153,9 +153,6 @@ def check_estimator(
     else:
         scitype_of_estimator = ""
 
-    print(scitype_of_estimator)
-    print(list(testclass_dict.keys()))
-
     if scitype_of_estimator in testclass_dict.keys():
         results_scitype = testclass_dict[scitype_of_estimator]().run_tests(
             estimator=estimator,
