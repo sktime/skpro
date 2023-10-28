@@ -8,6 +8,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from skbase.testing import BaseFixtureGenerator as _BaseFixtureGenerator
+from skbase.testing import QuickTester as _QuickTester
 from skbase.testing import TestAllObjects as _TestAllObjects
 from skbase.testing.utils.inspect import _get_args
 from skbase.utils import deep_equals
@@ -281,7 +282,7 @@ class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
             assert is_equal, msg
 
 
-class TestAllEstimators(PackageConfig, BaseFixtureGenerator):
+class TestAllEstimators(PackageConfig, BaseFixtureGenerator, _QuickTester):
     """Package level tests for all sktime estimators, i.e., objects with fit."""
 
     def test_fit_updates_state(self, object_instance, scenario):
