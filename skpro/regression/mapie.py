@@ -208,6 +208,7 @@ class MapieRegressor(BaseProbaRegressor):
         mapie_est_ = MapieRegressor(**params)
 
         mapie_est_.fit(X, y)
+        self._y_index = y.index
 
         self.estimator_mapie_ = mapie_est_
 
@@ -275,7 +276,7 @@ class MapieRegressor(BaseProbaRegressor):
 
         index = X.index
         columns = pd.MultiIndex.from_product(
-            [X.columns, coverage, ["lower", "upper"]],
+            [self._y_index, coverage, ["lower", "upper"]],
         )
 
         values = np.reshape(mapie_pred_int, (len(index), -1), order="F")
