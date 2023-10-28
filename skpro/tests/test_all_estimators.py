@@ -95,6 +95,8 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
         # and checks the python env against python_dependencies tag
         obj_list = [obj for obj in obj_list if run_test_for_class(obj)]
 
+        raise ValueError(obj_list)
+
         return obj_list
 
     # which sequence the conditional fixtures are generated in
