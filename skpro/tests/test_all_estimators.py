@@ -89,13 +89,13 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
             exclude_objects=self.exclude_objects,
         )
 
+        raise ValueError(obj_list)
+
         # run_test_for_class selects the estimators to run
         # based on whether they have changed, and whether they have all dependencies
         # internally, uses the ONLY_CHANGED_MODULES flag,
         # and checks the python env against python_dependencies tag
         obj_list = [obj for obj in obj_list if run_test_for_class(obj)]
-
-        raise ValueError(obj_list)
 
         return obj_list
 
