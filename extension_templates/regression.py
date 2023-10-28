@@ -161,8 +161,8 @@ class ClassName(BaseProbaRegressor):
 
         # boilerplate code to create correct output index
         index = X.index
-        y_index = self._y_index  # index from y in fit, not automatically stored
-        columns = y_index
+        y_cols = self._y_cols  # columns from y in fit, not automatically stored
+        columns = y_cols
 
         # values = logic to produce prediction values
         # replace this import by the distribution you are using
@@ -211,9 +211,9 @@ class ClassName(BaseProbaRegressor):
         import pandas as pd
 
         index = X.index
-        y_index = self._y_index  # index from y in fit, not automatically stored
+        y_cols = self._y_cols  # columns from y in fit, not automatically stored
         columns = pd.MultiIndex.from_product(
-            [y_index, coverage, ["lower", "upper"]],
+            [y_cols, coverage, ["lower", "upper"]],
         )
 
         # values = logic to produce prediction values
@@ -254,9 +254,9 @@ class ClassName(BaseProbaRegressor):
         import pandas as pd
 
         index = X.index
-        y_index = self._y_index  # index from y in fit, not automatically stored
+        y_cols = self._y_cols  # columns from y in fit, not automatically stored
         columns = pd.MultiIndex.from_product(
-            [y_index, alpha],
+            [y_cols, alpha],
         )
 
         # values = logic to produce prediction values
