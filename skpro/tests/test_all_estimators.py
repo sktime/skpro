@@ -15,7 +15,7 @@ from skbase.utils import deep_equals
 
 from skpro.registry import OBJECT_TAG_LIST, all_objects
 from skpro.tests.scenarios.scenarios_getter import retrieve_scenarios
-from skpro.utils.git_diff import is_class_changed
+from skpro.tests.test_switch import run_test_for_class
 from skpro.utils.random_state import set_random_state
 
 # whether to test only estimators from modules that are changed w.r.t. main
@@ -35,7 +35,7 @@ class PackageConfig:
 
     # list of object types (class names) to exclude
     # expected type: list of str, str are class names
-    exclude_objects = "ClassName"  # exclude classes from extension templates
+    exclude_objects = ["ClassName"]  # exclude classes from extension templates
 
     # list of valid tags
     # expected type: list of str, str are tag names
@@ -89,11 +89,11 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
             exclude_objects=self.exclude_objects,
         )
 
-        # this setting ensures that only estimators are tested that have changed
-        # in the sense that any line in the module is different from main
-        # exception: if this module has changed, we always run all tests by override
-        if ONLY_CHANGED_MODULES and not is_class_changed(type(self)):
-            obj_list = [obj for obj in obj_list if is_class_changed(obj)]
+        # run_test_for_class selects the estimators to run
+        # based on whether they have changed, and whether they have all dependencies
+        # internally, uses the ONLY_CHANGED_MODULES flag,
+        # and checks the python env against python_dependencies tag
+        obj_list = [obj for obj in obj_list if run_test_for_class(obj)]
 
         return obj_list
 
