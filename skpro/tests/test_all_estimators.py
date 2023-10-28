@@ -35,7 +35,7 @@ class PackageConfig:
 
     # list of object types (class names) to exclude
     # expected type: list of str, str are class names
-    exclude_objects = "ClassName"  # exclude classes from extension templates
+    exclude_objects = ["ClassName"]  # exclude classes from extension templates
 
     # list of valid tags
     # expected type: list of str, str are tag names
