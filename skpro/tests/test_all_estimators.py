@@ -99,7 +99,7 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
 
         test = run_test_for_class(MapieRegressor)
 
-        raise ValueError(test + " " + str(obj_list))
+        raise ValueError(str(test) + " " + str(obj_list))
 
         return obj_list
 
