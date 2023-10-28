@@ -97,9 +97,9 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
 
         from skpro.regression.mapie import MapieRegressor
 
-        test = run_test_for_class(MapieRegressor)
-
-        raise ValueError(str(test) + " " + str(obj_list))
+        if MapieRegressor in obj_list:
+            test = run_test_for_class(MapieRegressor)
+            raise ValueError(str(test) + " " + str(obj_list))
 
         return obj_list
 
