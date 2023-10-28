@@ -53,6 +53,7 @@ dependencies = [
 all_extras = [
     "attrs",
     "distfit",
+    "mapie",
     "matplotlib>=3.3.2",
     "ngboost",
     "statsmodels>=0.12.1",
