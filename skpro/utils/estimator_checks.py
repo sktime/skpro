@@ -112,11 +112,11 @@ def check_estimator(
     from skpro.base import BaseEstimator
     from skpro.distributions.tests.test_all_distrs import TestAllDistributions
     from skpro.regression.tests.test_all_regressors import TestAllRegressors
-    from skpro.tests.test_all_estimators import TestAllObjects
+    from skpro.tests.test_all_estimators import TestAllEstimators, TestAllObjects
 
     testclass_dict = dict()
 
-    testclass_dict["regressor"] = TestAllRegressors
+    testclass_dict["regressor_proba"] = TestAllRegressors
     testclass_dict["distribution"] = TestAllDistributions
 
     results = TestAllObjects().run_tests(
@@ -135,26 +135,27 @@ def check_estimator(
         else:
             return isinstance(obj, BaseEstimator)
 
-    # commented out for now - add when TestAllEstimators is added
-    # if is_estimator(estimator):
-    #     results_estimator = TestAllEstimators().run_tests(
-    #         obj=estimator,
-    #         raise_exceptions=raise_exceptions,
-    #         tests_to_run=tests_to_run,
-    #         fixtures_to_run=fixtures_to_run,
-    #         tests_to_exclude=tests_to_exclude,
-    #         fixtures_to_exclude=fixtures_to_exclude,
-    #     )
-    #     results.update(results_estimator)
+    if is_estimator(estimator):
+        results_estimator = TestAllEstimators().run_tests(
+            obj=estimator,
+            raise_exceptions=raise_exceptions,
+            tests_to_run=tests_to_run,
+            fixtures_to_run=fixtures_to_run,
+            tests_to_exclude=tests_to_exclude,
+            fixtures_to_exclude=fixtures_to_exclude,
+        )
+        results.update(results_estimator)
 
-    try:
+    if isclass(estimator) and hasattr(estimator, "get_class_tag"):
+        scitype_of_estimator = estimator.get_class_tag("object_type", "object")
+    elif hasattr(estimator, "get_tag"):
         scitype_of_estimator = estimator.get_tag("object_type", "object")
-    except Exception:
+    else:
         scitype_of_estimator = ""
 
     if scitype_of_estimator in testclass_dict.keys():
         results_scitype = testclass_dict[scitype_of_estimator]().run_tests(
-            estimator=estimator,
+            obj=estimator,
             raise_exceptions=raise_exceptions,
             tests_to_run=tests_to_run,
             fixtures_to_run=fixtures_to_run,
