@@ -95,12 +95,6 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
         # and checks the python env against python_dependencies tag
         obj_list = [obj for obj in obj_list if run_test_for_class(obj)]
 
-        from skpro.regression.mapie import MapieRegressor
-
-        if MapieRegressor in obj_list:
-            test = run_test_for_class(MapieRegressor)
-            raise ValueError(str(test) + " " + str(obj_list))
-
         return obj_list
 
     # which sequence the conditional fixtures are generated in
