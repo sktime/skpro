@@ -16,7 +16,6 @@ from skbase.utils import deep_equals
 from skpro.registry import OBJECT_TAG_LIST, all_objects
 from skpro.tests.scenarios.scenarios_getter import retrieve_scenarios
 from skpro.tests.test_switch import run_test_for_class
-from skpro.utils.git_diff import is_class_changed
 from skpro.utils.random_state import set_random_state
 
 # whether to test only estimators from modules that are changed w.r.t. main
