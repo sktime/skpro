@@ -238,8 +238,11 @@ class MapieRegressor(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        y_pred = self.estimator_mapie_.predict(X)
+        y_pred_mapie = self.estimator_mapie_.predict(X)
+        index = X.index
+        columns = self._y_cols
 
+        y_pred = pd.DataFrame(y_pred_mapie, index=index, columns=columns)
         return y_pred
 
     def _predict_interval(self, X, coverage):
