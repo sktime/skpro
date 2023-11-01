@@ -53,6 +53,7 @@ dependencies = [
 all_extras = [
     "attrs",
     "distfit",
+    "mapie",
     "matplotlib>=3.3.2",
     "ngboost",
     "polars<0.20.0; python_version < '3.12'",

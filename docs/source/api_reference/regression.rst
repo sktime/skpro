@@ -63,6 +63,22 @@ take one or multiple ``sklearn`` estimators and adda probabilistic prediction mo
 
     ResidualDouble
 
+.. currentmodule:: skpro.regression.multiquantile
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MultipleQuantileRegressor
+
+.. currentmodule:: skpro.regression.mapie
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MapieRegressor
+
 Base
 ----
 
