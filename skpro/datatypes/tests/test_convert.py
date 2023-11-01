@@ -2,11 +2,10 @@
 
 __author__ = ["fkiraly"]
 
-from skbase.utils import deep_equals
-
 from skpro.datatypes import SCITYPE_REGISTER, scitype_to_mtype
 from skpro.datatypes._convert import _conversions_defined, convert
 from skpro.datatypes._examples import get_examples
+from skpro.utils import deep_equals
 
 SCITYPES = [sci[0] for sci in SCITYPE_REGISTER]
 

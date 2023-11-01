@@ -551,7 +551,7 @@ class BaseProbaRegressor(BaseEstimator):
         len_y = y_metadata["n_instances"]
 
         # input check X vs y
-        if not len_X == len_y:
+        if len_X != "NA" and len_y != "NA" and not len_X == len_y:
             raise ValueError(
                 f"X and y in fit of {self} must have same number of rows, "
                 f"but X had {len_X} rows, and y had {len_y} rows"
