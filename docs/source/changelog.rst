@@ -14,6 +14,9 @@ You can also subscribe to ``skpro``'s
 
 For planned changes and upcoming releases, see our :ref:`roadmap`.
 
+[2.1.1] - 2023-11-02
+====================
+
 [2.1.0] - 2023-10-09
 ====================
 
