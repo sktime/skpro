@@ -17,6 +17,66 @@ For planned changes and upcoming releases, see our :ref:`roadmap`.
 [2.1.1] - 2023-11-02
 ====================
 
+Highlights
+----------
+
+* probabilistic regressor: multiple quantile regression (:pr:`108`) :user:`Ram0nB`
+* probabilistic regressor: interface to ``MapieRegressor`` from ``mapie`` package
+  (:pr:`136`) :user:`fkiraly`
+* framework support for ``polars`` via mtypes (:pr:`130`) :user:`fkiraly`
+
+Enhancements
+------------
+
+Data types, checks, conversions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] ``polars`` mtypes for data tables (:pr:`130`) :user:`fkiraly`
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] probabilistic regressors - input checks and support for more input types
+  (:pr:`129`) :user:`fkiraly`
+* [ENH] multiple quantile regression (:pr:`108`) :user:`Ram0nB`
+* [ENH] interface ``MapieRegressor`` from ``mapie`` (:pr:`136`) :user:`fkiraly`
+
+Test framework
+~~~~~~~~~~~~~~
+
+* [ENH] integrate ``check_estimator`` with ``TestAllEstimators`` and
+  ``TestAllRegressors`` for python command line estimator testing
+  (:pr:`138`) :user:`fkiraly`
+* [ENH] improved conditional testing (:pr:`140`) :user:`fkiraly`
+
+Documentation
+-------------
+
+* [DOC] fix math in ``plotting`` docstrings (:pr:`121`) :user:`fkiraly`
+* [DOC] improved probabilistic tabular regressor extension template
+  (:pr:`137`) :user:`fkiraly`
+* [DOC] typo fixes in regression extension template (:pr:`139`) :user:`fkiraly`
+
+Maintenance
+-----------
+
+* [MNT] point readthedocs ``json`` switcher variable to GitHub
+  (:pr:`125`) :user:`fkiraly`
+* [MNT] change test OS versions to latest (:pr:`126`) :user:`fkiraly`
+
+Fixes
+-----
+
+* [BUG] fix test fixture generation logic (:pr:`142`) :user:`fkiraly`
+* [BUG] fix retrieval in ``all_objects`` if ``filter_tags`` is provided
+  (:pr:`141`) :user:`fkiraly`
+
+Contributors
+------------
+:user:`fkiraly`,
+:user:`frthjf`
+
+
 [2.1.0] - 2023-10-09
 ====================
 
