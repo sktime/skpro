@@ -76,6 +76,7 @@ Contributors
 :user:`fkiraly`,
 :user:`Ram0nB`
 
+
 [2.1.0] - 2023-10-09
 ====================
 
