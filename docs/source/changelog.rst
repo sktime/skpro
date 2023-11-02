@@ -74,8 +74,7 @@ Fixes
 Contributors
 ------------
 :user:`fkiraly`,
-:user:`frthjf`
-
+:user:`Ram0nB`
 
 [2.1.0] - 2023-10-09
 ====================
