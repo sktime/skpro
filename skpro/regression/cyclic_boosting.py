@@ -257,12 +257,12 @@ class CyclicBoosting(BaseProbaRegressor):
             distr_type = Normal
             distr_loc_scale_name = ("mu", "sigma")
             self.var_jqpd = np.sqrt(self.var_jqpd)
-        # TODO: add other distributions
-        # elif distr_type == "Laplace":
-        #     from skpro.distributions.laplace import Laplace
+        elif distr_type == "Laplace":
+            from skpro.distributions.laplace import Laplace
 
-        #     distr_type = Laplace
-        #     distr_loc_scale_name = ("mu", "scale")
+            distr_type = Laplace
+            distr_loc_scale_name = ("mu", "scale")
+            self.var_jppd = np.sqrt(self.var_jqpd) / 2
         # elif distr_type in ["Cauchy", "t"]:
         #     from skpro.distributions.t import TDistribution
 
@@ -322,10 +322,10 @@ class CyclicBoosting(BaseProbaRegressor):
         }
         param1 = {"feature_properties": fp}
         param2 = {"feature_properties": fp, "interaction": [("age", "sex"), ("s1, s3")]}
-        # param3 = {
-        #     "feature_properties": fp,
-        #     "interaction": [("age", "sex"), ("s1, s3")],
-        #     "distr_type": "Laplace",
-        # }
+        param3 = {
+            "feature_properties": fp,
+            "interaction": [("age", "sex"), ("s1, s3")],
+            "distr_type": "Laplace",
+        }
 
-        return [param1, param2]
+        return [param1, param2, param3]
