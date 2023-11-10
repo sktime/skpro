@@ -305,47 +305,27 @@ class CyclicBoosting(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
+        from cyclic_boosting import flags
 
-        # todo: set the testing parameters for the estimators
-        # Testing parameters can be dictionary or list of dictionaries
-        #
-        # this can, if required, use:
-        #   class properties (e.g., inherited); parent class test case
-        #   imported objects such as estimators from skpro or sklearn
-        # important: all such imports should be *inside get_test_params*, not at the top
-        #            since imports are used only at testing time
-        #
-        # The parameter_set argument is not used for most automated, module level tests.
-        #   It can be used in custom, estimator specific tests, for "special" settings.
-        #   For classification, this is also used in tests for reference settings,
-        #       such as published in benchmarking studies, or for identity testing.
-        # A parameter dictionary must be returned *for all values* of parameter_set,
-        #   i.e., "parameter_set not available" errors should never be raised.
-        #
-        # A good parameter set should primarily satisfy two criteria,
-        #   1. Chosen set of parameters should have a low testing time,
-        #      ideally in the magnitude of few seconds for the entire test suite.
-        #       This is vital for the cases where default values result in
-        #       "big" models which not only increases test time but also
-        #       run into the risk of test workers crashing.
-        #   2. There should be a minimum two such parameter sets with different
-        #      sets of values to ensure a wide range of code coverage is provided.
-        #
-        # example 1: specify params as dictionary
-        # any number of params can be specified
-        # params = {"est": value0, "parama": value1, "paramb": value2}
-        #
-        # example 2: specify params as list of dictionary
-        # note: Only first dictionary will be used by create_test_instance
-        # params = [{"est": value1, "parama": value2},
-        #           {"est": value3, "parama": value4}]
-        #
-        # example 3: parameter set depending on param_set value
-        #   note: only needed if a separate parameter set is needed in tests
-        # if parameter_set == "special_param_set":
-        #     params = {"est": value1, "parama": value2}
-        #     return params
-        #
-        # # "default" params
-        # params = {"est": value3, "parama": value4}
-        # return params
+        # NOTE: This test is only corresponded diabeat dataset
+        fp = {
+            "age": flags.IS_CONTINUOUS,
+            "sex": flags.IS_CONTINUOUS,
+            "bmi": flags.IS_CONTINUOUS,
+            "bp": flags.IS_CONTINUOUS,
+            "s1": flags.IS_CONTINUOUS,
+            "s2": flags.IS_CONTINUOUS,
+            "s3": flags.IS_CONTINUOUS,
+            "s4": flags.IS_CONTINUOUS,
+            "s5": flags.IS_CONTINUOUS,
+            "s6": flags.IS_CONTINUOUS,
+        }
+        param1 = {"feature_properties": fp}
+        param2 = {"feature_properties": fp, "interaction": [("age", "sex"), ("s1, s3")]}
+        # param3 = {
+        #     "feature_properties": fp,
+        #     "interaction": [("age", "sex"), ("s1, s3")],
+        #     "distr_type": "Laplace",
+        # }
+
+        return [param1, param2]
