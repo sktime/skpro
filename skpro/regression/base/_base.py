@@ -560,10 +560,12 @@ class BaseProbaRegressor(BaseEstimator):
         # in case y gets an index through conversion and X already had one
         # we need to make sure that the index of y is the same as the index of X
         # example case: X was pd.DataFrame, y was np.ndarray
-        # but both get converted to pd.DataFrame, then y gets RangeIndex without this
+        # but both get converted to X_inner, y_inner: pd.DataFrame
+        # then y_inner would geta RangeIndex without this, but should have X_inner.index
         if hasattr(X_inner, "index") and not hasattr(y, "index"):
             if isinstance(y_inner, (pd.DataFrame, pd.Series)):
                 y_inner.index = X_inner.index
+
 
         return X_inner, y_inner
 
