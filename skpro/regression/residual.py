@@ -216,7 +216,7 @@ class ResidualDouble(BaseProbaRegressor):
         y = y.values
         y = flatten_to_1D_if_colvector(y)
 
-        est.fit(prep_skl_df(X, copy_df=True), y)
+        est.fit(X, y)
 
         if cv is None:
             y_pred = est.predict(X)
