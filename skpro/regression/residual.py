@@ -219,7 +219,7 @@ class ResidualDouble(BaseProbaRegressor):
         est.fit(prep_skl_df(X, copy_df=True), y)
 
         if cv is None:
-            y_pred = est.predict()
+            y_pred = est.predict(X)
         else:
             y_pred = self._predict_residuals_cv(X, y, cv, est)
 
