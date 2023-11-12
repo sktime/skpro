@@ -238,6 +238,9 @@ class ResidualDouble(BaseProbaRegressor):
         else:
             X_r = X
 
+        # coerce X to pandas DataFrame with string column names
+        X_r = prep_skl_df(X_r, copy_df=True)
+
         est_r.fit(X_r, resids)
 
         return self
