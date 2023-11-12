@@ -10,6 +10,7 @@ from sklearn import clone
 from skpro.distributions.empirical import Empirical
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.numpy import flatten_to_1D_if_colvector
+from skpro.utils.sklearn import prep_skl_df
 
 
 class BootstrapRegressor(BaseProbaRegressor):
@@ -111,6 +112,9 @@ class BootstrapRegressor(BaseProbaRegressor):
         self.estimators_ = []
         self._cols = y.columns
 
+        # coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
         for _i in range(n_bootstrap_samples):
             esti = clone(estimator)
             row_iloc = pd.RangeIndex(n)
@@ -147,6 +151,10 @@ class BootstrapRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         cols = self._cols
+
+        # coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
         y_preds = [est.predict(X) for est in self.estimators_]
 
         def _coerce_df(x):

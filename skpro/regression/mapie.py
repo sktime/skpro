@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.sklearn import prep_skl_df
 
 
 class MapieRegressor(BaseProbaRegressor):
@@ -208,6 +209,7 @@ class MapieRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
+        # construct mapie regressor
         from mapie.regression.regression import MapieRegressor
 
         PARAMS_TO_FORWARD = [
@@ -226,13 +228,22 @@ class MapieRegressor(BaseProbaRegressor):
         params = {k: v for k, v in params.items() if k in PARAMS_TO_FORWARD}
         mapie_est_ = MapieRegressor(**params)
 
+        # remember y columns for predict
         self._y_cols = y.columns
+
+        # coerce y to numpy array
         if len(y.columns) == 1:
             y = y.to_numpy().flatten()
+
+        # coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
+        # fit mapie regressor and save to self
         mapie_est_.fit(X, y)
 
         self.estimator_mapie_ = mapie_est_
 
+        # forward fitted attributes to self
         FITTED_PARAMS_TO_FORWARD = ["estimator_", "conformity_scores_"]
 
         for param in FITTED_PARAMS_TO_FORWARD:
@@ -259,11 +270,17 @@ class MapieRegressor(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
+        # coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
+        # predict with mapie regressor
         y_pred_mapie = self.estimator_mapie_.predict(X)
+
+        # format output as pandas DataFrame with correct indices
         index = X.index
         columns = self._y_cols
-
         y_pred = pd.DataFrame(y_pred_mapie, index=index, columns=columns)
+
         return y_pred
 
     def _predict_interval(self, X, coverage):
