@@ -9,6 +9,7 @@ from sklearn import clone
 
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.numpy import flatten_to_1D_if_colvector
+from skpro.utils.sklearn import prep_skl_df
 
 
 class ResidualDouble(BaseProbaRegressor):
@@ -207,15 +208,18 @@ class ResidualDouble(BaseProbaRegressor):
         use_y_pred = self.use_y_pred
 
         self._y_cols = y.columns
-        y = y.values
+
+        # coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
 
         # flatten column vector to 1D array to avoid sklearn complaints
+        y = y.values
         y = flatten_to_1D_if_colvector(y)
 
-        est.fit(X, y)
+        est.fit(prep_skl_df(X, copy_df=True), y)
 
         if cv is None:
-            y_pred = est.predict(X)
+            y_pred = est.predict()
         else:
             y_pred = self._predict_residuals_cv(X, y, cv, est)
 
@@ -259,6 +263,8 @@ class ResidualDouble(BaseProbaRegressor):
         """
         est = self.estimator_
 
+        X = prep_skl_df(X, copy_df=True)
+
         y_pred = est.predict(X)
         y_pred = pd.DataFrame(y_pred, columns=self._y_cols, index=X.index)
 
@@ -291,6 +297,9 @@ class ResidualDouble(BaseProbaRegressor):
         distr_params = self.distr_params
         min_scale = self.min_scale
 
+        # coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
         n_cols = len(self._y_cols)
 
         if distr_params is None:
@@ -309,7 +318,7 @@ class ResidualDouble(BaseProbaRegressor):
         else:
             X_r = X
 
-        y_pred_scale = est_r.predict(X_r)
+        y_pred_scale = est_r.predict(X_r, copy_df=True)
         y_pred_scale = y_pred_scale.clip(min=min_scale)
         y_pred_scale = y_pred_scale.reshape(-1, n_cols)
 
