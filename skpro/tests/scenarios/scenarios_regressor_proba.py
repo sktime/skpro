@@ -76,7 +76,6 @@ class _ProbaRegressorTestScenario(TestScenario, BaseObject):
 def _load_diabetes_small():
     """Load diabetes dataset, return first 50 samples."""
     import pandas as pd
-
     from sklearn.datasets import load_diabetes
 
     X, y = load_diabetes(return_X_y=True, as_frame=True)
@@ -138,7 +137,7 @@ scenarios_regressor_proba = [
 def _get_Xy_traintest_X_mixix_ynp():
     """Get X, y train/test data for regression tests.
 
-    X is pandas.DataFrame, y is univariate numpy array. 
+    X is pandas.DataFrame, y is univariate numpy array.
     X has homogeneous dtype, and no missing data.
 
     X has mixed column index type (int and str).
