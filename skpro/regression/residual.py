@@ -318,6 +318,9 @@ class ResidualDouble(BaseProbaRegressor):
         else:
             X_r = X
 
+        # coerce X to pandas DataFrame with string column names
+        X_r = prep_skl_df(X_r, copy_df=True)
+
         y_pred_scale = est_r.predict(X_r)
         y_pred_scale = y_pred_scale.clip(min=min_scale)
         y_pred_scale = y_pred_scale.reshape(-1, n_cols)
