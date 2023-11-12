@@ -566,7 +566,6 @@ class BaseProbaRegressor(BaseEstimator):
             if isinstance(y_inner, (pd.DataFrame, pd.Series)):
                 y_inner.index = X_inner.index
 
-
         return X_inner, y_inner
 
     def _check_X(self, X, return_metadata=False):
