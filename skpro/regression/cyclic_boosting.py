@@ -15,15 +15,13 @@ __author__ = ["setoguchi-naoki"]
 
 import numpy as np
 import pandas as pd
-from scipy.misc import derivative
-from scipy.integrate import quad
 from skpro.regression.base import BaseProbaRegressor
+from skpro.distributions.qpd import J_QPD_S
 
 # from cyclic_boosting import common_smoothers, binning
 from cyclic_boosting import (
     pipeline_CBMultiplicativeQuantileRegressor,
 )
-from cyclic_boosting.quantile_matching import J_QPD_S
 
 
 # todo: change class name and write docstring
@@ -59,6 +57,10 @@ class CyclicBoosting(BaseProbaRegressor):
         quantile prediction results
     quantile_est: list
         estimators, each estimator predicts point in the value of quantiles attribute
+    qpd: skpro.distributions.J_QPD_S
+        Johnson Quantile-Parameterized Distributions instance
+    distr_type: str, default='QPD'
+        target distribution, Option: Normal, Laplace
 
     Examples
     --------
@@ -101,8 +103,7 @@ class CyclicBoosting(BaseProbaRegressor):
         self.quantiles = [0.2, 0.5, 0.8]
         self.quantile_values = []
         self.quantile_est = []
-        self.mean_jqpd = None
-        self.var_jqpd = None
+        self.qpd = None
         self.distr_type = distr_type
 
         super().__init__()
@@ -125,7 +126,7 @@ class CyclicBoosting(BaseProbaRegressor):
                     quantile=quantile,
                     feature_properties=self.feature_properties,
                     feature_groups=features,
-                    maximal_iterations=100,
+                    maximal_iterations=50,
                 )
             )
 
@@ -178,54 +179,23 @@ class CyclicBoosting(BaseProbaRegressor):
 
         index = X.index
         y_cols = self._y_cols
-        columns = y_cols
 
         # quantile prediction
         for est in self.quantile_est:
             yhat = est.predict(X.copy())
             self.quantile_values.append(yhat)
 
-        # generate j-qpd on each sample
-        mean, var = [], []
-        n_samples = len(X)
+        j_qpd = J_QPD_S(
+            0.2,
+            qv_low=self.quantile_values[0],
+            qv_median=self.quantile_values[1],
+            qv_high=self.quantile_values[2],
+            index=index,
+            columns=y_cols,
+        )
+        self.qpd = j_qpd
 
-        # NOTE: cdf -> pdf calculation because j-qpd's pdf calculation is bit complex
-        def exp_func(x):
-            pdf = derivative(j_qpd_s.cdf, x, dx=1e-6)
-            return x * pdf
-
-        def var_func(x, mu):
-            pdf = derivative(j_qpd_s.cdf, x, dx=1e-6)
-            return ((x - mu) ** 2) * pdf
-
-        for i in range(n_samples):
-            try:
-                j_qpd_s = J_QPD_S(
-                    0.2,
-                    self.quantile_values[0][i],
-                    self.quantile_values[1][i],
-                    self.quantile_values[2][i],
-                )
-                # TODO: scipy.integrate will be removed in scipy 1.12.0
-                # NOTE: integral range (-inf to inf) return NaN, it should check
-                loc, _ = quad(exp_func, a=0.0, b=np.inf)
-                mean.append(loc)
-                scale, _ = quad(var_func, a=0.0, b=np.inf, args=(loc))
-                var.append(scale)
-            except ValueError:
-                mean.append(np.nan)
-                var.append(np.nan)
-                continue
-
-        # fill nan by mean
-        mean_arr = np.asarray(mean)
-        mean_arr[np.isnan(mean_arr)] = np.nanmean(mean_arr)
-        var_arr = np.asarray(var)
-        var_arr[np.isnan(var_arr)] = np.nanmean(var_arr)
-        self.mean_jqpd = mean_arr.reshape(-1, len(y_cols))
-        self.var_jqpd = var_arr.reshape(-1, len(y_cols))
-
-        y_pred = pd.DataFrame(mean, index=index, columns=columns)
+        y_pred = pd.DataFrame(j_qpd.mean(), index=index, columns=y_cols)
         return y_pred
 
     def _predict_proba(self, X):
@@ -248,45 +218,48 @@ class CyclicBoosting(BaseProbaRegressor):
             labels predicted for `X`
         """
 
-        # mean, variance calculation from j-qpd
+        # predict j-qpd
         _ = self._predict(X)
 
-        if self.distr_type == "Normal":
-            from skpro.distributions.normal import Normal
-
-            distr_type = Normal
-            distr_loc_scale_name = ("mu", "sigma")
-            self.var_jqpd = np.sqrt(self.var_jqpd)
-        elif distr_type == "Laplace":
-            from skpro.distributions.laplace import Laplace
-
-            distr_type = Laplace
-            distr_loc_scale_name = ("mu", "scale")
-            self.var_jppd = np.sqrt(self.var_jqpd) / 2
-        # elif distr_type in ["Cauchy", "t"]:
-        #     from skpro.distributions.t import TDistribution
-
-        #     distr_type = TDistribution
-        #     distr_loc_scale_name = ("mu", "sigma")
+        if self.distr_type == "QPD":
+            return self.qpd
         else:
-            raise NotImplementedError(f"{self.distr_type} is not support")
+            if self.distr_type == "Normal":
+                from skpro.distributions.normal import Normal
 
-        params = {}
-        # row/column index
-        ix = {"index": X.index, "columns": self._y_cols}
-        params.update(ix)
-        # location and scale
-        loc_scale = {
-            distr_loc_scale_name[0]: self.mean_jqpd,
-            distr_loc_scale_name[1]: self.var_jqpd,
-        }
-        params.update(loc_scale)
+                distr_type = Normal
+                distr_loc_scale_name = ("mu", "sigma")
+                mean_jqpd = self.qpd.mean()
+                var_jqpd = np.sqrt(self.qpd.var())
+            elif distr_type == "Laplace":
+                from skpro.distributions.laplace import Laplace
 
-        y_pred = distr_type(**params)
-        return y_pred
+                distr_type = Laplace
+                distr_loc_scale_name = ("mu", "scale")
+                mean_jqpd = self.qpd.mean()
+                var_jqpd = np.sqrt(self.qpd.var()) / 2
+            # elif distr_type in ["Cauchy", "t"]:
+            #     from skpro.distributions.t import TDistribution
 
-    # todo: return default parameters, so that a test instance can be created
-    #   required for automated unit and integration testing of estimator
+            #     distr_type = TDistribution
+            #     distr_loc_scale_name = ("mu", "sigma")
+            else:
+                raise NotImplementedError(f"{self.distr_type} is not support")
+
+            params = {}
+            # row/column index
+            ix = {"index": X.index, "columns": self._y_cols}
+            params.update(ix)
+            # location and scale
+            loc_scale = {
+                distr_loc_scale_name[0]: mean_jqpd,
+                distr_loc_scale_name[1]: var_jqpd,
+            }
+            params.update(loc_scale)
+
+            y_pred = distr_type(**params)
+            return y_pred
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator.
@@ -324,8 +297,18 @@ class CyclicBoosting(BaseProbaRegressor):
         param2 = {"feature_properties": fp, "interaction": [("age", "sex"), ("s1, s3")]}
         param3 = {
             "feature_properties": fp,
-            "interaction": [("age", "sex"), ("s1, s3")],
+            "interaction": [("age", "sex")],
             "distr_type": "Laplace",
         }
+        param4 = {
+            "feature_properties": fp,
+            "interaction": [("age", "sex")],
+            "distr_type": "Normal",
+        }
+        param5 = {
+            "feature_properties": fp,
+            "interaction": [("age", "sex")],
+            "distr_type": "QPD",
+        }
 
-        return [param1, param2, param3]
+        return [param1, param2, param3, param4, param5]
