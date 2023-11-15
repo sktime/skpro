@@ -35,6 +35,7 @@ Parametric distributions
     Laplace
     Normal
     TDistribution
+    J_QPD_S
 
 Non-parametric and empirical distributions
 ------------------------------------------
