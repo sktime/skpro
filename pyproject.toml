@@ -47,7 +47,6 @@ dependencies = [
     "scikit-base>=0.4.3,<0.7.0",
     "scikit-learn>=0.24.0,<1.4.0",
     "scipy<2.0.0,>=1.2.0",
-    "cyclic-boosting>=1.2.1"
 ]
 
 [project.optional-dependencies]
@@ -60,6 +59,7 @@ all_extras = [
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
+    "cyclic-boosting>=1.2.1"
 ]
 
 dev = [
