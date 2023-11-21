@@ -14,9 +14,10 @@ from scipy.integrate import quad
 from typing import Optional
 
 from skpro.distributions.base import BaseDistribution
+from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
 
 
-class J_QPD_S(BaseDistribution):
+class QPD_S(BaseDistribution):
     """Johnson Quantile-Parameterized Distributions
 
     see https://repositories.lib.utexas.edu/bitstream/handle/2152/63037/HADLOCK-DISSERTATION-2017.pdf
@@ -56,15 +57,17 @@ class J_QPD_S(BaseDistribution):
         index=None,
         columns=None,
     ):
+        self.qpd = []
         self.alpha = alpha
         self.version = version
         self.qv_low = qv_low
         self.qv_median = qv_median
         self.qv_high = qv_high
+        self.l = l
         self.index = index
         self.columns = columns
 
-        for qv in [qv_low, qv_median, qv_high]:
+        for qv in [alpha, qv_low, qv_median, qv_high]:
             if isinstance(qv, float):
                 qv = np.array([qv])
             elif (
@@ -95,151 +98,79 @@ class J_QPD_S(BaseDistribution):
             qv_median[idx] = np.nanmean(qv_median)
             qv_high[idx] = np.nanmean(qv_high)
 
-        self.l = l
-        self.c = self.phi.ppf(1 - alpha)
-
-        self.L = log(qv_low - l)
-        self.H = log(qv_high - l)
-        self.B = log(qv_median - l)
-
-        self.n = np.zeros_like(self.L)
-        self.theta = qv_median - l
-
-        pos = np.where((self.L + self.H - 2 * self.B) > 0, True, False)
-        self.n[pos] = 1
-        self.theta[pos] = qv_low[pos] - l
-
-        neg = np.where((self.L + self.H - 2 * self.B) < 0, True, False)
-        self.n[neg] = -1
-        self.theta[neg] = qv_high[neg] - l
-
-        B_L = self.B - self.L
-        H_B = self.H - self.B
-        _min = np.where(B_L < H_B, B_L, H_B)
-
-        self.delta = 1.0 / self.c * sinh(arccosh((self.H - self.L) / (2 * _min)))
-        self.kappa = 1.0 / (self.delta * self.c) * _min
-
-        # DataFrame
-        self.L = pd.DataFrame(self.L, index=index)
-        self.H = pd.DataFrame(self.H, index=index)
-        self.B = pd.DataFrame(self.B, index=index)
-        self.n = pd.DataFrame(self.n, index=index)
-        self.theta = pd.DataFrame(self.theta, index=index)
-        self.delta = pd.DataFrame(self.delta, index=index)
-        self.kappa = pd.DataFrame(self.kappa, index=index)
+        iter = np.nditer(qv_low, flags=["c_index"])
+        for x in iter:
+            jqpd = J_QPD_S(
+                alpha=alpha,
+                qv_low=qv_low[iter.index],
+                qv_median=qv_median[iter.index],
+                qv_high=qv_high[iter.index],
+                l=l,
+                version=version,
+            )
+            self.qpd.append(jqpd)
+        self.qpd = pd.DataFrame(self.qpd, index=index)
 
         super().__init__(index=index, columns=columns)
 
-    def mean(self):
-        def cdf_func(x, theta, kappa, delta, n):
-            cdf_arr = self.phi.cdf(
-                1.0
-                / delta
-                * sinh(
-                    arcsinh(1.0 / kappa * log((x - self.l) / theta))
-                    - arcsinh(n * self.c * delta)
-                )
-            )
-            return cdf_arr
-
-        def exp_func(x, theta, kappa, delta, n):
+    def mean(self, lower=0.0, upper=np.inf):
+        def exp_func(x, qpd):
             # TODO: scipy.integrate will be removed in scipy 1.12.0
-            pdf = derivative(cdf_func, x, dx=1e-6, args=(theta, kappa, delta, n))
+            pdf = derivative(qpd.cdf, x, dx=1e-6)
             return x * pdf
 
         loc = []
-        for i in self.index:
-            theta = self.theta.loc[i, :].to_numpy()
-            kappa = self.kappa.loc[i, :].to_numpy()
-            delta = self.delta.loc[i, :].to_numpy()
-            n = self.n.loc[i, :].to_numpy()
+        for idx in self.index:
+            qpd = self.qpd.loc[idx, :].values[0]
             # NOTE: integral interval should be checked, -inf to inf will be NaN
-            l, _ = quad(exp_func, args=(theta, kappa, delta, n), a=0.0, b=np.inf)
+            l, _ = quad(exp_func, args=(qpd), a=lower, b=upper)
             loc.append(l)
-
         loc_arr = np.array(loc)
         return pd.DataFrame(loc_arr, index=self.index, columns=self.columns)
 
-    def var(self):
-        def cdf_func(x, theta, kappa, delta, n):
-            cdf_arr = self.phi.cdf(
-                1.0
-                / delta
-                * sinh(
-                    arcsinh(1.0 / kappa * log((x - self.l) / theta))
-                    - arcsinh(n * self.c * delta)
-                )
-            )
-            return cdf_arr
-
-        def var_func(x, mu, theta, kappa, delta, n):
+    def var(self, lower=0.0, upper=np.inf):
+        def var_func(x, mu, qpd):
             # TODO: scipy.integrate will be removed in scipy 1.12.0
-            pdf = derivative(cdf_func, x, dx=1e-6, args=(theta, kappa, delta, n))
+            pdf = derivative(qpd.cdf, x, dx=1e-6)
             return ((x - mu) ** 2) * pdf
 
         mean = self.mean()
         var = []
-        for i in self.index:
-            theta = self.theta.loc[i, :].to_numpy()
-            kappa = self.kappa.loc[i, :].to_numpy()
-            delta = self.delta.loc[i, :].to_numpy()
-            n = self.n.loc[i, :].to_numpy()
-            mu = mean.loc[i, :].to_numpy()
+        for idx in self.index:
+            mu = mean.loc[idx, :].to_numpy()
+            qpd = self.qpd.loc[idx, :].values[0]
             # NOTE: integral interval should be checked, -inf to inf will be NaN
-            l, _ = quad(var_func, args=(mu, theta, kappa, delta, n), a=0.0, b=np.inf)
+            l, _ = quad(var_func, args=(mu, qpd), a=lower, b=upper)
             var.append(l)
-
         var_arr = np.array(var)
         return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
 
-    def pdf(self, x):
+    def pdf(self, x: pd.DataFrame):
         # cdf -> pdf calculation because j-qpd's pdf calculation is bit complex
-        def cdf_func(x, theta, kappa, delta, n):
-            cdf_arr = self.phi.cdf(
-                1.0
-                / delta
-                * sinh(
-                    arcsinh(1.0 / kappa * log((x - self.l) / theta))
-                    - arcsinh(n * self.c * delta)
-                )
-            )
-            return cdf_arr
-
         pdf = []
-        for i in x.index:
-            theta = self.theta.loc[i, :].to_numpy()
-            kappa = self.kappa.loc[i, :].to_numpy()
-            delta = self.delta.loc[i, :].to_numpy()
-            n = self.n.loc[i, :].to_numpy()
-
-            p = derivative(cdf_func, x, dx=1e-6, args=(theta, kappa, delta, n))
-            pdf.append(p)
-
+        for idx in x.index:
+            qpd = self.qpd.loc[idx, :].values[0]
+            _x = x.loc[idx, :]
+            _pdf = [derivative(qpd.cdf, x0, dx=1e-6) for x0 in _x]
+            pdf.append(_pdf)
         pdf_arr = np.array(pdf)
-        return pd.DataFrame(pdf_arr, index=x.index, columns=["pdf"])
+        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
-    def ppf(self, p):
-        theta = self.theta.loc[p.index, :].to_numpy()
-        kappa = self.kappa.loc[p.index, :].to_numpy()
-        delta = self.delta.loc[p.index, :].to_numpy()
-        n = self.n.loc[p.index, :].to_numpy()
-        ppf_arr = self.l + theta * exp(
-            kappa * sinh(arcsinh(delta * self.phi.ppf(p)) + arcsinh(n * self.c * delta))
-        )
+    def ppf(self, p: pd.DataFrame):
+        ppf = []
+        for idx in p.index:
+            qpd = self.qpd.loc[idx, :].values[0]
+            _ppf = qpd.ppf(p.loc[idx, :])
+            ppf.append(_ppf)
+        ppf_arr = np.array(ppf)
         return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
 
-    def cdf(self, x):
-        theta = self.theta.loc[x.index, :].to_numpy()
-        kappa = self.kappa.loc[x.index, :].to_numpy()
-        delta = self.delta.loc[x.index, :].to_numpy()
-        n = self.n.loc[x.index, :].to_numpy()
-        cdf_arr = self.phi.cdf(
-            1.0
-            / delta
-            * sinh(
-                arcsinh(1.0 / kappa * log((x - self.l) / theta))
-                - arcsinh(n * self.c * delta)
-            )
-        )
+    def cdf(self, x: pd.DataFrame):
+        cdf_arr = np.empty_like(x.shape)
+        cdf = []
+        for idx in x.index:
+            qpd = self.qpd.loc[idx, :].values[0]
+            _cdf = qpd.cdf(x.loc[idx, :])
+            cdf.append(_cdf)
+        cdf_arr = np.array(cdf)
         return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
