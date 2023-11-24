@@ -6,17 +6,13 @@ Please read the official document for its detail
 https://cyclic-boosting.readthedocs.io/en/latest/
 """
 
-"""License.
-EPL 2.0
-https://github.com/Blue-Yonder-OSS/cyclic-boosting/blob/main/LICENSE
-"""
-
 __author__ = ["setoguchi-naoki"]
 
+import warnings
 import numpy as np
 import pandas as pd
 from skpro.regression.base import BaseProbaRegressor
-from skpro.distributions.qpd import J_QPD_S
+from skpro.distributions.qpd import QPD_S
 
 # from cyclic_boosting import common_smoothers, binning
 from cyclic_boosting import (
@@ -43,9 +39,6 @@ class CyclicBoosting(BaseProbaRegressor):
     interaction : list[tuple], default=(), optional
         some combinations of explanatory variables, (interaction term)
         e.g. [(sample1, sample2), (sample1, sample3)]
-    distr_type: str, default='Normal',
-        probability distribution name which is assumed for observation data's
-        distribution
 
     Attributes
     ----------
@@ -59,8 +52,6 @@ class CyclicBoosting(BaseProbaRegressor):
         estimators, each estimator predicts point in the value of quantiles attribute
     qpd: skpro.distributions.J_QPD_S
         Johnson Quantile-Parameterized Distributions instance
-    distr_type: str, default='QPD'
-        target distribution, Option: Normal, Laplace
 
     Examples
     --------
@@ -95,17 +86,17 @@ class CyclicBoosting(BaseProbaRegressor):
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
-        "python_dependencies": "cyclic_boosting>=1.2.1",
+        # "python_dependencies": "cyclic_boosting>=1.2.1",
     }
 
-    def __init__(self, feature_properties, interaction=tuple(), distr_type="Normal"):
+    def __init__(self, feature_properties, interaction=tuple(), alpha=0.2):
         self.feature_properties = feature_properties
         self.interaction = interaction
-        self.quantiles = [0.2, 0.5, 0.8]
+        self.alpha = alpha
+        self.quantiles = [self.alpha, 0.5, 1 - self.alpha]
         self.quantile_values = []
         self.quantile_est = []
         self.qpd = None
-        self.distr_type = distr_type
 
         super().__init__()
 
@@ -115,6 +106,8 @@ class CyclicBoosting(BaseProbaRegressor):
         for i in interaction:
             if not isinstance(i, tuple):
                 raise ValueError("interaction must be tuple")
+        if alpha >= 0.5 or alpha <= 0.0:
+            raise ValueError("alpha's range must be 0.0 < alpha < 0.5")
 
         # build estimators
         features = list(self.feature_properties.keys())
@@ -159,7 +152,7 @@ class CyclicBoosting(BaseProbaRegressor):
         return self
 
     def _predict(self, X):
-        """Predict labels for data from features.
+        """Predict median.
 
         State required:
             Requires state to be "fitted" = self.is_fitted=True
@@ -181,26 +174,15 @@ class CyclicBoosting(BaseProbaRegressor):
         index = X.index
         y_cols = self._y_cols
 
-        # quantile prediction
-        for est in self.quantile_est:
-            yhat = est.predict(X.copy())
-            self.quantile_values.append(yhat)
+        # median prediction
+        median_estimator = self.quantile_est[1]
+        yhat = median_estimator.predict(X.copy())
 
-        j_qpd = J_QPD_S(
-            0.2,
-            qv_low=self.quantile_values[0],
-            qv_median=self.quantile_values[1],
-            qv_high=self.quantile_values[2],
-            index=index,
-            columns=y_cols,
-        )
-        self.qpd = j_qpd
-
-        y_pred = pd.DataFrame(j_qpd.mean(), index=index, columns=y_cols)
+        y_pred = pd.DataFrame(yhat, index=index, columns=y_cols)
         return y_pred
 
     def _predict_proba(self, X):
-        """Predict distribution over labels for data from features.
+        """Predict QPD from three predicted quantile values.
 
         State required:
             Requires state to be "fitted".
@@ -219,47 +201,95 @@ class CyclicBoosting(BaseProbaRegressor):
             labels predicted for `X`
         """
 
-        # predict j-qpd
-        _ = self._predict(X)
+        index = X.index
+        y_cols = self._y_cols
 
-        if self.distr_type == "QPD":
-            return self.qpd
+        # predict quantiles
+        self.quantile_values = []
+        for est in self.quantile_est:
+            yhat = est.predict(X.copy())
+            self.quantile_values.append(yhat)
+
+        # Johnson Quantile-Parameterized Distributions
+        qpd = QPD_S(
+            alpha=self.alpha,
+            qv_low=self.quantile_values[0],
+            qv_median=self.quantile_values[1],
+            qv_high=self.quantile_values[2],
+            index=index,
+            columns=y_cols,
+        )
+
+        return qpd
+
+    def _predict_quantiles(self, X, alpha):
+        """Compute/return quantile predictions.
+
+        private _predict_quantiles containing the core logic,
+            called from predict_quantiles and default _predict_interval
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+        alpha : guaranteed list of float
+            A list of probabilities at which quantile predictions are computed.
+
+        Returns
+        -------
+        quantiles : pd.DataFrame
+            Column has multi-index: first level is variable name from ``y`` in fit,
+                second level being the values of alpha passed to the function.
+            Row index is equal to row index of ``X``.
+            Entries are quantile predictions, for var in col index,
+                at quantile probability in second col index, for the row index.
+        """
+        is_given_proba = False
+        warning = (
+            "{} percentile doesn't trained, return QPD's quantile value, "
+            "which is given by predict_proba(), "
+            "if you need more plausible quantile value, "
+            "please train regressor again for specified quantile estimation"
+        )
+        if isinstance(alpha, list):
+            for a in alpha:
+                if not (a in self.quantiles):
+                    warnings.warn(warning.format(a))
+                    is_given_proba = True
+        elif isinstance(alpha, float):
+            if not (alpha in self.quantiles):
+                warnings.warn(warning.format(alpha))
+                is_given_proba = True
         else:
-            if self.distr_type == "Normal":
-                from skpro.distributions.normal import Normal
+            raise ValueError("alpha must be float or list of floats")
 
-                distr_type = Normal
-                distr_loc_scale_name = ("mu", "sigma")
-                mean_jqpd = self.qpd.mean()
-                var_jqpd = np.sqrt(self.qpd.var())
-            elif distr_type == "Laplace":
-                from skpro.distributions.laplace import Laplace
+        index = X.index
+        y_cols = self._y_cols
 
-                distr_type = Laplace
-                distr_loc_scale_name = ("mu", "scale")
-                mean_jqpd = self.qpd.mean()
-                var_jqpd = np.sqrt(self.qpd.var()) / 2
-            # elif distr_type in ["Cauchy", "t"]:
-            #     from skpro.distributions.t import TDistribution
+        columns = pd.MultiIndex.from_product(
+            [y_cols, alpha],
+        )
 
-            #     distr_type = TDistribution
-            #     distr_loc_scale_name = ("mu", "sigma")
-            else:
-                raise NotImplementedError(f"{self.distr_type} is not support")
+        # predict quantiles
+        self.quantile_values = []
+        if is_given_proba:
+            qpd = self.predict_proba(X.copy())
+            if isinstance(alpha, list):
+                alpha = [alpha]
 
-            params = {}
-            # row/column index
-            ix = {"index": X.index, "columns": self._y_cols}
-            params.update(ix)
-            # location and scale
-            loc_scale = {
-                distr_loc_scale_name[0]: mean_jqpd,
-                distr_loc_scale_name[1]: var_jqpd,
-            }
-            params.update(loc_scale)
+            p = pd.DataFrame(alpha, index=X.index, columns=columns)
+            quantiles = qpd.ppf(p)
 
-            y_pred = distr_type(**params)
-            return y_pred
+        else:
+            for est in self.quantile_est:
+                yhat = est.predict(X.copy())
+                self.quantile_values.append(yhat)
+
+            quantiles = pd.DataFrame(
+                np.transpose(self.quantile_values), index=index, columns=columns
+            )
+
+        return quantiles
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -299,17 +329,6 @@ class CyclicBoosting(BaseProbaRegressor):
         param3 = {
             "feature_properties": fp,
             "interaction": [("age", "sex")],
-            "distr_type": "Laplace",
-        }
-        param4 = {
-            "feature_properties": fp,
-            "interaction": [("age", "sex")],
-            "distr_type": "Normal",
-        }
-        param5 = {
-            "feature_properties": fp,
-            "interaction": [("age", "sex")],
-            "distr_type": "QPD",
         }
 
-        return [param1, param2, param3, param4, param5]
+        return [param1, param2, param3]
