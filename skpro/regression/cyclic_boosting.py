@@ -5,8 +5,11 @@ for both regression and classification tasks.
 Please read the official document for its detail
 https://cyclic-boosting.readthedocs.io/en/latest/
 """
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
-__author__ = ["setoguchi-naoki"]
+__author__ = [
+    "setoguchi-naoki"
+]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
 import warnings
 import numpy as np
@@ -86,7 +89,7 @@ class CyclicBoosting(BaseProbaRegressor):
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
-        # "python_dependencies": "cyclic_boosting>=1.2.1",
+        "python_dependencies": "cyclic_boosting>=1.2.1",
     }
 
     def __init__(self, feature_properties, interaction=tuple(), alpha=0.2):
@@ -222,6 +225,51 @@ class CyclicBoosting(BaseProbaRegressor):
 
         return qpd
 
+    def _predict_interval(self, X, coverage):
+        """Compute/return interval predictions.
+
+        private _predict_interval containing the core logic,
+            called from predict_interval and default _predict_quantiles
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+        coverage : guaranteed list of float of unique values
+           nominal coverage(s) of predictive interval(s)
+
+        Returns
+        -------
+        pred_int : pd.DataFrame
+            Column has multi-index: first level is variable name from ``y`` in fit,
+            second level coverage fractions for which intervals were computed,
+            in the same order as in input `coverage`.
+            Third level is string "lower" or "upper", for lower/upper interval end.
+            Row index is equal to row index of ``X``.
+            Entries are lower/upper bounds of interval predictions,
+            for var in col index, at nominal coverage in second col index,
+            lower/upper depending on third col index, for the row index.
+            Upper/lower interval end are equivalent to
+            quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
+        """
+
+        index = X.index
+        y_cols = self._y_cols
+        columns = pd.MultiIndex.from_product(
+            [y_cols, coverage, ["lower", "upper"]],
+        )
+
+        # predict interval
+        interval = pd.DataFrame(index=index)
+        for c in coverage:
+            alpha = [0.5 - 0.5 * float(c), 0.5 + 0.5 * float(c)]
+            interval = pd.concat(
+                [interval, self.predict_quantiles(X=X.copy(), alpha=alpha)], axis=1
+            )
+        interval.columns = columns
+
+        return interval
+
     def _predict_quantiles(self, X, alpha):
         """Compute/return quantile predictions.
 
@@ -244,6 +292,7 @@ class CyclicBoosting(BaseProbaRegressor):
             Entries are quantile predictions, for var in col index,
                 at quantile probability in second col index, for the row index.
         """
+
         is_given_proba = False
         warning = (
             "{} percentile doesn't trained, return QPD's quantile value, "
@@ -329,6 +378,7 @@ class CyclicBoosting(BaseProbaRegressor):
         param3 = {
             "feature_properties": fp,
             "interaction": [("age", "sex")],
+            "alpha": 0.3,
         }
 
         return [param1, param2, param3]
