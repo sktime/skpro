@@ -1,12 +1,15 @@
 """J-QPD probability distribution."""
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
-__author__ = ["FelixWick", "setoguchi-naoki"]
+__author__ = [
+    "FelixWick",
+    "setoguchi-naoki",
+]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
 import pandas as pd
 import numpy as np
 import warnings
 
-from numpy import exp, log, sinh, arcsinh, arccosh
 from scipy.stats import norm, logistic
 from scipy.misc import derivative
 from scipy.integrate import quad
@@ -79,6 +82,15 @@ class QPD_S(BaseDistribution):
             else:
                 raise ValueError("data type is not float or array_like object")
 
+        shape = self.qv_low.shape
+        if index is None:
+            self.index = index
+            index = pd.RangeIndex(shape[0])
+
+        if columns is None:
+            self.columns = columns
+            columns = pd.RangeIndex(shape[1])
+
         if version == "normal":
             self.phi = norm()
         elif version == "logistic":
@@ -88,7 +100,8 @@ class QPD_S(BaseDistribution):
 
         if (np.any(qv_low > qv_median)) or np.any((qv_high < qv_median)):
             warnings.warn(
-                "The SPT values are not monotonically increasing, each SPT will be replaced by mean value"
+                "The SPT values are not monotonically increasing, "
+                "each SPT will be replaced by mean value"
             )
             idx = np.where((qv_low > qv_median), True, False) + np.where(
                 (qv_high < qv_median), True, False
@@ -114,11 +127,6 @@ class QPD_S(BaseDistribution):
         super().__init__(index=index, columns=columns)
 
     def mean(self, lower=0.0, upper=np.inf):
-        def exp_func(x, qpd):
-            # TODO: scipy.integrate will be removed in scipy 1.12.0
-            pdf = derivative(qpd.cdf, x, dx=1e-6)
-            return x * pdf
-
         loc = []
         for idx in self.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -129,11 +137,6 @@ class QPD_S(BaseDistribution):
         return pd.DataFrame(loc_arr, index=self.index, columns=self.columns)
 
     def var(self, lower=0.0, upper=np.inf):
-        def var_func(x, mu, qpd):
-            # TODO: scipy.integrate will be removed in scipy 1.12.0
-            pdf = derivative(qpd.cdf, x, dx=1e-6)
-            return ((x - mu) ** 2) * pdf
-
         mean = self.mean()
         var = []
         for idx in self.index:
@@ -166,7 +169,6 @@ class QPD_S(BaseDistribution):
         return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
 
     def cdf(self, x: pd.DataFrame):
-        cdf_arr = np.empty_like(x.shape)
         cdf = []
         for idx in x.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -175,12 +177,33 @@ class QPD_S(BaseDistribution):
         cdf_arr = np.array(cdf)
         return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
 
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        params1 = {
+            "alpha": 0.2,
+            "version": "normal",
+            "qv_low": 0.2,
+            "qv_median": 0.5,
+            "qv_high": 0.8,
+        }
+        params2 = {
+            "alpha": [0.2, 0.2, 0.2],
+            "version": "normal",
+            "qv_low": [0.2, 0.2, 0.2],
+            "qv_median": [0.5, 0.5, 0.5],
+            "qv_high": [0.8, 0.8, 0.8],
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a"]),
+        }
+        return [params1, params2]
+
 
 class QPD_B(BaseDistribution):
     """Johnson Quantile-Parameterized Distributions with bounded mode
 
     see https://repositories.lib.utexas.edu/bitstream/handle/2152/63037/HADLOCK-DISSERTATION-2017.pdf
-    (Due to the Python keyword, the parameter lambda from this reference is named kappa below.).
+    (Due to the Python keyword, the parameter lambda from this reference is named kappa below).
     A distribution is parameterized by a symmetric-percentile triplet (SPT).
 
     Parameters
@@ -242,6 +265,15 @@ class QPD_B(BaseDistribution):
             else:
                 raise ValueError("data type is not float or array_like object")
 
+        shape = self.qv_low.shape
+        if index is None:
+            self.index = index
+            index = pd.RangeIndex(shape[0])
+
+        if columns is None:
+            self.columns = columns
+            columns = pd.RangeIndex(shape[1])
+
         if version == "normal":
             self.phi = norm()
         elif version == "logistic":
@@ -251,7 +283,8 @@ class QPD_B(BaseDistribution):
 
         if (np.any(qv_low > qv_median)) or np.any((qv_high < qv_median)):
             warnings.warn(
-                "The SPT values are not monotonically increasing, each SPT will be replaced by mean value"
+                "The SPT values are not monotonically increasing, "
+                "each SPT will be replaced by mean value"
             )
             idx = np.where((qv_low > qv_median), True, False) + np.where(
                 (qv_high < qv_median), True, False
@@ -278,32 +311,20 @@ class QPD_B(BaseDistribution):
         super().__init__(index=index, columns=columns)
 
     def mean(self, lower=0.0, upper=np.inf):
-        def exp_func(x, qpd):
-            # TODO: scipy.integrate will be removed in scipy 1.12.0
-            pdf = derivative(qpd.cdf, x, dx=1e-6)
-            return x * pdf
-
         loc = []
         for idx in self.index:
             qpd = self.qpd.loc[idx, :].values[0]
-            # NOTE: integral interval should be checked, -inf to inf will be NaN
             l, _ = quad(exp_func, args=(qpd), a=lower, b=upper)
             loc.append(l)
         loc_arr = np.array(loc)
         return pd.DataFrame(loc_arr, index=self.index, columns=self.columns)
 
     def var(self, lower=0.0, upper=np.inf):
-        def var_func(x, mu, qpd):
-            # TODO: scipy.integrate will be removed in scipy 1.12.0
-            pdf = derivative(qpd.cdf, x, dx=1e-6)
-            return ((x - mu) ** 2) * pdf
-
         mean = self.mean()
         var = []
         for idx in self.index:
             mu = mean.loc[idx, :].to_numpy()
             qpd = self.qpd.loc[idx, :].values[0]
-            # NOTE: integral interval should be checked, -inf to inf will be NaN
             l, _ = quad(var_func, args=(mu, qpd), a=lower, b=upper)
             var.append(l)
         var_arr = np.array(var)
@@ -330,7 +351,6 @@ class QPD_B(BaseDistribution):
         return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
 
     def cdf(self, x: pd.DataFrame):
-        cdf_arr = np.empty_like(x.shape)
         cdf = []
         for idx in x.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -338,3 +358,40 @@ class QPD_B(BaseDistribution):
             cdf.append(_cdf)
         cdf_arr = np.array(cdf)
         return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        params1 = {
+            "alpha": 0.2,
+            "version": "normal",
+            "qv_low": 0.2,
+            "qv_median": 0.5,
+            "qv_high": 0.8,
+            "l": 0.0,
+            "u": 1.0,
+        }
+        params2 = {
+            "alpha": 0.2,
+            "version": "normal",
+            "qv_low": [0.2, 0.2, 0.2],
+            "qv_median": [0.5, 0.5, 0.5],
+            "qv_high": [0.8, 0.8, 0.8],
+            "l": 0.0,
+            "u": 1.0,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a"]),
+        }
+        return [params1, params2]
+
+
+def exp_func(x, qpd):
+    # TODO: scipy.integrate will be removed in scipy 1.12.0
+    pdf = derivative(qpd.cdf, x, dx=1e-6)
+    return x * pdf
+
+
+def var_func(x, mu, qpd):
+    # TODO: scipy.integrate will be removed in scipy 1.12.0
+    pdf = derivative(qpd.cdf, x, dx=1e-6)
+    return ((x - mu) ** 2) * pdf
