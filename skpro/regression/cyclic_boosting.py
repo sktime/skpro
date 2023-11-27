@@ -20,6 +20,7 @@ from skpro.distributions.qpd import QPD_S
 # from cyclic_boosting import common_smoothers, binning
 from cyclic_boosting import (
     pipeline_CBMultiplicativeQuantileRegressor,
+    pipeline_CBAdditiveQuantileRegressor,
 )
 
 
@@ -42,6 +43,10 @@ class CyclicBoosting(BaseProbaRegressor):
     interaction : list[tuple], default=(), optional
         some combinations of explanatory variables, (interaction term)
         e.g. [(sample1, sample2), (sample1, sample3)]
+    alpha : float, default=0.2
+        lower quantile for QPD's parameter alpha
+    mode : str, default='multiplicative'
+        the type of quantile regressor. 'multiplicative' or 'additive'
 
     Attributes
     ----------
@@ -92,7 +97,13 @@ class CyclicBoosting(BaseProbaRegressor):
         "python_dependencies": "cyclic_boosting>=1.2.1",
     }
 
-    def __init__(self, feature_properties, interaction=tuple(), alpha=0.2):
+    def __init__(
+        self,
+        feature_properties,
+        interaction=tuple(),
+        alpha=0.2,
+        mode="multiplicative",
+    ):
         self.feature_properties = feature_properties
         self.interaction = interaction
         self.alpha = alpha
@@ -100,6 +111,7 @@ class CyclicBoosting(BaseProbaRegressor):
         self.quantile_values = []
         self.quantile_est = []
         self.qpd = None
+        self.mode = mode
 
         super().__init__()
 
@@ -117,9 +129,16 @@ class CyclicBoosting(BaseProbaRegressor):
         for i in interaction:
             features.append(i)
 
+        if self.mode == "multiplicative":
+            regressor = pipeline_CBMultiplicativeQuantileRegressor
+        elif self.mode == "additive":
+            regressor = pipeline_CBAdditiveQuantileRegressor
+        else:
+            raise ValueError("mode must be 'multiplicative' or 'additive'")
+
         for quantile in self.quantiles:
             self.quantile_est.append(
-                pipeline_CBMultiplicativeQuantileRegressor(
+                regressor(
                     quantile=quantile,
                     feature_properties=self.feature_properties,
                     feature_groups=features,
@@ -380,5 +399,11 @@ class CyclicBoosting(BaseProbaRegressor):
             "interaction": [("age", "sex")],
             "alpha": 0.3,
         }
+        param4 = {
+            "feature_properties": fp,
+            "interaction": [("age", "sex")],
+            "alpha": 0.3,
+            "mode": "additive",
+        }
 
-        return [param1, param2, param3]
+        return [param1, param2, param3, param4]
