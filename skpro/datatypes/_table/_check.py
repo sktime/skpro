@@ -235,9 +235,7 @@ def check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
         if _req("n_features", return_metadata):
             metadata["n_features"] = len(all_keys)
         if _req("feature_names", return_metadata):
-            metadata["feature_names"] = all_keys
-
-    if _req("feature_names", return_metadata):
+            metadata["feature_names"] = all_keys.tolist()
 
     return _ret(True, None, metadata, return_metadata)
 
