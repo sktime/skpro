@@ -98,6 +98,8 @@ def check_pdseries_table(obj, return_metadata=False, var_name="obj"):
         metadata["is_univariate"] = True
     if _req("n_instances", return_metadata):
         metadata["n_instances"] = len(index)
+    if _req("n_features", return_metadata):
+        metadata["n_features"] = 1
     if _req("feature_names", return_metadata):
         if not hasattr(obj, "name") or obj.name is None:
             metadata["feature_names"] = [0]
