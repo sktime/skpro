@@ -89,6 +89,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
             scitype="Proba",
             return_metadata=True,
             var_name="predict_quantiles return",
+            msg_return_dict="list",
         )  # type: ignore
         assert valid, msg
 
@@ -117,6 +118,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
             scitype="Proba",
             return_metadata=True,
             var_name="predict_interval return",
+            msg_return_dict="list",
         )  # type: ignore
         assert valid, msg
 

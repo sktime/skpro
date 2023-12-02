@@ -24,6 +24,7 @@ __all__ = [
 ]
 
 import numpy as np
+from warnings import warn
 
 from skpro.datatypes._common import _metadata_requested, _ret
 from skpro.datatypes._proba import check_dict_Proba

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.base import BaseEstimator
-from skpro.datatypes import check_is_mtype, convert
+from skpro.datatypes import check_is_error_msg, check_is_mtype, convert
 from skpro.utils.validation._dependencies import _check_estimator_deps
 
 # allowed input mtypes
@@ -575,12 +575,17 @@ class BaseProbaRegressor(BaseEstimator):
             req_metadata = []
         # input validity check for X
         valid, msg, metadata = check_is_mtype(
-            X, ALLOWED_MTYPES, "Table", return_metadata=req_metadata, var_name="X"
+            X,
+            ALLOWED_MTYPES,
+            "Table",
+            return_metadata=req_metadata,
+            var_name="X",
+            msg_return_dict="list",
         )
 
         # update with clearer message
         if not valid:
-            raise TypeError(msg)
+            check_is_error_msg(msg, var_name="X", raise_exception=True)
 
         # convert X to X_inner_mtype
         X_inner_mtype = self.get_tag("X_inner_mtype")
@@ -615,12 +620,17 @@ class BaseProbaRegressor(BaseEstimator):
     def _check_y(self, y):
         # input validity check for y
         valid, msg, metadata = check_is_mtype(
-            y, ALLOWED_MTYPES, "Table", return_metadata=["n_instances"], var_name="y"
+            y,
+            ALLOWED_MTYPES,
+            "Table",
+            return_metadata=["n_instances"],
+            var_name="y",
+            msg_return_dict="list",
         )
 
         # update with clearer message
         if not valid:
-            raise TypeError(msg)
+            check_is_error_msg(msg, var_name="y", raise_exception=True)
 
         # convert y to y_inner_mtype
         y_inner_mtype = self.get_tag("y_inner_mtype")
