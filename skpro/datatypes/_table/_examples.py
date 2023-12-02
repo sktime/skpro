@@ -72,6 +72,8 @@ example_dict_metadata[("Table", 0)] = {
     "is_empty": False,
     "has_nans": False,
     "n_instances": 4,
+    "n_features": 1,
+    "feature_names": ["a"],
 }
 
 ###
@@ -117,4 +119,6 @@ example_dict_metadata[("Table", 1)] = {
     "is_empty": False,
     "has_nans": False,
     "n_instances": 4,
+    "n_features": 2,
+    "feature_names": ["a", "b"],
 }
