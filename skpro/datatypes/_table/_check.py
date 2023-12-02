@@ -30,8 +30,8 @@ metadata: dict - metadata about obj if valid, otherwise None
         "is_empty": bool, True iff table has no variables or no instances
         "has_nans": bool, True iff the panel contains NaN values
         "n_instances": int, number of instances/rows in the table
-        "n_features": int, number of variables in series
-        "feature_names": list of int or object, names of variables in series
+        "n_features": int, number of variables in table
+        "feature_names": list of int or object, names of variables in tab;e
 """
 
 __author__ = ["fkiraly"]
