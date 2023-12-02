@@ -213,7 +213,7 @@ def test_check_metadata_inference(scitype, mtype, fixture_index):
     error if check itself raises an error
     """
     # retrieve fixture for checking
-    fixture, _, expected_metadata = get_examples(
+    fixture, lossy, expected_metadata = get_examples(
         mtype=mtype, as_scitype=scitype, return_metadata=True
     ).get(fixture_index)
 
@@ -225,6 +225,15 @@ def test_check_metadata_inference(scitype, mtype, fixture_index):
     # metadata keys to ignore
     # is_equal_index is not fully supported yet in inference
     EXCLUDE_KEYS = ["is_equal_index"]
+
+    # metadata keys to ignore if mtype is lossy
+    EXCLUDE_IF_LOSSY = [
+        "feature_names",  # lossy mtypes do not have feature names
+    ]
+
+    # if mtype is in the list, add mtype specific keys to exclude
+    if lossy:
+        EXCLUDE_KEYS += EXCLUDE_IF_LOSSY
 
     if metadata_provided:
         expected_metadata = expected_metadata.copy()
@@ -242,11 +251,16 @@ def test_check_metadata_inference(scitype, mtype, fixture_index):
         if "scitype" in metadata:
             del metadata["scitype"]
 
+        # remove keys that are not checked
+        for key in EXCLUDE_KEYS:
+            if key in metadata:
+                del metadata[key]
+
         # currently we do not check this field in metadata inference
 
         msg = (
             f"check_is_mtype returns wrong metadata on scitype {scitype}, "
-            f"mtype {mtype}, fixture {fixture_index}, when quering full metadata. "
+            f"mtype {mtype}, fixture {fixture_index}, when querying full metadata. "
             f"returned: {metadata}; expected: {expected_metadata}"
         )
 
@@ -258,7 +272,7 @@ def test_check_metadata_inference(scitype, mtype, fixture_index):
     if fixture is not None and check_is_defined and metadata_provided:
         for metadata_key in subset_keys:
             check_result = check_is_mtype(
-                fixture, mtype, scitype, return_metadata=[metadata_key]
+                fixture, mtype, scitype, return_metadata=[metadata_key],
             )
             metadata = check_result[2]
 
@@ -270,7 +284,7 @@ def test_check_metadata_inference(scitype, mtype, fixture_index):
 
             msg = (
                 f"check_is_mtype returns wrong metadata on scitype {scitype}, "
-                f"mtype {mtype}, fixture {fixture_index}, when quering "
+                f"mtype {mtype}, fixture {fixture_index}, when querying "
                 f"metadata for metadata key {metadata_key}. "
                 f"returned: {metadata[metadata_key]}; "
                 f"expected: {expected_metadata[metadata_key]}"
