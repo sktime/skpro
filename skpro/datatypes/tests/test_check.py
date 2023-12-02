@@ -272,7 +272,7 @@ def test_check_metadata_inference(scitype, mtype, fixture_index):
     if fixture is not None and check_is_defined and metadata_provided:
         for metadata_key in subset_keys:
             check_result = check_is_mtype(
-                fixture, mtype, scitype, return_metadata=[metadata_key],
+                fixture, mtype, scitype, return_metadata=[metadata_key]
             )
             metadata = check_result[2]
 
