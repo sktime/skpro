@@ -331,7 +331,10 @@ def test_check_negative(scitype, mtype):
             # check fixtures that exist against checks that exist
             if fixture_wrong_type is not None and check_is_defined:
                 assert not check_is_mtype(
-                    fixture_wrong_type, mtype, scitype, msg_return_dict="list",
+                    fixture_wrong_type,
+                    mtype,
+                    scitype,
+                    msg_return_dict="list",
                 ), (
                     f"check_is_mtype {mtype} returns True "
                     f"on {wrong_mtype} fixture {i}"
