@@ -62,7 +62,7 @@ class CyclicBoosting(BaseProbaRegressor):
     qpd: skpro.distributions.J_QPD_S
         Johnson Quantile-Parameterized Distributions instance
 
-    Examples
+    Example
     --------
     >>> from skpro.regression.cyclic_boosting import CyclicBoosting
     >>> from cyclic_boosting import flags
@@ -72,17 +72,17 @@ class CyclicBoosting(BaseProbaRegressor):
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
     >>>
     >>> fp = {
-    >>>     'age': flags.IS_CONTINUOUS,
-    >>>     'sex': flags.IS_CONTINUOUS,
-    >>>     'bmi': flags.IS_CONTINUOUS,
-    >>>     'bp':  flags.IS_CONTINUOUS,
-    >>>     's1':  flags.IS_CONTINUOUS,
-    >>>     's2':  flags.IS_CONTINUOUS,
-    >>>     's3':  flags.IS_CONTINUOUS,
-    >>>     's4':  flags.IS_CONTINUOUS,
-    >>>     's5':  flags.IS_CONTINUOUS,
-    >>>     's6':  flags.IS_CONTINUOUS,
-    >>> }
+    ...     'age': flags.IS_CONTINUOUS,
+    ...     'sex': flags.IS_CONTINUOUS,
+    ...     'bmi': flags.IS_CONTINUOUS,
+    ...     'bp':  flags.IS_CONTINUOUS,
+    ...     's1':  flags.IS_CONTINUOUS,
+    ...     's2':  flags.IS_CONTINUOUS,
+    ...     's3':  flags.IS_CONTINUOUS,
+    ...     's4':  flags.IS_CONTINUOUS,
+    ...     's5':  flags.IS_CONTINUOUS,
+    ...     's6':  flags.IS_CONTINUOUS,
+    ... }
     >>> reg_proba = CyclicBoosting(feature_properties=fp)
     >>> reg_proba.fit(X_train, y_train)
     >>> y_pred = reg_proba.predict_proba(X_test)
@@ -95,7 +95,7 @@ class CyclicBoosting(BaseProbaRegressor):
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
-        "python_dependencies": "cyclic_boosting>=1.2.1",
+        "python_dependencies": "cyclic_boosting>=1.2.4",
     }
 
     def __init__(

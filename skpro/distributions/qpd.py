@@ -25,7 +25,7 @@ class QPD_S(BaseDistribution):
     see https://repositories.lib.utexas.edu/bitstream/handle/2152
         /63037/HADLOCK-DISSERTATION-2017.pdf
     (Due to the Python keyword, the parameter lambda from
-    this reference is named kappa below.).
+    this reference is named kappa below.)
     A distribution is parameterized by a symmetric-percentile triplet (SPT).
 
     Parameters
@@ -48,12 +48,12 @@ class QPD_S(BaseDistribution):
     >>> from skpro.distributions.qpd import QPD_S
 
     >>> qpd = QPD_S(
-                    lower=0.2,
-                    qv_low=[[1, 2], [3, 4]],
-                    qv_median=[[3, 4], [5, 6]],
-                    qv_high=[[5, 6], [7, 8]],
-                    l=0
-              )
+    ...         lower=0.2,
+    ...         qv_low=[[1, 2], [3, 4]],
+    ...         qv_median=[[3, 4], [5, 6]],
+    ...         qv_high=[[5, 6], [7, 8]],
+    ...         l=0
+    ...       )
     """
 
     _tags = {
