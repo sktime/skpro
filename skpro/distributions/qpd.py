@@ -1,4 +1,4 @@
-"""J-QPD probability distribution."""
+"""Johnson Quantile-Parameterized Distributions."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = [
@@ -6,25 +6,26 @@ __author__ = [
     "setoguchi-naoki",
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
-import pandas as pd
-import numpy as np
 import warnings
-
-from scipy.stats import norm, logistic
-from scipy.misc import derivative
-from scipy.integrate import quad
-
 from typing import Optional
 
+import numpy as np
+import pandas as pd
+from cyclic_boosting.quantile_matching import J_QPD_B, J_QPD_S
+from scipy.integrate import quad
+from scipy.misc import derivative
+from scipy.stats import logistic, norm
+
 from skpro.distributions.base import BaseDistribution
-from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
 
 
 class QPD_S(BaseDistribution):
-    """Johnson Quantile-Parameterized Distributions with semi-bounded mode
+    """Johnson Quantile-Parameterized Distributions with semi-bounded mode.
 
-    see https://repositories.lib.utexas.edu/bitstream/handle/2152/63037/HADLOCK-DISSERTATION-2017.pdf
-    (Due to the Python keyword, the parameter lambda from this reference is named kappa below.).
+    see https://repositories.lib.utexas.edu/bitstream/handle/2152
+        /63037/HADLOCK-DISSERTATION-2017.pdf
+    (Due to the Python keyword, the parameter lambda from
+    this reference is named kappa below.).
     A distribution is parameterized by a symmetric-percentile triplet (SPT).
 
     Parameters
@@ -41,6 +42,18 @@ class QPD_S(BaseDistribution):
         lower bound of semi-bounded range (default is 0)
     version: str
         options are ``normal`` (default) or ``logistic``
+
+    Example
+    -------
+    >>> from skpro.distributions.qpd import QPD_S
+
+    >>> qpd = QPD_S(
+                    lower=0.2,
+                    qv_low=[[1, 2], [3, 4]],
+                    qv_median=[[3, 4], [5, 6]],
+                    qv_high=[[5, 6], [7, 8]],
+                    l=0
+              )
     """
 
     _tags = {
@@ -66,7 +79,7 @@ class QPD_S(BaseDistribution):
         self.qv_low = qv_low
         self.qv_median = qv_median
         self.qv_high = qv_high
-        self.l = l
+        self.l_ = l
         self.index = index
         self.columns = columns
 
@@ -98,27 +111,30 @@ class QPD_S(BaseDistribution):
         else:
             raise Exception("Invalid version.")
 
-        if (np.any(qv_low > qv_median)) or np.any((qv_high < qv_median)):
+        if (np.any(qv_low > qv_median)) or np.any(qv_high < qv_median):
             warnings.warn(
                 "The SPT values are not monotonically increasing, "
-                "each SPT will be replaced by mean value"
+                "each SPT will be replaced by mean value",
+                stacklevel=2,
             )
             idx = np.where((qv_low > qv_median), True, False) + np.where(
                 (qv_high < qv_median), True, False
             )
-            print(f"replaced index by mean {np.argwhere(idx > 0).tolist()}")
+            warnings.warn(
+                f"replaced index by mean {np.argwhere(idx > 0).tolist()}", stacklevel=2
+            )
             qv_low[idx] = np.nanmean(qv_low)
             qv_median[idx] = np.nanmean(qv_median)
             qv_high[idx] = np.nanmean(qv_high)
 
         iter = np.nditer(qv_low, flags=["c_index"])
-        for x in iter:
+        for _i in iter:
             jqpd = J_QPD_S(
                 alpha=alpha,
                 qv_low=qv_low[iter.index],
                 qv_median=qv_median[iter.index],
                 qv_high=qv_high[iter.index],
-                l=l,
+                l=self.l_,
                 version=version,
             )
             self.qpd.append(jqpd)
@@ -127,29 +143,45 @@ class QPD_S(BaseDistribution):
         super().__init__(index=index, columns=columns)
 
     def mean(self, lower=0.0, upper=np.inf):
+        """Return expected value of the distribution.
+
+        Returns
+        -------
+        pd.DataFrame with same rows, columns as `self`
+        expected value of distribution (entry-wise)
+        """
         loc = []
         for idx in self.index:
             qpd = self.qpd.loc[idx, :].values[0]
-            # NOTE: integral interval should be checked, -inf to inf will be NaN
             l, _ = quad(exp_func, args=(qpd), a=lower, b=upper)
             loc.append(l)
         loc_arr = np.array(loc)
         return pd.DataFrame(loc_arr, index=self.index, columns=self.columns)
 
     def var(self, lower=0.0, upper=np.inf):
+        """Return element/entry-wise variance of the distribution.
+
+        Returns
+        -------
+        pd.DataFrame with same rows, columns as `self`
+        variance of distribution (entry-wise)
+        """
         mean = self.mean()
         var = []
         for idx in self.index:
             mu = mean.loc[idx, :].to_numpy()
             qpd = self.qpd.loc[idx, :].values[0]
-            # NOTE: integral interval should be checked, -inf to inf will be NaN
             l, _ = quad(var_func, args=(mu, qpd), a=lower, b=upper)
             var.append(l)
         var_arr = np.array(var)
         return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
 
     def pdf(self, x: pd.DataFrame):
-        # cdf -> pdf calculation because j-qpd's pdf calculation is bit complex
+        """Probability density function.
+
+        this fucntion transform cdf to pdf
+        because j-qpd's pdf calculation is bit complex
+        """
         pdf = []
         for idx in x.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -160,6 +192,7 @@ class QPD_S(BaseDistribution):
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
     def ppf(self, p: pd.DataFrame):
+        """Quantile function = percent point function = inverse cdf."""
         ppf = []
         for idx in p.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -169,6 +202,7 @@ class QPD_S(BaseDistribution):
         return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
 
     def cdf(self, x: pd.DataFrame):
+        """Cumulative distribution function."""
         cdf = []
         for idx in x.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -200,10 +234,12 @@ class QPD_S(BaseDistribution):
 
 
 class QPD_B(BaseDistribution):
-    """Johnson Quantile-Parameterized Distributions with bounded mode
+    """Johnson Quantile-Parameterized Distributions with bounded mode.
 
-    see https://repositories.lib.utexas.edu/bitstream/handle/2152/63037/HADLOCK-DISSERTATION-2017.pdf
-    (Due to the Python keyword, the parameter lambda from this reference is named kappa below).
+    see https://repositories.lib.utexas.edu/bitstream/handle/2152
+        /63037/HADLOCK-DISSERTATION-2017.pdf
+    (Due to the Python keyword, the parameter lambda from
+    this reference is named kappa below).
     A distribution is parameterized by a symmetric-percentile triplet (SPT).
 
     Parameters
@@ -248,7 +284,7 @@ class QPD_B(BaseDistribution):
         self.qv_low = qv_low
         self.qv_median = qv_median
         self.qv_high = qv_high
-        self.l = l
+        self.l_ = l
         self.u = u
         self.index = index
         self.columns = columns
@@ -281,28 +317,31 @@ class QPD_B(BaseDistribution):
         else:
             raise Exception("Invalid version.")
 
-        if (np.any(qv_low > qv_median)) or np.any((qv_high < qv_median)):
+        if (np.any(qv_low > qv_median)) or np.any(qv_high < qv_median):
             warnings.warn(
                 "The SPT values are not monotonically increasing, "
-                "each SPT will be replaced by mean value"
+                "each SPT will be replaced by mean value",
+                stacklevel=2,
             )
             idx = np.where((qv_low > qv_median), True, False) + np.where(
                 (qv_high < qv_median), True, False
             )
-            print(f"replaced index by mean {np.argwhere(idx > 0).tolist()}")
+            warnings.warn(
+                f"replaced index by mean {np.argwhere(idx > 0).tolist()}", stacklevel=2
+            )
             qv_low[idx] = np.nanmean(qv_low)
             qv_median[idx] = np.nanmean(qv_median)
             qv_high[idx] = np.nanmean(qv_high)
 
         iter = np.nditer(qv_low, flags=["c_index"])
-        for x in iter:
+        for _i in iter:
             jqpd = J_QPD_B(
                 alpha=alpha,
                 qv_low=qv_low[iter.index],
                 qv_median=qv_median[iter.index],
                 qv_high=qv_high[iter.index],
-                l=l,
-                u=u,
+                l=self.l_,
+                u=self.u,
                 version=version,
             )
             self.qpd.append(jqpd)
@@ -311,6 +350,13 @@ class QPD_B(BaseDistribution):
         super().__init__(index=index, columns=columns)
 
     def mean(self, lower=0.0, upper=np.inf):
+        """Return expected value of the distribution.
+
+        Returns
+        -------
+        pd.DataFrame with same rows, columns as `self`
+        expected value of distribution (entry-wise)
+        """
         loc = []
         for idx in self.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -320,6 +366,13 @@ class QPD_B(BaseDistribution):
         return pd.DataFrame(loc_arr, index=self.index, columns=self.columns)
 
     def var(self, lower=0.0, upper=np.inf):
+        """Return element/entry-wise variance of the distribution.
+
+        Returns
+        -------
+        pd.DataFrame with same rows, columns as `self`
+        variance of distribution (entry-wise)
+        """
         mean = self.mean()
         var = []
         for idx in self.index:
@@ -331,7 +384,11 @@ class QPD_B(BaseDistribution):
         return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
 
     def pdf(self, x: pd.DataFrame):
-        # cdf -> pdf calculation because j-qpd's pdf calculation is bit complex
+        """Probability density function.
+
+        this fucntion transform cdf to pdf
+        because j-qpd's pdf calculation is bit complex
+        """
         pdf = []
         for idx in x.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -342,6 +399,7 @@ class QPD_B(BaseDistribution):
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
     def ppf(self, p: pd.DataFrame):
+        """Quantile function = percent point function = inverse cdf."""
         ppf = []
         for idx in p.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -351,6 +409,7 @@ class QPD_B(BaseDistribution):
         return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
 
     def cdf(self, x: pd.DataFrame):
+        """Cumulative distribution function."""
         cdf = []
         for idx in x.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -386,12 +445,14 @@ class QPD_B(BaseDistribution):
 
 
 def exp_func(x, qpd):
+    """Return Expectation."""
     # TODO: scipy.integrate will be removed in scipy 1.12.0
     pdf = derivative(qpd.cdf, x, dx=1e-6)
     return x * pdf
 
 
 def var_func(x, mu, qpd):
+    """Return Variance."""
     # TODO: scipy.integrate will be removed in scipy 1.12.0
     pdf = derivative(qpd.cdf, x, dx=1e-6)
     return ((x - mu) ** 2) * pdf
