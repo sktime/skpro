@@ -1,4 +1,5 @@
 """Cyclic boosting regressors.
+
 This is a interface for Cyclic boosting, it contains efficient,
 off-the-shelf, general-purpose supervised machine learning methods
 for both regression and classification tasks.
@@ -12,19 +13,19 @@ __author__ = [
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
 import warnings
+
 import numpy as np
 import pandas as pd
-from skpro.regression.base import BaseProbaRegressor
-from skpro.distributions.qpd import QPD_S
 
-# from cyclic_boosting import common_smoothers, binning
 from cyclic_boosting import (
-    pipeline_CBMultiplicativeQuantileRegressor,
     pipeline_CBAdditiveQuantileRegressor,
+    pipeline_CBMultiplicativeQuantileRegressor,
 )
 
+from skpro.distributions.qpd import QPD_S
+from skpro.regression.base import BaseProbaRegressor
 
-# todo: change class name and write docstring
+
 class CyclicBoosting(BaseProbaRegressor):
     """Cyclic boosting regressor.
 
@@ -163,7 +164,6 @@ class CyclicBoosting(BaseProbaRegressor):
         -------
         self : reference to self
         """
-
         self._y_cols = y.columns
         y = y.to_numpy().flatten()
 
@@ -192,7 +192,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-
         index = X.index
         y_cols = self._y_cols
 
@@ -222,7 +221,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-
         index = X.index
         y_cols = self._y_cols
 
@@ -271,7 +269,6 @@ class CyclicBoosting(BaseProbaRegressor):
             Upper/lower interval end are equivalent to
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
-
         index = X.index
         y_cols = self._y_cols
         columns = pd.MultiIndex.from_product(
@@ -311,7 +308,6 @@ class CyclicBoosting(BaseProbaRegressor):
             Entries are quantile predictions, for var in col index,
                 at quantile probability in second col index, for the row index.
         """
-
         is_given_proba = False
         warning = (
             "{} percentile doesn't trained, return QPD's quantile value, "
@@ -322,11 +318,11 @@ class CyclicBoosting(BaseProbaRegressor):
         if isinstance(alpha, list):
             for a in alpha:
                 if not (a in self.quantiles):
-                    warnings.warn(warning.format(a))
+                    warnings.warn(warning.format(a), stacklevel=2)
                     is_given_proba = True
         elif isinstance(alpha, float):
             if not (alpha in self.quantiles):
-                warnings.warn(warning.format(alpha))
+                warnings.warn(warning.format(alpha), stacklevel=2)
                 is_given_proba = True
         else:
             raise ValueError("alpha must be float or list of floats")
