@@ -64,7 +64,7 @@ class QPD_S(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm"],
+        "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "cdf", "ppf"],
         "distr:measuretype": "continuous",
     }
@@ -271,10 +271,23 @@ class QPD_B(BaseDistribution):
     dist_shape: str
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
+
+    Example
+    -------
+    >>> from skpro.distributions.qpd import QPD_B
+
+    >>> qpd = QPD_S(
+    ...         lower=0.2,
+    ...         qv_low=[[1, 2], [3, 4]],
+    ...         qv_median=[[3, 4], [5, 6]],
+    ...         qv_high=[[5, 6], [7, 8]],
+    ...         lower=0,
+    ...         upper=10
+    ...       )
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm"],
+        "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "cdf", "ppf"],
         "distr:measuretype": "continuous",
     }
@@ -488,10 +501,21 @@ class QPD_U(BaseDistribution):
     dist_shape: str
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
+
+    Example
+    -------
+    >>> from skpro.distributions.qpd import QPD_U
+
+    >>> qpd = QPD_S(
+    ...         lower=0.2,
+    ...         qv_low=[[1, 2], [3, 4]],
+    ...         qv_median=[[3, 4], [5, 6]],
+    ...         qv_high=[[5, 6], [7, 8]],
+    ...       )
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm"],
+        "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "cdf", "ppf"],
         "distr:measuretype": "continuous",
     }
