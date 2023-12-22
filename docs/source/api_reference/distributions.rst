@@ -35,6 +35,7 @@ Parametric distributions
     Laplace
     Normal
     TDistribution
+    QPD_U
     QPD_S
     QPD_B
 
