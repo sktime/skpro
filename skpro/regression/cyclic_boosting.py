@@ -96,13 +96,12 @@ class CyclicBoosting(BaseProbaRegressor):
     """
 
     _tags = {
-        "object_type": "regressor",
         "estimator_type": "regressor_proba",
         "capability:multioutput": False,
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
-        "python_dependencies": "cyclic_boosting>=1.2.4",
+        "python_dependencies": "cyclic_boosting>=1.2.5",
     }
 
     def __init__(
