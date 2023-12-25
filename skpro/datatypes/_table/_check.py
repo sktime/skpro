@@ -30,6 +30,8 @@ metadata: dict - metadata about obj if valid, otherwise None
         "is_empty": bool, True iff table has no variables or no instances
         "has_nans": bool, True iff the panel contains NaN values
         "n_instances": int, number of instances/rows in the table
+        "n_features": int, number of variables in table
+        "feature_names": list of int or object, names of variables in tab;e
 """
 
 __author__ = ["fkiraly"]
@@ -65,6 +67,10 @@ def check_pddataframe_table(obj, return_metadata=False, var_name="obj"):
         metadata["n_instances"] = len(index)
     if _req("has_nans", return_metadata):
         metadata["has_nans"] = obj.isna().values.any()
+    if _req("n_features", return_metadata):
+        metadata["n_features"] = len(obj.columns)
+    if _req("feature_names", return_metadata):
+        metadata["feature_names"] = obj.columns.to_list()
 
     # check that no dtype is object
     if "object" in obj.dtypes.values:
@@ -92,6 +98,13 @@ def check_pdseries_table(obj, return_metadata=False, var_name="obj"):
         metadata["is_univariate"] = True
     if _req("n_instances", return_metadata):
         metadata["n_instances"] = len(index)
+    if _req("n_features", return_metadata):
+        metadata["n_features"] = 1
+    if _req("feature_names", return_metadata):
+        if not hasattr(obj, "name") or obj.name is None:
+            metadata["feature_names"] = [0]
+        else:
+            metadata["feature_names"] = [obj.name]
 
     # check that dtype is not object
     if "object" == obj.dtypes:
@@ -131,6 +144,11 @@ def check_numpy1d_table(obj, return_metadata=False, var_name="obj"):
     # check whether there any nans; compute only if requested
     if _req("has_nans", return_metadata):
         metadata["has_nans"] = pd.isnull(obj).any()
+    # 1D numpy arrays are considered univariate, with one feature named 0 (integer)
+    if _req("n_features", return_metadata):
+        metadata["n_features"] = 1
+    if _req("feature_names", return_metadata):
+        metadata["feature_names"] = [0]
 
     return _ret(True, None, metadata, return_metadata)
 
@@ -159,6 +177,11 @@ def check_numpy2d_table(obj, return_metadata=False, var_name="obj"):
     # check whether there any nans; compute only if requested
     if _req("has_nans", return_metadata):
         metadata["has_nans"] = pd.isnull(obj).any()
+    # 1D numpy arrays are considered univariate, with integer feature names
+    if _req("n_features", return_metadata):
+        metadata["n_features"] = obj.shape[1]
+    if _req("feature_names", return_metadata):
+        metadata["feature_names"] = list(range(obj.shape[1]))
 
     return _ret(True, None, metadata, return_metadata)
 
@@ -207,6 +230,14 @@ def check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
         metadata["is_empty"] = len(obj) < 1 or np.all([len(x) < 1 for x in obj])
     if _req("n_instances", return_metadata):
         metadata["n_instances"] = len(obj)
+
+    # this can be expensive, so compute only if requested
+    if _req("n_features", return_metadata) or _req("feature_names", return_metadata):
+        all_keys = np.unique([key for d in obj for key in d.keys()])
+        if _req("n_features", return_metadata):
+            metadata["n_features"] = len(all_keys)
+        if _req("feature_names", return_metadata):
+            metadata["feature_names"] = all_keys.tolist()
 
     return _ret(True, None, metadata, return_metadata)
 
