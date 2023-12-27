@@ -455,8 +455,8 @@ class QPD_B(BaseDistribution):
             "qv_low": 0.2,
             "qv_median": 0.5,
             "qv_high": 0.8,
-            "l": 0.0,
-            "u": 1.0,
+            "lower": 0.0,
+            "upper": 1.0,
         }
         params2 = {
             "alpha": 0.2,
@@ -464,8 +464,8 @@ class QPD_B(BaseDistribution):
             "qv_low": [0.2, 0.2, 0.2],
             "qv_median": [0.5, 0.5, 0.5],
             "qv_high": [0.8, 0.8, 0.8],
-            "l": 0.0,
-            "u": 1.0,
+            "lower": 0.0,
+            "upper": 1.0,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a"]),
         }
