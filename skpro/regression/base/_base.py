@@ -29,14 +29,12 @@ class BaseProbaRegressor(BaseEstimator):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, index=None, columns=None):
-        self.index = index
-        self.columns = columns
-
+    def __init__(self):
         super().__init__()
         _check_estimator_deps(self)
 
         self._X_converter_store = {}
+        self._y_converter_store = {}
 
     def __rmul__(self, other):
         """Magic * method, return (left) concatenated Pipeline.
@@ -82,7 +80,11 @@ class BaseProbaRegressor(BaseEstimator):
         -------
         self : reference to self
         """
-        X, y = self._check_X_y(X, y)
+        X, y, X_metadata, y_metadata = self._check_X_y(X, y, return_metadata=True)
+
+        # remember metadata
+        self._X_metadata = X_metadata
+        self._y_metadata = y_metadata
 
         # set fitted flag to True
         self._is_fitted = True
@@ -130,6 +132,16 @@ class BaseProbaRegressor(BaseEstimator):
         X = self._check_X(X)
 
         y_pred = self._predict(X)
+
+        # output conversion - back to mtype seen in fit
+        y_pred = convert(
+            y_pred,
+            from_type=self.get_tag("y_inner_mtype"),
+            to_type=self._y_metadata["mtype"],
+            as_scitype="Table",
+            store=self._X_converter_store,
+        )
+
         return y_pred
 
     def _predict(self, X):
@@ -186,16 +198,6 @@ class BaseProbaRegressor(BaseEstimator):
         X = self._check_X(X)
 
         y_pred = self._predict_proba(X)
-
-        # output conversion
-        y_pred = convert(
-            y_pred,
-            from_type=self.get_tag("X_inner_mtype"),
-            to_type=self._X_input_mtype,
-            as_scitype="Table",
-            store=self._X_converter_store,
-        )
-
         return y_pred
 
     def _predict_proba(self, X):
@@ -543,7 +545,7 @@ class BaseProbaRegressor(BaseEstimator):
 
         return pred_var
 
-    def _check_X_y(self, X, y):
+    def _check_X_y(self, X, y, return_metadata=False):
         X_inner, X_metadata = self._check_X(X, return_metadata=True)
         y_inner, y_metadata = self._check_y(y)
 
@@ -566,7 +568,10 @@ class BaseProbaRegressor(BaseEstimator):
             if isinstance(y_inner, (pd.DataFrame, pd.Series)):
                 y_inner.index = X_inner.index
 
-        return X_inner, y_inner
+        if return_metadata:
+            return X_inner, y_inner, X_metadata, y_metadata
+        else:
+            return X_inner, y_inner
 
     def _check_X(self, X, return_metadata=False):
         if return_metadata:
@@ -609,9 +614,6 @@ class BaseProbaRegressor(BaseEstimator):
         else:
             self._X_columns = X.columns
 
-        # remember input mtype
-        self._X_input_mtype = metadata["mtype"]
-
         if return_metadata:
             return X, metadata
         else:
@@ -639,6 +641,7 @@ class BaseProbaRegressor(BaseEstimator):
             from_type=metadata["mtype"],
             to_type=y_inner_mtype,
             as_scitype="Table",
+            store=self._y_converter_store,
         )
 
         return y, metadata
