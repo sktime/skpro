@@ -328,7 +328,7 @@ class Pipeline(_Pipeline):
 
         super().__init__()
 
-        tags_to_clone = ["capability:multioutput"]
+        tags_to_clone = ["capability:multioutput", "capability:survival"]
         self.clone_tags(self.regressor_, tags_to_clone)
 
     @property
