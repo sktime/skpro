@@ -70,7 +70,7 @@ Work in progress.
 Proportional hazards models
 ---------------------------
 
-.. currentmodule:: skpro.regression.survival.coxph
+.. currentmodule:: skpro.survival.coxph
 
 .. autosummary::
     :toctree: auto_generated/
