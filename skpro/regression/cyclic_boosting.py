@@ -36,7 +36,7 @@ class CyclicBoosting(BaseProbaRegressor):
         e.g. {sample1: IS_CONTINUOUS | IS_LINEAR, sample2: IS_ORDERED}
         for basic options, see
         https://cyclic-boosting.readthedocs.io/en/latest/tutorial.html#set-feature-properties
-    interaction : list[tuple], default=(), optional
+    interaction : list[tuple], default=None, optional
         some combinations of explanatory variables, (interaction term)
         e.g. [(sample1, sample2), (sample1, sample3)]
     alpha : float, default=0.2
@@ -103,7 +103,7 @@ class CyclicBoosting(BaseProbaRegressor):
     def __init__(
         self,
         feature_properties,
-        interaction=tuple(),
+        interaction=None,
         alpha=0.2,
         mode="multiplicative",
         bound="U",
@@ -127,6 +127,8 @@ class CyclicBoosting(BaseProbaRegressor):
         # check parameters
         if not isinstance(feature_properties, dict):
             raise ValueError("feature_properties needs to be dict")
+        if interaction is None:
+            interaction = [()]
         for i in interaction:
             if not isinstance(i, tuple):
                 raise ValueError("interaction needs to be tuple")
