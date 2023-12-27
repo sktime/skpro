@@ -93,7 +93,7 @@ class BaseProbaRegressor(BaseEstimator):
         """
         capa_surv = self.get_tag("capability:survival")
 
-        check_ret = self._check_X_y(X, y, return_metadata=True)
+        check_ret = self._check_X_y(X, y, C, return_metadata=True)
 
         # remember metadata
         self._X_metadata = check_ret["X_metadata"]
