@@ -4,8 +4,6 @@ __author__ = ["fkiraly"]
 
 from inspect import isclass
 
-from sktime.registry._base_classes import BASE_CLASS_REGISTER
-
 
 def scitype(obj, force_single_scitype=True, coerce_to_list=False):
     """Determine scitype string of obj.
@@ -41,29 +39,19 @@ def scitype(obj, force_single_scitype=True, coerce_to_list=False):
             tag_type = obj.get_tag("object_type", None, raise_error=False)
         if tag_type is not None:
             if coerce_to_list and not isinstance(tag_type, list):
-                return [tag_type]
+                scitypes = [tag_type]
             else:
-                return tag_type
-
-    # if the tag is not present, determine scitype from legacy base class logic
-    if isclass(obj):
-        scitypes = [sci[0] for sci in BASE_CLASS_REGISTER if issubclass(obj, sci[1])]
+                scitypes = tag_type
     else:
-        scitypes = [sci[0] for sci in BASE_CLASS_REGISTER if isinstance(obj, sci[1])]
+        scitypes = ["object"]
 
-    if len(scitypes) == 0:
+    if isinstance(scitypes, list) and len(scitypes) == 0:
         raise TypeError("Error, no scitype could be determined for obj")
 
-    if len(scitypes) > 1 and "object" in scitypes:
-        scitypes = list(set(scitypes).difference(["object"]))
-
-    if len(scitypes) > 1 and "estimator" in scitypes:
-        scitypes = list(set(scitypes).difference(["estimator"]))
-
-    if force_single_scitype:
+    if isinstance(scitypes, list) and force_single_scitype:
         scitypes = [scitypes[0]]
 
-    if len(scitypes) == 1 and not coerce_to_list:
+    if isinstance(scitypes, list) and len(scitypes) == 1 and not coerce_to_list:
         return scitypes[0]
 
     return scitypes
