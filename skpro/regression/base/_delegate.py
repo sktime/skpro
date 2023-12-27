@@ -38,7 +38,7 @@ class _DelegatedProbaRegressor(BaseProbaRegressor):
     def _get_delegate(self):
         return getattr(self, self._delegate_name)
 
-    def _fit(self, X, y):
+    def _fit(self, X, y, C=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -48,15 +48,23 @@ class _DelegatedProbaRegressor(BaseProbaRegressor):
         ----------
         X : pandas DataFrame
             feature instances to fit regressor to
-        y : pandas DataFrame, must be same length as X
+        y : pd.DataFrame, must be same length as X
             labels to fit regressor to
+        C : pd.DataFrame, optional (default=None)
+            censoring information for survival analysis,
+            should have same column name as y, same length as X and y
+            should have entries 0 and 1 (float or int)
+            0 = uncensored, 1 = (right) censored
+            if None, all observations are assumed to be uncensored
+            Can be passed to any probabilistic regressor,
+            but is ignored if capability:survival tag is False.
 
         Returns
         -------
         self : reference to self
         """
         estimator = self._get_delegate()
-        estimator.fit(X=X, y=y)
+        estimator.fit(X=X, y=y, C=C)
         return self
 
     def _predict(self, X):
