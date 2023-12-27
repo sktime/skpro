@@ -45,7 +45,7 @@ class CoxPH(BaseProbaRegressor):
         If float, regularization parameter is the same for all variables.
         If iterable, must be of same length as number of variables (columns) in X.
         Corresponds to statsmodels PHReg.fit_regularized alpha parameter.
-        
+
     Attributes
     ----------
     results_: statsmodels PHRegResults instance
