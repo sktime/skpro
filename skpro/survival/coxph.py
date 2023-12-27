@@ -28,7 +28,6 @@ class CoxPH(BaseProbaRegressor):
         Corresponds to statsmodels PHReg.fit method.
         "elastic_net": elastic net regularization.
         Corresponds to statsmodels PHReg.fit_regularized method.
-
     ties : str, optional (default="breslow"), one of {"breslow", "efron"}
         Method used to deal with ties in the data.
         "breslow": Breslow's method.
@@ -55,11 +54,8 @@ class CoxPH(BaseProbaRegressor):
         
     Attributes
     ----------
-    estimator_: EnsembleRegressor
-        fitted mapie ensemble regressor
-
-    conformity_scores_: ArrayLike of shape (n_samples_train,)
-        Conformity scores between ``y_train`` and ``y_pred``.
+    results_: statsmodels PHRegResults instance
+        results of the fitted model
 
     Example
     -------
@@ -127,7 +123,7 @@ class CoxPH(BaseProbaRegressor):
         from statsmodels.duration.hazard_regression import PHReg
 
         endog = y.to_numpy().flatten()
-        exog = X.to_numpy()
+        exog = X
         status = C.to_numpy().flatten() if C is not None else None
 
         params = {
@@ -139,9 +135,9 @@ class CoxPH(BaseProbaRegressor):
 
         # fit model
         if self.method == "lpl":
-            self._model = model.fit()
+            self.results_ = model.fit()
         else:
-            self._model = model.fit_regularized(method=self.method, alpha=self.alpha)
+            self.results_ = model.fit_regularized(method=self.method, alpha=self.alpha)
 
         return self
 
@@ -164,21 +160,21 @@ class CoxPH(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        from skpro.distributions.adapters import
+        from skpro.distributions.adapters.scipy import empirical_from_discrete
 
         # boilerplate code to create correct output index
         index = X.index
         y_cols = self._y_cols  # columns from y in fit, not automatically stored
         columns = y_cols
 
-        # values = logic to produce prediction values
-        # replace this import by the distribution you are using
-        # the distribution type can be conditional, e.g., data or parameter dependent
-        from skpro.distributions import SomeDistribution
+        # get results from statsmodels
+        results = self.results_
+        params = results.params
 
-        values = None  # fill in values
-        y_pred = SomeDistribution(values, index=index, columns=columns)
-
+        # produce predictions from statsmodels
+        dist = self._model.get_distribution(params=params, exog=X)
+        # convert results to skpro BaseDistribution child instance
+        y_pred = empirical_from_discrete(dist=dist, index=index, columns=columns)
         return y_pred
 
     @classmethod
@@ -199,18 +195,12 @@ class CoxPH(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from sklearn.ensemble import RandomForestRegressor
-
         params1 = {}
 
         params2 = {
-            "estimator": RandomForestRegressor(),
-            "method": "base",
-            "cv": 2,
-            "test_size": 0.2,
-            "agg_function": "median",
-            "conformity_score": None,
-            "random_state": 42,
+            "method": "elastic_net",
+            "alpha": 0.1,
+            "ties": "efron",
         }
 
         return [params1, params2]
