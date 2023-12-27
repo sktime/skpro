@@ -40,7 +40,7 @@ class ClassName(BaseProbaRegressor):
     # todo: fill out estimator tags here
     #  tags are inherited from parent class if they are not set
     # tags inherited from base are "safe defaults" which can usually be left as-is
-    _tags = {}
+    _tags = {"capability:survival": True}
 
     # todo: fill init
     # params should be written to self and never changed
