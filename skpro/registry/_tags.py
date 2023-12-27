@@ -113,6 +113,12 @@ OBJECT_TAG_REGISTER = [
         ("list", "str"),
         "which machine type(s) is the internal _fit/_predict able to deal with?",
     ),
+    (
+        "C_inner_mtype",
+        "regressor_proba",
+        ("list", "str"),
+        "which machine type(s) is the internal _fit/_predict able to deal with?",
+    ),
     # ----------------
     # BaseDistribution
     # ----------------
