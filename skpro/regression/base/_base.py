@@ -185,16 +185,6 @@ class BaseProbaRegressor(BaseEstimator):
         X = self._check_X(X)
 
         y_pred = self._predict_proba(X)
-
-        # output conversion
-        y_pred = convert(
-            y_pred,
-            from_type=self.get_tag("X_inner_mtype"),
-            to_type=self._X_input_mtype,
-            as_scitype="Table",
-            store=self._y_converter_store,
-        )
-
         return y_pred
 
     def _predict_proba(self, X):
