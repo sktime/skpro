@@ -94,7 +94,7 @@ class QPD_S(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-        from cyclic_boosting.quantile_matching import J_QPD_S
+        from cyclic_boosting.quantile_matching import J_QPD_extended_S
 
         for qv in [alpha, qv_low, qv_median, qv_high]:
             if isinstance(qv, float):
@@ -321,7 +321,7 @@ class QPD_B(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
         
-        from cyclic_boosting.quantile_matching import J_QPD_B
+        from cyclic_boosting.quantile_matching import J_QPD_extended_B
 
         for qv in [alpha, qv_low, qv_median, qv_high]:
             if isinstance(qv, float):
@@ -545,6 +545,10 @@ class QPD_U(BaseDistribution):
         self.index = index
         self.columns = columns
 
+        super().__init__(index=index, columns=columns)
+
+        from cyclic_boosting.quantile_matching import J_QPD_extended_U
+
         for qv in [alpha, qv_low, qv_median, qv_high]:
             if isinstance(qv, float):
                 qv = np.array([qv])
@@ -601,8 +605,6 @@ class QPD_U(BaseDistribution):
             )
             self.qpd.append(jqpd)
         self.qpd = pd.DataFrame(self.qpd, index=index)
-
-        super().__init__(index=index, columns=columns)
 
     def mean(self, lower=0.0, upper=np.inf):
         """Return expected value of the distribution.
