@@ -712,7 +712,7 @@ class BaseProbaRegressor(BaseEstimator):
         # convert y to y_inner_mtype
         C_inner_mtype = self.get_tag("C_inner_mtype")
         C_inner = convert(
-            obj=y,
+            obj=C,
             from_type=metadata["mtype"],
             to_type=C_inner_mtype,
             as_scitype="Table",
