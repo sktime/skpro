@@ -112,7 +112,9 @@ def _get_Xy_traintest():
 
 X_train, X_test, y_train, y_test = _get_Xy_traintest()
 C_train = pd.DataFrame(
-    np.choice([0, 1], size=len(y_train)), index=y_train.index, columns=y_train.columns
+    np.random.choice([0, 1], size=len(y_train)),
+    index=y_train.index,
+    columns=y_train.columns,
 )
 
 
