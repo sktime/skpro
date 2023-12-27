@@ -62,6 +62,7 @@ class QPD_S(BaseDistribution):
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "python_dependencies": "cyclic_boosting>=1.2.5",
     }
 
     def __init__(
@@ -287,6 +288,7 @@ class QPD_B(BaseDistribution):
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "python_dependencies": "cyclic_boosting>=1.2.5",
     }
 
     def __init__(
@@ -517,6 +519,7 @@ class QPD_U(BaseDistribution):
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "python_dependencies": "cyclic_boosting>=1.2.5",
     }
 
     def __init__(
