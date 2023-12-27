@@ -9,6 +9,9 @@ __all__ = ["scenarios_regressor_proba"]
 
 from inspect import isclass
 
+import numpy as np
+import pandas as pd
+
 from skpro.base import BaseObject
 from skpro.tests.scenarios.scenarios import TestScenario
 
@@ -108,6 +111,9 @@ def _get_Xy_traintest():
 
 
 X_train, X_test, y_train, y_test = _get_Xy_traintest()
+C_train = pd.DataFrame(
+    np.choice([0, 1], size=len(y_train)), index=y_train.index, columns=y_train.columns
+)
 
 
 class ProbaRegressorBasic(_ProbaRegressorTestScenario):
@@ -128,9 +134,22 @@ class ProbaRegressorBasic(_ProbaRegressorTestScenario):
     default_arg_sequence = ["fit", "predict", "predict"]
 
 
-scenarios_regressor_proba = [
-    ProbaRegressorBasic,
-]
+class ProbaRegressorSurvival(_ProbaRegressorTestScenario):
+    """Fit/predict with survival data, including a censoring dataset."""
+
+    _tags = {
+        "X_univariate": False,
+        "X_missing": False,
+        "y_univariate": True,
+        "is_enabled": True,
+    }
+
+    args = {
+        "fit": {"X": X_train, "y": y_train, "C": C_train},
+        "predict": {"X": X_test},
+    }
+    default_method_sequence = ["fit", "predict", "predict_proba"]
+    default_arg_sequence = ["fit", "predict", "predict"]
 
 
 # as a function to ensure we can move to fixture-like structure later
@@ -185,4 +204,5 @@ class ProbaRegressorXcolMixIxYnp(_ProbaRegressorTestScenario):
 scenarios_regressor_proba = [
     ProbaRegressorBasic,
     ProbaRegressorXcolMixIxYnp,
+    ProbaRegressorSurvival,
 ]
