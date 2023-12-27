@@ -11,11 +11,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-from cyclic_boosting.quantile_matching import (
-    J_QPD_extended_S,
-    J_QPD_extended_B,
-    J_QPD_extended_U,
-)
+
 from scipy.integrate import quad
 from scipy.misc import derivative
 from scipy.stats import logistic, norm

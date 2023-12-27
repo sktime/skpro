@@ -68,11 +68,11 @@ class CyclicBoosting(BaseProbaRegressor):
     Example
     --------
     >>> from skpro.regression.cyclic_boosting import CyclicBoosting
-    >>> from cyclic_boosting import flags
-    >>> from sklearn.datasets import load_diabetes
-    >>> from sklearn.model_selection import train_test_split
-    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
-    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> from cyclic_boosting import flags  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
     >>>
     >>> fp = {
     ...     'age': flags.IS_CONTINUOUS,
@@ -85,10 +85,10 @@ class CyclicBoosting(BaseProbaRegressor):
     ...     's4':  flags.IS_CONTINUOUS,
     ...     's5':  flags.IS_CONTINUOUS,
     ...     's6':  flags.IS_CONTINUOUS,
-    ... }
-    >>> reg_proba = CyclicBoosting(feature_properties=fp)
-    >>> reg_proba.fit(X_train, y_train)
-    >>> y_pred = reg_proba.predict_proba(X_test)
+    ... }  # doctest: +SKIP
+    >>> reg_proba = CyclicBoosting(feature_properties=fp)  # doctest: +SKIP
+    >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
+    >>> y_pred = reg_proba.predict_proba(X_test)  # doctest: +SKIP
     """
 
     _tags = {
