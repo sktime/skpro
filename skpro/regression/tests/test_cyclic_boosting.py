@@ -1,6 +1,7 @@
 """Tests for cyclic boosting regressor."""
 
 import pytest
+
 from skpro.regression.cyclic_boosting import CyclicBoosting
 from skpro.tests.test_switch import run_test_for_class
 
@@ -21,16 +22,16 @@ def test_cyclic_boosting_simple_use():
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
     fp = {
-        'age': flags.IS_CONTINUOUS,
-        'sex': flags.IS_CONTINUOUS,
-        'bmi': flags.IS_CONTINUOUS,
-        'bp':  flags.IS_CONTINUOUS,
-        's1':  flags.IS_CONTINUOUS,
-        's2':  flags.IS_CONTINUOUS,
-        's3':  flags.IS_CONTINUOUS,
-        's4':  flags.IS_CONTINUOUS,
-        's5':  flags.IS_CONTINUOUS,
-        's6':  flags.IS_CONTINUOUS,
+        "age": flags.IS_CONTINUOUS,
+        "sex": flags.IS_CONTINUOUS,
+        "bmi": flags.IS_CONTINUOUS,
+        "bp": flags.IS_CONTINUOUS,
+        "s1": flags.IS_CONTINUOUS,
+        "s2": flags.IS_CONTINUOUS,
+        "s3": flags.IS_CONTINUOUS,
+        "s4": flags.IS_CONTINUOUS,
+        "s5": flags.IS_CONTINUOUS,
+        "s6": flags.IS_CONTINUOUS,
     }
 
     reg_proba = CyclicBoosting(feature_properties=fp)
