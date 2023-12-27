@@ -84,6 +84,12 @@ OBJECT_TAG_REGISTER = [
     # BaseProbaRegressor
     # ------------------
     (
+        "capability:survival",
+        "regressor_proba",
+        "bool",
+        "whether estimator can use censoring information, for survival analysis",
+    ),
+    (
         "capability:multioutput",
         "regressor_proba",
         "bool",
