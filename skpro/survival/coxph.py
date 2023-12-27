@@ -1,24 +1,18 @@
-"""Interface adapter statsmodels cox proportional hazards."""
+"""Interface adapter to statsmodels cox proportional hazards models."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["fkiraly"]
-
-import numpy as np
-import pandas as pd
 
 from skpro.regression.base import BaseProbaRegressor
 
 
 class CoxPH(BaseProbaRegressor):
-    """MAPIE probabilistic regressor, conformity score based prediction intervals.
+    """Cox proportional hazards model, partial likelihood or elastic net, statsmodels.
 
-    Direct interface to ``mapie.regression.regression.MapieRegressor`` from the
-    ``mapie`` package.
+    Direct interface to ``statsmodels.duration.hazard_regression.PHReg``
 
-    Uses jackknife+ to estimate prediction intervals on a per-sample basis.
-
-    Any (non-probabilistic) sklearn regressor can be used as the base regressor,
-    ``MapieRegressor`` will add prediction intervals.
+    Implements vanilla partial likelihood minimization (``method="lpl"``),
+    and elastic net regularized minimization (``method="elastic_net"``).
 
     Parameters
     ----------
@@ -56,24 +50,6 @@ class CoxPH(BaseProbaRegressor):
     ----------
     results_: statsmodels PHRegResults instance
         results of the fitted model
-
-    Example
-    -------
-    >>> from skpro.regression.mapie import MapieRegressor  # doctest: +SKIP
-    >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
-    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
-    >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
-    >>>
-    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
-    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
-    >>>
-    >>> reg_tabular = RandomForestRegressor()  # doctest: +SKIP
-    >>>
-    >>> reg_proba = MapieRegressor(reg_tabular)  # doctest: +SKIP
-    >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
-    MapieRegressor(...)
-    >>> y_pred_int = reg_proba.predict_interval(X_test)  # doctest: +SKIP
-    >>> y_pred_dist = reg_proba.predict_proba(X_test)  # doctest: +SKIP
     """
 
     _tags = {
