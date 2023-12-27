@@ -164,7 +164,7 @@ class CoxPH(BaseProbaRegressor):
         y_pred = empirical_from_discrete(dist=dist, index=index, columns=columns)
         return y_pred
 
-    def _get_strata(X):
+    def _get_strata(self, X):
         """Get strata from X.
 
         Parameters
