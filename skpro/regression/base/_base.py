@@ -95,6 +95,12 @@ class BaseProbaRegressor(BaseEstimator):
 
         check_ret = self._check_X_y(X, y, C, return_metadata=True)
 
+        # get inner X, y, C
+        X_inner = check_ret["X_inner"]
+        y_inner = check_ret["y_inner"]
+        if capa_surv:
+            C_inner = check_ret["C_inner"]
+
         # remember metadata
         self._X_metadata = check_ret["X_metadata"]
         self._y_metadata = check_ret["y_metadata"]
@@ -105,9 +111,9 @@ class BaseProbaRegressor(BaseEstimator):
         self._is_fitted = True
 
         if not capa_surv:
-            return self._fit(X, y)
+            return self._fit(X_inner, y_inner)
         else:
-            return self._fit(X, y, C=C)
+            return self._fit(X_inner, y_inner, C=C_inner)
 
     def _fit(self, X, y, C=None):
         """Fit regressor to training data.
