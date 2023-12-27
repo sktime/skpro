@@ -17,7 +17,6 @@ from scipy.integrate import quad
 from typing import Optional
 
 from skpro.distributions.base import BaseDistribution
-from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
 
 
 class QPD_S(BaseDistribution):
@@ -69,6 +68,10 @@ class QPD_S(BaseDistribution):
         self.l = l
         self.index = index
         self.columns = columns
+
+        super().__init__(index=index, columns=columns)
+
+        from cyclic_boosting.quantile_matching import J_QPD_S
 
         for qv in [alpha, qv_low, qv_median, qv_high]:
             if isinstance(qv, float):
@@ -123,8 +126,6 @@ class QPD_S(BaseDistribution):
             )
             self.qpd.append(jqpd)
         self.qpd = pd.DataFrame(self.qpd, index=index)
-
-        super().__init__(index=index, columns=columns)
 
     def mean(self, lower=0.0, upper=np.inf):
         loc = []
@@ -253,6 +254,10 @@ class QPD_B(BaseDistribution):
         self.index = index
         self.columns = columns
 
+        super().__init__(index=index, columns=columns)
+        
+        from cyclic_boosting.quantile_matching import J_QPD_B
+
         for qv in [alpha, qv_low, qv_median, qv_high]:
             if isinstance(qv, float):
                 qv = np.array([qv])
@@ -307,8 +312,6 @@ class QPD_B(BaseDistribution):
             )
             self.qpd.append(jqpd)
         self.qpd = pd.DataFrame(self.qpd, index=index)
-
-        super().__init__(index=index, columns=columns)
 
     def mean(self, lower=0.0, upper=np.inf):
         loc = []

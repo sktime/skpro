@@ -17,14 +17,7 @@ import pandas as pd
 from skpro.regression.base import BaseProbaRegressor
 from skpro.distributions.qpd import QPD_S
 
-# from cyclic_boosting import common_smoothers, binning
-from cyclic_boosting import (
-    pipeline_CBMultiplicativeQuantileRegressor,
-    pipeline_CBAdditiveQuantileRegressor,
-)
 
-
-# todo: change class name and write docstring
 class CyclicBoosting(BaseProbaRegressor):
     """Cyclic boosting regressor.
 
@@ -130,8 +123,12 @@ class CyclicBoosting(BaseProbaRegressor):
             features.append(i)
 
         if self.mode == "multiplicative":
+            from cyclic_boosting import pipeline_CBMultiplicativeQuantileRegressor
+
             regressor = pipeline_CBMultiplicativeQuantileRegressor
         elif self.mode == "additive":
+            from cyclic_boosting import pipeline_CBAdditiveQuantileRegressor
+
             regressor = pipeline_CBAdditiveQuantileRegressor
         else:
             raise ValueError("mode must be 'multiplicative' or 'additive'")
