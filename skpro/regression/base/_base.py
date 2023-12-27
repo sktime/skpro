@@ -30,7 +30,6 @@ class BaseProbaRegressor(BaseEstimator):
     }
 
     def __init__(self):
-
         super().__init__()
         _check_estimator_deps(self)
 
