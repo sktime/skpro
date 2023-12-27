@@ -29,14 +29,13 @@ class BaseProbaRegressor(BaseEstimator):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, index=None, columns=None):
-        self.index = index
-        self.columns = columns
+    def __init__(self):
 
         super().__init__()
         _check_estimator_deps(self)
 
         self._X_converter_store = {}
+        self._y_converter_store = {}
 
     def __rmul__(self, other):
         """Magic * method, return (left) concatenated Pipeline.
@@ -193,7 +192,7 @@ class BaseProbaRegressor(BaseEstimator):
             from_type=self.get_tag("X_inner_mtype"),
             to_type=self._X_input_mtype,
             as_scitype="Table",
-            store=self._X_converter_store,
+            store=self._y_converter_store,
         )
 
         return y_pred
@@ -639,6 +638,7 @@ class BaseProbaRegressor(BaseEstimator):
             from_type=metadata["mtype"],
             to_type=y_inner_mtype,
             as_scitype="Table",
+            store=self._y_converter_store,
         )
 
         return y, metadata
