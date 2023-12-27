@@ -1,5 +1,6 @@
 """Tests for cyclic boosting regressor."""
 
+import pandas as pd
 import pytest
 
 from skpro.regression.cyclic_boosting import CyclicBoosting
@@ -19,6 +20,7 @@ def test_cyclic_boosting_simple_use():
     from skpro.regression.cyclic_boosting import CyclicBoosting
 
     X, y = load_diabetes(return_X_y=True, as_frame=True)
+    y = pd.DataFrame(y)
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
     fp = {
