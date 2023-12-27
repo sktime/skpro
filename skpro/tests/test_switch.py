@@ -59,7 +59,7 @@ def run_test_for_class(cls):
         else:
             return True
 
-    def _is_class_changed_or_sktime_parents(cls):
+    def _is_class_changed_or_parents(cls):
         """Check if class or any of its sktime parents have changed, return bool."""
         # if cls is a function, not a class, default to is_class_changed
         if not isclass(cls):
@@ -67,14 +67,14 @@ def run_test_for_class(cls):
 
         # now we know cls is a class, so has an mro
         cls_and_parents = getmro(cls)
-        cls_and_sktime_parents = [
+        cls_and_parents = [
             x for x in cls_and_parents if x.__module__.startswith("sktime")
         ]
-        return any(is_class_changed(x) for x in cls_and_sktime_parents)
+        return any(is_class_changed(x) for x in cls_and_parents)
 
     def _tests_covering_class_changed(cls):
         """Check if any of the tests covering cls have changed, return bool."""
-        from sktime.tests.test_class_register import get_test_classes_for_obj
+        from skpro.tests.test_class_register import get_test_classes_for_obj
 
         test_classes = get_test_classes_for_obj(cls)
         return any(is_class_changed(x) for x in test_classes)
@@ -89,7 +89,7 @@ def run_test_for_class(cls):
     # if ONLY_CHANGED_MODULES is on, run the test if and only if
     # any of the modules containing any of the classes in the list have changed
     if ONLY_CHANGED_MODULES:
-        cond2 = any(_is_class_changed_or_sktime_parents(x) for x in cls)
+        cond2 = any(_is_class_changed_or_parents(x) for x in cls)
     else:
         cond2 = True
 
