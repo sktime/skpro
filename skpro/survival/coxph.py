@@ -156,7 +156,7 @@ class CoxPH(BaseProbaRegressor):
             exog, strata = self._get_strata(exog)
             kwargs = {"params": params, "exog": exog, "strata": strata}
         else:
-            kwargs = {"params":params, "exog": exog}
+            kwargs = {"params": params, "exog": exog}
 
         # produce predictions from statsmodels
         dist = self._model.get_distribution(**kwargs)
