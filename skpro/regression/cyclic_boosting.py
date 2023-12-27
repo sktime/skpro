@@ -1,4 +1,5 @@
 """Cyclic boosting regressors.
+
 This is a interface for Cyclic boosting, it contains efficient,
 off-the-shelf, general-purpose supervised machine learning methods
 for both regression and classification tasks.
@@ -12,10 +13,12 @@ __author__ = [
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
 import warnings
+
 import numpy as np
 import pandas as pd
+
+from skpro.distributions.qpd import QPD_S, QPD_B, QPD_U
 from skpro.regression.base import BaseProbaRegressor
-from skpro.distributions.qpd import QPD_S
 
 
 class CyclicBoosting(BaseProbaRegressor):
@@ -40,6 +43,14 @@ class CyclicBoosting(BaseProbaRegressor):
         lower quantile for QPD's parameter alpha
     mode : str, default='multiplicative'
         the type of quantile regressor. 'multiplicative' or 'additive'
+    bound : str
+            Different modes defined by supported target range, options are ``S``
+            (semi-bound), ``B`` (bound), and ``U`` (unbound).
+    lower : float
+        lower bound of supported range (only active for bound and semi-bound
+        modes)
+    upper : float
+        upper bound of supported range (only active for bound mode)
 
     Attributes
     ----------
@@ -54,7 +65,7 @@ class CyclicBoosting(BaseProbaRegressor):
     qpd: skpro.distributions.J_QPD_S
         Johnson Quantile-Parameterized Distributions instance
 
-    Examples
+    Example
     --------
     >>> from skpro.regression.cyclic_boosting import CyclicBoosting
     >>> from cyclic_boosting import flags
@@ -64,30 +75,29 @@ class CyclicBoosting(BaseProbaRegressor):
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
     >>>
     >>> fp = {
-    >>>     'age': flags.IS_CONTINUOUS,
-    >>>     'sex': flags.IS_CONTINUOUS,
-    >>>     'bmi': flags.IS_CONTINUOUS,
-    >>>     'bp':  flags.IS_CONTINUOUS,
-    >>>     's1':  flags.IS_CONTINUOUS,
-    >>>     's2':  flags.IS_CONTINUOUS,
-    >>>     's3':  flags.IS_CONTINUOUS,
-    >>>     's4':  flags.IS_CONTINUOUS,
-    >>>     's5':  flags.IS_CONTINUOUS,
-    >>>     's6':  flags.IS_CONTINUOUS,
-    >>> }
+    ...     'age': flags.IS_CONTINUOUS,
+    ...     'sex': flags.IS_CONTINUOUS,
+    ...     'bmi': flags.IS_CONTINUOUS,
+    ...     'bp':  flags.IS_CONTINUOUS,
+    ...     's1':  flags.IS_CONTINUOUS,
+    ...     's2':  flags.IS_CONTINUOUS,
+    ...     's3':  flags.IS_CONTINUOUS,
+    ...     's4':  flags.IS_CONTINUOUS,
+    ...     's5':  flags.IS_CONTINUOUS,
+    ...     's6':  flags.IS_CONTINUOUS,
+    ... }
     >>> reg_proba = CyclicBoosting(feature_properties=fp)
     >>> reg_proba.fit(X_train, y_train)
     >>> y_pred = reg_proba.predict_proba(X_test)
     """
 
     _tags = {
-        "object_type": "regressor",
         "estimator_type": "regressor_proba",
         "capability:multioutput": False,
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
-        "python_dependencies": "cyclic_boosting>=1.2.1",
+        "python_dependencies": "cyclic_boosting>=1.2.5",
     }
 
     def __init__(
@@ -96,6 +106,9 @@ class CyclicBoosting(BaseProbaRegressor):
         interaction=tuple(),
         alpha=0.2,
         mode="multiplicative",
+        bound="U",
+        lower=0,
+        upper=1,
     ):
         self.feature_properties = feature_properties
         self.interaction = interaction
@@ -105,17 +118,20 @@ class CyclicBoosting(BaseProbaRegressor):
         self.quantile_est = []
         self.qpd = None
         self.mode = mode
+        self.bound = bound
+        self.lower = lower
+        self.upper = upper
 
         super().__init__()
 
         # check parameters
         if not isinstance(feature_properties, dict):
-            raise ValueError("feature_properties must be dict")
+            raise ValueError("feature_properties needs to be dict")
         for i in interaction:
             if not isinstance(i, tuple):
-                raise ValueError("interaction must be tuple")
+                raise ValueError("interaction needs to be tuple")
         if alpha >= 0.5 or alpha <= 0.0:
-            raise ValueError("alpha's range must be 0.0 < alpha < 0.5")
+            raise ValueError("alpha's range needs to be 0.0 < alpha < 0.5")
 
         # build estimators
         features = list(self.feature_properties.keys())
@@ -131,7 +147,7 @@ class CyclicBoosting(BaseProbaRegressor):
 
             regressor = pipeline_CBAdditiveQuantileRegressor
         else:
-            raise ValueError("mode must be 'multiplicative' or 'additive'")
+            raise ValueError("mode needs to be 'multiplicative' or 'additive'")
 
         for quantile in self.quantiles:
             self.quantile_est.append(
@@ -160,7 +176,6 @@ class CyclicBoosting(BaseProbaRegressor):
         -------
         self : reference to self
         """
-
         self._y_cols = y.columns
         y = y.to_numpy().flatten()
 
@@ -189,7 +204,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-
         index = X.index
         y_cols = self._y_cols
 
@@ -219,7 +233,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-
         index = X.index
         y_cols = self._y_cols
 
@@ -230,14 +243,25 @@ class CyclicBoosting(BaseProbaRegressor):
             self.quantile_values.append(yhat)
 
         # Johnson Quantile-Parameterized Distributions
-        qpd = QPD_S(
-            alpha=self.alpha,
-            qv_low=self.quantile_values[0],
-            qv_median=self.quantile_values[1],
-            qv_high=self.quantile_values[2],
-            index=index,
-            columns=y_cols,
-        )
+        params = {
+            "alpha": self.alpha,
+            "qv_low": self.quantile_values[0],
+            "qv_median": self.quantile_values[1],
+            "qv_high": self.quantile_values[2],
+            "index": index,
+            "columns": y_cols,
+        }
+        if self.bound == "U":
+            qpd = QPD_U(**params)
+        elif self.bound == "S":
+            params["lower"] = self.lower
+            qpd = QPD_S(**params)
+        elif self.bound == "B":
+            params["lower"] = self.lower
+            params["upper"] = self.upper
+            qpd = QPD_B(**params)
+        else:
+            raise ValueError("bound need to be 'U' or 'S' or 'B'")
 
         return qpd
 
@@ -268,7 +292,6 @@ class CyclicBoosting(BaseProbaRegressor):
             Upper/lower interval end are equivalent to
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
-
         index = X.index
         y_cols = self._y_cols
         columns = pd.MultiIndex.from_product(
@@ -286,7 +309,7 @@ class CyclicBoosting(BaseProbaRegressor):
 
         return interval
 
-    def _predict_quantiles(self, X, alpha):
+    def _predict_quantiles(self, X, quantiles):
         """Compute/return quantile predictions.
 
         private _predict_quantiles containing the core logic,
@@ -296,7 +319,7 @@ class CyclicBoosting(BaseProbaRegressor):
         ----------
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
-        alpha : guaranteed list of float
+        quantiles : guaranteed list of float
             A list of probabilities at which quantile predictions are computed.
 
         Returns
@@ -308,7 +331,6 @@ class CyclicBoosting(BaseProbaRegressor):
             Entries are quantile predictions, for var in col index,
                 at quantile probability in second col index, for the row index.
         """
-
         is_given_proba = False
         warning = (
             "{} percentile doesn't trained, return QPD's quantile value, "
@@ -316,33 +338,33 @@ class CyclicBoosting(BaseProbaRegressor):
             "if you need more plausible quantile value, "
             "please train regressor again for specified quantile estimation"
         )
-        if isinstance(alpha, list):
-            for a in alpha:
-                if not (a in self.quantiles):
-                    warnings.warn(warning.format(a))
+        if isinstance(quantiles, list):
+            for q in quantiles:
+                if not (q in self.quantiles):
+                    warnings.warn(warning.format(q), stacklevel=2)
                     is_given_proba = True
-        elif isinstance(alpha, float):
-            if not (alpha in self.quantiles):
-                warnings.warn(warning.format(alpha))
+        elif isinstance(quantiles, float):
+            if not (quantiles in self.quantiles):
+                warnings.warn(warning.format(quantiles), stacklevel=2)
                 is_given_proba = True
         else:
-            raise ValueError("alpha must be float or list of floats")
+            raise ValueError("quantile needs to be float or list of floats")
 
         index = X.index
         y_cols = self._y_cols
 
         columns = pd.MultiIndex.from_product(
-            [y_cols, alpha],
+            [y_cols, quantiles],
         )
 
         # predict quantiles
         self.quantile_values = []
         if is_given_proba:
             qpd = self.predict_proba(X.copy())
-            if isinstance(alpha, list):
-                alpha = [alpha]
+            if isinstance(quantiles, list):
+                quantile = [quantiles]
 
-            p = pd.DataFrame(alpha, index=X.index, columns=columns)
+            p = pd.DataFrame(quantile, index=X.index, columns=columns)
             quantiles = qpd.ppf(p)
 
         else:

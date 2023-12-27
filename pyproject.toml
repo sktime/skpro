@@ -59,7 +59,7 @@ all_extras = [
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
-    "cyclic-boosting>=1.2.1"
+    "cyclic-boosting>=1.2.5"
 ]
 
 dev = [
