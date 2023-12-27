@@ -375,7 +375,7 @@ class Pipeline(_Pipeline):
         else:
             return Pipeline(steps=list(zip(new_names, new_ests)))
 
-    def _fit(self, X, y):
+    def _fit(self, X, y, C=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -385,8 +385,16 @@ class Pipeline(_Pipeline):
         ----------
         X : pandas DataFrame
             feature instances to fit regressor to
-        y : pandas DataFrame, must be same length as X
+        y : pd.DataFrame, must be same length as X
             labels to fit regressor to
+        C : pd.DataFrame, optional (default=None)
+            censoring information for survival analysis,
+            should have same column name as y, same length as X and y
+            should have entries 0 and 1 (float or int)
+            0 = uncensored, 1 = (right) censored
+            if None, all observations are assumed to be uncensored
+            Can be passed to any probabilistic regressor,
+            but is ignored if capability:survival tag is False.
 
         Returns
         -------
@@ -406,7 +414,7 @@ class Pipeline(_Pipeline):
         # fit regressor
         name, regressor = self.steps_[-1]
         r = regressor.clone()
-        r.fit(X, y)
+        r.fit(X, y, C=C)
         self.steps_[-1] = (name, r)
 
         return self
