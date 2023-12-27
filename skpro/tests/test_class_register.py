@@ -73,7 +73,9 @@ def get_test_classes_for_obj(obj):
         else:
             return isinstance(obj, BaseEstimator)
 
-    if not is_object(obj):
+    # warning: BaseEstimator does not inherit from BaseObject,
+    # therefore we need to check both
+    if not is_object(obj) and not is_estimator(obj):
         return []
 
     testclass_dict = get_test_class_registry()
