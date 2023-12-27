@@ -60,11 +60,13 @@ class CoxPH(BaseProbaRegressor):
 
     def __init__(
         self,
+        method="lpl",
         ties="breslow",
         missing="drop",
         strata=None,
         alpha=0.0,
     ):
+        self.method = method
         self.ties = ties
         self.missing = missing
         self.strata = strata
