@@ -107,6 +107,10 @@ class CoxPH(BaseProbaRegressor):
             "missing": self.missing,
         }
 
+        if self.strata is not None:
+            exog, strata = self._get_strata(exog)
+            params["strata"] = strata
+
         model = PHReg(endog=endog, exog=exog, status=status, **params)
 
         # fit model
@@ -146,12 +150,38 @@ class CoxPH(BaseProbaRegressor):
         # get results from statsmodels
         results = self.results_
         params = results.params
+        exog = X
+
+        if self.strata is not None:
+            exog, strata = self._get_strata(exog)
+            kwargs = {"params": params, "exog": exog, "strata": strata}
+        else:
+            kwargs = {"params":params, "exog": exog}
 
         # produce predictions from statsmodels
-        dist = self._model.get_distribution(params=params, exog=X)
+        dist = self._model.get_distribution(**kwargs)
         # convert results to skpro BaseDistribution child instance
         y_pred = empirical_from_discrete(dist=dist, index=index, columns=columns)
         return y_pred
+
+    def _get_strata(X):
+        """Get strata from X.
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature data frame to get strata from
+
+        Returns
+        -------
+        X_wo_strata : pandas DataFrame
+            X without strata column
+        strata : 1D np.ndarray
+            strata column from X, coerced to 1D np.ndarray
+        """
+        strata = X.loc[:, [self.strata]].to_numpy().flatten()
+        X_wo_strata = X.drop(columns=[self.strata])
+        return X_wo_strata, strata
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
