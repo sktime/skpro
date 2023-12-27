@@ -1,13 +1,12 @@
 """Tests for cyclic boosting regressor."""
 
 import pytest
-
-from sktime.regression.cyclic_boosting import CyclicBoosting
-from sktime.tests.test_switch import run_test_for_class
+from skpro.regression.cyclic_boosting import CyclicBoosting
+from skpro.tests.test_switch import run_test_for_class
 
 
 @pytest.mark.skipif(
-    not run_test_for_class(CyclicBoosting)),
+    not run_test_for_class(CyclicBoosting),
     reason="run test only if softdeps are present and incrementally (if requested)",
 )
 def test_cyclic_boosting_simple_use():

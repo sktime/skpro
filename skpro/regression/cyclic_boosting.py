@@ -17,7 +17,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from skpro.distributions.qpd import QPD_S, QPD_B, QPD_U
+from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
 from skpro.regression.base import BaseProbaRegressor
 
 

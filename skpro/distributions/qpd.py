@@ -11,7 +11,6 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-
 from scipy.integrate import quad
 from scipy.misc import derivative
 from scipy.stats import logistic, norm
@@ -316,7 +315,7 @@ class QPD_B(BaseDistribution):
         self.columns = columns
 
         super().__init__(index=index, columns=columns)
-        
+
         from cyclic_boosting.quantile_matching import J_QPD_extended_B
 
         for qv in [alpha, qv_low, qv_median, qv_high]:
