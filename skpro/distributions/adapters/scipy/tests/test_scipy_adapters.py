@@ -14,8 +14,8 @@ def test_empirical_from_discrete():
     pk = (0.1, 0.2, 0.3, 0.1, 0.1, 0.0, 0.2)
     pk2 = (0.1, 0.1, 0.4, 0.0, 0.1, 0.2, 0.1)
 
-    dist1 = rv_discrete(name='custm', values=(xk, pk))
-    dist2 = rv_discrete(name='custm', values=(xk, pk2))
+    dist1 = rv_discrete(name="custm", values=(xk, pk))
+    dist2 = rv_discrete(name="custm", values=(xk, pk2))
 
     emp = empirical_from_discrete([dist1, dist2])
     assert isinstance(emp.spl, pd.DataFrame)

@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def empirical_from_discrete(dist, index=None, columns=None):
-    """Converts a list of scipy discrete distributions to an skpro empirical.
+    """Convert a list of scipy discrete distributions to an skpro Empirical object.
 
     Parameters
     ----------
