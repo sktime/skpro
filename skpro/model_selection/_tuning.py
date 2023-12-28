@@ -490,28 +490,31 @@ class GridSearchCV(BaseGridSearch):
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
 
-        params = [{
+        param1 = {
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=3),
             "param_grid": {"estimator": [linreg1, linreg2]},
             "scoring": CRPS(),
-        }]
+        }
 
-        params += [{
+        param2 = {
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=4),
             "param_grid": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
-        }]
+        }
+
+        params = [param1, param2]
 
         # testing with survival predictor
         if _check_estimator_deps(CoxPH, severity="none"):
-            params += [{
+            param3 = {
                 "estimator": CoxPH(alpha=0.05),
                 "cv": KFold(n_splits=4),
                 "param_grid": {"estimator__method": ["lpl", "elastic_net"]},
                 "scoring": PinballLoss(),
-            }]
+            }
+            params.append(param3)
 
         return params
 
@@ -740,27 +743,30 @@ class RandomizedSearchCV(BaseGridSearch):
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
 
-        params = [{
+        param1 = {
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=3),
             "param_distributions": {"estimator": [linreg1, linreg2]},
             "scoring": CRPS(),
-        }]
+        }
 
-        params += [{
+        param2 += {
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=4),
             "param_distributions": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
-        }]
+        }
+
+        params = [param1, param2]
 
         # testing with survival predictor
         if _check_estimator_deps(CoxPH, severity="none"):
-            params += [{
+            param3 = {
                 "estimator": CoxPH(alpha=0.05),
                 "cv": KFold(n_splits=4),
                 "param_distributions": {"estimator__method": ["lpl", "elastic_net"]},
                 "scoring": PinballLoss(),
-            }]
+            }
+            params += [param3]
 
         return params
