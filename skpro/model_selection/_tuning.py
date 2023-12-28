@@ -484,25 +484,36 @@ class GridSearchCV(BaseGridSearch):
 
         from skpro.metrics import CRPS, PinballLoss
         from skpro.regression.residual import ResidualDouble
+        from skpro.survival.coxph import CoxPH
+        from skpro.utils.validation._dependencies import _check_estimator_deps
 
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
 
-        params = {
+        params = [{
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=3),
             "param_grid": {"estimator": [linreg1, linreg2]},
             "scoring": CRPS(),
-        }
+        }]
 
-        params2 = {
+        params += [{
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=4),
             "param_grid": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
-        }
+        }]
 
-        return [params, params2]
+        # testing with survival predictor
+        if _check_estimator_deps(CoxPH, severity="none"):
+            params += [{
+                "estimator": CoxPH(alpha=0.05),
+                "cv": KFold(n_splits=4),
+                "param_grid": {"estimator__method": ["lpl", "elastic_net"]},
+                "scoring": PinballLoss(),
+            }]
+
+        return params
 
 
 class RandomizedSearchCV(BaseGridSearch):
@@ -723,22 +734,34 @@ class RandomizedSearchCV(BaseGridSearch):
 
         from skpro.metrics import CRPS, PinballLoss
         from skpro.regression.residual import ResidualDouble
+        from skpro.survival.coxph import CoxPH
+        from skpro.utils.validation._dependencies import _check_estimator_deps
 
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
 
-        params = {
+        params = [{
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=3),
             "param_distributions": {"estimator": [linreg1, linreg2]},
             "scoring": CRPS(),
-        }
+        }]
 
-        params2 = {
+        params += [{
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=4),
             "param_distributions": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
-        }
+        }]
 
-        return [params, params2]
+
+        # testing with survival predictor
+        if _check_estimator_deps(CoxPH, severity="none"):
+            params += [{
+                "estimator": CoxPH(alpha=0.05),
+                "cv": KFold(n_splits=4),
+                "param_distributions": {"estimator__method": ["lpl", "elastic_net"]},
+                "scoring": PinballLoss(),
+            }]
+
+        return params
