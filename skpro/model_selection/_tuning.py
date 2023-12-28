@@ -134,7 +134,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
                     stacklevel=2,
                 )
 
-        def _fit_and_score(params):
+        def _fit_and_score(params, meta):
             # Clone estimator.
             estimator = self.estimator.clone()
 
