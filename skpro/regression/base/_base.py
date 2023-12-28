@@ -5,7 +5,16 @@ import numpy as np
 import pandas as pd
 
 from skpro.base import BaseEstimator
+from skpro.datatypes import check_is_error_msg, check_is_mtype, convert
 from skpro.utils.validation._dependencies import _check_estimator_deps
+
+# allowed input mtypes
+ALLOWED_MTYPES = [
+    "pd_DataFrame_Table",
+    "pd_Series_Table",
+    "numpy1D",
+    "numpy2D",
+]
 
 
 class BaseProbaRegressor(BaseEstimator):
@@ -16,14 +25,16 @@ class BaseProbaRegressor(BaseEstimator):
         "estimator_type": "regressor_proba",  # type of estimator, e.g., "regressor"
         "capability:multioutput": False,
         "capability:missing": True,
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, index=None, columns=None):
-        self.index = index
-        self.columns = columns
-
+    def __init__(self):
         super().__init__()
         _check_estimator_deps(self)
+
+        self._X_converter_store = {}
+        self._y_converter_store = {}
 
     def __rmul__(self, other):
         """Magic * method, return (left) concatenated Pipeline.
@@ -69,7 +80,11 @@ class BaseProbaRegressor(BaseEstimator):
         -------
         self : reference to self
         """
-        X, y = self._check_X_y(X, y)
+        X, y, X_metadata, y_metadata = self._check_X_y(X, y, return_metadata=True)
+
+        # remember metadata
+        self._X_metadata = X_metadata
+        self._y_metadata = y_metadata
 
         # set fitted flag to True
         self._is_fitted = True
@@ -117,6 +132,16 @@ class BaseProbaRegressor(BaseEstimator):
         X = self._check_X(X)
 
         y_pred = self._predict(X)
+
+        # output conversion - back to mtype seen in fit
+        y_pred = convert(
+            y_pred,
+            from_type=self.get_tag("y_inner_mtype"),
+            to_type=self._y_metadata["mtype"],
+            as_scitype="Table",
+            store=self._X_converter_store,
+        )
+
         return y_pred
 
     def _predict(self, X):
@@ -520,37 +545,106 @@ class BaseProbaRegressor(BaseEstimator):
 
         return pred_var
 
-    def _check_X_y(self, X, y):
-        X = self._check_X(X)
-        y = self._check_y(y)
+    def _check_X_y(self, X, y, return_metadata=False):
+        X_inner, X_metadata = self._check_X(X, return_metadata=True)
+        y_inner, y_metadata = self._check_y(y)
+
+        len_X = X_metadata["n_instances"]
+        len_y = y_metadata["n_instances"]
 
         # input check X vs y
-        if not len(X) == len(y):
+        if len_X != "NA" and len_y != "NA" and not len_X == len_y:
             raise ValueError(
                 f"X and y in fit of {self} must have same number of rows, "
-                f"but X had {len(X)} rows, and y had {len(y)} rows"
+                f"but X had {len_X} rows, and y had {len_y} rows"
             )
 
-        return X, y
+        # in case y gets an index through conversion and X already had one
+        # we need to make sure that the index of y is the same as the index of X
+        # example case: X was pd.DataFrame, y was np.ndarray
+        # but both get converted to X_inner, y_inner: pd.DataFrame
+        # then y_inner would geta RangeIndex without this, but should have X_inner.index
+        if hasattr(X_inner, "index") and not hasattr(y, "index"):
+            if isinstance(y_inner, (pd.DataFrame, pd.Series)):
+                y_inner.index = X_inner.index
 
-    def _check_X(self, X):
+        if return_metadata:
+            return X_inner, y_inner, X_metadata, y_metadata
+        else:
+            return X_inner, y_inner
+
+    def _check_X(self, X, return_metadata=False):
+        if return_metadata:
+            req_metadata = ["n_instances"]
+        else:
+            req_metadata = []
+        # input validity check for X
+        valid, msg, metadata = check_is_mtype(
+            X,
+            ALLOWED_MTYPES,
+            "Table",
+            return_metadata=req_metadata,
+            var_name="X",
+            msg_return_dict="list",
+        )
+
+        # update with clearer message
+        if not valid:
+            check_is_error_msg(msg, var_name="X", raise_exception=True)
+
+        # convert X to X_inner_mtype
+        X_inner_mtype = self.get_tag("X_inner_mtype")
+        X = convert(
+            obj=X,
+            from_type=metadata["mtype"],
+            to_type=X_inner_mtype,
+            as_scitype="Table",
+            store=self._X_converter_store,
+        )
+
         # if we have seen X before, check against columns
-        if hasattr(self, "_X_columns") and not (X.columns == self._X_columns).all():
-            raise ValueError(
-                "X in predict methods must have same columns as X in fit, "
-                f"columns in fit were {self._X_columns}, "
-                f"but in predict found X.columns = {X.columns}"
-            )
+        if hasattr(self, "_X_columns") and hasattr(X, "columns"):
+            if not (X.columns == self._X_columns).all():
+                raise ValueError(
+                    "X in predict methods must have same columns as X in fit, "
+                    f"columns in fit were {self._X_columns}, "
+                    f"but in predict found X.columns = {X.columns}"
+                )
         # if not, remember columns
         else:
             self._X_columns = X.columns
 
-        return X
+        if return_metadata:
+            return X, metadata
+        else:
+            return X
 
     def _check_y(self, y):
-        if isinstance(y, pd.Series):
-            y = pd.DataFrame(y)
-        return y
+        # input validity check for y
+        valid, msg, metadata = check_is_mtype(
+            y,
+            ALLOWED_MTYPES,
+            "Table",
+            return_metadata=["n_instances"],
+            var_name="y",
+            msg_return_dict="list",
+        )
+
+        # update with clearer message
+        if not valid:
+            check_is_error_msg(msg, var_name="y", raise_exception=True)
+
+        # convert y to y_inner_mtype
+        y_inner_mtype = self.get_tag("y_inner_mtype")
+        y = convert(
+            obj=y,
+            from_type=metadata["mtype"],
+            to_type=y_inner_mtype,
+            as_scitype="Table",
+            store=self._y_converter_store,
+        )
+
+        return y, metadata
 
     def _check_alpha(self, alpha, name="alpha"):
         """Check that quantile or confidence level value, or list of values, is valid.

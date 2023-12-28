@@ -7,11 +7,11 @@ __author__ = ["fkiraly", "Alex-JG3"]
 import numpy as np
 import pandas as pd
 import pytest
-from skbase.testing import BaseFixtureGenerator, QuickTester
+from skbase.testing import QuickTester
 
 from skpro.datatypes import check_is_mtype
 from skpro.distributions.base import BaseDistribution
-from skpro.tests.test_all_estimators import PackageConfig
+from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 from skpro.utils.index import random_ss_ix
 
 
@@ -139,7 +139,9 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         d = object_instance
 
         def _check_quantile_output(obj, q):
-            assert check_is_mtype(obj, "pred_quantiles", "Proba")
+            assert check_is_mtype(
+                obj, "pred_quantiles", "Proba", msg_return_dict="list"
+            )
             assert (obj.index == d.index).all()
 
             if not isinstance(q, list):

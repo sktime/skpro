@@ -2,10 +2,9 @@
 
 __author__ = ["fkiraly"]
 
-from skbase.utils import deep_equals
-
 from skpro.datatypes._convert import convert_to
 from skpro.datatypes._examples import get_examples
+from skpro.utils import deep_equals
 
 # hard-coded scitypes/mtypes to use in test_convert_to
 #   easy to change in case the strings change
