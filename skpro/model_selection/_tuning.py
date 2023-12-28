@@ -750,7 +750,7 @@ class RandomizedSearchCV(BaseGridSearch):
             "scoring": CRPS(),
         }
 
-        param2 += {
+        param2 = {
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=4),
             "param_distributions": {"estimator__fit_intercept": [True, False]},
