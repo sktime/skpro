@@ -223,7 +223,7 @@ def evaluate(
     # dispatch by backend
     results = parallelize(
         fun=_evaluate_fold,
-        iter=enumerate(xy_splits),
+        iter=xy_splits,
         meta=_evaluate_fold_kwargs,
         backend=backend_in,
         backend_params=backend_params,
