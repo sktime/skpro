@@ -233,7 +233,7 @@ def evaluate(
     if backend in ["dask", "dask_lazy"]:
         import dask.dataframe as dd
 
-        metadata = _get_column_order_and_datatype(scoring, return_data, cutoff_dtype)
+        metadata = _get_column_order_and_datatype(scoring, return_data)
 
         results = dd.from_delayed(results, meta=metadata)
         if backend == "dask":
@@ -340,7 +340,7 @@ def _evaluate_fold(x, meta):
         temp_result["y_test"] = [y_test]
         temp_result.update(y_preds_cache)
     result = pd.DataFrame(temp_result)
-    result = result.astype({"len_train_window": int, "cutoff": cutoff_dtype})
+    result = result.astype({"len_y_train": int})
 
     column_order = _get_column_order_and_datatype(scoring, return_data)
     result = result.reindex(columns=column_order.keys())
