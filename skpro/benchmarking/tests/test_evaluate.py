@@ -30,7 +30,7 @@ def _check_evaluate_output(out, cv, y, scoring):
     assert set(out.columns) == {
         "fit_time",
         "len_y_train",
-        f"{scitype)}_time",
+        f"{scitype}_time",
         f"test_{scoring.name}",
     }
 
