@@ -202,6 +202,10 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
         from sklearn.preprocessing import StandardScaler
 
         from skpro.regression.residual import ResidualDouble
+        from skpro.survival.coxph import CoxPH
+        from skpro.utils.validation._dependencies import _check_estimator_deps
+
+        params = []
 
         regressor = ResidualDouble.create_test_instance()
 
@@ -209,11 +213,15 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
             ("transformer", StandardScaler()),
             ("regressor", regressor),
         ]
-        params1 = {"steps": STEPS1}
+        params += [{"steps": STEPS1}]
 
-        params2 = {"steps": [StandardScaler(), regressor]}
+        params += [{"steps": [StandardScaler(), regressor]}]
 
-        return [params1, params2]
+        # testing with survival predictor
+        if _check_estimator_deps(CoxPH, severity="none"):
+            params += [{"steps": [StandardScaler(), CoxPH()]}]
+
+        return params
 
 
 class Pipeline(_Pipeline):
