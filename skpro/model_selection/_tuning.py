@@ -52,7 +52,9 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         super().__init__()
 
         tags_to_clone = [
-            "capability:multioutput", "capability:missing", "capability:survival"
+            "capability:multioutput",
+            "capability:missing",
+            "capability:survival",
         ]
         self.clone_tags(estimator, tags_to_clone)
 
