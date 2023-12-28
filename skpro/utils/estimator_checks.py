@@ -3,8 +3,6 @@
 __author__ = ["fkiraly"]
 __all__ = ["check_estimator"]
 
-from inspect import isclass
-
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
@@ -109,34 +107,14 @@ def check_estimator(
     )
     _check_soft_dependencies("pytest", msg=msg)
 
-    from skpro.base import BaseEstimator
-    from skpro.distributions.tests.test_all_distrs import TestAllDistributions
-    from skpro.regression.tests.test_all_regressors import TestAllRegressors
-    from skpro.tests.test_all_estimators import TestAllEstimators, TestAllObjects
+    from skpro.tests.test_class_register import get_test_classes_for_obj
 
-    testclass_dict = dict()
+    test_clss_for_est = get_test_classes_for_obj(estimator)
 
-    testclass_dict["regressor_proba"] = TestAllRegressors
-    testclass_dict["distribution"] = TestAllDistributions
+    results = {}
 
-    results = TestAllObjects().run_tests(
-        obj=estimator,
-        raise_exceptions=raise_exceptions,
-        tests_to_run=tests_to_run,
-        fixtures_to_run=fixtures_to_run,
-        tests_to_exclude=tests_to_exclude,
-        fixtures_to_exclude=fixtures_to_exclude,
-    )
-
-    def is_estimator(obj):
-        """Return whether obj is an estimator class or estimator object."""
-        if isclass(obj):
-            return issubclass(obj, BaseEstimator)
-        else:
-            return isinstance(obj, BaseEstimator)
-
-    if is_estimator(estimator):
-        results_estimator = TestAllEstimators().run_tests(
+    for test_cls in test_clss_for_est:
+        test_cls_results = test_cls().run_tests(
             obj=estimator,
             raise_exceptions=raise_exceptions,
             tests_to_run=tests_to_run,
@@ -144,25 +122,7 @@ def check_estimator(
             tests_to_exclude=tests_to_exclude,
             fixtures_to_exclude=fixtures_to_exclude,
         )
-        results.update(results_estimator)
-
-    if isclass(estimator) and hasattr(estimator, "get_class_tag"):
-        scitype_of_estimator = estimator.get_class_tag("object_type", "object")
-    elif hasattr(estimator, "get_tag"):
-        scitype_of_estimator = estimator.get_tag("object_type", "object")
-    else:
-        scitype_of_estimator = ""
-
-    if scitype_of_estimator in testclass_dict.keys():
-        results_scitype = testclass_dict[scitype_of_estimator]().run_tests(
-            obj=estimator,
-            raise_exceptions=raise_exceptions,
-            tests_to_run=tests_to_run,
-            fixtures_to_run=fixtures_to_run,
-            tests_to_exclude=tests_to_exclude,
-            fixtures_to_exclude=fixtures_to_exclude,
-        )
-        results.update(results_scitype)
+        results.update(test_cls_results)
 
     failed_tests = [key for key in results.keys() if results[key] != "PASSED"]
     if len(failed_tests) > 0:
