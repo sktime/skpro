@@ -3,6 +3,7 @@
 __author__ = ["fkiraly"]
 
 import pandas as pd
+
 from skpro.regression.base import BaseProbaRegressor
 
 
