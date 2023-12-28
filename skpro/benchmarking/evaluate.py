@@ -133,25 +133,37 @@ def evaluate(
         - "dask": any valid keys for ``dask.compute`` can be passed,
           e.g., ``scheduler``
 
+    C : pd.DataFrame, optional (default=None)
+        censoring information to use in the evaluation experiment,
+        should have same column name as y, same length as X and y
+        should have entries 0 and 1 (float or int)
+        0 = uncensored, 1 = (right) censored
+        if None, all observations are assumed to be uncensored
+        Can be passed to any probabilistic regressor,
+        but is ignored if capability:survival tag is False.
+
     Returns
     -------
     results : pd.DataFrame or dask.dataframe.DataFrame
         DataFrame that contains several columns with information regarding each
         refit/update and prediction of the estimator.
-        Row index is splitter index of train/test fold in `cv`.
-        Entries in the i-th row are for the i-th train/test split in `cv`.
+        Row index is splitter index of train/test fold in ``cv``.
+        Entries in the i-th row are for the i-th train/test split in ``cv``.
         Columns are as follows:
-        - test_{scoring.name}: (float) Model performance score. If `scoring` is a list,
-            then there is a column withname `test_{scoring.name}` for each scorer.
-        - fit_time: (float) Time in sec for `fit` or `update` on train fold.
-        - pred_time: (float) Time in sec to `predict` from fitted estimator.
+        - test_{scoring.name}: (float) Model performance score.
+          If ``scoring`` is a list,
+          then there is a column withname ``test_{scoring.name}`` for each scorer.
+        - fit_time: (float) Time in sec for ``fit`` on train fold.
+        - pred_time: (float) Time in sec to ``predict`` from fitted estimator.
+        - pred_[method]_time: (float)
+          Time in sec to run ``predict_[method]`` from fitted estimator.
         - len_y_train: (int) length of y_train.
-        - y_train: (pd.Series) only present if see `return_data=True`
-          train fold of the i-th split in `cv`, used to fit the estimator.
-        - y_pred: (pd.Series) present if see `return_data=True`
-          predictions from fitted estimator for the i-th test fold indices of `cv`.
-        - y_test: (pd.Series) present if see `return_data=True`
-          testing fold of the i-th split in `cv`, used to compute the metric.
+        - y_train: (pd.Series) only present if see ``return_data=True``
+          train fold of the i-th split in ``cv``, used to fit the estimator.
+        - y_pred: (pd.Series) present if see ``return_data=True``
+          predictions from fitted estimator for the i-th test fold indices of ``cv``.
+        - y_test: (pd.Series) present if see ``return_data=True``
+          testing fold of the i-th split in ``cv``, used to compute the metric.
 
     Examples
     --------
