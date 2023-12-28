@@ -754,7 +754,6 @@ class RandomizedSearchCV(BaseGridSearch):
             "scoring": PinballLoss(),
         }]
 
-
         # testing with survival predictor
         if _check_estimator_deps(CoxPH, severity="none"):
             params += [{
