@@ -32,6 +32,29 @@ to pipeline time-to-event prediction estimators.
 
     Pipeline
 
+Reduction to plain probabilistic regression
+-------------------------------------------
+
+The below estimators can be used to reduce a survival predictor
+to a plain probabilistic regressor, i.e., in the ``skpro.regression`` module.
+
+These add the capability to take censoring into account.
+
+.. currentmodule:: skpro.survival.compose
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    FitUncensored
+
+Reduction - adding ``predict_proba``
+------------------------------------
+
+Simple strategies to use sklearn regressors for survival prediction
+are obtained from using any of the wrappers in ``skpro.regression``,
+then applying reduction to tabular supervised probabilistic regression (above).
+
 Model selection and tuning
 --------------------------
 
@@ -51,21 +74,6 @@ Model selection and tuning
     :template: class.rst
 
     evaluate
-
-Reduction - adding ``predict_proba``
-------------------------------------
-
-Work in progress.
-
-Reduction to plain probabilistic regression
--------------------------------------------
-
-The below estimators can be used to reduce a survival predictor
-to a plain probabilistic regressor, i.e., in the ``skpro.regression`` module.
-
-These add the capability to take censoring into account.
-
-Work in progress.
 
 Proportional hazards models
 ---------------------------
