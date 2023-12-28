@@ -21,11 +21,16 @@ from skpro.utils.validation._dependencies import _check_soft_dependencies
 def _check_evaluate_output(out, cv, y, scoring):
     assert isinstance(out, pd.DataFrame)
 
+    if hasattr(scoring, "get_tag"):
+        scitype = scoring.get_tag("scitype:y_pred", raise_error=False)
+    else:
+        scitype = None
+
     # Check column names.
     assert set(out.columns) == {
         "fit_time",
         "len_y_train",
-        f"{_get_pred_method(scoring)}_time",
+        f"{scitype)}_time",
         f"test_{scoring.name}",
     }
 
