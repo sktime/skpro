@@ -25,7 +25,7 @@ def _check_evaluate_output(out, cv, y, scoring):
     assert set(out.columns) == {
         "fit_time",
         "len_y_train",
-        "pred_time",
+        f"{_get_pred_method(scoring)}_time",
         f"test_{scoring.name}",
     }
 
