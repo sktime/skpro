@@ -180,23 +180,14 @@ def evaluate(
 
     # todo: input checks and coercions
     # cv = check_cv(cv, enforce_start_with_window=True)
-    # if isinstance(scoring, list):
-    #    scoring = [check_scoring(s) for s in scoring]
-    # else:
-    #     scoring = check_scoring(scoring)
 
-    score_name = (
-        f"test_{scoring.name}"
-        if not isinstance(scoring, list)
-        else f"test_{scoring[0].name}"
-    )
+    scoring = _check_scores(scoring)
 
     _evaluate_fold_kwargs = {
         "estimator": estimator,
-        "scoring": scoring if not isinstance(scoring, list) else scoring[0],
-        "return_data": True,
+        "scoring": scoring,
+        "return_data": return_data,
         "error_score": error_score,
-        "score_name": score_name,
     }
 
     def gen_X_y_train_test(X, y, C, cv):
@@ -204,10 +195,12 @@ def evaluate(
 
         Yields
         ------
-        X_train : i-th train split of y as per cv. None if X was None.
-        X_test : i-th test split of y as per cv. None if X was None.
-        y_train : i-th train split of y as per cv
-        y_test : i-th test split of y as per cv
+        X_train : i-th train split of y as per cv.
+        X_test : i-th test split of y as per cv.
+        y_train : i-th train split of y as per cv. None if y was None.
+        y_test : i-th test split of y as per cv. None if y was None.
+        C_train : i-th train split of C as per cv. None if C was None.
+        C_test : i-th test split of C as per cv. None if C was None.
         """
         for train, test in cv.split(X):
             yield _split(X, y, C, train, test)
@@ -389,3 +382,34 @@ def _get_column_order_and_datatype(metric_types, return_data=True):
         fit_metadata.update(y_metadata)
     metrics_metadata.update(fit_metadata)
     return metrics_metadata.copy()
+
+
+def _check_scores(metrics):
+    """Validate and coerce to BaseMetric and segregate them based on predict type.
+
+    Parameters
+    ----------
+    metrics : sktime accepted metrics object or a list of them or None
+
+    Return
+    ------
+    metrics_type : Dict
+        The key is metric types and its value is a list of its corresponding metrics.
+    """
+    if not isinstance(metrics, list):
+        metrics = [metrics]
+
+    metrics_type = {}
+    for metric in metrics:
+        # collect predict type
+        if hasattr(metric, "get_tag"):
+            scitype = metric.get_tag(
+                "scitype:y_pred", raise_error=False, tag_value_default="pred"
+            )
+        else:  # If no scitype exists then metric is a point forecast type
+            scitype = "pred"
+        if scitype not in metrics_type.keys():
+            metrics_type[scitype] = [metric]
+        else:
+            metrics_type[scitype].append(metric)
+    return metrics_type
