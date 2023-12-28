@@ -38,6 +38,7 @@ def evaluate(
     error_score=np.nan,
     backend=None,
     compute=True,
+    C=None,
     **kwargs,
 ):
     r"""Evaluate estimator using re-sample folds.
