@@ -88,8 +88,8 @@ class FitUncensored(_DelegatedProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from skpro.regression.residual import ResidualDouble
         from skpro.regression.bootstrap import BootstrapRegressor
+        from skpro.regression.residual import ResidualDouble
 
         param1 = {"estimator": ResidualDouble.create_test_instance()}
         param2 = {"estimator": BootstrapRegressor.create_test_instance()}
