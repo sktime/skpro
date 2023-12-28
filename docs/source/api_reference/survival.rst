@@ -47,6 +47,7 @@ These add the capability to take censoring into account.
     :template: class.rst
 
     FitUncensored
+    ConditionUncensored
 
 Reduction - adding ``predict_proba``
 ------------------------------------
