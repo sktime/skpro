@@ -105,7 +105,7 @@ class SklearnProbaReg(BaseProbaRegressor):
         X_inner = prep_skl_df(X)
         _, y_std = self.estimator_.predict(X_inner, return_std=True)
         y_std = pd.DataFrame(y_std, index=X.index, columns=X.columns)
-        y_var = y_std ** 2
+        y_var = y_std**2
         return y_var
 
     @classmethod
@@ -126,8 +126,8 @@ class SklearnProbaReg(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from sklearn.linear_model import BayesianRidge
         from sklearn.gaussian_process import GaussianProcessRegressor
+        from sklearn.linear_model import BayesianRidge
 
         param1 = {"estimator": BayesianRidge()}
         param2 = {"estimator": GaussianProcessRegressor()}
