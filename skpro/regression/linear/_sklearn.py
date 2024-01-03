@@ -14,6 +14,7 @@ class _DelegateWithFittedParamForwarding(_DelegatedProbaRegressor):
     Assumes that delegate has an attribute `estimator_`,
     from which fitted attributes are forwarded to self.
     """
+
     # attribute for _DelegatedProbaRegressor, which then delegates
     #     all non-overridden methods are same as of getattr(self, _delegate_name)
     #     see further details in _DelegatedRegressor docstring
@@ -145,7 +146,7 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
     ):
         from sklearn.linear_model import ARDRegression
 
-        skl_estimator=ARDRegression(
+        skl_estimator = ARDRegression(
             max_iter=max_iter,
             tol=tol,
             alpha_1=alpha_1,
@@ -316,7 +317,6 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
         copy_X=True,
         verbose=False,
     ):
-
         from sklearn.linear_model import BayesianRidge
 
         skl_estimator = BayesianRidge(
