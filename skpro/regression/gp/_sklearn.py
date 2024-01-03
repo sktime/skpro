@@ -160,6 +160,7 @@ class GaussianProcess(_DelegateWithFittedParamForwarding):
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
         from sklearn.gaussian_process.kernels import WhiteKernel
+
         param1 = {}
         param2 = {
             "kernel": WhiteKernel(),
