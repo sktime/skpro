@@ -57,8 +57,6 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
     weights) and alpha (precision of the distribution of the noise).
     The estimation is done by an iterative procedures (Evidence Maximization)
 
-    Read more in the :ref:`User Guide <bayesian_regression>`.
-
     Parameters
     ----------
     max_iter : int, default=None
@@ -215,8 +213,6 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
     Fit a Bayesian ridge model. See the Notes section for details on this
     implementation and the optimization of the regularization parameters
     lambda (precision of the weights) and alpha (precision of the noise).
-
-    Read more in the :ref:`User Guide <bayesian_regression>`.
 
     Parameters
     ----------
