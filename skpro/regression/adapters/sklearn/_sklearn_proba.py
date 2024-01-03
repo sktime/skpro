@@ -25,7 +25,10 @@ class SklearnProbaReg(BaseProbaRegressor):
         Estimator to wrap, must have ``predict`` with ``return_std`` argument.
     """
 
-    _tags = {}
+    _tags = {
+        "capability:multioutput": False,
+        "capability:missing": True,
+    }
 
     def __init__(self, estimator):
         self.estimator = estimator
