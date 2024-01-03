@@ -16,12 +16,12 @@ class Empirical(BaseDistribution):
     ----------
     spl : pd.DataFrame with pd.MultiIndex
         empirical sample
-        last (highest) index is time, first (lowest) index is sample
+        last (highest) index is instance, first (lowest) index is sample
     weights : pd.Series, with same index and length as spl, optional, default=None
         if not passed, ``spl`` is assumed to be unweighted
     time_indep : bool, optional, default=True
-        if True, ``sample`` will sample individual time indices independently
-        if False, ``sample`` will sample etire instances from ``spl``
+        if True, ``sample`` will sample individual instance indices independently
+        if False, ``sample`` will sample entire instances from ``spl``
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -79,7 +79,6 @@ class Empirical(BaseDistribution):
 
         sorted = {}
         weights = {}
-        weights
         for t in times:
             sorted[t] = {}
             weights[t] = {}

@@ -17,6 +17,8 @@ MTYPE_REGISTER_TABLE = [
     ("numpy2D", "Table", "2D np.narray representation of a univariate table"),
     ("pd_Series_Table", "Table", "pd.Series representation of a data table"),
     ("list_of_dict", "Table", "list of dictionaries with primitive entries"),
+    ("polars_eager_table", "Table", "polars.DataFrame representation of a data table"),
+    ("polars_lazy_table", "Table", "polars.LazyFrame representation of a data table"),
 ]
 
 MTYPE_LIST_TABLE = pd.DataFrame(MTYPE_REGISTER_TABLE)[0].values

@@ -143,7 +143,13 @@ def all_objects(
 
     if object_types:
         if filter_tags and "object_type" not in filter_tags.keys():
-            object_tag_filter = {}
+            object_tag_filter = {"object_type": object_types}
+        elif filter_tags:
+            filter_tags_filter = filter_tags.get("object_type", [])
+            if isinstance(object_types, str):
+                object_types = [object_types]
+            object_tag_update = {"object_type": object_types + filter_tags_filter}
+            filter_tags.update(object_tag_update)
         else:
             object_tag_filter = {"object_type": object_types}
         if filter_tags:

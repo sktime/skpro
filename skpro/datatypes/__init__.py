@@ -6,6 +6,7 @@
 __author__ = ["fkiraly"]
 
 from skpro.datatypes._check import (
+    check_is_error_msg,
     check_is_mtype,
     check_is_scitype,
     check_raise,
@@ -25,6 +26,7 @@ from skpro.datatypes._registry import (
 )
 
 __all__ = [
+    "check_is_error_msg",
     "check_is_mtype",
     "check_is_scitype",
     "check_raise",

@@ -10,6 +10,7 @@ from sklearn import clone
 
 from skpro.base import BaseMetaEstimator
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.sklearn import prep_skl_df
 
 
 class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
@@ -391,6 +392,9 @@ class Pipeline(_Pipeline):
         -------
         self : reference to self
         """
+        # coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
         # transform X
         for step_idx, name, transformer in self._iter_transformers():
             t = transformer
@@ -530,6 +534,9 @@ class Pipeline(_Pipeline):
 
     def _transform(self, X, y=None):
         """Transform data."""
+        # coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
         for _, _, transformer in self._iter_transformers():
             if self._has_y_arg(transformer.transform):
                 Xt = transformer.transform(X=X, y=y)
