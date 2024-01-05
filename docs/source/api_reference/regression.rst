@@ -102,8 +102,21 @@ Gaussian process and kernel regression
 
     GaussianProcess
 
-Base
-----
+
+Adapters to other interfaces
+----------------------------
+
+.. currentmodule:: skpro.regression.adapters.sklearn
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    SklearnProbaReg
+
+
+Base classes
+------------
 
 .. currentmodule:: skpro.regression.base
 
