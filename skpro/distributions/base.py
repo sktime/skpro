@@ -271,8 +271,6 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
-            pdf_res = self.pdf(x=x)
-
             return df_map(self.pdf(x=x))(np.log)
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
