@@ -62,6 +62,8 @@ class ConditionUncensored(BaseProbaRegressor):
             Can be passed to any probabilistic regressor,
             but is ignored if capability:survival tag is False.
         """
+        self._y_cols = y.columns
+
         X_and_C = self._get_padded_X(X, C)
         self.regressor_ = self.regressor.clone().fit(X_and_C, y)
 
