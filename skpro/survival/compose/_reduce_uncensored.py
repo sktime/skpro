@@ -60,6 +60,11 @@ class FitUncensored(_DelegatedProbaRegressor):
             Can be passed to any probabilistic regressor,
             but is ignored if capability:survival tag is False.
         """
+        if C is None:
+            self.estimator_ = self.estimator.clone()
+            self.estimator_.fit(X, y)
+            return self
+
         uncensored_index = C.index[C.iloc[:, 0] == 0].tolist()
 
         X_uncensored = X.iloc[uncensored_index, :]
