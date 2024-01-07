@@ -68,7 +68,7 @@ def run_test_for_class(cls):
         # now we know cls is a class, so has an mro
         cls_and_parents = getmro(cls)
         cls_and_parents = [
-            x for x in cls_and_parents if x.__module__.startswith("sktime")
+            x for x in cls_and_parents if x.__module__.startswith("skpro")
         ]
         return any(is_class_changed(x) for x in cls_and_parents)
 
