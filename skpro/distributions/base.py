@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.base import BaseObject
+from skpro.utils.pandas import df_map
 from skpro.utils.validation._dependencies import _check_estimator_deps
 
 
@@ -229,7 +230,8 @@ class BaseDistribution(BaseObject):
                 "this may be numerically unstable"
             )
             warn(self._method_error_msg("pdf", fill_in=approx_method))
-            return self.log_pdf(x=x).applymap(np.exp)
+
+            return df_map(self.log_pdf(x=x))(np.exp)
 
         raise NotImplementedError(self._method_error_msg("pdf", "error"))
 
@@ -269,13 +271,7 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
-            pdf_res = self.pdf(x=x)
-            # safe deprecation of applymap, renamed to map in pandas 2 versions
-            # this if/else ensures compatibility with a wider range of pandas versions
-            if hasattr(pdf_res, "map"):
-                return pdf_res.map(np.log)
-            else:
-                return pdf_res.applymap(np.log)
+            return df_map(self.pdf(x=x))(np.log)
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
 
