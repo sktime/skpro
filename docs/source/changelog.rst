@@ -26,7 +26,8 @@ Highlights
 Dependency changes
 ~~~~~~~~~~~~~~~~~~
 
-* ``scikit-base`` bounds have been updated to ``<0.8.0``.
+* ``scikit-base`` bounds have been updated to ``<0.8.0,>=0.6.1``.
+* ``polars`` (data container soft dependency) bounds have been updated to allow python 3.12.
 
 Enhancements
 ------------
