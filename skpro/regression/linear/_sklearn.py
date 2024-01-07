@@ -102,6 +102,18 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
         copy_X=True,
         verbose=False,
     ):
+        self.max_iter = max_iter
+        self.tol = tol
+        self.alpha_1 = alpha_1
+        self.alpha_2 = alpha_2
+        self.lambda_1 = lambda_1
+        self.lambda_2 = lambda_2
+        self.compute_score = compute_score
+        self.threshold_lambda = threshold_lambda
+        self.fit_intercept = fit_intercept
+        self.copy_X = copy_X
+        self.verbose = verbose
+
         from sklearn.linear_model import ARDRegression
 
         skl_estimator = ARDRegression(
@@ -273,6 +285,19 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
         copy_X=True,
         verbose=False,
     ):
+        self.max_iter = max_iter
+        self.tol = tol
+        self.alpha_1 = alpha_1
+        self.alpha_2 = alpha_2
+        self.lambda_1 = lambda_1
+        self.lambda_2 = lambda_2
+        self.alpha_init = alpha_init
+        self.lambda_init = lambda_init
+        self.compute_score = compute_score
+        self.fit_intercept = fit_intercept
+        self.copy_X = copy_X
+        self.verbose = verbose
+
         from sklearn.linear_model import BayesianRidge
 
         skl_estimator = BayesianRidge(
@@ -333,7 +358,6 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
             "lambda_1": 2e-6,
             "lambda_2": 2e-6,
             "compute_score": True,
-            "threshold_lambda": 15000.0,
             "fit_intercept": False,
         }
         return [param1, param2]
