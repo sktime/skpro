@@ -23,6 +23,11 @@ Highlights
 * ``sklearn`` based probabilistic regressors - Gaussian processes, Bayesian linear regression (:pr:`166`) :user:`fkiraly`
 * ``SklearnProbaReg`` - general interface adapter to ``sklearn`` regressors with variance prediction model (:pr:`163`) :user:`fkiraly`
 
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``scikit-base`` bounds have been updated to ``<0.8.0``.
+
 Enhancements
 ------------
 
