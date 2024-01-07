@@ -15,9 +15,9 @@ class Normal(BaseDistribution):
 
     Parameters
     ----------
-    mean : float or array of float (1D or 2D)
+    mu : float or array of float (1D or 2D)
         mean of the normal distribution
-    sd : float or array of float (1D or 2D), must be positive
+    sigma : float or array of float (1D or 2D), must be positive
         standard deviation of the normal distribution
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
