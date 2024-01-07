@@ -67,8 +67,8 @@ class FitUncensored(_DelegatedProbaRegressor):
 
         uncensored_index = C.index[C.iloc[:, 0] == 0].tolist()
 
-        X_uncensored = X.iloc[uncensored_index, :]
-        y_uncensored = y.iloc[uncensored_index, :]
+        X_uncensored = X.loc[uncensored_index, :]
+        y_uncensored = y.loc[uncensored_index, :]
 
         self.estimator_ = self.estimator.clone()
         self.estimator_.fit(X_uncensored, y_uncensored)
