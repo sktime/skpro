@@ -19,6 +19,61 @@ For planned changes and upcoming releases, see our :ref:`roadmap`.
 
 
 
+Enhancements
+------------
+
+Data types, checks, conversions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] ``n_features`` and ``feature_names`` metadata field for table mtypes (:pr:`150`) :user:`fkiraly`
+* [ENH] ``check_is_mtype`` dict type return, improved input check error messages in ``BaseRegressorProba`` (:pr:`151`) :user:`fkiraly`
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] adapter from ``scipy`` ``rv_discrete`` to ``skpro`` ``Empirical`` (:pr:`155`) :user:`fkiraly`
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] ``sklearn`` wrappers to str-coerce columns of ``pd.DataFrame`` before passing by @fkiraly in https://github.com/sktime/skpro/pull/148
+* [ENH] clean up copy-paste leftovers in ``BaseProbaRegressor`` by @fkiraly in https://github.com/sktime/skpro/pull/156
+* [ENH] adapter for ``sklearn`` probabilistic regressors (:pr:`163`) :user:`fkiraly`
+* [ENH] add tags to ``SklearnProbaReg`` (:pr:`168`) :user:`fkiraly`
+* [ENH] interfacing all concrete ``sklearn`` probabilistic regressors (:pr:`166`) :user:`fkiraly`
+
+Test framework
+~~~~~~~~~~~~~~
+
+* [ENH] scenario tests for mixed ``pandas`` column index types (:pr:`145`) :user:`fkiraly`
+* [ENH] scitype inference utility, test class register, test class test condition (:pr:`159`) :user:`fkiraly`
+
+Fixes
+-----
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] in probabilistic regressors, ensure correct index treatment if ``X: pd.DataFrame`` and ``y: np.ndarray`` are passed (:pr:`146`) :user:`fkiraly`
+
+Documentation
+-------------
+
+* [DOC] update `AUTHORS.rst` file (:pr:`147`) :user:`fkiraly`
+
+Maintenance
+-----------
+
+* [MNT] [Dependabot](deps): Bump ``actions/upload-artifact`` from 3 to 4 (:pr:`154`) :user:`dependabot`
+* [MNT] [Dependabot](deps): Bump ``actions/download-artifact`` from 3 to 4 (:pr:`153`) :user:`dependabot`
+* [MNT] [Dependabot](deps): Bump ``actions/setup-python`` from 4 to 5 (:pr:`152`) :user:`dependabot`
+* [MNT] [Dependabot](deps-dev): Update ``sphinx-gallery`` requirement from ``<0.15.0`` to ``<0.16.0`` (:pr:`149`) :user:`dependabot`
+* [MNT] [Dependabot](deps-dev): Update ``scikit-base`` requirement from ``<0.7.0,>=0.6.1`` to ``>=0.6.1,<0.8.0`` (:pr:`169`) :user:`dependabot`
+* [MNT] adding ``codecov.yml`` and turning coverage reports informational (:pr:`165`) :user:`fkiraly`
+* [MNT] handle deprecation of ``pandas.DataFrame.applymap`` (:pr:`170`) :user:`fkiraly`
+* [MNT] handle ``polars`` deprecations (:pr:`171`) :user:`fkiraly`
+
+
 [2.1.1] - 2023-11-02
 ====================
 
