@@ -511,7 +511,7 @@ class GridSearchCV(BaseGridSearch):
             param3 = {
                 "estimator": CoxPH(alpha=0.05),
                 "cv": KFold(n_splits=4),
-                "param_grid": {"estimator__method": ["lpl", "elastic_net"]},
+                "param_grid": {"method": ["lpl", "elastic_net"]},
                 "scoring": PinballLoss(),
             }
             params.append(param3)
@@ -764,7 +764,7 @@ class RandomizedSearchCV(BaseGridSearch):
             param3 = {
                 "estimator": CoxPH(alpha=0.05),
                 "cv": KFold(n_splits=4),
-                "param_distributions": {"estimator__method": ["lpl", "elastic_net"]},
+                "param_distributions": {"method": ["lpl", "elastic_net"]},
                 "scoring": PinballLoss(),
             }
             params += [param3]
