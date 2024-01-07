@@ -333,7 +333,6 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
             "lambda_1": 2e-6,
             "lambda_2": 2e-6,
             "compute_score": True,
-            "threshold_lambda": 15000.0,
             "fit_intercept": False,
         }
         return [param1, param2]
