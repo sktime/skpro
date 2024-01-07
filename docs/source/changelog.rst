@@ -17,7 +17,11 @@ For planned changes and upcoming releases, see our :ref:`roadmap`.
 [2.1.2] - 2023-01-07
 ====================
 
+Highlights
+----------
 
+* ``sklearn`` based probabilistic regressors - Gaussian processes, Bayesian linear regression (:pr:`166`) :user:`fkiraly`
+* ``SklearnProbaReg`` - general interface adapter to ``sklearn`` regressors with variance prediction model (:pr:`163`) :user:`fkiraly`
 
 Enhancements
 ------------
@@ -59,7 +63,7 @@ Probabilistic regression
 Documentation
 -------------
 
-* [DOC] update `AUTHORS.rst` file (:pr:`147`) :user:`fkiraly`
+* [DOC] update ``AUTHORS.rst`` file (:pr:`147`) :user:`fkiraly`
 
 Maintenance
 -----------
