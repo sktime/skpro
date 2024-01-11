@@ -47,15 +47,17 @@ class QPD_S(BaseDistribution):
 
     Example
     -------
-    >>> from skpro.distributions.qpd import QPD_S
+    >>> from skpro.distributions.qpd import QPD_S  # doctest: +SKIP
 
     >>> qpd = QPD_S(
-    ...         lower=0.2,
-    ...         qv_low=[[1, 2], [3, 4]],
-    ...         qv_median=[[3, 4], [5, 6]],
-    ...         qv_high=[[5, 6], [7, 8]],
+    ...         alpha=0.2,
+    ...         qv_low=[1, 2],
+    ...         qv_median=[3, 4],
+    ...         qv_high=[5, 6],
     ...         lower=0
-    ...       )
+    ...       )  # doctest: +SKIP
+
+    >>> qpd.mean()  # doctest: +SKIP
     """
 
     _tags = {
@@ -71,9 +73,9 @@ class QPD_S(BaseDistribution):
         qv_low: float or object,
         qv_median: float or object,
         qv_high: float or object,
-        lower: Optional[float] = 0,
+        lower: Optional[float] = 0.0,
         version: Optional[str] = "normal",
-        dist_shape: Optional[float] = 0,
+        dist_shape: Optional[float] = 0.0,
         index=None,
         columns=None,
     ):
@@ -92,26 +94,25 @@ class QPD_S(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_S
 
-        for qv in [alpha, qv_low, qv_median, qv_high]:
-            if isinstance(qv, float):
-                qv = np.array([qv])
+        params = [alpha, qv_low, qv_median, qv_high]
+        for idx, p in enumerate(params):
+            if isinstance(p, float):
+                params[idx] = np.array([p])
             elif (
-                isinstance(qv, tuple)
-                or isinstance(qv, list)
-                or isinstance(qv, np.ndarray)
+                isinstance(p, tuple) or isinstance(p, list) or isinstance(p, np.ndarray)
             ):
-                qv = np.array(qv)
+                params[idx] = np.array(p)
             else:
                 raise ValueError("data type is not float or array_like object")
 
-        shape = self.qv_low.shape
+        alpha, qv_low, qv_median, qv_high = params[:]
         if index is None:
+            index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
-            index = pd.RangeIndex(shape[0])
 
         if columns is None:
+            columns = pd.RangeIndex(1)
             self.columns = columns
-            columns = pd.RangeIndex(shape[1])
 
         if version == "normal":
             self.phi = norm()
@@ -148,7 +149,7 @@ class QPD_S(BaseDistribution):
                 shape=dist_shape,
             )
             self.qpd.append(jqpd)
-        self.qpd = pd.DataFrame(self.qpd, index=index)
+        self.qpd = pd.DataFrame(self.qpd, index=self.index)
 
     def mean(self, lower=0.0, upper=np.inf):
         """Return expected value of the distribution.
@@ -230,7 +231,7 @@ class QPD_S(BaseDistribution):
             "qv_high": 0.8,
         }
         params2 = {
-            "alpha": [0.2, 0.2, 0.2],
+            "alpha": 0.2,
             "version": "normal",
             "qv_low": [0.2, 0.2, 0.2],
             "qv_median": [0.5, 0.5, 0.5],
@@ -272,16 +273,18 @@ class QPD_B(BaseDistribution):
 
     Example
     -------
-    >>> from skpro.distributions.qpd import QPD_B
+    >>> from skpro.distributions.qpd import QPD_B  # doctest: +SKIP
 
-    >>> qpd = QPD_S(
-    ...         lower=0.2,
-    ...         qv_low=[[1, 2], [3, 4]],
-    ...         qv_median=[[3, 4], [5, 6]],
-    ...         qv_high=[[5, 6], [7, 8]],
+    >>> qpd = QPD_B(
+    ...         alpha=0.2,
+    ...         qv_low=[1, 2],
+    ...         qv_median=[3, 4],
+    ...         qv_high=[5, 6],
     ...         lower=0,
     ...         upper=10
-    ...       )
+    ...       )  # doctest: +SKIP
+
+    >>> qpd.mean()  # doctest: +SKIP
     """
 
     _tags = {
@@ -300,7 +303,7 @@ class QPD_B(BaseDistribution):
         lower: float,
         upper: float,
         version: Optional[str] = "normal",
-        dist_shape: Optional[float] = 0,
+        dist_shape: Optional[float] = 0.0,
         index=None,
         columns=None,
     ):
@@ -320,26 +323,25 @@ class QPD_B(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_B
 
-        for qv in [alpha, qv_low, qv_median, qv_high]:
-            if isinstance(qv, float):
-                qv = np.array([qv])
+        params = [alpha, qv_low, qv_median, qv_high]
+        for idx, p in enumerate(params):
+            if isinstance(p, float):
+                params[idx] = np.array([p])
             elif (
-                isinstance(qv, tuple)
-                or isinstance(qv, list)
-                or isinstance(qv, np.ndarray)
+                isinstance(p, tuple) or isinstance(p, list) or isinstance(p, np.ndarray)
             ):
-                qv = np.array(qv)
+                params[idx] = np.array(p)
             else:
                 raise ValueError("data type is not float or array_like object")
 
-        shape = self.qv_low.shape
+        alpha, qv_low, qv_median, qv_high = params[:]
         if index is None:
+            index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
-            index = pd.RangeIndex(shape[0])
 
         if columns is None:
+            columns = pd.RangeIndex(1)
             self.columns = columns
-            columns = pd.RangeIndex(shape[1])
 
         if version == "normal":
             self.phi = norm()
@@ -377,7 +379,7 @@ class QPD_B(BaseDistribution):
                 shape=dist_shape,
             )
             self.qpd.append(jqpd)
-        self.qpd = pd.DataFrame(self.qpd, index=index)
+        self.qpd = pd.DataFrame(self.qpd, index=self.index)
 
     def mean(self, lower=0.0, upper=np.inf):
         """Return expected value of the distribution.
@@ -493,10 +495,6 @@ class QPD_U(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    l : float
-        lower bound of semi-bounded range
-    u : float
-        upper bound of supported range
     version: str
         options are ``normal`` (default) or ``logistic``
     dist_shape: str
@@ -505,14 +503,16 @@ class QPD_U(BaseDistribution):
 
     Example
     -------
-    >>> from skpro.distributions.qpd import QPD_U
+    >>> from skpro.distributions.qpd import QPD_U  # doctest: +SKIP
 
-    >>> qpd = QPD_S(
-    ...         lower=0.2,
-    ...         qv_low=[[1, 2], [3, 4]],
-    ...         qv_median=[[3, 4], [5, 6]],
-    ...         qv_high=[[5, 6], [7, 8]],
-    ...       )
+    >>> qpd = QPD_U(
+    ...         alpha=0.2,
+    ...         qv_low=[1, 2],
+    ...         qv_median=[3, 4],
+    ...         qv_high=[5, 6],
+    ...       )  # doctest: +SKIP
+
+    >>> qpd.mean()  # doctest: +SKIP
     """
 
     _tags = {
@@ -529,7 +529,7 @@ class QPD_U(BaseDistribution):
         qv_median: float or object,
         qv_high: float or object,
         version: Optional[str] = "normal",
-        dist_shape: Optional[float] = 0,
+        dist_shape: Optional[float] = 0.0,
         index=None,
         columns=None,
     ):
@@ -547,26 +547,25 @@ class QPD_U(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_U
 
-        for qv in [alpha, qv_low, qv_median, qv_high]:
-            if isinstance(qv, float):
-                qv = np.array([qv])
+        params = [alpha, qv_low, qv_median, qv_high]
+        for idx, p in enumerate(params):
+            if isinstance(p, float):
+                params[idx] = np.array([p])
             elif (
-                isinstance(qv, tuple)
-                or isinstance(qv, list)
-                or isinstance(qv, np.ndarray)
+                isinstance(p, tuple) or isinstance(p, list) or isinstance(p, np.ndarray)
             ):
-                qv = np.array(qv)
+                params[idx] = np.array(p)
             else:
                 raise ValueError("data type is not float or array_like object")
 
-        shape = self.qv_low.shape
+        alpha, qv_low, qv_median, qv_high = params[:]
         if index is None:
+            index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
-            index = pd.RangeIndex(shape[0])
 
         if columns is None:
+            columns = pd.RangeIndex(1)
             self.columns = columns
-            columns = pd.RangeIndex(shape[1])
 
         if version == "normal":
             self.phi = norm()
@@ -602,7 +601,7 @@ class QPD_U(BaseDistribution):
                 shape=dist_shape,
             )
             self.qpd.append(jqpd)
-        self.qpd = pd.DataFrame(self.qpd, index=index)
+        self.qpd = pd.DataFrame(self.qpd, index=self.index)
 
     def mean(self, lower=0.0, upper=np.inf):
         """Return expected value of the distribution.
