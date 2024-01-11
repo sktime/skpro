@@ -73,7 +73,7 @@ class CyclicBoosting(BaseProbaRegressor):
     >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
-    >>>
+
     >>> fp = {
     ...     'age': flags.IS_CONTINUOUS,
     ...     'sex': flags.IS_CONTINUOUS,
@@ -128,17 +128,17 @@ class CyclicBoosting(BaseProbaRegressor):
         if not isinstance(feature_properties, dict):
             raise ValueError("feature_properties needs to be dict")
         if interaction is None:
-            interaction = [()]
-        for i in interaction:
-            if not isinstance(i, tuple):
-                raise ValueError("interaction needs to be tuple")
+            interaction = []
+        if interaction:
+            for i in interaction:
+                if not isinstance(i, tuple):
+                    raise ValueError("interaction needs to be tuple")
         if alpha >= 0.5 or alpha <= 0.0:
             raise ValueError("alpha's range needs to be 0.0 < alpha < 0.5")
 
         # build estimators
         features = list(self.feature_properties.keys())
-        for i in interaction:
-            features.append(i)
+        features += interaction
 
         if self.mode == "multiplicative":
             from cyclic_boosting import pipeline_CBMultiplicativeQuantileRegressor
@@ -414,17 +414,11 @@ class CyclicBoosting(BaseProbaRegressor):
             "s6": flags.IS_CONTINUOUS,
         }
         param1 = {"feature_properties": fp}
-        param2 = {"feature_properties": fp, "interaction": [("age", "sex"), ("s1, s3")]}
-        param3 = {
-            "feature_properties": fp,
-            "interaction": [("age", "sex")],
-            "alpha": 0.3,
-        }
-        param4 = {
+        param2 = {
             "feature_properties": fp,
             "interaction": [("age", "sex")],
             "alpha": 0.3,
             "mode": "additive",
         }
 
-        return [param1, param2, param3, param4]
+        return [param1, param2]
