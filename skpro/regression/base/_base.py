@@ -575,9 +575,9 @@ class BaseProbaRegressor(BaseEstimator):
 
     def _check_X(self, X, return_metadata=False):
         if return_metadata:
-            req_metadata = ["n_instances"]
+            req_metadata = ["n_instances", "feature_names"]
         else:
-            req_metadata = []
+            req_metadata = ["feature_names"]
         # input validity check for X
         valid, msg, metadata = check_is_mtype(
             X,
@@ -612,7 +612,7 @@ class BaseProbaRegressor(BaseEstimator):
                 )
         # if not, remember columns
         else:
-            self._X_columns = X.columns
+            self._X_columns = metadata["feature_names"]
 
         if return_metadata:
             return X, metadata
