@@ -37,7 +37,7 @@ def test_cyclic_boosting_simple_use():
     }
 
     reg_proba = CyclicBoosting(feature_properties=fp)
-    reg_proba.fit(X_train, y_train)
+    reg_proba.fit(X_train.copy(), y_train)
     y_pred = reg_proba.predict_proba(X_test)
 
     assert y_pred.shape == y_test.shape
