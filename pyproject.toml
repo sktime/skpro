@@ -61,7 +61,7 @@ all_extras = [
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
-    "cyclic-boosting>=1.2.5"
+    "cyclic-boosting>=1.2.5; python_version < '3.12'"
 ]
 
 dev = [
