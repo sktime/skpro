@@ -44,13 +44,15 @@ class CyclicBoosting(BaseProbaRegressor):
     mode : str, default='multiplicative'
         the type of quantile regressor. 'multiplicative' or 'additive'
     bound : str
-            Different modes defined by supported target range, options are ``S``
+        Different modes defined by supported target range, options are ``S``
             (semi-bound), ``B`` (bound), and ``U`` (unbound).
     lower : float
         lower bound of supported range (only active for bound and semi-bound
         modes)
     upper : float
         upper bound of supported range (only active for bound mode)
+    max_iter : int, default=10
+        number of maximal iterations
 
     Attributes
     ----------
@@ -87,8 +89,8 @@ class CyclicBoosting(BaseProbaRegressor):
     ...     's6':  flags.IS_CONTINUOUS,
     ... }  # doctest: +SKIP
     >>> reg_proba = CyclicBoosting(feature_properties=fp)  # doctest: +SKIP
-    >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
-    >>> y_pred = reg_proba.predict_proba(X_test)  # doctest: +SKIP
+    >>> reg_proba.fit(X_train.copy(), y_train)  # doctest: +SKIP
+    >>> y_pred = reg_proba.predict_proba(X_test.copy())  # doctest: +SKIP
     """
 
     _tags = {
@@ -109,6 +111,7 @@ class CyclicBoosting(BaseProbaRegressor):
         bound="U",
         lower=0,
         upper=1,
+        max_iter=10,
     ):
         self.feature_properties = feature_properties
         self.interaction = interaction
@@ -121,6 +124,7 @@ class CyclicBoosting(BaseProbaRegressor):
         self.bound = bound
         self.lower = lower
         self.upper = upper
+        self.max_iter = max_iter
 
         super().__init__()
 
@@ -157,7 +161,7 @@ class CyclicBoosting(BaseProbaRegressor):
                     quantile=quantile,
                     feature_properties=self.feature_properties,
                     feature_groups=features,
-                    maximal_iterations=50,
+                    maximal_iterations=max_iter,
                 )
             )
 
@@ -178,6 +182,10 @@ class CyclicBoosting(BaseProbaRegressor):
         -------
         self : reference to self
         """
+        for feature_name in self.feature_properties.keys():
+            if feature_name not in X.columns:
+                raise ValueError(f"{feature_name} is not in X")
+
         self._y_cols = y.columns
         y = y.to_numpy().flatten()
 
@@ -206,6 +214,10 @@ class CyclicBoosting(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
+        for feature_name in self.feature_properties.keys():
+            if feature_name not in X.columns:
+                raise ValueError(f"{feature_name} is not in X")
+
         index = X.index
         y_cols = self._y_cols
 
@@ -235,6 +247,10 @@ class CyclicBoosting(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
+        for feature_name in self.feature_properties.keys():
+            if feature_name not in X.columns:
+                raise ValueError(f"{feature_name} is not in X")
+
         index = X.index
         y_cols = self._y_cols
 
@@ -294,6 +310,10 @@ class CyclicBoosting(BaseProbaRegressor):
             Upper/lower interval end are equivalent to
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
+        for feature_name in self.feature_properties.keys():
+            if feature_name not in X.columns:
+                raise ValueError(f"{feature_name} is not in X")
+
         index = X.index
         y_cols = self._y_cols
         columns = pd.MultiIndex.from_product(
@@ -340,6 +360,10 @@ class CyclicBoosting(BaseProbaRegressor):
             "if you need more plausible quantile value, "
             "please train regressor again for specified quantile estimation"
         )
+        for feature_name in self.feature_properties.keys():
+            if feature_name not in X.columns:
+                raise ValueError(f"{feature_name} is not in X")
+
         if isinstance(quantiles, list):
             for q in quantiles:
                 if not (q in self.quantiles):
@@ -400,7 +424,7 @@ class CyclicBoosting(BaseProbaRegressor):
         """
         from cyclic_boosting import flags
 
-        # NOTE: This test is only corresponded diabeat dataset
+        # NOTE: This test is only corresponded diabetes dataset
         fp = {
             "age": flags.IS_CONTINUOUS,
             "sex": flags.IS_CONTINUOUS,

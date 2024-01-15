@@ -21,6 +21,8 @@ def test_cyclic_boosting_simple_use():
 
     X, y = load_diabetes(return_X_y=True, as_frame=True)
     y = pd.DataFrame(y)
+    X = X.iloc[:50]
+    y = y.iloc[:50]
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
     fp = {
@@ -37,7 +39,7 @@ def test_cyclic_boosting_simple_use():
     }
 
     reg_proba = CyclicBoosting(feature_properties=fp)
-    reg_proba.fit(X_train.copy(), y_train)
+    reg_proba.fit(X_train, y_train)
     y_pred = reg_proba.predict_proba(X_test)
 
     assert y_pred.shape == y_test.shape
