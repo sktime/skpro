@@ -30,33 +30,37 @@ class CyclicBoosting(BaseProbaRegressor):
 
     Parameters
     ----------
-    feature_properties : dict
+    feature_groups : list, default=None
+        Explanatory variables and interaction terms in the model,
+        For each feature or feature tuple in the sequence, a
+        one- or multidimensional factor profile will be determined,
+        respectively, and used in the prediction.
+        e.g. [sample1, sample2, sample3, (sample1, sample2)]
+        see https://cyclic-boosting.readthedocs.io/en/latest/tutorial.html#set-features
+    feature_properties : dict, default=None
         name and characteristic of train dataset
         it is able to set multiple characteristic by OR operator
         e.g. {sample1: IS_CONTINUOUS | IS_LINEAR, sample2: IS_ORDERED}
-        for basic options, see
-        https://cyclic-boosting.readthedocs.io/en/latest/tutorial.html#set-feature-properties
-    interaction : list[tuple], default=None, optional
-        some combinations of explanatory variables, (interaction term)
-        e.g. [(sample1, sample2), (sample1, sample3)]
+        for basic options, see https://cyclic-boosting.readthedocs.io/en/latest/\
+        tutorial.html#set-feature-properties
     alpha : float, default=0.2
         lower quantile for QPD's parameter alpha
     mode : str, default='multiplicative'
         the type of quantile regressor. 'multiplicative' or 'additive'
-    bound : str
+    bound : str, default='U'
         Different modes defined by supported target range, options are ``S``
             (semi-bound), ``B`` (bound), and ``U`` (unbound).
-    lower : float
+    lower : float, default=0.0
         lower bound of supported range (only active for bound and semi-bound
         modes)
-    upper : float
+    upper : float, default=1.0
         upper bound of supported range (only active for bound mode)
-    max_iter : int, default=10
-        number of maximal iterations
+    maximal_iterations : int, default=10
+        number of iterations
 
     Attributes
     ----------
-    estimators_ : list of of skpro regressors
+    estimators_ : list of skpro regressors
         clones of regressor in `estimator` fitted in the ensemble
     quantiles : list, default=[0.2, 0.5, 0.8]
         targets of quantile prediction for j-qpd's param
@@ -70,27 +74,14 @@ class CyclicBoosting(BaseProbaRegressor):
     Example
     --------
     >>> from skpro.regression.cyclic_boosting import CyclicBoosting
-    >>> from cyclic_boosting import flags  # doctest: +SKIP
     >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
     >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
 
-    >>> fp = {
-    ...     'age': flags.IS_CONTINUOUS,
-    ...     'sex': flags.IS_CONTINUOUS,
-    ...     'bmi': flags.IS_CONTINUOUS,
-    ...     'bp':  flags.IS_CONTINUOUS,
-    ...     's1':  flags.IS_CONTINUOUS,
-    ...     's2':  flags.IS_CONTINUOUS,
-    ...     's3':  flags.IS_CONTINUOUS,
-    ...     's4':  flags.IS_CONTINUOUS,
-    ...     's5':  flags.IS_CONTINUOUS,
-    ...     's6':  flags.IS_CONTINUOUS,
-    ... }  # doctest: +SKIP
-    >>> reg_proba = CyclicBoosting(feature_properties=fp)  # doctest: +SKIP
-    >>> reg_proba.fit(X_train.copy(), y_train)  # doctest: +SKIP
-    >>> y_pred = reg_proba.predict_proba(X_test.copy())  # doctest: +SKIP
+    >>> reg_proba = CyclicBoosting()  # doctest: +SKIP
+    >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
+    >>> y_pred = reg_proba.predict_proba(X_test)  # doctest: +SKIP
     """
 
     _tags = {
@@ -104,46 +95,41 @@ class CyclicBoosting(BaseProbaRegressor):
 
     def __init__(
         self,
-        feature_properties,
-        interaction=None,
+        feature_groups=None,
+        feature_properties=None,
         alpha=0.2,
         mode="multiplicative",
         bound="U",
-        lower=0,
-        upper=1,
-        max_iter=10,
+        lower=0.0,
+        upper=1.0,
+        maximal_iterations=10,
     ):
+        self.feature_groups = feature_groups
         self.feature_properties = feature_properties
-        self.interaction = interaction
         self.alpha = alpha
         self.quantiles = [self.alpha, 0.5, 1 - self.alpha]
-        self.quantile_values = []
-        self.quantile_est = []
+        self.quantile_values = list()
+        self.quantile_est = list()
         self.qpd = None
         self.mode = mode
         self.bound = bound
         self.lower = lower
         self.upper = upper
-        self.max_iter = max_iter
+        self.maximal_iterations = maximal_iterations
 
         super().__init__()
 
         # check parameters
-        if not isinstance(feature_properties, dict):
+        if (not isinstance(feature_groups, list)) and feature_groups is not None:
+            raise ValueError("feature_groups needs to be list")
+        if (
+            not isinstance(feature_properties, dict)
+        ) and feature_properties is not None:
             raise ValueError("feature_properties needs to be dict")
-        if interaction is None:
-            interaction = []
-        if interaction:
-            for i in interaction:
-                if not isinstance(i, tuple):
-                    raise ValueError("interaction needs to be tuple")
         if alpha >= 0.5 or alpha <= 0.0:
             raise ValueError("alpha's range needs to be 0.0 < alpha < 0.5")
 
         # build estimators
-        features = list(self.feature_properties.keys())
-        features += interaction
-
         if self.mode == "multiplicative":
             from cyclic_boosting import pipeline_CBMultiplicativeQuantileRegressor
 
@@ -159,9 +145,9 @@ class CyclicBoosting(BaseProbaRegressor):
             self.quantile_est.append(
                 regressor(
                     quantile=quantile,
-                    feature_properties=self.feature_properties,
-                    feature_groups=features,
-                    maximal_iterations=max_iter,
+                    feature_groups=feature_groups,
+                    feature_properties=feature_properties,
+                    maximal_iterations=maximal_iterations,
                 )
             )
 
@@ -182,9 +168,16 @@ class CyclicBoosting(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        for feature_name in self.feature_properties.keys():
-            if feature_name not in X.columns:
-                raise ValueError(f"{feature_name} is not in X")
+        if self.feature_groups is not None:
+            feature_names = list()
+            for feature in self.feature_groups:
+                if isinstance(feature, tuple):
+                    for f in feature:
+                        feature_names.append(f)
+                else:
+                    feature_names.append(feature)
+            if not set(feature_names).issubset(set(X.columns)):
+                raise ValueError(f"{feature} is not in X")
 
         self._y_cols = y.columns
         y = y.to_numpy().flatten()
@@ -214,9 +207,16 @@ class CyclicBoosting(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        for feature_name in self.feature_properties.keys():
-            if feature_name not in X.columns:
-                raise ValueError(f"{feature_name} is not in X")
+        if self.feature_groups is not None:
+            feature_names = list()
+            for feature in self.feature_groups:
+                if isinstance(feature, tuple):
+                    for f in feature:
+                        feature_names.append(f)
+                else:
+                    feature_names.append(feature)
+            if not set(feature_names).issubset(set(X.columns)):
+                raise ValueError(f"{feature} is not in X")
 
         index = X.index
         y_cols = self._y_cols
@@ -247,15 +247,22 @@ class CyclicBoosting(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        for feature_name in self.feature_properties.keys():
-            if feature_name not in X.columns:
-                raise ValueError(f"{feature_name} is not in X")
+        if self.feature_groups is not None:
+            feature_names = list()
+            for feature in self.feature_groups:
+                if isinstance(feature, tuple):
+                    for f in feature:
+                        feature_names.append(f)
+                else:
+                    feature_names.append(feature)
+            if not set(feature_names).issubset(set(X.columns)):
+                raise ValueError(f"{feature} is not in X")
 
         index = X.index
         y_cols = self._y_cols
 
         # predict quantiles
-        self.quantile_values = []
+        self.quantile_values = list()
         for est in self.quantile_est:
             yhat = est.predict(X.copy())
             self.quantile_values.append(yhat)
@@ -310,9 +317,16 @@ class CyclicBoosting(BaseProbaRegressor):
             Upper/lower interval end are equivalent to
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
-        for feature_name in self.feature_properties.keys():
-            if feature_name not in X.columns:
-                raise ValueError(f"{feature_name} is not in X")
+        if self.feature_groups is not None:
+            feature_names = list()
+            for feature in self.feature_groups:
+                if isinstance(feature, tuple):
+                    for f in feature:
+                        feature_names.append(f)
+                else:
+                    feature_names.append(feature)
+            if not set(feature_names).issubset(set(X.columns)):
+                raise ValueError(f"{feature} is not in X")
 
         index = X.index
         y_cols = self._y_cols
@@ -353,6 +367,17 @@ class CyclicBoosting(BaseProbaRegressor):
             Entries are quantile predictions, for var in col index,
                 at quantile probability in second col index, for the row index.
         """
+        if self.feature_groups is not None:
+            feature_names = list()
+            for feature in self.feature_groups:
+                if isinstance(feature, tuple):
+                    for f in feature:
+                        feature_names.append(f)
+                else:
+                    feature_names.append(feature)
+            if not set(feature_names).issubset(set(X.columns)):
+                raise ValueError(f"{feature} is not in X")
+
         is_given_proba = False
         warning = (
             "{} percentile doesn't trained, return QPD's quantile value, "
@@ -360,10 +385,6 @@ class CyclicBoosting(BaseProbaRegressor):
             "if you need more plausible quantile value, "
             "please train regressor again for specified quantile estimation"
         )
-        for feature_name in self.feature_properties.keys():
-            if feature_name not in X.columns:
-                raise ValueError(f"{feature_name} is not in X")
-
         if isinstance(quantiles, list):
             for q in quantiles:
                 if not (q in self.quantiles):
@@ -384,7 +405,7 @@ class CyclicBoosting(BaseProbaRegressor):
         )
 
         # predict quantiles
-        self.quantile_values = []
+        self.quantile_values = list()
         if is_given_proba:
             qpd = self.predict_proba(X.copy())
             if isinstance(quantiles, list):
@@ -422,27 +443,6 @@ class CyclicBoosting(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from cyclic_boosting import flags
 
-        # NOTE: This test is only corresponded diabetes dataset
-        fp = {
-            "age": flags.IS_CONTINUOUS,
-            "sex": flags.IS_CONTINUOUS,
-            "bmi": flags.IS_CONTINUOUS,
-            "bp": flags.IS_CONTINUOUS,
-            "s1": flags.IS_CONTINUOUS,
-            "s2": flags.IS_CONTINUOUS,
-            "s3": flags.IS_CONTINUOUS,
-            "s4": flags.IS_CONTINUOUS,
-            "s5": flags.IS_CONTINUOUS,
-            "s6": flags.IS_CONTINUOUS,
-        }
-        param1 = {"feature_properties": fp}
-        param2 = {
-            "feature_properties": fp,
-            "interaction": [("age", "sex")],
-            "alpha": 0.3,
-            "mode": "additive",
-        }
-
-        return [param1, param2]
+        param1 = {"alpha": 0.3, "mode": "additive", "bound": "S", "lower": 0.0}
+        return [param1]
