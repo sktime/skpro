@@ -38,9 +38,9 @@ class CyclicBoosting(BaseProbaRegressor):
         e.g. [sample1, sample2, sample3, (sample1, sample2)]
         see https://cyclic-boosting.readthedocs.io/en/latest/tutorial.html#set-features
     feature_properties : dict, default=None
-        name and characteristic of train dataset
+        name and characteristic of train dataset by `flags` from cyclic boosting library
         it is able to set multiple characteristic by OR operator
-        e.g. {sample1: IS_CONTINUOUS | IS_LINEAR, sample2: IS_ORDERED}
+        e.g. {sample1: flags.IS_CONTINUOUS | flags.IS_LINEAR, sample2: flags.IS_ORDERED}
         for basic options, see https://cyclic-boosting.readthedocs.io/en/latest/\
         tutorial.html#set-feature-properties
     alpha : float, default=0.2
