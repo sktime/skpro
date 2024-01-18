@@ -443,6 +443,5 @@ class CyclicBoosting(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-
         param1 = {"alpha": 0.3, "mode": "additive", "bound": "S", "lower": 0.0}
         return [param1]
