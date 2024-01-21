@@ -574,12 +574,34 @@ class BaseProbaRegressor(BaseEstimator):
             return X_inner, y_inner
 
     def _check_X(self, X, return_metadata=False):
+        """Check validity of X, convert to X_inner_mtype, and return.
+
+        Writes to self:
+        feature_names_in_ = feature_names metadata of X, if not already set.
+            feature_names is metadata field of X, as returned by check_is_mtype.
+        n_features_in_ = number of features in X, if not already set.
+            n_features_in_ = len(feature_names_in_)
+
+        Parameters
+        ----------
+        X : object
+            object to check and convert
+        return_metadata : bool, optional, default=False
+            whether to return metadata
+
+        Returns
+        -------
+        X_inner : object
+            X converted to X_inner_mtype = self.get_tag("X_inner_mtype")
+        X_metadata : dict, only returned if return_metadata=True
+            metadata of X, as returned by check_is_mtype
+        """
         if return_metadata:
             req_metadata = ["n_instances", "feature_names"]
         else:
             req_metadata = ["feature_names"]
         # input validity check for X
-        valid, msg, metadata = check_is_mtype(
+        valid, msg, X_metadata = check_is_mtype(
             X,
             ALLOWED_MTYPES,
             "Table",
@@ -587,37 +609,44 @@ class BaseProbaRegressor(BaseEstimator):
             var_name="X",
             msg_return_dict="list",
         )
+        # shorthands for metadata used below
+        X_feature_names = X_metadata["feature_names"]
 
         # update with clearer message
         if not valid:
             check_is_error_msg(msg, var_name="X", raise_exception=True)
 
+        # if we have seen X before, check against columns
+        if hasattr(self, "feature_names_in_"):
+            msg_feat = (
+                f"Error in {type(self).__name__}: "
+                "X in predict methods must have same columns as X in fit, "
+                f"columns in fit were {self.feature_names_in_}, "
+                f"but in predict found X feature names = {X_feature_names}"
+            )
+            if not len(X_feature_names) == len(self.feature_names_in_):
+                raise ValueError(msg_feat)
+            if not (X_feature_names == self.feature_names_in_).all():
+                raise ValueError(msg_feat)
+        # if not, remember columns
+        else:
+            self.feature_names_in_ = X_feature_names
+            self.n_features_in_ = len(X_feature_names)
+
         # convert X to X_inner_mtype
         X_inner_mtype = self.get_tag("X_inner_mtype")
-        X = convert(
+        X_inner = convert(
             obj=X,
-            from_type=metadata["mtype"],
+            from_type=X_metadata["mtype"],
             to_type=X_inner_mtype,
             as_scitype="Table",
             store=self._X_converter_store,
         )
 
-        # if we have seen X before, check against columns
-        if hasattr(self, "_X_columns") and hasattr(X, "columns"):
-            if not (X.columns == self._X_columns).all():
-                raise ValueError(
-                    "X in predict methods must have same columns as X in fit, "
-                    f"columns in fit were {self._X_columns}, "
-                    f"but in predict found X.columns = {X.columns}"
-                )
-        # if not, remember columns
-        else:
-            self._X_columns = metadata["feature_names"]
-
         if return_metadata:
-            return X, metadata
+            return X_inner, X_metadata
         else:
-            return X
+            return X_inner
 
     def _check_y(self, y):
         # input validity check for y
