@@ -611,6 +611,8 @@ class BaseProbaRegressor(BaseEstimator):
         )
         # shorthands for metadata used below
         X_feature_names = X_metadata["feature_names"]
+        if not isinstance(X_feature_names, np.ndarray):
+            X_feature_names = np.array(X_feature_names)
 
         # update with clearer message
         if not valid:
