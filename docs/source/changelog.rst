@@ -14,6 +14,54 @@ You can also subscribe to ``skpro``'s
 
 For planned changes and upcoming releases, see our :ref:`roadmap`.
 
+
+[2.1.3] - 2023-01-22
+====================
+
+``sklearn`` compatibility update:
+
+* compatibility with ``sklearn 1.4.X``
+* addition of ``feature_names_in_`` and ``n_features_in_`` default attributes
+  to ``BaseProbaRegressor``, written to ``self`` in ``fit``
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``sklearn`` bounds have been updated to ``<1.4.0,>=0.24.0``.
+
+Core interface changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+Probabilistic regression
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+* probabilistic regressors will now always save attributes ``feature_names_in_``
+  and ``n_features_in_`` to ``self`` in ``fit``.
+  ``feature_names_in_`` is an 1D ``np.ndarray`` of feature names seen in ``fit``,
+  ``n_features_in_`` is an ``int``, and equal to ``len(feature_names_in_)``.
+* this ensures compatibility with ``sklearn``, where these attributes are expected.
+* the new attributes can also be queried via the existing ``get_fitted_params``
+  interface.
+
+Enhancements
+------------
+
+* [ENH] in ``BaseRegressorProba.fit``, use ``"feature_names"`` metadata field
+  to store feature names and write to ``self`` in ``fit`` (:pr:`180`) :user:`dependabot`
+
+Maintenance
+-----------
+
+* [MNT] [Dependabot](deps): Bump ``actions/dependency-review-action``
+  from 3 to 4 (:pr:`178`) :user:`dependabot`
+* [MNT] [Dependabot](deps-dev): Update polars requirement from ``<0.20.0``
+  to ``<0.21.0`` (:pr:`176`) :user:`dependabot`
+* [MNT] [Dependabot](deps-dev): Update ``sphinx-issues`` requirement
+  from ``<4.0.0`` to ``<5.0.0`` (:pr:`179`) :user:`dependabot`
+* [MNT] [Dependabot](deps-dev): Update ``scikit-learn`` requirement
+  from ``<1.4.0,>=0.24.0`` to ``>=0.24.0,<1.5.0`` (:pr:`177`) :user:`dependabot`
+
+
 [2.1.2] - 2023-01-07
 ====================
 
@@ -46,8 +94,8 @@ Probability distributions
 Probabilistic regression
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-* [ENH] ``sklearn`` wrappers to str-coerce columns of ``pd.DataFrame`` before passing by @fkiraly in https://github.com/sktime/skpro/pull/148
-* [ENH] clean up copy-paste leftovers in ``BaseProbaRegressor`` by @fkiraly in https://github.com/sktime/skpro/pull/156
+* [ENH] ``sklearn`` wrappers to str-coerce columns of ``pd.DataFrame`` before passing (:pr:`148`) :user:`fkiraly`
+* [ENH] clean up copy-paste leftovers in ``BaseProbaRegressor`` (:pr:`156`) :user:`fkiraly`
 * [ENH] adapter for ``sklearn`` probabilistic regressors (:pr:`163`) :user:`fkiraly`
 * [ENH] add tags to ``SklearnProbaReg`` (:pr:`168`) :user:`fkiraly`
 * [ENH] interfacing all concrete ``sklearn`` probabilistic regressors (:pr:`166`) :user:`fkiraly`
