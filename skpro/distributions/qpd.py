@@ -124,18 +124,19 @@ class QPD_S(BaseDistribution):
         if (np.any(qv_low > qv_median)) or np.any(qv_high < qv_median):
             warnings.warn(
                 "The SPT values are not monotonically increasing, "
-                "each SPT will be replaced by mean value",
+                "each SPT is sorted by value",
                 stacklevel=2,
             )
             idx = np.where((qv_low > qv_median), True, False) + np.where(
                 (qv_high < qv_median), True, False
             )
-            warnings.warn(
-                f"replaced index by mean {np.argwhere(idx > 0).tolist()}", stacklevel=2
-            )
-            qv_low[idx] = np.nanmean(qv_low)
-            qv_median[idx] = np.nanmean(qv_median)
-            qv_high[idx] = np.nanmean(qv_high)
+            un_orderd_idx = np.argwhere(idx > 0).tolist()
+            warnings.warn(f"sorted index {un_orderd_idx}", stacklevel=2)
+            for idx in un_orderd_idx:
+                low, mid, high = sorted([qv_low[idx], qv_median[idx], qv_high[idx]])
+                qv_low[idx] = low
+                qv_median[idx] = mid
+                qv_high[idx] = high
 
         iter = np.nditer(qv_low, flags=["c_index"])
         for _i in iter:
@@ -195,7 +196,7 @@ class QPD_S(BaseDistribution):
         for idx in x.index:
             qpd = self.qpd.loc[idx, :].values[0]
             _x = x.loc[idx, :]
-            _pdf = [derivative(qpd.cdf, x0, dx=1e-6) for x0 in _x]
+            _pdf = derivative(qpd.cdf, _x, dx=1e-6)
             pdf.append(_pdf)
         pdf_arr = np.array(pdf)
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
@@ -353,18 +354,19 @@ class QPD_B(BaseDistribution):
         if (np.any(qv_low > qv_median)) or np.any(qv_high < qv_median):
             warnings.warn(
                 "The SPT values are not monotonically increasing, "
-                "each SPT will be replaced by mean value",
+                "each SPT is sorted by value",
                 stacklevel=2,
             )
             idx = np.where((qv_low > qv_median), True, False) + np.where(
                 (qv_high < qv_median), True, False
             )
-            warnings.warn(
-                f"replaced index by mean {np.argwhere(idx > 0).tolist()}", stacklevel=2
-            )
-            qv_low[idx] = np.nanmean(qv_low)
-            qv_median[idx] = np.nanmean(qv_median)
-            qv_high[idx] = np.nanmean(qv_high)
+            un_orderd_idx = np.argwhere(idx > 0).tolist()
+            warnings.warn(f"sorted index {un_orderd_idx}", stacklevel=2)
+            for idx in un_orderd_idx:
+                low, mid, high = sorted([qv_low[idx], qv_median[idx], qv_high[idx]])
+                qv_low[idx] = low
+                qv_median[idx] = mid
+                qv_high[idx] = high
 
         iter = np.nditer(qv_low, flags=["c_index"])
         for _i in iter:
@@ -425,7 +427,7 @@ class QPD_B(BaseDistribution):
         for idx in x.index:
             qpd = self.qpd.loc[idx, :].values[0]
             _x = x.loc[idx, :]
-            _pdf = [derivative(qpd.cdf, x0, dx=1e-6) for x0 in _x]
+            _pdf = derivative(qpd.cdf, _x, dx=1e-6)
             pdf.append(_pdf)
         pdf_arr = np.array(pdf)
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
@@ -577,18 +579,19 @@ class QPD_U(BaseDistribution):
         if (np.any(qv_low > qv_median)) or np.any(qv_high < qv_median):
             warnings.warn(
                 "The SPT values are not monotonically increasing, "
-                "each SPT will be replaced by mean value",
+                "each SPT is sorted by value",
                 stacklevel=2,
             )
             idx = np.where((qv_low > qv_median), True, False) + np.where(
                 (qv_high < qv_median), True, False
             )
-            warnings.warn(
-                f"replaced index by mean {np.argwhere(idx > 0).tolist()}", stacklevel=2
-            )
-            qv_low[idx] = np.nanmean(qv_low)
-            qv_median[idx] = np.nanmean(qv_median)
-            qv_high[idx] = np.nanmean(qv_high)
+            un_orderd_idx = np.argwhere(idx > 0).tolist()
+            warnings.warn(f"sorted index {un_orderd_idx}", stacklevel=2)
+            for idx in un_orderd_idx:
+                low, mid, high = sorted([qv_low[idx], qv_median[idx], qv_high[idx]])
+                qv_low[idx] = low
+                qv_median[idx] = mid
+                qv_high[idx] = high
 
         iter = np.nditer(qv_low, flags=["c_index"])
         for _i in iter:
@@ -647,7 +650,7 @@ class QPD_U(BaseDistribution):
         for idx in x.index:
             qpd = self.qpd.loc[idx, :].values[0]
             _x = x.loc[idx, :]
-            _pdf = [derivative(qpd.cdf, x0, dx=1e-6) for x0 in _x]
+            _pdf = derivative(qpd.cdf, _x, dx=1e-6)
             pdf.append(_pdf)
         pdf_arr = np.array(pdf)
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
