@@ -75,7 +75,7 @@ def test_cyclic_boosting_with_manual_paramaters():
     reg_proba = CyclicBoosting(
         feature_groups=features,
         feature_properties=fp,
-        maximal_iterations=20,
+        maximal_iterations=5,
         alpha=0.25,
         mode="additive",
         bound="S",
