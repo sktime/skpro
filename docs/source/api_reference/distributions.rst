@@ -35,9 +35,6 @@ Parametric distributions
     Laplace
     Normal
     TDistribution
-    QPD_U
-    QPD_S
-    QPD_B
 
 Non-parametric and empirical distributions
 ------------------------------------------
@@ -49,6 +46,9 @@ Non-parametric and empirical distributions
     :template: class.rst
 
     Empirical
+    QPD_U
+    QPD_S
+    QPD_B
 
 Composite distributions
 -----------------------
