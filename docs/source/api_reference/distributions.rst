@@ -46,6 +46,9 @@ Non-parametric and empirical distributions
     :template: class.rst
 
     Empirical
+    QPD_U
+    QPD_S
+    QPD_B
 
 Composite distributions
 -----------------------

@@ -79,6 +79,14 @@ take one or multiple ``sklearn`` estimators and adda probabilistic prediction mo
 
     MapieRegressor
 
+.. currentmodule:: skpro.regression.cyclic_boosting
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    CyclicBoosting
+
 Linear regression
 -----------------
 
