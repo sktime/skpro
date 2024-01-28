@@ -78,14 +78,9 @@ class BaseProbaRegressor(BaseEstimator):
             feature instances to fit regressor to
         y : pd.DataFrame, must be same length as X
             labels to fit regressor to
-        C : pd.DataFrame, optional (default=None)
-            censoring information for survival analysis,
-            should have same column name as y, same length as X and y
-            should have entries 0 and 1 (float or int)
-            0 = uncensored, 1 = (right) censored
-            if None, all observations are assumed to be uncensored
-            Can be passed to any probabilistic regressor,
-            but is ignored if capability:survival tag is False.
+        C : ignored, optional (default=None)
+            censoring information for survival analysis
+            All probabilistic regressors assume data to be uncensored
 
         Returns
         -------

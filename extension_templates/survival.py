@@ -7,7 +7,7 @@
 # todo: uncomment the following line, enter authors' GitHub IDs
 # __author__ = [authorGitHubID, anotherAuthorGitHubID]
 
-from skpro.regression.base import BaseProbaRegressor
+from skpro.survival.base import BaseSurvReg
 
 # todo: add any necessary imports here
 
@@ -16,8 +16,8 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 # todo: change class name and write docstring
-class ClassName(BaseProbaRegressor):
-    """Custom probabilistic supervised regressor. todo: write docstring.
+class ClassName(BaseSurvReg):
+    """Custom probabilistic survival regressor. todo: write docstring.
 
     todo: describe your custom regressor here
 
@@ -98,8 +98,6 @@ class ClassName(BaseProbaRegressor):
             should have entries 0 and 1 (float or int)
             0 = uncensored, 1 = (right) censored
             if None, all observations are assumed to be uncensored
-            Can be passed to any probabilistic regressor,
-            but is ignored if capability:survival tag is False.
         """
         # insert logic for estimator here
         # fitted parameters should be written to parameters ending in underscore
