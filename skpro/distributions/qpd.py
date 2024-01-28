@@ -61,10 +61,16 @@ class QPD_S(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["setoguchi-naoki", "felix-wick"],
+        "maintainers": ["setoguchi-naoki"],
+        "python_dependencies": "cyclic_boosting>=1.2.5",
+        # estimator tags
+        # --------------
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "cdf", "ppf"],
         "distr:measuretype": "continuous",
-        "python_dependencies": "cyclic_boosting>=1.2.5",
     }
 
     def __init__(
@@ -289,10 +295,16 @@ class QPD_B(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["setoguchi-naoki", "felix-wick"],
+        "maintainers": ["setoguchi-naoki"],
+        "python_dependencies": "cyclic_boosting>=1.2.5",
+        # estimator tags
+        # --------------
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "cdf", "ppf"],
         "distr:measuretype": "continuous",
-        "python_dependencies": "cyclic_boosting>=1.2.5",
     }
 
     def __init__(
@@ -518,10 +530,16 @@ class QPD_U(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["setoguchi-naoki", "felix-wick"],
+        "maintainers": ["setoguchi-naoki"],
+        "python_dependencies": "cyclic_boosting>=1.2.5",
+        # estimator tags
+        # --------------
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "cdf", "ppf"],
         "distr:measuretype": "continuous",
-        "python_dependencies": "cyclic_boosting>=1.2.5",
     }
 
     def __init__(
