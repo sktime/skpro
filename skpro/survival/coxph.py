@@ -5,6 +5,7 @@ __author__ = ["fkiraly"]
 
 from skpro.survival.base import BaseSurvReg
 
+
 class CoxPH(BaseSurvReg):
     """Cox proportional hazards model, partial likelihood or elastic net, statsmodels.
 
