@@ -694,18 +694,6 @@ class BaseProbaRegressor(BaseEstimator):
             store=self._X_converter_store,
         )
 
-        # if we have seen X before, check against columns
-        if hasattr(self, "_X_columns") and hasattr(X, "columns"):
-            if not (X_inner.columns == self._X_columns).all():
-                raise ValueError(
-                    "X in predict methods must have same columns as X in fit, "
-                    f"columns in fit were {self._X_columns}, "
-                    f"but in predict found X.columns = {X_inner.columns}"
-                )
-        # if not, remember columns
-        else:
-            self._X_columns = X.columns
-
         if return_metadata:
             return X_inner, X_metadata
         else:
