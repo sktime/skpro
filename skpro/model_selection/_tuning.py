@@ -495,6 +495,7 @@ class GridSearchCV(BaseGridSearch):
             "cv": KFold(n_splits=3),
             "param_grid": {"estimator": [linreg1, linreg2]},
             "scoring": CRPS(),
+            "error_score": "raise",
         }
 
         param2 = {
@@ -502,6 +503,7 @@ class GridSearchCV(BaseGridSearch):
             "cv": KFold(n_splits=4),
             "param_grid": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
+            "error_score": "raise",
         }
 
         params = [param1, param2]
@@ -513,6 +515,7 @@ class GridSearchCV(BaseGridSearch):
                 "cv": KFold(n_splits=4),
                 "param_grid": {"method": ["lpl", "elastic_net"]},
                 "scoring": PinballLoss(),
+                "error_score": "raise",
             }
             params.append(param3)
 
@@ -748,6 +751,7 @@ class RandomizedSearchCV(BaseGridSearch):
             "cv": KFold(n_splits=3),
             "param_distributions": {"estimator": [linreg1, linreg2]},
             "scoring": CRPS(),
+            "error_score": "raise",
         }
 
         param2 = {
@@ -755,6 +759,7 @@ class RandomizedSearchCV(BaseGridSearch):
             "cv": KFold(n_splits=4),
             "param_distributions": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
+            "error_score": "raise",
         }
 
         params = [param1, param2]
@@ -766,6 +771,7 @@ class RandomizedSearchCV(BaseGridSearch):
                 "cv": KFold(n_splits=4),
                 "param_distributions": {"method": ["lpl", "elastic_net"]},
                 "scoring": PinballLoss(),
+                "error_score": "raise",
             }
             params += [param3]
 
