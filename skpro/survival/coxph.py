@@ -98,6 +98,8 @@ class CoxPH(BaseSurvReg):
         """
         from statsmodels.duration.hazard_regression import PHReg
 
+        self._y_cols = y.columns
+
         endog = y.to_numpy().flatten()
         exog = X
         status = C.to_numpy().flatten() if C is not None else None
