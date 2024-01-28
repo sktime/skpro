@@ -46,3 +46,4 @@ class BaseSurvReg(BaseProbaRegressor):
         self : reference to self
         """
         super().fit(X=X, y=y, C=C)
+        return self
