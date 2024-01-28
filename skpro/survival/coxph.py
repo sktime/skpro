@@ -3,10 +3,10 @@
 
 __author__ = ["fkiraly"]
 
-from skpro.regression.base import BaseProbaRegressor
+from skpro.survival.base import BaseSurvReg
 
 
-class CoxPH(BaseProbaRegressor):
+class CoxPH(BaseSurvReg):
     """Cox proportional hazards model, partial likelihood or elastic net, statsmodels.
 
     Direct interface to ``statsmodels.duration.hazard_regression.PHReg``
@@ -91,8 +91,6 @@ class CoxPH(BaseProbaRegressor):
             should have entries 0 and 1 (float or int)
             0 = uncensored, 1 = (right) censored
             if None, all observations are assumed to be uncensored
-            Can be passed to any probabilistic regressor,
-            but is ignored if capability:survival tag is False.
 
         Returns
         -------
