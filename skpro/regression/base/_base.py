@@ -228,8 +228,16 @@ class BaseProbaRegressor(BaseEstimator):
         if not can_do_proba:
             raise NotImplementedError
 
-        # if any of the above are implemented, predict_var will have a default
-        #   we use predict_var to get scale, and predict to get location
+        # defaulting logic is as follows:
+        # var direct deputies are proba, then interval
+        # proba direct deputy is var (via Normal dist)
+        # quantiles direct deputies are interval, then proba
+        # interval direct deputy is quantiles
+        #
+        # so, conditions for defaulting for proba is:
+        # default to var if any of the other three are implemented
+
+        # we use predict_var to get scale, and predict to get location
         pred_var = self.predict_var(X=X)
         pred_std = np.sqrt(pred_var)
         pred_mean = self.predict(X=X)
@@ -320,6 +328,15 @@ class BaseProbaRegressor(BaseEstimator):
 
         if not can_do_proba:
             raise NotImplementedError
+
+        # defaulting logic is as follows:
+        # var direct deputies are proba, then interval
+        # proba direct deputy is var (via Normal dist)
+        # quantiles direct deputies are interval, then proba
+        # interval direct deputy is quantiles
+        #
+        # so, conditions for defaulting for interval are:
+        # default to quantiles if any of the other three methods are implemented
 
         # we default to _predict_quantiles if that is implemented or _predict_proba
         # since _predict_quantiles will default to _predict_proba if it is not
@@ -412,10 +429,21 @@ class BaseProbaRegressor(BaseEstimator):
         """
         implements_interval = self._has_implementation_of("_predict_interval")
         implements_proba = self._has_implementation_of("_predict_proba")
-        can_do_proba = implements_interval or implements_proba
+        implements_var = self._has_implementation_of("_predict_var")
+        can_do_proba = implements_interval or implements_proba or implements_var
 
         if not can_do_proba:
             raise NotImplementedError
+
+        # defaulting logic is as follows:
+        # var direct deputies are proba, then interval
+        # proba direct deputy is var (via Normal dist)
+        # quantiles direct deputies are interval, then proba
+        # interval direct deputy is quantiles
+        #
+        # so, conditions for defaulting for quantiles are:
+        # 1. default to interval if interval implemented
+        # 2. default to proba if proba or var are implemented
 
         if implements_interval:
             pred_int = pd.DataFrame()
@@ -448,7 +476,7 @@ class BaseProbaRegressor(BaseEstimator):
             int_idx = pd.MultiIndex.from_product([var_names, alpha])
             pred_int.columns = int_idx
 
-        elif implements_proba:
+        elif implements_proba or implements_var:
             pred_proba = self.predict_proba(X=X)
             pred_int = pred_proba.quantile(alpha=alpha)
 
@@ -516,6 +544,16 @@ class BaseProbaRegressor(BaseEstimator):
 
         if not can_do_proba:
             raise NotImplementedError
+
+        # defaulting logic is as follows:
+        # var direct deputies are proba, then interval
+        # proba direct deputy is var (via Normal dist)
+        # quantiles direct deputies are interval, then proba
+        # interval direct deputy is quantiles
+        #
+        # so, conditions for defaulting for var are:
+        # 1. default to proba if proba implemented
+        # 2. default to interval if interval or quantiles are implemented
 
         if implements_proba:
             pred_proba = self._predict_proba(X=X)
