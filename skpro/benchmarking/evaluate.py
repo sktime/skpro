@@ -259,7 +259,7 @@ def _evaluate_fold(x, meta):
     y_train = x["y_train"]
     y_test = x["y_test"]
     C_train = x.get("C_train", None)
-    C_train = x.get("C_test", None)
+    C_test = x.get("C_test", None)
 
     estimator = meta["estimator"]
     scoring = meta["scoring"]
@@ -318,7 +318,8 @@ def _evaluate_fold(x, meta):
                 else:
                     y_pred = y_preds_cache[y_pred_key][0]
 
-                score = metric(y_test, y_pred, y_train=y_train)
+                # score prediction and store score
+                score = metric(y_test, y_pred, y_train=y_train, C_true=C_test)
                 temp_result[result_key] = [score]
 
     except Exception as e:
