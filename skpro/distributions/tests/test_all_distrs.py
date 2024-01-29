@@ -10,7 +10,6 @@ import pytest
 from skbase.testing import QuickTester
 
 from skpro.datatypes import check_is_mtype
-from skpro.distributions.base import BaseDistribution
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 from skpro.utils.index import random_ss_ix
 

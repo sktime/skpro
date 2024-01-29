@@ -5,7 +5,6 @@ from skbase.testing import QuickTester
 
 from skpro.datatypes import check_is_mtype, check_raise
 from skpro.distributions.base import BaseDistribution
-from skpro.regression.base._base import BaseProbaRegressor
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
 TEST_ALPHAS = [0.05, [0.1], [0.25, 0.75], [0.3, 0.1, 0.9]]
