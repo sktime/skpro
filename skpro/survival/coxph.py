@@ -178,7 +178,7 @@ class CoxPH(BaseSurvReg):
         dist = model.get_distribution(**kwargs)
         dist.xk = dist.xk[:n_exog]
         dist.pk = dist.pk[:n_exog]
- 
+
         # convert results to skpro BaseDistribution child instance
         y_pred = empirical_from_rvdf(dist=dist, index=index, columns=columns)
         return y_pred
