@@ -66,14 +66,14 @@ class SPLL(BaseDistrMetric):
 
     def _evaluate_by_index(self, y_true, y_pred, **kwargs):
 
-        C = kwargs.get("C", None)
+        C_true = kwargs.get("C_true", None)
 
-        if C is None:
+        if C_true is None:
             # then all uncensored, Delta = 0
             res = -y_pred.log_pdf(y_true)
         else:
-            cont_term = -y_pred.log_pdf(y_true) * (1 - C.to_numpy())
-            disc_term = np.log(1 - y_pred.cdf(y_true)) * C.to_numpy()
+            cont_term = -y_pred.log_pdf(y_true) * (1 - C_true.to_numpy())
+            disc_term = np.log(1 - y_pred.cdf(y_true)) * C_true.to_numpy()
             res = cont_term + disc_term
 
         if self.multivariate:
