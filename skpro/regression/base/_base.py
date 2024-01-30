@@ -78,14 +78,9 @@ class BaseProbaRegressor(BaseEstimator):
             feature instances to fit regressor to
         y : pd.DataFrame, must be same length as X
             labels to fit regressor to
-        C : pd.DataFrame, optional (default=None)
-            censoring information for survival analysis,
-            should have same column name as y, same length as X and y
-            should have entries 0 and 1 (float or int)
-            0 = uncensored, 1 = (right) censored
-            if None, all observations are assumed to be uncensored
-            Can be passed to any probabilistic regressor,
-            but is ignored if capability:survival tag is False.
+        C : ignored, optional (default=None)
+            censoring information for survival analysis
+            All probabilistic regressors assume data to be uncensored
 
         Returns
         -------
@@ -252,8 +247,16 @@ class BaseProbaRegressor(BaseEstimator):
         if not can_do_proba:
             raise NotImplementedError
 
-        # if any of the above are implemented, predict_var will have a default
-        #   we use predict_var to get scale, and predict to get location
+        # defaulting logic is as follows:
+        # var direct deputies are proba, then interval
+        # proba direct deputy is var (via Normal dist)
+        # quantiles direct deputies are interval, then proba
+        # interval direct deputy is quantiles
+        #
+        # so, conditions for defaulting for proba is:
+        # default to var if any of the other three are implemented
+
+        # we use predict_var to get scale, and predict to get location
         pred_var = self.predict_var(X=X)
         pred_std = np.sqrt(pred_var)
         pred_mean = self.predict(X=X)
@@ -340,10 +343,20 @@ class BaseProbaRegressor(BaseEstimator):
         """
         implements_quantiles = self._has_implementation_of("_predict_quantiles")
         implements_proba = self._has_implementation_of("_predict_proba")
-        can_do_proba = implements_quantiles or implements_proba
+        implements_var = self._has_implementation_of("_predict_var")
+        can_do_proba = implements_quantiles or implements_proba or implements_var
 
         if not can_do_proba:
             raise NotImplementedError
+
+        # defaulting logic is as follows:
+        # var direct deputies are proba, then interval
+        # proba direct deputy is var (via Normal dist)
+        # quantiles direct deputies are interval, then proba
+        # interval direct deputy is quantiles
+        #
+        # so, conditions for defaulting for interval are:
+        # default to quantiles if any of the other three methods are implemented
 
         # we default to _predict_quantiles if that is implemented or _predict_proba
         # since _predict_quantiles will default to _predict_proba if it is not
@@ -436,10 +449,21 @@ class BaseProbaRegressor(BaseEstimator):
         """
         implements_interval = self._has_implementation_of("_predict_interval")
         implements_proba = self._has_implementation_of("_predict_proba")
-        can_do_proba = implements_interval or implements_proba
+        implements_var = self._has_implementation_of("_predict_var")
+        can_do_proba = implements_interval or implements_proba or implements_var
 
         if not can_do_proba:
             raise NotImplementedError
+
+        # defaulting logic is as follows:
+        # var direct deputies are proba, then interval
+        # proba direct deputy is var (via Normal dist)
+        # quantiles direct deputies are interval, then proba
+        # interval direct deputy is quantiles
+        #
+        # so, conditions for defaulting for quantiles are:
+        # 1. default to interval if interval implemented
+        # 2. default to proba if proba or var are implemented
 
         if implements_interval:
             pred_int = pd.DataFrame()
@@ -472,7 +496,7 @@ class BaseProbaRegressor(BaseEstimator):
             int_idx = pd.MultiIndex.from_product([var_names, alpha])
             pred_int.columns = int_idx
 
-        elif implements_proba:
+        elif implements_proba or implements_var:
             pred_proba = self.predict_proba(X=X)
             pred_int = pred_proba.quantile(alpha=alpha)
 
@@ -540,6 +564,16 @@ class BaseProbaRegressor(BaseEstimator):
 
         if not can_do_proba:
             raise NotImplementedError
+
+        # defaulting logic is as follows:
+        # var direct deputies are proba, then interval
+        # proba direct deputy is var (via Normal dist)
+        # quantiles direct deputies are interval, then proba
+        # interval direct deputy is quantiles
+        #
+        # so, conditions for defaulting for var are:
+        # 1. default to proba if proba implemented
+        # 2. default to interval if interval or quantiles are implemented
 
         if implements_proba:
             pred_proba = self._predict_proba(X=X)
@@ -628,12 +662,34 @@ class BaseProbaRegressor(BaseEstimator):
         return ret_dict
 
     def _check_X(self, X, return_metadata=False):
+        """Check validity of X, convert to X_inner_mtype, and return.
+
+        Writes to self:
+        feature_names_in_ = feature_names metadata of X, if not already set.
+            feature_names is metadata field of X, as returned by check_is_mtype.
+        n_features_in_ = number of features in X, if not already set.
+            n_features_in_ = len(feature_names_in_)
+
+        Parameters
+        ----------
+        X : object
+            object to check and convert
+        return_metadata : bool, optional, default=False
+            whether to return metadata
+
+        Returns
+        -------
+        X_inner : object
+            X converted to X_inner_mtype = self.get_tag("X_inner_mtype")
+        X_metadata : dict, only returned if return_metadata=True
+            metadata of X, as returned by check_is_mtype
+        """
         if return_metadata:
-            req_metadata = ["n_instances"]
+            req_metadata = ["n_instances", "feature_names"]
         else:
-            req_metadata = []
+            req_metadata = ["feature_names"]
         # input validity check for X
-        valid, msg, metadata = check_is_mtype(
+        valid, msg, X_metadata = check_is_mtype(
             X,
             ALLOWED_MTYPES,
             "Table",
@@ -641,35 +697,44 @@ class BaseProbaRegressor(BaseEstimator):
             var_name="X",
             msg_return_dict="list",
         )
+        # shorthands for metadata used below
+        X_feature_names = X_metadata["feature_names"]
+        if not isinstance(X_feature_names, np.ndarray):
+            X_feature_names = np.array(X_feature_names)
 
         # update with clearer message
         if not valid:
             check_is_error_msg(msg, var_name="X", raise_exception=True)
 
+        # if we have seen X before, check against columns
+        if hasattr(self, "feature_names_in_"):
+            msg_feat = (
+                f"Error in {type(self).__name__}: "
+                "X in predict methods must have same columns as X in fit, "
+                f"columns in fit were {self.feature_names_in_}, "
+                f"but in predict found X feature names = {X_feature_names}"
+            )
+            if not len(X_feature_names) == len(self.feature_names_in_):
+                raise ValueError(msg_feat)
+            if not (X_feature_names == self.feature_names_in_).all():
+                raise ValueError(msg_feat)
+        # if not, remember columns
+        else:
+            self.feature_names_in_ = X_feature_names
+            self.n_features_in_ = len(X_feature_names)
+
         # convert X to X_inner_mtype
         X_inner_mtype = self.get_tag("X_inner_mtype")
         X_inner = convert(
             obj=X,
-            from_type=metadata["mtype"],
+            from_type=X_metadata["mtype"],
             to_type=X_inner_mtype,
             as_scitype="Table",
             store=self._X_converter_store,
         )
 
-        # if we have seen X before, check against columns
-        if hasattr(self, "_X_columns") and hasattr(X, "columns"):
-            if not (X_inner.columns == self._X_columns).all():
-                raise ValueError(
-                    "X in predict methods must have same columns as X in fit, "
-                    f"columns in fit were {self._X_columns}, "
-                    f"but in predict found X.columns = {X_inner.columns}"
-                )
-        # if not, remember columns
-        else:
-            self._X_columns = X.columns
-
         if return_metadata:
-            return X_inner, metadata
+            return X_inner, X_metadata
         else:
             return X_inner
 

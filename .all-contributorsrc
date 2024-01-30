@@ -99,6 +99,27 @@
         "doc",
         "ideas"
       ]
+    },
+    {
+      "login": "FelixWick",
+      "name": "Felix Wick",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7291058?v=4",
+      "profile": "https://github.com/FelixWick",
+      "contributions": [
+        "ideas",
+        "review"
+      ]
+    },
+    {
+      "login": "setoguchi-naoki",
+      "name": "Naoki Setoguchi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/104494531?v=4",
+      "profile": "https://github.com/setoguchi-naoki",
+      "contributions": [
+        "code",
+        "doc",
+        "test"
+      ]
     }
   ]
 }

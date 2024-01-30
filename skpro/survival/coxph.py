@@ -3,10 +3,12 @@
 
 __author__ = ["fkiraly"]
 
-from skpro.regression.base import BaseProbaRegressor
+import numpy as np
+
+from skpro.survival.base import BaseSurvReg
 
 
-class CoxPH(BaseProbaRegressor):
+class CoxPH(BaseSurvReg):
     """Cox proportional hazards model, partial likelihood or elastic net, statsmodels.
 
     Direct interface to ``statsmodels.duration.hazard_regression.PHReg``
@@ -91,14 +93,14 @@ class CoxPH(BaseProbaRegressor):
             should have entries 0 and 1 (float or int)
             0 = uncensored, 1 = (right) censored
             if None, all observations are assumed to be uncensored
-            Can be passed to any probabilistic regressor,
-            but is ignored if capability:survival tag is False.
 
         Returns
         -------
         self : reference to self
         """
         from statsmodels.duration.hazard_regression import PHReg
+
+        self._y_cols = y.columns
 
         endog = y.to_numpy().flatten()
         exog = X
@@ -114,6 +116,7 @@ class CoxPH(BaseProbaRegressor):
             params["strata"] = strata
 
         model = PHReg(endog=endog, exog=exog, status=status, **params)
+        self.model_ = model
 
         # fit model
         if self.method == "lpl":
@@ -142,7 +145,9 @@ class CoxPH(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        from skpro.distributions.adapters.scipy import empirical_from_discrete
+        from copy import deepcopy
+
+        from skpro.distributions.adapters.statsmodels import empirical_from_rvdf
 
         # boilerplate code to create correct output index
         index = X.index
@@ -152,7 +157,15 @@ class CoxPH(BaseProbaRegressor):
         # get results from statsmodels
         results = self.results_
         params = results.params
-        exog = X
+        exog = X.to_numpy()
+        n_exog = exog.shape[0]
+
+        # unreported bug in statsmodels PHReg.get_distribution
+        # stratum_rows is not set correctly, uses rows from fit
+        # we set it manually here
+        model = self.model_
+        model = deepcopy(model)
+        model.surv.stratum_rows = [np.array([ix for ix in range(n_exog)])]
 
         if self.strata is not None:
             exog, strata = self._get_strata(exog)
@@ -161,9 +174,13 @@ class CoxPH(BaseProbaRegressor):
             kwargs = {"params": params, "exog": exog}
 
         # produce predictions from statsmodels
-        dist = self._model.get_distribution(**kwargs)
+        # contrary to the documentation, this returns rv_discrete_float
+        dist = model.get_distribution(**kwargs)
+        dist.xk = dist.xk[:n_exog]
+        dist.pk = dist.pk[:n_exog]
+
         # convert results to skpro BaseDistribution child instance
-        y_pred = empirical_from_discrete(dist=dist, index=index, columns=columns)
+        y_pred = empirical_from_rvdf(dist=dist, index=index, columns=columns)
         return y_pred
 
     def _get_strata(self, X):
