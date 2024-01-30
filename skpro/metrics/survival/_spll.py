@@ -18,7 +18,7 @@ class SPLL(BaseDistrMetric):
     survival function :math:`d.S`, a ground truth value :math:`y`
     and censoring indicator :math:`\Delta`, taking values 1 (censored) and
     0 (uncensored), the survival process logarithmic loss is defined as
-    :math:`L(y, d) := (\Delta - 1) (\log d.\lambda(y)) - \Delta \log d.S(y)`.
+    :math:`L((y, \Delta), d) := (\Delta - 1) (\log d.\lambda(y)) - \Delta \log d.S(y)`.
     Logarithms are natural logarithms.
 
     The above can be expressed in terms of pdf :math:`d.p` and cdf :math:`d.F`
