@@ -96,6 +96,11 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["ram0nb"],
+        # estimator tags
+        # --------------
         "capability:missing": False,
         "capability:multioutput": False,
     }
