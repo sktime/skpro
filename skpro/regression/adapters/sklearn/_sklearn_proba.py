@@ -38,7 +38,6 @@ class SklearnProbaReg(BaseProbaRegressor):
         self.inner_type = inner_type
         super().__init__()
 
-
     def _coerce_inner(self, obj):
         """Coerce obj to type of X_inner_type.
 
