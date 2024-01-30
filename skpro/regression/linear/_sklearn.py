@@ -130,7 +130,7 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
             verbose=verbose,
         )
 
-        skpro_est = SklearnProbaReg(skl_estimator)
+        skpro_est = SklearnProbaReg(skl_estimator, inner_type="np.ndarray")
         self._estimator = skpro_est.clone()
 
         super().__init__()
