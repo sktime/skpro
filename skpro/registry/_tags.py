@@ -99,7 +99,7 @@ OBJECT_TAG_REGISTER = [
     # ------------------
     (
         "capability:survival",
-        ["regressor_proba", "metric"],
+        "regressor_proba",
         "bool",
         "whether estimator can use censoring information, for survival analysis",
     ),
@@ -198,6 +198,12 @@ OBJECT_TAG_REGISTER = [
         "metric",
         "bool",
         "whether lower (True) or higher (False) is better",
+    ),
+    (
+        "capability:survival",
+        "metric",
+        "bool",
+        "whether metric uses censoring information, for survival analysis",
     ),
     # ----------------------------
     # BaseMetaObject reserved tags
