@@ -351,7 +351,7 @@ class CyclicBoosting(BaseProbaRegressor):
 
         return interval
 
-    def _predict_quantiles(self, X, quantiles):
+    def _predict_quantiles(self, X, alpha):
         """Compute/return quantile predictions.
 
         private _predict_quantiles containing the core logic,
@@ -361,7 +361,7 @@ class CyclicBoosting(BaseProbaRegressor):
         ----------
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
-        quantiles : guaranteed list of float
+        alpha : guaranteed list of float
             A list of probabilities at which quantile predictions are computed.
 
         Returns
@@ -373,6 +373,8 @@ class CyclicBoosting(BaseProbaRegressor):
             Entries are quantile predictions, for var in col index,
                 at quantile probability in second col index, for the row index.
         """
+        quantiles = alpha
+
         if self.feature_groups is not None:
             feature_names = list()
             for feature in self.feature_groups:
