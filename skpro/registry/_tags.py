@@ -61,6 +61,20 @@ OBJECT_TAG_REGISTER = [
         "str",
         "type of estimator, e.g., 'regressor', 'transformer'",
     ),
+    # packaging information
+    # ---------------------
+    (
+        "maintainers",
+        "object",
+        ("list", "str"),
+        "list of current maintainers of the object, each maintainer a GitHub handle",
+    ),
+    (
+        "authors",
+        "object",
+        ("list", "str"),
+        "list of authors of the object, each author a GitHub handle",
+    ),
     (
         "python_version",
         "object",
