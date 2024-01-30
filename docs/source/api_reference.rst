@@ -15,6 +15,7 @@ It describes the classes and functions included in ``sktime``.
     :maxdepth: 1
 
     api_reference/regression
+    api_reference/survival
     api_reference/distributions
     api_reference/base
     api_reference/utils
