@@ -4,7 +4,7 @@ Time series regression
 ======================
 
 The :mod:`skpro.regression` module contains algorithms and composition tools for probabilistic supervised regression,
-i.e., tabular regression estimator with a probabilistic prediction mode.
+i.e., tabular regression estimation with a probabilistic prediction mode.
 
 All regressors in ``skpro`` can be listed using the ``skpro.registry.all_objects`` utility,
 using ``object_types="regressor_proba"``, optionally filtered by tags.

@@ -98,6 +98,12 @@ OBJECT_TAG_REGISTER = [
     # BaseProbaRegressor
     # ------------------
     (
+        "capability:survival",
+        "regressor_proba",
+        "bool",
+        "whether estimator can use censoring information, for survival analysis",
+    ),
+    (
         "capability:multioutput",
         "regressor_proba",
         "bool",
@@ -117,6 +123,12 @@ OBJECT_TAG_REGISTER = [
     ),
     (
         "y_inner_mtype",
+        "regressor_proba",
+        ("list", "str"),
+        "which machine type(s) is the internal _fit/_predict able to deal with?",
+    ),
+    (
+        "C_inner_mtype",
         "regressor_proba",
         ("list", "str"),
         "which machine type(s) is the internal _fit/_predict able to deal with?",
