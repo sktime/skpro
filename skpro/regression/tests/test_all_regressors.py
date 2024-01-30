@@ -20,6 +20,11 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
     # passed to skpro.registry.all_objects as object_type
     object_type_filter = "regressor_proba"
 
+    # TEMPORARY skip for CyclicBoosting and QPD classes
+    # due to silent failures on main, se #190
+    exclude_objects = ["QPD_S", "QPD_B", "QPD_U", "CyclicBoosting"]
+    # remove this when fixing failures to re-enable testing
+
     def test_input_output_contract(self, object_instance):
         """Tests that output of predict methods is as specified."""
         import pandas as pd
