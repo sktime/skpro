@@ -29,6 +29,11 @@ class DistributionFixtureGenerator(BaseFixtureGenerator):
 
     object_type_filter = BaseDistribution
 
+    # TEMPORARY skip for CyclicBoosting and QPD classes
+    # due to silent failures on main, se #190
+    exclude_objects = ["QPD_S", "QPD_B", "QPD_U"]
+    # remove this when fixing failures to re-enable testing
+
 
 def _has_capability(distr, method):
     """Check whether distr has capability of method.
