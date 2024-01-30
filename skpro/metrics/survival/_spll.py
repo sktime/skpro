@@ -53,6 +53,13 @@ class SPLL(BaseDistrMetric):
         2nd Edition, 2003, Springer, New York. Formula 7.1.2.
     """
 
+    _tags = {
+        "authors": "fkiraly",
+        "capability:survival": True,
+        "scitype:y_pred": "pred_proba",
+        "lower_is_better": True,
+    }
+
     def __init__(self, multioutput="uniform_average", multivariate=False):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
