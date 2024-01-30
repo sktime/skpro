@@ -65,7 +65,6 @@ class SPLL(BaseDistrMetric):
         super().__init__(multioutput=multioutput)
 
     def _evaluate_by_index(self, y_true, y_pred, **kwargs):
-
         C_true = kwargs.get("C_true", None)
 
         if C_true is None:
