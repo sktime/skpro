@@ -55,6 +55,7 @@ class SklearnProbaReg(BaseProbaRegressor):
         from sklearn import clone
 
         self.estimator_ = clone(self.estimator)
+        self._y_cols = y.columns
         X_inner = prep_skl_df(X)
         y_inner = prep_skl_df(y)
 
@@ -84,7 +85,8 @@ class SklearnProbaReg(BaseProbaRegressor):
         """
         X_inner = prep_skl_df(X)
         y_pred = self.estimator_.predict(X_inner)
-        return y_pred
+        y_pred_df = pd.DataFrame(y_pred, index=X.index, columns=self._y_cols)
+        return y_pred_df
 
     def _predict_var(self, X):
         """Compute/return variance predictions.
@@ -107,7 +109,7 @@ class SklearnProbaReg(BaseProbaRegressor):
         """
         X_inner = prep_skl_df(X)
         _, y_std = self.estimator_.predict(X_inner, return_std=True)
-        y_std = pd.DataFrame(y_std, index=X.index, columns=X.columns)
+        y_std = pd.DataFrame(y_std, index=X.index, columns=self._y_cols)
         y_var = y_std**2
         return y_var
 
