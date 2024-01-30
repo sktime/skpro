@@ -22,7 +22,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
 
     # TEMPORARY skip for CyclicBoosting and QPD classes
     # due to silent failures on main, se #190
-    exclude_objects = ["QPD_S", "QPD_B", "QPD_U", "CyclicBoosting"]
+    exclude_objects = ["CyclicBoosting"]
     # remove this when fixing failures to re-enable testing
 
     def test_input_output_contract(self, object_instance):
