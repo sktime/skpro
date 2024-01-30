@@ -102,7 +102,7 @@ class ConditionUncensored(BaseProbaRegressor):
             labels predicted for `X`
         """
         X_and_C = self._get_padded_X(X)
-        y_pred = self.estimator.clone().predict(X_and_C)
+        y_pred = self.estimator_.predict(X_and_C)
         return y_pred
 
     def _predict_proba(self, X):
@@ -125,7 +125,7 @@ class ConditionUncensored(BaseProbaRegressor):
             labels predicted for `X`
         """
         X_and_C = self._get_padded_X(X)
-        y_pred = self.estimator.clone().predict_proba(X_and_C)
+        y_pred = self.estimator_.predict_proba(X_and_C)
         return y_pred
 
     def _predict_interval(self, X, coverage):
@@ -156,7 +156,7 @@ class ConditionUncensored(BaseProbaRegressor):
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
         X_and_C = self._get_padded_X(X)
-        y_pred = self.estimator.clone().predict_interval(X_and_C, coverage=coverage)
+        y_pred = self.estimator_.predict_interval(X_and_C, coverage=coverage)
         return y_pred
 
     def _predict_quantiles(self, X, alpha):
@@ -182,7 +182,7 @@ class ConditionUncensored(BaseProbaRegressor):
                 at quantile probability in second col index, for the row index.
         """
         X_and_C = self._get_padded_X(X)
-        y_pred = self.estimator.clone().predict_quantiles(X_and_C, alpha=alpha)
+        y_pred = self.estimator_.predict_quantiles(X_and_C, alpha=alpha)
         return y_pred
 
     @classmethod
