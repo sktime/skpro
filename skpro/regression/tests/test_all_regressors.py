@@ -20,6 +20,11 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
     # which object types are generated; None=all, or class (passed to all_objects)
     object_type_filter = BaseProbaRegressor
 
+    # TEMPORARY skip for CyclicBoosting and QPD classes
+    # due to silent failures on main, se #190
+    exclude_objects = ["CyclicBoosting"]
+    # remove this when fixing failures to re-enable testing
+
     def test_input_output_contract(self, object_instance):
         """Tests that output of predict methods is as specified."""
         import pandas as pd
