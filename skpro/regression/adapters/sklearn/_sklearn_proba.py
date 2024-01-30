@@ -15,7 +15,7 @@ class SklearnProbaReg(BaseProbaRegressor):
     Wraps an sklearn regressor that can be queried for variance prediction,
     and constructs an skpro regressor from it.
 
-    The wrapped resgressor must have a ``predict`` with
+    The wrapped regressor must have a ``predict`` with
     a ``return_std`` argument, and return a tuple of ``(y_pred, y_std)``,
     both ndarray of shape (n_samples,) or (n_samples, n_targets).
 
@@ -23,6 +23,9 @@ class SklearnProbaReg(BaseProbaRegressor):
     ----------
     estimator : sklearn regressor
         Estimator to wrap, must have ``predict`` with ``return_std`` argument.
+    inner_type : str, one of "pd.DataFrame", "np.ndarray", default="pd.DataFrame"
+        Type of X passed to ``fit`` and ``predict`` methods of the wrapped estimator.
+        Type of y passed to ``fit`` method of the wrapped estimator.
     """
 
     _tags = {
@@ -30,11 +33,29 @@ class SklearnProbaReg(BaseProbaRegressor):
         "capability:missing": True,
     }
 
-    def __init__(self, estimator):
+    def __init__(self, estimator, inner_type="pd.DataFrame"):
         self.estimator = estimator
+        self.inner_type = inner_type
         super().__init__()
 
-    # todo: implement this, mandatory
+    def _coerce_inner(self, obj):
+        """Coerce obj to type of inner_type.
+
+        Parameters
+        ----------
+        obj : object
+            Object to coerce
+
+        Returns
+        -------
+        obj : object
+            Coerced object
+        """
+        obj = prep_skl_df(obj)
+        if self.inner_type == "np.ndarray":
+            obj = obj.to_numpy()
+        return obj
+
     def _fit(self, X, y):
         """Fit regressor to training data.
 
@@ -55,11 +76,16 @@ class SklearnProbaReg(BaseProbaRegressor):
         from sklearn import clone
 
         self.estimator_ = clone(self.estimator)
-        X_inner = prep_skl_df(X)
-        y_inner = prep_skl_df(y)
+        self._y_cols = y.columns
 
-        if len(y_inner.columns) == 1:
+        X_inner = self._coerce_inner(X)
+        y_inner = self._coerce_inner(y)
+
+        if isinstance(y_inner, pd.DataFrame) and len(y_inner.columns) == 1:
             y_inner = y_inner.iloc[:, 0]
+        elif len(y_inner.shape) > 1 and y_inner.shape[1] == 1:
+            y_inner = y_inner[:, 0]
+
         self.estimator_.fit(X_inner, y_inner)
         return self
 
@@ -82,9 +108,10 @@ class SklearnProbaReg(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        X_inner = prep_skl_df(X)
+        X_inner = self._coerce_inner(X)
         y_pred = self.estimator_.predict(X_inner)
-        return y_pred
+        y_pred_df = pd.DataFrame(y_pred, index=X.index, columns=self._y_cols)
+        return y_pred_df
 
     def _predict_var(self, X):
         """Compute/return variance predictions.
@@ -105,9 +132,9 @@ class SklearnProbaReg(BaseProbaRegressor):
             A variance prediction for given variable and fh index is a predicted
             variance for that variable and index, given observed data.
         """
-        X_inner = prep_skl_df(X)
+        X_inner = self._coerce_inner(X)
         _, y_std = self.estimator_.predict(X_inner, return_std=True)
-        y_std = pd.DataFrame(y_std, index=X.index, columns=X.columns)
+        y_std = pd.DataFrame(y_std, index=X.index, columns=self._y_cols)
         y_var = y_std**2
         return y_var
 
