@@ -76,8 +76,6 @@ class SPLL(BaseDistrMetric):
             disc_term = np.log(1 - y_pred.cdf(y_true)) * C.to_numpy()
             res = cont_term + disc_term
 
-        # replace this by multivariate log_pdf once distr implements
-        # i.e., pass multivariate on to log_pdf
         if self.multivariate:
             return pd.DataFrame(res.mean(axis=1), columns=["SPLL"])
         else:
