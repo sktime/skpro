@@ -25,11 +25,6 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
     exclude_objects = ["CyclicBoosting"]
     # remove this when fixing failures to re-enable testing
 
-    # TEMPORARY skip for CyclicBoosting and QPD classes
-    # due to silent failures on main, se #190
-    exclude_objects = ["CyclicBoosting"]
-    # remove this when fixing failures to re-enable testing
-
     def test_input_output_contract(self, object_instance):
         """Tests that output of predict methods is as specified."""
         import pandas as pd
