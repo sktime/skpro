@@ -18,16 +18,16 @@ class SPLL(BaseDistrMetric):
     survival function :math:`d.S`, a ground truth value :math:`y`
     and censoring indicator :math:`\Delta`, taking values 1 (censored) and
     0 (uncensored), the survival process logarithmic loss is defined as
-    :math:`L((y, \Delta), d) := (\Delta - 1) (\log d.\lambda(y)) - \Delta \log d.S(y)`.
+    :math:`L((y, \Delta), d) := (\Delta - 1) (\log d.p(y)) - \Delta \log d.S(y)`.
     Logarithms are natural logarithms.
 
-    The above can be expressed in terms of pdf :math:`d.p` and cdf :math:`d.F`
-    by substituting :math:`d.\lambda = -d.p / d.S` and :math:`d.S = 1 - d.F`.
+    Where :math:`d.S = 1 - d.F` for the cdf :math:`d.F` of :math:`d`.
 
     To obtain the loss from formula 7.1.2 in [1]_, condition on
     :math:`N(A) \le 1` (i.e., no more than one event in the interval :math:`A`),
     use that :math:`\Delta = 1` iff :math:`N(A) = 0`,
-    and :math:`-\log d.S(y) = \int_A d.\lambda(t) \; dt`.
+    and :math:`-\log d.S(y) = \int_A d.\lambda(t) \; dt`, with
+    :math:`d.\lambda = -d.p / d.S`.
 
     `evaluate` computes the average test sample loss.
     `evaluate_by_index` produces the loss sample by test data point.
