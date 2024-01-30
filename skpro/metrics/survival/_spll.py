@@ -14,7 +14,7 @@ class SPLL(BaseDistrMetric):
     Same as the negative log-likelihood of the survival process (see [1]_),
     and therefore a proper scoring rule for survival predictions.
 
-    For a predictive distribution :math:`d` with hazard function :math:`d.\lambda`,
+    For a predictive distribution :math:`d` with pdf :math:`d.p`,
     survival function :math:`d.S`, a ground truth value :math:`y`
     and censoring indicator :math:`\Delta`, taking values 1 (censored) and
     0 (uncensored), the survival process logarithmic loss is defined as
