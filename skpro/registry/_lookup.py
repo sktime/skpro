@@ -54,11 +54,11 @@ def all_objects(
 
     return_names: bool, optional (default=True)
 
-        if True, estimator class name is included in the ``all_ojects``
+        if True, estimator class name is included in the ``all_objects``
         return in the order: name, estimator class, optional tags, either as
         a tuple or as pandas.DataFrame columns
 
-        if False, estimator class name is removed from the ``all_ojects`` return.
+        if False, estimator class name is removed from the ``all_objects`` return.
 
     filter_tags: dict of (str or list of str), optional (default=None)
         For a list of valid tag strings, use the registry.all_tags utility.
@@ -75,10 +75,10 @@ def all_objects(
 
     as_dataframe: bool, optional (default=False)
 
-        True: ``all_ojects`` will return a pandas.DataFrame with named
+        True: ``all_objects`` will return a pandas.DataFrame with named
         columns for all of the attributes being returned.
 
-        False: ``all_ojects`` will return a list (either a list of
+        False: ``all_objects`` will return a list (either a list of
         estimators or a list of tuples, see Returns)
 
     return_tags: str or list of str, optional (default=None)
