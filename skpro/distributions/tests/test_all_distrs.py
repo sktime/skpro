@@ -29,11 +29,6 @@ class DistributionFixtureGenerator(BaseFixtureGenerator):
 
     object_type_filter = BaseDistribution
 
-    # TEMPORARY skip for CyclicBoosting and QPD classes
-    # due to silent failures on main, se #190
-    exclude_objects = ["QPD_S", "QPD_B", "QPD_U"]
-    # remove this when fixing failures to re-enable testing
-
 
 def _has_capability(distr, method):
     """Check whether distr has capability of method.
@@ -64,6 +59,11 @@ METHODS_ROWWISE = ["energy"]  # results in one column
 
 class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTester):
     """Module level tests for all skpro parameter fitters."""
+
+    # TEMPORARY skip for CyclicBoosting and QPD classes
+    # due to silent failures on main, se #190
+    exclude_objects = ["QPD_S", "QPD_B", "QPD_U"]
+    # remove this when fixing failures to re-enable testing
 
     @pytest.mark.parametrize("shuffled", [False, True])
     def test_sample(self, object_instance, shuffled):
