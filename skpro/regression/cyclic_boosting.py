@@ -85,12 +85,18 @@ class CyclicBoosting(BaseProbaRegressor):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["setoguchi-naoki", "felix-wick"],
+        "maintainers": ["setoguchi-naoki"],
         "estimator_type": "regressor_proba",
+        "python_dependencies": "cyclic_boosting>=1.2.5",
+        # estimator tags
+        # --------------
         "capability:multioutput": False,
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
-        "python_dependencies": "cyclic_boosting>=1.2.5",
     }
 
     def __init__(

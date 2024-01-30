@@ -164,8 +164,13 @@ class MapieRegressor(BaseProbaRegressor):
     """
 
     _tags = {
-        "capability:missing": True,
+        # packaging info
+        # --------------
+        "authors": ["fkiraly"],
         "python_dependencies": ["mapie"],
+        # estimator tags
+        # --------------
+        "capability:missing": True,
     }
 
     def __init__(
