@@ -414,6 +414,23 @@ class BaseDistrMetric(BaseProbaMetric):
             out = _coerce_to_df(out_df)
         return out
 
+    def _coerce_inner_df(self, obj):
+        """Coerce obj to pd_DataFrame_Table, for inner method call.
+
+        Parameters
+        ----------
+        obj : object
+            Object to coerce
+
+        Returns
+        -------
+        obj : object
+            Coerced object
+        """
+        obj = convert_to(obj, to_type="pd_DataFrame_Table", as_scitype="Table")
+        obj = _coerce_to_df(obj)
+        return obj
+
     def evaluate_by_index(self, y_true, y_pred, **kwargs):
         """Evaluate the metric by instance index (row).
 
@@ -433,12 +450,18 @@ class BaseDistrMetric(BaseProbaMetric):
         else:
             multivariate = False
 
-        y_true = convert_to(y_true, to_type="pd_DataFrame_Table", as_scitype="Table")
-        y_true = _coerce_to_df(y_true)
+        y_true = self._coerce_inner_df(y_true)
+
+        if "C_true" in kwargs:
+            C_true = kwargs["C_true"]
+            C_true = self._coerce_inner_df(C_true)
+            kwargs_inner = {"C_true": C_true}
+        else:
+            kwargs_inner = {}
 
         if multivariate:
             res = self._evaluate_by_index(
-                y_true=y_true, y_pred=y_pred, multioutput=multioutput
+                y_true=y_true, y_pred=y_pred, multioutput=multioutput, **kwargs_inner
             )
             res.columns = ["score"]
             return res
@@ -448,7 +471,10 @@ class BaseDistrMetric(BaseProbaMetric):
                 y_pred_col = y_pred.loc[:, [col]]
                 y_true_col = y_true.loc[:, [col]]
                 res_for_col = self._evaluate_by_index(
-                    y_true=y_true_col, y_pred=y_pred_col, multioutput=multioutput
+                    y_true=y_true_col,
+                    y_pred=y_pred_col,
+                    multioutput=multioutput,
+                    **kwargs_inner,
                 )
                 res_for_col.columns = [col]
                 res_by_col += [res_for_col]
