@@ -39,7 +39,7 @@ class SklearnProbaReg(BaseProbaRegressor):
         super().__init__()
 
     def _coerce_inner(self, obj):
-        """Coerce obj to type of X_inner_type.
+        """Coerce obj to type of inner_type.
 
         Parameters
         ----------
@@ -79,8 +79,6 @@ class SklearnProbaReg(BaseProbaRegressor):
         self._y_cols = y.columns
         X_inner = self._coerce_inner(X)
         y_inner = self._coerce_inner(y)
-        if self.X_inner_type == "np.ndarray":
-            X_inner = X_inner.to_numpy()
 
         if len(y_inner.columns) == 1:
             y_inner = y_inner.iloc[:, 0]
