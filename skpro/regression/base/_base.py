@@ -324,7 +324,8 @@ class BaseProbaRegressor(BaseEstimator):
         """
         implements_quantiles = self._has_implementation_of("_predict_quantiles")
         implements_proba = self._has_implementation_of("_predict_proba")
-        can_do_proba = implements_quantiles or implements_proba
+        implements_var = self._has_implementation_of("_predict_var")
+        can_do_proba = implements_quantiles or implements_proba or implements_var
 
         if not can_do_proba:
             raise NotImplementedError
