@@ -99,7 +99,7 @@ OBJECT_TAG_REGISTER = [
     # ------------------
     (
         "capability:survival",
-        "regressor_proba",
+        ["regressor_proba", "metric"],
         "bool",
         "whether estimator can use censoring information, for survival analysis",
     ),
