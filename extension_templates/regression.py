@@ -40,7 +40,28 @@ class ClassName(BaseProbaRegressor):
     # todo: fill out estimator tags here
     #  tags are inherited from parent class if they are not set
     # tags inherited from base are "safe defaults" which can usually be left as-is
-    _tags = {}
+    _tags = {
+        # packaging info
+        # --------------
+        "authors": ["author1", "author2"],  # authors, GitHub handles
+        "maintainers": ["maintainer1", "maintainer2"],  # maintainers, GitHub handles
+        # author = significant contribution to code at some point
+        # maintainer = algorithm maintainer role, "owner"
+        # specify one or multiple authors and maintainers, only for skpro contribution
+        # remove maintainer tag if maintained by skpro/sktim core team
+        #
+        "python_version": None,  # PEP 440 python version specifier to limit versions
+        "python_dependencies": None,  # PEP 440 python dependencies specifier,
+        # e.g., "numba>0.53", or a list, e.g., ["numba>0.53", "numpy>=1.19.0"]
+        # delete if no python dependencies or version limitations
+        #
+        # estimator tags
+        # --------------
+        "capability:multioutput": False,  # can the estimator handle multi-output data?
+        "capability:missing": True,  # can the estimator handle missing data?
+        "X_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit, _predict
+        "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
+    }
 
     # todo: fill init
     # params should be written to self and never changed
