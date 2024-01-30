@@ -77,11 +77,15 @@ class SklearnProbaReg(BaseProbaRegressor):
 
         self.estimator_ = clone(self.estimator)
         self._y_cols = y.columns
+
         X_inner = self._coerce_inner(X)
         y_inner = self._coerce_inner(y)
 
-        if len(y_inner.columns) == 1:
+        if isinstance(y_inner, pd.DataFrame) and len(y_inner.columns) == 1:
             y_inner = y_inner.iloc[:, 0]
+        elif len(y_inner.shape) > 1 and y_inner.shape[1] == 1:
+            y_inner = y_inner[:, 0]
+
         self.estimator_.fit(X_inner, y_inner)
         return self
 
