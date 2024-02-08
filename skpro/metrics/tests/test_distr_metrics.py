@@ -33,7 +33,7 @@ class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
         y_pred = dist.create_test_instance()
         y_true = y_pred.sample()
 
-        m = metric(multivariate=multivariate, multioutput=multioutput)
+        m = metric.set_params(multivariate=multivariate, multioutput=multioutput)
 
         if not multivariate:
             expected_cols = y_true.columns
@@ -51,7 +51,7 @@ class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
         assert (res.columns == expected_cols).all()
         assert res.shape == (y_true.shape[0], len(expected_cols))
 
-        res = m.evaluate(y_true, y_pred)
+        res = m.evaluate(**metric_args)
 
         expect_df = not multivariate and multioutput == "raw_values"
         if expect_df:
