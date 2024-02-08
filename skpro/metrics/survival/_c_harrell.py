@@ -143,7 +143,7 @@ class ConcordanceHarrell(BaseDistrMetric):
                 conc2 = comp2 & (rj < rij)
 
                 # mark concordnt pairs, handling ties
-                conc3 = nCij & nCj &     ((yj == yij) & (rj == rij))
+                conc3 = nCij & nCj & ((yj == yij) & (rj == rij))
                 conc = conc1 | conc2 | conc3
 
                 # count concordant pairs
