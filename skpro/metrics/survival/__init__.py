@@ -4,7 +4,9 @@
 __author__ = ["fkiraly"]
 
 __all__ = [
+    "ConcordanceHarrell",
     "SPLL",
 ]
 
+from skpro.metrics.survival._c_harrell import ConcordanceHarrell
 from skpro.metrics.survival._spll import SPLL
