@@ -7,7 +7,7 @@ API Reference
 Welcome to the API reference for ``skpro``.
 
 The API reference provides a technical manual.
-It describes the classes and functions included in ``sktime``.
+It describes the classes and functions included in ``skpro``.
 
 .. include:: includes/api_css.rst
 

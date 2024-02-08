@@ -199,6 +199,12 @@ OBJECT_TAG_REGISTER = [
         "bool",
         "whether lower (True) or higher (False) is better",
     ),
+    (
+        "capability:survival",
+        "metric",
+        "bool",
+        "whether metric uses censoring information, for survival analysis",
+    ),
     # ----------------------------
     # BaseMetaObject reserved tags
     # ----------------------------

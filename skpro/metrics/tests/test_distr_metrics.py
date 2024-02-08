@@ -5,12 +5,21 @@ import pandas as pd
 import pytest
 
 from skpro.distributions import Normal
-from skpro.metrics import CRPS, LinearizedLogLoss, LogLoss, SquaredDistrLoss
+from skpro.metrics import (
+    CRPS,
+    SPLL,
+    ConcordanceHarrell,
+    LinearizedLogLoss,
+    LogLoss,
+    SquaredDistrLoss,
+)
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 DISTR_METRICS = [
     CRPS,
+    SPLL,
+    ConcordanceHarrell,
     LinearizedLogLoss,
     LogLoss,
     SquaredDistrLoss,
