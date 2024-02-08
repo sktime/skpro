@@ -40,6 +40,14 @@ to a plain probabilistic regressor, i.e., in the ``skpro.regression`` module.
 
 These add the capability to take censoring into account.
 
+.. currentmodule:: skpro.survival.compose
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    FitUncensored
+    ConditionUncensored
 
 Reduction - adding ``predict_proba``
 ------------------------------------
