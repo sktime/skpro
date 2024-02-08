@@ -14,7 +14,7 @@ You can also subscribe to ``skpro``'s
 
 For planned changes and upcoming releases, see our :ref:`roadmap`.
 
-[2.2.0] - 2023-02-XX
+[2.2.0] - 2023-02-08
 ====================
 
 Highlights
@@ -142,6 +142,14 @@ Maintenance
 * [MNT] [Dependabot](deps-dev): Update pandas requirement from ``<2.2.0,>=1.1.0`` to ``>=1.1.0,<2.3.0`` (:pr:`182`) :user:`dependabot`
 * [MNT] [Dependabot](deps): Bump codecov/codecov-action from 3 to 4 by (:pr:`201`) :user:`dependabot`
 * [MNT] [Dependabot](deps): Bump pre-commit/action from ``3.0.0`` to ``3.0.1`` (:pr:`202`) :user:`dependabot`
+
+Contributors
+------------
+
+:user:`FelixWick`,
+:user:`fkiraly`,
+:user:`hazrulakmal`,
+:user:`setoguchi-naoki`
 
 
 [2.1.3] - 2023-01-22
