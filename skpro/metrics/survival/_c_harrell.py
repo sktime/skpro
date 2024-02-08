@@ -131,7 +131,7 @@ class ConcordanceHarrell(BaseDistrMetric):
                 rij = rj[i]
                 Cij = Cj[i]
                 nCij = 1 - Cij
-                one_unc = (1 - Cj * Cij)
+                one_unc = 1 - Cj * Cij
 
                 # mark concordant pairs (no ties)
                 comp1 = nCij * (yj > yij)  # comparable, > type
