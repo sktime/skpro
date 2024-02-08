@@ -126,15 +126,15 @@ class ConcordanceHarrell(BaseDistrMetric):
 
         for j in range(y_true.shape[1]):
             yj = y_true[:, j]
-            Cj = C_true[:, j]
-            nCj = 1 - Cj
+            Cj = C_true[:, j] == 1
+            nCj = ~Cj
             rj = risk_scores[:, j]
             for i in range(y_true.shape[0]):
                 yij = yj[i]
                 rij = rj[i]
                 Cij = Cj[i]
-                nCij = 1 - Cij
-                one_unc = 1 - Cj * Cij
+                nCij = ~Cij
+                one_unc = ~(Cj & Cij)
 
                 # mark concordant pairs (no ties)
                 comp1 = nCij & (yj > yij)  # comparable, > type
