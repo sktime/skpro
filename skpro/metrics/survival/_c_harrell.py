@@ -183,6 +183,7 @@ class ConcordanceHarrell(BaseDistrMetric):
                 # count concordant pairs
                 nconc = conc.sum() - nCij * nCj  # subtract i=j
                 if tie_score != 0:
+                    nconc = nconc.astype(float)
                     nconc += np.sum((yj != yij) & (rj == rij)) * tie_score
                     nconc += np.sum(one_unc & (yj == yij) & (rj == rij)) * tie_score
 
