@@ -57,9 +57,6 @@ Survival or time-to-event predictions are a variant of distribution predictions,
 where the ground truth may be censored.
 These metrics take the censoring information into account.
 
-Distribution predictions are also known as conditional distribution predictions.
-(or conditional density predictions, if continuous).
-
 .. currentmodule:: skpro.metrics.survival
 
 .. autosummary::
