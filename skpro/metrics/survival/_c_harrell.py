@@ -1,6 +1,5 @@
-"""Concrete performance metrics for probabilistic supervised regression."""
+"""Concordance index, Harrell's."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-# adapted from sktime
 
 import numpy as np
 import pandas as pd
@@ -149,7 +148,7 @@ class ConcordanceHarrell(BaseDistrMetric):
             C_true = np.zeros_like(y_true)
 
         risk_scores = getattr(y_pred, self.score)(**score_args)
-        if self.higher_score_is_lower_risk:
+        if not self.higher_score_is_lower_risk:
             risk_scores = -risk_scores
         risk_scores = risk_scores.to_numpy()
 
