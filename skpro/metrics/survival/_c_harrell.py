@@ -72,9 +72,9 @@ class ConcordanceHarrell(BaseDistrMetric):
         * If ``'overall'``, ``evaluate``
         returns the fraction of concordant among all comparable pairs.
         This is as in [1]_.
-        In ``evaluate_by_index``, fractions are multiplied by the
-        number of comparable pairs overall, divided by the number of comparable pairs
-        for the index, times the number of non-equal indices.
+        In ``evaluate_by_index``, fraction denominators are the
+        number of comparable pairs overall, divided by the number of samples,
+        instead of the number of comparable pairs in which the index is the first index.
 
         * If ``'index'``, ``evaluate`` returns the average, over indices,
         of the fraction of concordant pairs among
