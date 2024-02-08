@@ -17,5 +17,6 @@ It describes the classes and functions included in ``sktime``.
     api_reference/regression
     api_reference/survival
     api_reference/distributions
+    api_reference/metrics
     api_reference/base
     api_reference/utils
