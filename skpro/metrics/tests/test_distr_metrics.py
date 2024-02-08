@@ -1,6 +1,5 @@
 """Tests for probabilistic metrics for distribution predictions."""
-import warnings
-
+import numpy as np
 import pandas as pd
 import pytest
 from skbase.testing import QuickTester
@@ -22,10 +21,11 @@ class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
     # passed to skpro.registry.all_objects as object_type
     object_type_filter = "metric_distr"
 
-    @pytest.mark.parametrize("normal", TEST_DISTS)
+    @pytest.mark.parametrize("dist", TEST_DISTS)
+    @pytest.mark.parametrize("pass_c", [True, False])
     @pytest.mark.parametrize("multivariate", [True, False])
     @pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average"])
-    def test_distr_evaluate(object_instance, dist, multivariate, multioutput):
+    def test_distr_evaluate(object_instance, dist, pass_c, multivariate, multioutput):
         """Test expected output of evaluate functions."""
         metric = object_instance
 
@@ -39,7 +39,13 @@ class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
         else:
             expected_cols = ["score"]
 
-        res = m.evaluate_by_index(y_true, y_pred)
+        metric_args = {"y_true": y_true, "y_pred": y_pred}
+        if pass_c:
+            c_true = np.random.randint(0, 2, size=y_true.shape)
+            c_true = pd.DataFrame(c_true, columns=y_true.columns, index=y_true.index)
+            metric_args["c_true"] = c_true
+
+        res = m.evaluate_by_index(**metric_args)
         assert isinstance(res, pd.DataFrame)
         assert (res.columns == expected_cols).all()
         assert res.shape == (y_true.shape[0], len(expected_cols))
