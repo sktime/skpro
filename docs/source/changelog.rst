@@ -20,7 +20,7 @@ For planned changes and upcoming releases, see our :ref:`roadmap`.
 Highlights
 ----------
 
-* interface to ``cyclic_boosting`` (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
+* interface to ``cyclic_boosting`` package (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
 * framework support for probabilistic survival/time-to-event prediction with right censored data (:pr:`157`) :user:`fkiraly`
 * basic set of time-to-event prediction estimators and survival prediction metrics (:pr:`161`, :pr:`198`) :user:`fkiraly`
 * Johnson Quantile-Parameterized Distributions (QPD) with bounded and unbounded mode (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
