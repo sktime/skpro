@@ -195,11 +195,17 @@ class ConcordanceHarrell(BaseDistrMetric):
                 nconc_mat[i, j] = nconc
                 ncomp_mat[i, j] = ncomp
 
+        # normalization
         if normalization == "overall":
+            # weighting is such that average over rows
+            # results in the overall C-index
             ncomp_total = ncomp_mat.sum(axis=0)
             nspl = len(ncomp)
             result = (nspl / ncomp_total) * nconc_mat
         else:  # normalization == "index"
+            # weighting is such that rows contain simple fractions
+            # but the average over rows is not the overall C-index,
+            # as number of comparable pairs is in general not the same for each index
             result = nconc_mat / ncomp_mat
 
         res_df = pd.DataFrame(result, index=ix, columns=cols)
