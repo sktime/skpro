@@ -1,6 +1,5 @@
-"""Concrete performance metrics for probabilistic supervised regression."""
+"""Survival Process Logarithmic Loss for distributional predictions."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-# adapted from sktime
 
 import numpy as np
 import pandas as pd
