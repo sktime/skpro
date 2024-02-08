@@ -70,13 +70,11 @@ We strongly believe in the value of sharing help publicly, as it allows a wider 
 
 Our objective is to enhance the interoperability and usability of the AI model ecosystem:
 
-* ``skpro`` is compatible with [scikit-learn] and [sktime], and composites can be built across
-libraries, e.g., an ``sktime`` probabiistic forecaster via reduction to an ``skpro`` probabilistic regressor
-which in turn is an ``sklearn`` regressor with added probabilistic prediction mode by a ``skpro`` compositor.
+* ``skpro`` is compatible with [scikit-learn] and [sktime], e.g., an ``sktime`` proba forecaster can
+be built with an ``skpro`` proba regressor which in an ``sklearn`` regressor with proba mode added by ``skpro``
 
-* ``skpro`` provides de-novo implementations of algorithms or composition meta-algorithms, but aso
-a mini-package management framework interfacing popular second- and third-party components, such as
-[cyclic-boosting] or [MAPIE] packages.
+* ``skpro`` provides a mini-package management framework for first-party implemenentations,
+and for interfacing popular second- and third-party components, such as [cyclic-boosting] or [MAPIE] packages.
 
 [scikit-learn]: https://scikit-learn.org/stable/
 [sktime]: https://www.sktime.net
