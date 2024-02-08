@@ -68,7 +68,7 @@ class ConcordanceHarrell(BaseDistrMetric):
         fractions of concordant pairs are averaged primarily overall,
         or primarily per index. In both cases, ``evaluate`` returns the
         arithmetic mean of ``evaluate_by_index``.
-        
+
         * If ``'overall'``, ``evaluate``
         returns the fraction of concordant among all comparable pairs.
         This is as in [1]_.
