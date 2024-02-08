@@ -142,7 +142,7 @@ class ConcordanceHarrell(BaseDistrMetric):
                 comp2 = nCj & (yj < yij)  # comparable, < type
                 conc2 = comp2 & (rj < rij)
 
-                # mark concordnt pairs, handling ties
+                # mark concordant pairs, handling ties
                 conc3 = nCij & nCj & ((yj == yij) & (rj == rij))
                 conc = conc1 | conc2 | conc3
 
