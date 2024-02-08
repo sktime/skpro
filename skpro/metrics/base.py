@@ -34,7 +34,7 @@ class BaseProbaMetric(BaseObject):
     """
 
     _tags = {
-        "object_type": "metric",  # type of object
+        "object_type": ["metric", "metric_distr"],  # type of object
         "reserved_params": ["multioutput", "score_average"],
         "scitype:y_pred": "pred_proba",
         "lower_is_better": True,
