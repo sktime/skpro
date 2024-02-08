@@ -112,7 +112,7 @@ class ConcordanceHarrell(BaseDistrMetric):
         if C_true is not None:
             C_true = C_true.to_numpy()
         else:
-            C_true = np.zeros_like_like(y_true)
+            C_true = np.zeros_like(y_true)
 
         risk_scores = getattr(y_pred, self.score)(**self.score_args)
         if self.higher_score_is_lower_risk:
