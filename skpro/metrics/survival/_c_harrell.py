@@ -47,17 +47,42 @@ class ConcordanceHarrell(BaseDistrMetric):
         The type of inverse risk score to use.
         Calls predict_proba, then the method of the same name as `score`.
         Examples include 'mean', 'median', 'quantile', 'cdf'.
+
     score_args : dict, optional, default=None
         Additional arguments to pass to the score method, e.g., quantiles.
+
     higher_score_is_lower_risk : bool, optional, default=True
         If True, higher score is considered lower risk, and vice versa,
         that is, the score is assumed to be an inverse risk score.
         If False, the score is assumed to be a risk score, and a
         negative sign is applied to the score.
+
     tie_score : float, optional, default=0.5
         The value to use for ties in the risk scores,
         as a relative value to counting as concordant.
         1 is counting as concordant, 0 is counting as discordant.
+        0.5 is counting as half concordant, half discordant.
+
+    normalization : str, {'overall', 'index'}, optional, default='overall'
+        Determines the normalization of the concordance index, whether
+        fractions of concordant pairs are averaged primarily overall,
+        or primarily per index. In both cases, ``evaluate`` returns the
+        arithmetic mean of ``evaluate_by_index``.
+        
+        * If ``'overall'``, ``evaluate``
+        returns the fraction of concordant among all comparable pairs.
+        This is as in [1]_.
+        In ``evaluate_by_index``, fractions are multiplied by the
+        number of comparable pairs overall, divided by the number of comparable pairs
+        for the index, times the number of non-equal indices.
+
+        * If ``'index'``, ``evaluate`` returns the average, over indices,
+        of the fraction of concordant pairs among
+        all comparable pairs in which the index is the first index.
+        In ``evaluate_by_index``, entries are the fraction of concordant pairs
+        among all comparable pairs in which the index is the first index,
+        without further normalization.
+
     multioutput : {'raw_values', 'uniform_average'} or array-like of shape
         (n_outputs,), default='uniform_average'
         Defines whether and how to aggregate metric for across variables.
@@ -91,6 +116,7 @@ class ConcordanceHarrell(BaseDistrMetric):
         score_args=None,
         higher_score_is_lower_risk=True,
         tie_score=0.5,
+        normalization="overall",
         multioutput="uniform_average",
         multivariate=False,
     ):
@@ -98,16 +124,21 @@ class ConcordanceHarrell(BaseDistrMetric):
         self.score_args = score_args
         self.higher_score_is_lower_risk = higher_score_is_lower_risk
         self.tie_score = tie_score
+        self.normalization = normalization
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
     def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         C_true = kwargs.get("C_true", None)
+
+        # retrieve parameters
         tie_score = self.tie_score
+        normalization = self.normalization
         score_args = self.score_args
         if score_args is None:
             score_args = {}
 
+        # convert to numpy and remember index and columns
         ix = y_true.index
         cols = y_true.columns
 
@@ -122,8 +153,11 @@ class ConcordanceHarrell(BaseDistrMetric):
             risk_scores = -risk_scores
         risk_scores = risk_scores.to_numpy()
 
+        ncomp_mat = np.zeros_like(y_true)
+        nconc_mat = np.zeros_like(y_true)
         result = np.zeros_like(y_true)
 
+        # compute concordance index for each index
         for j in range(y_true.shape[1]):
             yj = y_true[:, j]
             Cj = C_true[:, j] == 1
@@ -157,7 +191,15 @@ class ConcordanceHarrell(BaseDistrMetric):
                 comp = comp1 | comp2 | comp3
                 ncomp = comp.sum() - nCij  # subtract i=j, but only if counted above
 
-                result[i, j] = nconc / ncomp
+                nconc_mat[i, j] = nconc
+                ncomp_mat[i, j] = ncomp
+
+        if normalization == "overall":
+            ncomp_total = ncomp_mat.sum(axis=0)
+            nspl = len(ncomp)
+            result = (nspl / ncomp_total) * nconc_mat
+        else:  # normalization == "index"
+            result = nconc_mat / ncomp_mat
 
         res_df = pd.DataFrame(result, index=ix, columns=cols)
 
