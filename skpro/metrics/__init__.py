@@ -12,6 +12,7 @@ __all__ = [
     "LogLoss",
     "LinearizedLogLoss",
     "SquaredDistrLoss",
+    "ConcordanceHarrell",
     "SPLL",
 ]
 
@@ -24,4 +25,4 @@ from skpro.metrics._classes import (
     PinballLoss,
     SquaredDistrLoss,
 )
-from skpro.metrics.survival import SPLL
+from skpro.metrics.survival import ConcordanceHarrell, SPLL
