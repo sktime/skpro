@@ -137,23 +137,23 @@ class ConcordanceHarrell(BaseDistrMetric):
                 one_unc = 1 - Cj * Cij
 
                 # mark concordant pairs (no ties)
-                comp1 = nCij * (yj > yij)  # comparable, > type
+                comp1 = nCij & (yj > yij)  # comparable, > type
                 conc1 = comp1 & (rj > rij)
-                comp2 = nCj * (yj < yij)  # comparable, < type
+                comp2 = nCj & (yj < yij)  # comparable, < type
                 conc2 = comp2 & (rj < rij)
 
                 # mark concordnt pairs, handling ties
-                conc3 = nCij * nCj * ((yj == yij) & (rj == rij))
+                conc3 = nCij & nCj &     ((yj == yij) & (rj == rij))
                 conc = conc1 | conc2 | conc3
 
                 # count concordant pairs
                 nconc = conc.sum() - nCij * nCj  # subtract i=j
                 if tie_score != 0:
                     nconc += np.sum((yj != yij) & (rj == rij)) * tie_score
-                    nconc += np.sum(one_unc * (yj == yij) & (rj == rij)) * tie_score
+                    nconc += np.sum(one_unc & (yj == yij) & (rj == rij)) * tie_score
 
                 # count comparable pairs
-                comp3 = one_unc * (yj == yij)
+                comp3 = one_unc & (yj == yij)
                 comp = comp1 | comp2 | comp3
                 ncomp = comp.sum() - nCij  # subtract i=j, but only if counted above
 
