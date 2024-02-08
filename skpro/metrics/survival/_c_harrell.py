@@ -104,6 +104,9 @@ class ConcordanceHarrell(BaseDistrMetric):
     def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         C_true = kwargs.get("C_true", None)
         tie_score = self.tie_score
+        score_args = self.score_args
+        if score_args is None:
+            score_args = {}
 
         ix = y_true.index
         cols = y_true.columns
@@ -114,7 +117,7 @@ class ConcordanceHarrell(BaseDistrMetric):
         else:
             C_true = np.zeros_like(y_true)
 
-        risk_scores = getattr(y_pred, self.score)(**self.score_args)
+        risk_scores = getattr(y_pred, self.score)(**score_args)
         if self.higher_score_is_lower_risk:
             risk_scores = -risk_scores
         risk_scores = risk_scores.to_numpy()
