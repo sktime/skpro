@@ -203,7 +203,7 @@ class ConcordanceHarrell(BaseDistrMetric):
             # weighting is such that average over rows
             # results in the overall C-index
             ncomp_total = ncomp_mat.sum(axis=0)
-            nspl = len(ncomp)
+            nspl = len(ncomp_mat)
             result = (nspl / ncomp_total) * nconc_mat
         else:  # normalization == "index"
             # weighting is such that rows contain simple fractions
