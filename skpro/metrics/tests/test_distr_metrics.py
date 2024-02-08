@@ -7,7 +7,6 @@ from skbase.testing import QuickTester
 from skpro.distributions import Normal
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
-
 TEST_DISTS = [Normal]
 
 
