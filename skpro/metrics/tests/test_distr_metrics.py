@@ -10,7 +10,7 @@ from skpro.metrics import (
     SPLL,
     ConcordanceHarrell,
     LinearizedLogLoss,
-    LogLoss, 
+    LogLoss,
     SquaredDistrLoss,
 )
 
@@ -21,7 +21,7 @@ DISTR_METRICS = [
     SPLL,
     ConcordanceHarrell,
     LinearizedLogLoss,
-    LogLoss, 
+    LogLoss,
     SquaredDistrLoss,
 ]
 
