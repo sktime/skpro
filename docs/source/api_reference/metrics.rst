@@ -1,11 +1,11 @@
 
-.. _performance_metric_ref:
+.. _metrics_ref:
 
 Performance metrics
 ===================
 
 The :mod:`skpro.metrics` module contains metrics for evaluating
-probabilistic predictions, including survival and time-to-event prediction.s.
+probabilistic predictions, including survival and time-to-event predictions.
 
 All metrics in ``skpro`` can be listed using the ``skpro.registry.all_objects`` utility,
 using ``object_types="metric"``, optionally filtered by tags.
