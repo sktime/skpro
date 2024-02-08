@@ -24,7 +24,9 @@ class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
     @pytest.mark.parametrize("pass_c", [True, False])
     @pytest.mark.parametrize("multivariate", [True, False])
     @pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average"])
-    def test_distr_evaluate(object_instance, dist, pass_c, multivariate, multioutput):
+    def test_distr_evaluate(
+        self, object_instance, dist, pass_c, multivariate, multioutput
+    ):
         """Test expected output of evaluate functions."""
         metric = object_instance
 
