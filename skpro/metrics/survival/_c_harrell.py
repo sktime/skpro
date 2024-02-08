@@ -11,7 +11,7 @@ from skpro.metrics.base import BaseDistrMetric
 class ConcordanceHarrell(BaseDistrMetric):
     r"""Concordance index (Harrell).
 
-    Fraction of concordant test index pairs among all such pairs,
+    Fraction of concordant test index pairs among all comparale pairs,
     as proposed in [1]_, commonly known as Harrell's C-index, Harrell's C,
     or simply concordance index,
     if not in delination of other C-indices (e.g., Uno's C-index).
@@ -21,8 +21,15 @@ class ConcordanceHarrell(BaseDistrMetric):
     a pair of test non-equal test indices :math:`i \lneq j` is concordant if
     :math:`(y_i > y_j) \land (s_i > s_j)` or :math:`(y_i < y_j) \land (s_i < s_j)`.
     If :math:`(s_i = s_j)`, the pair is counted as concordant if :math:`y_i = y_j`,
-    otherwise it is considered a tie,
+    and :math:`c_i = c_j = 0`, otherwise it is considered a tie,
     counted as half concordant, half discordant by default.
+
+    A pair of test indices :math:`i \lneq j` is said to be comparable
+    if one of the following conditions holds:
+
+    * :math:`y_i > y_j` and :math:`c_j = 0`
+    * :math:`y_i < y_j` and :math:`c_i = 0`
+    * :math:`y_i = y_j` and :math:`c_i c_j = 0`
 
     This metric supports multiple options for inverse risk scores,
     including any method evaluates of predictive distributions.
