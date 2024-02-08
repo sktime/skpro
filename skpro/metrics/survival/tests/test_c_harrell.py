@@ -8,7 +8,7 @@ import pytest
 @pytest.mark.parametrize("concordant", [True, False])
 @pytest.mark.parametrize("pass_c", [True, False])
 @pytest.mark.parametrize("normalization", ["overall", "index"])
-def test_charrell_logic(concordant=True, pass_c=True, normalization="overall"):
+def test_charrell_logic(concordant, pass_c, normalization):
     """Test the logic of the Harrell's C-index metric.
 
     Parameters
