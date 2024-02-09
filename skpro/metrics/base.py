@@ -34,7 +34,7 @@ class BaseProbaMetric(BaseObject):
     """
 
     _tags = {
-        "object_type": ["metric", "metric_distr"],  # type of object
+        "object_type": "metric",  # type of object
         "reserved_params": ["multioutput", "score_average"],
         "scitype:y_pred": "pred_proba",
         "lower_is_better": True,
@@ -376,6 +376,7 @@ class BaseDistrMetric(BaseProbaMetric):
     """
 
     _tags = {
+        "object_type": ["metric", "metric_distr"],  # type of object
         "scitype:y_pred": "pred_proba",
         "lower_is_better": True,
     }
@@ -402,7 +403,7 @@ class BaseDistrMetric(BaseProbaMetric):
         multioutput = self.multioutput
         multivariate = self.multivariate
 
-        index_df = self.evaluate_by_index(y_true, y_pred)
+        index_df = self.evaluate_by_index(y_true, y_pred, **kwargs)
         out_df = pd.DataFrame(index_df.mean(axis=0)).T
         out_df.columns = index_df.columns
 
