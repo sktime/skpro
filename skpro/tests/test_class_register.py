@@ -21,6 +21,7 @@ def get_test_class_registry():
         keys are scitypes, values are test classes TestAll[Scitype]
     """
     from skpro.distributions.tests.test_all_distrs import TestAllDistributions
+    from skpro.metrics.tests.test_distr_metrics import TestAllDistrMetrics
     from skpro.regression.tests.test_all_regressors import TestAllRegressors
     from skpro.tests.test_all_estimators import TestAllEstimators, TestAllObjects
 
@@ -37,6 +38,7 @@ def get_test_class_registry():
     # so also imply estimator and object tests, or only object tests
     testclass_dict["distribution"] = TestAllDistributions
     testclass_dict["regressor_proba"] = TestAllRegressors
+    testclass_dict["metric_proba"] = TestAllDistrMetrics
 
     return testclass_dict
 
