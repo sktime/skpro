@@ -33,7 +33,9 @@ class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
         y_pred = dist.create_test_instance()
         y_true = y_pred.sample()
 
-        m = metric.set_params(multivariate=multivariate, multioutput=multioutput)
+        m = metric.set_params(multioutput=multioutput)
+        if "multivariate" in metric.get_params():
+            m = m.set_params(multivariate=multivariate)
 
         if not multivariate:
             expected_cols = y_true.columns
