@@ -17,6 +17,17 @@ For planned changes and upcoming releases, see our :ref:`roadmap`.
 [2.2.1] - 2023-03-03
 ====================
 
+Minor bugfix and maintenance release.
+
+Contents
+--------
+
+* [ENH] migrate tests of distribution prediction metrics to ``skbase`` class
+  (:pr:`208`) :user:`fkiraly`
+* [BUG] fix dispatching of censoring information in probabilistic metrics
+  (:pr:`208`) :user:`fkiraly`
+* [BUG] fix missing location/scale in `TDistribution` (:pr:`210`) :user:`ivarzap`
+
 
 [2.2.0] - 2023-02-08
 ====================
