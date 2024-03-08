@@ -77,7 +77,7 @@ def test_cyclic_boosting_with_manual_paramaters():
         feature_properties=fp,
         maximal_iterations=5,
         alpha=0.25,
-        mode="additive",
+        mode="multiplicative",
         bound="S",
         lower=0.0,
     )

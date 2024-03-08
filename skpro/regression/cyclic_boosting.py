@@ -190,7 +190,7 @@ class CyclicBoosting(BaseProbaRegressor):
 
         # multiple quantile regression for full probability estimation
         for est in self.quantile_est:
-            est.fit(X.copy(), y)
+            est.fit(X.copy(), y)  # copy to avoid inplace modification
 
         return self
 
