@@ -120,6 +120,16 @@
         "doc",
         "test"
       ]
+    },
+    {
+      "login": "ShreeshaM07",
+      "name": "Shreesha M",
+      "avatar_url": "https://avatars.githubusercontent.com/u/120820143?s=400&v=4",
+      "profile": "https://github.com/ShreeshaM07",
+      "contributions": [
+          "code",
+          "doc"
+      ]
     }
   ]
 }
