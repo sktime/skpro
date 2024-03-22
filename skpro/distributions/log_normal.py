@@ -86,13 +86,26 @@ class LogNormal(BaseDistribution):
         pd.DataFrame with same rows as `self`, single column `"energy"`
         each row contains one float, self-energy/energy as described above.
         """
+        approx_spl_size = self.get_tag("approx_energy_spl")
+        approx_method = (
+            "by approximating the energy expectation by the arithmetic mean of "
+            f"{approx_spl_size} samples"
+        )
+        
+        # splx, sply = i.i.d. samples of X - Y of size N = approx_spl_size
+        N = approx_spl_size
         if x is None:
-            sd_arr = self._sigma
-            energy_arr = 2 * np.sum(sd_arr, axis=1) / np.sqrt(np.pi)
-            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
+            splx = self.sample(N)
+            sply = self.sample(N)
+            # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx, sply
+            spl = splx - sply
+            energy = spl.apply(np.linalg.norm, axis=1, ord=1).groupby(level=1).mean()
+            energy = pd.DataFrame(energy, index=self.index, columns=["energy"])
         else:
-            mu_arr, sd_arr = self._mu, self._sigma
-            c_arr = (np.log(x) - mu_arr) * (2 * self.cdf(x) - 1) + 2 * sd_arr**2 * self.pdf(x)
+            d = self.loc[x.index, x.columns]
+            mu_arr, sd_arr = d._mu, d._sigma
+            
+            c_arr = x*(2*self.cdf(x)-1)-2*exp((mu_arr+sd_arr**2)/2)*(self.cdf((np.log(x)-mu_arr-sd_arr**2)/sd_arr)+self.cdf(sd_arr/mu_arr**0.5)-1)
             energy_arr = np.sum(c_arr, axis=1)
             energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
         return energy
