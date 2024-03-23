@@ -362,6 +362,3 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
         }
         return [param1, param2]
 
-
-class GaussianRegressor(_DelegateWithFittedParamForwarding):
-    pass
