@@ -1,4 +1,4 @@
-"""Gaussian regression."""
+"""Gaussian regression"""
 
 # License: BSD-3-Clause (see LICENSE file)
 
