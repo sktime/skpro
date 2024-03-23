@@ -61,10 +61,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/2273226?v=4",
       "profile": "https://github.com/iwitaly",
       "contributions": [
-          "code",
-          "doc",
-          "maintenance",
-          "review"
+        "code",
+        "doc",
+        "maintenance",
+        "review"
       ]
     },
     {
@@ -73,8 +73,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/39331844?v=4",
       "profile": "https://github.com/yarnabrina",
       "contributions": [
-          "code",
-          "maintenance"
+        "code",
+        "maintenance"
       ]
     },
     {
@@ -98,6 +98,15 @@
         "code",
         "doc",
         "ideas"
+      ]
+    },
+    {
+      "login": "sanjayk0508",
+      "name": "Sanjay Kumar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/102804548?v=4",
+      "profile": "https://github.com/sanjayk0508",
+      "contributions": [
+        "code"
       ]
     },
     {
