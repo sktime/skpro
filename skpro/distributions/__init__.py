@@ -11,6 +11,7 @@ __all__ = [
     "QPD_S",
     "QPD_B",
     "QPD_U",
+    "ChiSquared"
 ]
 
 from skpro.distributions.empirical import Empirical
@@ -19,3 +20,4 @@ from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
 from skpro.distributions.t import TDistribution
+from skpro.distributions.chi_squared import ChiSquared
