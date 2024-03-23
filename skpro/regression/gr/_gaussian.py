@@ -7,8 +7,6 @@ __author__ = ["sanjayk0508"]
 import numpy as np
 from scipy.stats import norm
 
-from skpro.utils.validation import check_X_y, check_is_fitted, check_array
-
 from skpro.regression.adapters.sklearn import SklearnProbaReg
 from skpro.regression.base.adapters import _DelegateWithFittedParamForwarding
 
@@ -127,8 +125,6 @@ class GaussianRegressor(_DelegateWithFittedParamForwarding):
         self : GaussianRegressor
             Fitted regressor.
         """
-        X, y = check_X_y(X, y)
-        check_is_fitted(self, ["_estimator"])
 
         self._estimator.fit(X, y)
         self.residuals_ = y - self.predict(X)
@@ -157,7 +153,6 @@ class GaussianRegressor(_DelegateWithFittedParamForwarding):
         score : float
             Negative log-likelihood of the Gaussian distribution.
         """
-        check_is_fitted(self, ["_estimator"])
 
         residuals = y - self.predict(X)
         return -norm.logpdf(residuals).sum()
@@ -178,8 +173,6 @@ class GaussianRegressor(_DelegateWithFittedParamForwarding):
         the mean of the distribution, and the second column represents the
         standard deviation.
         """
-        check_is_fitted(self, ["_estimator"])
-        X = check_array(X)
 
         y_mean = self.predict(X)
 
@@ -206,8 +199,6 @@ class GaussianRegressor(_DelegateWithFittedParamForwarding):
         y_pred : array-like of shape (n_samples,) or (n_samples, n_targets)
             Predicted values.
         """
-        check_is_fitted(self, ["_estimator"])
-        X = check_array(X)
 
         return self._estimator.predict(X)
 

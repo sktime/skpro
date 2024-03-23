@@ -1,6 +1,6 @@
 """Gaussian regression"""
 
-# License: BSD-3-Clause (see LICENSE file)
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 from skpro.regression.gr._gaussian import GaussianRegressor
 
