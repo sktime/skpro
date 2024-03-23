@@ -3,6 +3,7 @@
 # adapted from sktime
 
 __all__ = [
+    "ChiSquared",
     "Empirical",
     "Laplace",
     "Mixture",
@@ -13,6 +14,7 @@ __all__ = [
     "QPD_U",
 ]
 
+from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.mixture import Mixture
