@@ -7,6 +7,7 @@ __all__ = [
     "Laplace",
     "Mixture",
     "Normal",
+    "LogNormal",
     "TDistribution",
     "QPD_S",
     "QPD_B",
