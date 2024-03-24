@@ -202,6 +202,10 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
         from sklearn.preprocessing import StandardScaler
 
         from skpro.regression.residual import ResidualDouble
+        from skpro.survival.coxph import CoxPH
+        from skpro.utils.validation._dependencies import _check_estimator_deps
+
+        params = []
 
         regressor = ResidualDouble.create_test_instance()
 
@@ -209,11 +213,15 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
             ("transformer", StandardScaler()),
             ("regressor", regressor),
         ]
-        params1 = {"steps": STEPS1}
+        params += [{"steps": STEPS1}]
 
-        params2 = {"steps": [StandardScaler(), regressor]}
+        params += [{"steps": [StandardScaler(), regressor]}]
 
-        return [params1, params2]
+        # testing with survival predictor
+        if _check_estimator_deps(CoxPH, severity="none"):
+            params += [{"steps": [StandardScaler(), CoxPH()]}]
+
+        return params
 
 
 class Pipeline(_Pipeline):
@@ -328,7 +336,7 @@ class Pipeline(_Pipeline):
 
         super().__init__()
 
-        tags_to_clone = ["capability:multioutput"]
+        tags_to_clone = ["capability:multioutput", "capability:survival"]
         self.clone_tags(self.regressor_, tags_to_clone)
 
     @property
@@ -375,7 +383,7 @@ class Pipeline(_Pipeline):
         else:
             return Pipeline(steps=list(zip(new_names, new_ests)))
 
-    def _fit(self, X, y):
+    def _fit(self, X, y, C=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -385,8 +393,16 @@ class Pipeline(_Pipeline):
         ----------
         X : pandas DataFrame
             feature instances to fit regressor to
-        y : pandas DataFrame, must be same length as X
+        y : pd.DataFrame, must be same length as X
             labels to fit regressor to
+        C : pd.DataFrame, optional (default=None)
+            censoring information for survival analysis,
+            should have same column name as y, same length as X and y
+            should have entries 0 and 1 (float or int)
+            0 = uncensored, 1 = (right) censored
+            if None, all observations are assumed to be uncensored
+            Can be passed to any probabilistic regressor,
+            but is ignored if capability:survival tag is False.
 
         Returns
         -------
@@ -406,7 +422,7 @@ class Pipeline(_Pipeline):
         # fit regressor
         name, regressor = self.steps_[-1]
         r = regressor.clone()
-        r.fit(X, y)
+        r.fit(X, y, C=C)
         self.steps_[-1] = (name, r)
 
         return self

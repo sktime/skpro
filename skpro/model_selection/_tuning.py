@@ -4,13 +4,15 @@
 __author__ = ["fkiraly"]
 __all__ = ["GridSearchCV", "RandomizedSearchCV"]
 
+from warnings import warn
+
 import numpy as np
 import pandas as pd
-from joblib import Parallel, delayed
 from sklearn.model_selection import ParameterGrid, ParameterSampler, check_cv
 
 from skpro.benchmarking.evaluate import evaluate
 from skpro.regression.base._delegate import _DelegatedProbaRegressor
+from skpro.utils.parallel import parallelize
 
 
 class BaseGridSearch(_DelegatedProbaRegressor):
@@ -20,6 +22,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         "capability:missing": True,
     }
 
+    # todo 2.3.0: remove pre_dispatch and n_jobs params
     def __init__(
         self,
         estimator,
@@ -32,6 +35,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         verbose=0,
         return_n_best_estimators=1,
         error_score=np.nan,
+        backend_params=None,
     ):
         self.estimator = estimator
         self.cv = cv
@@ -43,10 +47,15 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         self.verbose = verbose
         self.return_n_best_estimators = return_n_best_estimators
         self.error_score = error_score
+        self.backend_params = backend_params
 
         super().__init__()
 
-        tags_to_clone = ["capability:multioutput", "capability:missing"]
+        tags_to_clone = [
+            "capability:multioutput",
+            "capability:missing",
+            "capability:survival",
+        ]
         self.clone_tags(estimator, tags_to_clone)
 
     # attribute for _DelegatedProbaRegressor, which then delegates
@@ -77,7 +86,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
     def _run_search(self, evaluate_candidates):
         raise NotImplementedError("abstract method")
 
-    def _fit(self, X, y):
+    def _fit(self, X, y, C=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -87,8 +96,16 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         ----------
         X : pandas DataFrame
             feature instances to fit regressor to
-        y : pandas DataFrame, must be same length as X
+        y : pd.DataFrame, must be same length as X
             labels to fit regressor to
+        C : pd.DataFrame, optional (default=None)
+            censoring information for survival analysis,
+            should have same column name as y, same length as X and y
+            should have entries 0 and 1 (float or int)
+            0 = uncensored, 1 = (right) censored
+            if None, all observations are assumed to be uncensored
+            Can be passed to any probabilistic regressor,
+            but is ignored if capability:survival tag is False.
 
         Returns
         -------
@@ -100,11 +117,24 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         scoring = self.scoring
         scoring_name = f"test_{scoring.name}"
 
-        parallel = Parallel(
-            n_jobs=self.n_jobs, pre_dispatch=self.pre_dispatch, backend=self.backend
-        )
+        # todo 2.3.0: remove this logic and only use backend_params
+        backend = self.backend
+        backend_params = self.backend_params if self.backend_params else {}
+        if backend in ["threading", "multiprocessing", "loky"]:
+            n_jobs = self.n_jobs
+            pre_dispatch = self.pre_dispatch
+            backend_params["n_jobs"] = n_jobs
+            backend_params["pre_dispatch"] = pre_dispatch
+            if n_jobs is not None or pre_dispatch is not None:
+                warn(
+                    f"in {self.__class__.__name__}, n_jobs and pre_dispatch "
+                    "parameters are deprecated and will be removed in 2.3.0. "
+                    "Please use n_jobs and pre_dispatch directly in the backend_params "
+                    "argument instead.",
+                    stacklevel=2,
+                )
 
-        def _fit_and_score(params):
+        def _fit_and_score(params, meta):
             # Clone estimator.
             estimator = self.estimator.clone()
 
@@ -117,6 +147,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
                 cv=cv,
                 X=X,
                 y=y,
+                C=C,
                 scoring=scoring,
                 error_score=self.error_score,
             )
@@ -146,8 +177,11 @@ class BaseGridSearch(_DelegatedProbaRegressor):
                     )
                 )
 
-            out = parallel(
-                delayed(_fit_and_score)(params) for params in candidate_params
+            out = parallelize(
+                fun=_fit_and_score,
+                iter=candidate_params,
+                backend=backend,
+                backend_params=backend_params,
             )
 
             if len(out) < 1:
@@ -186,7 +220,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
 
         # Refit model with best parameters.
         if self.refit:
-            self.best_estimator_.fit(X, y)
+            self.best_estimator_.fit(X, y, C=C)
 
         # Sort values according to rank
         results = results.sort_values(
@@ -283,13 +317,42 @@ class GridSearchCV(BaseGridSearch):
     error_score : numeric value or the str 'raise', optional (default=np.nan)
         The test score returned when a estimator fails to be fitted.
     return_train_score : bool, optional (default=False)
-    backend : str, optional (default="loky")
-        Specify the parallelisation backend implementation in joblib, where
-        "loky" is used by default.
+
+    backend : {"dask", "loky", "multiprocessing", "threading"}, by default "loky".
+        Runs parallel evaluate if specified and `strategy` is set as "refit".
+
+        - "None": executes loop sequentally, simple list comprehension
+        - "loky", "multiprocessing" and "threading": uses ``joblib.Parallel`` loops
+        - "joblib": custom and 3rd party ``joblib`` backends, e.g., ``spark``
+        - "dask": uses ``dask``, requires ``dask`` package in environment
+
+        Recommendation: Use "dask" or "loky" for parallel evaluate.
+        "threading" is unlikely to see speed ups due to the GIL and the serialization
+        backend (``cloudpickle``) for "dask" and "loky" is generally more robust
+        than the standard ``pickle`` library used in "multiprocessing".
+
     error_score : "raise" or numeric, default=np.nan
         Value to assign to the score if an exception occurs in estimator fitting. If set
         to "raise", the exception is raised. If a numeric value is given,
         FitFailedWarning is raised.
+
+    backend_params : dict, optional
+        additional parameters passed to the backend as config.
+        Directly passed to ``utils.parallel.parallelize``.
+        Valid keys depend on the value of ``backend``:
+
+        - "None": no additional parameters, ``backend_params`` is ignored
+        - "loky", "multiprocessing" and "threading": default ``joblib`` backends
+          any valid keys for ``joblib.Parallel`` can be passed here, e.g., ``n_jobs``,
+          with the exception of ``backend`` which is directly controlled by ``backend``.
+          If ``n_jobs`` is not passed, it will default to ``-1``, other parameters
+          will default to ``joblib`` defaults.
+        - "joblib": custom and 3rd party ``joblib`` backends, e.g., ``spark``.
+          any valid keys for ``joblib.Parallel`` can be passed here, e.g., ``n_jobs``,
+          ``backend`` must be passed as a key of ``backend_params`` in this case.
+          If ``n_jobs`` is not passed, it will default to ``-1``, other parameters
+          will default to ``joblib`` defaults.
+        - "dask": any valid keys for ``dask.compute`` can be passed, e.g., ``scheduler``
 
     Attributes
     ----------
@@ -421,25 +484,42 @@ class GridSearchCV(BaseGridSearch):
 
         from skpro.metrics import CRPS, PinballLoss
         from skpro.regression.residual import ResidualDouble
+        from skpro.survival.coxph import CoxPH
+        from skpro.utils.validation._dependencies import _check_estimator_deps
 
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
 
-        params = {
+        param1 = {
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=3),
             "param_grid": {"estimator": [linreg1, linreg2]},
             "scoring": CRPS(),
+            "error_score": "raise",
         }
 
-        params2 = {
+        param2 = {
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=4),
             "param_grid": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
+            "error_score": "raise",
         }
 
-        return [params, params2]
+        params = [param1, param2]
+
+        # testing with survival predictor
+        if _check_estimator_deps(CoxPH, severity="none"):
+            param3 = {
+                "estimator": CoxPH(alpha=0.05),
+                "cv": KFold(n_splits=4),
+                "param_grid": {"method": ["lpl", "elastic_net"]},
+                "scoring": PinballLoss(),
+                "error_score": "raise",
+            }
+            params.append(param3)
+
+        return params
 
 
 class RandomizedSearchCV(BaseGridSearch):
@@ -516,13 +596,42 @@ class RandomizedSearchCV(BaseGridSearch):
         Pass an int for reproducible output across multiple
         function calls.
     pre_dispatch : str, optional (default='2*n_jobs')
-    backend : str, optional (default="loky")
-        Specify the parallelisation backend implementation in joblib, where
-        "loky" is used by default.
+
+    backend : {"dask", "loky", "multiprocessing", "threading"}, by default "loky".
+        Runs parallel evaluate if specified and `strategy` is set as "refit".
+
+        - "None": executes loop sequentally, simple list comprehension
+        - "loky", "multiprocessing" and "threading": uses ``joblib.Parallel`` loops
+        - "joblib": custom and 3rd party ``joblib`` backends, e.g., ``spark``
+        - "dask": uses ``dask``, requires ``dask`` package in environment
+
+        Recommendation: Use "dask" or "loky" for parallel evaluate.
+        "threading" is unlikely to see speed ups due to the GIL and the serialization
+        backend (``cloudpickle``) for "dask" and "loky" is generally more robust
+        than the standard ``pickle`` library used in "multiprocessing".
+
     error_score : "raise" or numeric, default=np.nan
         Value to assign to the score if an exception occurs in estimator fitting. If set
         to "raise", the exception is raised. If a numeric value is given,
         FitFailedWarning is raised.
+
+    backend_params : dict, optional
+        additional parameters passed to the backend as config.
+        Directly passed to ``utils.parallel.parallelize``.
+        Valid keys depend on the value of ``backend``:
+
+        - "None": no additional parameters, ``backend_params`` is ignored
+        - "loky", "multiprocessing" and "threading": default ``joblib`` backends
+          any valid keys for ``joblib.Parallel`` can be passed here, e.g., ``n_jobs``,
+          with the exception of ``backend`` which is directly controlled by ``backend``.
+          If ``n_jobs`` is not passed, it will default to ``-1``, other parameters
+          will default to ``joblib`` defaults.
+        - "joblib": custom and 3rd party ``joblib`` backends, e.g., ``spark``.
+          any valid keys for ``joblib.Parallel`` can be passed here, e.g., ``n_jobs``,
+          ``backend`` must be passed as a key of ``backend_params`` in this case.
+          If ``n_jobs`` is not passed, it will default to ``-1``, other parameters
+          will default to ``joblib`` defaults.
+        - "dask": any valid keys for ``dask.compute`` can be passed, e.g., ``scheduler``
 
     Attributes
     ----------
@@ -631,22 +740,39 @@ class RandomizedSearchCV(BaseGridSearch):
 
         from skpro.metrics import CRPS, PinballLoss
         from skpro.regression.residual import ResidualDouble
+        from skpro.survival.coxph import CoxPH
+        from skpro.utils.validation._dependencies import _check_estimator_deps
 
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
 
-        params = {
+        param1 = {
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=3),
             "param_distributions": {"estimator": [linreg1, linreg2]},
             "scoring": CRPS(),
+            "error_score": "raise",
         }
 
-        params2 = {
+        param2 = {
             "estimator": ResidualDouble(LinearRegression()),
             "cv": KFold(n_splits=4),
             "param_distributions": {"estimator__fit_intercept": [True, False]},
             "scoring": PinballLoss(),
+            "error_score": "raise",
         }
 
-        return [params, params2]
+        params = [param1, param2]
+
+        # testing with survival predictor
+        if _check_estimator_deps(CoxPH, severity="none"):
+            param3 = {
+                "estimator": CoxPH(alpha=0.05),
+                "cv": KFold(n_splits=4),
+                "param_distributions": {"method": ["lpl", "elastic_net"]},
+                "scoring": PinballLoss(),
+                "error_score": "raise",
+            }
+            params += [param3]
+
+        return params
