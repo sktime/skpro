@@ -162,13 +162,13 @@ class GaussianRegressor(BaseProbaRegressor):
             var_weights = None,
             missing = "none",
     ):
-        self.endog = endog,
-        self.exog = exog,
-        self.family = Gaussian(),
-        self.offset = offset,
-        self.exposure = exposure,
-        self.freq_weights = freq_weights,
-        self.var_weights = var_weights,
+        self.endog = endog
+        self.exog = exog
+        self.family = Gaussian()
+        self.offset = offset
+        self.exposure = exposure
+        self.freq_weights = freq_weights
+        self.var_weights = var_weights
         self.missing = missing
 
         super().__init__()
@@ -310,5 +310,35 @@ class GaussianRegressor(BaseProbaRegressor):
     
 
     def _predict_proba(self, X):
-        pass
+        """Predict distribution over labels for data from features.
+
+        State required:
+            Requires state to be "fitted".
+
+        Accesses in self:
+            Fitted model attributes ending in "_"
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+
+        Returns
+        -------
+        y_pred : skpro BaseDistribution, same length as `X`
+            labels predicted for `X`
+        """
+        from skpro.distributions.normal import Normal
+
+        y_pred_series = self.glm_estimator_.predict(X)
+        y_mu = pd.DataFrame(y_pred_series, columns = [self.endog.columns])
+        y_sigma = np.std(y_mu.values)
+        params = {
+            "mu": y_mu, 
+            "sigma": y_sigma, 
+            "index": X.index, 
+            "columns": y_mu.columns
+        }
+        y_pred = Normal(**params)
+        return y_pred
 
