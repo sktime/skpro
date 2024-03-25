@@ -27,8 +27,7 @@ class GaussianRegressor(BaseProbaRegressor):
     Parameters
     ----------
     family : family class instance
-        To specify the binomial distribution family = sm.family.Binomial() Each
-        family can take a link instance as an argument.
+        To specify the Gaussian link.
         See statsmodels.family.family for more information.
 
     offset : array_like or None
