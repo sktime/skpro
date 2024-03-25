@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from statsmodels.genmod.families.family import Gaussian
 from statsmodels.genmod.generalized_linear_model import GLM
+from statsmodels.tools import add_constant
 
 from skpro.regression.base import BaseProbaRegressor
 
@@ -25,18 +26,6 @@ class GaussianRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    y : pandas DataFrame
-        1d array of the endogenous response variable. This array can be 1d or
-        2d. Binomial family models accept a 2d array  with two columns.
-        If supplied each observation is expected to  be [success, failure].
-        Equivalent to statsmodel's (endog).
-
-    X : pandas DataFrame
-        A (n,k) array where n is the number of observations and k is the number
-        of regressors. An intercept is not included by default and should be
-        added by the user (models specified using a formula include an
-        intercept by default). Equivalent to statsmodel's (exog).
-
     family : family class instance
         To specify the binomial distribution family = sm.family.Binomial() Each
         family can take a link instance as an argument.
@@ -65,6 +54,64 @@ class GaussianRegressor(BaseProbaRegressor):
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
         If 'raise', an error is raised. Default = 'none'
+
+    start_params : array_like (optional)
+        Initial guess of the solution for the loglikelihood maximization.
+        The default is family-specific and is given by the
+        family.starting_mu(endog). If start_params is given then the initial
+        mean will be calculated as np.dot(exog, start_params).
+        This parameter is used inside the GLM fit() function.
+
+    maxiter : int
+        Number of iterations. This parameter is used inside the GLM fit() function.
+
+    method : str
+        Default is 'IRLS' for iteratively re-weighted least squares.
+        This parameter is used inside the GLM fit() function.
+
+    tol : float
+        Convergence tolerance. Default is 1e-8. This parameter is
+        used inside the GLM fit() function.
+
+    scale : str/float
+        scale can be 'X2', 'dev', or a float. The default value is None,
+        which uses X2 for gamma, gaussian and inverse gaussian. X2 is
+        Pearson's chi-square divided by df_resid. The default is 1 for
+        the Bionmial and Poisson families. dev is the deviance divided
+        by df_resid. This parameter is used inside the GLM fit() function.
+
+    cov_type : str
+        The type of parameter estimate covariance matrix to compute.
+        This parameter is used inside the GLM fit() function.
+
+    cov_kwds : dict-like
+        Extra arguments for calculating the covariance of the
+        parameter estimates. This parameter is used inside the GLM fit() function.
+
+    use_t : bool
+        if True, the Student t-distribution if used for inference.
+        This parameter is used inside the GLM fit() function.
+
+    full_output : bool
+        Set to True to have all available output in the Results object’s
+        mle_retvals attribute. The output is dependent on the solver. See
+        LikelihoodModelResults notes section for more information. Not used
+        if methhod is IRLS. This parameter is used inside the GLM fit() function.
+
+    disp : bool
+        Set to True to print convergence messages. Not used if method
+        is IRLS. This parameter is used inside the GLM fit() function.
+
+    max_start_irls : int
+        The number of IRLS iterations used to obtain starting values for
+        gradient optimization. Only relevenat if method is set to something
+        other than "IRLS". This parameter is used inside the GLM fit() function.
+
+    add_constant : bool
+        statsmodels does not include an intercept by default. Specify this as
+        True if you would like to add an intercept (floats of 1s) to the
+        dataset X. Default = False. Note that when the input is a pandas
+        Series or DataFrame, the added column's name is 'const'.
 
     Attributes
     ----------
@@ -139,58 +186,6 @@ class GaussianRegressor(BaseProbaRegressor):
         The value of the weights after the last iteration of fit.
         Only available after fit is called. See statsmodels.families.family
         for the specific distribution weighting functions.
-
-    start_params : array_like (optional)
-        Initial guess of the solution for the loglikelihood maximization.
-        The default is family-specific and is given by the
-        family.starting_mu(endog). If start_params is given then the initial
-        mean will be calculated as np.dot(exog, start_params).
-        This parameter is used inside the GLM fit() function.
-
-    maxiter : int
-        Number of iterations. This parameter is used inside the GLM fit() function.
-
-    method : str
-        Default is 'IRLS' for iteratively re-weighted least squares.
-        This parameter is used inside the GLM fit() function.
-
-    tol : float
-        Convergence tolerance. Default is 1e-8. This parameter is
-        used inside the GLM fit() function.
-
-    scale : str/float
-        scale can be 'X2', 'dev', or a float. The default value is None,
-        which uses X2 for gamma, gaussian and inverse gaussian. X2 is
-        Pearson's chi-square divided by df_resid. The default is 1 for
-        the Bionmial and Poisson families. dev is the deviance divided
-        by df_resid. This parameter is used inside the GLM fit() function.
-
-    cov_type : str
-        The type of parameter estimate covariance matrix to compute.
-        This parameter is used inside the GLM fit() function.
-
-    cov_kwds : dict-like
-        Extra arguments for calculating the covariance of the
-        parameter estimates. This parameter is used inside the GLM fit() function.
-
-    use_t : bool
-        if True, the Student t-distribution if used for inference.
-        This parameter is used inside the GLM fit() function.
-
-    full_output : bool
-        Set to True to have all available output in the Results object’s
-        mle_retvals attribute. The output is dependent on the solver. See
-        LikelihoodModelResults notes section for more information. Not used
-        if methhod is IRLS. This parameter is used inside the GLM fit() function.
-
-    disp : bool
-        Set to True to print convergence messages. Not used if method
-        is IRLS. This parameter is used inside the GLM fit() function.
-
-    max_start_irls : int
-        The number of IRLS iterations used to obtain starting values for
-        gradient optimization. Only relevenat if method is set to something
-        other than "IRLS". This parameter is used inside the GLM fit() function.
     """
 
     _tags = {
@@ -223,6 +218,7 @@ class GaussianRegressor(BaseProbaRegressor):
         full_output=True,
         disp=False,
         max_start_irls=3,
+        add_constant=False,
     ):
         self.family = Gaussian()
         self.offset = offset
@@ -241,6 +237,7 @@ class GaussianRegressor(BaseProbaRegressor):
         self.full_output = full_output
         self.disp = disp
         self.max_start_irls = max_start_irls
+        self.add_constant = add_constant
 
         super().__init__()
 
@@ -253,14 +250,26 @@ class GaussianRegressor(BaseProbaRegressor):
         Parameters
         ----------
         X : pandas DataFrame
-            feature instances to fit regressor to
-        y : pandas DataFrame, must be same length as X
-            labels to fit regressor to
+            A (n,k) array where n is the number of observations and k is the number
+            of regressors. An intercept is not included by default and should be
+            added by the user (models specified using a formula include an
+            intercept by default). Equivalent to statsmodel's (exog).
+
+        y : pandas DataFrame
+            1d array of the endogenous response variable. This array can be 1d or
+            2d. Binomial family models accept a 2d array  with two columns.
+            If supplied each observation is expected to  be [success, failure].
+            Equivalent to statsmodel's (endog).
 
         Returns
         -------
         self : reference to self
         """
+        if self.add_constant:
+            X = add_constant(X)
+
+        y_col = y.columns
+
         glm_estimator = GLM(
             endog=y,
             exog=X,
@@ -290,10 +299,11 @@ class GaussianRegressor(BaseProbaRegressor):
             self.max_start_irls,
         )
 
-        FITTED_PARAMS_TO_FORWARD = ["glm_estimator_"]
+        # forward some parameters to self
+        FITTED_PARAMS_TO_FORWARD = {"glm_estimator_": fitted_glm_model, "y_col": y_col}
 
-        for param in FITTED_PARAMS_TO_FORWARD:
-            setattr(self, param, fitted_glm_model)
+        for k, v in FITTED_PARAMS_TO_FORWARD.items():
+            setattr(self, k, v)
 
         return self
 
@@ -315,7 +325,7 @@ class GaussianRegressor(BaseProbaRegressor):
         -------
         y : pandas DataFrame, same length as `X`, with same columns as y in fit
         """
-        y_column = self.endog.columns
+        y_column = self.y_col
         y_pred_series = self.glm_estimator_.predict(X)
         y_pred = pd.DataFrame(y_pred_series, columns=[y_column])
 
@@ -343,7 +353,7 @@ class GaussianRegressor(BaseProbaRegressor):
         from skpro.distributions.normal import Normal
 
         y_pred_series = self.glm_estimator_.predict(X)
-        y_mu = pd.DataFrame(y_pred_series, columns=[self.endog.columns])
+        y_mu = pd.DataFrame(y_pred_series, columns=[self.y_col])
         y_sigma = np.std(y_mu.values)
         params = {
             "mu": y_mu,
@@ -353,3 +363,26 @@ class GaussianRegressor(BaseProbaRegressor):
         }
         y_pred = Normal(**params)
         return y_pred
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator.
+
+        Parameters
+        ----------
+        parameter_set : str, default="default"
+            Name of the set of test parameters to return, for use in tests. If no
+            special parameters are defined for a value, will return `"default"` set.
+
+        Returns
+        -------
+        params : dict or list of dict, default = {}
+            Parameters to create testing instances of the class
+            Each dict are parameters to construct an "interesting" test instance, i.e.,
+            `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
+            `create_test_instance` uses the first (or only) dictionary in `params`
+        """
+        params1 = {}
+        params2 = {"add_constant": True}
+
+        return [params1, params2]
