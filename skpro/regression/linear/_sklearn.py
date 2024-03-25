@@ -361,4 +361,3 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
             "fit_intercept": False,
         }
         return [param1, param2]
-
