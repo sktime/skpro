@@ -1,7 +1,6 @@
 """Interface adapter for the Generalized Linear Model Regressor with Gaussian Link."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
-import numpy as np
 import pandas as pd
 from statsmodels.genmod.families.family import Gaussian
 from statsmodels.genmod.generalized_linear_model import GLM
@@ -114,77 +113,77 @@ class GaussianRegressor(BaseProbaRegressor):
 
     Attributes
     ----------
-    df_model : float
+    df_model_ : float
         Model degrees of freedom is equal to p - 1, where p is the number of
         regressors. Note that the intercept is not reported as a degree of freedom.
 
-    df_resid : float
+    df_resid_ : float
         Residual degrees of freedom is equal to the number of observation n
         minus the number of regressors p.
 
-    endog : pandas DataFrame
+    endog_ : pandas DataFrame
         Note that endog is a reference to the data so that if data is already
         an array and it is changed, then endog changes as well.
 
-    exposure : array_like
-        Include ln(exposure) in model with coefficient constrained to 1.
-        Can only be used if the link is the logarithm function.
-
-    exog : pandas DataFrame
+    exog_ : pandas DataFrame
         Note that exog is a reference to the data so that if data is already
         an array and it is changed, then exog changes as well.
 
-    freq_weights : ndarray
+    freq_weights_ : ndarray
         Note that freq_weights is a reference to the data so that if data
         is already an array and it is changed, then freq_weights changes
         as well.
 
-    var_weights : ndarray
+    var_weights_ : ndarray
         Note that var_weights is a reference to the data so that if
         data is already an array and it is changed, then var_weights
         changes as well.
 
-    iteration : int
+    iteration_ : int
         The number of iterations that fit has run. Initialized at 0.
+        Only available after fit is called
 
-    family : family class instance
+    family_ : family class instance
         he distribution family of the model. Can be any family
         in statsmodels.families. Default is Gaussian.
 
-    mu : ndarray
+    mu_ : ndarray
         The mean response of the transformed variable. mu is the value of the
         inverse of the link function at lin_pred, where lin_pred is the linear
         predicted value of the WLS fit of the transformed variable. mu is only
         available after fit is called. See statsmodels.families.family.fitted
         of the distribution family for more information.
 
-    n_trials : ndarray
+    n_trials_ : ndarray
         Note that n_trials is a reference to the data so that if data is
         already an array and it is changed, then n_trials changes as well.
         n_trials is the number of binomial trials and only available with that
         distribution. See statsmodels.families.Binomial for more information.
 
-    normalized_cov_params : ndarray
+    normalized_cov_params_ : ndarray
         The p x p normalized covariance of the design / exogenous data. This
         is approximately equal to (X.T X)^(-1)
 
-    offset : array_like
+    offset_ : array_like
         Include offset in model with coefficient constrained to 1.
 
-    scale : float
+    scale_ : float
         The estimate of the scale / dispersion of the model fit.
         Only available after fit is called. See GLM.fit and GLM.estimate_scale
         for more information.
 
-    scaletype : str
+    scaletype_ : str
         The scaling used for fitting the model. This is only available
         after fit is called. The default is None. See GLM.fit for
         more information.
 
-    weights : ndarray
+    weights_ : ndarray
         The value of the weights after the last iteration of fit.
         Only available after fit is called. See statsmodels.families.family
         for the specific distribution weighting functions.
+
+    glm_fit_ : GLM
+        fitted generalized linear model
     """
 
     _tags = {
@@ -280,11 +279,26 @@ class GaussianRegressor(BaseProbaRegressor):
             missing=self.missing,
         )
 
-        self._estimator = (
-            glm_estimator  # does this need to be cloned using some clone method?
-        )
+        self._estimator = glm_estimator
 
-        fitted_glm_model = self._estimator.fit(
+        PARAMS_TO_FORWARD = {
+            "df_model_": glm_estimator.df_model,
+            "df_resid_": glm_estimator.df_resid,
+            "endog_": glm_estimator.endog,
+            "exog_": glm_estimator.exog,
+            "freq_weights_": glm_estimator.freq_weights,
+            "var_weights": glm_estimator.var_weights,
+            "family_": glm_estimator.family,
+            "mu_": glm_estimator.mu,
+            "n_trials_": glm_estimator.n_trials,
+            "weights_": glm_estimator.weights,
+            "scaletype_": glm_estimator.scaletype,
+        }
+
+        for k, v in PARAMS_TO_FORWARD.items():
+            setattr(self, k, v)
+
+        fitted_glm_model = glm_estimator.fit(
             self.start_params,
             self.maxiter,
             self.method,
@@ -299,7 +313,19 @@ class GaussianRegressor(BaseProbaRegressor):
         )
 
         # forward some parameters to self
-        FITTED_PARAMS_TO_FORWARD = {"glm_estimator_": fitted_glm_model, "y_col": y_col}
+        FITTED_PARAMS_TO_FORWARD = {
+            "glm_fit_": fitted_glm_model,
+            "y_col": y_col,
+            "fit_history_": fitted_glm_model.fit_history,
+            "iterations_": fitted_glm_model.fit_history["iteration"],
+            "model_": fitted_glm_model.model,
+            "nobs_": fitted_glm_model.nobs,
+            "normalized_cov_params_": fitted_glm_model.normalized_cov_params,
+            "params_": fitted_glm_model.params,
+            "pvalues_": fitted_glm_model.pvalues,
+            "scale_": fitted_glm_model.scale,
+            "stand_errors_": fitted_glm_model.bse,
+        }
 
         for k, v in FITTED_PARAMS_TO_FORWARD.items():
             setattr(self, k, v)
@@ -324,9 +350,10 @@ class GaussianRegressor(BaseProbaRegressor):
         -------
         y : pandas DataFrame, same length as `X`, with same columns as y in fit
         """
+        index = X.index
         y_column = self.y_col
-        y_pred_series = self.glm_estimator_.predict(X)
-        y_pred = pd.DataFrame(y_pred_series, columns=[y_column])
+        y_pred_series = self.glm_fit_.predict(X)
+        y_pred = pd.DataFrame(y_pred_series, index=index, columns=[y_column])
 
         return y_pred
 
@@ -351,9 +378,17 @@ class GaussianRegressor(BaseProbaRegressor):
         """
         from skpro.distributions.normal import Normal
 
-        y_pred_series = self.glm_estimator_.predict(X)
-        y_mu = pd.DataFrame(y_pred_series, columns=[self.y_col])
-        y_sigma = np.std(y_mu.values)
+        index = X.index
+        y_column = self.y_col
+
+        # instead of using the conventional predict() method, we use statsmodels
+        # get_prediction method, which returns a pandas df that contains
+        # the prediction and prediction variance i.e mu and sigma
+        y_predictions_df = self.glm_fit_.get_predictions(X).summary_frame()
+        y_mu = pd.DataFrame(y_predictions_df["mean"], index=index, columns=[y_column])
+        y_sigma = pd.DataFrame(
+            y_predictions_df["mean_se"], index=index, columns=[y_column]
+        )
         params = {
             "mu": y_mu,
             "sigma": y_sigma,
