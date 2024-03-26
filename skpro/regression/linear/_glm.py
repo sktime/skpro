@@ -221,7 +221,6 @@ class GaussianRegressor(BaseProbaRegressor):
 
     def __init__(
         self,
-        family=None,
         offset=None,
         exposure=None,
         freq_weights=None,
