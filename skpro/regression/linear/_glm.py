@@ -160,13 +160,6 @@ class GaussianRegressor(BaseProbaRegressor):
         n_trials is the number of binomial trials and only available with that
         distribution. See statsmodels.families.Binomial for more information.
 
-    normalized_cov_params_ : ndarray
-        The p x p normalized covariance of the design / exogenous data. This
-        is approximately equal to (X.T X)^(-1)
-
-    offset_ : array_like
-        Include offset in model with coefficient constrained to 1.
-
     scale_ : float
         The estimate of the scale / dispersion of the model fit.
         Only available after fit is called. See GLM.fit and GLM.estimate_scale
@@ -184,6 +177,35 @@ class GaussianRegressor(BaseProbaRegressor):
 
     glm_fit_ : GLM
         fitted generalized linear model
+
+    fit_history_ : dict
+        Contains information about the iterations.
+        Its keys are iterations, deviance and params. Only available after
+        fit is called.
+
+    model_ : class instance
+        Pointer to GLM model instance that called fit.
+
+    nobs_ : float
+        The number of observations n. Only available after fit is called.
+
+    normalized_cov_params_ : ndarray
+        For Gaussian link: This is the p x p normalized covariance of the
+        design / exogenous data. This is approximately equal to (X.T X)^(-1)
+
+    params_ : ndarray
+        The coefficients of the fitted model. Note that interpretation of the
+        coefficients often depends on the distribution family and the data.
+
+    pvalues_ : ndarray
+        The two-tailed p-values for the parameters.
+
+    scale_ : float
+        The estimate of the scale / dispersion for the model fit.
+        See GLM.fit and GLM.estimate_scale for more information.
+
+    stand_errors_ : ndarray
+        The standard errors of the fitted GLM.
     """
 
     _tags = {
@@ -281,6 +303,20 @@ class GaussianRegressor(BaseProbaRegressor):
 
         self._estimator = glm_estimator
 
+        fitted_glm_model = glm_estimator.fit(
+            self.start_params,
+            self.maxiter,
+            self.method,
+            self.tol,
+            self.scale,
+            self.cov_type,
+            self.cov_kwds,
+            self.use_t,
+            self.full_output,
+            self.disp,
+            self.max_start_irls,
+        )
+
         PARAMS_TO_FORWARD = {
             "df_model_": glm_estimator.df_model,
             "df_resid_": glm_estimator.df_resid,
@@ -298,26 +334,12 @@ class GaussianRegressor(BaseProbaRegressor):
         for k, v in PARAMS_TO_FORWARD.items():
             setattr(self, k, v)
 
-        fitted_glm_model = glm_estimator.fit(
-            self.start_params,
-            self.maxiter,
-            self.method,
-            self.tol,
-            self.scale,
-            self.cov_type,
-            self.cov_kwds,
-            self.use_t,
-            self.full_output,
-            self.disp,
-            self.max_start_irls,
-        )
-
         # forward some parameters to self
         FITTED_PARAMS_TO_FORWARD = {
             "glm_fit_": fitted_glm_model,
             "y_col": y_col,
             "fit_history_": fitted_glm_model.fit_history,
-            "iterations_": fitted_glm_model.fit_history["iteration"],
+            "iteration_": fitted_glm_model.fit_history["iteration"],
             "model_": fitted_glm_model.model,
             "nobs_": fitted_glm_model.nobs,
             "normalized_cov_params_": fitted_glm_model.normalized_cov_params,
