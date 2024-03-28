@@ -3,8 +3,6 @@
 
 import pandas as pd
 from statsmodels.genmod.families.family import Gaussian
-from statsmodels.genmod.generalized_linear_model import GLM
-from statsmodels.tools import add_constant
 
 from skpro.regression.base import BaseProbaRegressor
 
@@ -284,6 +282,9 @@ class GaussianRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
+        from statsmodels.genmod.generalized_linear_model import GLM
+        from statsmodels.tools import add_constant
+
         if self.add_constant:
             X = add_constant(X)
 
