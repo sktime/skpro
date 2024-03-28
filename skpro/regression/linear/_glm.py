@@ -2,7 +2,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 import pandas as pd
-from statsmodels.genmod.families.family import Gaussian
 
 from skpro.regression.base import BaseProbaRegressor
 
@@ -237,6 +236,9 @@ class GaussianRegressor(BaseProbaRegressor):
         max_start_irls=3,
         add_constant=False,
     ):
+        super().__init__()
+        from statsmodels.genmod.families.family import Gaussian
+
         self.family = Gaussian()
         self.offset = offset
         self.exposure = exposure
@@ -255,8 +257,6 @@ class GaussianRegressor(BaseProbaRegressor):
         self.disp = disp
         self.max_start_irls = max_start_irls
         self.add_constant = add_constant
-
-        super().__init__()
 
     def _fit(self, X, y):
         """Fit regressor to training data.
