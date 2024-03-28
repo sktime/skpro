@@ -215,8 +215,8 @@ class GaussianRegressor(BaseProbaRegressor):
         "python_dependencies": None,
         "capability:multioutput": False,
         "capability:missing": False,
-        "X_inner_mtype": "pd_DataFrame",
-        "y_inner_mtype": "pd_DataFrame",
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
     }
 
     def __init__(
