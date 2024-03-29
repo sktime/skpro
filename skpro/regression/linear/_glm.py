@@ -118,31 +118,9 @@ class GLMRegressor(BaseProbaRegressor):
         Residual degrees of freedom is equal to the number of observation n
         minus the number of regressors p.
 
-    endog_ : pandas DataFrame
-        Note that endog is a reference to the data so that if data is already
-        an array and it is changed, then endog changes as well.
-
-    exog_ : pandas DataFrame
-        Note that exog is a reference to the data so that if data is already
-        an array and it is changed, then exog changes as well.
-
-    freq_weights_ : ndarray
-        Note that freq_weights is a reference to the data so that if data
-        is already an array and it is changed, then freq_weights changes
-        as well.
-
-    var_weights_ : ndarray
-        Note that var_weights is a reference to the data so that if
-        data is already an array and it is changed, then var_weights
-        changes as well.
-
     iteration_ : int
         The number of iterations that fit has run. Initialized at 0.
         Only available after fit is called
-
-    family_ : family class instance
-        he distribution family of the model. Can be any family
-        in statsmodels.families. Default is Gaussian.
 
     mu_ : ndarray
         The mean response of the transformed variable. mu is the value of the
@@ -320,11 +298,6 @@ class GLMRegressor(BaseProbaRegressor):
         PARAMS_TO_FORWARD = {
             "df_model_": glm_estimator.df_model,
             "df_resid_": glm_estimator.df_resid,
-            "endog_": glm_estimator.endog,
-            "exog_": glm_estimator.exog,
-            "freq_weights_": glm_estimator.freq_weights,
-            "var_weights": glm_estimator.var_weights,
-            "family_": glm_estimator.family,
             "mu_": glm_estimator.mu,
             "n_trials_": glm_estimator.n_trials,
             "weights_": glm_estimator.weights,
