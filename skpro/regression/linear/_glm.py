@@ -209,7 +209,7 @@ class GLMRegressor(BaseProbaRegressor):
         "authors": ["julian-fong"],
         "maintainers": ["julian-fong"],
         "python_version": None,
-        "python_dependencies": None,
+        "python_dependencies": "statsmodels",
         "capability:multioutput": False,
         "capability:missing": False,
         "X_inner_mtype": "pd_DataFrame_Table",
