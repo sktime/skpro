@@ -373,17 +373,12 @@ class GLMRegressor(BaseProbaRegressor):
         """
         from skpro.distributions.normal import Normal
 
-        index = X.index
-        y_column = self.y_col
-
         # instead of using the conventional predict() method, we use statsmodels
         # get_prediction method, which returns a pandas df that contains
         # the prediction and prediction variance i.e mu and sigma
-        y_predictions_df = self.glm_fit_.get_predictions(X).summary_frame()
-        y_mu = pd.DataFrame(y_predictions_df["mean"], index=index, columns=[y_column])
-        y_sigma = pd.DataFrame(
-            y_predictions_df["mean_se"], index=index, columns=[y_column]
-        )
+        y_predictions_df = self.glm_fit_.get_prediction(X).summary_frame()
+        y_mu = y_predictions_df["mean"].rename("mu").to_frame()
+        y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
         params = {
             "mu": y_mu,
             "sigma": y_sigma,
