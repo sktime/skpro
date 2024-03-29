@@ -101,7 +101,7 @@ Linear regression
 
     ARDRegression
     BayesianRidge
-    GaussianRegressor
+    GLMRegressor
 
 Gaussian process and kernel regression
 --------------------------------------

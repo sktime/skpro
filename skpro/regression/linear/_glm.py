@@ -6,7 +6,7 @@ import pandas as pd
 from skpro.regression.base import BaseProbaRegressor
 
 
-class GaussianRegressor(BaseProbaRegressor):
+class GLMRegressor(BaseProbaRegressor):
     """
     Fits a generalized linear model with a gaussian link.
 
