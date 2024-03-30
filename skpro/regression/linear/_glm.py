@@ -348,7 +348,7 @@ class GLMRegressor(BaseProbaRegressor):
         index = X.index
         y_column = self.y_col
         y_pred_series = self.glm_fit_.predict(X)
-        y_pred = pd.DataFrame(y_pred_series, index=index, columns=[y_column])
+        y_pred = pd.DataFrame(y_pred_series, index=index, columns=y_column)
 
         return y_pred
 
@@ -376,6 +376,7 @@ class GLMRegressor(BaseProbaRegressor):
         # instead of using the conventional predict() method, we use statsmodels
         # get_prediction method, which returns a pandas df that contains
         # the prediction and prediction variance i.e mu and sigma
+        y_column = self.y_col
         y_predictions_df = self.glm_fit_.get_prediction(X).summary_frame()
         y_mu = y_predictions_df["mean"].rename("mu").to_frame()
         y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
@@ -383,7 +384,7 @@ class GLMRegressor(BaseProbaRegressor):
             "mu": y_mu,
             "sigma": y_sigma,
             "index": X.index,
-            "columns": y_mu.columns,
+            "columns": y_column,
         }
         y_pred = Normal(**params)
         return y_pred
