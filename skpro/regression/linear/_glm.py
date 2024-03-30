@@ -261,16 +261,14 @@ class GLMRegressor(BaseProbaRegressor):
         self : reference to self
         """
         from statsmodels.genmod.generalized_linear_model import GLM
-        from statsmodels.tools import add_constant
 
-        if self.add_constant:
-            X = add_constant(X)
+        X_ = self._prep_x(X)
 
         y_col = y.columns
 
         glm_estimator = GLM(
             endog=y,
-            exog=X,
+            exog=X_,
             family=self.family,
             offset=self.offset,
             exposure=self.exposure,
@@ -345,10 +343,7 @@ class GLMRegressor(BaseProbaRegressor):
         -------
         y : pandas DataFrame, same length as `X`, with same columns as y in fit
         """
-        if self.add_constant:
-            X_ = self._prep_x(X)
-        else:
-            X_ = X
+        X_ = self._prep_x(X)
 
         index = X_.index
         y_column = self.y_col
@@ -378,10 +373,7 @@ class GLMRegressor(BaseProbaRegressor):
         """
         from skpro.distributions.normal import Normal
 
-        if self.add_constant:
-            X_ = self._prep_x(X)
-        else:
-            X_ = X
+        X_ = self._prep_x(X)
 
         # instead of using the conventional predict() method, we use statsmodels
         # get_prediction method, which returns a pandas df that contains
@@ -410,14 +402,17 @@ class GLMRegressor(BaseProbaRegressor):
 
         Returns
         -------
-        X.copy : pandas DataFrame
+        X_ : pandas DataFrame
             A copy of the input X with an added column 'const' with is an
             array of len(X) of 1s
         """
         from statsmodels.tools import add_constant
 
-        X_copy = add_constant(X)
-        return X_copy
+        if self.add_constant:
+            X_ = add_constant(X)
+            return X_
+        else:
+            return X
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
