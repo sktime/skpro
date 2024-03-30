@@ -345,9 +345,14 @@ class GLMRegressor(BaseProbaRegressor):
         -------
         y : pandas DataFrame, same length as `X`, with same columns as y in fit
         """
-        index = X.index
+        if self.add_constant:
+            X_ = self._prep_x(X)
+        else:
+            X_ = X
+
+        index = X_.index
         y_column = self.y_col
-        y_pred_series = self.glm_fit_.predict(X)
+        y_pred_series = self.glm_fit_.predict(X_)
         y_pred = pd.DataFrame(y_pred_series, index=index, columns=y_column)
 
         return y_pred
@@ -373,21 +378,46 @@ class GLMRegressor(BaseProbaRegressor):
         """
         from skpro.distributions.normal import Normal
 
+        if self.add_constant:
+            X_ = self._prep_x(X)
+        else:
+            X_ = X
+
         # instead of using the conventional predict() method, we use statsmodels
         # get_prediction method, which returns a pandas df that contains
         # the prediction and prediction variance i.e mu and sigma
         y_column = self.y_col
-        y_predictions_df = self.glm_fit_.get_prediction(X).summary_frame()
+        y_predictions_df = self.glm_fit_.get_prediction(X_).summary_frame()
         y_mu = y_predictions_df["mean"].rename("mu").to_frame()
         y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
         params = {
             "mu": y_mu,
             "sigma": y_sigma,
-            "index": X.index,
+            "index": X_.index,
             "columns": y_column,
         }
         y_pred = Normal(**params)
         return y_pred
+
+    def _prep_x(self, X):
+        """
+        Return a copy of X with an added constant of self.add_constant = True.
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            Dataset that the user is trying to do inference on
+
+        Returns
+        -------
+        X.copy : pandas DataFrame
+            A copy of the input X with an added column 'const' with is an
+            array of len(X) of 1s
+        """
+        from statsmodels.tools import add_constant
+
+        X_copy = add_constant(X)
+        return X_copy
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
