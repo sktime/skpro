@@ -438,6 +438,6 @@ class GLMRegressor(BaseProbaRegressor):
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
         params1 = {}
-        params2 = {"maxiter": 50}
+        params2 = {"add_constant": True}
 
         return [params1, params2]
