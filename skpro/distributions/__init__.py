@@ -7,10 +7,11 @@ __all__ = [
     "Laplace",
     "Mixture",
     "Normal",
-    "TDistribution",
+    "Poisson",
     "QPD_S",
     "QPD_B",
     "QPD_U",
+    "TDistribution",
 ]
 
 from skpro.distributions.empirical import Empirical

@@ -3,7 +3,6 @@
 
 __author__ = ["fkiraly"]
 
-import numpy as np
 import pandas as pd
 from scipy.stats import poisson
 
