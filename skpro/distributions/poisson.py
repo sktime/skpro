@@ -41,7 +41,7 @@ class Poisson(BaseDistribution):
         # todo: untangle index handling
         # and broadcast of parameters.
         # move this functionality to the base class
-        self._mu, self._get_bc_params(self.mu, self.scale)
+        self._mu = self._get_bc_params(self.mu)
         shape = self._mu.shape
 
         if index is None:
