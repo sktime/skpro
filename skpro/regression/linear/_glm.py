@@ -22,29 +22,6 @@ class GLMRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    family : family class instance
-        To specify the Gaussian link.
-        See statsmodels.family.family for more information.
-
-    offset : array_like or None
-        An offset to be included in the model. If provided, must be an array
-        whose length is the number of rows in exog (x).
-
-    exposure : array_like or None
-        Log(exposure) will be added to the linear prediction in the model.
-        Exposure is only valid if the log link is used. If provided, it must be
-        an array with the same length as endog (y).
-
-    freq_weights : array_like
-        1d array of frequency weights. The default is None. If None is selected
-        or a blank value, then the algorithm will replace with an array of 1s
-        with length equal to the endog.
-
-    var_weights : array_like
-        1d array of variance (analytic) weights. The default is None. If None
-        is selected or a blank value, then the algorithm will replace with an
-        array of 1s with length equal to the endog.
-
     missing : str
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
@@ -57,52 +34,52 @@ class GLMRegressor(BaseProbaRegressor):
         mean will be calculated as np.dot(exog, start_params).
         This parameter is used inside the GLM fit() function.
 
-    maxiter : int
+    maxiter : int, optional, default=100
         Number of iterations. This parameter is used inside the GLM fit() function.
 
-    method : str
+    method : str, optional, default='IRLS'
         Default is 'IRLS' for iteratively re-weighted least squares.
         This parameter is used inside the GLM fit() function.
 
-    tol : float
+    tol : float, optional, default=1e-8
         Convergence tolerance. Default is 1e-8. This parameter is
         used inside the GLM fit() function.
 
-    scale : str/float
+    scale : str/float, optional, default=None
         scale can be 'X2', 'dev', or a float. The default value is None,
         which uses X2 for gamma, gaussian and inverse gaussian. X2 is
         Pearson's chi-square divided by df_resid. The default is 1 for
         the Bionmial and Poisson families. dev is the deviance divided
         by df_resid. This parameter is used inside the GLM fit() function.
 
-    cov_type : str
+    cov_type : str, optional, default='nonrobust'
         The type of parameter estimate covariance matrix to compute.
         This parameter is used inside the GLM fit() function.
 
-    cov_kwds : dict-like
+    cov_kwds : dict-like, optional, default=None
         Extra arguments for calculating the covariance of the
         parameter estimates. This parameter is used inside the GLM fit() function.
 
-    use_t : bool
+    use_t : bool, optional, default=False
         if True, the Student t-distribution if used for inference.
         This parameter is used inside the GLM fit() function.
 
-    full_output : bool
+    full_output : bool, optional, default=True
         Set to True to have all available output in the Results object’s
         mle_retvals attribute. The output is dependent on the solver. See
         LikelihoodModelResults notes section for more information. Not used
         if methhod is IRLS. This parameter is used inside the GLM fit() function.
 
-    disp : bool
+    disp : bool, optional, default=False
         Set to True to print convergence messages. Not used if method
         is IRLS. This parameter is used inside the GLM fit() function.
 
-    max_start_irls : int
+    max_start_irls : int, optional, default=3
         The number of IRLS iterations used to obtain starting values for
         gradient optimization. Only relevenat if method is set to something
         other than "IRLS". This parameter is used inside the GLM fit() function.
 
-    add_constant : bool
+    add_constant : bool, optional, default=False
         statsmodels does not include an intercept by default. Specify this as
         True if you would like to add an intercept (floats of 1s) to the
         dataset X. Default = False. Note that when the input is a pandas
@@ -196,10 +173,6 @@ class GLMRegressor(BaseProbaRegressor):
 
     def __init__(
         self,
-        offset=None,
-        exposure=None,
-        freq_weights=None,
-        var_weights=None,
         missing="none",
         start_params=None,
         maxiter=100,
@@ -217,11 +190,7 @@ class GLMRegressor(BaseProbaRegressor):
         super().__init__()
         from statsmodels.genmod.families.family import Gaussian
 
-        self.family = Gaussian()
-        self.offset = offset
-        self.exposure = exposure
-        self.freq_weights = freq_weights
-        self.var_weights = var_weights
+        self._family = Gaussian()
         self.missing = missing
         self.start_params = start_params
         self.maxiter = maxiter
@@ -269,11 +238,7 @@ class GLMRegressor(BaseProbaRegressor):
         glm_estimator = GLM(
             endog=y,
             exog=X_,
-            family=self.family,
-            offset=self.offset,
-            exposure=self.exposure,
-            freq_weights=self.freq_weights,
-            var_weights=self.var_weights,
+            family=self._family,
             missing=self.missing,
         )
 
