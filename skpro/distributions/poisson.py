@@ -33,7 +33,7 @@ class Poisson(BaseDistribution):
         "distr:measuretype": "discrete",
     }
 
-    def __init__(self, mu, scale, index=None, columns=None):
+    def __init__(self, mu, index=None, columns=None):
         self.mu = mu
         self.index = index
         self.columns = columns
