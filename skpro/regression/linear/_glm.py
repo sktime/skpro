@@ -13,10 +13,6 @@ class GLMRegressor(BaseProbaRegressor):
     Direct interface to ``statsmodels.genmod.generalized_linear_model.GLM``
     from the ``statsmodels`` package.
 
-    statsmodels uses parameters 'exog' and 'endog' to denote the X and y values
-    respectively and supports two separate definition of weights: frequency
-    and variance.
-
     For a direct link to statmodels' Generalized Linear Models module see:
     https://www.statsmodels.org/stable/glm.html#module-reference
 
