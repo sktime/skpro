@@ -5,7 +5,6 @@ __author__ = ["fkiraly"]
 
 import numpy as np
 import pandas as pd
-
 from scipy.special import gammaincc
 
 from skpro.distributions.base import BaseDistribution
