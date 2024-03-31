@@ -5,7 +5,7 @@ __author__ = ["fkiraly"]
 
 import numpy as np
 import pandas as pd
-from scipy.special import gammaincc
+from scipy.stats import poisson
 
 from skpro.distributions.base import BaseDistribution
 
@@ -22,9 +22,9 @@ class Poisson(BaseDistribution):
 
     Example
     -------
-    >>> from skpro.distributions import Laplace
+    >>> from skpro.distributions import Poisson
 
-    >>> n = Poisson(mu=[[1, 1], [2, 3], [4, 5]])
+    >>> distr = Poisson(mu=[[1, 1], [2, 3], [4, 5]])
     """
 
     _tags = {
@@ -41,7 +41,8 @@ class Poisson(BaseDistribution):
         # todo: untangle index handling
         # and broadcast of parameters.
         # move this functionality to the base class
-        self._mu = self._get_bc_params(self.mu)
+        # important: if only one argument, it is a lenght-1-tuple, deal with this
+        self._mu = self._get_bc_params(self.mu)[0]
         shape = self._mu.shape
 
         if index is None:
@@ -83,23 +84,26 @@ class Poisson(BaseDistribution):
     def pmf(self, x):
         """Probability mass function."""
         d = self.loc[x.index, x.columns]
-        pdf_arr = np.exp(-np.abs((x.values - d.mu) / d.scale))
-        pdf_arr = pdf_arr / (2 * d.scale)
+        pdf_arr = poisson.pmf(x.values, d.mu)
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
     def log_pmf(self, x):
         """Logarithmic probability mass function."""
         d = self.loc[x.index, x.columns]
-        lpdf_arr = -np.abs((x.values - d.mu) / d.scale)
-        lpdf_arr = lpdf_arr - np.log(2 * d.scale)
+        lpdf_arr = poisson.logpmf(x.values, d.mu)
         return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
 
     def cdf(self, x):
         """Cumulative distribution function."""
         d = self.loc[x.index, x.columns]
-        s = np.floor(x.values + 1)
-        cdf_arr = gammaincc(s, d.mu)
+        cdf_arr = poisson.cdf(x.values, d.mu)
         return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
+
+    def ppf(self, p):
+        """Quantile function = percent point function = inverse cdf."""
+        d = self.loc[p.index, p.columns]
+        icdf_arr = poisson.ppf(p.values, d.mu)
+        return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
