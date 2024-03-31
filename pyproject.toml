@@ -1,6 +1,6 @@
 [project]
 name = "skpro"
-version = "2.2.1"
+version = "2.2.2"
 description = "A unified framework for probability distributions and probabilistic supervised regression"
 authors = [
     {name = "skpro developers", email = "sktime.toolbox@gmail.com"},
