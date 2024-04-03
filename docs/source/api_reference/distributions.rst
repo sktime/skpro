@@ -34,6 +34,7 @@ Parametric distributions
 
     Laplace
     Normal
+    Poisson
     TDistribution
 
 Non-parametric and empirical distributions
