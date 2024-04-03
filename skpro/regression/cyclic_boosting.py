@@ -6,6 +6,7 @@ for both regression and classification tasks.
 Please read the official document for its detail
 https://cyclic-boosting.readthedocs.io/en/latest/
 """
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = [
@@ -17,7 +18,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
+from skpro.distributions.qpd import QPD_B, QPD_S
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -90,7 +91,7 @@ class CyclicBoosting(BaseProbaRegressor):
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
         "estimator_type": "regressor_proba",
-        "python_dependencies": "cyclic_boosting>=1.2.5",
+        "python_dependencies": "cyclic_boosting>=1.4.0",
         # estimator tags
         # --------------
         "capability:multioutput": False,
@@ -105,7 +106,7 @@ class CyclicBoosting(BaseProbaRegressor):
         feature_properties=None,
         alpha=0.2,
         mode="multiplicative",
-        bound="U",
+        bound="S",
         lower=0.0,
         upper=1.0,
         maximal_iterations=10,
@@ -282,9 +283,7 @@ class CyclicBoosting(BaseProbaRegressor):
             "index": index,
             "columns": y_cols,
         }
-        if self.bound == "U":
-            qpd = QPD_U(**params)
-        elif self.bound == "S":
+        if self.bound == "S":
             params["lower"] = self.lower
             qpd = QPD_S(**params)
         elif self.bound == "B":
@@ -292,7 +291,7 @@ class CyclicBoosting(BaseProbaRegressor):
             params["upper"] = self.upper
             qpd = QPD_B(**params)
         else:
-            raise ValueError("bound need to be 'U' or 'S' or 'B'")
+            raise ValueError("bound need to be 'S' or 'B'")
 
         return qpd
 
@@ -451,5 +450,19 @@ class CyclicBoosting(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        param1 = {"alpha": 0.3, "mode": "additive", "bound": "S", "lower": 0.0}
-        return [param1]
+        param1 = {
+            "alpha": 0.2,
+            "mode": "additive",
+            "bound": "S",
+            "lower": 0.0,
+            "maximal_iterations": 5,
+        }
+        param2 = {
+            "alpha": 0.2,
+            "mode": "additive",
+            "bound": "B",
+            "lower": 0.0,
+            "upper": 1000,
+            "maximal_iterations": 5,
+        }
+        return [param1, param2]
