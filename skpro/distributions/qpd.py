@@ -68,7 +68,7 @@ class QPD_S(BaseDistribution):
         # --------------
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
-        "python_dependencies": "cyclic_boosting>=1.4.0; findiff",
+        "python_dependencies": ["cyclic_boosting>=1.4.0", "findiff"],
         # estimator tags
         # --------------
         "capabilities:approx": [],
@@ -273,7 +273,7 @@ class QPD_B(BaseDistribution):
         # --------------
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
-        "python_dependencies": "cyclic_boosting>=1.2.5",
+        "python_dependencies": ["cyclic_boosting>=1.4.0", "findiff"],
         # estimator tags
         # --------------
         "capabilities:approx": [],
