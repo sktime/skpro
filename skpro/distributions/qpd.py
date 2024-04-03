@@ -19,7 +19,6 @@ if typing.TYPE_CHECKING:
 
 import numpy as np
 import pandas as pd
-from findiff import FinDiff
 from scipy.stats import logistic, norm
 
 from skpro.distributions.base import BaseDistribution
@@ -439,6 +438,8 @@ class QPD_B(BaseDistribution):
 
 def calc_pdf(x: np.ndarray, qpd: J_QPD_S | J_QPD_B) -> np.ndarray:
     """Return pdf value for all samples."""
+    from findiff import FinDiff
+
     dx = x[1] - x[0]
     derivative = FinDiff(1, dx, 1)
     cdf = qpd.cdf(x).T
