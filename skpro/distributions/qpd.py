@@ -11,7 +11,7 @@ __author__ = [
 
 import typing
 import warnings
-from typing import Optional, Sequence, Union
+from typing import Sequence
 
 if typing.TYPE_CHECKING:
     from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
