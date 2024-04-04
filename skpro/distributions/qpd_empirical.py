@@ -12,7 +12,9 @@ from skpro.distributions.empirical import Empirical
 class QPD_Empirical(Empirical):
     """Empirical quantile parametrized distribution.
 
-    This distribution is parameterized
+    This distribution is parameterized by a set of quantile points.
+
+    todo: add docstr
 
     Parameters
     ----------
