@@ -293,7 +293,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        from skpro.distributions import Empirical
+        from skpro.distributions import QPD_Empirical
 
         alpha_sorted = sorted(self.alpha)
 
@@ -305,23 +305,8 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         # column index  : as y in fit
         empirical_spl = quantile_preds.stack(level=1).swaplevel(0, 1)
 
-        # obtain alpha weights for empirical distr such that we take the nearest
-        # available quantile prob (the cum weights match the chosen quantile prob)
-        alpha_np = np.array(alpha_sorted)
-        alpha_diff = np.diff(alpha_np)
-        alpha_diff2 = np.repeat(alpha_diff, 2) / 2
-        weight_double = np.concatenate([[alpha_np[0]], alpha_diff2, [1 - alpha_np[-1]]])
-        weight_double2 = weight_double.reshape(-1, 2)
-        weights = weight_double2.sum(axis=1)
-
-        # obtain weights per emprical sample
-        empirical_spl_weights = pd.Series(index=empirical_spl.index)
-        for i, a in enumerate(alpha_sorted):
-            empirical_spl_weights.loc[a] = weights[i]
-
-        y_pred_proba = Empirical(
+        y_pred_proba = QPD_Empirical(
             empirical_spl,
-            weights=empirical_spl_weights,
             index=X.index,
             columns=[self._y_varname],
         )
