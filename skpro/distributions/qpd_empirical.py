@@ -86,6 +86,33 @@ class QPD_Empirical(Empirical):
 
         return empirical_spl_weights
 
+    def _iloc(self, rowidx=None, colidx=None):
+        index = self.index
+        columns = self.columns
+
+        spl_subset = self.quantiles
+
+        if rowidx is not None:
+            rowidx_loc = index[rowidx]
+            # subset multiindex to rowidx by last level
+            spl_subset = self.spl.loc[(slice(None), rowidx_loc), :]
+            subs_rowidx = index[rowidx]
+        else:
+            subs_rowidx = index
+
+        if colidx is not None:
+            spl_subset = spl_subset.iloc[:, colidx]
+            subs_colidx = columns[colidx]
+        else:
+            subs_colidx = columns
+
+        return QPD_Empirical(
+            spl_subset,
+            time_indep=self.time_indep,
+            index=subs_rowidx,
+            columns=subs_colidx,
+        )
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
