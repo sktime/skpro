@@ -85,3 +85,31 @@ class QPD_Empirical(Empirical):
             empirical_spl_weights.loc[a] = weights[i]
 
         return empirical_spl_weights
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        # params1 is a DataFrame with simple row multiindex
+        spl_idx = pd.MultiIndex.from_product(
+            [[0.2, 0.5, 0.8], [0, 1, 2]], names=["alpha", "sample"]
+        )
+        spl = pd.DataFrame(
+            [[0, 1], [2, 3], [4, 5], [1, 2], [4, 5], [7, 8], [2, 3], [6, 7], [10, 11]],
+            index=spl_idx,
+            columns=["a", "b"],
+        )
+        params1 = {
+            "spl": spl,
+            "weights": None,
+            "time_indep": True,
+            "index": pd.RangeIndex(3),
+            "columns": pd.Index(["a", "b"]),
+        }
+
+        params2 = {
+            "spl": spl,
+            "time_indep": False,
+            "index": pd.RangeIndex(3),
+            "columns": pd.Index(["a", "b"]),
+        }
+        return [params1, params2]
