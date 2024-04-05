@@ -99,15 +99,14 @@ class QPD_Empirical(Empirical):
             columns=["a", "b"],
         )
         params1 = {
-            "spl": spl,
-            "weights": None,
+            "quantiles": spl,
             "time_indep": True,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }
 
         params2 = {
-            "spl": spl,
+            "quantiles": spl,
             "time_indep": False,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
