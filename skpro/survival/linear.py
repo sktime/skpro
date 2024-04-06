@@ -7,130 +7,137 @@ from skpro.survival.adapters.sksurv import _SksurvAdapter
 from skpro.survival.base import BaseSurvReg
 
 
-class IPCRidge(_SksurvAdapter, BaseSurvReg):
+class CoxNet(_SksurvAdapter, BaseSurvReg):
     """Accelerated failure time model with IPCW, from scikit-survival.
 
     Direct interface to ``sksurv.linear_model.IPCRidge``
 
     Parameters
     ----------
-    alpha : float, optional, default: 1.0
-        Small positive values of alpha improve the conditioning of the problem
-        and reduce the variance of the estimates.
-        `alpha` must be a non-negative float i.e. in `[0, inf)`.
+    n_alphas : int, optional, default: 100
+        Number of alphas along the regularization path.
 
-        For numerical reasons, using `alpha = 0` is not advised.
+    alphas : array-like or None, optional
+        List of alphas where to compute the models.
+        If ``None`` alphas are set automatically.
 
-    fit_intercept : bool, default: True
-        Whether to fit the intercept for this model. If set
-        to false, no intercept will be used in calculations
-        (i.e. ``X`` and ``y`` are expected to be centered).
+    alpha_min_ratio : float or { "auto" }, optional, default: "auto"
+        Determines minimum alpha of the regularization path
+        if ``alphas`` is ``None``. The smallest value for alpha
+        is computed as the fraction of the data derived maximum
+        alpha (i.e. the smallest value for which all
+        coefficients are zero).
 
-    copy_X : bool, default: True
-        If True, X will be copied; else, it may be overwritten.
+        If set to "auto", the value will depend on the
+        sample size relative to the number of features.
+        If ``n_samples > n_features``, the default value is 0.0001
+        If ``n_samples <= n_features``, 0.01 is the default value.
 
-    max_iter : int, default: None
-        Maximum number of iterations for conjugate gradient solver.
-        For 'sparse_cg' and 'lsqr' solvers, the default value is determined
-        by scipy.sparse.linalg. For 'sag' solver, the default value is 1000.
-        For 'lbfgs' solver, the default value is 15000.
+    l1_ratio : float, optional, default: 0.5
+        The ElasticNet mixing parameter, with ``0 < l1_ratio <= 1``.
+        For ``l1_ratio = 0`` the penalty is an L2 penalty.
+        For ``l1_ratio = 1`` it is an L1 penalty.
+        For ``0 < l1_ratio < 1``, the penalty is a combination of L1 and L2.
 
-    tol : float, default: 1e-4
-        Precision of the solution. Note that `tol` has no effect for solvers 'svd' and
-        'cholesky'.
+    penalty_factor : array-like or None, optional
+        Separate penalty factors can be applied to each coefficient.
+        This is a number that multiplies alpha to allow differential
+        shrinkage.  Can be 0 for some variables, which implies no shrinkage,
+        and that variable is always included in the model.
+        Default is 1 for all variables.
 
-    solver : {'auto', 'svd', 'cholesky', 'lsqr', 'sparse_cg', \
-            'sag', 'saga', 'lbfgs'}, default: 'auto'
-        Solver to use in the computational routines:
+        Note: the penalty factors are internally rescaled to sum to
+        ``n_features``, and the alphas sequence will reflect this change.
 
-        - 'auto' chooses the solver automatically based on the type of data.
+    normalize : boolean, optional, default: False
+        If True, the features X will be normalized before optimization by
+        subtracting the mean and dividing by the l2-norm.
+        If you wish to standardize, please use
+        ``sklearn.preprocessing.StandardScaler`` before calling ``fit``
+        on an estimator with ``normalize=False``.
 
-        - 'svd' uses a Singular Value Decomposition of X to compute the Ridge
-          coefficients. It is the most stable solver, in particular more stable
-          for singular matrices than 'cholesky' at the cost of being slower.
+    copy_X : boolean, optional, default: True
+        If ``True``, X will be copied; else, it may be overwritten.
 
-        - 'cholesky' uses the standard scipy.linalg.solve function to
-          obtain a closed-form solution.
+    tol : float, optional, default: 1e-7
+        The tolerance for the optimization: optimization continues
+        until all updates are smaller than ``tol``.
 
-        - 'sparse_cg' uses the conjugate gradient solver as found in
-          scipy.sparse.linalg.cg. As an iterative algorithm, this solver is
-          more appropriate than 'cholesky' for large-scale data
-          (possibility to set `tol` and `max_iter`).
+    max_iter : int, optional, default: 100000
+        The maximum number of iterations.
 
-        - 'lsqr' uses the dedicated regularized least-squares routine
-          scipy.sparse.linalg.lsqr. It is the fastest and uses an iterative
-          procedure.
-
-        - 'sag' uses a Stochastic Average Gradient descent, and 'saga' uses
-          its improved, unbiased version named SAGA. Both methods also use an
-          iterative procedure, and are often faster than other solvers when
-          both n_samples and n_features are large. Note that 'sag' and
-          'saga' fast convergence is only guaranteed on features with
-          approximately the same scale. You can preprocess the data with a
-          scaler from sklearn.preprocessing.
-
-        - 'lbfgs' uses L-BFGS-B algorithm implemented in
-          `scipy.optimize.minimize`. It can be used only when `positive`
-          is True.
-
-        All solvers except 'svd' support both dense and sparse data. However, only
-        'lsqr', 'sag', 'sparse_cg', and 'lbfgs' support sparse input when
-        `fit_intercept` is True.
-
-    positive : bool, default: False
-        When set to ``True``, forces the coefficients to be positive.
-        Only 'lbfgs' solver is supported in this case.
-
-    random_state : int, RandomState instance, default: None
-        Used when ``solver`` == 'sag' or 'saga' to shuffle the data.
+    verbose : bool, optional, default: False
+        Whether to print additional information during optimization.
 
     Attributes
     ----------
-    coef_ : ndarray, shape = (n_features,)
-        Weight vector.
+    alphas_ : ndarray, shape=(n_alphas,)
+        The actual sequence of alpha values used.
 
-    intercept_ : float or ndarray of shape (n_targets,)
-        Independent term in decision function. Set to 0.0 if
-        ``fit_intercept = False``.
+    alpha_min_ratio_ : float
+        The inferred value of alpha_min_ratio.
 
-    n_iter_ : None or ndarray of shape (n_targets,)
-        Actual number of iterations for each target. Available only for
-        sag and lsqr solvers. Other solvers will return None.
+    penalty_factor_ : ndarray, shape=(n_features,)
+        The actual penalty factors used.
+
+    coef_ : ndarray, shape=(n_features, n_alphas)
+        Matrix of coefficients.
+
+    offset_ : ndarray, shape=(n_alphas,)
+        Bias term to account for non-centered features.
+
+    deviance_ratio_ : ndarray, shape=(n_alphas,)
+        The fraction of (null) deviance explained.
+
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
     """
 
-    _tags = {
-        "capability:missing": False,
-        "capability:survival": True,
-        "python_dependencies": ["statsmodels"],
-    }
+    _tags = {"authors": ["sebp", "fkiraly"]}  # sebp credit for interfaced estimator
 
     def __init__(
         self,
-        alpha=1.0,
-        fit_intercept=True,
+        n_alphas=100,
+        alphas=None,
+        alpha_min_ratio="auto",
+        l1_ratio=0.5,
+        penalty_factor=None,
+        normalize=False,
         copy_X=True,
-        max_iter=None,
-        tol=1e-3,
-        solver="auto",
-        positive=False,
-        random_state=None,
+        tol=1e-7,
+        max_iter=100000,
+        verbose=False,
     ):
-        self.alpha = alpha
-        self.fit_intercept = fit_intercept
+        self.n_alphas = n_alphas
+        self.alphas = alphas
+        self.alpha_min_ratio = alpha_min_ratio
+        self.l1_ratio = l1_ratio
+        self.penalty_factor = penalty_factor
+        self.normalize = normalize
         self.copy_X = copy_X
-        self.max_iter = max_iter
         self.tol = tol
-        self.solver = solver
-        self.positive = positive
-        self.random_state = random_state
+        self.max_iter = max_iter
+        self.verbose = verbose
 
         super().__init__()
 
     def _get_sksurv_class(self):
         """Getter of the sksurv class to be used for the adapter."""
-        from sksurv.linear_model import IPCRidge as _IPCRidge
+        from sksurv.linear_model import CoxnetSurvivalAnalysis as _CoxNet
 
-        return _IPCRidge
+        return _CoxNet
+
+    def _get_sksurv_object(self):
+        """Abstract method to initialize sksurv object.
+
+        The default initializes result of _get_sksurv_class
+        with self.get_params.
+        """
+        cls = self._get_sksurv_class()
+        params = self.get_params()
+        params["fit_baseline_model"] = True  # required for predict_survival_function
+        # and therefore for _predict_proba implementation to be valid
+        return cls(**self.get_params())
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -153,10 +160,13 @@ class IPCRidge(_SksurvAdapter, BaseSurvReg):
         params1 = {}
 
         params2 = {
-            "alpha": 0.1,
-            "fit_intercept": False,
-            "max_iter": 500,
-            "solver": "sag",
+            "n_alphas": 99,
+            "alpha_min_ratio": 0.001,
+            "l1_ratio": 0.4,
+            "normalize": True,
+            "tol": 1e-6,
+            "max_iter": 99999,
+            "verbose": True,
         }
 
         return [params1, params2]
