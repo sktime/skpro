@@ -8,7 +8,7 @@ from skpro.survival.base import BaseSurvReg
 
 
 class CoxNet(_SksurvAdapter, BaseSurvReg):
-    """Cox’s proportional hazard’s model with elastic net penalty.
+    """Cox proportional hazard model with elastic net penalty.
 
     Direct interface to ``sksurv.linear_model.CoxnetSurvivalAnalysis``, by ``sebp``.
 
