@@ -89,6 +89,17 @@ Proportional hazards models
     CoxPHSkSurv
     CoxNet
 
+Tree models
+-----------
+
+.. currentmodule:: skpro.survival.tree
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    SurvivalTree
+
 Base
 ----
 
