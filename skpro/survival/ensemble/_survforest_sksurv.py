@@ -208,7 +208,6 @@ class SurvivalForestSkSurv(_SksurvAdapter, BaseSurvReg):
             "min_samples_leaf": 2,
             "max_features": "log2",
             "max_leaf_nodes": 10,
-            "bootstrap": False,
             "oob_score": True,
         }
 
@@ -413,7 +412,6 @@ class SurvivalForestXtraSkSurv(_SksurvAdapter, BaseSurvReg):
             "min_samples_leaf": 2,
             "max_features": "log2",
             "max_leaf_nodes": 10,
-            "bootstrap": False,
             "oob_score": True,
         }
 
