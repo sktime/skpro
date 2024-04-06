@@ -53,7 +53,7 @@ class SurvGradBoostSkSurv(_SksurvAdapter, BaseSurvReg):
     criterion : string, optional, "squared_error" or "friedman_mse" (default)
         The function to measure the quality of a split. Supported criteria
         are "friedman_mse" for the mean squared error with improvement
-        score by Friedman, "squared_error" for mean squared error=.
+        score by Friedman, "squared_error" for mean squared error.
         The default value of "friedman_mse" is
         generally the best as it can provide a better approximation in
         some cases.
