@@ -316,7 +316,7 @@ class SurvGradBoostSkSurv(_SksurvAdapter, BaseSurvReg):
 
 
 class SurvGradBoostCompSkSurv(_SksurvAdapter, BaseSurvReg):
-    """"Survival Gradient boosting component-wise least squares, from sksurv.
+    r"""Survival Gradient boosting component-wise least squares, from sksurv.
 
     Direct interface to ``ComponentwiseGradientBoostingSurvivalAnalysis``
     from ``sksurv.ensemble.boosting``.
@@ -332,29 +332,29 @@ class SurvGradBoostCompSkSurv(_SksurvAdapter, BaseSurvReg):
     learning_rate : float, optional, default: 0.1
         learning rate shrinks the contribution of each base learner by `learning_rate`.
         There is a trade-off between `learning_rate` and `n_estimators`.
-        Values must be in the range `[0.0, inf)`.
+        Values must be in the range ``[0.0, inf)``.
 
     n_estimators : int, default: 100
         The number of boosting stages to perform. Gradient boosting
         is fairly robust to over-fitting so a large number usually
         results in better performance.
-        Values must be in the range `[1, inf)`.
+        Values must be in the range ``[1, inf)``.
 
     subsample : float, optional, default: 1.0
         The fraction of samples to be used for fitting the individual base
         learners. If smaller than 1.0 this results in Stochastic Gradient
-        Boosting. `subsample` interacts with the parameter `n_estimators`.
-        Choosing `subsample < 1.0` leads to a reduction of variance
+        Boosting. ``subsample`` interacts with the parameter ``n_estimators``.
+        Choosing ``subsample < 1.0`` leads to a reduction of variance
         and an increase in bias.
-        Values must be in the range `(0.0, 1.0]`.
+        Values must be in the range ``(0.0, 1.0]``.
 
     dropout_rate : float, optional, default: 0.0
         If larger than zero, the residuals at each iteration are only computed
         from a random subset of base learners. The value corresponds to the
         percentage of base learners that are dropped. In each iteration,
         at least one base learner is dropped. This is an alternative regularization
-        to shrinkage, i.e., setting `learning_rate < 1.0`.
-        Values must be in the range `[0.0, 1.0)`.
+        to shrinkage, i.e., setting ``learning_rate < 1.0``.
+        Values must be in the range ``[0.0, 1.0)``.
 
     random_state : int seed, RandomState instance, or None, default: None
         The seed of the pseudo random number generator to use when
@@ -363,7 +363,7 @@ class SurvGradBoostCompSkSurv(_SksurvAdapter, BaseSurvReg):
     verbose : int, default: 0
         Enable verbose output. If 1 then it prints progress and performance
         once in a while.
-        Values must be in the range `[0, inf)`.
+        Values must be in the range ``[0, inf)``.
 
     Attributes
     ----------
@@ -421,7 +421,7 @@ class SurvGradBoostCompSkSurv(_SksurvAdapter, BaseSurvReg):
     def _get_sksurv_class(self):
         """Getter of the sksurv class to be used for the adapter."""
         from sksurv.ensemble.boosting import (
-            ComponentwiseGradientBoostingSurvivalAnalysis
+            ComponentwiseGradientBoostingSurvivalAnalysis,
         )
 
         return ComponentwiseGradientBoostingSurvivalAnalysis
