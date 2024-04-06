@@ -14,11 +14,18 @@ class _SksurvAdapter:
     """Mixin adapter class for sksurv models."""
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly"],
+        "python_dependencies": ["scikit-survival"],
+        "python_dependencies_alias": {"scikit-survival": "sksurv"},
+        "license_type": "copyleft",
+        # capability tags
+        # ---------------
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
-        "python_dependencies": ["scikit-survival"],
-        "python_dependencies_alias": {"scikit-survival": "sksurv"},
+        "capability:multioutput": False,
     }
 
     # defines the name of the attribute containing the sksurv estimator
@@ -73,12 +80,12 @@ class _SksurvAdapter:
         sksurv_est = self._init_sksurv_object()
 
         if C is None:
-            C = pd.Series(np.zeros(len(y)), index=y.index, name=y.name)
+            C = pd.DataFrame(np.zeros(len(y)), index=y.index, columns=y.columns)
 
         # input conversion
         X = X.astype("float")  # sksurv insists on float dtype
-        y_np = y[0].values
-        C_np = C[0].values
+        y_np = y.iloc[:, 0].values  # we know univariate due to tag
+        C_np = C.iloc[:, 0].values
         C_np_bool = C_np == 0  # sksurv uses "delta" indicator, 0 = censored
 
         y_sksurv = list(zip(y_np, C_np_bool))
