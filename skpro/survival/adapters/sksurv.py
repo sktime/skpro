@@ -89,6 +89,7 @@ class _SksurvAdapter:
         y_np = y.iloc[:, 0].values  # we know univariate due to tag
         C_np = C.iloc[:, 0].values
         C_np_bool = C_np == 0  # sksurv uses "delta" indicator, 0 = censored
+        # this is the opposite of skpro ("censoring" indicator), where 1 = censored
 
         y_sksurv = list(zip(C_np_bool, y_np))
         y_sksurv = np.array(y_sksurv, dtype=[("delta", "?"), ("time", "<f8")])
