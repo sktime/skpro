@@ -8,9 +8,9 @@ from skpro.survival.base import BaseSurvReg
 
 
 class CoxNet(_SksurvAdapter, BaseSurvReg):
-    """Accelerated failure time model with IPCW, from scikit-survival.
+    """Cox’s proportional hazard’s model with elastic net penalty.
 
-    Direct interface to ``sksurv.linear_model.IPCRidge``
+    Direct interface to ``sksurv.linear_model.CoxnetSurvivalAnalysis``, by ``sebp``.
 
     Parameters
     ----------
