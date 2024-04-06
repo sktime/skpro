@@ -100,6 +100,20 @@ Tree models
 
     SurvivalTree
 
+Tree ensemble models
+--------------------
+
+.. currentmodule:: skpro.survival.ensemble
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    SurvivalForestSkSurv
+    SurvivalForestXtraSkSurv
+    SurvGradBoostSkSurv
+    SurvGradBoostCompSkSurv
+
 Base
 ----
 
