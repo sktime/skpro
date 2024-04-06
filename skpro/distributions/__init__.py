@@ -12,6 +12,7 @@ __all__ = [
     "QPD_B",
     "QPD_U",
     "TDistribution",
+    "Logistic",
 ]
 
 from skpro.distributions.empirical import Empirical
@@ -21,3 +22,4 @@ from skpro.distributions.normal import Normal
 from skpro.distributions.poisson import Poisson
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
 from skpro.distributions.t import TDistribution
+from skpro.distributions.logistic import Logistic
