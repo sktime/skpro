@@ -65,7 +65,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
     # remove this when fixing failures to re-enable testing
 
     def test_shape(self, object_instance):
-        """Test index and shape of distribution."""
+        """Test index, columns, len and shape of distribution."""
         d = object_instance
 
         assert isinstance(d.index, pd.Index)
