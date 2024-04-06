@@ -18,7 +18,7 @@ class _SksurvAdapter:
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
         "python_dependencies": ["scikit-survival"],
-        "python_dependencies_alias": {"scikit-survival": "sksurv"}
+        "python_dependencies_alias": {"scikit-survival": "sksurv"},
     }
 
     # defines the name of the attribute containing the sksurv estimator
