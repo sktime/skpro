@@ -327,7 +327,8 @@ class SurvGradBoostCompSkSurv(_SksurvAdapter, BaseSurvReg):
         loss function to be optimized. 'coxph' refers to partial likelihood loss
         of Cox's proportional hazards model. The loss 'squared' minimizes a
         squared regression loss that ignores predictions beyond the time of censoring,
-        and 'ipcwls' refers to inverse-probability of censoring weighted least squares error.
+        and 'ipcwls' refers to inverse-probability of censoring weighted least squares
+        error.
 
     learning_rate : float, optional, default: 0.1
         learning rate shrinks the contribution of each base learner by `learning_rate`.
