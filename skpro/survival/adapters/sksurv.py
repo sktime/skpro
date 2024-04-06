@@ -90,7 +90,7 @@ class _SksurvAdapter:
         C_np = C.iloc[:, 0].values
         C_np_bool = C_np == 0  # sksurv uses "delta" indicator, 0 = censored
 
-        y_sksurv = list(zip(y_np, C_np_bool))
+        y_sksurv = list(zip(C_np_bool, y_np))
         y_sksurv = np.array(y_sksurv, dtype=[("delta", "?"), ("time", "<f8")])
 
         self._y_cols = y.columns  # remember column names for later
