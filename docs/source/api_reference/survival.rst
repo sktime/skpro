@@ -86,6 +86,8 @@ Proportional hazards models
     :template: class.rst
 
     CoxPH
+    CoxPHSkSurv
+    CoxNet
 
 Base
 ----
