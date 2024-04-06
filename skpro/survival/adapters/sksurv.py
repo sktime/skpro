@@ -133,7 +133,7 @@ class _SksurvAdapter:
         times = sksurv_est.unique_times_[:-1]
 
         nt = len(times)
-        mi = pd.MultiIndex.from_product([X.index, range(nt)])
+        mi = pd.MultiIndex.from_product([X.index, range(nt)]).swaplevel()
 
         times_val = np.repeat(times, repeats=len(X))
         times_df = pd.DataFrame(times_val, index=mi, columns=self._y_cols)
@@ -141,6 +141,8 @@ class _SksurvAdapter:
         weights = -np.diff(sksurv_survf, axis=1).flatten()
         weights_df = pd.Series(weights, index=mi)
 
-        dist = Empirical(spl=times_df, weights=weights_df)
+        dist = Empirical(
+            spl=times_df, weights=weights_df, index=X.index, columns=self._y_cols
+        )
 
         return dist
