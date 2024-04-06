@@ -216,7 +216,7 @@ class SurvivalForestSkSurv(_SksurvAdapter, BaseSurvReg):
 
 
 class SurvivalForestXtraSkSurv(_SksurvAdapter, BaseSurvReg):
-    """"Survival random forest with extra randomization-averaging, from scikit-survival.
+    """Survival random forest with extra randomization-averaging, from scikit-survival.
 
     Direct interface to ``sksurv.ensemble.ExtraSurvivalTrees``, by ``sebp``.
 
