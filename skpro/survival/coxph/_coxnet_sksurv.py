@@ -1,4 +1,4 @@
-"""Interface adapters to scikit-survival linear models."""
+"""Interface adapters to scikit-survival Cox-net model."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["fkiraly"]
