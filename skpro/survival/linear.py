@@ -137,7 +137,7 @@ class CoxNet(_SksurvAdapter, BaseSurvReg):
         params = self.get_params()
         params["fit_baseline_model"] = True  # required for predict_survival_function
         # and therefore for _predict_proba implementation to be valid
-        return cls(**self.get_params())
+        return cls(params)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

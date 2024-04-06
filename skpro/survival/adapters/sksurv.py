@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.distributions.empirical import Empirical
+from skpro.utils.sklearn import prep_skl_df
 
 
 class _SksurvAdapter:
@@ -84,6 +85,7 @@ class _SksurvAdapter:
 
         # input conversion
         X = X.astype("float")  # sksurv insists on float dtype
+        X = prep_skl_df(X)
         y_np = y.iloc[:, 0].values  # we know univariate due to tag
         C_np = C.iloc[:, 0].values
         C_np_bool = C_np == 0  # sksurv uses "delta" indicator, 0 = censored
@@ -122,6 +124,7 @@ class _SksurvAdapter:
 
         # input conversion
         X = X.astype("float")  # sksurv insists on float dtype
+        X = prep_skl_df(X)
 
         # predict on X
         sksurv_survf = sksurv_est.predict_survival_function(X, return_array=True)
