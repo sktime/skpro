@@ -299,7 +299,6 @@ class SurvGradBoostSkSurv(_SksurvAdapter, BaseSurvReg):
         params1 = {}
 
         params2 = {
-            "loss": "squared",
             "learning_rate": 0.2,
             "n_estimators": 99,
             "subsample": 0.9,
@@ -448,7 +447,6 @@ class SurvGradBoostCompSkSurv(_SksurvAdapter, BaseSurvReg):
         params1 = {}
 
         params2 = {
-            "loss": "squared",
             "learning_rate": 0.2,
             "n_estimators": 99,
             "subsample": 0.9,
