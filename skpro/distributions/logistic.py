@@ -28,8 +28,8 @@ class Logistic(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
     }
 
@@ -52,9 +52,6 @@ class Logistic(BaseDistribution):
             columns = pd.RangeIndex(shape[1])
         
         super().__init__(index=index, columns=columns)
-
-    def energy(self, x=None):
-        raise NotImplementedError
     
     def mean(self):
         r"""Return expected value of the distribution.
