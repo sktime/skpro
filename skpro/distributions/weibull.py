@@ -54,9 +54,6 @@ class Weibull(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def energy(self, x=None):
-        raise NotImplementedError
-
     def mean(self):
         r"""Return expected value of the distribution.
         
