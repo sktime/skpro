@@ -92,7 +92,8 @@ class Logistic(BaseDistribution):
     def log_pdf(self, x):
         """Logarithmic probability density function."""
         d = self.loc[x.index, x.columns]
-        lpdf_arr = np.log(1/(2 * d.scale * (np.cosh((x.values - d.mu)/d.scale) + 1)))
+        y = -(x.values - d.mu) / d.scale
+        lpdf_arr = y - np.log(d.scale) - 2 * np.log(1 + np.exp(y))
         return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
 
     def cdf(self, x):
