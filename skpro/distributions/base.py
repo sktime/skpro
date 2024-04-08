@@ -76,6 +76,10 @@ class BaseDistribution(BaseObject):
         """Shape of self, a pair (2-tuple)."""
         return (len(self.index), len(self.columns))
 
+    def __len__(self):
+        """Length of self, number of rows."""
+        return len(self.index)
+
     def _loc(self, rowidx=None, colidx=None):
         if rowidx is not None:
             row_iloc = self.index.get_indexer_for(rowidx)
