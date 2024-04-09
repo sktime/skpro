@@ -14,10 +14,10 @@ class Weibull(BaseDistribution):
 
     Parameters
     ----------
-    lambda_val : float or array of float (1D or 2D), must be positive
-        lambda parameter of the distribution
     scale : float or array of float (1D or 2D), must be positive
         scale parameter of the distribution
+    power : float or array of float (1D or 2D), must be positive
+        power parameter of the distribution
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -25,7 +25,7 @@ class Weibull(BaseDistribution):
     -------
     >>> from skpro.distributions.weibull import Weibull
 
-    >>> w = Weibull(lambda_val=[[0, 1], [2, 3], [4, 5]], scale=1)
+    >>> w = Weibull(scale=[[0, 1], [2, 3], [4, 5]], power=1)
     """
 
     _tags = {
@@ -34,17 +34,17 @@ class Weibull(BaseDistribution):
         "distr:measuretype": "continuous",
     }
 
-    def __init__(self, lambda_val, scale, index=None, columns=None):
-        self.lambda_val = lambda_val
+    def __init__(self, scale, power, index=None, columns=None):
         self.scale = scale
+        self.power = power
         self.index = index
         self.columns = columns
 
         # todo: untangle index handling
         # and broadcast of parameters.
         # move this functionality to the base class
-        self._lambda_val, self._scale = self._get_bc_params(self.lambda_val, self.scale)
-        shape = self._lambda_val.shape
+        self._scale, self._power = self._get_bc_params(self.scale, self.power)
+        shape = self._scale.shape
 
         if index is None:
             index = pd.RangeIndex(shape[0])
@@ -65,7 +65,7 @@ class Weibull(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
-        mean_arr = self._scale * gamma(1 + 1 / self._lambda_val)
+        mean_arr = self._scale * gamma(1 + 1 / self._power)
         return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
 
     def var(self):
@@ -79,8 +79,8 @@ class Weibull(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
-        left_gamma = gamma(1 + 2 / self._lambda_val)
-        right_gamma = gamma(1 + 1 / self._lambda_val) ** 2
+        left_gamma = gamma(1 + 2 / self._power)
+        right_gamma = gamma(1 + 1 / self._power) ** 2
         var_arr = self._scale ** 2 * (left_gamma - right_gamma)
         return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
 
@@ -88,35 +88,35 @@ class Weibull(BaseDistribution):
         """Probability density function."""
         d = self.loc[x.index, x.columns]
         # if x.values[i] < 0, then pdf_arr[i] = 0
-        pdf_arr = (d.lambda_val / d.scale) * (x.values / d.scale) ** (d.lambda_val - 1) * np.exp(- (x.values / d.scale) ** d.lambda_val)
+        pdf_arr = (d.power / d.scale) * (x.values / d.scale) ** (d.power - 1) * np.exp(- (x.values / d.scale) ** d.power)
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
     def log_pdf(self, x):
         """Logarithmic probability density function."""
         d = self.loc[x.index, x.columns]
-        lpdf_arr = np.log(d.lambda_val / d.scale) + (d.lambda_val - 1) * np.log(x.values / d.scale) - (x.values / d.scale) ** d.lambda_val
+        lpdf_arr = np.log(d.power / d.scale) + (d.power - 1) * np.log(x.values / d.scale) - (x.values / d.scale) ** d.power
         return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
 
     def cdf(self, x):
         """Cumulative distribution function."""
         d = self.loc[x.index, x.columns]
         # if x.values[i] < 0, then cdf_arr[i] = 0
-        cdf_arr = 1 - np.exp(-(x.values / d.scale) ** d.lambda_val)
+        cdf_arr = 1 - np.exp(-(x.values / d.scale) ** d.power)
         return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
 
     def ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
         d = self.loc[p.index, p.columns]
-        ppf_arr = d.scale * (-np.log(1 - p.values)) ** (1 / d.lambda_val)
+        ppf_arr = d.scale * (-np.log(1 - p.values)) ** (1 / d.power)
         return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        params1 = {"lambda_val": [[0, 1], [2, 3], [4, 5]], "scale": 1}
+        params1 = {"scale": [[0, 1], [2, 3], [4, 5]], "power": 1}
         params2 = {
-            "lambda_val": 1,
             "scale": 1,
+            "power": 1,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
