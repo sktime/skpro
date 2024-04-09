@@ -33,6 +33,7 @@ Parametric distributions
     :template: class.rst
 
     Laplace
+    Logistic
     Normal
     Poisson
     TDistribution
