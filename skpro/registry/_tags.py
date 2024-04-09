@@ -94,6 +94,13 @@ OBJECT_TAG_REGISTER = [
         "should be provided if import name differs from package name, \
         key-value pairs are package name, import name",
     ),
+    (
+        "license_type",
+        "object",
+        "str",
+        "license type for interfaced packages: 'copyleft', 'permissive', 'copyright'. \
+        may be incorrect, NO LIABILITY assumed for this field",
+    ),
     # ------------------
     # BaseProbaRegressor
     # ------------------
