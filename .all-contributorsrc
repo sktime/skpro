@@ -120,6 +120,15 @@
         "doc",
         "test"
       ]
+    },
+    {
+      "login": "malikrafsan",
+      "name": "Malik Akbar Hashemi Rafsanjani",
+      "avatar_url": "https://avatars.githubusercontent.com/u/77711133?v=4",
+      "profile": "https://github.com/malikrafsan",
+      "contributions": [
+        "code"
+      ]
     }
   ]
 }
