@@ -160,8 +160,7 @@ class _SksurvAdapter:
 
         Returns
         -------
-        np.ndarray (1d array of shape (n_instances,))
-            Index of the cluster each time series in X belongs to.
+        skpro Empirical distribution
         """
         sksurv_est = getattr(self, self._estimator_attr)
 
