@@ -143,7 +143,7 @@ class _LifelinesAdapter:
         times_df = pd.DataFrame(times_val, index=mi, columns=self._y_cols)
 
         lifelines_survf_t = np.transpose(lifelines_survf.values)
-        weights = -np.diff(lifelines_survf, axis=1).flatten()
+        weights = -np.diff(lifelines_survf_t, axis=1).flatten()
         weights_df = pd.Series(weights, index=mi)
 
         dist = Empirical(
