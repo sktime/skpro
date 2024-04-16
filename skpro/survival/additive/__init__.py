@@ -2,4 +2,4 @@
 
 __all__ = ["AalenAdditiveLifelines"]
 
-from skpro.additive._aalen_lifelines import AalenAdditiveLifelines
+from skpro.survival.additive._aalen_lifelines import AalenAdditiveLifelines
