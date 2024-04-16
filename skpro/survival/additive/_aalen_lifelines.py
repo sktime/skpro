@@ -51,7 +51,7 @@ class AalenAdditive(_LifelinesAdapter, BaseSurvReg):
     """
 
     _tags = {"authors": ["CamDavidsonPilon", "rocreguant", "fkiraly"]}
-    # CamDavidsonPilon credit for interfaced estimator
+    # CamDavidsonPilon, rocreguant credit for interfaced estimator
 
     def __init__(
         self,
