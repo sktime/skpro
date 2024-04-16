@@ -36,9 +36,9 @@ class _LifelinesAdapter:
 
         should import and return lifelines class
         """
-        # from lifelines import lifelinesClass
+        # from lifelines import LifelinesClass
         #
-        # return lifelines
+        # return LifelinesClass
         raise NotImplementedError("abstract method")
 
     def _get_lifelines_object(self):

@@ -37,9 +37,9 @@ class _SksurvAdapter:
 
         should import and return sksurv class
         """
-        # from sksurv import sksurvClass
+        # from sksurv import SksurvClass
         #
-        # return sksurv
+        # return SksurvClass
         raise NotImplementedError("abstract method")
 
     def _get_sksurv_object(self):
