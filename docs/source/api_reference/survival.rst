@@ -89,6 +89,17 @@ Proportional hazards models
     CoxPHSkSurv
     CoxNet
 
+Generalized additive survival models
+------------------------------------
+
+.. currentmodule:: skpro.survival.additive
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    AalenAdditiveLifelines
+
 Tree models
 -----------
 
