@@ -202,7 +202,7 @@ def _clip_surv(surv_arr):
     surv_arr_diff = np.diff(surv_arr, axis=1)
 
     # avoid iterative minimization if no further clipping is needed
-    if np.sum(surv_arr_diff > 0) == 0:
+    if not (surv_arr_diff > 0).any():
         clipped = too_large.any() or too_small.any()
         return surv_arr, surv_arr_diff, clipped
 
