@@ -85,8 +85,8 @@ class AFTWeibullLifelines(_LifelinesAdapter, BaseSurvReg):
         the concordance index of the model.
     """
 
-    _tags = {"authors": ["CamDavidsonPilon", "JoseLlanes", "mathurinm", "fkiraly"]}
-    # CamDavidsonPilon, JoseLlanes, mathurinm credit for interfaced estimator
+    _tags = {"authors": ["CamDavidsonPilon", "fkiraly"]}
+    # CamDavidsonPilon, credit for interfaced estimator
 
     def __init__(
         self,
