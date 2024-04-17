@@ -77,3 +77,44 @@ def _surv_diff(surv_arr):
     surv_arr_diff = surv_arr_diff[:, :-1]
 
     return surv_arr_diff
+
+
+def _get_fitted_params_default_safe(obj=None):
+    """Obtain fitted params of object, per sklearn convention.
+
+    Same as _get_fitted_params_default, but with exception handling.
+
+    This is since in sksurv, feature_importances_ is a property
+    and may raise an exception if the estimator does not have it.
+
+    Parameters
+    ----------
+    obj : any object
+
+    Returns
+    -------
+    fitted_params : dict with str keys
+        fitted parameters, keyed by names of fitted parameter
+    """
+    # default retrieves all self attributes ending in "_"
+    # and returns them with keys that have the "_" removed
+    #
+    # get all attributes ending in "_", exclude any that start with "_" (private)
+    fitted_params = [
+        attr for attr in dir(obj) if attr.endswith("_") and not attr.startswith("_")
+    ]
+
+    def hasattr_safe(obj, attr):
+        try:
+            if hasattr(obj, attr):
+                getattr(obj, attr)
+                return True
+        except Exception:
+            return False
+
+    # remove the "_" at the end
+    fitted_param_dict = {
+        p[:-1]: getattr(obj, p) for p in fitted_params if hasattr_safe(obj, p)
+    }
+
+    return fitted_param_dict

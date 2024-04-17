@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.distributions.empirical import Empirical
-from skpro.survival.adapters._common import _clip_surv
+from skpro.survival.adapters._common import _clip_surv, _get_fitted_params_default_safe
 from skpro.utils.sklearn import prep_skl_df
 
 
@@ -109,7 +109,7 @@ class _LifelinesAdapter:
         lifelines_est.fit(**fit_args)
 
         # write fitted params to self
-        lifelines_fitted_params = self._get_fitted_params_default(lifelines_est)
+        lifelines_fitted_params = _get_fitted_params_default_safe(lifelines_est)
         for k, v in lifelines_fitted_params.items():
             setattr(self, f"{k}_", v)
 
