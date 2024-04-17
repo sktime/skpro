@@ -135,7 +135,7 @@ class _LifelinesAdapter:
         # predict on X
         lifelines_survf = lifelines_est.predict_survival_function(X)
 
-        times = lifelines_survf.index[:-1]
+        times = lifelines_survf.index
 
         nt = len(times)
         mi = pd.MultiIndex.from_product([X.index, range(nt)]).swaplevel()
@@ -188,7 +188,7 @@ def _clip_surv(surv_arr):
         Clipped survival function values.
     surv_arr_diff : 2D np.ndarray
         Difference of clipped survival function values.
-        Same as np.diff(surv_arr_clipped, axis=1).
+        Same as np.diff(surv_arr_clipped, axis=1, prepend=1).
         Returned to avoid recomputation, if needed later in context.
     clipped : boolean
         Whether clipping was needed.
@@ -199,7 +199,7 @@ def _clip_surv(surv_arr):
     surv_arr[too_large] = 1
     surv_arr[too_small] = 0
 
-    surv_arr_diff = np.diff(surv_arr, axis=1)
+    surv_arr_diff = np.diff(surv_arr, axis=1, prepend=1)
 
     # avoid iterative minimization if no further clipping is needed
     if not (surv_arr_diff > 0).any():
@@ -212,6 +212,6 @@ def _clip_surv(surv_arr):
     for i in range(1, surv_arr.shape[1]):
         surv_arr[:, i] = np.minimum(surv_arr[:, i], surv_arr[:, i - 1])
 
-    surv_arr_diff = np.diff(surv_arr, axis=1)
+    surv_arr_diff = np.diff(surv_arr, axis=1, prepend=1)
 
     return surv_arr, surv_arr_diff, True
