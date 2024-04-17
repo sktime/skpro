@@ -3,6 +3,8 @@
 
 __author__ = ["fkiraly"]
 
+import numpy as np
+
 from skpro.distributions.weibull import Weibull
 from skpro.survival.adapters.lifelines import _LifelinesAdapter
 from skpro.survival.base import BaseSurvReg
@@ -181,6 +183,8 @@ class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
         ll_pred_proba = lifelines_est._prep_inputs_for_prediction_and_return_scores
 
         scale, k = ll_pred_proba(df, ancillary)
+        scale = np.expand_dims(scale, axis=1)
+        k = np.expand_dims(k, axis=1)
 
         dist = Weibull(scale=scale, k=k, index=X.index, columns=self._y_cols)
         return dist
