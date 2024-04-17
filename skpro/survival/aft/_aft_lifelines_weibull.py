@@ -180,9 +180,9 @@ class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
         lifelines_est = getattr(self, self._estimator_attr)
         ll_pred_proba = lifelines_est._prep_inputs_for_prediction_and_return_scores
 
-        scale, shape = ll_pred_proba(df, ancillary)
+        scale, k = ll_pred_proba(df, ancillary)
 
-        dist = Weibull(scale=scale, shape=shape, index=X.index, columns=self._y_cols)
+        dist = Weibull(scale=scale, k=k, index=X.index, columns=self._y_cols)
         return dist
 
     @classmethod
