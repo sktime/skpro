@@ -109,6 +109,9 @@ class _LifelinesAdapter:
         lifelines_est.fit(**fit_args)
 
         # write fitted params to self
+        # some fitted parameters are properties and may raise exceptions
+        # for example, AIC_ of CoxPHFitter
+        # to avoid this, we use a safe getter
         lifelines_fitted_params = _get_fitted_params_default_safe(lifelines_est)
         for k, v in lifelines_fitted_params.items():
             setattr(self, f"{k}_", v)
