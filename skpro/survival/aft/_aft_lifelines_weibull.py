@@ -124,7 +124,7 @@ class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
         params = self.get_params()
         params.pop("scale_cols", None)
         params.pop("shape_cols", None)
-        return cls(params)
+        return cls(**params)
 
     def _add_extra_fit_args(self, X, y, C=None):
         """Get extra arguments for the fit method.
