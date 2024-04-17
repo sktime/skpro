@@ -24,7 +24,8 @@ def _clip_surv(surv_arr):
         Clipped survival function values.
     surv_arr_diff : 2D np.ndarray
         Difference of clipped survival function values.
-        Same as np.diff(surv_arr_clipped, axis=1, prepend=1).
+        Same as np.diff(surv_arr, axis=1, prepend=1, append=0),
+        then summing the last two columns to become one column.
         Returned to avoid recomputation, if needed later in context.
     clipped : boolean
         Whether clipping was needed.
