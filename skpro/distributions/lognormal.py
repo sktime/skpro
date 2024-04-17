@@ -131,7 +131,7 @@ class LogNormal(BaseDistribution):
         """
         mu = self._mu
         sigma = self._sigma
-        sd_arr = exp(2 * mu + 2 * sigma**2) - exp(2 * mu + sigma**2)
+        sd_arr = np.exp(2 * mu + 2 * sigma**2) - np.exp(2 * mu + sigma**2)
         return pd.DataFrame(sd_arr, index=self.index, columns=self.columns) ** 2
 
     def pdf(self, x):
