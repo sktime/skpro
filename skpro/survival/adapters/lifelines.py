@@ -95,7 +95,6 @@ class _LifelinesAdapter:
         self._y_cols = y.columns  # remember column names for later
         y_name = y.columns[0]
 
-
         fit_args = {
             "df": df,
             "duration_col": y_name,

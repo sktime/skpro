@@ -12,7 +12,7 @@ class AalenAdditive(_LifelinesAdapter, BaseSurvReg):
 
     Direct interface to ``lifelines.fitters.AalenAdditiveFitter``,
     by ``CamDavidsonPilon``.
-    
+
     This class fits the regression model:
 
     .. math::  h(t|x)  = b_0(t) + b_1(t) x_1 + ... + b_N(t) x_N
@@ -22,7 +22,7 @@ class AalenAdditive(_LifelinesAdapter, BaseSurvReg):
     This implementation assumes non-time-varying covariates.
 
     Parameters
-    -----------
+    ----------
     fit_intercept: bool, optional (default: True)
       If False, do not attach an intercept (column of ones) to the covariate matrix.
       The intercept, :math:`b_0(t)` acts as a baseline hazard.
