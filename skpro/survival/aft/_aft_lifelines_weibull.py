@@ -114,6 +114,18 @@ class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
 
         return WeibullAFTFitter
 
+    def _get_lifelines_object(self):
+        """Abstract method to initialize lifelines object.
+
+        The default initializes result of _get_lifelines_class
+        with self.get_params.
+        """
+        cls = self._get_lifelines_class()
+        params = self.get_params()
+        params.pop("scale_cols", None)
+        params.pop("shape_cols", None)
+        return cls(params)
+
     def _add_extra_fit_args(self, X, y, C=None):
         """Get extra arguments for the fit method.
 
