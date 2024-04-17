@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
-"""LogNormal probability distribution."""
+"""Log-Normal probability distribution."""
 
 __author__ = ["fkiraly"]
 
+from math import exp
+
 import numpy as np
 import pandas as pd
-from math import exp
+
 from scipy.special import erf, erfinv
 
 from skpro.distributions.base import BaseDistribution
@@ -38,7 +39,6 @@ class LogNormal(BaseDistribution):
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
-
         self.mu = mu
         self.sigma = sigma
         self.index = index
@@ -74,7 +74,8 @@ class LogNormal(BaseDistribution):
         Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
 
         If `x` is `None`, returns :math:`\mathbb{E}[|X-Y|]` (per row), "self-energy".
-        If `x` is passed, returns :math:`\mathbb{E}[|X-x|]-0.5\mathbb{E}[|X-Y|]` (per row), "CRPS wrt x".
+        If `x` is passed, returns :math:`\mathbb{E}[|X-x|]-0.5\mathbb{E}[|X-Y|]`
+        (per row), "CRPS wrt x".
 
         Parameters
         ----------
@@ -91,20 +92,26 @@ class LogNormal(BaseDistribution):
             "by approximating the energy expectation by the arithmetic mean of "
             f"{approx_spl_size} samples"
         )
-        
+
         # splx, sply = i.i.d. samples of X - Y of size N = approx_spl_size
         N = approx_spl_size
         if x is None:
             splx = self.sample(N)
             sply = self.sample(N)
-            # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx, sply
+            # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx,sply
             spl = splx - sply
             energy = spl.apply(np.linalg.norm, axis=1, ord=1).groupby(level=1).mean()
             energy = pd.DataFrame(energy, index=self.index, columns=["energy"])
         else:
             d = self.loc[x.index, x.columns]
             mu_arr, sd_arr = d._mu, d._sigma
-            c_arr = x*(2*self.cdf(x)-1)-2*exp((mu_arr+sd_arr**2)/2)*(self.cdf((np.log(x)-mu_arr-sd_arr**2)/sd_arr)+self.cdf(sd_arr/mu_arr**0.5)-1)  # noqa E501
+            c_arr = x * (2 * self.cdf(x) - 1)
+            c_arr2 = -2 * exp((mu_arr + sd_arr**2) / 2)
+            c_arr3 = self.cdf((np.log(x) - mu_arr - sd_arr**2) / sd_arr)
+            c_arr3 = c_arr3 + self.cdf(sd_arr / mu_arr**0.5) - 1
+            c_arr2 = c_arr2 * c_arr3
+            c_arr = c_arr + c_arr2
+
             energy_arr = np.sum(c_arr, axis=1)
             energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
         return energy
@@ -143,7 +150,7 @@ class LogNormal(BaseDistribution):
         """Probability density function."""
         d = self.loc[x.index, x.columns]
         pdf_arr = np.exp(-0.5 * ((np.log(x.values) - d.mu) / d.sigma) ** 2)
-        pdf_arr = pdf_arr / (x.values*d.sigma * np.sqrt(2 * np.pi))
+        pdf_arr = pdf_arr / (x.values * d.sigma * np.sqrt(2 * np.pi))
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
     def log_pdf(self, x):
