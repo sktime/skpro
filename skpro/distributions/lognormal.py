@@ -18,9 +18,9 @@ class LogNormal(BaseDistribution):
     Parameters
     ----------
     mean : float or array of float (1D or 2D)
-        mean of the normal distribution of the variable's natural logarithm
+        mean of the logarithm of the distribution
     sd : float or array of float (1D or 2D), must be positive
-        standard deviation of the normal distribution of the logarithm of the distribution
+        standard deviation the logarithm of the distribution
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
