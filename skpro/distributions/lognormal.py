@@ -104,8 +104,7 @@ class LogNormal(BaseDistribution):
         else:
             d = self.loc[x.index, x.columns]
             mu_arr, sd_arr = d._mu, d._sigma
-            
-            c_arr = x*(2*self.cdf(x)-1)-2*exp((mu_arr+sd_arr**2)/2)*(self.cdf((np.log(x)-mu_arr-sd_arr**2)/sd_arr)+self.cdf(sd_arr/mu_arr**0.5)-1)
+            c_arr = x*(2*self.cdf(x)-1)-2*exp((mu_arr+sd_arr**2)/2)*(self.cdf((np.log(x)-mu_arr-sd_arr**2)/sd_arr)+self.cdf(sd_arr/mu_arr**0.5)-1)  # noqa E501
             energy_arr = np.sum(c_arr, axis=1)
             energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
         return energy
@@ -121,7 +120,7 @@ class LogNormal(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
-        mean_arr = np.exp(self._mu + self._sigma**2/2)
+        mean_arr = np.exp(self._mu + self._sigma**2 / 2)
         return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
 
     def var(self):
@@ -135,7 +134,9 @@ class LogNormal(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
-        sd_arr = exp(2*self._mu + 2*(self._sigma)**2) - exp(2*self._mu + (self._sigma)**2)
+        mu = self._mu
+        sigma = self._sigma
+        sd_arr = exp(2 * mu + 2 * sigma**2) - exp(2 * mu + sigma**2)
         return pd.DataFrame(sd_arr, index=self.index, columns=self.columns) ** 2
 
     def pdf(self, x):
@@ -149,7 +150,7 @@ class LogNormal(BaseDistribution):
         """Logarithmic probability density function."""
         d = self.loc[x.index, x.columns]
         lpdf_arr = -0.5 * ((np.log(x.values) - d.mu) / d.sigma) ** 2
-        lpdf_arr = lpdf_arr - np.log(x.values*d.sigma * np.sqrt(2 * np.pi))
+        lpdf_arr = lpdf_arr - np.log(x.values * d.sigma * np.sqrt(2 * np.pi))
         return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
 
     def cdf(self, x):
@@ -162,7 +163,7 @@ class LogNormal(BaseDistribution):
         """Quantile function = percent point function = inverse cdf."""
         d = self.loc[p.index, p.columns]
         icdf_arr = d.mu + d.sigma * np.sqrt(2) * erfinv(2 * p.values - 1)
-        icdf_arr = np.exp(self._sigma*icdf_arr)
+        icdf_arr = np.exp(self._sigma * icdf_arr)
         return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
 
     @classmethod
