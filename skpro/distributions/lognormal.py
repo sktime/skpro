@@ -94,7 +94,7 @@ class LogNormal(BaseDistribution):
             d = self.loc[x.index, x.columns]
             mu_arr, sd_arr = d._mu, d._sigma
             c_arr = x * (2 * self.cdf(x) - 1)
-            c_arr2 = -2 * exp((mu_arr + sd_arr**2) / 2)
+            c_arr2 = -2 * np.exp((mu_arr + sd_arr**2) / 2)
             c_arr3 = self.cdf((np.log(x) - mu_arr - sd_arr**2) / sd_arr)
             c_arr3 = c_arr3 + self.cdf(sd_arr / mu_arr**0.5) - 1
             c_arr2 = c_arr2 * c_arr3
