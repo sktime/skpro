@@ -48,7 +48,7 @@ class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
 
     fit_intercept: boolean, optional (default=True)
         Whether to fit an intercept term in the model.
-    
+
     alpha: float, optional (default=0.05)
       the level in the confidence intervals around the estimated survival function,
       for computation of ``confidence_intervals_`` fitted parameter.
