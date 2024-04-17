@@ -155,7 +155,8 @@ class _LifelinesAdapter:
                 "not monotonically decreasing or not in [0, 1]. "
                 "skpro has clipped the predictions to enforce proper range and "
                 "valid predictive distributions. "
-                "However, predictions may still be unreliable."
+                "However, predictions may still be unreliable.",
+                stacklevel=2,
             )
 
         weights = -lifelines_survf_t_diff.flatten()
