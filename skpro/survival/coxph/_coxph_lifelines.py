@@ -201,11 +201,14 @@ class CoxPHlifelines(_LifelinesAdapter, BaseSurvReg):
             "n_baseline_knots": 3,
         }
 
-        params3 = {
-            "baseline_estimation_method": "piecewise",
-            "penalizer": 0.15,
-            "l1_ratio": 0.05,
-            "breakpoints": [10, 20, 30, 100],
-        }
+        # breakpoints are specific to data ranges,
+        # but tests loop over various data sets, so this would break
+        #
+        # params3 = {
+        #     "baseline_estimation_method": "piecewise",
+        #     "penalizer": 0.15,
+        #     "l1_ratio": 0.05,
+        #     "breakpoints": [10, 20, 30, 100],
+        # }
 
-        return [params1, params2, params3]
+        return [params1, params2]
