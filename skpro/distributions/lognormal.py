@@ -7,7 +7,6 @@ from math import exp
 
 import numpy as np
 import pandas as pd
-
 from scipy.special import erf, erfinv
 
 from skpro.distributions.base import BaseDistribution
@@ -56,7 +55,7 @@ class LogNormal(BaseDistribution):
         if columns is None:
             columns = pd.RangeIndex(shape[1])
 
-        super(LogNormal, self).__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns)
 
     def _get_bc_params(self):
         """Fully broadcast parameters of self, given param shapes and index, columns."""
