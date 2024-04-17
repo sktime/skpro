@@ -26,7 +26,7 @@ class Weibull(BaseDistribution):
     -------
     >>> from skpro.distributions.weibull import Weibull
 
-    >>> w = Weibull(scale=[[0, 1], [2, 3], [4, 5]], k=1)
+    >>> w = Weibull(scale=[[1, 1], [2, 3], [4, 5]], k=1)
     """
 
     _tags = {
@@ -122,7 +122,7 @@ class Weibull(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        params1 = {"scale": [[0, 1], [2, 3], [4, 5]], "k": 1}
+        params1 = {"scale": [[1, 1], [2, 3], [4, 5]], "k": 1}
         params2 = {
             "scale": 1,
             "k": 1,
