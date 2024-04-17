@@ -90,6 +90,17 @@ Proportional hazards models
     CoxPHSkSurv
     CoxNet
 
+Accelerated failure time models
+-------------------------------
+
+.. currentmodule:: skpro.survival.aft
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    AFTWeibull
+
 Generalized additive survival models
 ------------------------------------
 

@@ -9,7 +9,7 @@ from skpro.survival.base import BaseSurvReg
 from skpro.utils.sklearn import prep_skl_df
 
 
-class AFTWeibullLifelines(_LifelinesAdapter, BaseSurvReg):
+class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
     r"""Weibull AFT model, from lifelines.
 
     Direct interface to ``lifelines.fitters.WeibullAFTFitter``,

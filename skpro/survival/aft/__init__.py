@@ -1,6 +1,6 @@
 """Module containing accelerated failure time models."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
-__all__ = ["_SksurvAdapter"]
+__all__ = ["AFTWeibull"]
 
-from skpro.survival.adapters.sksurv import _SksurvAdapter
+from skpro.survival.aft._aft_lifelines_weibull import AFTWeibull
