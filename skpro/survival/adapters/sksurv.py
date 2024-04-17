@@ -102,7 +102,7 @@ class _SksurvAdapter:
 
         # write fitted params to self
         # some fitted parameters are properties and may raise exceptions
-        # for example, AIC_ of CoxPHFitter
+        # for example, AIC_ and AIC_partial_ of CoxPHFitter
         # to avoid this, we use a safe getter
         EXCEPTED_FITTED_PARAMS = ["n_features_in", "feature_names_in"]
         sksurv_fitted_params = _get_fitted_params_default_safe(sksurv_est)
