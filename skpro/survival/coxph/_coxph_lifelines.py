@@ -51,7 +51,8 @@ class CoxPHlifelines(_LifelinesAdapter, BaseSurvReg):
 
     baseline_estimation_method: string, default="breslow",
         one of: ``"breslow"``, ``"spline"``, or ``"piecewise"``.
-        Specifies algorithm for estimato of baseline hazard, see above.
+        Specifies algorithm for estimation of baseline hazard, see above.
+        If ``"piecewise"``, the ``breakpoints`` parameter must be set.
 
     penalizer: float or array, optional (default=0.0)
         Penalty to the size of the coefficients during regression.
@@ -92,7 +93,8 @@ class CoxPHlifelines(_LifelinesAdapter, BaseSurvReg):
         parameter can be employed instead.
 
     breakpoints: list, optional
-        Used only when ``baseline_estimation_method="piecewise"``.
+        Used only when ``baseline_estimation_method="piecewise"``,
+        must be passed in this case.
         Set the positions of the baseline hazard breakpoints.
 
     Attributes
@@ -203,6 +205,7 @@ class CoxPHlifelines(_LifelinesAdapter, BaseSurvReg):
             "baseline_estimation_method": "piecewise",
             "penalizer": 0.15,
             "l1_ratio": 0.05,
+            "breakpoints": [10, 20, 30, 100],
         }
 
         return [params1, params2, params3]
