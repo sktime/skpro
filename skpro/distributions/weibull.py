@@ -16,8 +16,8 @@ class Weibull(BaseDistribution):
     ----------
     scale : float or array of float (1D or 2D), must be positive
         scale parameter of the distribution
-    power : float or array of float (1D or 2D), must be positive
-        power parameter of the distribution
+    shape : float or array of float (1D or 2D), must be positive
+        shape parameter of the distribution
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -25,7 +25,7 @@ class Weibull(BaseDistribution):
     -------
     >>> from skpro.distributions.weibull import Weibull
 
-    >>> w = Weibull(scale=[[0, 1], [2, 3], [4, 5]], power=1)
+    >>> w = Weibull(scale=[[0, 1], [2, 3], [4, 5]], shape=1)
     """
 
     _tags = {
@@ -34,16 +34,16 @@ class Weibull(BaseDistribution):
         "distr:measuretype": "continuous",
     }
 
-    def __init__(self, scale, power, index=None, columns=None):
+    def __init__(self, scale, shape, index=None, columns=None):
         self.scale = scale
-        self.power = power
+        self.shape = shape
         self.index = index
         self.columns = columns
 
         # todo: untangle index handling
         # and broadcast of parameters.
         # move this functionality to the base class
-        self._scale, self._power = self._get_bc_params(self.scale, self.power)
+        self._scale, self._shape = self._get_bc_params(self.scale, self.shape)
         shape = self._scale.shape
 
         if index is None:
@@ -56,67 +56,75 @@ class Weibull(BaseDistribution):
 
     def mean(self):
         r"""Return expected value of the distribution.
-        
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns the expectation :math:`\lambda \Gamma (1+\frac{1}{k})`
-        
+
+        For Weibull distribution, expectation is given by,
+        :math:`\lambda \Gamma (1+\frac{1}{k})`
+
         Returns
         -------
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
-        mean_arr = self._scale * gamma(1 + 1 / self._power)
+        mean_arr = self._scale * gamma(1 + 1 / self._shape)
         return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
 
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns :math:`\lambda^2 \left( \Gamma(1+\frac{2}{k}) - \Gamma^2(1+\frac{1}{k}) \right)`
+        For Weibull distribution, variance is given by
+        :math:`\lambda^2 \left( \Gamma(1+\frac{2}{k}) - \Gamma^2(1+\frac{1}{k}) \right)`
 
         Returns
         -------
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
-        left_gamma = gamma(1 + 2 / self._power)
-        right_gamma = gamma(1 + 1 / self._power) ** 2
-        var_arr = self._scale ** 2 * (left_gamma - right_gamma)
+        left_gamma = gamma(1 + 2 / self._shape)
+        right_gamma = gamma(1 + 1 / self._shape) ** 2
+        var_arr = self._scale**2 * (left_gamma - right_gamma)
         return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
 
     def pdf(self, x):
         """Probability density function."""
         d = self.loc[x.index, x.columns]
         # if x.values[i] < 0, then pdf_arr[i] = 0
-        pdf_arr = (d.power / d.scale) * (x.values / d.scale) ** (d.power - 1) * np.exp(- (x.values / d.scale) ** d.power)
+        pdf_arr = (
+            (d.shape / d.scale)
+            * (x.values / d.scale) ** (d.shape - 1)
+            * np.exp(-((x.values / d.scale) ** d.shape))
+        )
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
     def log_pdf(self, x):
         """Logarithmic probability density function."""
         d = self.loc[x.index, x.columns]
-        lpdf_arr = np.log(d.power / d.scale) + (d.power - 1) * np.log(x.values / d.scale) - (x.values / d.scale) ** d.power
+        lpdf_arr = (
+            np.log(d.shape / d.scale)
+            + (d.shape - 1) * np.log(x.values / d.scale)
+            - (x.values / d.scale) ** d.shape
+        )
         return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
 
     def cdf(self, x):
         """Cumulative distribution function."""
         d = self.loc[x.index, x.columns]
         # if x.values[i] < 0, then cdf_arr[i] = 0
-        cdf_arr = 1 - np.exp(-(x.values / d.scale) ** d.power)
+        cdf_arr = 1 - np.exp(-((x.values / d.scale) ** d.shape))
         return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
 
     def ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
         d = self.loc[p.index, p.columns]
-        ppf_arr = d.scale * (-np.log(1 - p.values)) ** (1 / d.power)
+        ppf_arr = d.scale * (-np.log(1 - p.values)) ** (1 / d.shape)
         return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        params1 = {"scale": [[0, 1], [2, 3], [4, 5]], "power": 1}
+        params1 = {"scale": [[0, 1], [2, 3], [4, 5]], "shape": 1}
         params2 = {
             "scale": 1,
-            "power": 1,
+            "shape": 1,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
