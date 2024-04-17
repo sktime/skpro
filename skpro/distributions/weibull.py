@@ -9,6 +9,7 @@ from scipy.special import gamma
 
 from skpro.distributions.base import BaseDistribution
 
+
 class Weibull(BaseDistribution):
     """Weibull distribution.
 
