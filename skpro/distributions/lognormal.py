@@ -87,21 +87,10 @@ class LogNormal(BaseDistribution):
         pd.DataFrame with same rows as `self`, single column `"energy"`
         each row contains one float, self-energy/energy as described above.
         """
-        approx_spl_size = self.get_tag("approx_energy_spl")
-        approx_method = (
-            "by approximating the energy expectation by the arithmetic mean of "
-            f"{approx_spl_size} samples"
-        )
-
-        # splx, sply = i.i.d. samples of X - Y of size N = approx_spl_size
-        N = approx_spl_size
         if x is None:
-            splx = self.sample(N)
-            sply = self.sample(N)
-            # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx,sply
-            spl = splx - sply
-            energy = spl.apply(np.linalg.norm, axis=1, ord=1).groupby(level=1).mean()
-            energy = pd.DataFrame(energy, index=self.index, columns=["energy"])
+            return super().energy(x)
+        # explicit formula for CRPS of log-normal cross-term
+        # obtained by bhavikar04 via wolfram alpha
         else:
             d = self.loc[x.index, x.columns]
             mu_arr, sd_arr = d._mu, d._sigma
