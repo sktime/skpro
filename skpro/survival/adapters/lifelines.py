@@ -63,6 +63,25 @@ class _LifelinesAdapter:
         setattr(self, self._estimator_attr, cls)
         return getattr(self, self._estimator_attr)
 
+    def _get_extra_fit_args(self, X, y, C=None):
+        """Get extra arguments for the fit method.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Training features
+        y: pd.DataFrame
+            Training labels
+        C: pd.DataFrame, optional (default=None)
+            Censoring information for survival analysis.
+
+        Returns
+        -------
+        dict
+            Extra arguments for the fit method.
+        """
+        return {}
+
     def _fit(self, X, y, C=None):
         """Fit estimator training data.
 
@@ -70,9 +89,9 @@ class _LifelinesAdapter:
         ----------
         X : pd.DataFrame
             Training features
-        y: pd.Series
+        y: pd.DataFrame
             Training labels
-        C: pd.Series, optional (default=None)
+        C: pd.DataFrame, optional (default=None)
             Censoring information for survival analysis.
 
         Returns
@@ -85,6 +104,9 @@ class _LifelinesAdapter:
         # input conversion
         X = X.astype("float")  # lifelines insists on float dtype
         X = prep_skl_df(X)
+
+        if hasattr(self, "X_col_subset"):
+            X = X[self.X_col_subset]
 
         to_concat = [X, y]
 
@@ -104,6 +126,8 @@ class _LifelinesAdapter:
         }
         if C is not None:
             fit_args["event_col"] = "__C"
+
+        fit_args.update(self._get_extra_fit_args(X, y, C))
 
         # fit lifelines estimator
         lifelines_est.fit(**fit_args)

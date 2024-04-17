@@ -3,8 +3,10 @@
 
 __author__ = ["fkiraly"]
 
+from skpro.distributions.weibull import Weibull
 from skpro.survival.adapters.lifelines import _LifelinesAdapter
 from skpro.survival.base import BaseSurvReg
+from skpro.utils.sklearn import prep_skl_df
 
 
 class AFTWeibullLifelines(_LifelinesAdapter, BaseSurvReg):
@@ -33,12 +35,23 @@ class AFTWeibullLifelines(_LifelinesAdapter, BaseSurvReg):
 
     Parameters
     ----------
-    alpha: float, optional (default=0.05)
-      the level in the confidence intervals around the estimated survival function,
-      for computation of ``confidence_intervals_`` fitted parameter.
+    scale_cols: pd.Index or coercible, optional, default=None
+        Columns of the input data frame to be used as covariates for
+        the scale parameter :math:`\lambda`.
+        If None, all columns are used.
+
+    shape_cols: string "all", pd.Index or coercible, optional, default=None
+        Columns of the input data frame to be used as covariates for
+        the shape parameter :math:`\rho`.
+        If None, no covariates are used, the shape parameter is estimated as a constant.
+        If "all", all columns are used.
 
     fit_intercept: boolean, optional (default=True)
         Whether to fit an intercept term in the model.
+    
+    alpha: float, optional (default=0.05)
+      the level in the confidence intervals around the estimated survival function,
+      for computation of ``confidence_intervals_`` fitted parameter.
 
     penalizer: float or array, optional (default=0.0)
         the penalizer coefficient to the size of the coefficients.
@@ -77,11 +90,15 @@ class AFTWeibullLifelines(_LifelinesAdapter, BaseSurvReg):
 
     def __init__(
         self,
+        scale_cols=None,
+        shape_cols=None,
+        fit_intercept: bool = True,
         alpha: float = 0.05,
         penalizer: float = 0.0,
         l1_ratio: float = 0.0,
-        fit_intercept: bool = True,
     ):
+        self.scale_cols = scale_cols
+        self.shape_cols = shape_cols
         self.alpha = alpha
         self.penalizer = penalizer
         self.l1_ratio = l1_ratio
@@ -89,11 +106,73 @@ class AFTWeibullLifelines(_LifelinesAdapter, BaseSurvReg):
 
         super().__init__()
 
+        if scale_cols is not None:
+            self.X_col_subset = scale_cols
+
     def _get_lifelines_class(self):
         """Getter of the lifelines class to be used for the adapter."""
         from lifelines.fitters.weibull_aft_fitter import WeibullAFTFitter
 
         return WeibullAFTFitter
+
+    def _add_extra_fit_args(self, X, y, C=None):
+        """Get extra arguments for the fit method.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Training features
+        y: pd.DataFrame
+            Training labels
+        C: pd.DataFrame, optional (default=None)
+            Censoring information for survival analysis.
+        fit_args: dict, optional (default=None)
+            Existing arguments for the fit method, from the adapter.
+
+        Returns
+        -------
+        dict
+            Extra arguments for the fit method.
+        """
+        if self.scale_cols is not None:
+            if self.scale_cols == "all":
+                return {"ancillary": True}
+            else:
+                return {"ancillary": X[self.scale_cols]}
+        else:
+            return {}
+
+    def _predict_proba(self, X):
+        """Predict_proba method adapter.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Features to predict on.
+
+        Returns
+        -------
+        skpro Empirical distribution
+        """
+        if self.shape_cols == "all":
+            ancillary = X
+        elif self.shape_cols is not None:
+            ancillary = X[self.shape_cols]
+        else:
+            ancillary = None
+
+        if self.scale_cols is not None:
+            df = X[self.scale_cols]
+        else:
+            df = X
+
+        lifelines_est = getattr(self, self._estimator_attr)
+        ll_pred_proba = lifelines_est._prep_inputs_for_prediction_and_return_scores
+
+        scale, shape = ll_pred_proba(df, ancillary)
+
+        dist = Weibull(scale=scale, shape=shape, index=X.index, columns=self._y_cols)
+        return dist
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -116,11 +195,10 @@ class AFTWeibullLifelines(_LifelinesAdapter, BaseSurvReg):
         params1 = {}
 
         params2 = {
-            "baseline_estimation_method": "spline",
+            "shape_cols": "all",
+            "fit_intercept": False,
+            "alpha": 0.1,
             "penalizer": 0.1,
             "l1_ratio": 0.1,
-            "n_baseline_knots": 3,
         }
-
-
         return [params1, params2]
