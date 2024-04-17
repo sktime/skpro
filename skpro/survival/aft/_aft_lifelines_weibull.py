@@ -6,7 +6,6 @@ __author__ = ["fkiraly"]
 from skpro.distributions.weibull import Weibull
 from skpro.survival.adapters.lifelines import _LifelinesAdapter
 from skpro.survival.base import BaseSurvReg
-from skpro.utils.sklearn import prep_skl_df
 
 
 class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
