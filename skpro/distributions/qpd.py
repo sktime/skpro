@@ -70,6 +70,7 @@ class QPD_Johnson(BaseDistribution):
 
     >>> qpd.mean()  # doctest: +SKIP
     """
+
     _tags = {
         # packaging info
         # --------------
