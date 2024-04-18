@@ -10,7 +10,7 @@ from skpro.distributions.empirical import Empirical
 
 
 class QPD_Empirical(Empirical):
-    """Empirical quantile parametrized distribution.
+    r"""Empirical quantile parametrized distribution.
 
     This distribution is parameterized by a set of quantile points and quantiles,
     quantiles :math:`q_1, q_2, \dots, q_N`
@@ -34,7 +34,7 @@ class QPD_Empirical(Empirical):
     supported at the quantiles :math:`q_1, q_2, \dots, q_N`,
     with weights :math:`w_1, w_2, \dots, w_N`
     such that :math:`w_i = (p_{i+1} - p_{i-1})/2` for :math:`1 = 1, \dots, N`,
-    where we define :math:`p_0 = 0` and :math:`p_{N+1} = 2`.
+    where we define :math:`p_0 = -p_1` and :math:`p_{N+1} = 2 - p_N`.
 
     Formally, the distribution is parametrized by the quantiles :math:`q_i`
     and the quantile points :math:`p_i`, not by the quantiles and weights :math:`w_i`,
