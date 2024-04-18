@@ -18,17 +18,24 @@ from scipy.stats import logistic, norm
 from skpro.distributions.base import BaseDistribution
 
 
-class QPD_S(BaseDistribution):
-    """Johnson Quantile-Parameterized Distributions with semi-bounded mode.
+class QPD_Johnson(BaseDistribution):
+    """Johnson Quantile-Parameterized Distribution.
+
+    This class allows selection of the mode bounding type,
+    i.e. semi-bounded, bounded, or unbounded.
+
+    A Johnson QPD distribution is parameterized by a symmetric-percentile triplet (SPT),
+    at quantiles alpha, 0.5, and 1-alpha, respectively.
 
     see https://repositories.lib.utexas.edu/bitstream/handle/2152
         /63037/HADLOCK-DISSERTATION-2017.pdf
-    (Due to the Python keyword, the parameter lambda from
-    this reference is named kappa below.)
-    A distribution is parameterized by a symmetric-percentile triplet (SPT).
+    Parameter names are as in the reference, except for the parameter lambda,
+    which is renamed to kappa, as lambda is a reserved keyword in python.
 
     Parameters
     ----------
+    bounding : str, one of 'S' (default), 'B', 'U'
+        mode bounding type, i.e. semi-bounded (S), bounded (B), or unbounded (U)
     alpha : float
         lower quantile of SPT (upper is ``1 - alpha``)
     qv_low : float or array_like[float]
@@ -39,9 +46,9 @@ class QPD_S(BaseDistribution):
         quantile function value of quantile ``1 - alpha``
     lower : float
         lower bound of semi-bounded range (default is 0)
-    version: str
-        options are ``normal`` (default) or ``logistic``
-    dist_shape: str
+    version: str, one of ``'normal'`` (default), ``'logistic'``
+        options are ``'normal'`` (default) or ``'logistic'``
+    dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
 
@@ -72,6 +79,18 @@ class QPD_S(BaseDistribution):
         "distr:measuretype": "continuous",
     }
 
+    def __init__(
+        self,
+        alpha: float,
+        qv_low: float or object,
+        qv_median: float or object,
+        qv_high: float or object,
+        lower: Optional[float] = 0.0,
+        version: Optional[str] = "normal",
+        dist_shape: Optional[float] = 0.0,
+        index=None,
+        columns=None,
+    ):
 
 class QPD_S(BaseDistribution):
     """Johnson Quantile-Parameterized Distributions with semi-bounded mode.
