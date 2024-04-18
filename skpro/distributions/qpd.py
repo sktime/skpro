@@ -103,6 +103,10 @@ class QPD_S(BaseDistribution):
         alpha, qv_low, qv_median, qv_high = self._get_bc_params(
             alpha, qv_low, qv_median, qv_high, oned_as="col"
         )
+        alpha = alpha.flatten()
+        qv_low = qv_low.flatten()
+        qv_median = qv_median.flatten()
+        qv_high = qv_high.flatten()
 
         if index is None:
             index = pd.RangeIndex(alpha.shape[0])
@@ -333,6 +337,10 @@ class QPD_B(BaseDistribution):
         alpha, qv_low, qv_median, qv_high = self._get_bc_params(
             alpha, qv_low, qv_median, qv_high, oned_as="col"
         )
+        alpha = alpha.flatten()
+        qv_low = qv_low.flatten()
+        qv_median = qv_median.flatten()
+        qv_high = qv_high.flatten()
 
         if index is None:
             index = pd.RangeIndex(alpha.shape[0])
@@ -558,6 +566,10 @@ class QPD_U(BaseDistribution):
         alpha, qv_low, qv_median, qv_high = self._get_bc_params(
             alpha, qv_low, qv_median, qv_high, oned_as="col"
         )
+        alpha = alpha.flatten()
+        qv_low = qv_low.flatten()
+        qv_median = qv_median.flatten()
+        qv_high = qv_high.flatten()
 
         if index is None:
             index = pd.RangeIndex(alpha.shape[0])
