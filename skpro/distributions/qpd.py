@@ -68,8 +68,8 @@ class QPD_S(BaseDistribution):
         "python_dependencies": "cyclic_boosting>=1.2.5",
         # estimator tags
         # --------------
-        "capabilities:approx": [],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
         "distr:measuretype": "continuous",
     }
 
@@ -302,8 +302,8 @@ class QPD_B(BaseDistribution):
         "python_dependencies": "cyclic_boosting>=1.2.5",
         # estimator tags
         # --------------
-        "capabilities:approx": [],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
         "distr:measuretype": "continuous",
     }
 
@@ -537,8 +537,8 @@ class QPD_U(BaseDistribution):
         "python_dependencies": "cyclic_boosting>=1.2.5",
         # estimator tags
         # --------------
-        "capabilities:approx": [],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
         "distr:measuretype": "continuous",
     }
 
