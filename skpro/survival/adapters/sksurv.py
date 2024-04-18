@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.distributions.empirical import Empirical
+from skpro.survival.adapters._common import _get_fitted_params_default_safe
 from skpro.utils.sklearn import prep_skl_df
 
 
@@ -37,9 +38,9 @@ class _SksurvAdapter:
 
         should import and return sksurv class
         """
-        # from sksurv import sksurvClass
+        # from sksurv import SksurvClass
         #
-        # return sksurv
+        # return SksurvClass
         raise NotImplementedError("abstract method")
 
     def _get_sksurv_object(self):
@@ -100,55 +101,16 @@ class _SksurvAdapter:
         sksurv_est.fit(X, y_sksurv)
 
         # write fitted params to self
+        # some fitted parameters are properties and may raise exceptions
+        # for example, AIC_ and AIC_partial_ of CoxPHFitter
+        # to avoid this, we use a safe getter
         EXCEPTED_FITTED_PARAMS = ["n_features_in", "feature_names_in"]
-        sksurv_fitted_params = self._get_fitted_params_default_safe(sksurv_est)
+        sksurv_fitted_params = _get_fitted_params_default_safe(sksurv_est)
         for k, v in sksurv_fitted_params.items():
             if k not in EXCEPTED_FITTED_PARAMS:
                 setattr(self, f"{k}_", v)
 
         return self
-
-    def _get_fitted_params_default_safe(self, obj=None):
-        """Obtain fitted params of object, per sklearn convention.
-
-        Same as _get_fitted_params_default, but with exception handling.
-
-        This is since in sksurv, feature_importances_ is a property
-        and may raise an exception if the estimator does not have it.
-
-        Parameters
-        ----------
-        obj : any object, optional, default=self
-
-        Returns
-        -------
-        fitted_params : dict with str keys
-            fitted parameters, keyed by names of fitted parameter
-        """
-        obj = obj if obj else self
-
-        # default retrieves all self attributes ending in "_"
-        # and returns them with keys that have the "_" removed
-        #
-        # get all attributes ending in "_", exclude any that start with "_" (private)
-        fitted_params = [
-            attr for attr in dir(obj) if attr.endswith("_") and not attr.startswith("_")
-        ]
-
-        def hasattr_safe(obj, attr):
-            try:
-                if hasattr(obj, attr):
-                    getattr(obj, attr)
-                    return True
-            except Exception:
-                return False
-
-        # remove the "_" at the end
-        fitted_param_dict = {
-            p[:-1]: getattr(obj, p) for p in fitted_params if hasattr_safe(obj, p)
-        }
-
-        return fitted_param_dict
 
     def _predict_proba(self, X):
         """Predict_proba method adapter.
@@ -160,8 +122,7 @@ class _SksurvAdapter:
 
         Returns
         -------
-        np.ndarray (1d array of shape (n_instances,))
-            Index of the cluster each time series in X belongs to.
+        skpro Empirical distribution
         """
         sksurv_est = getattr(self, self._estimator_attr)
 
