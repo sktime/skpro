@@ -23,8 +23,7 @@ class _DelegatedDistribution(BaseDistribution):
         To override delegation, override _delegate_name attribute in child class.
 
     Delegates the following methods:
-        _fit, _predict,
-        _predict_interval, _predict_quantiles, _predict_var, _predict_proba
+        _iloc, pdf, log_pdf, cdf, ppf, energy, mean, var, pdfnorm, sample
 
     Does NOT delegate get_params, set_params.
         get_params, set_params will hence use one additional nesting level by default.
