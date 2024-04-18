@@ -100,18 +100,10 @@ class QPD_S(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_S
 
-        params = [alpha, qv_low, qv_median, qv_high]
-        for idx, p in enumerate(params):
-            if isinstance(p, float):
-                params[idx] = np.array([p])
-            elif (
-                isinstance(p, tuple) or isinstance(p, list) or isinstance(p, np.ndarray)
-            ):
-                params[idx] = np.array(p)
-            else:
-                raise ValueError("data type is not float or array_like object")
+        alpha, qv_low, qv_median, qv_high = self._get_bc_params(
+            alpha, qv_low, qv_median, qv_high
+        )
 
-        alpha, qv_low, qv_median, qv_high = params[:]
         if index is None:
             index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
@@ -336,18 +328,10 @@ class QPD_B(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_B
 
-        params = [alpha, qv_low, qv_median, qv_high]
-        for idx, p in enumerate(params):
-            if isinstance(p, float):
-                params[idx] = np.array([p])
-            elif (
-                isinstance(p, tuple) or isinstance(p, list) or isinstance(p, np.ndarray)
-            ):
-                params[idx] = np.array(p)
-            else:
-                raise ValueError("data type is not float or array_like object")
+        alpha, qv_low, qv_median, qv_high = self._get_bc_params(
+            alpha, qv_low, qv_median, qv_high
+        )
 
-        alpha, qv_low, qv_median, qv_high = params[:]
         if index is None:
             index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
@@ -567,18 +551,10 @@ class QPD_U(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_U
 
-        params = [alpha, qv_low, qv_median, qv_high]
-        for idx, p in enumerate(params):
-            if isinstance(p, float):
-                params[idx] = np.array([p])
-            elif (
-                isinstance(p, tuple) or isinstance(p, list) or isinstance(p, np.ndarray)
-            ):
-                params[idx] = np.array(p)
-            else:
-                raise ValueError("data type is not float or array_like object")
+        alpha, qv_low, qv_median, qv_high = self._get_bc_params(
+            alpha, qv_low, qv_median, qv_high
+        )
 
-        alpha, qv_low, qv_median, qv_high = params[:]
         if index is None:
             index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
