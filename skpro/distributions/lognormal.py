@@ -66,42 +66,43 @@ class LogNormal(BaseDistribution):
         bc = np.broadcast_arrays(*to_broadcast)
         return bc[0], bc[1]
 
-    def energy(self, x=None):
-        r"""Energy of self, w.r.t. self or a constant frame x.
+    # commented out, seems incorrect
+    # def energy(self, x=None):
+    #     r"""Energy of self, w.r.t. self or a constant frame x.
 
-        Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
+    #     Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
 
-        If `x` is `None`, returns :math:`\mathbb{E}[|X-Y|]` (per row), "self-energy".
-        If `x` is passed, returns :math:`\mathbb{E}[|X-x|]-0.5\mathbb{E}[|X-Y|]`
-        (per row), "CRPS wrt x".
+    #     If `x` is `None`, returns :math:`\mathbb{E}[|X-Y|]` (per row), "self-energy".
+    #     If `x` is passed, returns :math:`\mathbb{E}[|X-x|]-0.5\mathbb{E}[|X-Y|]`
+    #     (per row), "CRPS wrt x".
 
-        Parameters
-        ----------
-        x : None or pd.DataFrame, optional, default=None
-            if pd.DataFrame, must have same rows and columns as `self`
+    #     Parameters
+    #     ----------
+    #     x : None or pd.DataFrame, optional, default=None
+    #         if pd.DataFrame, must have same rows and columns as `self`
 
-        Returns
-        -------
-        pd.DataFrame with same rows as `self`, single column `"energy"`
-        each row contains one float, self-energy/energy as described above.
-        """
-        if x is None:
-            return super().energy(x)
-        # explicit formula for CRPS of log-normal cross-term
-        # obtained by bhavikar04 via wolfram alpha
-        else:
-            d = self.loc[x.index, x.columns]
-            mu_arr, sd_arr = d._mu, d._sigma
-            c_arr = x * (2 * self.cdf(x) - 1)
-            c_arr2 = -2 * np.exp((mu_arr + sd_arr**2) / 2)
-            c_arr3 = self.cdf((np.log(x) - mu_arr - sd_arr**2) / sd_arr)
-            c_arr3 = c_arr3 + self.cdf(sd_arr / mu_arr**0.5) - 1
-            c_arr2 = c_arr2 * c_arr3
-            c_arr = c_arr + c_arr2
+    #     Returns
+    #     -------
+    #     pd.DataFrame with same rows as `self`, single column `"energy"`
+    #     each row contains one float, self-energy/energy as described above.
+    #     """
+    #     if x is None:
+    #         return super().energy(x)
+    #     # explicit formula for CRPS of log-normal cross-term
+    #     # obtained by bhavikar04 via wolfram alpha
+    #     else:
+    #         d = self.loc[x.index, x.columns]
+    #         mu_arr, sd_arr = d._mu, d._sigma
+    #         c_arr = x * (2 * self.cdf(x) - 1)
+    #         c_arr2 = -2 * np.exp((mu_arr + sd_arr**2) / 2)
+    #         c_arr3 = self.cdf((np.log(x) - mu_arr - sd_arr**2) / sd_arr)
+    #         c_arr3 = c_arr3 + self.cdf(sd_arr / mu_arr**0.5) - 1
+    #         c_arr2 = c_arr2 * c_arr3
+    #         c_arr = c_arr + c_arr2
 
-            energy_arr = np.sum(c_arr, axis=1)
-            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
-        return energy
+    #         energy_arr = np.sum(c_arr, axis=1)
+    #         energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
+    #     return energy
 
     def mean(self):
         r"""Return expected value of the distribution.
