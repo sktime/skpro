@@ -21,8 +21,8 @@ class QPD_Empirical(Empirical):
     the unique distribution satisfying:
 
     * the support is :math:`[q_1, q_N]`
-    * for any quantile point :math:`p \in [p_i, p_{i+1}]`, it holds that
-      :math:`\mbox{ppf}(p) = :math:`\mbox{ppf}(p_i)`,
+    * for any quantile point :math:`p \in [p_1, p_N]`, it holds that
+      :math:`\mbox{ppf}(p)` = :math:`\mbox{ppf}(p_i)`,
       where :math:`i` is the index minimizing :math:`|p_i - p|`,
       in all cases where this minimizer is unique.
 
