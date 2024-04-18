@@ -134,7 +134,11 @@ def linkcode_resolve(domain, info):
         filename = "skpro/%s#L%d-L%d" % find_source()
     except Exception:
         filename = info["module"].replace(".", "/") + ".py"
-    return f"https://github.com/sktime/skpro/blob/{version_match}/{filename}"
+    if version_match == "latest":
+        version = "main"
+    else:
+        version = version_match
+    return f"https://github.com/sktime/skpro/blob/{version}/{filename}"
 
 
 # -- Options for HTML output -------------------------------------------------
