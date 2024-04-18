@@ -15,10 +15,10 @@ from scipy.integrate import quad
 from scipy.misc import derivative
 from scipy.stats import logistic, norm
 
-from skpro.distributions.base import BaseDistribution
+from skpro.distributions.base import _DelegatedDistribution
 
 
-class QPD_Johnson(BaseDistribution):
+class QPD_Johnson(_DelegatedDistribution):
     """Johnson Quantile-Parameterized Distribution.
 
     A Johnson QPD distribution is parameterized by a symmetric-percentile triplet (SPT),
