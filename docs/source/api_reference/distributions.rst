@@ -36,6 +36,7 @@ Continuous support
     :template: class.rst
 
     Laplace
+    Logistic
     Normal
     TDistribution
     Weibull
