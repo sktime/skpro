@@ -23,8 +23,7 @@ class _DelegatedDistribution(BaseDistribution):
         To override delegation, override _delegate_name attribute in child class.
 
     Delegates the following methods:
-        _fit, _predict,
-        _predict_interval, _predict_quantiles, _predict_var, _predict_proba
+        _iloc, pdf, log_pdf, cdf, ppf, energy, mean, var, pdfnorm, sample
 
     Does NOT delegate get_params, set_params.
         get_params, set_params will hence use one additional nesting level by default.
@@ -32,9 +31,9 @@ class _DelegatedDistribution(BaseDistribution):
     Does NOT delegate or copy tags, this should be done in a child class if required.
     """
 
-    # attribute for _DelegatedProbaRegressor, which then delegates
+    # attribute for _DelegatedDistribution, which then delegates
     #     all non-overridden methods are same as of getattr(self, _delegate_name)
-    #     see further details in _DelegatedRegressor docstring
+    #     see further details in _DelegatedDistribution docstring
     _delegate_name = "delegate_"
 
     def _get_delegate(self):
