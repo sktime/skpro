@@ -105,11 +105,11 @@ class QPD_S(BaseDistribution):
         )
 
         if index is None:
-            index = pd.RangeIndex(qv_low.shape[0])
+            index = pd.RangeIndex(alpha.shape[0])
             self.index = index
 
         if columns is None:
-            columns = pd.RangeIndex(1)
+            columns = pd.RangeIndex(alpha.shape[1])
             self.columns = columns
 
         if version == "normal":
@@ -228,6 +228,8 @@ class QPD_S(BaseDistribution):
             "qv_low": 0.2,
             "qv_median": 0.5,
             "qv_high": 0.8,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a"]),
         }
         params2 = {
             "alpha": 0.2,
@@ -333,11 +335,11 @@ class QPD_B(BaseDistribution):
         )
 
         if index is None:
-            index = pd.RangeIndex(qv_low.shape[0])
+            index = pd.RangeIndex(alpha.shape[0])
             self.index = index
 
         if columns is None:
-            columns = pd.RangeIndex(1)
+            columns = pd.RangeIndex(alpha.shape[1])
             self.columns = columns
 
         if version == "normal":
@@ -459,6 +461,8 @@ class QPD_B(BaseDistribution):
             "qv_high": 0.8,
             "lower": 0.0,
             "upper": 1.0,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a"]),
         }
         params2 = {
             "alpha": 0.2,
@@ -556,11 +560,11 @@ class QPD_U(BaseDistribution):
         )
 
         if index is None:
-            index = pd.RangeIndex(qv_low.shape[0])
+            index = pd.RangeIndex(alpha.shape[0])
             self.index = index
 
         if columns is None:
-            columns = pd.RangeIndex(1)
+            columns = pd.RangeIndex(alpha.shape[1])
             self.columns = columns
 
         if version == "normal":
@@ -678,6 +682,8 @@ class QPD_U(BaseDistribution):
             "qv_low": 0.2,
             "qv_median": 0.5,
             "qv_high": 0.8,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a"]),
         }
         params2 = {
             "alpha": 0.2,

@@ -210,9 +210,9 @@ class BaseDistribution(BaseObject):
             args_as_np = [row_to_col(arg) for arg in args_as_np]
 
         if hasattr(self, "index") and self.index is not None:
-            args += (self.index.to_numpy().reshape(-1, 1),)
+            args_as_np += (self.index.to_numpy().reshape(-1, 1),)
         if hasattr(self, "columns") and self.columns is not None:
-            args += (self.columns.to_numpy(),)
+            args_as_np += (self.columns.to_numpy(),)
         bc = np.broadcast_arrays(*args_as_np)
         if dtype is not None:
             bc = [array.astype(dtype) for array in bc]
