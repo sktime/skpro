@@ -5,6 +5,7 @@
 __all__ = [
     "Empirical",
     "Laplace",
+    "Logistic",
     "Mixture",
     "Normal",
     "Poisson",
@@ -12,14 +13,15 @@ __all__ = [
     "QPD_B",
     "QPD_U",
     "TDistribution",
-    "Logistic",
+    "Weibull",
 ]
 
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.laplace import Laplace
+from skpro.distributions.logistic import Logistic
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
 from skpro.distributions.poisson import Poisson
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
 from skpro.distributions.t import TDistribution
-from skpro.distributions.logistic import Logistic
+from skpro.distributions.weibull import Weibull

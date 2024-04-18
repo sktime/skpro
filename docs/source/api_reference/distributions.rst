@@ -26,6 +26,9 @@ Base
 Parametric distributions
 ------------------------
 
+Continuous support
+~~~~~~~~~~~~~~~~~~
+
 .. currentmodule:: skpro.distributions
 
 .. autosummary::
@@ -35,8 +38,21 @@ Parametric distributions
     Laplace
     Logistic
     Normal
-    Poisson
     TDistribution
+    Weibull
+
+
+Integer support
+~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    Poisson
+
 
 Non-parametric and empirical distributions
 ------------------------------------------
