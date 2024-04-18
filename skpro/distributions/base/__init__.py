@@ -2,6 +2,8 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
-__all__ = ["BaseDistribution"]
+__all__ = ["BaseDistribution", "_DelegatedProbaRegressor"]
 
 from skpro.distributions.base._base	import BaseDistribution
+from skpro.distributions.base._delegate import _DelegatedProbaRegressor
+
