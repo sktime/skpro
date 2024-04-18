@@ -14,7 +14,7 @@ from copy import deepcopy
 from skpro.distributions.base._base import BaseDistribution
 
 
-class _DelegatedProbaRegressor(BaseDistribution):
+class _DelegatedDistribution(BaseDistribution):
     """Delegator mixin that delegates all methods to wrapped estimator.
 
     Delegates inner methods to a wrapped estimator.
