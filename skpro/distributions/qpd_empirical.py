@@ -12,9 +12,38 @@ from skpro.distributions.empirical import Empirical
 class QPD_Empirical(Empirical):
     """Empirical quantile parametrized distribution.
 
-    This distribution is parameterized by a set of quantile points.
+    This distribution is parameterized by a set of quantile points and quantiles,
+    quantiles :math:`q_1, q_2, \dots, q_N`
+    at quantile points :math:`p_1, p_2, \dots, p_N`,
+    with :math:`0 \le p_1 < p_2 < \dots < p_N \le 1`.
 
-    todo: add docstr
+    It represents a distribution with piecewise constant CDF and quantile function,
+    the unique distribution satisfying:
+
+    * the support is :math:`[q_1, q_N]`
+    * for any quantile point :math:`p \in [p_i, p_{i+1}]`, it holds that
+      :math:`\mbox{ppf}(p) = :math:`\mbox{ppf}(p_i)`,
+      where :math:`i` is the index minimizing :math:`|p_i - p|`,
+      in all cases where this minimizer is unique.
+
+    In vernacular terms, the quantile function agrees with the quantiles prescribed by
+    :math:`q_i` at the quantile points :math:`p_i`, and for other quantile points
+    agrees with the value at the nearest quantile point.
+
+    In explicit terms, the distribution is an empirical distribution (sum-of-diracs),
+    supported at the quantiles :math:`q_1, q_2, \dots, q_N`,
+    with weights :math:`w_1, w_2, \dots, w_N`
+    such that :math:`w_i = (p_{i+1} - p_{i-1})/2` for :math:`1 = 1, \dots, N`,
+    where we define :math:`p_0 = 0` and :math:`p_{N+1} = 2`.
+
+    Formally, the distribution is parametrized by the quantiles :math:`q_i`
+    and the quantile points :math:`p_i`, not by the quantiles and weights :math:`w_i`,
+    so it is distinct from the empirical distribution (``skpro`` ``Empirical``),
+    as a parameterized distribution,
+    by being quantile parameterized and not sample parameterized.
+
+    However, it is equivalent, as an unparameterized distribution,
+    to an ``Empirical`` distribution with weights and nodes given as above.
 
     Parameters
     ----------
