@@ -1,9 +1,7 @@
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Log-Normal probability distribution."""
 
-__author__ = ["fkiraly"]
-
-from math import exp
+__author__ = ["bhavikar04", "fkiraly"]
 
 import numpy as np
 import pandas as pd
@@ -32,6 +30,7 @@ class LogNormal(BaseDistribution):
     """
 
     _tags = {
+        "authors": ["bhavikar04", "fkiraly"],
         "capabilities:approx": ["pdflognorm"],
         "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
