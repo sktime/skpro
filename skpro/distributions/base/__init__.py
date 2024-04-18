@@ -4,6 +4,5 @@
 
 __all__ = ["BaseDistribution", "_DelegatedDistribution"]
 
-from skpro.distributions.base._base	import BaseDistribution
+from skpro.distributions.base._base import BaseDistribution
 from skpro.distributions.base._delegate import _DelegatedDistribution
-
