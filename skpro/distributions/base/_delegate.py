@@ -32,10 +32,10 @@ class _DelegatedDistribution(BaseDistribution):
     Does NOT delegate or copy tags, this should be done in a child class if required.
     """
 
-    # attribute for _DelegatedProbaRegressor, which then delegates
+    # attribute for _DelegatedDistribution, which then delegates
     #     all non-overridden methods are same as of getattr(self, _delegate_name)
-    #     see further details in _DelegatedRegressor docstring
-    _delegate_name = "estimator_"
+    #     see further details in _DelegatedDistribution docstring
+    _delegate_name = "delegate_"
 
     def _get_delegate(self):
         return getattr(self, self._delegate_name)
