@@ -7,6 +7,7 @@ __all__ = [
     "Laplace",
     "Mixture",
     "Normal",
+    "LogNormal",
     "Poisson",
     "QPD_S",
     "QPD_B",
@@ -17,6 +18,7 @@ __all__ = [
 
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.laplace import Laplace
+from skpro.distributions.lognormal import LogNormal
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
 from skpro.distributions.poisson import Poisson
