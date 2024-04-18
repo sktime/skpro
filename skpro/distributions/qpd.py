@@ -15,7 +15,7 @@ from scipy.integrate import quad
 from scipy.misc import derivative
 from scipy.stats import logistic, norm
 
-from skpro.distributions.base import _DelegatedDistribution
+from skpro.distributions.base import _DelegatedDistribution, BaseDistribution
 
 
 class QPD_Johnson(_DelegatedDistribution):
