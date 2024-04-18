@@ -8,6 +8,7 @@ import pandas as pd
 
 from skpro.distributions.base import BaseDistribution
 
+
 class Logistic(BaseDistribution):
     """Logistic distribution.
 
@@ -47,12 +48,12 @@ class Logistic(BaseDistribution):
 
         if index is None:
             index = pd.RangeIndex(shape[0])
-        
+
         if columns is None:
             columns = pd.RangeIndex(shape[1])
-        
+
         super().__init__(index=index, columns=columns)
-    
+
     def mean(self):
         r"""Return expected value of the distribution.
 
@@ -80,13 +81,13 @@ class Logistic(BaseDistribution):
         """
         var_arr = (self._scale**2 * np.pi**2) / 3
         return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
-    
+
     def pdf(self, x):
         """Probability density function."""
         d = self.loc[x.index, x.columns]
         numerator = np.exp(-(x.values - d.mu) / d.scale)
-        denumerator = d.scale * ((1 + np.exp(-(x.values - d.mu) / d.scale))**2)
-        pdf_arr = numerator / denumerator
+        denominator = d.scale * ((1 + np.exp(-(x.values - d.mu) / d.scale)) ** 2)
+        pdf_arr = numerator / denominator
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
     def log_pdf(self, x):
@@ -107,7 +108,7 @@ class Logistic(BaseDistribution):
         d = self.loc[p.index, p.columns]
         ppf_arr = d.mu + d.scale * np.log(p.values / (1 - p.values))
         return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
-    
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
@@ -119,4 +120,3 @@ class Logistic(BaseDistribution):
             "columns": pd.Index(["a", "b"]),
         }
         return [params1, params2]
-
