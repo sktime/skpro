@@ -59,6 +59,61 @@ class QPD_S(BaseDistribution):
 
     >>> qpd.mean()  # doctest: +SKIP
     """
+    _tags = {
+        # packaging info
+        # --------------
+        "authors": ["setoguchi-naoki", "felix-wick", "fkiraly"],
+        "maintainers": ["setoguchi-naoki"],
+        "python_dependencies": "cyclic_boosting>=1.2.5",
+        # estimator tags
+        # --------------
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
+        "distr:measuretype": "continuous",
+    }
+
+
+class QPD_S(BaseDistribution):
+    """Johnson Quantile-Parameterized Distributions with semi-bounded mode.
+
+    see https://repositories.lib.utexas.edu/bitstream/handle/2152
+        /63037/HADLOCK-DISSERTATION-2017.pdf
+    (Due to the Python keyword, the parameter lambda from
+    this reference is named kappa below.)
+    A distribution is parameterized by a symmetric-percentile triplet (SPT).
+
+    Parameters
+    ----------
+    alpha : float
+        lower quantile of SPT (upper is ``1 - alpha``)
+    qv_low : float or array_like[float]
+        quantile function value of ``alpha``
+    qv_median : float or array_like[float]
+        quantile function value of quantile 0.5
+    qv_high : float or array_like[float]
+        quantile function value of quantile ``1 - alpha``
+    lower : float
+        lower bound of semi-bounded range (default is 0)
+    version: str
+        options are ``normal`` (default) or ``logistic``
+    dist_shape: str
+        parameter modifying the logistic base distribution via
+        sinh/arcsinh-scaling (only active in sinhlogistic version)
+
+    Example
+    -------
+    >>> from skpro.distributions.qpd import QPD_S  # doctest: +SKIP
+
+    >>> qpd = QPD_S(
+    ...         alpha=0.2,
+    ...         qv_low=[1, 2],
+    ...         qv_median=[3, 4],
+    ...         qv_high=[5, 6],
+    ...         lower=0
+    ...       )  # doctest: +SKIP
+
+    >>> qpd.mean()  # doctest: +SKIP
+    """
 
     _tags = {
         # packaging info
