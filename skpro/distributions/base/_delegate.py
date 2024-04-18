@@ -35,7 +35,7 @@ class _DelegatedDistribution(BaseDistribution):
     # attribute for _DelegatedProbaRegressor, which then delegates
     #     all non-overridden methods are same as of getattr(self, _delegate_name)
     #     see further details in _DelegatedRegressor docstring
-    _delegate_name = "estimator_"
+    _delegate_name = "delegate_"
 
     def _get_delegate(self):
         return getattr(self, self._delegate_name)

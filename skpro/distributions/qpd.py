@@ -21,9 +21,6 @@ from skpro.distributions.base import BaseDistribution
 class QPD_Johnson(BaseDistribution):
     """Johnson Quantile-Parameterized Distribution.
 
-    This class allows selection of the mode bounding type,
-    i.e. semi-bounded, bounded, or unbounded.
-
     A Johnson QPD distribution is parameterized by a symmetric-percentile triplet (SPT),
     at quantiles alpha, 0.5, and 1-alpha, respectively.
 
@@ -32,10 +29,15 @@ class QPD_Johnson(BaseDistribution):
     Parameter names are as in the reference, except for the parameter lambda,
     which is renamed to kappa, as lambda is a reserved keyword in python.
 
+    This class allows selection of the mode bounding type,
+    i.e. semi-bounded, bounded, or unbounded.
+
+    * if neither ``lower`` nor ``upper`` bound is given, the mode is unbounded
+    * if only ``lower`` bound is given, the mode is semi-bounded
+    * if both ``lower`` and ``upper`` bounds are given, the mode is bounded
+
     Parameters
     ----------
-    bounding : str, one of 'S' (default), 'B', 'U'
-        mode bounding type, i.e. semi-bounded (S), bounded (B), or unbounded (U)
     alpha : float
         lower quantile of SPT (upper is ``1 - alpha``)
     qv_low : float or array_like[float]
@@ -44,8 +46,10 @@ class QPD_Johnson(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    lower : float
-        lower bound of semi-bounded range (default is 0)
+    lower : float, default = None (no lower bound)
+        lower bound of semi-bounded range or bounded range
+    upper : float, default = None (no upper bound)
+        upper bound of bounded range
     version: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
     dist_shape: float, optional, default=0.0
@@ -54,9 +58,9 @@ class QPD_Johnson(BaseDistribution):
 
     Example
     -------
-    >>> from skpro.distributions.qpd import QPD_S  # doctest: +SKIP
+    >>> from skpro.distributions.qpd import QPD_Johnson  # doctest: +SKIP
 
-    >>> qpd = QPD_S(
+    >>> qpd = QPD_Johnson(
     ...         alpha=0.2,
     ...         qv_low=[1, 2],
     ...         qv_median=[3, 4],
@@ -85,12 +89,91 @@ class QPD_Johnson(BaseDistribution):
         qv_low: float or object,
         qv_median: float or object,
         qv_high: float or object,
-        lower: Optional[float] = 0.0,
+        lower: Optional[float] = None,
+        upper: Optional[float] = None,
         version: Optional[str] = "normal",
         dist_shape: Optional[float] = 0.0,
         index=None,
         columns=None,
     ):
+        self.alpha = alpha
+        self.qv_low = qv_low
+        self.qv_median = qv_median
+        self.qv_high = qv_high
+        self.lower = lower
+        self.upper = upper
+        self.version = version
+        self.dist_shape = dist_shape
+        self.index = index
+        self.columns = columns
+
+        if lower is None:
+            delegate_cls = QPD_U
+            extra_params = {}
+        elif upper is None:
+            delegate_cls = QPD_S
+            extra_params = {"lower": lower}
+        else:
+            delegate_cls = QPD_B
+            extra_params = {"lower": lower, "upper": upper}
+
+        params = {
+            "alpha": alpha,
+            "qv_low": qv_low,
+            "qv_median": qv_median,
+            "qv_high": qv_high,
+            "version": version,
+            "dist_shape": dist_shape,
+            "index": index,
+            "columns": columns,
+            **extra_params,
+        }
+
+        self.delegate_ = delegate_cls(**params)
+
+        self.index = self.delegate_.index
+        self.columns = self.delegate_.columns
+
+        super().__init__(index=self.index, columns=self.columns)
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        params1 = {
+            "alpha": 0.2,
+            "version": "normal",
+            "qv_low": 0.2,
+            "qv_median": 0.5,
+            "qv_high": 0.8,
+        }
+        params2 = {
+            "alpha": 0.1,
+            "version": "normal",
+            "qv_low": [0.2, 0.2, 0.2],
+            "qv_median": [0.5, 0.5, 0.5],
+            "qv_high": [0.8, 0.8, 0.8],
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a"]),
+        }
+        params3 = {
+            "alpha": 0.1,
+            "version": "normal",
+            "qv_low": [0.1, 0.2, 0.3],
+            "qv_median": [0.4, 0.5, 0.6],
+            "qv_high": [0.7, 0.8, 0.9],
+            "lower": 0.05,
+        }
+        params4 = {
+            "alpha": 0.12,
+            "version": "logistic",
+            "qv_low": [0.25, 0.2, 0.22],
+            "qv_median": [0.45, 0.51, 0.54],
+            "qv_high": [0.85, 0.83, 0.81],
+            "lower": 0.05,
+            "upper": 0.95,
+        }
+        return [params1, params2, params3, params4]
+
 
 class QPD_S(BaseDistribution):
     """Johnson Quantile-Parameterized Distributions with semi-bounded mode.

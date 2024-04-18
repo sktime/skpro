@@ -64,6 +64,7 @@ Non-parametric and empirical distributions
     :template: class.rst
 
     Empirical
+    QPD_Johnson
     QPD_U
     QPD_S
     QPD_B
