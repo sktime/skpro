@@ -105,7 +105,7 @@ class QPD_S(BaseDistribution):
         )
 
         if index is None:
-            index = pd.RangeIndex(alpha.shape[0])
+            index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
 
         if columns is None:
@@ -335,7 +335,7 @@ class QPD_B(BaseDistribution):
         )
 
         if index is None:
-            index = pd.RangeIndex(alpha.shape[0])
+            index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
 
         if columns is None:
@@ -560,7 +560,7 @@ class QPD_U(BaseDistribution):
         )
 
         if index is None:
-            index = pd.RangeIndex(alpha.shape[0])
+            index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
 
         if columns is None:
