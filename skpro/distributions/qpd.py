@@ -100,13 +100,9 @@ class QPD_S(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_S
 
-        alpha, qv_low, qv_median, qv_high = self._get_bc_params(
-            alpha, qv_low, qv_median, qv_high, oned_as="col"
+        alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
+            self, alpha, qv_low, qv_median, qv_high, oned_as="col"
         )
-        alpha = alpha.flatten()
-        qv_low = qv_low.flatten()
-        qv_median = qv_median.flatten()
-        qv_high = qv_high.flatten()
 
         if index is None:
             index = pd.RangeIndex(alpha.shape[0])
@@ -334,13 +330,9 @@ class QPD_B(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_B
 
-        alpha, qv_low, qv_median, qv_high = self._get_bc_params(
-            alpha, qv_low, qv_median, qv_high, oned_as="col"
+        alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
+            self, alpha, qv_low, qv_median, qv_high, oned_as="col"
         )
-        alpha = alpha.flatten()
-        qv_low = qv_low.flatten()
-        qv_median = qv_median.flatten()
-        qv_high = qv_high.flatten()
 
         if index is None:
             index = pd.RangeIndex(alpha.shape[0])
@@ -563,13 +555,9 @@ class QPD_U(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_U
 
-        alpha, qv_low, qv_median, qv_high = self._get_bc_params(
-            alpha, qv_low, qv_median, qv_high, oned_as="col"
+        alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
+            self, alpha, qv_low, qv_median, qv_high, oned_as="col"
         )
-        alpha = alpha.flatten()
-        qv_low = qv_low.flatten()
-        qv_median = qv_median.flatten()
-        qv_high = qv_high.flatten()
 
         if index is None:
             index = pd.RangeIndex(alpha.shape[0])
@@ -721,3 +709,16 @@ def var_func(x, mu, qpd):
     # TODO: scipy.integrate will be removed in scipy 1.12.0
     pdf = derivative(qpd.cdf, x, dx=1e-6)
     return ((x - mu) ** 2) * pdf
+
+
+def _prep_qpd_params(self, alpha, qv_low, qv_median, qv_high):
+    """Prepare parameters for Johnson Quantile-Parameterized Distributions."""
+    if not isinstance(alpha, np.ndarray):
+        alpha = np.array([alpha])
+    qv_low, qv_median, qv_high = BaseDistribution._get_bc_params(
+        self, qv_low, qv_median, qv_high, oned_as="col"
+    )
+    qv_low = qv_low.flatten()
+    qv_median = qv_median.flatten()
+    qv_high = qv_high.flatten()
+    return alpha, qv_low, qv_median, qv_high
