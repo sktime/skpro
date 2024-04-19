@@ -40,7 +40,7 @@ class Fisk(BaseDistribution):
         "distr:measuretype": "continuous",
     }
 
-    def __init__(self, alpha, beta, index=None, columns=None):
+    def __init__(self, alpha=1, beta=1, index=None, columns=None):
         self.alpha = alpha
         self.beta = beta
         self.index = index
