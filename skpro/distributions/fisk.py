@@ -110,7 +110,7 @@ class Fisk(BaseDistribution):
     def ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
         d = self.loc[p.index, p.columns]
-        icdf_arr = fisk.ppf(x.values, scale=d.alpha, c=d.beta)
+        icdf_arr = fisk.ppf(p.values, scale=d.alpha, c=d.beta)
         return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
 
     @classmethod
