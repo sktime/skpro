@@ -172,11 +172,11 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
         lifelines_est = getattr(self, self._estimator_attr)
         ll_pred_proba = lifelines_est._prep_inputs_for_prediction_and_return_scores
 
-        mu, sd = ll_pred_proba(df, ancillary)
+        mu, sigma = ll_pred_proba(df, ancillary)
         mu = np.expand_dims(mu, axis=1)
-        sd = np.expand_dims(sd, axis=1)
+        sigma = np.expand_dims(sigma, axis=1)
 
-        dist = LogNormal(mu=mu, sd=sd, index=X.index, columns=self._y_cols)
+        dist = LogNormal(mu=mu, sigma=sigma, index=X.index, columns=self._y_cols)
         return dist
 
     @classmethod
