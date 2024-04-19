@@ -23,13 +23,14 @@ class BaseDistribution(BaseObject):
         "object_type": "distribution",  # type of object, e.g., 'distribution'
         "python_version": None,  # PEP 440 python version specifier to limit versions
         "python_dependencies": None,  # string or str list of pkg soft dependencies
-        "reserved_params": ["index", "columns"],
         "capabilities:approx": ["energy", "mean", "var", "pdfnorm"],
         "approx_mean_spl": 1000,  # sample size used in MC estimates of mean
         "approx_var_spl": 1000,  # sample size used in MC estimates of var
         "approx_energy_spl": 1000,  # sample size used in MC estimates of energy
         "approx_spl": 1000,  # sample size used in other MC estimates
         "bisect_iter": 1000,  # max iters for bisection method in ppf
+        "reserved_params": ["index", "columns"],
+        "broadcast_params": None,  # list of params to broadcast
     }
 
     def __init__(self, index=None, columns=None):
@@ -38,6 +39,11 @@ class BaseDistribution(BaseObject):
 
         super().__init__()
         _check_estimator_deps(self)
+
+        bc_params, shape, is_scalar = self._get_bc_params_dict(return_shape=True)
+        self._bc_params = bc_params
+        self._is_scalar = is_scalar
+        self._shape = shape
 
     @property
     def loc(self):
@@ -74,11 +80,14 @@ class BaseDistribution(BaseObject):
     @property
     def shape(self):
         """Shape of self, a pair (2-tuple)."""
-        return (len(self.index), len(self.columns))
+        return self._shape
 
     def __len__(self):
         """Length of self, number of rows."""
-        return len(self.index)
+        shape = self._shape
+        if len(shape) == 0:
+            return 1
+        return shape[0]
 
     def _loc(self, rowidx=None, colidx=None):
         if rowidx is not None:
@@ -168,7 +177,7 @@ class BaseDistribution(BaseObject):
         else:
             return msg
 
-    def _get_bc_params(self, *args, dtype=None, oned_as="row"):
+    def _get_bc_params(self, *args, dtype=None, oned_as="row", return_shape=False):
         """Fully broadcast tuple of parameters given param shapes and index, columns.
 
         Parameters
@@ -183,19 +192,25 @@ class BaseDistribution(BaseObject):
         oned_as : str, optional, "row" (default) or "col"
             If 'row', then 1D arrays are treated as row vectors. If 'column', then 1D
             arrays are treated as column vectors.
+        return_shape : bool, optional, default=False
+            If True, return shape tuple, and a boolean tuple
+            indicating which parameters are scalar.
 
         Returns
         -------
         Tuple of float or integer arrays
             Each element of the tuple represents a different broadcastable distribution
             parameter.
+        shape : Tuple, only returned if ``return_shape`` is True
+            Shape of the broadcasted parameters.
+            Pair of row/column if not scalar, empty tuple if scalar.
+        is_scalar : Tuple of bools, only returned if ``return_is_scalar`` is True
+            Each element of the tuple is True if the corresponding parameter is scalar.
         """
         number_of_params = len(args)
         if number_of_params == 0:
             # Handle case where no positional arguments are provided
-            params = self.get_params()
-            params.pop("index")
-            params.pop("columns")
+            params = self._get_dist_params()
             args = tuple(params.values())
             number_of_params = len(args)
 
@@ -216,7 +231,83 @@ class BaseDistribution(BaseObject):
         bc = np.broadcast_arrays(*args_as_np)
         if dtype is not None:
             bc = [array.astype(dtype) for array in bc]
-        return bc[:number_of_params]
+        bc = bc[:number_of_params]
+        if return_shape:
+            shape = bc[0].shape
+            is_scalar = tuple([arr.ndim == 0 for arr in bc])
+            return bc, shape, is_scalar
+        return bc
+
+    def _get_bc_params_dict(
+            self, dtype=None, oned_as="row", return_shape=False, **kwargs
+        ):
+        """Fully broadcast dict of parameters given param shapes and index, columns.
+
+        Parameters
+        ----------
+        kwargs : float, int, array of floats, or array of ints (1D or 2D)
+            Distribution parameters that are to be made broadcastable. If no positional
+            arguments are provided, all parameters of `self` are used except for `index`
+            and `columns`.
+        dtype : str, optional
+            broadcasted arrays are cast to all have datatype `dtype`. If None, then no
+            datatype casting is done.
+        oned_as : str, optional, "row" (default) or "col"
+            If 'row', then 1D arrays are treated as row vectors. If 'column', then 1D
+            arrays are treated as column vectors.
+        return_shape : bool, optional, default=False
+            If True, return shape tuple, and a boolean tuple
+            indicating which parameters are scalar.
+
+        Returns
+        -------
+        dict of float or integer arrays
+            Each element of the tuple represents a different broadcastable distribution
+            parameter.
+        shape : Tuple, only returned if ``return_shape`` is True
+            Shape of the broadcasted parameters.
+            Pair of row/column if not scalar, empty tuple if scalar.
+        is_scalar : Tuple of bools, only returned if ``return_is_scalar`` is True
+            Each element of the tuple is True if the corresponding parameter is scalar.
+        """
+        number_of_params = len(kwargs)
+        if number_of_params == 0:
+            # Handle case where no positional arguments are provided
+            kwargs = self._get_dist_params()
+            number_of_params = len(kwargs)
+
+        kwargs_as_np = {k: row_to_col(np.array(v)) for k, v in kwargs.items()}
+
+        def row_to_col(arr):
+            """Convert 1D arrays to 2D col arrays, leave 2D arrays unchanged."""
+            if arr.ndim == 1 and oned_as == "col":
+                return arr.reshape(-1, 1)
+            return arr
+
+        if hasattr(self, "index") and self.index is not None:
+            kwargs_as_np["index"] = self.index.to_numpy().reshape(-1, 1)
+        if hasattr(self, "columns") and self.columns is not None:
+            kwargs_as_np["columns"] = self.columns.to_numpy()
+
+        bc_params = self.get_tags()["broadcast_params"]
+        if bc_params is None:
+            bc_params = kwargs_as_np.keys()
+
+        args_as_np = [kwargs_as_np[k] for k in bc_params]
+        bc = np.broadcast_arrays(*args_as_np)
+        if dtype is not None:
+            bc = [array.astype(dtype) for array in bc]
+
+        shape = ()
+        for i, k in enumerate(bc_params):
+            kwargs_as_np[k] = row_to_col(bc[i])
+            if bc[i].ndim == 2:
+                shape = bc[i].shape
+
+        if return_shape:
+            is_scalar = tuple([arr.ndim == 0 for arr in bc])
+            return kwargs_as_np, shape, is_scalar
+        return kwargs_as_np
 
     def pdf(self, x):
         r"""Probability density function.
