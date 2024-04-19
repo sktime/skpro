@@ -31,7 +31,7 @@ class Fisk(BaseDistribution):
     -------
     >>> from skpro.distributions.fisk import Fisk
 
-    >>> d = Fisk(mu=[[0, 1], [2, 3], [4, 5]], scale=1)
+    >>> d = Fisk(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
     """
 
     _tags = {
@@ -116,7 +116,7 @@ class Fisk(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        params1 = {"alpha": [[1, 1], [2, 3], [4, 5]]}
+        params1 = {"alpha": [[1, 1], [2, 3], [4, 5]], "beta": 3}
         params2 = {
             "alpha": 2,
             "beta": 3,
