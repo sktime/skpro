@@ -101,7 +101,7 @@ class QPD_S(BaseDistribution):
         from cyclic_boosting.quantile_matching import J_QPD_extended_S
 
         alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
-            self, alpha, qv_low, qv_median, qv_high, oned_as="col"
+            self, alpha, qv_low, qv_median, qv_high
         )
 
         if index is None:
@@ -331,7 +331,7 @@ class QPD_B(BaseDistribution):
         from cyclic_boosting.quantile_matching import J_QPD_extended_B
 
         alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
-            self, alpha, qv_low, qv_median, qv_high, oned_as="col"
+            self, alpha, qv_low, qv_median, qv_high
         )
 
         if index is None:
@@ -556,7 +556,7 @@ class QPD_U(BaseDistribution):
         from cyclic_boosting.quantile_matching import J_QPD_extended_U
 
         alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
-            self, alpha, qv_low, qv_median, qv_high, oned_as="col"
+            self, alpha, qv_low, qv_median, qv_high
         )
 
         if index is None:
