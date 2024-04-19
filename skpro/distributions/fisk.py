@@ -16,7 +16,7 @@ class Fisk(BaseDistribution):
     and a shape parameter :math:`\beta`, such that the cumulative distribution
     function (CDF) is given by:
 
-    .. math:: F(x) = \left(1 + \frac{x}{\alpha}\right)^{-\beta}\right)^{-1}
+    .. math:: F(x) = 1 - \left(1 + \frac{x}{\alpha}\right)^{-\beta}\right)^{-1}
 
     Parameters
     ----------
