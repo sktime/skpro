@@ -109,7 +109,7 @@ class QPD_S(BaseDistribution):
             self.index = index
 
         if columns is None:
-            columns = pd.RangeIndex(alpha.shape[1])
+            columns = pd.RangeIndex(1)
             self.columns = columns
 
         if version == "normal":
@@ -339,7 +339,7 @@ class QPD_B(BaseDistribution):
             self.index = index
 
         if columns is None:
-            columns = pd.RangeIndex(alpha.shape[1])
+            columns = pd.RangeIndex(1)
             self.columns = columns
 
         if version == "normal":
@@ -564,7 +564,7 @@ class QPD_U(BaseDistribution):
             self.index = index
 
         if columns is None:
-            columns = pd.RangeIndex(alpha.shape[1])
+            columns = pd.RangeIndex(1)
             self.columns = columns
 
         if version == "normal":
