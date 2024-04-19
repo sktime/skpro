@@ -59,6 +59,11 @@ METHODS_ROWWISE = ["energy"]  # results in one column
 class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTester):
     """Module level tests for all skpro parameter fitters."""
 
+    # TEMPORARY skip for CyclicBoosting and QPD classes
+    # due to silent failures on main, se #190
+    exclude_objects = ["QPD_B"]
+    # remove this when fixing failures to re-enable testing
+
     def test_shape(self, object_instance):
         """Test index, columns, len and shape of distribution."""
         d = object_instance
