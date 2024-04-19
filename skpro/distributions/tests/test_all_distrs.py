@@ -61,7 +61,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
 
     # TEMPORARY skip for CyclicBoosting and QPD classes
     # due to silent failures on main, se #190
-    exclude_objects = ["QPD_S", "QPD_B", "QPD_U"]
+    exclude_objects = ["QPD_B"]
     # remove this when fixing failures to re-enable testing
 
     def test_shape(self, object_instance):

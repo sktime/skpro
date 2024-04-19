@@ -168,7 +168,7 @@ class BaseDistribution(BaseObject):
         else:
             return msg
 
-    def _get_bc_params(self, *args, dtype=None):
+    def _get_bc_params(self, *args, dtype=None, oned_as="row"):
         """Fully broadcast tuple of parameters given param shapes and index, columns.
 
         Parameters
@@ -180,6 +180,9 @@ class BaseDistribution(BaseObject):
         dtype : str, optional
             broadcasted arrays are cast to all have datatype `dtype`. If None, then no
             datatype casting is done.
+        oned_as : str, optional, "row" (default) or "col"
+            If 'row', then 1D arrays are treated as row vectors. If 'column', then 1D
+            arrays are treated as column vectors.
 
         Returns
         -------
@@ -196,11 +199,21 @@ class BaseDistribution(BaseObject):
             args = tuple(params.values())
             number_of_params = len(args)
 
+        def row_to_col(arr):
+            """Convert 1D arrays to 2D col arrays, leave 2D arrays unchanged."""
+            if arr.ndim == 1:
+                return arr.reshape(-1, 1)
+            return arr
+
+        args_as_np = [np.array(arg) for arg in args]
+        if oned_as == "col":
+            args_as_np = [row_to_col(arg) for arg in args_as_np]
+
         if hasattr(self, "index") and self.index is not None:
-            args += (self.index.to_numpy().reshape(-1, 1),)
+            args_as_np += (self.index.to_numpy().reshape(-1, 1),)
         if hasattr(self, "columns") and self.columns is not None:
-            args += (self.columns.to_numpy(),)
-        bc = np.broadcast_arrays(*args)
+            args_as_np += (self.columns.to_numpy(),)
+        bc = np.broadcast_arrays(*args_as_np)
         if dtype is not None:
             bc = [array.astype(dtype) for array in bc]
         return bc[:number_of_params]
