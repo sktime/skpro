@@ -76,6 +76,10 @@ class BaseDistribution(BaseObject):
         """Shape of self, a pair (2-tuple)."""
         return (len(self.index), len(self.columns))
 
+    def __len__(self):
+        """Length of self, number of rows."""
+        return len(self.index)
+
     def _loc(self, rowidx=None, colidx=None):
         if rowidx is not None:
             row_iloc = self.index.get_indexer_for(rowidx)
@@ -447,7 +451,8 @@ class BaseDistribution(BaseObject):
 
         # uses formula int p(x)^a dx = E[p(X)^{a-1}], and MC approximates the RHS
         spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
-        return pd.concat(spl, axis=0).groupby(level=1, sort=False).mean()
+        spl_df = pd.concat(spl, keys=range(approx_spl_size))
+        return spl_df.groupby(level=1, sort=False).mean()
 
     def _coerce_to_self_index_df(self, x):
         x = np.array(x)

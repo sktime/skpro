@@ -14,6 +14,158 @@ You can also subscribe to ``skpro``'s
 
 For planned changes and upcoming releases, see our :ref:`roadmap`.
 
+[2.2.1] - 2023-03-03
+====================
+
+Minor bugfix and maintenance release.
+
+Contents
+--------
+
+* [ENH] migrate tests of distribution prediction metrics to ``skbase`` class
+  (:pr:`208`) :user:`fkiraly`
+* [BUG] fix dispatching of censoring information in probabilistic metrics
+  (:pr:`208`) :user:`fkiraly`
+* [BUG] fix missing location/scale in `TDistribution` (:pr:`210`) :user:`ivarzap`
+
+
+[2.2.0] - 2023-02-08
+====================
+
+Highlights
+----------
+
+* interface to ``cyclic_boosting`` package (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
+* framework support for probabilistic survival/time-to-event prediction with right censored data (:pr:`157`) :user:`fkiraly`
+* basic set of time-to-event prediction estimators and survival prediction metrics (:pr:`161`, :pr:`198`) :user:`fkiraly`
+* Johnson Quantile-Parameterized Distributions (QPD) with bounded and unbounded mode (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
+* abstract parallelization backend, for benchmarking and tuning (:pr:`160`) :user:`fkiraly`, :user:`hazrulakmal`
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``pandas`` bounds have been updated to ``>=1.1.0,<2.3.0``.
+
+Core interface changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+BaseObject and base framework
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* estimators and objects now record author and maintainer information in the new
+  tags ``"authors"`` and ``"maintainers"``. This is required only for estimators
+  in ``skpro`` proper and compatible third party packages. It is also used to generate
+  mini-package headers used in lookup functionality of the ``skpro`` webpage.
+* the ``model_selection`` and ``benchmarking`` utilities now support abstract
+  parallelization backends via the ``backend`` and ``backend_params`` arguments.
+  This has been standardized to use the same backend options and syntax as the
+  abstract parallelization backend in ``sktime``.
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* all probabilistic regressors now accept an argument ``C`` in ``fit``,
+  to pass censoring information. This is for API compatibility with survival
+  and is ignored when passed to non-survival regressors, corresponding to the
+  naive reduction strategy of "ignoring censoring information".
+* existing pipelines, tuners and ensemble methods have been extended to support
+  survival prediction - if ``C`` if passed, it is passed to the underlying
+  components.
+
+Survival and time-to-event prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* support for probabilistic survival or time-to-event prediction estimators
+  with right censored data has been introduced. The interface and base class
+  is identical to the tabular probabilistic regression interface, with the
+  addition of a ``C`` argument to the ``fit`` methods.
+  Regressors that genuinely support survival prediction have the
+  ``capability: survival`` tag set to ``True`` in their metadata.
+* an extension template for survival prediction has been added to the
+  ``skpro`` extension templates, in ``extension_templates``
+* the interface for probabilistic performance metrics has been extended to
+  also accept censoring information, which can be passed via the optional ``C_true``
+  argument, to all performance metrics. Metrics genuinely supporting survival
+  prediction have the ``capability: survival`` tag set to ``True``. Other metrics
+  still take the ``C_true`` argument, but ignore it. This corresponds to the
+  naive reduction strategy of "ignoring censoring information".
+* for pipelining and tuning, the existing compositors in ``model_selection``
+  and ``regression.compose`` can be used, see above.
+* for benchmarking, the existing benchmarking framework in ``benchmarking``
+  can be used, it has been extended to support survival prediction and censoring
+  information.
+
+Enhancements
+------------
+
+BaseObject and base framework
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* [ENH] author and maintainer tags, tags documented in regressor extension template
+  (:pr:`187`) :user:`fkiraly`
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] Johnson Quantile-Parameterized Distributions (QPD) with bounded and
+  unbounded mode (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] Cyclic boosting interface (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
+* [ENH] abstract parallelization backend, refactor of ``evaluate`` and tuners,
+  extend evaluate and tuners to survival predictors (:pr:`160`) :user:`fkiraly`, :user:`hazrulakmal`
+
+Survival and time-to-event prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] support for survival/time-to-event prediction, statsmodels Cox PH model
+  (:pr:`157`) :user:`fkiraly`
+* [ENH] survival prediction compositor - reducers to tabular probabilistic regression
+  (:pr:`161`) :user:`fkiraly`
+* [ENH] survival prediction metrics - framework support and tests, SPLL, Harrell C
+  (:pr:`198`) :user:`fkiraly`
+
+Fixes
+-----
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] fix API non-compliance in ``sklearn`` variance prediction adapter (:pr:`192`) :user:`fkiraly`
+* [BUG] fix defaulting logic for ``_predict_interval`` and ``_predict_quantiles`` when only ``_predict_var`` is implemented (:pr:`191`) :user:`fkiraly`
+* [BUG] fix ``CyclicBoosting._predict_quantiles`` (:pr:`195`) :user:`fkiraly`
+* [BUG] fix fallback for ``pdfnorm`` method, add metrics to tests (:pr:`204`) :user:`fkiraly`
+
+Test framework
+~~~~~~~~~~~~~~
+
+* [BUG] fix lookup for specialized test classes (:pr:`189`) :user:`fkiraly`
+
+Documentation
+-------------
+
+* [DOC] API reference for performance metrics (:pr:`206`) :user:`fkiraly`
+* [DOC] README update for 2.2.0 (:pr:`207`) :user:`fkiraly`
+
+Maintenance
+-----------
+
+* [MNT] [Dependabot](deps): Bump styfle/cancel-workflow-action from ``0.12.0`` to ``0.12.1`` (:pr:`183`) :user:`dependabot`
+* [MNT] skip ``CyclicBoosting`` and QPD tests until #189 failures are resolved (:pr:`193`) :user:`fkiraly`
+* [MNT] [Dependabot](deps-dev): Update pandas requirement from ``<2.2.0,>=1.1.0`` to ``>=1.1.0,<2.3.0`` (:pr:`182`) :user:`dependabot`
+* [MNT] [Dependabot](deps): Bump codecov/codecov-action from 3 to 4 by (:pr:`201`) :user:`dependabot`
+* [MNT] [Dependabot](deps): Bump pre-commit/action from ``3.0.0`` to ``3.0.1`` (:pr:`202`) :user:`dependabot`
+
+Contributors
+------------
+
+:user:`FelixWick`,
+:user:`fkiraly`,
+:user:`hazrulakmal`,
+:user:`setoguchi-naoki`
+
 
 [2.1.3] - 2023-01-22
 ====================

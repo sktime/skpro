@@ -134,7 +134,11 @@ def linkcode_resolve(domain, info):
         filename = "skpro/%s#L%d-L%d" % find_source()
     except Exception:
         filename = info["module"].replace(".", "/") + ".py"
-    return f"https://github.com/sktime/skpro/blob/{version_match}/{filename}"
+    if version_match == "latest":
+        version = "main"
+    else:
+        version = version_match
+    return f"https://github.com/sktime/skpro/blob/{version}/{filename}"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -145,7 +149,7 @@ def linkcode_resolve(domain, info):
 html_theme = "pydata_sphinx_theme"
 
 # Define the json_url for our version switcher.
-json_url = "https://github.com/sktime/skpro/blob/main/docs/source/_static/switcher.json"
+json_url = "https://skpro.readthedocs.io/en/latest/_static/switcher.json"
 
 # This uses code from the py-data-sphinx theme's own conf.py
 # Define the version we use for matching in the version switcher.

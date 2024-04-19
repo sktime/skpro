@@ -94,9 +94,22 @@ OBJECT_TAG_REGISTER = [
         "should be provided if import name differs from package name, \
         key-value pairs are package name, import name",
     ),
+    (
+        "license_type",
+        "object",
+        "str",
+        "license type for interfaced packages: 'copyleft', 'permissive', 'copyright'. \
+        may be incorrect, NO LIABILITY assumed for this field",
+    ),
     # ------------------
     # BaseProbaRegressor
     # ------------------
+    (
+        "capability:survival",
+        "regressor_proba",
+        "bool",
+        "whether estimator can use censoring information, for survival analysis",
+    ),
     (
         "capability:multioutput",
         "regressor_proba",
@@ -117,6 +130,12 @@ OBJECT_TAG_REGISTER = [
     ),
     (
         "y_inner_mtype",
+        "regressor_proba",
+        ("list", "str"),
+        "which machine type(s) is the internal _fit/_predict able to deal with?",
+    ),
+    (
+        "C_inner_mtype",
         "regressor_proba",
         ("list", "str"),
         "which machine type(s) is the internal _fit/_predict able to deal with?",
@@ -186,6 +205,12 @@ OBJECT_TAG_REGISTER = [
         "metric",
         "bool",
         "whether lower (True) or higher (False) is better",
+    ),
+    (
+        "capability:survival",
+        "metric",
+        "bool",
+        "whether metric uses censoring information, for survival analysis",
     ),
     # ----------------------------
     # BaseMetaObject reserved tags
