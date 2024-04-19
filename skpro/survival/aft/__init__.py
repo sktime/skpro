@@ -3,4 +3,5 @@
 
 __all__ = ["AFTWeibull"]
 
+from skpro.survival.aft._aft_lifelines_lognormal import AFTLogNormal
 from skpro.survival.aft._aft_lifelines_weibull import AFTWeibull

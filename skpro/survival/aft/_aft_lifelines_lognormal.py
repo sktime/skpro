@@ -10,7 +10,7 @@ from skpro.survival.adapters.lifelines import _LifelinesAdapter
 from skpro.survival.base import BaseSurvReg
 
 
-class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
+class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
     r"""Log-Normal AFT model, from lifelines.
 
     Direct interface to ``lifelines.fitters.LogNormalAFTFitter``,

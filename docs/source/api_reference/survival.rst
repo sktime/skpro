@@ -99,6 +99,7 @@ Accelerated failure time models
     :toctree: auto_generated/
     :template: class.rst
 
+    AFTLogNormal
     AFTWeibull
 
 Generalized additive survival models
