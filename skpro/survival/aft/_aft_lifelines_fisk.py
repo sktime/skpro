@@ -105,7 +105,7 @@ class AFTFisk(_LifelinesAdapter, BaseSurvReg):
 
     def _get_lifelines_class(self):
         """Getter of the lifelines class to be used for the adapter."""
-        from lifelines.fitters.log_logistic_aft_fitter_aft_fitter import (
+        from lifelines.fitters.log_logistic_aft_fitter import (
             LogLogisticAFTFitter,
         )
 
