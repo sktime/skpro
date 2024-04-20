@@ -8,7 +8,7 @@ from skpro.survival.base import BaseSurvReg
 
 
 class SurvivalForestSkSurv(_SksurvAdapter, BaseSurvReg):
-    """Random survival forestm from scikit-survival.
+    """Random survival forest from scikit-survival.
 
     Direct interface to ``sksurv.ensemble.RandomSurvivalForest``, by ``sebp``.
 

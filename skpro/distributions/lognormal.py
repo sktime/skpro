@@ -11,14 +11,19 @@ from skpro.distributions.base import BaseDistribution
 
 
 class LogNormal(BaseDistribution):
-    """Log-Normal distribution (skpro native).
+    r"""Log-Normal distribution (skpro native).
+
+    Parameterized by mean and standard deviation of the logarithm of the distribution,
+    :math:`\mu` and :math:`\sigma`, respectively, such that the cdf
+
+    .. math:: F(x) = \frac{1}{2} + \frac{1}{2} \text{erf}\left(\frac{\log(x) - \mu}{\sigma \sqrt{2}}\right)  # noqa E501
 
     Parameters
     ----------
-    mean : float or array of float (1D or 2D)
-        mean of the logarithm of the distribution
-    sd : float or array of float (1D or 2D), must be positive
-        standard deviation the logarithm of the distribution
+    mu : float or array of float (1D or 2D)
+        mean of the logarithm of the distribution, :math:`\mu` above
+    sigma : float or array of float (1D or 2D), must be positive
+        standard deviation the logarithm of the distribution, :math:`\sigma` above
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -148,7 +153,7 @@ class LogNormal(BaseDistribution):
         """Quantile function = percent point function = inverse cdf."""
         d = self.loc[p.index, p.columns]
         icdf_arr = d.mu + d.sigma * np.sqrt(2) * erfinv(2 * p.values - 1)
-        icdf_arr = np.exp(self._sigma * icdf_arr)
+        icdf_arr = np.exp(icdf_arr)
         return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
 
     @classmethod

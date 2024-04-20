@@ -12,7 +12,106 @@ is available on GitHub.
 You can also subscribe to ``skpro``'s
 `PyPi release <https://libraries.io/pypi/skpro>`_.
 
-For planned changes and upcoming releases, see our :ref:`roadmap`.
+For planned changes and upcoming releases, see roadmap in the
+`issue tracker <https://github.com/sktime/skpro/issues>`_.
+
+[2.2.2] - 2023-04-20
+====================
+
+Highlights
+----------
+
+* ``lifelines`` predictive survival regressors are available as ``skpro`` estimators:
+  accelerated failure time (Fisk, Log-normal, Weibull), CoxPH variants,
+  Aalen additive model (:pr:`247`, :pr:`258`, :pr:`260`) :user:`fkiraly`
+* ``scikit-survival`` predictive survival regressors are available as ``skpro`` estimators:
+  CoxPH variants, CoxNet, survival tree and forest, survival gradient boosting (:pr:`237`) :user:`fkiraly`
+* GLM regressor using ``statsmodels`` ``GLM``, with Gaussian link (:pr:`222`) :user:`julian-fong`
+* various survival type distributions added: log-normal, logistic, Fisk (=log-logistic), Weibull
+  (:pr:`218`, :pr:`241`, :pr:`242`, :pr:`259`) :user:`bhavikar`, :user:`malikrafsan`, :user:`fkiraly`
+* Poisson distribution added (:pr:`226`) :user:`fkiraly`
+
+
+Core interface changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Probability distributions (``BaseDistribution``) now have a ``len`` method,
+  which returns the number of number of rows of the distribution, this is the same
+  as the ``len`` of a ``pd.DataFrame`` returned by ``sample``.
+* the interface now supports discrete distributions and those with integer support.
+  Such distributions implement ``pmf`` and ``log_pmf`` methods.
+
+Enhancements
+------------
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] Log-normal probability distribution (:pr:`218`) :user:`bhavikar`
+* [ENH] Poisson distribution (:pr:`226`) :user:`fkiraly`
+* [ENH] make ``Empirical`` distribution compatible with multi-index rows (:pr:`233`) :user:`fkiraly`
+* [ENH] empirical quantile parameterized distribution (:pr:`236`) :user:`fkiraly`
+* [ENH] add ``len`` of ``BaseDistribution``, test ``shape``, ``len``, indices (:pr:`239`) :user:`fkiraly`
+* [ENH] Logistic distribution (:pr:`241`) :user:`malikrafsan`
+* [ENH] Weibull distribution (:pr:`242`) :user:`malikrafsan`
+* [ENH] delegator class for distributions (:pr:`252`) :user:`fkiraly`
+* [ENH] Johnson QP-distributions - add some missing capability tags (:pr:`253`) :user:`fkiraly`
+* [ENH] remove stray ``_get_bc_params`` from ``LogNormal`` (:pr:`256`) :user:`fkiraly`
+* [ENH] Fisk distribution aka log-logistic distribution (:pr:`259`) :user:`fkiraly`
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] ``GLMRegressor`` using statsmodels ``GLM`` with Gaussian link (:pr:`222`) :user:`julian-fong`
+* [ENH] added test parameters for probabilistic metrics (:pr:`234`) :user:`fkiraly`
+
+Survival and time-to-event prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] adapter to ``scikit-survival``, all distributional survival regressors interfaced (:pr:`237`) :user:`fkiraly`
+* [ENH] adapter to ``lifelines``, most distributional survival regressors interfaced (:pr:`247`) :user:`fkiraly`
+* [ENH] log-normal AFT model from ``lifelines``(:pr:`258`) :user:`fkiraly`
+* [ENH] log-logistic/Fisk AFT model from ``lifelines`` (:pr:`260`) :user:`fkiraly`
+
+Fixes
+-----
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] bugfixes to QPD distributions - ``QPD_U``, ``QPD_S`` (:pr:`194`) :user:`fkiraly`
+* [BUG] fixes to lognormal distribution  (:pr:`261`) :user:`fkiraly`
+
+Test framework
+~~~~~~~~~~~~~~
+
+* [ENH] refactor test scenario creation to be lazy rather than on module load (:pr:`245`) :user:`fkiraly`
+
+Documentation
+-------------
+
+* [DOC] documentation improvement for probabilistic metrics (:pr:`234`) :user:`fkiraly`
+* [DOC] add :user:`julian-fong` to ``all-contributorsrc`` (:pr:`238`) :user:`fkiraly`
+* [DOC] docstring with mathematical description for ``QPD_Empirical`` (:pr:`253`) :user:`fkiraly`
+
+Maintenance
+-----------
+
+* [MNT] fix version pointer in readthedocs ``json`` (:pr:`225`) :user:`fkiraly`
+* [MNT] fix broken api source links in latest docs version (:pr:`243`) :user:`duydl`
+
+Contributors
+------------
+
+:user:`bhavikar`,
+:user:`duydl`,
+:user:`fkiraly`,
+:user:`julian-fong`,
+:user:`malikrafsan`
+
 
 [2.2.1] - 2023-03-03
 ====================

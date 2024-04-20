@@ -4,6 +4,7 @@
 
 __all__ = [
     "Empirical",
+    "Fisk",
     "Laplace",
     "Logistic",
     "LogNormal",
@@ -19,6 +20,7 @@ __all__ = [
 ]
 
 from skpro.distributions.empirical import Empirical
+from skpro.distributions.fisk import Fisk
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.lognormal import LogNormal

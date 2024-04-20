@@ -1,37 +1,40 @@
-"""Interface adapter to lifelines Log-Normal AFT model."""
+"""Interface adapter to lifelines Fisk AFT model."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["fkiraly"]
 
 import numpy as np
 
-from skpro.distributions.lognormal import LogNormal
+from skpro.distributions.fisk import Fisk
 from skpro.survival.adapters.lifelines import _LifelinesAdapter
 from skpro.survival.base import BaseSurvReg
 
 
-class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
-    r"""Log-Normal AFT model, from lifelines.
+class AFTFisk(_LifelinesAdapter, BaseSurvReg):
+    r"""Log-Logitsic/Fisk AFT model, from lifelines.
 
-    Direct interface to ``lifelines.fitters.LogNormalAFTFitter``,
+    Direct interface to ``lifelines.fitters.LogLogisticAFTFitter``,
     by ``CamDavidsonPilon``.
 
-    This class implements a Log-Normal AFT model. The model has parametric form, with
-    :math:`\mu(x) = \exp\left(\beta_0 + \beta_1x_1 + ... + \beta_n x_n \right)`,
-    and, optionally,
-    :math:`\sigma(y) = \exp\left(\alpha_0 + \alpha_1 y_1 + ... + \alpha_m y_m \right)`,
+    This class implements a Log-Logistic AFT model. The model has parametric
+    form, with :math:`\alpha(x) = \exp\left(a_0 + a_1x_1 + ... + a_n x_n \right)`,
+    and, optionally, :math:`\beta(y) = \exp\left(b_0 + b_1 y_1 + ... + b_m y_m \right)`.
 
-    with predictive distribution being Log-Normal, with
-    mean :math:`\mu(x)` and standard deviation :math:`\sigma(y)`.
+    with predictive distribution being Fisk (aka log-logistic), with
+    scale parameter :math:`\alpha(x)` and shape parameter (exponent) :math:`\beta(y)`.
+
+    The :math:`\alpha` (scale) parameter has an interpretation
+    as being equal to the *median* lifetime. The
+    :math:`\beta` parameter influences the shape of the hazard.
 
     Parameters
     ----------
-    mu_cols: pd.Index or coercible, optional, default=None
+    alpha_cols: pd.Index or coercible, optional, default=None
         Columns of the input data frame to be used as covariates for
         the mean parameter :math:`\mu`.
         If None, all columns are used.
 
-    sd_cols: string "all", pd.Index or coercible, optional, default=None
+    beta_cols: string "all", pd.Index or coercible, optional, default=None
         Columns of the input data frame to be used as covariates for
         the standard deviation parameter :math:`\sigma`.
         If None, no covariates are used, the standard deviation parameter
@@ -81,15 +84,15 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
 
     def __init__(
         self,
-        mu_cols=None,
-        sd_cols=None,
+        alpha_cols=None,
+        beta_cols=None,
         fit_intercept: bool = True,
         alpha: float = 0.05,
         penalizer: float = 0.0,
         l1_ratio: float = 0.0,
     ):
-        self.mu_cols = mu_cols
-        self.sd_cols = sd_cols
+        self.alpha_cols = alpha_cols
+        self.beta_cols = beta_cols
         self.alpha = alpha
         self.penalizer = penalizer
         self.l1_ratio = l1_ratio
@@ -97,14 +100,14 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
 
         super().__init__()
 
-        if mu_cols is not None:
-            self.X_col_subset = mu_cols
+        if alpha_cols is not None:
+            self.X_col_subset = alpha_cols
 
     def _get_lifelines_class(self):
         """Getter of the lifelines class to be used for the adapter."""
-        from lifelines.fitters.log_normal_aft_fitter import LogNormalAFTFitter
+        from lifelines.fitters.log_logistic_aft_fitter import LogLogisticAFTFitter
 
-        return LogNormalAFTFitter
+        return LogLogisticAFTFitter
 
     def _get_lifelines_object(self):
         """Abstract method to initialize lifelines object.
@@ -114,8 +117,8 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
         """
         cls = self._get_lifelines_class()
         params = self.get_params()
-        params.pop("mu_cols", None)
-        params.pop("sd_cols", None)
+        params.pop("alpha_cols", None)
+        params.pop("beta_cols", None)
         return cls(**params)
 
     def _add_extra_fit_args(self, X, y, C=None):
@@ -137,11 +140,11 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
         dict
             Extra arguments for the fit method.
         """
-        if self.mu_cols is not None:
-            if self.mu_cols == "all":
+        if self.alpha_cols is not None:
+            if self.alpha_cols == "all":
                 return {"ancillary": True}
             else:
-                return {"ancillary": X[self.mu_cols]}
+                return {"ancillary": X[self.alpha_cols]}
         else:
             return {}
 
@@ -157,26 +160,26 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
         -------
         skpro Empirical distribution
         """
-        if self.sd_cols == "all":
+        if self.beta_cols == "all":
             ancillary = X
-        elif self.sd_cols is not None:
-            ancillary = X[self.sd_cols]
+        elif self.beta_cols is not None:
+            ancillary = X[self.beta_cols]
         else:
             ancillary = None
 
-        if self.mu_cols is not None:
-            df = X[self.mu_cols]
+        if self.alpha_cols is not None:
+            df = X[self.alpha_cols]
         else:
             df = X
 
         lifelines_est = getattr(self, self._estimator_attr)
         ll_pred_proba = lifelines_est._prep_inputs_for_prediction_and_return_scores
 
-        mu, sigma = ll_pred_proba(df, ancillary)
-        mu = np.expand_dims(mu, axis=1)
-        sigma = np.expand_dims(sigma, axis=1)
+        alpha, beta = ll_pred_proba(df, ancillary)
+        alpha = np.expand_dims(alpha, axis=1)
+        beta = np.expand_dims(beta, axis=1)
 
-        dist = LogNormal(mu=mu, sigma=sigma, index=X.index, columns=self._y_cols)
+        dist = Fisk(alpha=alpha, beta=beta, index=X.index, columns=self._y_cols)
         return dist
 
     @classmethod
@@ -200,10 +203,10 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
         params1 = {}
 
         params2 = {
-            "sd_cols": "all",
+            "beta_cols": "all",
             "fit_intercept": False,
             "alpha": 0.1,
-            "penalizer": 0.001,
-            "l1_ratio": 0.001,
+            "penalizer": 0.1,
+            "l1_ratio": 0.1,
         }
         return [params1, params2]
