@@ -5,7 +5,7 @@ __author__ = ["bhavikar04", "fkiraly"]
 
 import numpy as np
 import pandas as pd
-from scipy.stats import erf, erfinv
+from scipy.special import erf, erfinv
 
 from skpro.distributions.base import BaseDistribution
 
