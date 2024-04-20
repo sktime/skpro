@@ -21,9 +21,9 @@ class LogNormal(BaseDistribution):
     Parameters
     ----------
     mu : float or array of float (1D or 2D)
-        mean of the logarithm of the distribution
+        mean of the logarithm of the distribution, :math:`\mu` above
     sigma : float or array of float (1D or 2D), must be positive
-        standard deviation the logarithm of the distribution
+        standard deviation the logarithm of the distribution, :math:`\sigma` above
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
