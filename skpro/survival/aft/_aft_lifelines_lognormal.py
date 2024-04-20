@@ -203,7 +203,7 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
             "sd_cols": "all",
             "fit_intercept": False,
             "alpha": 0.1,
-            "penalizer": 0.01,
-            "l1_ratio": 0.01,
+            "penalizer": 0.001,
+            "l1_ratio": 0.001,
         }
         return [params1, params2]
