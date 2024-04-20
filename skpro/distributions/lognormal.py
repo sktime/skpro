@@ -11,7 +11,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class LogNormal(BaseDistribution):
-    """Log-Normal distribution (skpro native).
+    r"""Log-Normal distribution (skpro native).
 
     Parameterized by mean and standard deviation of the logarithm of the distribution,
     :math:`\mu` and :math:`\sigma`, respectively, such that the cdf
