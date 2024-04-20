@@ -12,7 +12,8 @@ is available on GitHub.
 You can also subscribe to ``skpro``'s
 `PyPi release <https://libraries.io/pypi/skpro>`_.
 
-For planned changes and upcoming releases, see our :ref:`roadmap`.
+For planned changes and upcoming releases, see roadmap in the
+`issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 [2.2.2] - 2023-04-20
 ====================
@@ -25,7 +26,7 @@ Highlights
   Aalen additive model (:pr:`247`, :pr:`258`, :pr:`260`) :user:`fkiraly`
 * ``scikit-survival`` predictive survival regressors are available as ``skpro`` estimators:
   CoxPH variants, CoxNet, survival tree and forest, survival gradient boosting (:pr:`237`) :user:`fkiraly`
-* GLM regressor`` using ``statsmodels`` ``GLM``, with Gaussian link (:pr:`222`) :user:`julian-fong`
+* GLM regressor using ``statsmodels`` ``GLM``, with Gaussian link (:pr:`222`) :user:`julian-fong`
 * various survival type distributions added: log-normal, logistic, Fisk (=log-logistic), Weibull
   (:pr:`218`, :pr:`241`, :pr:`242`, :pr:`259`) :user:`bhavikar`, :user:`malikrafsan`, :user:`fkiraly`
 * Poisson distribution added (:pr:`226`) :user:`fkiraly`
