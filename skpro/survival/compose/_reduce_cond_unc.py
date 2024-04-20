@@ -13,7 +13,7 @@ class ConditionUncensored(BaseProbaRegressor):
     Simple baseline reduction strategy for predictive survival analysis.
 
     Fits a probabilistic regressor on X padded with censoring information C,
-    in predict applies the fitted regressor to X padded with 0 (non-censord).
+    in predict applies the fitted regressor to X padded with 0 (non-censored).
 
     In ``fit``, passes column concat of ``X`` and ``C`` to ``regressor.fit``.
 

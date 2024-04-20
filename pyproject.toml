@@ -53,11 +53,13 @@ dependencies = [
 all_extras = [
     "attrs",
     "distfit",
+    "lifelines<0.29.0",
     "mapie",
     "matplotlib>=3.3.2",
     "ngboost",
     "polars<0.21.0",
     "pyarrow<14.0.0; python_version < '3.12'",
+    "scikit-survival<0.23.0",
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",

@@ -61,8 +61,24 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
 
     # TEMPORARY skip for CyclicBoosting and QPD classes
     # due to silent failures on main, se #190
-    exclude_objects = ["QPD_S", "QPD_B", "QPD_U"]
+    exclude_objects = ["QPD_B"]
     # remove this when fixing failures to re-enable testing
+
+    def test_shape(self, object_instance):
+        """Test index, columns, len and shape of distribution."""
+        d = object_instance
+
+        assert isinstance(d.index, pd.Index)
+        assert isinstance(d.columns, pd.Index)
+
+        assert isinstance(d.shape, tuple)
+        assert len(d.shape) == 2
+
+        assert d.shape[0] == len(d.index)
+        assert d.shape[1] == len(d.columns)
+
+        assert isinstance(len(d), int)
+        assert len(d) == d.shape[0]
 
     @pytest.mark.parametrize("shuffled", [False, True])
     def test_sample(self, object_instance, shuffled):

@@ -110,14 +110,6 @@ def _get_Xy_traintest():
     return X_train, X_test, y_train, y_test
 
 
-X_train, X_test, y_train, y_test = _get_Xy_traintest()
-C_train = pd.DataFrame(
-    np.random.choice([0, 1], size=len(y_train)),
-    index=y_train.index,
-    columns=y_train.columns,
-)
-
-
 class ProbaRegressorBasic(_ProbaRegressorTestScenario):
     """Fit/predict with multivariate pandas mtype (same dtype), and labels y."""
 
@@ -128,10 +120,14 @@ class ProbaRegressorBasic(_ProbaRegressorTestScenario):
         "is_enabled": True,
     }
 
-    args = {
-        "fit": {"X": X_train, "y": y_train},
-        "predict": {"X": X_test},
-    }
+    @property
+    def args(self):
+        X_train, X_test, y_train, _ = _get_Xy_traintest()
+        return {
+            "fit": {"X": X_train, "y": y_train},
+            "predict": {"X": X_test},
+        }
+
     default_method_sequence = ["fit", "predict", "predict_proba"]
     default_arg_sequence = ["fit", "predict", "predict"]
 
@@ -146,10 +142,19 @@ class ProbaRegressorSurvival(_ProbaRegressorTestScenario):
         "is_enabled": True,
     }
 
-    args = {
-        "fit": {"X": X_train, "y": y_train, "C": C_train},
-        "predict": {"X": X_test},
-    }
+    @property
+    def args(self):
+        X_train, X_test, y_train, _ = _get_Xy_traintest()
+        C_train = pd.DataFrame(
+            np.random.choice([0, 1], size=len(y_train)),
+            index=y_train.index,
+            columns=y_train.columns,
+        )
+        return {
+            "fit": {"X": X_train, "y": y_train, "C": C_train},
+            "predict": {"X": X_test},
+        }
+
     default_method_sequence = ["fit", "predict", "predict_proba"]
     default_arg_sequence = ["fit", "predict", "predict"]
 
@@ -182,9 +187,6 @@ def _get_Xy_traintest_X_mixix_ynp():
     return X_train, X_test, y_train, y_test
 
 
-X_train_mc, X_test_mc, y_train_mc, y_test_mc = _get_Xy_traintest_X_mixix_ynp()
-
-
 class ProbaRegressorXcolMixIxYnp(_ProbaRegressorTestScenario):
     """Fit/predict with multivariate pandas mtype, mixed col idx type."""
 
@@ -195,10 +197,14 @@ class ProbaRegressorXcolMixIxYnp(_ProbaRegressorTestScenario):
         "is_enabled": True,
     }
 
-    args = {
-        "fit": {"X": X_train_mc, "y": y_train_mc},
-        "predict": {"X": X_test_mc},
-    }
+    @property
+    def args(self):
+        X_train_mc, X_test_mc, y_train_mc, _ = _get_Xy_traintest_X_mixix_ynp()
+        return {
+            "fit": {"X": X_train_mc, "y": y_train_mc},
+            "predict": {"X": X_test_mc},
+        }
+
     default_method_sequence = ["fit", "predict", "predict_proba"]
     default_arg_sequence = ["fit", "predict", "predict"]
 
