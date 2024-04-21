@@ -789,10 +789,13 @@ class BaseDistribution(BaseObject):
         if self._has_implementation_of("_ppf") or self._has_implementation_of("ppf"):
             if n_samples is None:
                 return self.ppf(gen_unif())
-            else:
-                pd_smpl = [self.ppf(gen_unif()) for _ in range(n_samples)]
+            # else, we generate n_samples i.i.d. samples
+            pd_smpl = [self.ppf(gen_unif()) for _ in range(n_samples)]
+            if self.ndim > 0:
                 df_spl = pd.concat(pd_smpl, keys=range(n_samples))
-                return df_spl
+            else:
+                df_spl = pd.DataFrame(pd_smpl)
+            return df_spl
 
         raise NotImplementedError(self._method_error_msg("sample", "error"))
 
