@@ -17,6 +17,7 @@ import pandas as pd
 from scipy.special import erfinv
 
 from skpro.distributions.base import BaseDistribution
+from skpro.utils.estimator_checks import check_estimator
 
 
 # normal distribution with exact implementations removed
@@ -58,3 +59,14 @@ class _DistrDefaultMethodTester(BaseDistribution):
         pdf_arr = np.exp(-0.5 * ((x.values - d.mu) / d.sigma) ** 2)
         pdf_arr = pdf_arr / (d.sigma * np.sqrt(2 * np.pi))
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+
+
+def test_base_default():
+    """Test default methods.
+
+    The _DistributionDefaultMethodTester class is not detected
+    by TestAllDistributions (it is private), so we need to test it explicitly.
+
+    check_estimator invokes a TestAllDistributions call.
+    """
+    check_estimator(_DistrDefaultMethodTester, raise_exceptions=True)
