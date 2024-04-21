@@ -617,7 +617,7 @@ class BaseDistribution(BaseObject):
         return self._boilerplate("_energy_x", x=x, columns=["energy"])
 
     def _energy_self(self):
-        """Energy of self, w.r.t. self.
+        r"""Energy of self, w.r.t. self.
 
         :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
 
@@ -626,7 +626,7 @@ class BaseDistribution(BaseObject):
         return self._energy_default()
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x.
+        r"""Energy of self, w.r.t. a constant frame x.
 
         :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
         and :math:`x` is a constant.
