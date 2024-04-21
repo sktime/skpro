@@ -601,7 +601,7 @@ class BaseDistribution(BaseObject):
         The CRPS is related to energy:
         it holds that
         :math:`\mbox{CRPS}(\mbox{self}, y)` = `self.energy(y) - 0.5 * self.energy()`.
-    
+
         Parameters
         ----------
         x : None or pd.DataFrame, optional, default=None
