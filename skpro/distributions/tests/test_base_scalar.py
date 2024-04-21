@@ -33,8 +33,8 @@ def test_scalar_distribution():
     x = 0.5
     assert np.isscalar(d.mean())
     assert np.isscalar(d.var())
-    # assert np.isscalar(d.energy())
-    # assert np.isscalar(d.energy(x))
+    assert np.isscalar(d.energy())
+    assert np.isscalar(d.energy(x))
     assert np.isscalar(d.pdf(x))
     assert np.isscalar(d.log_pdf(x))
     assert np.isscalar(d.cdf(x))
@@ -59,12 +59,14 @@ def test_broadcast_ambiguous():
     assert d.index.equals(pd.RangeIndex(1))
     assert d.columns.equals(pd.RangeIndex(1))
 
-    def is_expected_2d(output):
+    def is_expected_2d(output, col=None):
         assert isinstance(output, pd.DataFrame)
         assert output.ndim == 2
         assert output.shape == (1, 1)
         assert output.index.equals(pd.RangeIndex(1))
-        assert output.columns.equals(pd.RangeIndex(1))
+        if col is None:
+            col = pd.RangeIndex(1)
+        assert output.columns.equals(pd.Index(col))
         return True
 
     # test scalar input
@@ -72,8 +74,8 @@ def test_broadcast_ambiguous():
 
     assert is_expected_2d(d.mean())
     assert is_expected_2d(d.var())
-    # assert is_expected_2d(d.energy())
-    # assert is_expected_2d(d.energy(x))
+    assert is_expected_2d(d.energy(), ["energy"])
+    assert is_expected_2d(d.energy(x), ["energy"])
     assert is_expected_2d(d.pdf(x))
     assert is_expected_2d(d.log_pdf(x))
     assert is_expected_2d(d.cdf(x))

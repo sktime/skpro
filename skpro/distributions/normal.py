@@ -48,34 +48,23 @@ class Normal(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def energy(self, x=None):
-        r"""Energy of self, w.r.t. self or a constant frame x.
+    def _energy_self(self):
+        sigma = self._bc_params["sigma"]
+        energy_arr = 2 * sigma / np.sqrt(np.pi)
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
+        return energy_arr
 
-        Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
+    def _energy_x(self, x=None):
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
 
-        If `x` is `None`, returns :math:`\mathbb{E}[|X-Y|]` (per row), "self-energy".
-        If `x` is passed, returns :math:`\mathbb{E}[|X-x|]` (per row), "energy wrt x".
-
-        Parameters
-        ----------
-        x : None or pd.DataFrame, optional, default=None
-            if pd.DataFrame, must have same rows and columns as `self`
-
-        Returns
-        -------
-        pd.DataFrame with same rows as `self`, single column `"energy"`
-        each row contains one float, self-energy/energy as described above.
-        """
-        if x is None:
-            sd_arr = self._sigma
-            energy_arr = 2 * np.sum(sd_arr, axis=1) / np.sqrt(np.pi)
-            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
-        else:
-            mu_arr, sd_arr = self._mu, self._sigma
-            c_arr = (x - mu_arr) * (2 * self.cdf(x) - 1) + 2 * sd_arr**2 * self.pdf(x)
-            energy_arr = np.sum(c_arr, axis=1)
-            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
-        return energy
+        cdf = self.cdf(x)
+        pdf = self.pdf(x)
+        energy_arr = (x - mu) * (2 * cdf - 1) + 2 * sigma**2 * pdf
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
+        return energy_arr
 
     def _mean(self):
         """Return expected value of the distribution.

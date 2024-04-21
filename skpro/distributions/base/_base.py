@@ -316,15 +316,19 @@ class BaseDistribution(BaseObject):
             if bc[i].ndim > 0:
                 shape = bc[i].shape
 
+        # special case: user provided iterables so it broadcasts to 1D
+        # this is interpreted as a row vector, i.e., one multivariate distr
         if len(shape) == 1:
-            shape = (shape[0], 1)
+            shape = (1, shape[0])
+            for k, v in kwargs_as_np.items():
+                kwargs_as_np[k] = np.expand_dims(v, 0)
 
         if return_shape:
             is_scalar = tuple([arr.ndim == 0 for arr in bc])
             return kwargs_as_np, shape, is_scalar
         return kwargs_as_np
 
-    def _boilerplate(self, method, **kwargs):
+    def _boilerplate(self, method, columns=None, **kwargs):
         """Broadcasting boilerplate for distribution methods.
 
         Used to link public methods to private methods,
@@ -334,6 +338,8 @@ class BaseDistribution(BaseObject):
         ----------
         method : str
             Name of the method to be called, e.g., '_pdf'
+        columns : None (default) or pd.Index coercible
+            If not None, set return columns to this value
         kwargs : dict
             Keyword arguments to the method
             Checks and broadcasts are applied to all values in kwargs
@@ -363,7 +369,11 @@ class BaseDistribution(BaseObject):
         # if the result is not a DataFrame, coerce it to one
         # ensur the index and columns are the same as d
         if not isinstance(res, pd.DataFrame) and self.ndim > 1:
-            res = pd.DataFrame(res, index=d.index, columns=d.columns)
+            if columns is not None:
+                res_cols = pd.Index(columns)
+            else:
+                res_cols = d.columns
+            res = pd.DataFrame(res, index=d.index, columns=res_cols)
         # if numpy scalar, convert to python scalar, e.g., float
         if isinstance(res, np.ndarray) and self.ndim == 0:
             res = res[()]
@@ -582,27 +592,57 @@ class BaseDistribution(BaseObject):
     def energy(self, x=None):
         r"""Energy of self, w.r.t. self or a constant frame x.
 
-        Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
+        Let :math:`X, Y` be i.i.d. random variables with the distribution of ``self``.
 
-        If `x` is `None`, returns :math:`\mathbb{E}[|X-Y|]` (for each row),
-        "self-energy" (of the row marginal distribution).
-        If `x` is passed, returns :math:`\mathbb{E}[|X-x|]` (for each row),
-        "energy wrt x" (of the row marginal distribution).
+        If ``x`` is ``None``, returns :math:`\mathbb{E}[|X-Y|]` (per row),
+        "self-energy".
+        If ``x`` is passed, returns :math:`\mathbb{E}[|X-x|]` (per row), "energy wrt x".
 
+        The CRPS is related to energy:
+        it holds that
+        :math:`\mbox{CRPS}(\mbox{self}, y)` = `self.energy(y) - 0.5 * self.energy()`.
+    
         Parameters
         ----------
         x : None or pd.DataFrame, optional, default=None
-            if pd.DataFrame, must have same rows and columns as `self`
+            if ``pd.DataFrame``, must have same rows and columns as ``self``
 
         Returns
         -------
-        pd.DataFrame with same rows as `self`, single column `"energy"`
-        each row contains one float, self-energy/energy as described above.
+        ``pd.DataFrame`` with same rows as ``self``, single column ``"energy"``
+            each row contains one float, self-energy/energy as described above.
+        """
+        if x is None:
+            return self._boilerplate("_energy_self", columns=["energy"])
+        return self._boilerplate("_energy_x", x=x, columns=["energy"])
+
+    def _energy_self(self):
+        """Energy of self, w.r.t. self.
+
+        :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
+
+        Private method, to be implemented by subclasses.
+        """
+        return self._energy_default()
+
+    def _energy_x(self, x):
+        """Energy of self, w.r.t. a constant frame x.
+
+        :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
+        and :math:`x` is a constant.
+
+        Private method, to be implemented by subclasses.
+        """
+        return self._energy_default(x)
+
+    def _energy_default(self, x=None):
+        """Energy of self, w.r.t. self or a constant frame x.
+
+        Default implementation, using Monte Carlo estimates.
         """
         # we want to approximate E[abs(X-Y)]
         # if x = None, X,Y are i.i.d. copies of self
         # if x is not None, X=x (constant), Y=self
-
         approx_spl_size = self.get_tag("approx_energy_spl")
         approx_method = (
             "by approximating the energy expectation by the arithmetic mean of "
