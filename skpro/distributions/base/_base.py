@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 
 from skpro.base import BaseObject
-from skpro.utils.pandas import df_map
 from skpro.utils.validation._dependencies import _check_estimator_deps
 
 
@@ -377,7 +376,7 @@ class BaseDistribution(BaseObject):
         :math:`(i,j)`-th entry.
 
         The output of this method, for input ``x`` representing :math:`x`,
-        is a `DataFrame` with same columns and indices as ``self``,
+        is a ``DataFrame`` with same columns and indices as ``self``,
         and entries :math:`p_{X_{ij}}(x_{ij})`.
 
         If ``self`` has a mixed or discrete distribution, this returns
@@ -391,7 +390,7 @@ class BaseDistribution(BaseObject):
 
         Returns
         -------
-        `DataFrame` with same columns and index as `self`
+        ``pd.DataFrame`` with same columns and index as ``self``
             containing :math:`p_{X_{ij}}(x_{ij})`, as above
         """
         return self._boilerplate("_pdf", x=x)
@@ -438,12 +437,12 @@ class BaseDistribution(BaseObject):
 
         Parameters
         ----------
-        x : `pandas.DataFrame` or 2D np.ndarray
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
             representing :math:`x`, as above
 
         Returns
         -------
-        `DataFrame` with same columns and index as `self`
+        ``pd.DataFrame`` with same columns and index as ``self``
             containing :math:`\log p_{X_{ij}}(x_{ij})`, as above
         """
         return self._boilerplate("_log_pdf", x=x)
@@ -470,8 +469,8 @@ class BaseDistribution(BaseObject):
     def cdf(self, x):
         r"""Cumulative distribution function.
 
-        Let :math:`X` be a random variables with the distribution of `self`,
-        taking values in `(N, n)` `DataFrame`-s
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
         By :math:`F_{X_{ij}}`, denote the marginal cdf of :math:`X` at the
         :math:`(i,j)`-th entry.
@@ -479,6 +478,16 @@ class BaseDistribution(BaseObject):
         The output of this method, for input ``x`` representing :math:`x`,
         is a ``DataFrame`` with same columns and indices as ``self``,
         and entries :math:`F_{X_{ij}}(x_{ij})`.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`F_{X_{ij}}(x_{ij})`, as above
         """
         return self._boilerplate("_cdf", x=x)
 
@@ -506,20 +515,33 @@ class BaseDistribution(BaseObject):
     def ppf(self, p):
         r"""Quantile function = percent point function = inverse cdf.
 
-        Let :math:`X` be a random variables with the distribution of `self`,
-        taking values in `(N, n)` `DataFrame`-s
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
         By :math:`F_{X_{ij}}`, denote the marginal cdf of :math:`X` at the
         :math:`(i,j)`-th entry.
 
-        The output of this method, for input ``x`` representing :math:`x`,
+        The output of this method, for input ``p`` representing :math:`p`,
         is a ``DataFrame`` with same columns and indices as ``self``,
-        and entries :math:`F^{-1}_{X_{ij}}(x_{ij})`.
+        and entries :math:`F^{-1}_{X_{ij}}(p_{ij})`.
+
+        Parameters
+        ----------
+        p : ``pandas.DataFrame`` or 2D np.ndarray
+            representing :math:`p`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`F_{X_{ij}}(x_{ij})`, as above
         """
         return self._boilerplate("_ppf", p=p)
 
     def _ppf(self, p):
-        """Quantile function = percent point function = inverse cdf."""
+        """Quantile function = percent point function = inverse cdf.
+
+        Private method, to be implemented by subclasses.
+        """
         if self._has_implementation_of("cdf") or self._has_implementation_of("_cdf"):
             from scipy.optimize import bisect
 
@@ -604,13 +626,20 @@ class BaseDistribution(BaseObject):
     def mean(self):
         r"""Return expected value of the distribution.
 
-        Let :math:`X` be a random variable with the distribution of `self`.
+        Let :math:`X` be a random variable with the distribution of ``self``.
         Returns the expectation :math:`\mathbb{E}[X]`
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
+        ``pd.DataFrame`` with same rows, columns as ``self``
+            expected value of distribution (entry-wise)
+        """
+        return self._boilerplate("_mean")
+
+    def _mean(self):
+        """Return expected value of the distribution.
+
+        Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_mean_spl")
         approx_method = (
@@ -625,13 +654,21 @@ class BaseDistribution(BaseObject):
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`
+        Let :math:`X` be a random variable with the distribution of ``self``.
+        Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`,
+        where the square is element-wise.
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        variance of distribution (entry-wise)
+        ``pd.DataFrame`` with same rows, columns as ``self``
+            variance of distribution (entry-wise)
+        """
+        return self._boilerplate("_var")
+
+    def _var(self):
+        """Return element/entry-wise variance of the distribution.
+
+        Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_var_spl")
         approx_method = (

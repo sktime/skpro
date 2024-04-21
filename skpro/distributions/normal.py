@@ -45,7 +45,6 @@ class Normal(BaseDistribution):
         # and broadcast of parameters.
         # move this functionality to the base class
         self._mu, self._sigma = self._get_bc_params(self.mu, self.sigma)
-        shape = self._mu.shape
 
         super().__init__(index=index, columns=columns)
 
@@ -78,30 +77,23 @@ class Normal(BaseDistribution):
             energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
         return energy
 
-    def mean(self):
-        r"""Return expected value of the distribution.
-
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns the expectation :math:`\mathbb{E}[X]`
+    def _mean(self):
+        """Return expected value of the distribution.
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
         """
-        mean_arr = self._mu
-        return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
+        return self._bc_params["mu"]
 
-    def var(self):
+    def _var(self):
         r"""Return element/entry-wise variance of the distribution.
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`
-
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        variance of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
         """
         sd_arr = self._sigma
         return pd.DataFrame(sd_arr, index=self.index, columns=self.columns) ** 2
