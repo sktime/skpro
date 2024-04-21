@@ -663,7 +663,8 @@ class BaseDistribution(BaseObject):
         spl = splx - sply
         energy = spl.apply(np.linalg.norm, axis=1, ord=1)
         energy = energy.groupby(level=1, sort=False).mean()
-        energy = pd.DataFrame(energy, index=self.index, columns=["energy"])
+        if self.ndim > 0:
+            energy = pd.DataFrame(energy, index=self.index, columns=["energy"])
         return energy
 
     def mean(self):
