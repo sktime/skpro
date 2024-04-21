@@ -29,6 +29,7 @@ class BaseDistribution(BaseObject):
         "approx_spl": 1000,  # sample size used in other MC estimates
         "bisect_iter": 1000,  # max iters for bisection method in ppf
         "reserved_params": ["index", "columns"],
+        "broadcast_init": "on",  # whether to broadcast params in __init__
         "broadcast_params": None,  # list of params to broadcast
     }
 
@@ -39,16 +40,17 @@ class BaseDistribution(BaseObject):
         super().__init__()
         _check_estimator_deps(self)
 
-        bc_params, shape, is_scalar = self._get_bc_params_dict(return_shape=True)
-        self._bc_params = bc_params
-        self._is_scalar = is_scalar
-        self._shape = shape
+        if self.get_tags()["broadcast_init"] == "on":
+            bc_params, shape, is_scalar = self._get_bc_params_dict(return_shape=True)
+            self._bc_params = bc_params
+            self._is_scalar = is_scalar
+            self._shape = shape
 
-        if index is None and self.ndim > 0:
-            self.index = pd.RangeIndex(shape[0])
+            if index is None and self.ndim > 0:
+                self.index = pd.RangeIndex(shape[0])
 
-        if columns is None and self.ndim > 0:
-            self.columns = pd.RangeIndex(shape[1])
+            if columns is None and self.ndim > 0:
+                self.columns = pd.RangeIndex(shape[1])
 
     @property
     def loc(self):
