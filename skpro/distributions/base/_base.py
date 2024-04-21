@@ -57,6 +57,7 @@ class BaseDistribution(BaseObject):
                 self._shape = ()
             else:
                 self._shape = (len(index), len(columns))
+            return None
 
         # if broadcast_init os on or other, run this auto-init
         bc_params, shape, is_scalar = self._get_bc_params_dict(return_shape=True)
