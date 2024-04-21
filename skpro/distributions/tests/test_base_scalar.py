@@ -18,24 +18,71 @@ from skpro.distributions.normal import Normal
 
 def test_scalar_distribution():
     """Test scalar distribution logic."""
-    # test data
+    # test params
     mu = 1
     sigma = 2
 
     # instantiate distribution
-    distr = Normal(mu=mu, sigma=sigma)
-    assert distr.ndim == 0
-    assert distr.shape == ()
+    d = Normal(mu=mu, sigma=sigma)
+    assert d.ndim == 0
+    assert d.shape == ()
+    assert d.index is None
+    assert d.columns is None
 
     # test scalar input
     x = 0.5
-    assert np.isscalar(distr.mean(x))
-    assert np.isscalar(distr.var(x))
-    assert np.isscalar(distr.energy(x))
-    assert np.isscalar(distr.pdf(x))
-    assert np.isscalar(distr.log_pdf(x))
-    assert np.isscalar(distr.cdf(x))
-    assert np.isscalar(distr.ppf(x))
+    assert np.isscalar(d.mean())
+    assert np.isscalar(d.var())
+    # assert np.isscalar(d.energy())
+    # assert np.isscalar(d.energy(x))
+    assert np.isscalar(d.pdf(x))
+    assert np.isscalar(d.log_pdf(x))
+    assert np.isscalar(d.cdf(x))
+    assert np.isscalar(d.ppf(x))
+    assert np.isscalar(d.sample(x))
+
+    spl_mult = d.sample(5)
+    assert isinstance(spl_mult, pd.DataFrame)
+    assert spl_mult.shape == (5, 1)
+    assert spl_mult.index.equals(pd.RangeIndex(5))
 
 
-def test_broad
+def test_broadcast_ambiguous():
+    """Test broadcasting in cases of ambiguous parameter dimensions."""
+    mu = [1]
+    sigma = 2
+    # this should result in 2D array distribution
+    # anything that is not scalar is broadcast to 2D
+    d = Normal(mu=mu, sigma=sigma)
+    assert d.ndim == 2
+    assert d.shape == (1, 1)
+    assert d.index.equals(pd.RangeIndex(1))
+    assert d.columns.equals(pd.RangeIndex(1))
+
+    def is_expected_2d(output):
+        assert isinstance(output, pd.DataFrame)
+        assert output.ndim == 2
+        assert output.shape == (1, 1)
+        assert output.index.equals(pd.RangeIndex(1))
+        assert output.columns.equals(pd.RangeIndex(1))
+        return True
+
+    # test scalar input
+    x = 0.5
+
+    assert is_expected_2d(d.mean())
+    assert is_expected_2d(d.var())
+    # assert is_expected_2d(d.energy())
+    # assert is_expected_2d(d.energy(x))
+    assert is_expected_2d(d.pdf(x))
+    assert is_expected_2d(d.log_pdf(x))
+    assert is_expected_2d(d.cdf(x))
+    assert is_expected_2d(d.ppf(x))
+    assert is_expected_2d(d.sample(x))
+
+    spl_mult = d.sample(5)
+    assert isinstance(spl_mult, pd.DataFrame)
+    assert spl_mult.shape == (5, 1)
+    assert isinstance(spl_mult.index, pd.MultiIndex)
+    assert spl_mult.index.nlevels == 2
+    assert spl_mult.columns.equals(pd.RangeIndex(1))
