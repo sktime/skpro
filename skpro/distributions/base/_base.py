@@ -252,8 +252,8 @@ class BaseDistribution(BaseObject):
         return bc
 
     def _get_bc_params_dict(
-            self, dtype=None, oned_as="row", return_shape=False, **kwargs
-        ):
+        self, dtype=None, oned_as="row", return_shape=False, **kwargs
+    ):
         """Fully broadcast dict of parameters given param shapes and index, columns.
 
         Parameters
@@ -452,7 +452,7 @@ class BaseDistribution(BaseObject):
         """Logarithmic probability density function.
 
         Private method, to be implemented by subclasses.
-        """ 
+        """
         if self._has_implementation_of("pdf") or self._has_implementation_of("_pdf"):
             approx_method = (
                 "by taking the logarithm of the output returned by the pdf method, "
@@ -691,7 +691,7 @@ class BaseDistribution(BaseObject):
             x = x.reshape(1, -1)
         df_shape = self.shape
         x = np.broadcast_to(x, df_shape)
-        if self.ndim != 0:	
+        if self.ndim != 0:
             df = pd.DataFrame(x, index=self.index, columns=self.columns)
             return df
         return x
