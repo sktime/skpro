@@ -31,13 +31,13 @@ class AFTFisk(_LifelinesAdapter, BaseSurvReg):
     ----------
     alpha_cols: pd.Index or coercible, optional, default=None
         Columns of the input data frame to be used as covariates for
-        the mean parameter :math:`\mu`.
+        the scale parameter :math:`\alpha`.
         If None, all columns are used.
 
     beta_cols: string "all", pd.Index or coercible, optional, default=None
         Columns of the input data frame to be used as covariates for
-        the standard deviation parameter :math:`\sigma`.
-        If None, no covariates are used, the standard deviation parameter
+        the shape parameter :math:`\beta`.
+        If None, no covariates are used, the shape parameter
         is estimated as a constant. If "all", all columns are used.
 
     fit_intercept: boolean, optional (default=True)
