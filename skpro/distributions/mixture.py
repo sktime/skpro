@@ -63,10 +63,6 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def _init_shape_bc(self, index=None, columns=None):
-        """Initialize shape and broadcasted parameters."""
-        pass  # already initialized in __init__
-
     def _iloc(self, rowidx=None, colidx=None):
         dists = self._distributions
         weights = self.weights

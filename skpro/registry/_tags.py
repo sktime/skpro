@@ -197,6 +197,12 @@ OBJECT_TAG_REGISTER = [
         ("list", "str"),
         "distribution parameters to broadcast, complement is not broadcast",
     ),
+    (
+        "broadcast_init",
+        "distribution",
+        "str",
+        "whether to initialize broadcast parameters in __init__, 'on' or 'off'",
+    ),
     # ---------------
     # BaseProbaMetric
     # ---------------

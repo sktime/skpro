@@ -75,10 +75,6 @@ class Empirical(BaseDistribution):
         # initialized sorted samples
         self._init_sorted()
 
-    def _init_shape_bc(self, index=None, columns=None):
-        """Initialize shape and broadcasted parameters."""
-        pass  # already initialized in __init__
-
     def _init_sorted(self):
         """Initialize sorted version of spl."""
         times = self._timestamps

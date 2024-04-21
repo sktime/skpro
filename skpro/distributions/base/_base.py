@@ -30,6 +30,7 @@ class BaseDistribution(BaseObject):
         "bisect_iter": 1000,  # max iters for bisection method in ppf
         "reserved_params": ["index", "columns"],
         "broadcast_params": None,  # list of params to broadcast
+        "broadcast_init": "off",  # whether to auto-broadcast params in __init__
     }
 
     def __init__(self, index=None, columns=None):
@@ -51,6 +52,13 @@ class BaseDistribution(BaseObject):
         If overriden, must set ``self._shape``: this should be an empty tuple
         if the distribution is scalar, or a pair of integers otherwise.
         """
+        if self.get_tags()["broadcast_init"] == "off":
+            if index is None and columns is None:
+                self._shape = ()
+            else:
+                self._shape = (len(index), len(columns))
+
+        # if broadcast_init os on or other, run this auto-init
         bc_params, shape, is_scalar = self._get_bc_params_dict(return_shape=True)
         self._bc_params = bc_params
         self._is_scalar = is_scalar
