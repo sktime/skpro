@@ -113,6 +113,11 @@ class Normal(BaseDistribution):
         ----------
         x : 2D np.ndarray, same shape as ``self``
             values to evaluate the pdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
         """
         mu = self._bc_params["mu"]
         sigma = self._bc_params["sigma"]
@@ -120,24 +125,63 @@ class Normal(BaseDistribution):
         pdf_arr = pdf_arr / (sigma * np.sqrt(2 * np.pi))
         return pdf_arr
 
-    def log_pdf(self, x):
-        """Logarithmic probability density function."""
-        d = self.loc[x.index, x.columns]
-        lpdf_arr = -0.5 * ((x.values - d.mu) / d.sigma) ** 2
-        lpdf_arr = lpdf_arr - np.log(d.sigma * np.sqrt(2 * np.pi))
-        return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
+    def _log_pdf(self, x):
+        """Logarithmic probability density function.
 
-    def cdf(self, x):
-        """Cumulative distribution function."""
-        d = self.loc[x.index, x.columns]
-        cdf_arr = 0.5 + 0.5 * erf((x.values - d.mu) / (d.sigma * np.sqrt(2)))
-        return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
-    def ppf(self, p):
-        """Quantile function = percent point function = inverse cdf."""
-        d = self.loc[p.index, p.columns]
-        icdf_arr = d.mu + d.sigma * np.sqrt(2) * erfinv(2 * p.values - 1)
-        return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log pdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        lpdf_arr = -0.5 * ((x - mu) / sigma) ** 2
+        lpdf_arr = lpdf_arr - np.log(sigma * np.sqrt(2 * np.pi))
+        return lpdf_arr
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        cdf_arr = 0.5 + 0.5 * erf((x - mu) / (sigma * np.sqrt(2)))
+        return cdf_arr
+
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        icdf_arr = mu + sigma * np.sqrt(2) * erfinv(2 * p - 1)
+        return icdf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
