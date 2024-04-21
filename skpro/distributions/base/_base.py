@@ -314,8 +314,11 @@ class BaseDistribution(BaseObject):
         shape = ()
         for i, k in enumerate(bc_params):
             kwargs_as_np[k] = row_to_col(bc[i])
-            if bc[i].ndim == 2:
+            if bc[i].ndim > 0:
                 shape = bc[i].shape
+
+        if len(shape) == 1:
+            shape = (shape[0], 1)
 
         if return_shape:
             is_scalar = tuple([arr.ndim == 0 for arr in bc])
