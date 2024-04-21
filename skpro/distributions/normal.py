@@ -95,8 +95,7 @@ class Normal(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
-        sd_arr = self._sigma
-        return pd.DataFrame(sd_arr, index=self.index, columns=self.columns) ** 2
+        return self._sigma**2
 
     def _pdf(self, x):
         """Probability density function.
