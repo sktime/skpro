@@ -677,6 +677,7 @@ class BaseDistribution(BaseObject):
             splx = self.sample(N)
             sply = self.sample(N)
         else:
+            x = pd.DataFrame(x, index=self.index, columns=self.columns)
             splx = pd.concat([x] * N, keys=range(N))
             sply = self.sample(N)
 
