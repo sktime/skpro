@@ -6,7 +6,7 @@ All notable changes to this project beggining with version 0.1.0 will be
 documented in this file. The format is based on
 `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_ and we adhere
 to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_. The source
-code for all `releases <https://github.com/sktime/skbase/releases>`_
+code for all `releases <https://github.com/sktime/skpro/releases>`_
 is available on GitHub.
 
 You can also subscribe to ``skpro``'s
