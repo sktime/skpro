@@ -39,7 +39,7 @@ def test_scalar_distribution():
     assert np.isscalar(d.log_pdf(x))
     assert np.isscalar(d.cdf(x))
     assert np.isscalar(d.ppf(x))
-    assert np.isscalar(d.sample(x))
+    assert np.isscalar(d.sample())
 
     spl_mult = d.sample(5)
     assert isinstance(spl_mult, pd.DataFrame)
@@ -78,7 +78,7 @@ def test_broadcast_ambiguous():
     assert is_expected_2d(d.log_pdf(x))
     assert is_expected_2d(d.cdf(x))
     assert is_expected_2d(d.ppf(x))
-    assert is_expected_2d(d.sample(x))
+    assert is_expected_2d(d.sample())
 
     spl_mult = d.sample(5)
     assert isinstance(spl_mult, pd.DataFrame)
