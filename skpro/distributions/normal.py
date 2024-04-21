@@ -47,12 +47,6 @@ class Normal(BaseDistribution):
         self._mu, self._sigma = self._get_bc_params(self.mu, self.sigma)
         shape = self._mu.shape
 
-        if index is None:
-            index = pd.RangeIndex(shape[0])
-
-        if columns is None:
-            columns = pd.RangeIndex(shape[1])
-
         super().__init__(index=index, columns=columns)
 
     def energy(self, x=None):
@@ -112,12 +106,19 @@ class Normal(BaseDistribution):
         sd_arr = self._sigma
         return pd.DataFrame(sd_arr, index=self.index, columns=self.columns) ** 2
 
-    def pdf(self, x):
-        """Probability density function."""
-        d = self.loc[x.index, x.columns]
-        pdf_arr = np.exp(-0.5 * ((x.values - d.mu) / d.sigma) ** 2)
-        pdf_arr = pdf_arr / (d.sigma * np.sqrt(2 * np.pi))
-        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+    def _pdf(self, x):
+        """Probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+        pdf_arr = np.exp(-0.5 * ((x - mu) / sigma) ** 2)
+        pdf_arr = pdf_arr / (sigma * np.sqrt(2 * np.pi))
+        return pdf_arr
 
     def log_pdf(self, x):
         """Logarithmic probability density function."""

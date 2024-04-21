@@ -45,6 +45,12 @@ class BaseDistribution(BaseObject):
         self._is_scalar = is_scalar
         self._shape = shape
 
+        if index is None and self.ndim > 0:
+            index = pd.RangeIndex(shape[0])
+
+        if columns is None and self.ndim > 0:
+            columns = pd.RangeIndex(shape[1])
+
     @property
     def loc(self):
         """Location indexer.
@@ -81,6 +87,11 @@ class BaseDistribution(BaseObject):
     def shape(self):
         """Shape of self, a pair (2-tuple)."""
         return self._shape
+
+    @property
+    def ndim(self):
+        """Number of dimensions of self. 2 if array, 0 if scalar."""
+        return len(self._shape)
 
     def __len__(self):
         """Length of self, number of rows."""
@@ -278,13 +289,13 @@ class BaseDistribution(BaseObject):
             kwargs = self._get_dist_params()
             number_of_params = len(kwargs)
 
-        kwargs_as_np = {k: row_to_col(np.array(v)) for k, v in kwargs.items()}
-
         def row_to_col(arr):
             """Convert 1D arrays to 2D col arrays, leave 2D arrays unchanged."""
             if arr.ndim == 1 and oned_as == "col":
                 return arr.reshape(-1, 1)
             return arr
+
+        kwargs_as_np = {k: row_to_col(np.array(v)) for k, v in kwargs.items()}
 
         if hasattr(self, "index") and self.index is not None:
             kwargs_as_np["index"] = self.index.to_numpy().reshape(-1, 1)
@@ -326,7 +337,7 @@ class BaseDistribution(BaseObject):
 
         Parameters
         ----------
-        x : `pandas.DataFrame` or 2D np.ndarray
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
             representing :math:`x`, as above
 
         Returns
@@ -334,6 +345,23 @@ class BaseDistribution(BaseObject):
         `DataFrame` with same columns and index as `self`
             containing :math:`p_{X_{ij}}(x_{ij})`, as above
         """
+        if isinstance(x, pd.DataFrame):
+            x_subset = self.loc[x.index, x.columns]
+            x_inner = x_subset.values
+        elif not isinstance(x, np.ndarray):
+            x_inner = self._coerce_to_self_index_np(x, flatten=False)
+
+        res = self._pdf(x_inner)
+
+        if not isinstance(res, pd.DataFrame) and self.ndim > 1:
+            res = pd.DataFrame(res, index=self.index, columns=self.columns)
+        return res
+
+    def _pdf(self, x):
+        r"""Probability density function.
+
+        Private method, to be implemented by subclasses.
+        """ 
         if self._has_implementation_of("log_pdf"):
             approx_method = (
                 "by exponentiating the output returned by the log_pdf method, "
@@ -560,13 +588,44 @@ class BaseDistribution(BaseObject):
         spl_df = pd.concat(spl, keys=range(approx_spl_size))
         return spl_df.groupby(level=1, sort=False).mean()
 
-    def _coerce_to_self_index_df(self, x):
+    def _coerce_to_self_index_df(self, x, flatten=True):
+        """Coerce input to type similar to self.
+
+        If self is not scalar with index and columns,
+        coerces x to a pd.DataFrame with index and columns as self.
+
+        If self is scalar, coerces x to a scalar (0D) np.ndarray.
+        """
         x = np.array(x)
-        x = x.reshape(1, -1)
+        if flatten:
+            x = x.reshape(1, -1)
         df_shape = self.shape
         x = np.broadcast_to(x, df_shape)
-        df = pd.DataFrame(x, index=self.index, columns=self.columns)
-        return df
+        if self.ndim != 0:	
+            df = pd.DataFrame(x, index=self.index, columns=self.columns)
+            return df
+        return x
+
+    def _coerce_to_self_index_np(self, x, flatten=False):
+        """Coerce input to type similar to self.
+
+        Coerces x to a np.ndarray with same shape as self.
+        Broadcasts x to self.shape, if necessary, via np.broadcast_to.
+
+        Parameters
+        ----------
+        x : array-like, np.ndarray coercible
+            input to be coerced to self
+        flatten : bool, optional, default=True
+            if True, flattens x before broadcasting
+            if False, broadcasts x as is
+        """
+        x = np.array(x)
+        if flatten:
+            x = x.reshape(1, -1)
+        df_shape = self.shape
+        x = np.broadcast_to(x, df_shape)
+        return x
 
     def quantile(self, alpha):
         """Return entry-wise quantiles, in Proba/pred_quantiles mtype format.
