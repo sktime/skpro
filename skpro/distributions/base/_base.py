@@ -341,7 +341,7 @@ class BaseDistribution(BaseObject):
 
         Examples
         --------
-        >>> self._boilerplate('_pdf', x=x)
+        >>> self._boilerplate('_pdf', x=x)  # DOCTEST: +SKIP
         >>> # calls self._pdf(x=x_inner), broadcasting x to self's shape in x_inner
         """
         kwargs_inner = kwargs.copy()
@@ -352,9 +352,9 @@ class BaseDistribution(BaseObject):
             if isinstance(x, pd.DataFrame):
                 d = self.loc[x.index, x.columns]
                 x_inner = x.values
-            # else, if x is not an array, coerce it to a numpy array
+            # else, coerce to a numpy array if needed
             # then, broadcast it to the shape of self
-            elif not isinstance(x, np.ndarray):
+            else:
                 x_inner = self._coerce_to_self_index_np(x, flatten=False)
             kwargs_inner[k] = x_inner
 
@@ -370,15 +370,19 @@ class BaseDistribution(BaseObject):
     def pdf(self, x):
         r"""Probability density function.
 
-        Let :math:`X` be a random variables with the distribution of `self`,
-        taking values in `(N, n)` `DataFrame`-s
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
         By :math:`p_{X_{ij}}`, denote the marginal pdf of :math:`X` at the
         :math:`(i,j)`-th entry.
 
-        The output of this method, for input `x` representing :math:`x`,
-        is a `DataFrame` with same columns and indices as `self`,
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a `DataFrame` with same columns and indices as ``self``,
         and entries :math:`p_{X_{ij}}(x_{ij})`.
+
+        If ``self`` has a mixed or discrete distribution, this returns
+        the weighted continuous part of `self`'s distribution instead of the pdf,
+        i.e., the marginal pdf integrate to the weight of the continuous part.
 
         Parameters
         ----------
@@ -393,11 +397,13 @@ class BaseDistribution(BaseObject):
         return self._boilerplate("_pdf", x=x)
 
     def _pdf(self, x):
-        r"""Probability density function.
+        """Probability density function.
 
         Private method, to be implemented by subclasses.
-        """ 
-        if self._has_implementation_of("log_pdf"):
+        """
+        self_has_logpdf = self._has_implementation_of("log_pdf")
+        self_has_logpdf = self_has_logpdf or self._has_implementation_of("_log_pdf")
+        if self_has_logpdf:
             approx_method = (
                 "by exponentiating the output returned by the log_pdf method, "
                 "this may be numerically unstable"
@@ -416,17 +422,17 @@ class BaseDistribution(BaseObject):
 
         Numerically more stable than calling pdf and then taking logartihms.
 
-        Let :math:`X` be a random variables with the distribution of `self`,
-        taking values in `(N, n)` `DataFrame`-s
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in `(N, n)` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
         By :math:`p_{X_{ij}}`, denote the marginal pdf of :math:`X` at the
         :math:`(i,j)`-th entry.
 
-        The output of this method, for input `x` representing :math:`x`,
-        is a `DataFrame` with same columns and indices as `self`,
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
         and entries :math:`\log p_{X_{ij}}(x_{ij})`.
 
-        If `self` has a mixed or discrete distribution, this returns
+        If ``self`` has a mixed or discrete distribution, this returns
         the weighted continuous part of `self`'s distribution instead of the pdf,
         i.e., the marginal pdf integrate to the weight of the continuous part.
 
@@ -443,11 +449,11 @@ class BaseDistribution(BaseObject):
         return self._boilerplate("_log_pdf", x=x)
 
     def _log_pdf(self, x):
-        r"""Logarithmic probability density function.
+        """Logarithmic probability density function.
 
         Private method, to be implemented by subclasses.
         """ 
-        if self._has_implementation_of("pdf"):
+        if self._has_implementation_of("pdf") or self._has_implementation_of("_pdf"):
             approx_method = (
                 "by taking the logarithm of the output returned by the pdf method, "
                 "this may be numerically unstable"
@@ -462,7 +468,25 @@ class BaseDistribution(BaseObject):
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
 
     def cdf(self, x):
-        """Cumulative distribution function."""
+        r"""Cumulative distribution function.
+
+        Let :math:`X` be a random variables with the distribution of `self`,
+        taking values in `(N, n)` `DataFrame`-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`F_{X_{ij}}`, denote the marginal cdf of :math:`X` at the
+        :math:`(i,j)`-th entry.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`F_{X_{ij}}(x_{ij})`.
+        """
+        return self._boilerplate("_cdf", x=x)
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Private method, to be implemented by subclasses.
+        """
         N = self.get_tag("approx_spl")
         approx_method = (
             "by approximating the expected value by the indicator function on "
@@ -470,6 +494,9 @@ class BaseDistribution(BaseObject):
         )
         warn(self._method_error_msg("mean", fill_in=approx_method))
 
+        if not isinstance(x, pd.DataFrame):
+            x = pd.DataFrame(x, index=self.index, columns=self.columns)
+        # TODO: ensure this works for scalar x
         splx = pd.concat([x] * N, keys=range(N))
         spl = self.sample(N)
         ind = splx <= spl
@@ -477,8 +504,23 @@ class BaseDistribution(BaseObject):
         return ind.groupby(level=1, sort=False).mean()
 
     def ppf(self, p):
+        r"""Quantile function = percent point function = inverse cdf.
+
+        Let :math:`X` be a random variables with the distribution of `self`,
+        taking values in `(N, n)` `DataFrame`-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`F_{X_{ij}}`, denote the marginal cdf of :math:`X` at the
+        :math:`(i,j)`-th entry.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`F^{-1}_{X_{ij}}(x_{ij})`.
+        """
+        return self._boilerplate("_ppf", p=p)
+
+    def _ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
-        if self._has_implementation_of("cdf"):
+        if self._has_implementation_of("cdf") or self._has_implementation_of("_cdf"):
             from scipy.optimize import bisect
 
             max_iter = self.get_tag("bisect_iter")
@@ -739,10 +781,12 @@ class BaseDistribution(BaseObject):
 
         def gen_unif():
             np_unif = np.random.uniform(size=self.shape)
-            return pd.DataFrame(np_unif, index=self.index, columns=self.columns)
+            if self.ndim > 0:
+                return pd.DataFrame(np_unif, index=self.index, columns=self.columns)
+            return np_unif
 
         # if ppf is implemented, we use inverse transform sampling
-        if self._has_implementation_of("ppf"):
+        if self._has_implementation_of("_ppf") or self._has_implementation_of("ppf"):
             if n_samples is None:
                 return self.ppf(gen_unif())
             else:
