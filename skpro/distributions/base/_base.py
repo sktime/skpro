@@ -364,6 +364,9 @@ class BaseDistribution(BaseObject):
         # ensur the index and columns are the same as d
         if not isinstance(res, pd.DataFrame) and self.ndim > 1:
             res = pd.DataFrame(res, index=d.index, columns=d.columns)
+        # if numpy scalar, convert to python scalar, e.g., float
+        if isinstance(res, np.ndarray) and self.ndim == 0:
+            res = res[()]
         return res
 
     def pdf(self, x):
