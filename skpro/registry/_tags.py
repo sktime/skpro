@@ -191,6 +191,12 @@ OBJECT_TAG_REGISTER = [
         "int",
         "max iters for bisection method in ppf",
     ),
+    (
+        "broadcast_params",
+        "distribution",
+        ("list", "str"),
+        "distribution parameters to broadcast, complement is not broadcast",
+    ),
     # ---------------
     # BaseProbaMetric
     # ---------------

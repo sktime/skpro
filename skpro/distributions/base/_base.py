@@ -46,10 +46,10 @@ class BaseDistribution(BaseObject):
         self._shape = shape
 
         if index is None and self.ndim > 0:
-            index = pd.RangeIndex(shape[0])
+            self.index = pd.RangeIndex(shape[0])
 
         if columns is None and self.ndim > 0:
-            columns = pd.RangeIndex(shape[1])
+            self.columns = pd.RangeIndex(shape[1])
 
     @property
     def loc(self):
@@ -325,6 +325,48 @@ class BaseDistribution(BaseObject):
             return kwargs_as_np, shape, is_scalar
         return kwargs_as_np
 
+    def _boilerplate(self, method, **kwargs):
+        """Broadcasting boilerplate for distribution methods.
+
+        Used to link public methods to private methods,
+        handles coercion, broadcasting, and checks.
+
+        Parameters
+        ----------
+        method : str
+            Name of the method to be called, e.g., '_pdf'
+        kwargs : dict
+            Keyword arguments to the method
+            Checks and broadcasts are applied to all values in kwargs
+
+        Examples
+        --------
+        >>> self._boilerplate('_pdf', x=x)
+        >>> # calls self._pdf(x=x_inner), broadcasting x to self's shape in x_inner
+        """
+        kwargs_inner = kwargs.copy()
+        d = self
+
+        for k, x in kwargs.items():
+            # if x is a DataFrame, subset and reorder distibution to match it
+            if isinstance(x, pd.DataFrame):
+                d = self.loc[x.index, x.columns]
+                x_inner = x.values
+            # else, if x is not an array, coerce it to a numpy array
+            # then, broadcast it to the shape of self
+            elif not isinstance(x, np.ndarray):
+                x_inner = self._coerce_to_self_index_np(x, flatten=False)
+            kwargs_inner[k] = x_inner
+
+        # pass the broadcasted values to the private method
+        res = getattr(d, method)(**kwargs_inner)
+
+        # if the result is not a DataFrame, coerce it to one
+        # ensur the index and columns are the same as d
+        if not isinstance(res, pd.DataFrame) and self.ndim > 1:
+            res = pd.DataFrame(res, index=d.index, columns=d.columns)
+        return res
+
     def pdf(self, x):
         r"""Probability density function.
 
@@ -348,17 +390,7 @@ class BaseDistribution(BaseObject):
         `DataFrame` with same columns and index as `self`
             containing :math:`p_{X_{ij}}(x_{ij})`, as above
         """
-        if isinstance(x, pd.DataFrame):
-            x_subset = self.loc[x.index, x.columns]
-            x_inner = x_subset.values
-        elif not isinstance(x, np.ndarray):
-            x_inner = self._coerce_to_self_index_np(x, flatten=False)
-
-        res = self._pdf(x_inner)
-
-        if not isinstance(res, pd.DataFrame) and self.ndim > 1:
-            res = pd.DataFrame(res, index=self.index, columns=self.columns)
-        return res
+        return self._boilerplate("_pdf", x=x)
 
     def _pdf(self, x):
         r"""Probability density function.
@@ -372,7 +404,10 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("pdf", fill_in=approx_method))
 
-            return df_map(self.log_pdf(x=x))(np.exp)
+            res = self.log_pdf(x=x)
+            if isinstance(res, pd.DataFrame):
+                res = res.values
+            return np.exp(res)
 
         raise NotImplementedError(self._method_error_msg("pdf", "error"))
 
@@ -405,6 +440,13 @@ class BaseDistribution(BaseObject):
         `DataFrame` with same columns and index as `self`
             containing :math:`\log p_{X_{ij}}(x_{ij})`, as above
         """
+        return self._boilerplate("_log_pdf", x=x)
+
+    def _log_pdf(self, x):
+        r"""Logarithmic probability density function.
+
+        Private method, to be implemented by subclasses.
+        """ 
         if self._has_implementation_of("pdf"):
             approx_method = (
                 "by taking the logarithm of the output returned by the pdf method, "
@@ -412,7 +454,10 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
-            return df_map(self.pdf(x=x))(np.log)
+            res = self.pdf(x=x)
+            if isinstance(res, pd.DataFrame):
+                res = res.values
+            return np.log(res)
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
 
