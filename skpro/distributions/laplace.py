@@ -108,7 +108,7 @@ class Laplace(BaseDistribution):
         """
         sc = self._bc_params["scale"]
         sd_arr = sc / np.sqrt(2)
-        return sd_arr ** 2
+        return sd_arr**2
 
     def _pdf(self, x):
         """Probability density function.
