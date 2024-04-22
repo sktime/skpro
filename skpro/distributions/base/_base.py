@@ -596,27 +596,46 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("cdf", fill_in=approx_method))
 
-            result = pd.DataFrame(index=self.index, columns=self.columns, dtype="float")
-            for ix in self.index:
-                for col in self.columns:
+            def bisect_unb(opt_fun, **kwargs):
+                """Unbound version of bisect."""
+                left_bd = -1e6
+                right_bd = 1e6
+                while opt_fun(left_bd) > 0:
+                    left_bd *= 10
+                while opt_fun(right_bd) < 0:
+                    right_bd *= 10
+                return bisect(opt_fun, left_bd, right_bd, maxiter=max_iter, **kwargs)
+
+            shape = self.shape
+
+            # TODO: remove duplications in the code below
+            # requires cdf to accept numpy, or allow subsetting to produce scalar
+            if len(shape) == 0:
+
+                def opt_fun(x):
+                    """Optimization function, to find x s.t. cdf(x) = p_ix."""
+                    return d_ix.cdf(x) - p  # noqa: B023
+
+                result = bisect_unb(opt_fun)
+                return result
+
+            n_row, n_col = self.shape
+            result = np.array([[0.0] * n_col] * n_row, dtype=float)
+
+            for i in range(n_row):
+                for j in range(n_col):
+                    ix = self.index[i]
+                    col = self.columns[j]
                     d_ix = self.loc[[ix], [col]]
-                    p_ix = p.loc[ix, col]
+                    p_ix = p[i, j]
 
                     def opt_fun(x):
                         """Optimization function, to find x s.t. cdf(x) = p_ix."""
                         x = pd.DataFrame(x, index=[ix], columns=[col])  # noqa: B023
                         return d_ix.cdf(x).values[0][0] - p_ix  # noqa: B023
 
-                    left_bd = -1e6
-                    right_bd = 1e6
-                    while opt_fun(left_bd) > 0:
-                        left_bd *= 10
-                    while opt_fun(right_bd) < 0:
-                        right_bd *= 10
-                    result.loc[ix, col] = bisect(
-                        opt_fun, left_bd, right_bd, maxiter=max_iter
-                    )
-            return result.values
+                    result[i, j] = bisect_unb(opt_fun)
+            return result
 
         raise NotImplementedError(self._method_error_msg("ppf", "error"))
 
