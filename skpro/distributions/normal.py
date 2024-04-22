@@ -80,7 +80,7 @@ class Normal(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
-        return self._sigma**2
+        return self._bc_params["sigma"]**2
 
     def _pdf(self, x):
         """Probability density function.
