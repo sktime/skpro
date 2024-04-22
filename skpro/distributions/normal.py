@@ -13,6 +13,17 @@ from skpro.distributions.base import BaseDistribution
 class Normal(BaseDistribution):
     """Normal distribution (skpro native).
 
+    This distribution is univariate, without correlation between dimensions
+    for the array-valued case.
+
+    The normal distibution is parametrized by mean :math:`\mu` and
+    standard deviation :math:`\sigma`, such that the pdf is
+
+    .. math:: f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)  # noqa E501
+
+    The mean :math:`\mu` is represented by the parameter ``mu``,
+    and the standard deviation :math:`\sigma` by the parameter ``sigma``.
+
     Parameters
     ----------
     mu : float or array of float (1D or 2D)

@@ -11,10 +11,25 @@ from skpro.distributions.base import BaseDistribution
 
 class Laplace(BaseDistribution):
     """Laplace distribution.
+    
+    This distribution is univariate, without correlation between dimensions
+    for the array-valued case.
+
+    The Laplace distibution is parametrized by mean :math:`\mu` and
+    scale :math:`b`, such that the pdf is
+
+    .. math:: f(x) = \frac{1}{2b} \exp\left(-\frac{|x - \mu|}{b}\right)
+
+    The mean :math:`\mu` is represented by the parameter ``mu``,
+    and the scale :math:`b` by the parameter ``scale``.
+
+    It should be noted that this parametrization differs from the mean/standard
+    deviation parametrization, which is also common in the literature.
+    The standard deviation of this distibution is :math:`\sqrt{2} s`.
 
     Parameters
     ----------
-    mean : float or array of float (1D or 2D)
+    mu : float or array of float (1D or 2D)
         mean of the distribution
     scale : float or array of float (1D or 2D), must be positive
         scale parameter of the distribution, same as standard deviation / sqrt(2)
@@ -107,7 +122,7 @@ class Laplace(BaseDistribution):
             pdf values at the given points
         """
         sc = self._bc_params["scale"]
-        sd_arr = sc / np.sqrt(2)
+        sd_arr = np.sqrt(2) * sc
         return sd_arr**2
 
     def _pdf(self, x):
