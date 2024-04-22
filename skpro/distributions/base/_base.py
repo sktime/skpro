@@ -575,6 +575,16 @@ class BaseDistribution(BaseObject):
         """Quantile function = percent point function = inverse cdf.
 
         Private method, to be implemented by subclasses.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
         """
         if self._has_implementation_of("cdf") or self._has_implementation_of("_cdf"):
             from scipy.optimize import bisect
@@ -643,6 +653,11 @@ class BaseDistribution(BaseObject):
         :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
 
         Private method, to be implemented by subclasses.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
         """
         return self._energy_default()
 
@@ -653,6 +668,16 @@ class BaseDistribution(BaseObject):
         and :math:`x` is a constant.
 
         Private method, to be implemented by subclasses.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to compute energy w.r.t. to
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
         """
         return self._energy_default(x)
 
@@ -660,6 +685,16 @@ class BaseDistribution(BaseObject):
         """Energy of self, w.r.t. self or a constant frame x.
 
         Default implementation, using Monte Carlo estimates.
+
+        Parameters
+        ----------
+        x : None or 2D np.ndarray, same shape as ``self``
+            values to compute energy w.r.t. to
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
         """
         # we want to approximate E[abs(X-Y)]
         # if x = None, X,Y are i.i.d. copies of self
