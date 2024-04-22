@@ -367,7 +367,7 @@ class BaseDistribution(BaseObject):
 
         Examples
         --------
-        >>> self._boilerplate('_pdf', x=x)  # DOCTEST: +SKIP
+        >>> self._boilerplate('_pdf', x=x)  # doctest: +SKIP
         >>> # calls self._pdf(x=x_inner), broadcasting x to self's shape in x_inner
         """
         kwargs_inner = kwargs.copy()
