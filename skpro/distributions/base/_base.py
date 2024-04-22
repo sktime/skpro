@@ -597,8 +597,8 @@ class BaseDistribution(BaseObject):
             warn(self._method_error_msg("cdf", fill_in=approx_method))
 
             result = pd.DataFrame(index=self.index, columns=self.columns, dtype="float")
-            for ix in p.index:
-                for col in p.columns:
+            for ix in self.index:
+                for col in self.columns:
                     d_ix = self.loc[[ix], [col]]
                     p_ix = p.loc[ix, col]
 
