@@ -37,6 +37,7 @@ class TDistribution(BaseDistribution):
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
     }
 
     def __init__(self, mu, sigma, df=1, index=None, columns=None):
@@ -46,38 +47,30 @@ class TDistribution(BaseDistribution):
         self.index = index
         self.columns = columns
 
-        self._mu, self._sigma, self._df = self._get_bc_params(
-            self.mu, self.sigma, self.df
-        )
-        shape = self._mu.shape
-
-        if index is None:
-            index = pd.RangeIndex(shape[0])
-
-        if columns is None:
-            columns = pd.RangeIndex(shape[1])
-
         super().__init__(index=index, columns=columns)
 
-    def mean(self):
-        r"""Return expected value of the distribution.
-
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns the expectation :math:`\mathbb{E}[X]`. The expectation,
-        :math:`\mathbb{E}[X]`, as infinite if :math:`\nu \le 1`.
+    def _mean(self):
+        """Return expected value of the distribution.
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
         """
-        mean_arr = self._mu.copy()
-        if (self._df <= 1).any():
-            mean_arr = mean_arr.astype(np.float32)
-            mean_arr[self._df <= 1] = np.inf
-        return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
+        mean_arr = self._bc_params["mu"]
+        df = self._bc_params["df"]
 
-    def var(self):
+        if self.ndim == 0:
+            if df <= 1:
+                return np.inf
+            return mean_arr
+
+        if (df <= 1).any():
+            mean_arr = mean_arr.astype(np.float32)
+            mean_arr[df <= 1] = np.inf
+        return mean_arr
+
+    def _var(self):
         r"""Return element/entry-wise variance of the distribution.
 
         Let :math:`X` be a random variable with the distribution of `self`.
@@ -96,64 +89,121 @@ class TDistribution(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
-        df_arr = self._df.copy()
-        df_arr = df_arr.astype(np.float32)
+        sigma = self._bc_params["sigma"]
+        df = self._bc_params["df"]
+        df_arr = df.astype(np.float32)
+
+        if self.ndim == 0:
+            if df <= 2:
+                return np.inf
+            return sigma ** 2 * df / (df - 2)
+
         df_arr[df_arr <= 2] = np.inf
         mask = (df_arr > 2) & (df_arr != np.inf)
-        df_arr[mask] = self._sigma[mask] ** 2 * df_arr[mask] / (df_arr[mask] - 2)
-        return pd.DataFrame(df_arr, index=self.index, columns=self.columns)
+        df_arr[mask] = sigma[mask] ** 2 * df_arr[mask] / (df_arr[mask] - 2)
+        return df_arr
 
-    def pdf(self, x):
-        """Probability density function."""
-        d = self.loc[x.index, x.columns]
-        pdf_arr = gamma((d._df + 1) / 2)
-        pdf_arr = pdf_arr / (np.sqrt(np.pi * d._df) * gamma(d._df / 2))
-        pdf_arr = pdf_arr * (1 + ((x - d._mu) / d._sigma) ** 2 / d._df) ** (
-            -(d._df + 1) / 2
-        )
-        pdf_arr = pdf_arr / d._sigma
-        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+    def _pdf(self, x):
+        """Probability density function.
 
-    def log_pdf(self, x):
-        """Logarithmic probability density function."""
-        d = self.loc[x.index, x.columns]
-        lpdf_arr = loggamma((d._df + 1) / 2)
-        lpdf_arr = lpdf_arr - 0.5 * np.log(d._df * np.pi)
-        lpdf_arr = lpdf_arr - loggamma(d._df / 2)
-        lpdf_arr = lpdf_arr - ((d._df + 1) / 2) * np.log(
-            1 + ((x - d._mu) / d._sigma) ** 2 / d._df
-        )
-        lpdf_arr = lpdf_arr - np.log(d._sigma)
-        return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
-    def cdf(self, x):
-        """Cumulative distribution function."""
-        d = self.loc[x.index, x.columns]
-        x_ = (x - d._mu) / d._sigma
-        cdf_arr = x_ * gamma((d._df + 1) / 2)
-        cdf_arr = cdf_arr * hyp2f1(0.5, (d._df + 1) / 2, 3 / 2, -(x_**2) / d._df)
-        cdf_arr = 0.5 + cdf_arr / (np.sqrt(np.pi * d._df) * gamma(d._df / 2))
-        return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
+        """
+        df = self._bc_params["df"]
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
 
-    def ppf(self, p):
-        """Quantile function = percent point function = inverse cdf."""
-        d = self.loc[p.index, p.columns]
-        ppf_arr = p.to_numpy(copy=True)
-        ppf_arr[p.values == 0.5] = 0.0
-        ppf_arr[p.values <= 0] = -np.inf
-        ppf_arr[p.values >= 1] = np.inf
+        pdf_arr = gamma((df + 1) / 2)
+        pdf_arr = pdf_arr / (np.sqrt(np.pi * df) * gamma(df / 2))
+        pdf_arr = pdf_arr * (1 + ((x - mu) / sigma) ** 2 / df) ** (-(df + 1) / 2)
+        pdf_arr = pdf_arr / sigma
+        return pdf_arr
 
-        mask1 = (p.values < 0.5) & (p.values > 0)
-        mask2 = (p.values < 1) & (p.values > 0.5)
-        ppf_arr[mask1] = 1 / betaincinv(0.5 * d._df[mask1], 0.5, 2 * ppf_arr[mask1])
-        ppf_arr[mask2] = 1 / betaincinv(
-            0.5 * d._df[mask2], 0.5, 2 * (1 - ppf_arr[mask2])
-        )
+    def _log_pdf(self, x):
+        """Logarithmic probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log pdf values at the given points
+        """
+        df = self._bc_params["df"]
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        lpdf_arr = loggamma((df + 1) / 2)
+        lpdf_arr = lpdf_arr - 0.5 * np.log(df * np.pi)
+        lpdf_arr = lpdf_arr - loggamma(df / 2)
+        lpdf_arr = lpdf_arr - ((df + 1) / 2) * np.log(1 + ((x - mu) / sigma) ** 2 / df)
+        lpdf_arr = lpdf_arr - np.log(sigma)
+        return lpdf_arr
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        df = self._bc_params["df"]
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        x_ = (x - mu) / sigma
+        cdf_arr = x_ * gamma((df + 1) / 2)
+        cdf_arr = cdf_arr * hyp2f1(0.5, (df + 1) / 2, 3 / 2, -(x_**2) / df)
+        cdf_arr = 0.5 + cdf_arr / (np.sqrt(np.pi * df) * gamma(df / 2))
+        return cdf_arr
+
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        df = self._bc_params["df"]
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        ppf_arr = p.copy()
+        ppf_arr[p == 0.5] = 0.0
+        ppf_arr[p <= 0] = -np.inf
+        ppf_arr[p >= 1] = np.inf
+
+        mask1 = (p < 0.5) & (p > 0)
+        mask2 = (p < 1) & (p > 0.5)
+        ppf_arr[mask1] = 1 / betaincinv(0.5 * df[mask1], 0.5, 2 * ppf_arr[mask1])
+        ppf_arr[mask2] = 1 / betaincinv(0.5 * df[mask2], 0.5, 2 * (1 - ppf_arr[mask2]))
         ppf_arr[mask1 | mask2] = np.sqrt(ppf_arr[mask1 | mask2] - 1)
-        ppf_arr[mask1 | mask2] = np.sqrt(d._df[mask1 | mask2]) * ppf_arr[mask1 | mask2]
+        ppf_arr[mask1 | mask2] = np.sqrt(df[mask1 | mask2]) * ppf_arr[mask1 | mask2]
         ppf_arr[mask1] = -ppf_arr[mask1]
-        ppf_arr = d._sigma * ppf_arr + d._mu
-        return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
+        ppf_arr = sigma * ppf_arr + mu
+        return ppf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
