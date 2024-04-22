@@ -46,7 +46,6 @@ class Empirical(BaseDistribution):
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "energy", "cdf", "ppf"],
         "distr:measuretype": "discrete",
-        "broadcast_init": "off",
     }
 
     def __init__(self, spl, weights=None, time_indep=True, index=None, columns=None):
