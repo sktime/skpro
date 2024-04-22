@@ -96,7 +96,7 @@ class TDistribution(BaseDistribution):
         if self.ndim == 0:
             if df <= 2:
                 return np.inf
-            return sigma ** 2 * df / (df - 2)
+            return sigma**2 * df / (df - 2)
 
         df_arr[df_arr <= 2] = np.inf
         mask = (df_arr > 2) & (df_arr != np.inf)
