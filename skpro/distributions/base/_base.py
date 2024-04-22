@@ -586,7 +586,7 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("cdf", fill_in=approx_method))
 
-            result = pd.DataFrame(index=p.index, columns=p.columns, dtype="float")
+            result = pd.DataFrame(index=self.index, columns=self.columns, dtype="float")
             for ix in p.index:
                 for col in p.columns:
                     d_ix = self.loc[[ix], [col]]
@@ -606,7 +606,7 @@ class BaseDistribution(BaseObject):
                     result.loc[ix, col] = bisect(
                         opt_fun, left_bd, right_bd, maxiter=max_iter
                     )
-            return result
+            return result.values
 
         raise NotImplementedError(self._method_error_msg("ppf", "error"))
 
