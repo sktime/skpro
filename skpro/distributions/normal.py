@@ -45,13 +45,41 @@ class Normal(BaseDistribution):
         super().__init__(index=index, columns=columns)
 
     def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
+
+        Private method, to be implemented by subclasses.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
+        """
         sigma = self._bc_params["sigma"]
         energy_arr = 2 * sigma / np.sqrt(np.pi)
         if energy_arr.ndim > 0:
             energy_arr = np.sum(energy_arr, axis=1)
         return energy_arr
 
-    def _energy_x(self, x=None):
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
+        and :math:`x` is a constant.
+
+        Private method, to be implemented by subclasses.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to compute energy w.r.t. to
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
+        """
         mu = self._bc_params["mu"]
         sigma = self._bc_params["sigma"]
 
