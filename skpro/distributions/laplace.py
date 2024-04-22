@@ -32,6 +32,7 @@ class Laplace(BaseDistribution):
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
     }
 
     def __init__(self, mu, scale, index=None, columns=None):
@@ -40,107 +41,153 @@ class Laplace(BaseDistribution):
         self.index = index
         self.columns = columns
 
-        # todo: untangle index handling
-        # and broadcast of parameters.
-        # move this functionality to the base class
-        self._mu, self._scale = self._get_bc_params(self.mu, self.scale)
-        shape = self._mu.shape
-
-        if index is None:
-            index = pd.RangeIndex(shape[0])
-
-        if columns is None:
-            columns = pd.RangeIndex(shape[1])
-
         super().__init__(index=index, columns=columns)
 
-    def energy(self, x=None):
-        r"""Energy of self, w.r.t. self or a constant frame x.
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
 
-        Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
+        :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
 
-        If `x` is `None`, returns :math:`\mathbb{E}[|X-Y|]` (per row), "self-energy".
-        If `x` is passed, returns :math:`\mathbb{E}[|X-x|]` (per row), "energy wrt x".
+        Private method, to be implemented by subclasses.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
+        """
+        energy_arr = self._bc_params["scale"]
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1) * 1.5
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
+        and :math:`x` is a constant.
+
+        Private method, to be implemented by subclasses.
 
         Parameters
         ----------
-        x : None or pd.DataFrame, optional, default=None
-            if pd.DataFrame, must have same rows and columns as `self`
+        x : 2D np.ndarray, same shape as ``self``
+            values to compute energy w.r.t. to
 
         Returns
         -------
-        pd.DataFrame with same rows as `self`, single column `"energy"`
-        each row contains one float, self-energy/energy as described above.
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
         """
-        if x is None:
-            sc_arr = self._scale
-            energy_arr = np.sum(sc_arr, axis=1) * 1.5
-            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
-        else:
-            d = self.loc[x.index, x.columns]
-            mu_arr, sc_arr = d.mu, d.scale
-            y_arr = np.abs((x.values - mu_arr) / sc_arr)
-            c_arr = y_arr + np.exp(-y_arr)
-            energy_arr = np.sum(sc_arr * c_arr, axis=1)
-            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
-        return energy
+        mu = self._bc_params["mu"]
+        sc = self._bc_params["scale"]
 
-    def mean(self):
-        r"""Return expected value of the distribution.
+        y_arr = np.abs((x - mu) / sc)
+        c_arr = y_arr + np.exp(-y_arr)
+        energy_arr = sc * c_arr
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
+        return energy_arr
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns the expectation :math:`\mathbb{E}[X]`
+    def _mean(self):
+        """Return expected value of the distribution.
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
         """
-        mean_arr = self._mu
-        return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
+        return self._bc_params["mu"]
 
-    def var(self):
+    def _var(self):
         r"""Return element/entry-wise variance of the distribution.
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
+        """
+        sc = self._bc_params["scale"]
+        sd_arr = sc / np.sqrt(2)
+        return sd_arr ** 2
+
+    def _pdf(self, x):
+        """Probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        variance of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
         """
-        sd_arr = self._scale / np.sqrt(2)
-        return pd.DataFrame(sd_arr, index=self.index, columns=self.columns) ** 2
+        mu = self._bc_params["mu"]
+        sc = self._bc_params["scale"]
+        pdf_arr = np.exp(-np.abs((x - mu) / scale))
+        pdf_arr = pdf_arr / (2 * sc)
+        return pdf_arr
 
-    def pdf(self, x):
-        """Probability density function."""
-        d = self.loc[x.index, x.columns]
-        pdf_arr = np.exp(-np.abs((x.values - d.mu) / d.scale))
-        pdf_arr = pdf_arr / (2 * d.scale)
-        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+    def _log_pdf(self, x):
+        """Logarithmic probability density function.
 
-    def log_pdf(self, x):
-        """Logarithmic probability density function."""
-        d = self.loc[x.index, x.columns]
-        lpdf_arr = -np.abs((x.values - d.mu) / d.scale)
-        lpdf_arr = lpdf_arr - np.log(2 * d.scale)
-        return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
-    def cdf(self, x):
-        """Cumulative distribution function."""
-        d = self.loc[x.index, x.columns]
-        sgn_arr = np.sign(x.values - d.mu)
-        exp_arr = np.exp(-np.abs((x.values - d.mu) / d.scale))
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log pdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sc = self._bc_params["scale"]
+        lpdf_arr = -np.abs((x - mu) / sc)
+        lpdf_arr = lpdf_arr - np.log(2 * sc)
+        return lpdf_arr
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sc = self._bc_params["scale"]
+
+        sgn_arr = np.sign(x - mu)
+        exp_arr = np.exp(-np.abs((x - mu) / sc))
         cdf_arr = 0.5 + 0.5 * sgn_arr * (1 - exp_arr)
-        return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
+        return cdf_arr
 
-    def ppf(self, p):
-        """Quantile function = percent point function = inverse cdf."""
-        d = self.loc[p.index, p.columns]
-        sgn_arr = np.sign(p.values - 0.5)
-        icdf_arr = d.mu - d.scale * sgn_arr * np.log(1 - 2 * np.abs(p.values - 0.5))
-        return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sc = self._bc_params["scale"]
+
+        sgn_arr = np.sign(p - 0.5)
+        icdf_arr = mu - sc * sgn_arr * np.log(1 - 2 * np.abs(p - 0.5))
+        return icdf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
