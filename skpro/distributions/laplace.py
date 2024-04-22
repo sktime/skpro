@@ -125,7 +125,7 @@ class Laplace(BaseDistribution):
         """
         mu = self._bc_params["mu"]
         sc = self._bc_params["scale"]
-        pdf_arr = np.exp(-np.abs((x - mu) / scale))
+        pdf_arr = np.exp(-np.abs((x - mu) / sc))
         pdf_arr = pdf_arr / (2 * sc)
         return pdf_arr
 
