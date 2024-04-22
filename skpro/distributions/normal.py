@@ -42,11 +42,6 @@ class Normal(BaseDistribution):
         self.index = index
         self.columns = columns
 
-        # todo: untangle index handling
-        # and broadcast of parameters.
-        # move this functionality to the base class
-        self._mu, self._sigma = self._get_bc_params(self.mu, self.sigma)
-
         super().__init__(index=index, columns=columns)
 
     def _energy_self(self):
