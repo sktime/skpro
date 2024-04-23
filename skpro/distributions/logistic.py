@@ -73,8 +73,8 @@ class Logistic(BaseDistribution):
         variance of distribution (entry-wise)
         """
         scale = self._bc_params["scale"]
-        var_arr = (self._scale**2 * np.pi**2) / 3
-        return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
+        var_arr = (scale**2 * np.pi**2) / 3
+        return var_arr
 
     def _pdf(self, x):
         """Probability density function.
