@@ -12,6 +12,14 @@ from skpro.distributions.base import BaseDistribution
 class Logistic(BaseDistribution):
     """Logistic distribution.
 
+    The Weibull distibution is parametrized by a mean parameter :math:`\mu`,
+    and scale parameter :math:`s`, such that the cdf is given by:
+
+    .. math:: F(x) = \frac{1}{1 + \exp\left(\frac{x - \mu}{s}\right)}
+
+    The scale parameter :math:`s` is represented by the parameter ``scale``,
+    and the mean parameter :math:`\mu` by the parameter ``mu``.
+
     Parameters
     ----------
     mu : float or array of float (1D or 2D)
@@ -32,6 +40,7 @@ class Logistic(BaseDistribution):
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
     }
 
     def __init__(self, mu, scale, index=None, columns=None):
@@ -40,33 +49,17 @@ class Logistic(BaseDistribution):
         self.index = index
         self.columns = columns
 
-        # todo: untangle index handling
-        # and broadcast of parameters.
-        # move this functionality to the base class
-        self._mu, self._scale = self._get_bc_params(self.mu, self.scale)
-        shape = self._mu.shape
-
-        if index is None:
-            index = pd.RangeIndex(shape[0])
-
-        if columns is None:
-            columns = pd.RangeIndex(shape[1])
-
         super().__init__(index=index, columns=columns)
 
-    def mean(self):
-        r"""Return expected value of the distribution.
-
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns the expectation :math:`\mathbb{E}[X]`
+    def _mean(self):
+        """Return expected value of the distribution.
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
         """
-        mean_arr = self._mu
-        return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
+        return self._bc_params["mu"]
 
     def var(self):
         r"""Return variance of the distribution.
@@ -79,35 +72,88 @@ class Logistic(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
+        scale = self._bc_params["scale"]
         var_arr = (self._scale**2 * np.pi**2) / 3
         return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
 
-    def pdf(self, x):
-        """Probability density function."""
-        d = self.loc[x.index, x.columns]
-        numerator = np.exp(-(x.values - d.mu) / d.scale)
-        denominator = d.scale * ((1 + np.exp(-(x.values - d.mu) / d.scale)) ** 2)
+    def _pdf(self, x):
+        """Probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["scale"]
+
+        numerator = np.exp(-(x - mu) / scale)
+        denominator = scale * ((1 + np.exp(-(x - mu) / scale)) ** 2)
         pdf_arr = numerator / denominator
-        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+        return pdf_arr
 
-    def log_pdf(self, x):
-        """Logarithmic probability density function."""
-        d = self.loc[x.index, x.columns]
-        y = -(x.values - d.mu) / d.scale
-        lpdf_arr = y - np.log(d.scale) - 2 * np.logaddexp(0, y)
-        return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
+    def _log_pdf(self, x):
+        """Logarithmic probability density function.
 
-    def cdf(self, x):
-        """Cumulative distribution function."""
-        d = self.loc[x.index, x.columns]
-        cdf_arr = (1 + np.tanh((x.values - d.mu) / (2 * d.scale))) / 2
-        return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
-    def ppf(self, p):
-        """Quantile function = percent point function = inverse cdf."""
-        d = self.loc[p.index, p.columns]
-        ppf_arr = d.mu + d.scale * np.log(p.values / (1 - p.values))
-        return pd.DataFrame(ppf_arr, index=p.index, columns=p.columns)
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log pdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["scale"]
+
+        y = -(x - mu) / scale
+        lpdf_arr = y - np.log(scale) - 2 * np.logaddexp(0, y)
+        return lpdf_arr
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["scale"]
+
+        cdf_arr = (1 + np.tanh((x - mu) / (2 * scale))) / 2
+        return cdf_arr
+
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["scale"]
+
+        ppf_arr = mu + scale * np.log(p / (1 - p))
+        return ppf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
