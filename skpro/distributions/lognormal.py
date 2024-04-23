@@ -132,7 +132,7 @@ class LogNormal(BaseDistribution):
         mu = self._bc_params["mu"]
         sigma = self._bc_params["sigma"]
 
-        pdf_arr = np.exp(-0.5 * ((np.log(x.values) - mu) / sigma) ** 2)
+        pdf_arr = np.exp(-0.5 * ((np.log(x) - mu) / sigma) ** 2)
         pdf_arr = pdf_arr / (x * sigma * np.sqrt(2 * np.pi))
         return pdf_arr
 

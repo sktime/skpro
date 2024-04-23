@@ -79,9 +79,12 @@ class Weibull(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
-        left_gamma = gamma(1 + 2 / self._k)
-        right_gamma = gamma(1 + 1 / self._k) ** 2
-        var_arr = self._scale**2 * (left_gamma - right_gamma)
+        scale = self._bc_params["scale"]
+        k = self._bc_params["k"]
+
+        left_gamma = gamma(1 + 2 / k)
+        right_gamma = gamma(1 + 1 / k) ** 2
+        var_arr = scale**2 * (left_gamma - right_gamma)
         return var_arr
 
     def _pdf(self, x):
