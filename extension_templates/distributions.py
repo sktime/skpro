@@ -65,14 +65,14 @@ class ClassName(BaseDistribution):
     # super call must not be removed, change class name
     # parameter checks can go after super call
     def __init__(
-            self, paramname, paramname2="paramname2default", index=None, columns=None
+            self, param1, param2="param2default", index=None, columns=None
         ):
         # all distributions must have index and columns arg with None defaults
         # this is to ensure pandas-like behaviour
 
         # todo: write any hyper-parameters and components to self
-        self.paramname = paramname
-        self.paramname2 = paramname2
+        self.param1 = param1
+        self.param2 = param2
 
         # leave this as is
         super().__init__(index=index, columns=columns)
@@ -97,8 +97,8 @@ class ClassName(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             expected value of distribution (entry-wise)
         """
-        params1 = self._bc_params["param1"]  # returns broadcast params to x.shape
-        params2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
         res = "replace_this_by_internal_logic"
         return res
@@ -113,8 +113,8 @@ class ClassName(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             variance of the distribution (entry-wise)
         """
-        params1 = self._bc_params["param1"]  # returns broadcast params to x.shape
-        params2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
         res = "replace_this_by_internal_logic"
         return res
@@ -135,8 +135,8 @@ class ClassName(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
-        params1 = self._bc_params["param1"]  # returns broadcast params to x.shape
-        params2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
         res = "replace_this_by_internal_logic"
         return res
@@ -157,8 +157,8 @@ class ClassName(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             log pdf values at the given points
         """
-        params1 = self._bc_params["param1"]  # returns broadcast params to x.shape
-        params2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
         res = "replace_this_by_internal_logic"
         return res
@@ -179,8 +179,8 @@ class ClassName(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             cdf values at the given points
         """
-        params1 = self._bc_params["param1"]  # returns broadcast params to x.shape
-        params2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
         res = "replace_this_by_internal_logic"
         return res
@@ -217,8 +217,8 @@ class ClassName(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        params1 = self._bc_params["param1"]  # returns broadcast params to x.shape
-        params2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
         res = "replace_this_by_internal_logic"
         return res
@@ -243,8 +243,8 @@ class ClassName(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        params1 = self._bc_params["param1"]  # returns broadcast params to x.shape
-        params2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
         res = "replace_this_by_internal_logic"
         return res
@@ -269,8 +269,8 @@ class ClassName(BaseDistribution):
         in `pd-multiindex` mtype format convention, with same `columns` as `self`,
         and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
         """
-        params1 = self._bc_params["param1"]  # returns broadcast params to x.shape
-        params2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
         res = "replace_this_by_internal_logic"
         return res
