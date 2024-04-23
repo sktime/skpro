@@ -22,12 +22,19 @@ class BaseDistribution(BaseObject):
         "object_type": "distribution",  # type of object, e.g., 'distribution'
         "python_version": None,  # PEP 440 python version specifier to limit versions
         "python_dependencies": None,  # string or str list of pkg soft dependencies
-        "capabilities:approx": ["energy", "mean", "var", "pdfnorm"],
+        # default parameter settings for MC estimates
+        # -------------------------------------------
+        # these are used in default implementations of mean, var, energy, pdfnorm, ppf
         "approx_mean_spl": 1000,  # sample size used in MC estimates of mean
         "approx_var_spl": 1000,  # sample size used in MC estimates of var
         "approx_energy_spl": 1000,  # sample size used in MC estimates of energy
         "approx_spl": 1000,  # sample size used in other MC estimates
         "bisect_iter": 1000,  # max iters for bisection method in ppf
+        # which methods are approximate (not numerically exact) should be listed here
+        "capabilities:approx": ["energy", "mean", "var", "pdfnorm"],
+        # broadcasting and parameter settings
+        # -----------------------------------
+        # used to control broadcasting of parameters
         "reserved_params": ["index", "columns"],
         "broadcast_params": None,  # list of params to broadcast
         "broadcast_init": "off",  # whether to auto-broadcast params in __init__
