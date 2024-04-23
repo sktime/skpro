@@ -64,9 +64,7 @@ class ClassName(BaseDistribution):
     # params should be written to self and never changed
     # super call must not be removed, change class name
     # parameter checks can go after super call
-    def __init__(
-            self, param1, param2="param2default", index=None, columns=None
-        ):
+    def __init__(self, param1, param2="param2default", index=None, columns=None):
         # all distributions must have index and columns arg with None defaults
         # this is to ensure pandas-like behaviour
 
@@ -318,7 +316,7 @@ class ClassName(BaseDistribution):
 
         res = "replace_this_by_internal_logic"
         return res
-    
+
     # todo: return default parameters, so that a test instance can be created
     #   required for automated unit and integration testing of estimator
     @classmethod
