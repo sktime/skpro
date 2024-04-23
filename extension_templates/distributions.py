@@ -163,6 +163,50 @@ class ClassName(BaseDistribution):
         res = "replace_this_by_internal_logic"
         return res
 
+    # todo: consider implementing - only for discrete or mixed distributions
+    # at least one of _pmf and _log_pmf should be implemented
+    # if not implemented, returns exp of log_pmf
+    def _pmf(self, x):
+        """Probability mass function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pmf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            pmf values at the given points
+        """
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+
+        res = "replace_this_by_internal_logic"
+        return res
+
+    # todo: consider implementing - only for discrete or mixed distributions
+    # at least one of _pmf and _log_pmf should be implemented
+    # if not implemented, returns log of pmf
+    def _log_pmf(self, x):
+        """Logarithmic probability mass function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pmf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log pmf values at the given points
+        """
+        param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
+        param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
+
+        res = "replace_this_by_internal_logic"
+        return res
+
     # todo: consider implementing
     # at least one of _ppf and sample must be implemented
     # if not implemented, uses Monte Carlo estimate based on sample
