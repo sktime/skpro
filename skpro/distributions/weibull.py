@@ -160,7 +160,7 @@ class Weibull(BaseDistribution):
         k = self._bc_params["k"]
         scale = self._bc_params["scale"]
 
-        ppf_arr = scale * (-np.log(1 - p.values)) ** (1 / k)
+        ppf_arr = scale * (-np.log(1 - p)) ** (1 / k)
         return ppf_arr
 
     @classmethod

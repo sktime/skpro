@@ -134,7 +134,7 @@ class Fisk(BaseDistribution):
         cdf_arr = fisk.cdf(x, scale=alpha, c=beta)
         return cdf_arr
 
-    def ppf(self, p):
+    def _ppf(self, p):
         """Quantile function = percent point function = inverse cdf.
 
         Parameters
