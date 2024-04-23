@@ -98,7 +98,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: consider implementing
@@ -114,7 +114,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: consider implementing - only for continuous or mixed distributions
@@ -136,7 +136,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: consider implementing - only for continuous or mixed distributions
@@ -158,7 +158,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: consider implementing - only for discrete or mixed distributions
@@ -180,7 +180,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: consider implementing - only for discrete or mixed distributions
@@ -202,7 +202,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: consider implementing
@@ -224,7 +224,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: consider implementing
@@ -262,7 +262,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: consider implementing
@@ -288,7 +288,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: consider implementing
@@ -314,7 +314,7 @@ class ClassName(BaseDistribution):
         param1 = self._bc_params["param1"]  # returns broadcast params to x.shape
         param2 = self._bc_params["param2"]  # returns broadcast params to x.shape
 
-        res = "replace_this_by_internal_logic"
+        res = "do_sth_with(" + param1 + param2 + ")"  # replace this by internal logic
         return res
 
     # todo: return default parameters, so that a test instance can be created
