@@ -47,6 +47,7 @@ dependencies = [
     "scikit-base>=0.6.1,<0.8.0",
     "scikit-learn>=0.24.0,<1.5.0",
     "scipy<2.0.0,>=1.2.0",
+    "ngboost",
 ]
 
 [project.optional-dependencies]
