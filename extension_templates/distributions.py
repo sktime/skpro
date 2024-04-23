@@ -50,7 +50,7 @@ class ClassName(BaseDistribution):
         #
         # estimator tags
         # --------------
-        "distr:measuretype": "continuous",
+        "distr:measuretype": "continuous",  # one of "discrete", "continuous", "mixed"
         # these tags should correspond to which methods are numerically exact
         # and which are approximations, e.g., using Monte Carlo
         "capabilities:approx": ["pdfnorm", "energy"],
