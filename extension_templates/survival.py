@@ -306,8 +306,6 @@ class ClassName(BaseSurvReg):
         #
         # The parameter_set argument is not used for most automated, module level tests.
         #   It can be used in custom, estimator specific tests, for "special" settings.
-        #   For classification, this is also used in tests for reference settings,
-        #       such as published in benchmarking studies, or for identity testing.
         # A parameter dictionary must be returned *for all values* of parameter_set,
         #   i.e., "parameter_set not available" errors should never be raised.
         #
