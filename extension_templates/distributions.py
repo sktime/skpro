@@ -56,7 +56,7 @@ class ClassName(BaseDistribution):
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         # leave the broadcast_init tag as-is, this tag exists for compatibility with
-        # distribution deviating from assumptions on input parameters
+        # distributions deviating from assumptions on input parameters, e.g., Empirical
         "broadcast_init": "on",
     }
 
