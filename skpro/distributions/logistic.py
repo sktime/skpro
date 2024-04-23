@@ -61,7 +61,7 @@ class Logistic(BaseDistribution):
         """
         return self._bc_params["mu"]
 
-    def var(self):
+    def _var(self):
         r"""Return variance of the distribution.
 
         Let :math:`X` be a random variable with the distribution of `self`.
