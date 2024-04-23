@@ -108,7 +108,7 @@ class LogNormal(BaseDistribution):
         Returns
         -------
         2D np.ndarray, same shape as ``self``
-            pdf values at the given points
+            variance of the distribution (entry-wise)
         """
         mu = self._bc_params["mu"]
         sigma = self._bc_params["sigma"]

@@ -69,7 +69,7 @@ class Fisk(BaseDistribution):
         Returns
         -------
         2D np.ndarray, same shape as ``self``
-            pdf values at the given points
+            variance of the distribution (entry-wise)
         """
         alpha = self._bc_params["alpha"]
         beta = self._bc_params["beta"]

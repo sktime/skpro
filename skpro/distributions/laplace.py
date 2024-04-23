@@ -119,7 +119,7 @@ class Laplace(BaseDistribution):
         Returns
         -------
         2D np.ndarray, same shape as ``self``
-            pdf values at the given points
+            variance of the distribution (entry-wise)
         """
         sc = self._bc_params["scale"]
         sd_arr = np.sqrt(2) * sc

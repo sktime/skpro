@@ -117,7 +117,7 @@ class Normal(BaseDistribution):
         Returns
         -------
         2D np.ndarray, same shape as ``self``
-            pdf values at the given points
+            variance of the distribution (entry-wise)
         """
         return self._bc_params["sigma"] ** 2
 
@@ -136,6 +136,7 @@ class Normal(BaseDistribution):
         """
         mu = self._bc_params["mu"]
         sigma = self._bc_params["sigma"]
+
         pdf_arr = np.exp(-0.5 * ((x - mu) / sigma) ** 2)
         pdf_arr = pdf_arr / (sigma * np.sqrt(2 * np.pi))
         return pdf_arr
