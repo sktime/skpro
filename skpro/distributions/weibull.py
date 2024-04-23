@@ -11,7 +11,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Weibull(BaseDistribution):
-    """Weibull distribution.
+    r"""Weibull distribution.
 
     The Weibull distibution is parametrized by scale parameter :math:`\lambda`,
     and shape parameter :math:`k`, such that the cdf is given by:
@@ -53,7 +53,7 @@ class Weibull(BaseDistribution):
         super().__init__(index=index, columns=columns)
 
     def _mean(self):
-        """Return expected value of the distribution.
+        r"""Return expected value of the distribution.
 
         For Weibull distribution, expectation is given by,
         :math:`\lambda \Gamma (1+\frac{1}{k})`

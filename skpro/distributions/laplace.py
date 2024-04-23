@@ -10,7 +10,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Laplace(BaseDistribution):
-    """Laplace distribution.
+    r"""Laplace distribution.
     
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.

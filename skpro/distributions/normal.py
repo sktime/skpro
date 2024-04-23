@@ -11,7 +11,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Normal(BaseDistribution):
-    """Normal distribution (skpro native).
+    r"""Normal distribution (skpro native).
 
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
