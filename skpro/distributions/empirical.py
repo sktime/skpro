@@ -67,6 +67,8 @@ class Empirical(BaseDistribution):
         if columns is None:
             columns = spl.columns
 
+        self._shape = (len(index), len(columns))
+
         super().__init__(index=index, columns=columns)
 
         # initialized sorted samples
