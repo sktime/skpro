@@ -73,8 +73,13 @@ Survival and time-to-event prediction
 
 * [ENH] adapter to ``scikit-survival``, all distributional survival regressors interfaced (:pr:`237`) :user:`fkiraly`
 * [ENH] adapter to ``lifelines``, most distributional survival regressors interfaced (:pr:`247`) :user:`fkiraly`
-* [ENH] log-normal AFT model from ``lifelines``(:pr:`258`) :user:`fkiraly`
+* [ENH] log-normal AFT model from ``lifelines`` (:pr:`258`) :user:`fkiraly`
 * [ENH] log-logistic/Fisk AFT model from ``lifelines`` (:pr:`260`) :user:`fkiraly`
+
+Test framework
+~~~~~~~~~~~~~~
+
+* [ENH] refactor test scenario creation to be lazy rather than on module load (:pr:`245`) :user:`fkiraly`
 
 Fixes
 -----
@@ -84,11 +89,6 @@ Probability distributions
 
 * [BUG] bugfixes to QPD distributions - ``QPD_U``, ``QPD_S`` (:pr:`194`) :user:`fkiraly`
 * [BUG] fixes to lognormal distribution  (:pr:`261`) :user:`fkiraly`
-
-Test framework
-~~~~~~~~~~~~~~
-
-* [ENH] refactor test scenario creation to be lazy rather than on module load (:pr:`245`) :user:`fkiraly`
 
 Documentation
 -------------
@@ -125,7 +125,7 @@ Contents
   (:pr:`208`) :user:`fkiraly`
 * [BUG] fix dispatching of censoring information in probabilistic metrics
   (:pr:`208`) :user:`fkiraly`
-* [BUG] fix missing location/scale in `TDistribution` (:pr:`210`) :user:`ivarzap`
+* [BUG] fix missing location/scale in ``TDistribution`` (:pr:`210`) :user:`ivarzap`
 
 
 [2.2.0] - 2023-02-08

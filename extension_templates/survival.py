@@ -11,8 +11,9 @@ from skpro.survival.base import BaseSurvReg
 
 # todo: add any necessary imports here
 
-# todo: if any imports are skpro soft dependencies:
+# todo: for imports of skpro soft dependencies:
 # make sure to fill in the "python_dependencies" tag with the package import name
+# import soft dependencies only inside methods of the class, not at the top of the file
 
 
 # todo: change class name and write docstring
@@ -52,7 +53,7 @@ class ClassName(BaseSurvReg):
 
         # todo: write any hyper-parameters and components to self
         self.paramname = paramname
-        self.paramname2 = "paramname2default"
+        self.paramname2 = paramname2
 
         # leave this as is
         super().__init__()
