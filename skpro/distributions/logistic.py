@@ -46,8 +46,6 @@ class Logistic(BaseDistribution):
     def __init__(self, mu, scale, index=None, columns=None):
         self.mu = mu
         self.scale = scale
-        self.index = index
-        self.columns = columns
 
         super().__init__(index=index, columns=columns)
 

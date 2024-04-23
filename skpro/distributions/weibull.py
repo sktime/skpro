@@ -47,8 +47,6 @@ class Weibull(BaseDistribution):
     def __init__(self, scale, k, index=None, columns=None):
         self.scale = scale
         self.k = k
-        self.index = index
-        self.columns = columns
 
         super().__init__(index=index, columns=columns)
 

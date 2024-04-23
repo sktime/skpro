@@ -50,8 +50,6 @@ class Normal(BaseDistribution):
     def __init__(self, mu, sigma, index=None, columns=None):
         self.mu = mu
         self.sigma = sigma
-        self.index = index
-        self.columns = columns
 
         super().__init__(index=index, columns=columns)
 
