@@ -13,7 +13,7 @@ from skpro.distributions.base import BaseDistribution
 class Weibull(BaseDistribution):
     r"""Weibull distribution.
 
-    The Weibull distibution is parametrized by scale parameter :math:`\lambda`,
+    The Weibull distribution is parametrized by scale parameter :math:`\lambda`,
     and shape parameter :math:`k`, such that the cdf is given by:
 
     .. math:: F(x) = 1 - \exp\left(-\left(\frac{x}{\lambda}\right)^k\right)

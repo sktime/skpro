@@ -381,7 +381,7 @@ class BaseDistribution(BaseObject):
         d = self
 
         for k, x in kwargs.items():
-            # if x is a DataFrame, subset and reorder distibution to match it
+            # if x is a DataFrame, subset and reorder distribution to match it
             if isinstance(x, pd.DataFrame):
                 d = self.loc[x.index, x.columns]
                 x_inner = x.values

@@ -10,9 +10,9 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Logistic(BaseDistribution):
-    """Logistic distribution.
+    r"""Logistic distribution.
 
-    The Weibull distibution is parametrized by a mean parameter :math:`\mu`,
+    The logistic distribution is parametrized by a mean parameter :math:`\mu`,
     and scale parameter :math:`s`, such that the cdf is given by:
 
     .. math:: F(x) = \frac{1}{1 + \exp\left(\frac{x - \mu}{s}\right)}

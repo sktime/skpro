@@ -16,7 +16,7 @@ class Normal(BaseDistribution):
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
 
-    The normal distibution is parametrized by mean :math:`\mu` and
+    The normal distribution is parametrized by mean :math:`\mu` and
     standard deviation :math:`\sigma`, such that the pdf is
 
     .. math:: f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)  # noqa E501

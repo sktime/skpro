@@ -12,7 +12,7 @@ from skpro.distributions.base import BaseDistribution
 class Fisk(BaseDistribution):
     r"""Fisk distribution, aka log-logistic distribution.
 
-    The Fisk distibution is parametrized by a scale parameter :math:`\alpha`
+    The Fisk distribution is parametrized by a scale parameter :math:`\alpha`
     and a shape parameter :math:`\beta`, such that the cumulative distribution
     function (CDF) is given by:
 

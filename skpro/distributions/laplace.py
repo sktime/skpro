@@ -15,7 +15,7 @@ class Laplace(BaseDistribution):
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
 
-    The Laplace distibution is parametrized by mean :math:`\mu` and
+    The Laplace distribution is parametrized by mean :math:`\mu` and
     scale :math:`b`, such that the pdf is
 
     .. math:: f(x) = \frac{1}{2b} \exp\left(-\frac{|x - \mu|}{b}\right)
@@ -25,7 +25,7 @@ class Laplace(BaseDistribution):
 
     It should be noted that this parametrization differs from the mean/standard
     deviation parametrization, which is also common in the literature.
-    The standard deviation of this distibution is :math:`\sqrt{2} s`.
+    The standard deviation of this distribution is :math:`\sqrt{2} s`.
 
     Parameters
     ----------
