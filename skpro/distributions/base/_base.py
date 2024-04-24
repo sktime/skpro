@@ -44,7 +44,7 @@ class BaseDistribution(BaseObject):
 
     def __init__(self, index=None, columns=None):
         self.index = _coerce_to_pd_index_or_none(index)
-        self.columns = _coerce_to_pd_index_or_none(index)
+        self.columns = _coerce_to_pd_index_or_none(columns)
 
         super().__init__()
         _check_estimator_deps(self)
