@@ -6,6 +6,8 @@ __author__ = ["fkiraly"]
 
 import pytest
 
+from skpro.utils.validation._dependencies import _check_soft_dependencies
+
 
 def test_proba_example():
     """Test one subsetting case for BaseDistribution."""
@@ -66,3 +68,25 @@ def test_proba_subsetters_at_iat():
     assert isinstance(nss, Normal)
     assert nss.shape == ()
     assert nss == n.loc[1, 1]
+
+
+@pytest.mark.skipif(
+    not _check_soft_dependencies("matplotlib", severity="none"),
+    reason="skip if matplotlib is not available",
+)
+@pytest.mark.parametrize("fun", ["pdf", "ppf", "cdf"])
+def test_proba_plotting(fun):
+    """Test that plotting functions do not crash and return ax as expected."""
+    from skpro.distributions.normal import Normal
+
+    # default case, 2D distribution with n_columns>1
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1)
+    fig, ax = n.plot(fun=fun)
+
+    # 1D case requires special treatment of axes
+    n = Normal(mu=[[1], [2], [3]], sigma=1)
+    fig, ax = n.plot(fun=fun)
+    
+    # scalar case
+    n = Normal(mu=1, sigma=1)
+    ax = n.plot(fun=fun)
