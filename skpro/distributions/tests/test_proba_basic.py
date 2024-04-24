@@ -4,6 +4,7 @@
 
 __author__ = ["fkiraly"]
 
+import pandas as pd
 import pytest
 
 
@@ -66,3 +67,33 @@ def test_proba_subsetters_at_iat():
     assert isinstance(nss, Normal)
     assert nss.shape == ()
     assert nss == n.loc[1, 1]
+
+
+def test_proba_index_coercion():
+    """Test index coercion for BaseDistribution."""
+    from skpro.distributions.normal import Normal
+
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=["foo", "bar"])
+
+    assert n.shape == (3, 2)
+    assert isinstance(n.index, pd.Index)
+    assert isinstance(n.columns, pd.Index)
+    assert n.index.equals(pd.RangeIndex(3))
+    assert n.columns.equals(pd.Index(["foo", "bar"]))
+
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, index=["2", 1, 0])
+
+    assert n.shape == (3, 2)
+    assert isinstance(n.index, pd.Index)
+    assert isinstance(n.columns, pd.Index)
+    assert n.index.equals(pd.Index(["2", 1, 0]))
+    assert n.columns.equals(pd.RangeIndex(2))
+
+    # this should coerce to a 2D array of shape (1, 3)
+    n = Normal(0, 1, columns=[1, 2, 3])
+
+    assert n.shape == (1, 3)
+    assert isinstance(n.index, pd.Index)
+    assert isinstance(n.columns, pd.Index)
+    assert n.index.equals(pd.RangeIndex(1))
+    assert n.columns.equals(pd.Index([1, 2, 3]))

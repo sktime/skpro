@@ -43,8 +43,8 @@ class BaseDistribution(BaseObject):
     }
 
     def __init__(self, index=None, columns=None):
-        self.index = index
-        self.columns = columns
+        self.index = _coerce_to_pd_index_or_none(index)
+        self.columns = _coerce_to_pd_index_or_none(columns)
 
         super().__init__()
         _check_estimator_deps(self)
@@ -1008,14 +1008,24 @@ class BaseDistribution(BaseObject):
 
         qdfs = []
         for p in alpha:
-            p = self._coerce_to_self_index_df(p)
+            p = self._coerce_to_self_index_df(p, flatten=self.ndim > 0)
             qdf = self.ppf(p)
             qdfs += [qdf]
 
-        qres = pd.concat(qdfs, axis=1, keys=alpha)
-        qres = qres.reorder_levels([1, 0], axis=1)
+        if self.ndim > 0:
+            qres = pd.concat(qdfs, axis=1, keys=alpha)
+            qres = qres.reorder_levels([1, 0], axis=1)
+        else:
+            qdfs = np.expand_dims(np.array(qdfs), 0)
+            qres = pd.DataFrame(qdfs, columns=alpha)
 
-        cols = pd.MultiIndex.from_product([self.columns, alpha])
+        if self.ndim > 0:
+            cols = pd.MultiIndex.from_product([self.columns, alpha])
+        else:
+            clsname = self.__class__.__name__
+            cols = pd.MultiIndex.from_product([[clsname], alpha])
+            qres.columns = cols
+
         quantiles = qres.loc[:, cols]
         return quantiles
 
@@ -1256,3 +1266,12 @@ def _prod_multiindex(ix1, ix2):
 def is_scalar_notnone(obj):
     """Check if obj is scalar and not None."""
     return obj is not None and np.isscalar(obj)
+
+
+def _coerce_to_pd_index_or_none(x):
+    """Coerce to pd.Index, if not None, else return None."""
+    if x is None:
+        return None
+    if isinstance(x, pd.Index):
+        return x
+    return pd.Index(x)
