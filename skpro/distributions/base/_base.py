@@ -1111,7 +1111,7 @@ class BaseDistribution(BaseObject):
             x_argname = _get_first_argname(getattr(self, fun))
 
             def get_ax(ax, i, j, shape):
-                """API unifier for 2D and 1D subplots.
+                """Get axes at iloc i, j - API unifier for 2D and 1D subplot figures.
 
                 Covers inconsistency in matplotlib where creation of (m, 1) matrix
                 of subplots creates a 1D object and not a 2D object.
