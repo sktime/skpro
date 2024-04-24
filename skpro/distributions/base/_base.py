@@ -242,11 +242,11 @@ class BaseDistribution(BaseObject):
         return type(self)(**subset_params)
 
     def _iloc(self, rowidx=None, colidx=None):
-        if is_scalar(rowidx) and is_scalar(colidx):
+        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
             return self._iat(rowidx, colidx)
-        if is_scalar(rowidx):
+        if is_scalar_notnone(rowidx):
             rowidx = pd.Index([rowidx])
-        if is_scalar(colidx):
+        if is_scalar_notnone(colidx):
             colidx = pd.Index([colidx])
 
         subset_params = self._subset_params(rowidx=rowidx, colidx=colidx)
@@ -1233,3 +1233,8 @@ def _prod_multiindex(ix1, ix2):
     res = pd.MultiIndex.from_product(rows)
     res.names = [None] * len(res.names)
     return res
+
+
+def is_scalar_notnone(obj):
+    """Check if obj is scalar and not None."""
+    return obj is not None and np.isscalar(obj)
