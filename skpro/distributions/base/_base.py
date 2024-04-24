@@ -135,9 +135,8 @@ class BaseDistribution(BaseObject):
         """
         return _Indexer(ref=self, method="_iat")
 
-
     @property
-    def iat(self):
+    def at(self):
         """Integer location indexer, for single index.
 
         Use ``my_distribution.at[index]`` for ``pandas``-like row/column subsetting
