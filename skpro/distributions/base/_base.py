@@ -1058,6 +1058,15 @@ class _Indexer:
         self.ref = ref
         self.method = method
 
+    def __call__(self, *args, **kwargs):
+        """Error message to tell the user ot user [ ] instead of ( )."""
+        methodname = self.method[1:]
+        raise ValueError(
+            "Please use square brackets [] for indexing a distribution, i.e., "
+            f"mydist.{methodname}[index] or mydist.{methodname}[index1, index2], "
+            f"not mydist.{methodname}(index) or mydist.{methodname}(index1, index2)"
+        )
+
     def __getitem__(self, key):
         """Getitem dunder, for use in my_distr.loc[index] an my_distr.iloc[index]."""
 
