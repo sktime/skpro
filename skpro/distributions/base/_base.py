@@ -1075,6 +1075,9 @@ class BaseDistribution(BaseObject):
         ----------
         fun : str, optional, default="pdf"
             the function to plot, one of "pdf", "cdf", "ppf"
+        ax : matplotlib Axes object, optional
+            matplotlib Axes to plot in
+            if not provided, defaults to current axes (``plot.gca``)
         kwargs : keyword arguments
             passed to the plotting function
 
