@@ -1063,6 +1063,14 @@ class BaseDistribution(BaseObject):
     def plot(self, fun="pdf", ax=None, **kwargs):
         """Plot the distribution.
 
+        Different distribution defining functions can be selected for plotting
+        via the ``fun`` parameter.
+        The functions available are the same as the methods of the distribution class,
+        e.g., ``"pdf"``, ``"cdf"``, ``"ppf"``.
+
+        For array distribution, the marginal distribution at each entry is plotted,
+        as a separate subplot.
+
         Parameters
         ----------
         fun : str, optional, default="pdf"
@@ -1075,25 +1083,33 @@ class BaseDistribution(BaseObject):
         from matplotlib.pyplot import subplots
 
         if self.ndim > 0:
-            upper = self.ppf(0.999).values.flatten().max()
-            lower = self.ppf(0.001).values.flatten().min()
-            x_bounds = (lower, upper)
+            if "x_bounds" not in kwargs:
+                upper = self.ppf(0.999).values.flatten().max()
+                lower = self.ppf(0.001).values.flatten().min()
+                x_bounds = (lower, upper)
+            else:
+                x_bounds = kwargs.pop("x_bounds")
 
             fig, ax = subplots(self.shape[0], self.shape[1], sharex=True, sharey=True)
             for i, j in np.ndindex(self.shape):
                 d_ij = self.iloc[i, j]
                 ax[i, j] = d_ij.plot(
                     fun=fun, ax=ax[i, j],
-                    x_bounds=(upper, lower), 
+                    x_bounds=x_bounds, 
                     **kwargs,
                 )
             return fig, ax
 
-        plot_fun_name = f"_plot_{fun}"
-        ax = getattr(self, plot_fun_name)(ax=ax, **kwargs)
+        # for now, all plots default ot this function
+        # but this could be changed to a dispatch mechanism
+        # e.g., using this line instead
+        # plot_fun_name = f"_plot_{fun}"
+        plot_fun_name = "_plot_single"
+
+        ax = getattr(self, plot_fun_name)(ax=ax, fun=fun, **kwargs)
         return ax
 
-    def _plot_pdf(self, ax=None, **kwargs):
+    def _plot_single(self, ax=None, **kwargs):
         """Plot the pdf of the distribution."""
         import matplotlib.pyplot as plt
 
@@ -1102,8 +1118,10 @@ class BaseDistribution(BaseObject):
         else:
             lower, upper = self.ppf(0.001), self.ppf(0.999)
 
+        fun = kwargs.pop("fun")
+
         x_arr = np.linspace(lower, upper, 100)
-        y_arr = [self.pdf(x) for x in x_arr]
+        y_arr = [getattr(self, fun)(x) for x in x_arr]
         y_arr = np.array(y_arr)
 
         if ax is None:
