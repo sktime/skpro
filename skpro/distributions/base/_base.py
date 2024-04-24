@@ -228,12 +228,8 @@ class BaseDistribution(BaseObject):
                 arr = arr[:, colidx]
             if np.issubdtype(arr.dtype, np.integer):
                 arr = arr.astype("float")
-            if coerce_scalar and len(arr.shape) == 1:
-                arr = arr[0]
-            elif coerce_scalar and len(arr.shape) == 2:
-                arr = arr[0, 0]
-            elif coerce_scalar and len(arr.shape) == 0:
-                arr = arr[()]
+            if coerce_scalar:
+                arr = arr[(0,) * len(arr.shape)]
             subset_param_dict[param] = arr
         return subset_param_dict
 
