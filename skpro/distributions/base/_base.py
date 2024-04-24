@@ -1089,9 +1089,18 @@ class BaseDistribution(BaseObject):
                 x_bounds = (lower, upper)
             else:
                 x_bounds = kwargs.pop("x_bounds")
+            if "sharex" not in kwargs:
+                sharex = True
+            else:
+                sharex = kwargs.pop("sharex")
+            if "sharey" not in kwargs:
+                sharey = True
+            else:
+                sharey = kwargs.pop("sharey")
 
-            fig, ax = subplots(self.shape[0], self.shape[1], sharex=True, sharey=True)
-            for i, j in np.ndindex(self.shape):
+            shape = self.shape
+            fig, ax = subplots(shape[0], shape[1], sharex=sharex, sharey=sharey)
+            for i, j in np.ndindex(shape):
                 d_ij = self.iloc[i, j]
                 ax[i, j] = d_ij.plot(
                     fun=fun, ax=ax[i, j],
@@ -1113,12 +1122,16 @@ class BaseDistribution(BaseObject):
         """Plot the pdf of the distribution."""
         import matplotlib.pyplot as plt
 
+        fun = kwargs.pop("fun")
+
+        # obtain x axis bounds for plotting
         if "x_bounds" in kwargs:
             lower, upper = kwargs.pop("x_bounds")
-        else:
+        elif fun != "ppf":
             lower, upper = self.ppf(0.001), self.ppf(0.999)
 
-        fun = kwargs.pop("fun")
+        if fun == "ppf":
+            lower, upper = 0.001, 0.999
 
         x_arr = np.linspace(lower, upper, 100)
         y_arr = [getattr(self, fun)(x) for x in x_arr]
