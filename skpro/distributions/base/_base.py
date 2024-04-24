@@ -1103,7 +1103,8 @@ class BaseDistribution(BaseObject):
             for i, j in np.ndindex(shape):
                 d_ij = self.iloc[i, j]
                 ax[i, j] = d_ij.plot(
-                    fun=fun, ax=ax[i, j],
+                    fun=fun,
+                    ax=ax[i, j],
                     x_bounds=x_bounds, 
                     **kwargs,
                 )
