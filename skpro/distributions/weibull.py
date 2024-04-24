@@ -102,7 +102,7 @@ class Weibull(BaseDistribution):
         scale = self._bc_params["scale"]
 
         pdf_arr = (k / scale) * (x / scale) ** (k - 1) * np.exp(-((x / scale) ** k))
-        pdf_arr[x < 0] = 0  # if x < 0, pdf = 0
+        pdf_arr = pdf_arr * (x >= 0)  # if x < 0, pdf = 0
         return pdf_arr
 
     def _log_pdf(self, x):
@@ -122,7 +122,7 @@ class Weibull(BaseDistribution):
         scale = self._bc_params["scale"]
 
         lpdf_arr = np.log(k / scale) + (k - 1) * np.log(x / scale) - (x / scale) ** k
-        lpdf_arr[x < 0] = -np.inf  # if x < 0, pdf = 0, so log pdf = -inf
+        lpdf_arr = lpdf_arr + np.log(x >= 0)  # if x < 0, pdf = 0, so log pdf = -inf
         return lpdf_arr
 
     def _cdf(self, x):
@@ -142,7 +142,7 @@ class Weibull(BaseDistribution):
         scale = self._bc_params["scale"]
 
         cdf_arr = 1 - np.exp(-((x / scale) ** k))
-        cdf_arr[x < 0] = 0  # if x < 0, cdf = 0
+        cdf_arr = cdf_arr * (x >= 0)  # if x < 0, cdf = 0
         return cdf_arr
 
     def _ppf(self, p):
@@ -167,6 +167,7 @@ class Weibull(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"scale": [[1, 1], [2, 3], [4, 5]], "k": 1}
         params2 = {
             "scale": 1,
@@ -174,4 +175,7 @@ class Weibull(BaseDistribution):
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2]
+        # scalar case examples
+        params3 = {"scale": 2, "k": 3}
+
+        return [params1, params2, params3]
