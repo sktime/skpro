@@ -78,8 +78,8 @@ def test_proba_subsetters_at_iat():
 @pytest.mark.parametrize("fun", ["pdf", "ppf", "cdf"])
 def test_proba_plotting(fun):
     """Test that plotting functions do not crash and return ax as expected."""
-    from matplotlib.figure import Figure
     from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
     from skpro.distributions.normal import Normal
 
