@@ -200,8 +200,14 @@ OBJECT_TAG_REGISTER = [
     (
         "broadcast_init",
         "distribution",
-        "str",
+        ("str", ["on", "off"]),
         "whether to initialize broadcast parameters in __init__, 'on' or 'off'",
+    ),
+    (
+        "broadcast_inner",
+        "distribution",
+        ("str", ["array", "scalar"]),
+        "if inner logic is vectorized ('array') or scalar ('scalar')",
     ),
     # ---------------
     # BaseProbaMetric
