@@ -28,6 +28,7 @@ class _DistrDefaultMethodTester(BaseDistribution):
         "capabilities:approx": ["pdfnorm", "mean", "var", "energy", "log_pdf", "cdf"],
         "capabilities:exact": ["pdf", "ppf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
@@ -47,18 +48,59 @@ class _DistrDefaultMethodTester(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def ppf(self, p):
-        """Quantile function = percent point function = inverse cdf."""
-        d = self.loc[p.index, p.columns]
-        icdf_arr = d.mu + d.sigma * np.sqrt(2) * erfinv(2 * p.values - 1)
-        return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
 
-    def pdf(self, x):
-        """Probability density function."""
-        d = self.loc[x.index, x.columns]
-        pdf_arr = np.exp(-0.5 * ((x.values - d.mu) / d.sigma) ** 2)
-        pdf_arr = pdf_arr / (d.sigma * np.sqrt(2 * np.pi))
-        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        icdf_arr = mu + sigma * np.sqrt(2) * erfinv(2 * p - 1)
+        return icdf_arr
+
+    def _pdf(self, x):
+        """Probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        pdf_arr = np.exp(-0.5 * ((x - mu) / sigma) ** 2)
+        pdf_arr = pdf_arr / (sigma * np.sqrt(2 * np.pi))
+        return pdf_arr
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        # array case examples
+        params1 = {"mu": [[0, 1], [2, 3], [4, 5]], "sigma": 1}
+        params2 = {
+            "mu": 0,
+            "sigma": 1,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
+        }
+        # scalar case examples
+        params3 = {"mu": 1, "sigma": 2}
+        return [params1, params2, params3]
 
 
 def test_base_default():
