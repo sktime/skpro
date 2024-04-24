@@ -831,15 +831,21 @@ class BaseDistribution(BaseObject):
         if x is None:
             splx = self.sample(N)
             sply = self.sample(N)
-        else:
+        elif self.ndim > 0:  # and x is not None
             x = pd.DataFrame(x, index=self.index, columns=self.columns)
             splx = pd.concat([x] * N, keys=range(N))
+            sply = self.sample(N)
+        else:  # if self.ndim == 0 and x is not None
+            splx = pd.DataFrame([x] * N)
             sply = self.sample(N)
 
         # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx, sply
         spl = splx - sply
         energy = spl.apply(np.linalg.norm, axis=1, ord=1)
-        energy = energy.groupby(level=1, sort=False).mean()
+
+        if self.ndim > 0:
+            energy = energy.groupby(level=1, sort=False)
+        energy = energy.mean()
         if self.ndim > 0:
             energy = pd.DataFrame(energy, index=self.index, columns=["energy"])
         return energy
