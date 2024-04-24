@@ -1100,13 +1100,24 @@ class BaseDistribution(BaseObject):
 
             x_argname = _get_first_argname(getattr(self, fun))
 
+            def get_ax(ax, i, j, shape):
+                """API unifier for 2D and 1D subplots.
+
+                Covers inconsistency in matplotlib where creation of (m, 1) matrix
+                of subplots creates a 1D object and not a 2D object.
+                """
+                if shape[1] == 1:
+                    return ax[i]
+                else:
+                    return ax[i, j]
+
             shape = self.shape
             fig, ax = subplots(shape[0], shape[1], sharex=sharex, sharey=sharey)
             for i, j in np.ndindex(shape):
                 d_ij = self.iloc[i, j]
-                ax[i, j] = d_ij.plot(
+                get_ax(ax, i, j) = d_ij.plot(
                     fun=fun,
-                    ax=ax[i, j],
+                    ax=get_ax(ax, i, j),
                     x_bounds=x_bounds,
                     print_labels="off",
                     x_argname=x_argname,
