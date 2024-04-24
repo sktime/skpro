@@ -1098,6 +1098,8 @@ class BaseDistribution(BaseObject):
             else:
                 sharey = kwargs.pop("sharey")
 
+            x_argname = _get_first_argname(getattr(self, fun))
+
             shape = self.shape
             fig, ax = subplots(shape[0], shape[1], sharex=sharex, sharey=sharey)
             for i, j in np.ndindex(shape):
@@ -1105,9 +1107,17 @@ class BaseDistribution(BaseObject):
                 ax[i, j] = d_ij.plot(
                     fun=fun,
                     ax=ax[i, j],
-                    x_bounds=x_bounds, 
+                    x_bounds=x_bounds,
+                    print_labels="off",
+                    x_argname=x_argname,
                     **kwargs,
                 )
+            for i in range(shape[0]):
+                ax[i, 0].set_ylabel(f"{self.index[i]}")
+            for j in range(shape[1]):
+                ax[0, j].set_title(f"{self.columns[j]}")
+            fig.supylabel(f"{fun}({x_argname})")
+            fig.supxlabel(f"{x_argname}")
             return fig, ax
 
         # for now, all plots default ot this function
@@ -1124,6 +1134,8 @@ class BaseDistribution(BaseObject):
         import matplotlib.pyplot as plt
 
         fun = kwargs.pop("fun")
+        print_labels = kwargs.pop("print_labels", "on")
+        x_argname = kwargs.pop("x_argname", "x")
 
         # obtain x axis bounds for plotting
         if "x_bounds" in kwargs:
@@ -1142,6 +1154,10 @@ class BaseDistribution(BaseObject):
             ax = plt.gca()
 
         ax.plot(x_arr, y_arr, **kwargs)
+
+        if print_labels == "on":
+            ax.set_xlabel(f"{x_argname}")
+            ax.set_ylabel(f"{fun}({x_argname})")
         return ax
 
 
@@ -1343,3 +1359,10 @@ def _prod_multiindex(ix1, ix2):
 def is_scalar_notnone(obj):
     """Check if obj is scalar and not None."""
     return obj is not None and np.isscalar(obj)
+
+
+def _get_first_argname(fun):
+    """Get the name of the first argument of a function as str."""
+    from inspect import signature
+
+    return list(signature(fun).parameters.keys())[0]
