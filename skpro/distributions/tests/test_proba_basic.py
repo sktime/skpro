@@ -4,6 +4,7 @@
 
 __author__ = ["fkiraly"]
 
+import numpy as np
 import pytest
 
 from skpro.utils.validation._dependencies import _check_soft_dependencies
@@ -77,16 +78,30 @@ def test_proba_subsetters_at_iat():
 @pytest.mark.parametrize("fun", ["pdf", "ppf", "cdf"])
 def test_proba_plotting(fun):
     """Test that plotting functions do not crash and return ax as expected."""
+    from matplotlib.figure import Figure
+    from matplotlib.axes import Axes
+
     from skpro.distributions.normal import Normal
 
     # default case, 2D distribution with n_columns>1
     n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1)
     fig, ax = n.plot(fun=fun)
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, np.ndarray)
+    assert ax.shape == n.shape
+    assert all([isinstance(a, Axes) for a in ax.flatten()])
+    assert all([a.get_figure() == fig for a in ax.flatten()])
 
     # 1D case requires special treatment of axes
     n = Normal(mu=[[1], [2], [3]], sigma=1)
     fig, ax = n.plot(fun=fun)
-    
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, type(ax))
+    assert ax.shape == (n.shape[0],)
+    assert all([isinstance(a, Axes) for a in ax.flatten()])
+    assert all([a.get_figure() == fig for a in ax.flatten()])
+
     # scalar case
     n = Normal(mu=1, sigma=1)
     ax = n.plot(fun=fun)
+    assert isinstance(ax, Axes)
