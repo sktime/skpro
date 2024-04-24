@@ -68,17 +68,28 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         """Test index, columns, len and shape of distribution."""
         d = object_instance
 
-        assert isinstance(d.index, pd.Index)
-        assert isinstance(d.columns, pd.Index)
-
+        assert hasattr(d, "shape")
         assert isinstance(d.shape, tuple)
-        assert len(d.shape) == 2
+        assert len(d.shape) in [0, 2]
 
-        assert d.shape[0] == len(d.index)
-        assert d.shape[1] == len(d.columns)
+        if len(d.shape) == 2:
+            assert all(isinstance(n, int) for n in d.shape)
+
+            assert isinstance(d.index, pd.Index)
+            assert isinstance(d.columns, pd.Index)
+
+            assert d.shape[0] == len(d.index)
+            assert d.shape[1] == len(d.columns)
 
         assert isinstance(len(d), int)
-        assert len(d) == d.shape[0]
+
+        if len(d.shape) == 2:
+            assert len(d) == d.shape[0]
+        else:
+            assert len(d) == 1
+
+        assert hasattr(d, "ndim")
+        assert d.ndim == len(d.shape)
 
     @pytest.mark.parametrize("shuffled", [False, True])
     def test_sample(self, object_instance, shuffled):
@@ -90,12 +101,18 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
 
         res = d.sample()
 
-        assert d.shape == res.shape
-        assert (res.index == d.index).all()
-        assert (res.columns == d.columns).all()
+        if d.ndim > 0:
+            assert d.shape == res.shape
+            assert (res.index == d.index).all()
+            assert (res.columns == d.columns).all()
+        else:  # d.ndim = 0
+            assert np.isscalar(res)
 
         res_panel = d.sample(3)
-        dummy_panel = pd.concat([res, res, res], keys=range(3))
+        if d.ndim > 0:
+            dummy_panel = pd.concat([res, res, res], keys=range(3))
+        else:
+            dummy_panel = pd.DataFrame(index=range(3), columns=range(1))
         assert dummy_panel.shape == res_panel.shape
         assert (res_panel.index == dummy_panel.index).all()
         assert (res_panel.columns == dummy_panel.columns).all()
@@ -145,7 +162,11 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             d = _shuffle_distr(d)
 
         np_unif = np.random.uniform(size=d.shape)
-        p = pd.DataFrame(np_unif, index=d.index, columns=d.columns)
+        if d.ndim > 0:
+            p = pd.DataFrame(np_unif, index=d.index, columns=d.columns)
+        else:
+            p = np_unif
+
         res = getattr(object_instance, method)(p)
 
         _check_output_format(res, d, method)
@@ -177,6 +198,8 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
     def test_subsetting(self, object_instance, subset_row, subset_col):
         """Test subsetting of distribution."""
         d = object_instance
+        if d.ndim == 0:  # no subsetting to test if example is scalar
+            return None
 
         if subset_row:
             ix_loc = random_ss_ix(d.index, 3)
@@ -227,11 +250,23 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             return
         x = d.sample()
         x_approx = d.ppf(d.cdf(x))
-        assert np.allclose(x.values, x_approx.values)
+        if d.ndim > 0:
+            assert np.allclose(x.values, x_approx.values)
+        else:
+            assert np.allclose(x, x_approx)
 
 
 def _check_output_format(res, dist, method):
     """Check output format expectations for BaseDistribution tests."""
+    if dist.shape == ():  # scalar distribution case
+        # check if numpy float
+        assert np.isscalar(res)
+        assert np.isreal(res)
+        if method in METHODS_SCALAR_POS or method in METHODS_X_POS:
+            assert res >= 0
+        return None
+
+    # array distribution case
     if method in METHODS_ROWWISE:
         exp_shape = (dist.shape[0], 1)
     else:
@@ -254,5 +289,8 @@ def _check_output_format(res, dist, method):
 
 def _shuffle_distr(d):
     """Shuffle distribution row index."""
+    if d.shape == ():  # nothing to shuffle if scalar
+        return d
+    # shuffle rows otherwise
     shuffled_index = pd.DataFrame(d.index).sample(frac=1).index
     return d.loc[shuffled_index]
