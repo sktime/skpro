@@ -73,7 +73,7 @@ def test_proba_index_coercion():
     """Test index coercion for BaseDistribution."""
     from skpro.distributions.normal import Normal
 
-    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns = ["foo", "bar"])
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=["foo", "bar"])
 
     assert n.shape == (3, 2)
     assert isinstance(n.index, pd.Index)
@@ -81,7 +81,7 @@ def test_proba_index_coercion():
     assert n.index.equals(pd.RangeIndex(3))
     assert n.columns.equals(pd.Index(["foo", "bar"]))
 
-    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, index = ["2", 1, 0])
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, index=["2", 1, 0])
 
     assert n.shape == (3, 2)
     assert isinstance(n.index, pd.Index)
