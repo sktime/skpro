@@ -43,8 +43,8 @@ class BaseDistribution(BaseObject):
     }
 
     def __init__(self, index=None, columns=None):
-        self.index = index
-        self.columns = columns
+        self.index = _coerce_to_pd_index_or_none(index)
+        self.columns = _coerce_to_pd_index_or_none(columns)
 
         super().__init__()
         _check_estimator_deps(self)
@@ -1256,3 +1256,12 @@ def _prod_multiindex(ix1, ix2):
 def is_scalar_notnone(obj):
     """Check if obj is scalar and not None."""
     return obj is not None and np.isscalar(obj)
+
+
+def _coerce_to_pd_index_or_none(x):
+    """Coerce to pd.Index, if not None, else return None."""
+    if x is None:
+        return None
+    if isinstance(x, pd.Index):
+        return x
+    return pd.Index(x)
