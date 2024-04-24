@@ -189,7 +189,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             else:
                 expected_index = d.index
                 vars = d.columns
-            
+
             assert (obj.index == expected_index).all()
 
             if not isinstance(q, list):
