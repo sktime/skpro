@@ -11,7 +11,10 @@ import numpy as np
 import pandas as pd
 
 from skpro.base import BaseObject
-from skpro.utils.validation._dependencies import _check_estimator_deps
+from skpro.utils.validation._dependencies import (
+    _check_estimator_deps,
+    _check_soft_dependencies,
+)
 
 
 class BaseDistribution(BaseObject):
@@ -1056,6 +1059,58 @@ class BaseDistribution(BaseObject):
             return df_spl
 
         raise NotImplementedError(self._method_error_msg("sample", "error"))
+
+    def plot(self, fun="pdf", ax=None, **kwargs):
+        """Plot the distribution.
+
+        Parameters
+        ----------
+        fun : str, optional, default="pdf"
+            the function to plot, one of "pdf", "cdf", "ppf"
+        kwargs : keyword arguments
+            passed to the plotting function
+        """
+        _check_soft_dependencies("matplotlib", obj="distribution plot")
+
+        from matplotlib.pyplot import subplots
+
+        if self.ndim > 0:
+            upper = self.ppf(0.999).values.flatten().max()
+            lower = self.ppf(0.001).values.flatten().min()
+            x_bounds = (lower, upper)
+
+            fig, ax = subplots(self.shape[0], self.shape[1], sharex=True, sharey=True)
+            for i, j in np.ndindex(self.shape):
+                d_ij = self.iloc[i, j]
+                ax[i, j] = d_ij.plot(
+                    fun=fun, ax=ax[i, j],
+                    x_bounds=(upper, lower), 
+                    **kwargs,
+                )
+            return fig, ax
+
+        plot_fun_name = f"_plot_{fun}"
+        ax = getattr(self, plot_fun_name)(ax=ax, **kwargs)
+        return ax
+
+    def _plot_pdf(self, ax=None, **kwargs):
+        """Plot the pdf of the distribution."""
+        import matplotlib.pyplot as plt
+
+        if "x_bounds" in kwargs:
+            lower, upper = kwargs.pop("x_bounds")
+        else:
+            lower, upper = self.ppf(0.001), self.ppf(0.999)
+
+        x_arr = np.linspace(lower, upper, 100)
+        y_arr = [self.pdf(x) for x in x_arr]
+        y_arr = np.array(y_arr)
+
+        if ax is None:
+            ax = plt.gca()
+
+        ax.plot(x_arr, y_arr, **kwargs)
+        return ax
 
 
 class _Indexer:
