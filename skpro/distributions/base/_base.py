@@ -9,7 +9,6 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_scalar
 
 from skpro.base import BaseObject
 from skpro.utils.validation._dependencies import _check_estimator_deps
