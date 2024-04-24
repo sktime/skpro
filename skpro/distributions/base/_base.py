@@ -1061,8 +1061,11 @@ class _Indexer:
     def __call__(self, *args, **kwargs):
         """Error message to tell the user to use [ ] instead of ( )."""
         methodname = self.method[1:]
+        clsname = self.ref.__class__.__name__
         raise ValueError(
-            "Please use square brackets [] for indexing a distribution, i.e., "
+            f"Error while attempting to index {clsname} probability "
+            f"distribution instance via {methodname}: "
+            f"Please use square brackets [] for indexing a distribution, i.e., "
             f"mydist.{methodname}[index] or mydist.{methodname}[index1, index2], "
             f"not mydist.{methodname}(index) or mydist.{methodname}(index1, index2)"
         )
