@@ -1068,7 +1068,7 @@ class _Indexer:
         )
 
     def __getitem__(self, key):
-        """Getitem dunder, for use in my_distr.loc[index] an my_distr.iloc[index]."""
+        """Getitem dunder, for use in my_distr.loc[index] and my_distr.iloc[index]."""
 
         def is_noneslice(obj):
             res = isinstance(obj, slice)
