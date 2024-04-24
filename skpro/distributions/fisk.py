@@ -12,7 +12,7 @@ from skpro.distributions.base import BaseDistribution
 class Fisk(BaseDistribution):
     r"""Fisk distribution, aka log-logistic distribution.
 
-    The Fisk distibution is parametrized by a scale parameter :math:`\alpha`
+    The Fisk distribution is parametrized by a scale parameter :math:`\alpha`
     and a shape parameter :math:`\beta`, such that the cumulative distribution
     function (CDF) is given by:
 
@@ -38,84 +38,123 @@ class Fisk(BaseDistribution):
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
     }
 
     def __init__(self, alpha=1, beta=1, index=None, columns=None):
         self.alpha = alpha
         self.beta = beta
-        self.index = index
-        self.columns = columns
-
-        # todo: untangle index handling
-        # and broadcast of parameters.
-        # move this functionality to the base class
-        # important: if only one argument, it is a lenght-1-tuple, deal with this
-        self._alpha, self._beta = self._get_bc_params(self.alpha, self.beta)
-        shape = self._alpha.shape
-
-        if index is None:
-            index = pd.RangeIndex(shape[0])
-
-        if columns is None:
-            columns = pd.RangeIndex(shape[1])
 
         super().__init__(index=index, columns=columns)
 
-    def mean(self):
-        r"""Return expected value of the distribution.
-
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns the expectation :math:`\mathbb{E}[X]`
+    def _mean(self):
+        """Return expected value of the distribution.
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
         """
-        mean_arr = fisk.mean(scale=self._alpha, c=self._beta)
-        return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
 
-    def var(self):
+        mean_arr = fisk.mean(scale=alpha, c=beta)
+        return mean_arr
+
+    def _var(self):
         r"""Return element/entry-wise variance of the distribution.
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            variance of the distribution (entry-wise)
+        """
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
+
+        var_arr = fisk.var(scale=alpha, c=beta)
+        return var_arr
+
+    def _pdf(self, x):
+        """Probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        variance of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
         """
-        var_arr = fisk.var(scale=self._alpha, c=self._beta)
-        return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
 
-    def pdf(self, x):
-        """Probability density function."""
-        d = self.loc[x.index, x.columns]
-        pdf_arr = fisk.pdf(x.values, scale=d.alpha, c=d.beta)
-        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+        pdf_arr = fisk.pdf(x, scale=alpha, c=beta)
+        return pdf_arr
 
-    def log_pdf(self, x):
-        """Logarithmic probability density function."""
-        d = self.loc[x.index, x.columns]
-        lpdf_arr = fisk.logpdf(x.values, scale=d.alpha, c=d.beta)
-        return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
+    def _log_pdf(self, x):
+        """Logarithmic probability density function.
 
-    def cdf(self, x):
-        """Cumulative distribution function."""
-        d = self.loc[x.index, x.columns]
-        cdf_arr = fisk.cdf(x.values, scale=d.alpha, c=d.beta)
-        return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
-    def ppf(self, p):
-        """Quantile function = percent point function = inverse cdf."""
-        d = self.loc[p.index, p.columns]
-        icdf_arr = fisk.ppf(p.values, scale=d.alpha, c=d.beta)
-        return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log pdf values at the given points
+        """
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
+
+        lpdf_arr = fisk.logpdf(x, scale=alpha, c=beta)
+        return lpdf_arr
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
+
+        cdf_arr = fisk.cdf(x, scale=alpha, c=beta)
+        return cdf_arr
+
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
+
+        icdf_arr = fisk.ppf(p, scale=alpha, c=beta)
+        return icdf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"alpha": [[1, 1], [2, 3], [4, 5]], "beta": 3}
         params2 = {
             "alpha": 2,
@@ -123,4 +162,7 @@ class Fisk(BaseDistribution):
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2]
+        # scalar case examples
+        params3 = {"alpha": 1.5, "beta": 2.1}
+
+        return [params1, params2, params3]

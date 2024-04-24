@@ -36,28 +36,15 @@ class LogNormal(BaseDistribution):
 
     _tags = {
         "authors": ["bhavikar04", "fkiraly"],
-        "capabilities:approx": ["pdflognorm"],
-        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["energy", "pdfnorm"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
         self.mu = mu
         self.sigma = sigma
-        self.index = index
-        self.columns = columns
-
-        # todo: untangle index handling
-        # and broadcast of parameters.
-        # move this functionality to the base class
-        self._mu, self._sigma = self._get_bc_params()
-        shape = self._mu.shape
-
-        if index is None:
-            index = pd.RangeIndex(shape[0])
-
-        if columns is None:
-            columns = pd.RangeIndex(shape[1])
 
         super().__init__(index=index, columns=columns)
 
@@ -99,66 +86,117 @@ class LogNormal(BaseDistribution):
     #         energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
     #     return energy
 
-    def mean(self):
-        r"""Return expected value of the distribution.
-
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns the expectation :math:`\mathbb{E}[X]`
+    def _mean(self):
+        """Return expected value of the distribution.
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
         """
-        mean_arr = np.exp(self._mu + self._sigma**2 / 2)
-        return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
 
-    def var(self):
+        mean_arr = np.exp(mu + sigma**2 / 2)
+        return mean_arr
+
+    def _var(self):
         r"""Return element/entry-wise variance of the distribution.
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            variance of the distribution (entry-wise)
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        sd_arr = np.exp(2 * mu + 2 * sigma**2) - np.exp(2 * mu + sigma**2)
+        return sd_arr
+
+    def _pdf(self, x):
+        """Probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        variance of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
         """
-        mu = self._mu
-        sigma = self._sigma
-        sd_arr = np.exp(2 * mu + 2 * sigma**2) - np.exp(2 * mu + sigma**2)
-        return pd.DataFrame(sd_arr, index=self.index, columns=self.columns) ** 2
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
 
-    def pdf(self, x):
-        """Probability density function."""
-        d = self.loc[x.index, x.columns]
-        pdf_arr = np.exp(-0.5 * ((np.log(x.values) - d.mu) / d.sigma) ** 2)
-        pdf_arr = pdf_arr / (x.values * d.sigma * np.sqrt(2 * np.pi))
-        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+        pdf_arr = np.exp(-0.5 * ((np.log(x) - mu) / sigma) ** 2)
+        pdf_arr = pdf_arr / (x * sigma * np.sqrt(2 * np.pi))
+        return pdf_arr
 
-    def log_pdf(self, x):
-        """Logarithmic probability density function."""
-        d = self.loc[x.index, x.columns]
-        lpdf_arr = -0.5 * ((np.log(x.values) - d.mu) / d.sigma) ** 2
-        lpdf_arr = lpdf_arr - np.log(x.values * d.sigma * np.sqrt(2 * np.pi))
-        return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
+    def _log_pdf(self, x):
+        """Logarithmic probability density function.
 
-    def cdf(self, x):
-        """Cumulative distribution function."""
-        d = self.loc[x.index, x.columns]
-        cdf_arr = 0.5 + 0.5 * erf((np.log(x.values) - d.mu) / (d.sigma * np.sqrt(2)))
-        return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
-    def ppf(self, p):
-        """Quantile function = percent point function = inverse cdf."""
-        d = self.loc[p.index, p.columns]
-        icdf_arr = d.mu + d.sigma * np.sqrt(2) * erfinv(2 * p.values - 1)
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log pdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        lpdf_arr = -0.5 * ((np.log(x) - mu) / sigma) ** 2
+        lpdf_arr = lpdf_arr - np.log(x * sigma * np.sqrt(2 * np.pi))
+        return lpdf_arr
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        cdf_arr = 0.5 + 0.5 * erf((np.log(x) - mu) / (sigma * np.sqrt(2)))
+        return cdf_arr
+
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        icdf_arr = mu + sigma * np.sqrt(2) * erfinv(2 * p - 1)
         icdf_arr = np.exp(icdf_arr)
-        return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
+        return icdf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"mu": [[0, 1], [2, 3], [4, 5]], "sigma": 1}
         params2 = {
             "mu": 0,
@@ -166,4 +204,7 @@ class LogNormal(BaseDistribution):
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2]
+        # scalar case examples
+        params3 = {"mu": -2, "sigma": 2}
+
+        return [params1, params2, params3]
