@@ -37,7 +37,7 @@ class Uniform(BaseDistribution):
 
     def __init__(self, lower, upper, index=None, columns=None):
         if lower >= upper:
-            raise ValueError("Upper bound must be greater than lower bound.")
+            raise ValueError(f"Upper bound ({upper}) must be greater than lower bound {lower}.")
         self.lower = lower
         self.upper = upper
         self.index = index
