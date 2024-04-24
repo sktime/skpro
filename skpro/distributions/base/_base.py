@@ -1008,14 +1008,24 @@ class BaseDistribution(BaseObject):
 
         qdfs = []
         for p in alpha:
-            p = self._coerce_to_self_index_df(p)
+            p = self._coerce_to_self_index_df(p, flatten=self.ndim > 0)
             qdf = self.ppf(p)
             qdfs += [qdf]
 
-        qres = pd.concat(qdfs, axis=1, keys=alpha)
-        qres = qres.reorder_levels([1, 0], axis=1)
+        if self.ndim > 0:
+            qres = pd.concat(qdfs, axis=1, keys=alpha)
+            qres = qres.reorder_levels([1, 0], axis=1)
+        else:
+            qdfs = np.expand_dims(np.array(qdfs), 0)
+            qres = pd.DataFrame(qdfs, columns=alpha)
 
-        cols = pd.MultiIndex.from_product([self.columns, alpha])
+        if self.ndim > 0:
+            cols = pd.MultiIndex.from_product([self.columns, alpha])
+        else:
+            clsname = self.__class__.__name__
+            cols = pd.MultiIndex.from_product([[clsname], alpha])
+            qres.columns = cols
+
         quantiles = qres.loc[:, cols]
         return quantiles
 
