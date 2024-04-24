@@ -170,6 +170,13 @@ class BaseDistribution(BaseObject):
         return shape[0]
 
     def _loc(self, rowidx=None, colidx=None):
+        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
+            return self._at(rowidx, colidx)
+        if is_scalar_notnone(rowidx):
+            rowidx = pd.Index([rowidx])
+        if is_scalar_notnone(colidx):
+            colidx = pd.Index([colidx])
+
         if rowidx is not None:
             row_iloc = self.index.get_indexer_for(rowidx)
         else:
