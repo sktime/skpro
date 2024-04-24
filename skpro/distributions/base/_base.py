@@ -194,6 +194,23 @@ class BaseDistribution(BaseObject):
         return self._iat(rowidx=row_iloc, colidx=col_iloc)
 
     def _subset_params(self, rowidx, colidx, coerce_scalar=False):
+        """Subset distribution parameters to given rows and columns.
+
+        Parameters
+        ----------
+        rowidx : None, numpy index/slice coercible, or int
+            Rows to subset to. If None, no subsetting is done.
+        colidx : None, numpy index/slice coercible, or int
+            Columns to subset to. If None, no subsetting is done.
+        coerce_scalar : bool, optional, default=False
+            If True, and the subsetted parameter is a scalar, coerce it to a scalar.
+
+        Returns
+        -------
+        dict
+            Dictionary with subsetted distribution parameters.
+            Keys are parameter names of ``self``, values are the subsetted parameters.
+        """
         params = self._get_dist_params()
 
         subset_param_dict = {}
