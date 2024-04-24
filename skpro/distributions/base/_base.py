@@ -1077,6 +1077,13 @@ class BaseDistribution(BaseObject):
             the function to plot, one of "pdf", "cdf", "ppf"
         kwargs : keyword arguments
             passed to the plotting function
+
+        Returns
+        -------
+        fig : matplotlib.Figure, only returned if self is array distribution
+            matplotlig Figure object for subplots
+        ax : matplotlib.Axes
+            the axis or axes on which the plot is drawn
         """
         _check_soft_dependencies("matplotlib", obj="distribution plot")
 
@@ -1115,9 +1122,10 @@ class BaseDistribution(BaseObject):
             fig, ax = subplots(shape[0], shape[1], sharex=sharex, sharey=sharey)
             for i, j in np.ndindex(shape):
                 d_ij = self.iloc[i, j]
-                get_ax(ax, i, j) = d_ij.plot(
+                ax_ij = get_ax(ax, i, j, shape)
+                d_ij.plot(
                     fun=fun,
-                    ax=get_ax(ax, i, j),
+                    ax=ax_ij,
                     x_bounds=x_bounds,
                     print_labels="off",
                     x_argname=x_argname,
