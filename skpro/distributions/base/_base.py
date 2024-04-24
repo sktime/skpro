@@ -1132,9 +1132,11 @@ class BaseDistribution(BaseObject):
                     **kwargs,
                 )
             for i in range(shape[0]):
-                ax[i, 0].set_ylabel(f"{self.index[i]}")
+                ax_i0 = get_ax(ax, i, 0, shape)
+                ax_i0.set_ylabel(f"{self.index[i]}")
             for j in range(shape[1]):
-                ax[0, j].set_title(f"{self.columns[j]}")
+                ax_0j = get_ax(ax, 0, j, shape)
+                ax_0j.set_title(f"{self.columns[j]}")
             fig.supylabel(f"{fun}({x_argname})")
             fig.supxlabel(f"{x_argname}")
             return fig, ax
