@@ -183,11 +183,18 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             assert check_is_mtype(
                 obj, "pred_quantiles", "Proba", msg_return_dict="list"
             )
-            assert (obj.index == d.index).all()
+            if d.ndim == 0:
+                expected_index = pd.RangeIndex(1)
+                vars = [d.__class__.__name__]
+            else:
+                expected_index = d.index
+                vars = d.columns
+            
+            assert (obj.index == expected_index).all()
 
             if not isinstance(q, list):
                 q = [q]
-            expected_columns = pd.MultiIndex.from_product([d.columns, q])
+            expected_columns = pd.MultiIndex.from_product([vars, q])
             assert (obj.columns == expected_columns).all()
 
         res = d.quantile(q)
