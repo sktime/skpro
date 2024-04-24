@@ -102,7 +102,7 @@ class Weibull(BaseDistribution):
         scale = self._bc_params["scale"]
 
         pdf_arr = (k / scale) * (x / scale) ** (k - 1) * np.exp(-((x / scale) ** k))
-        pdf_arr[x < 0] = 0  # if x < 0, pdf = 0
+        pdf_arr = pdf_arr * (x >= 0)  # if x < 0, pdf = 0
         return pdf_arr
 
     def _log_pdf(self, x):
@@ -122,7 +122,7 @@ class Weibull(BaseDistribution):
         scale = self._bc_params["scale"]
 
         lpdf_arr = np.log(k / scale) + (k - 1) * np.log(x / scale) - (x / scale) ** k
-        lpdf_arr[x < 0] = -np.inf  # if x < 0, pdf = 0, so log pdf = -inf
+        lpdf_arr = lpdf_arr + np.log(x >= 0)  # if x < 0, pdf = 0, so log pdf = -inf
         return lpdf_arr
 
     def _cdf(self, x):
