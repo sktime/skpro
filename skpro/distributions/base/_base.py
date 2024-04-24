@@ -218,14 +218,12 @@ class BaseDistribution(BaseObject):
                 subset_param_dict[param] = None
                 continue
             arr = np.array(val)
-            if len(arr.shape) >= 2 and rowidx is not None and colidx is not None:
-                arr = arr[rowidx, colidx]
-            elif len(arr.shape) >= 2 and colidx is not None:
-                arr = arr[:, colidx]
-            elif len(arr.shape) >= 2 and rowidx is not None:
+            if len(arr.shape) == 2 and rowidx is not None:
                 arr = arr[rowidx, :]
-            elif len(arr.shape) == 1 and colidx is not None:
+            if len(arr.shape) == 1 and colidx is not None:
                 arr = arr[colidx]
+            if len(arr.shape) >= 2 and colidx is not None:
+                arr = arr[:, colidx]
             # elif len(arr.shape) == 1 and rowidx is not None:
             # do nothing with arr
             # if len(arr.shape) == 0:
