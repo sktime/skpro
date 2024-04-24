@@ -1059,7 +1059,7 @@ class _Indexer:
         self.method = method
 
     def __call__(self, *args, **kwargs):
-        """Error message to tell the user ot user [ ] instead of ( )."""
+        """Error message to tell the user to use [ ] instead of ( )."""
         methodname = self.method[1:]
         raise ValueError(
             "Please use square brackets [] for indexing a distribution, i.e., "
