@@ -142,7 +142,7 @@ class Weibull(BaseDistribution):
         scale = self._bc_params["scale"]
 
         cdf_arr = 1 - np.exp(-((x / scale) ** k))
-        cdf_arr[x < 0] = 0  # if x < 0, cdf = 0
+        cdf_arr = cdf_arr * (x >= 0)  # if x < 0, cdf = 0
         return cdf_arr
 
     def _ppf(self, p):
