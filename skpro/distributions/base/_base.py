@@ -9,6 +9,7 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_scalar
 
 from skpro.base import BaseObject
 from skpro.utils.validation._dependencies import _check_estimator_deps
@@ -38,6 +39,8 @@ class BaseDistribution(BaseObject):
         "reserved_params": ["index", "columns"],
         "broadcast_params": None,  # list of params to broadcast
         "broadcast_init": "off",  # whether to auto-broadcast params in __init__
+        "broadcast_inner": "array",  # whether inner args are array or scalar-like
+        # if "scalar", assumes scalar, and broadcasts in boilerplate
     }
 
     def __init__(self, index=None, columns=None):
@@ -80,35 +83,76 @@ class BaseDistribution(BaseObject):
 
     @property
     def loc(self):
-        """Location indexer.
+        """Location indexer, for groups of indices.
 
-        Use `my_distribution.loc[index]` for `pandas`-like row/column subsetting
-        of `BaseDistribution` descendants.
+        Use ``my_distribution.loc[index]`` for ``pandas``-like row/column subsetting
+        of ``BaseDistribution`` descendants.
 
-        `index` can be any `pandas` `loc` compatible index subsetter.
+        ``index`` can be any ``pandas`` ``iloc`` compatible index subsetter.
 
-        `my_distribution.loc[index]` or `my_distribution.loc[row_index, col_index]`
-        subset `my_distribution` to rows defined by `row_index`, cols by `col_index`,
-        to exactly the same/cols rows as `pandas` `loc` would subset
-        rows in `my_distribution.index` and columns in `my_distribution.columns`.
+        ``my_distribution.loc[index]``
+        or ``my_distribution.loc[row_index, col_index]``
+        subset ``my_distribution`` to rows selected
+        by ``row_index``, cols by ``col_index``,
+        to exactly the same cols/rows as ``pandas`` ``loc`` would subset
+        rows in ``my_distribution.index`` and columns in ``my_distribution.columns``.
         """
         return _Indexer(ref=self, method="_loc")
 
     @property
     def iloc(self):
-        """Integer location indexer.
+        """Integer location indexer, for groups of indices.
 
-        Use `my_distribution.iloc[index]` for `pandas`-like row/column subsetting
-        of `BaseDistribution` descendants.
+        Use ``my_distribution.iloc[index]`` for ``pandas``-like row/column subsetting
+        of ``BaseDistribution`` descendants.
 
-        `index` can be any `pandas` `iloc` compatible index subsetter.
+        ``index`` can be any ``pandas`` ``iloc`` compatible index subsetter.
 
-        `my_distribution.iloc[index]` or `my_distribution.iloc[row_index, col_index]`
-        subset `my_distribution` to rows defined by `row_index`, cols by `col_index`,
-        to exactly the same/cols rows as `pandas` `iloc` would subset
-        rows in `my_distribution.index` and columns in `my_distribution.columns`.
+        ``my_distribution.iloc[index]``
+        or ``my_distribution.iloc[row_index, col_index]``
+        subset ``my_distribution`` to rows selected
+        by ``row_index``, cols by ``col_index``,
+        to exactly the same cols/rows as ``pandas`` ``iloc`` would subset
+        rows in ``my_distribution.index`` and columns in ``my_distribution.columns``.
         """
         return _Indexer(ref=self, method="_iloc")
+
+    @property
+    def iat(self):
+        """Integer location indexer, for single index.
+
+        Use ``my_distribution.iat[index]`` for ``pandas``-like row/column subsetting
+        of ``BaseDistribution`` descendants.
+
+        ``index`` can be any ``pandas`` ``iat`` compatible index subsetter.
+
+        ``my_distribution.iat[index]``
+        or ``my_distribution.iat[row_index, col_index]``
+        subset ``my_distribution`` to the row selected
+        by ``row_index``, col by ``col_index``,
+        to exactly the same col/rows as ``pandas`` ``iat`` would subset
+        rows in ``my_distribution.index`` and columns in ``my_distribution.columns``.
+        """
+        return _Indexer(ref=self, method="_iat")
+
+
+    @property
+    def iat(self):
+        """Integer location indexer, for single index.
+
+        Use ``my_distribution.at[index]`` for ``pandas``-like row/column subsetting
+        of ``BaseDistribution`` descendants.
+
+        ``index`` can be any ``pandas`` ``at`` compatible index subsetter.
+
+        ``my_distribution.at[index]``
+        or ``my_distribution.at[row_index, col_index]``
+        subset ``my_distribution`` to the row selected
+        by ``row_index``, col by ``col_index``,
+        to exactly the same col/rows as ``pandas`` ``at`` would subset
+        rows in ``my_distribution.index`` and columns in ``my_distribution.columns``.
+        """
+        return _Indexer(ref=self, method="_at")
 
     @property
     def shape(self):
@@ -138,7 +182,18 @@ class BaseDistribution(BaseObject):
             col_iloc = None
         return self._iloc(rowidx=row_iloc, colidx=col_iloc)
 
-    def _subset_params(self, rowidx, colidx):
+    def _at(self, rowidx=None, colidx=None):
+        if rowidx is not None:
+            row_iloc = self.index.get_indexer_for([rowidx])[0]
+        else:
+            row_iloc = None
+        if colidx is not None:
+            col_iloc = self.columns.get_indexer_for([colidx])[0]
+        else:
+            col_iloc = None
+        return self._iat(rowidx=row_iloc, colidx=col_iloc)
+
+    def _subset_params(self, rowidx, colidx, coerce_scalar=False):
         params = self._get_dist_params()
 
         subset_param_dict = {}
@@ -147,23 +202,46 @@ class BaseDistribution(BaseObject):
                 subset_param_dict[param] = None
                 continue
             arr = np.array(val)
+            if len(arr.shape) >= 2 and rowidx is not None and colidx is not None:
+                arr = arr[rowidx, colidx]
+            elif len(arr.shape) >= 2 and colidx is not None:
+                arr = arr[:, colidx]
+            elif len(arr.shape) >= 2 and rowidx is not None:
+                arr = arr[rowidx, :]
+            elif len(arr.shape) == 1 and colidx is not None:
+                arr = arr[colidx]
+            # elif len(arr.shape) == 1 and rowidx is not None:
+            # do nothing with arr
             # if len(arr.shape) == 0:
             # do nothing with arr
-            if len(arr.shape) == 1 and colidx is not None:
-                arr = arr[colidx]
-            if len(arr.shape) == 2 and rowidx is not None:
-                arr = arr[rowidx, :]
-            if len(arr.shape) >= 2 and colidx is not None:
-                arr = arr[:, colidx]
             if np.issubdtype(arr.dtype, np.integer):
                 arr = arr.astype("float")
+            if coerce_scalar and len(arr.shape) == 1:
+                arr = arr[0]
+            elif coerce_scalar and len(arr.shape) == 2:
+                arr = arr[0, 0]
+            elif coerce_scalar and len(arr.shape) == 0:
+                arr = arr[()]
             subset_param_dict[param] = arr
         return subset_param_dict
 
+    def _iat(self, rowidx=None, colidx=None):
+        if rowidx is None or colidx is None:
+            raise ValueError("iat method requires both row and column index")
+        subset_params = self._subset_params(
+            rowidx=rowidx, colidx=colidx, coerce_scalar=True
+        )
+        return type(self)(**subset_params)
+
     def _iloc(self, rowidx=None, colidx=None):
-        # distr_type = type(self.distr)
+        if is_scalar(rowidx) and is_scalar(colidx):
+            return self._iat(rowidx, colidx)
+        if is_scalar(rowidx):
+            rowidx = pd.Index([rowidx])
+        if is_scalar(colidx):
+            colidx = pd.Index([colidx])
+
         subset_params = self._subset_params(rowidx=rowidx, colidx=colidx)
-        # distr_subset = distr_type(**subset_params)
 
         def subset_not_none(idx, subs):
             if subs is not None:
