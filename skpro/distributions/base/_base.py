@@ -218,16 +218,14 @@ class BaseDistribution(BaseObject):
                 subset_param_dict[param] = None
                 continue
             arr = np.array(val)
+            # if len(arr.shape) == 0:
+            # do nothing with arr
             if len(arr.shape) == 2 and rowidx is not None:
                 arr = arr[rowidx, :]
             if len(arr.shape) == 1 and colidx is not None:
                 arr = arr[colidx]
             if len(arr.shape) >= 2 and colidx is not None:
                 arr = arr[:, colidx]
-            # elif len(arr.shape) == 1 and rowidx is not None:
-            # do nothing with arr
-            # if len(arr.shape) == 0:
-            # do nothing with arr
             if np.issubdtype(arr.dtype, np.integer):
                 arr = arr.astype("float")
             if coerce_scalar and len(arr.shape) == 1:
