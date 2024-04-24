@@ -165,4 +165,4 @@ class Fisk(BaseDistribution):
         # scalar case examples
         params3 = {"alpha": 1.5, "beta": 2.1}
 
-        return [params1, params2, paramse]
+        return [params1, params2, params3]
