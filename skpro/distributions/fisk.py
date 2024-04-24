@@ -154,6 +154,7 @@ class Fisk(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"alpha": [[1, 1], [2, 3], [4, 5]], "beta": 3}
         params2 = {
             "alpha": 2,
@@ -161,4 +162,7 @@ class Fisk(BaseDistribution):
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2]
+        # scalar case examples
+        params3 = {"alpha": 1.5, "beta": 2.1}
+
+        return [params1, params2, paramse]

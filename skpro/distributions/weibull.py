@@ -167,6 +167,7 @@ class Weibull(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"scale": [[1, 1], [2, 3], [4, 5]], "k": 1}
         params2 = {
             "scale": 1,
@@ -174,4 +175,7 @@ class Weibull(BaseDistribution):
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2]
+        # scalar case examples
+        params3 = {"scale": 2, "k": 3}
+
+        return [params1, params2, params3]
