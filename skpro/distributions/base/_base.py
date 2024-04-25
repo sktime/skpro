@@ -542,6 +542,8 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("pdf", fill_in=approx_method))
 
+            if self.ndim > 2 and not isinstance(x, pd.DataFrame):
+                x = pd.DataFrame(x, index=self.index, columns=self.columns)
             res = self.log_pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
@@ -592,6 +594,8 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
+            if self.ndim > 2 and not isinstance(x, pd.DataFrame):
+                x = pd.DataFrame(x, index=self.index, columns=self.columns)
             res = self.pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
