@@ -80,3 +80,4 @@ Composite distributions
     :template: class.rst
 
     Mixture
+    MeanScale

@@ -8,6 +8,7 @@ __all__ = [
     "Laplace",
     "Logistic",
     "LogNormal",
+    "MeanScale",
     "Mixture",
     "Normal",
     "Poisson",
@@ -25,6 +26,7 @@ from skpro.distributions.fisk import Fisk
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.lognormal import LogNormal
+from skpro.distributions.meanscale import MeanScale
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
 from skpro.distributions.poisson import Poisson
