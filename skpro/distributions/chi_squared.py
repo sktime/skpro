@@ -21,7 +21,7 @@ class ChiSquared(BaseDistribution):
 
     Example
     -------
-    >>> from skpro.distributions.normal import ChiSquared
+    >>> from skpro.distributions.chi_squared import ChiSquared
     >>> chi = ChiSquared(dof=[[1, 2], [3, 4], [5, 6]])
     """
 
