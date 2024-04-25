@@ -639,11 +639,7 @@ class BaseDistribution(BaseObject):
         splx = self._sample_multiply(x, N)
         sply = self.sample(N)
         spl = splx <= sply
-
-        if self.ndim > 0:
-            return spl.groupby(level=1, sort=False).mean()
-        else:
-            return spl.mean().iloc[0]
+        return self._sample_mean(spl)
 
     def ppf(self, p):
         r"""Quantile function = percent point function = inverse cdf.
