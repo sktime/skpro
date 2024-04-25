@@ -138,6 +138,33 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "sukjingitsit",
+      "name": "Sukrit Jindal",
+      "avatar_url": "https://avatars.githubusercontent.com/u/132339317?v=4",
+      "profile": "https://github.com/sukjingitsit",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "an20805",
+      "name": "Anshuman Dangwal",
+      "avatar_url": "https://avatars.githubusercontent.com/u/115940865?v=4",
+      "profile": "https://github.com/an20805",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "duydl",
+      "name": "Duy Do Le",
+      "avatar_url": "https://avatars.githubusercontent.com/u/56506156?v=4",
+      "profile": "https://github.com/duydl",
+      "contributions": [
+        "maintenance"
+      ]
     }
   ]
 }
