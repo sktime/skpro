@@ -37,7 +37,7 @@ class Uniform(BaseDistribution):
     """
 
     _tags = {
-        "authors": ["an20805"],  
+        "authors": ["an20805"],
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["pdf", "log_pdf", "cdf", "ppf", "mean", "var", "energy"],
         "distr:measuretype": "continuous",
@@ -52,16 +52,16 @@ class Uniform(BaseDistribution):
 
         if self.ndim == 0 and lower >= upper:
             raise ValueError(
-                f"Error in Uniform distribution parameters, "
-                f"upper bound must be strictly greater than "
-                f"lower bound."
+                "Error in Uniform distribution parameters, "
+                "upper bound must be strictly greater than "
+                "lower bound."
             )
         else:
             if np.any(lower >= upper):
                 raise ValueError(
-                    f"Error in Uniform distribution parameters, "
-                    f"upper bound must be strictly greater than "
-                    f"lower bound."
+                    "Error in Uniform distribution parameters, "
+                    "upper bound must be strictly greater than "
+                    "lower bound."
                 )
 
     def _pdf(self, x):
@@ -213,8 +213,8 @@ class Uniform(BaseDistribution):
         params1 = {"lower": 0, "upper": [5, 10]}
         params2 = {
             "lower": -5,
-            "upper": 5, 
-            "index": pd.Index([1, 3, 5]), 
+            "upper": 5,
+            "index": pd.Index([1, 3, 5]),
             "columns": pd.Index(["a", "b"])
         }
         # scalar case examples
