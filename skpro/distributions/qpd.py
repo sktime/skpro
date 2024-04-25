@@ -39,9 +39,9 @@ class QPD_S(BaseDistribution):
         quantile function value of quantile ``1 - alpha``
     lower : float
         lower bound of semi-bounded range (default is 0)
-    version: str
+    version: str, optional, default="normal"
         options are ``normal`` (default) or ``logistic``
-    dist_shape: str
+    dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
 
@@ -68,8 +68,8 @@ class QPD_S(BaseDistribution):
         "python_dependencies": "cyclic_boosting>=1.2.5",
         # estimator tags
         # --------------
-        "capabilities:approx": [],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
         "distr:measuretype": "continuous",
     }
 
@@ -100,18 +100,10 @@ class QPD_S(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_S
 
-        params = [alpha, qv_low, qv_median, qv_high]
-        for idx, p in enumerate(params):
-            if isinstance(p, float):
-                params[idx] = np.array([p])
-            elif (
-                isinstance(p, tuple) or isinstance(p, list) or isinstance(p, np.ndarray)
-            ):
-                params[idx] = np.array(p)
-            else:
-                raise ValueError("data type is not float or array_like object")
+        alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
+            self, alpha, qv_low, qv_median, qv_high
+        )
 
-        alpha, qv_low, qv_median, qv_high = params[:]
         if index is None:
             index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
@@ -119,6 +111,8 @@ class QPD_S(BaseDistribution):
         if columns is None:
             columns = pd.RangeIndex(1)
             self.columns = columns
+
+        self._shape = (qv_low.shape[0], 1)
 
         if version == "normal":
             self.phi = norm()
@@ -236,6 +230,8 @@ class QPD_S(BaseDistribution):
             "qv_low": 0.2,
             "qv_median": 0.5,
             "qv_high": 0.8,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a"]),
         }
         params2 = {
             "alpha": 0.2,
@@ -272,9 +268,9 @@ class QPD_B(BaseDistribution):
         lower bound of semi-bounded range
     upper : float
         upper bound of supported range
-    version: str
+    version: str, optional, default="normal"
         options are ``normal`` (default) or ``logistic``
-    dist_shape: str
+    dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
 
@@ -302,8 +298,8 @@ class QPD_B(BaseDistribution):
         "python_dependencies": "cyclic_boosting>=1.2.5",
         # estimator tags
         # --------------
-        "capabilities:approx": [],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
         "distr:measuretype": "continuous",
     }
 
@@ -336,18 +332,10 @@ class QPD_B(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_B
 
-        params = [alpha, qv_low, qv_median, qv_high]
-        for idx, p in enumerate(params):
-            if isinstance(p, float):
-                params[idx] = np.array([p])
-            elif (
-                isinstance(p, tuple) or isinstance(p, list) or isinstance(p, np.ndarray)
-            ):
-                params[idx] = np.array(p)
-            else:
-                raise ValueError("data type is not float or array_like object")
+        alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
+            self, alpha, qv_low, qv_median, qv_high
+        )
 
-        alpha, qv_low, qv_median, qv_high = params[:]
         if index is None:
             index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
@@ -475,6 +463,8 @@ class QPD_B(BaseDistribution):
             "qv_high": 0.8,
             "lower": 0.0,
             "upper": 1.0,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a"]),
         }
         params2 = {
             "alpha": 0.2,
@@ -509,9 +499,9 @@ class QPD_U(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    version: str
+    version: str, optional, default="normal"
         options are ``normal`` (default) or ``logistic``
-    dist_shape: str
+    dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
 
@@ -537,8 +527,8 @@ class QPD_U(BaseDistribution):
         "python_dependencies": "cyclic_boosting>=1.2.5",
         # estimator tags
         # --------------
-        "capabilities:approx": [],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
         "distr:measuretype": "continuous",
     }
 
@@ -567,18 +557,10 @@ class QPD_U(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_U
 
-        params = [alpha, qv_low, qv_median, qv_high]
-        for idx, p in enumerate(params):
-            if isinstance(p, float):
-                params[idx] = np.array([p])
-            elif (
-                isinstance(p, tuple) or isinstance(p, list) or isinstance(p, np.ndarray)
-            ):
-                params[idx] = np.array(p)
-            else:
-                raise ValueError("data type is not float or array_like object")
+        alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
+            self, alpha, qv_low, qv_median, qv_high
+        )
 
-        alpha, qv_low, qv_median, qv_high = params[:]
         if index is None:
             index = pd.RangeIndex(qv_low.shape[0])
             self.index = index
@@ -702,6 +684,8 @@ class QPD_U(BaseDistribution):
             "qv_low": 0.2,
             "qv_median": 0.5,
             "qv_high": 0.8,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a"]),
         }
         params2 = {
             "alpha": 0.2,
@@ -727,3 +711,16 @@ def var_func(x, mu, qpd):
     # TODO: scipy.integrate will be removed in scipy 1.12.0
     pdf = derivative(qpd.cdf, x, dx=1e-6)
     return ((x - mu) ** 2) * pdf
+
+
+def _prep_qpd_params(self, alpha, qv_low, qv_median, qv_high):
+    """Prepare parameters for Johnson Quantile-Parameterized Distributions."""
+    if not isinstance(alpha, np.ndarray):
+        alpha = np.array([alpha])
+    qv_low, qv_median, qv_high = BaseDistribution._get_bc_params(
+        self, qv_low, qv_median, qv_high, oned_as="col"
+    )
+    qv_low = qv_low.flatten()
+    qv_median = qv_median.flatten()
+    qv_high = qv_high.flatten()
+    return alpha, qv_low, qv_median, qv_high
