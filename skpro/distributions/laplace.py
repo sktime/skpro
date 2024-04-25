@@ -205,6 +205,7 @@ class Laplace(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"mu": [[0, 1], [2, 3], [4, 5]], "scale": 1}
         params2 = {
             "mu": 0,
@@ -212,4 +213,7 @@ class Laplace(BaseDistribution):
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2]
+        # scalar case examples
+        params3 = {"mu": -0.5, "scale": 3}
+
+        return [params1, params2, params3]
