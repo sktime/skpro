@@ -19,6 +19,7 @@ class ChiSquared(BaseDistribution):
         degrees of freedom of the chi-squared distribution
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
+
     Example
     -------
     >>> from skpro.distributions.normal import ChiSquared
@@ -26,24 +27,18 @@ class ChiSquared(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": "sukjingitsit",
+        # estimator tags
+        # --------------
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
     }
 
     def __init__(self, dof, index=None, columns=None):
         self.dof = dof
-        self.index = index
-        self.columns = columns
 
-        # todo: untangle index handling
-        # and broadcast of parameters.
-        # move this functionality to the base class
-        self._dof = self._get_bc_params(self.dof)[0]
-        shape = self._dof.shape
-        if index is None:
-            index = pd.RangeIndex(shape[0])
-        if columns is None:
-            columns = pd.RangeIndex(shape[1])
         super().__init__(index=index, columns=columns)
 
     r"""Energy implementation issues:
@@ -63,68 +58,107 @@ class ChiSquared(BaseDistribution):
     for a chi-square distribution with k degrees of freedom.
     """
 
-    def mean(self):
-        r"""Return expected value of the distribution.
+    def _mean(self):
+        """Return expected value of the distribution.
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns the expectation :math:`\mathbb{E}[X]`
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
         """
-        mean_arr = self._dof
-        return pd.DataFrame(mean_arr, index=self.index, columns=self.columns)
+        return self._bc_params["dof"]
 
-    def var(self):
+    def _var(self):
         r"""Return element/entry-wise variance of the distribution.
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`
         Returns
         -------
-        pd.DataFrame with same rows, columns as `self`
-        variance of distribution (entry-wise)
+        2D np.ndarray, same shape as ``self``
+            variance of the distribution (entry-wise)
         """
-        sd_arr = 2 * self._dof
-        return pd.DataFrame(sd_arr, index=self.index, columns=self.columns)
+        return 2 * self._bc_params["dof"]
 
-    def pdf(self, x):
-        """Probability density function."""
-        d = self.loc[x.index, x.columns]
-        pdf_arr = np.exp(-x / 2) * np.power(x, (d.dof - 2) / 2)
-        pdf_arr = pdf_arr / (np.power(2, d.dof / 2) * gamma(d.dof / 2))
-        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+    def _pdf(self, x):
+        """Probability density function.
 
-    def log_pdf(self, x):
-        """Logarithmic probability density function."""
-        d = self.loc[x.index, x.columns]
-        lpdf_arr = -x / 2 + (d.dof - 2) * np.log(x) / 2
-        lpdf_arr = lpdf_arr - (d.dof * np.log(2) / 2 + np.log(gamma(d.dof / 2)))
-        return pd.DataFrame(lpdf_arr, index=x.index, columns=x.columns)
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
-    def cdf(self, x):
-        """Cumulative distribution function."""
-        d = self.loc[x.index, x.columns]
-        # cdf_arr = chdtr(d.dof, x)
-        cdf_arr = gammainc(d.dof / 2, x / 2)
-        cdf_arr = cdf_arr / (np.power(2, d.dof / 2) * gamma(d.dof / 2))
-        return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
+        """
+        dof = self._bc_params["dof"]
+        pdf_arr = np.exp(-x / 2) * np.power(x, (dof - 2) / 2)
+        pdf_arr = pdf_arr / (np.power(2, dof / 2) * gamma(dof / 2))
+        return pdf_arr
 
-    def ppf(self, p):
-        """Quantile function = percent point function = inverse cdf."""
-        # Working on maths of native ppf
-        d = self.loc[p.index, p.columns]
-        icdf_arr = chdtriv(d.dof, p)
-        return pd.DataFrame(icdf_arr, index=p.index, columns=p.columns)
+    def _log_pdf(self, x):
+        """Logarithmic probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log pdf values at the given points
+        """
+        dof = self._bc_params["dof"]
+        lpdf_arr = -x / 2 + (dof - 2) * np.log(x) / 2
+        lpdf_arr = lpdf_arr - (dof * np.log(2) / 2 + np.log(gamma(dof / 2)))
+        return lpdf_arr
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        dof = self._bc_params["dof"]
+        cdf_arr = gammainc(dof / 2, x / 2)
+        cdf_arr = cdf_arr / (np.power(2, dof / 2) * gamma(dof / 2))
+        return cdf_arr
+
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        dof = self._bc_params["dof"]
+        icdf_arr = chdtriv(dof, p)
+        return icdf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"dof": [[1, 2], [3, 4], [5, 6]]}
         params2 = {
             "dof": 10,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2]
+        # scalar case examples
+        params3 = {"dof": 3}
+        return [params1, params2, params3]
