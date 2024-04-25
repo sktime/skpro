@@ -3,9 +3,8 @@
 
 __author__ = ["sukjingitsit"]
 
-import numpy as np
 import pandas as pd
-from scipy.special import chdtriv, gamma, gammainc
+from scipy.stats.distributions import chi2
 
 from skpro.distributions.base import BaseDistribution
 
@@ -93,8 +92,7 @@ class ChiSquared(BaseDistribution):
             pdf values at the given points
         """
         dof = self._bc_params["dof"]
-        pdf_arr = np.exp(-x / 2) * np.power(x, (dof - 2) / 2)
-        pdf_arr = pdf_arr / (np.power(2, dof / 2) * gamma(dof / 2))
+        pdf_arr = chi2.pdf(x, dof)
         return pdf_arr
 
     def _log_pdf(self, x):
@@ -111,8 +109,7 @@ class ChiSquared(BaseDistribution):
             log pdf values at the given points
         """
         dof = self._bc_params["dof"]
-        lpdf_arr = -x / 2 + (dof - 2) * np.log(x) / 2
-        lpdf_arr = lpdf_arr - (dof * np.log(2) / 2 + np.log(gamma(dof / 2)))
+        lpdf_arr = chi2.logpdf(x, dof)
         return lpdf_arr
 
     def _cdf(self, x):
@@ -129,8 +126,7 @@ class ChiSquared(BaseDistribution):
             cdf values at the given points
         """
         dof = self._bc_params["dof"]
-        cdf_arr = gammainc(dof / 2, x / 2)
-        cdf_arr = cdf_arr / (np.power(2, dof / 2) * gamma(dof / 2))
+        cdf_arr = chi2.cdf(x, dof)
         return cdf_arr
 
     def _ppf(self, p):
@@ -147,7 +143,7 @@ class ChiSquared(BaseDistribution):
             ppf values at the given points
         """
         dof = self._bc_params["dof"]
-        icdf_arr = chdtriv(dof, p)
+        icdf_arr = chi2.ppf(p, dof)
         return icdf_arr
 
     @classmethod
