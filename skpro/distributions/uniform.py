@@ -10,8 +10,8 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Uniform(BaseDistribution):
-    """Continuous uniform distribution.
-    
+    r"""Continuous uniform distribution.
+
     The uniform distribution is parameterized by lower and upper bounds of interval,
     :math:`a` and :math`b`, such that the pdf is
 
@@ -215,7 +215,7 @@ class Uniform(BaseDistribution):
             "lower": -5,
             "upper": 5,
             "index": pd.Index([1, 3, 5]),
-            "columns": pd.Index(["a", "b"])
+            "columns": pd.Index(["a", "b"]),
         }
         # scalar case examples
         params3 = {"lower": 0, "upper": 3}
