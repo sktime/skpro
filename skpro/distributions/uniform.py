@@ -6,11 +6,19 @@ __author__ = ["an20805"]
 import numpy as np
 import pandas as pd
 
-from sktime.proba.base import BaseDistribution
+from skpro.distributions.base import BaseDistribution
 
 
 class Uniform(BaseDistribution):
     """Continuous uniform distribution.
+    
+    The uniform distribution is parameterized by lower and upper bounds of interval,
+    :math:`a` and :math`b`, such that the pdf is
+
+    .. math:: f(x) = \frac{1}{b - a} \text{ for } a \leq x \leq b, \text{ and } 0 \text{ otherwise}  # noqa E501
+
+    The lower bound :math:`a` is represented by the parameter ``lower``,
+    and the upper bound :math:`b` by the parameter ``upper``.
 
     Parameters
     ----------
@@ -31,104 +39,185 @@ class Uniform(BaseDistribution):
     _tags = {
         "authors": ["an20805"],  
         "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["pdf", "log_pdf", "cdf", "ppf", "mean", "var"],
+        "capabilities:exact": ["pdf", "log_pdf", "cdf", "ppf", "mean", "var", "energy"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
     }
 
     def __init__(self, lower, upper, index=None, columns=None):
-        if lower >= upper:
-            raise ValueError(f"Upper bound ({upper}) must be greater than lower bound {lower}.")
         self.lower = lower
         self.upper = upper
-        self.index = index
-        self.columns = columns
-
-        self._lower, self._upper = self._get_bc_params(self.lower, self.upper)
-
-        if index is None:
-            index = pd.RangeIndex(1)  
-
-        if columns is None:
-            columns = pd.RangeIndex(1)  
 
         super().__init__(index=index, columns=columns)
 
-    def pdf(self, x):
-        """Probability density function."""
-        d = self.loc[x.index, x.columns]
-        in_bounds = (x.values >= d.lower) & (x.values <= d.upper)
-        pdf_arr = np.where(in_bounds, 1 / (d.upper - d.lower), 0)
-        return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
+        if self.ndim == 0 and lower >= upper:
+            raise ValueError(
+                f"Error in Uniform distribution parameters, "
+                f"upper bound must be strictly greater than "
+                f"lower bound."
+            )
+        else:
+            if np.any(lower >= upper):
+                raise ValueError(
+                    f"Error in Uniform distribution parameters, "
+                    f"upper bound must be strictly greater than "
+                    f"lower bound."
+                )
 
-    def log_pdf(self, x):
-        """Logarithmic probability density function."""
-        return np.log(self.pdf(x))
-
-    def cdf(self, x):
-        """Cumulative distribution function."""
-        d = self.loc[x.index, x.columns]
-        cdf_arr = np.where(
-            x.values < d.lower, 0, np.where(x.values > d.upper, 1, (x.values - d.lower) / (d.upper - d.lower))
-        )
-        return pd.DataFrame(cdf_arr, index=x.index, columns=x.columns)
-
-    def ppf(self, p):
-        """Quantile function (inverse CDF)."""
-        d = self.loc[p.index, p.columns]
-        ppf_arr = d.lower + p.values * (d.upper - d.lower)
-        return pd.DataFrame(ppf_arr, index=p.index, columns=d.columns)
-
-    def mean(self):
-        """Mean of the distribution."""
-        return pd.DataFrame((self._lower + self._upper) / 2, index=self.index, columns=self.columns)
-    
-    def energy(self, x=None):
-        """Energy of self, w.r.t. self or a constant frame x.
-        Let X, Y be i.i.d. random variables with the distribution of self.
-        If x is None, returns the expected absolute difference between two random variables (self-energy).
-        If x is passed, returns the expected absolute difference between a random variable and a constant value.
+    def _pdf(self, x):
+        """Probability density function.
 
         Parameters
         ----------
-        x : None or pd.DataFrame, optional, default=None
-            if pd.DataFrame, must have same rows and columns as `self`
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pdf at
 
         Returns
         -------
-        pd.DataFrame with same rows as `self`, single column `"energy"`
-            each row contains one float, self-energy/energy as described above.
+        2D np.ndarray, same shape as ``self``
+            pdf values at the given points
         """
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
 
-        if x is None:
-            # Self-energy
-            a_arr, b_arr = self._lower, self._upper
-            energy_arr = (b_arr - a_arr) / 3  # Expected absolute difference
-            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
-        else:
-            # Energy wrt constant frame x
-            a_arr, b_arr = self._lower, self._upper
-            midpoint = (a_arr + b_arr) / 2
-            energy_arr = np.where(
-                x < a_arr, np.abs(x - midpoint),
-                np.where(x > b_arr, np.abs(x - midpoint), ((b_arr - x) ** 2 + (a_arr - x) ** 2) / (2 * (b_arr - a_arr))),
-            )
-            energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
-        return energy
+        in_bounds = (x >= lower) & (x <= upper)
+        pdf_arr = in_bounds / (upper - lower)
+        return pdf_arr
 
+    def _cdf(self, x):
+        """Cumulative distribution function.
 
-    def var(self):
-        """Variance of the distribution."""
-        return pd.DataFrame(((self._upper - self._lower) ** 2) / 12, index=self.index, columns=self.columns)
-    
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+
+        in_bounds = (x >= lower) & (x <= upper)
+        above_bound = x > upper
+
+        cdf_arr = in_bounds * (x - lower) / (upper - lower) + above_bound
+        return cdf_arr
+
+    def ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+
+        ppf_arr = lower + p * (upper - lower)
+        return ppf_arr
+
+    def _mean(self):
+        """Return expected value of the distribution.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
+        """
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+
+        mean_arr = (lower + upper) / 2
+        return mean_arr
+
+    def _var(self):
+        r"""Return element/entry-wise variance of the distribution.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            variance of the distribution (entry-wise)
+        """
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+
+        var_arr = (upper - lower) ** 2 / 12
+        return var_arr
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
+
+        Private method, to be implemented by subclasses.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
+        """
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+
+        energy_arr = (upper - lower) / 3  # Expected absolute difference
+
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
+        and :math:`x` is a constant.
+
+        Private method, to be implemented by subclasses.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to compute energy w.r.t. to
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
+        """
+        a = self._bc_params["lower"]
+        b = self._bc_params["upper"]
+
+        is_outside = x < a | x > b
+        is_inside = 1 - is_outside
+
+        midpoint = (a + b) / 2
+        energy_arr = is_outside * np.abs(x - midpoint)
+        energy_arr += is_inside * ((b - x) ** 2 + (a - x) ** 2) / (2 * (b - a))
+
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
+        return energy_arr
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        params1 = {"lower": 0, "upper": 10}
+        # array case examples
+        params1 = {"lower": 0, "upper": [5, 10]}
         params2 = {
             "lower": -5,
             "upper": 5, 
             "index": pd.Index([1, 3, 5]), 
             "columns": pd.Index(["a", "b"])
         }
-        return [params1, params2]
+        # scalar case examples
+        params3 = {"lower": 0, "upper": 3}
 
+        return [params1, params2, params3]
