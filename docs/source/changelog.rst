@@ -15,7 +15,7 @@ You can also subscribe to ``skpro``'s
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
-[2.2.2] - 2023-04-20
+[2.2.2] - 2024-04-20
 ====================
 
 Highlights
@@ -113,7 +113,7 @@ Contributors
 :user:`malikrafsan`
 
 
-[2.2.1] - 2023-03-03
+[2.2.1] - 2024-03-03
 ====================
 
 Minor bugfix and maintenance release.
@@ -128,7 +128,7 @@ Contents
 * [BUG] fix missing location/scale in ``TDistribution`` (:pr:`210`) :user:`ivarzap`
 
 
-[2.2.0] - 2023-02-08
+[2.2.0] - 2024-02-08
 ====================
 
 Highlights
@@ -313,7 +313,7 @@ Maintenance
   from ``<1.4.0,>=0.24.0`` to ``>=0.24.0,<1.5.0`` (:pr:`177`) :user:`dependabot`
 
 
-[2.1.2] - 2023-01-07
+[2.1.2] - 2024-01-07
 ====================
 
 Highlights
