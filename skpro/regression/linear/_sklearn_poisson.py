@@ -2,12 +2,13 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # based on sktime pipelines
 
-from skpro.regression.adapters.sklearn import SklearnProbaReg
+import pandas as pd
+
 from skpro.regression.base import BaseProbaRegressor
-from skpro.regression.base.adapters import _DelegateWithFittedParamForwarding
+from skpro.utils.sklearn import prep_skl_df
 
 
-class PoissonRegressor(_DelegateWithFittedParamForwarding):
+class PoissonRegressor(BaseProbaRegressor):
     """Poisson regression, direct adapter to sklearn PoissonRegressor.
 
     Generalized Linear Model with a Poisson distribution.
@@ -63,6 +64,13 @@ class PoissonRegressor(_DelegateWithFittedParamForwarding):
         Names of features seen during :term:'fit'.
     """
 
+    _tags = {
+        "capability:multioutput": False,
+        "capability:missing": False,
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
+    }
+
     def __init__(
         self,
         alpha=1.0,
@@ -92,16 +100,70 @@ class PoissonRegressor(_DelegateWithFittedParamForwarding):
             warm_start=warm_start,
         )
 
-        skpro_est = SklearnProbaReg(skl_estimator)
-        self._estimator = skpro_est.clone()
+        self.estimator_ = skl_estimator
 
     FITTED_PARAMS_TO_FORWARD = [
         "coef_",
         "intercept_",
         "n_iter_",
-        "n_features_in_",
-        "feature_names_in_",
     ]
+
+    def _fit(self, X, y):
+        """Fit regressor to training data.
+
+        Writes to self:
+            Sets fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pandas DataFrame, must be same length as X
+            labels to fit regressor to
+
+        Returns
+        -------
+        self : reference to self
+        """
+        X_inner = prep_skl_df(X).to_numpy()
+        y_inner = prep_skl_df(y).to_numpy()
+
+        self._y_cols = y.columns
+
+        if len(y_inner.shape) > 1 and y_inner.shape[1] == 1:
+            y_inner = y_inner[:, 0]
+
+        estimator = self.estimator_
+        estimator.fit(X=X_inner, y=y_inner)
+
+        for attr in self.FITTED_PARAMS_TO_FORWARD:
+            setattr(self, attr, getattr(estimator, attr))
+
+        return self
+
+    def _predict(self, X):
+        """Predict labels for data from features.
+
+        State required:
+            Requires state to be "fitted" = self.is_fitted=True
+
+        Accesses in self:
+            Fitted model attributes ending in "_"
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+
+        Returns
+        -------
+        y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
+            labels predicted for `X`
+        """
+        X_inner = prep_skl_df(X).to_numpy()
+        y_pred = self.estimator_.predict(X_inner)
+        y_pred_df = pd.DataFrame(y_pred, index=X.index, columns=self._y_cols)
+        return y_pred_df
 
     def _predict_var(self, X):
         """Compute/return variance predictions."""
@@ -128,9 +190,9 @@ class PoissonRegressor(_DelegateWithFittedParamForwarding):
         """
         from skpro.distributions.poisson import Poisson
 
-        X_inner = self._coerce_inner(X)
-        y_pred = self.estimator_.predict(X_inner)
-        y_pred_proba = Poisson(y_pred, index=X.index, columns=self._y_cols)
+        y_cols = self._y_cols
+        y_pred = self.predict(X).values
+        y_pred_proba = Poisson(y_pred, index=X.index, columns=y_cols)
         return y_pred_proba
 
     @classmethod
