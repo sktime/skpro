@@ -34,6 +34,7 @@ class ChiSquared(BaseDistribution):
         # --------------
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
     }
 
     def __init__(self, dof, index=None, columns=None):
