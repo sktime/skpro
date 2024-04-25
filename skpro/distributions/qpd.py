@@ -199,10 +199,6 @@ class QPD_S(BaseDistribution):
         pdf_arr = np.array(pdf)
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
-    def log_pdf(self, x: pd.DataFrame):
-        """Logarithmic probability density function."""
-        return np.log(self.pdf(x))
-
     def ppf(self, p: pd.DataFrame):
         """Quantile function = percent point function = inverse cdf."""
         ppf = []
@@ -434,10 +430,6 @@ class QPD_B(BaseDistribution):
         pdf_arr = np.array(pdf)
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
 
-    def log_pdf(self, x: pd.DataFrame):
-        """Logarithmic probability density function."""
-        return np.log(self.pdf(x))
-
     def ppf(self, p: pd.DataFrame):
         """Quantile function = percent point function = inverse cdf."""
         ppf = []
@@ -660,10 +652,6 @@ class QPD_U(BaseDistribution):
             pdf.append(_pdf)
         pdf_arr = np.array(pdf)
         return pd.DataFrame(pdf_arr, index=x.index, columns=x.columns)
-
-    def log_pdf(self, x: pd.DataFrame):
-        """Logarithmic probability density function."""
-        return np.log(self.pdf(x))
 
     def ppf(self, p: pd.DataFrame):
         """Quantile function = percent point function = inverse cdf."""
