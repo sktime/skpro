@@ -62,7 +62,6 @@ all_extras = [
     "tabulate",
     "uncertainties",
     "cyclic-boosting>=1.4.0; python_version < '3.12'",
-    "findiff"
 ]
 
 dev = [
