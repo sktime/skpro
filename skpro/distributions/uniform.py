@@ -57,6 +57,10 @@ class Uniform(BaseDistribution):
                 "lower bound."
             )
         else:
+            # use 2D broadcasted params for checking
+            lower = self._bc_params["lower"]
+            upper = self._bc_params["upper"]
+
             if np.any(lower >= upper):
                 raise ValueError(
                     "Error in Uniform distribution parameters, "
