@@ -31,7 +31,7 @@ class Uniform(BaseDistribution):
 
     Example
     -------
-    >>> from sktime.proba import Uniform
+    >>> from skpro.distributions import Uniform
 
     >>> u = Uniform(lower=0, upper=5)
     """
@@ -84,7 +84,7 @@ class Uniform(BaseDistribution):
         lower = self._bc_params["lower"]
         upper = self._bc_params["upper"]
 
-        in_bounds = (x >= lower) & (x <= upper)
+        in_bounds = np.logical_and(x >= lower, x <= upper)
         pdf_arr = in_bounds / (upper - lower)
         return pdf_arr
 
@@ -199,7 +199,7 @@ class Uniform(BaseDistribution):
         a = self._bc_params["lower"]
         b = self._bc_params["upper"]
 
-        is_outside = x < a | x > b
+        is_outside = np.logical_or(x < a, x > b)
         is_inside = 1 - is_outside
 
         midpoint = (a + b) / 2
