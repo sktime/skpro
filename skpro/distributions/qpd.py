@@ -112,6 +112,8 @@ class QPD_S(BaseDistribution):
             columns = pd.RangeIndex(1)
             self.columns = columns
 
+        self._shape = (qv_low.shape[0], 1)
+
         if version == "normal":
             self.phi = norm()
         elif version == "logistic":

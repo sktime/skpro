@@ -542,8 +542,9 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("pdf", fill_in=approx_method))
 
-            x_df = pd.DataFrame(x, index=self.index, columns=self.columns)
-            res = self.log_pdf(x=x_df)
+            if self.ndim > 0 and not isinstance(x, pd.DataFrame):
+                x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            res = self.log_pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
             return np.exp(res)
@@ -593,8 +594,9 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
-            x_df = pd.DataFrame(x, index=self.index, columns=self.columns)
-            res = self.pdf(x=x_df)
+            if self.ndim > 0 and not isinstance(x, pd.DataFrame):
+                x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            res = self.pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
             return np.log(res)
@@ -638,14 +640,10 @@ class BaseDistribution(BaseObject):
         )
         warn(self._method_error_msg("mean", fill_in=approx_method))
 
-        if not isinstance(x, pd.DataFrame):
-            x = pd.DataFrame(x, index=self.index, columns=self.columns)
-        # TODO: ensure this works for scalar x
-        splx = pd.concat([x] * N, keys=range(N))
-        spl = self.sample(N)
-        ind = splx <= spl
-
-        return ind.groupby(level=1, sort=False).mean()
+        splx = self._sample_multiply(x, N)
+        sply = self.sample(N)
+        spl = splx <= sply
+        return self._sample_mean(spl)
 
     def ppf(self, p):
         r"""Quantile function = percent point function = inverse cdf.
@@ -831,24 +829,66 @@ class BaseDistribution(BaseObject):
         if x is None:
             splx = self.sample(N)
             sply = self.sample(N)
-        elif self.ndim > 0:  # and x is not None
-            x = pd.DataFrame(x, index=self.index, columns=self.columns)
-            splx = pd.concat([x] * N, keys=range(N))
-            sply = self.sample(N)
-        else:  # if self.ndim == 0 and x is not None
-            splx = pd.DataFrame([x] * N)
+        else:  # if x is not None
+            splx = self._sample_multiply(x, N)
             sply = self.sample(N)
 
         # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx, sply
         spl = splx - sply
         energy = spl.apply(np.linalg.norm, axis=1, ord=1)
 
+        # todo: check if can use self._sample_mean
         if self.ndim > 0:
             energy = energy.groupby(level=1, sort=False)
         energy = energy.mean()
         if self.ndim > 0:
             energy = pd.DataFrame(energy, index=self.index, columns=["energy"])
         return energy
+
+    def _sample_multiply(self, x, N):
+        """Generate N copies of x, in a format as returned by self.sample.
+
+        Auxiliary function used in defaults for private methods.
+
+        Parameters
+        ----------
+        x : same format as output of sample(), without N,
+            or np.ndarray of same shape (2D or 0D)
+        N :int
+
+        Returns
+        -------
+        same format as output of sample(N), containing N copies of x
+        """
+        if self.ndim > 0:  # and x is not None
+            if not isinstance(x, pd.DataFrame):
+                x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            spl = pd.concat([x] * N, keys=range(N))
+        else:  # if self.ndim == 0 and x is not None
+            spl = pd.DataFrame([x] * N)
+        return spl
+
+    def _sample_mean(self, spl):
+        """Take mean of sample as returned by self.sample, respecting shape.
+
+        Auxiliary function used in defaults for private methods.
+
+        Parameters
+        ----------
+        x : same format as output of sample(N), with N:int,
+
+        Returns
+        -------
+        mean of sample:
+        if ``self`` is array: ``pd.DataFrame`` with same ``index`` and ``columns``
+        as ``self;
+        if ``self`` is scalar: scalar
+        """
+        if self.ndim > 0:
+            levels = list(range(1, spl.index.nlevels))
+            return spl.groupby(level=levels, sort=False).mean()
+        else:
+            return spl.mean().iloc[0]
 
     def mean(self):
         r"""Return expected value of the distribution.
@@ -876,7 +916,7 @@ class BaseDistribution(BaseObject):
         warn(self._method_error_msg("mean", fill_in=approx_method))
 
         spl = self.sample(approx_spl_size)
-        return spl.groupby(level=1, sort=False).mean()
+        return self._sample_mean(spl)
 
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
@@ -907,7 +947,7 @@ class BaseDistribution(BaseObject):
         spl1 = self.sample(approx_spl_size)
         spl2 = self.sample(approx_spl_size)
         spl = (spl1 - spl2) ** 2
-        return spl.groupby(level=1, sort=False).mean()
+        return self._sample_mean(spl)
 
     def pdfnorm(self, a=2):
         r"""a-norm of pdf, defaults to 2-norm.
