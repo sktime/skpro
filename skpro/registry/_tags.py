@@ -94,6 +94,13 @@ OBJECT_TAG_REGISTER = [
         "should be provided if import name differs from package name, \
         key-value pairs are package name, import name",
     ),
+    (
+        "license_type",
+        "object",
+        "str",
+        "license type for interfaced packages: 'copyleft', 'permissive', 'copyright'. \
+        may be incorrect, NO LIABILITY assumed for this field",
+    ),
     # ------------------
     # BaseProbaRegressor
     # ------------------
@@ -183,6 +190,24 @@ OBJECT_TAG_REGISTER = [
         "distribution",
         "int",
         "max iters for bisection method in ppf",
+    ),
+    (
+        "broadcast_params",
+        "distribution",
+        ("list", "str"),
+        "distribution parameters to broadcast, complement is not broadcast",
+    ),
+    (
+        "broadcast_init",
+        "distribution",
+        ("str", ["on", "off"]),
+        "whether to initialize broadcast parameters in __init__, 'on' or 'off'",
+    ),
+    (
+        "broadcast_inner",
+        "distribution",
+        ("str", ["array", "scalar"]),
+        "if inner logic is vectorized ('array') or scalar ('scalar')",
     ),
     # ---------------
     # BaseProbaMetric
