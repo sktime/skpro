@@ -299,5 +299,6 @@ def _shuffle_distr(d):
     if d.shape == ():  # nothing to shuffle if scalar
         return d
     # shuffle rows otherwise
-    shuffled_index = pd.DataFrame(d.index).sample(frac=1).index
+    shuffled_df = pd.DataFrame(d.index).sample(frac=1)
+    shuffled_index = pd.Index(shuffled_df.values.flatten())
     return d.loc[shuffled_index]
