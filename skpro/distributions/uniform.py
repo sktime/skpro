@@ -110,7 +110,7 @@ class Uniform(BaseDistribution):
         cdf_arr = in_bounds * (x - lower) / (upper - lower) + above_bound
         return cdf_arr
 
-    def ppf(self, p):
+    def _ppf(self, p):
         """Quantile function = percent point function = inverse cdf.
 
         Parameters
