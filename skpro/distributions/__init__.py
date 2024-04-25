@@ -3,6 +3,7 @@
 # adapted from sktime
 
 __all__ = [
+    "ChiSquared",
     "Empirical",
     "Fisk",
     "Laplace",
@@ -20,6 +21,7 @@ __all__ = [
     "Weibull",
 ]
 
+from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.fisk import Fisk
 from skpro.distributions.laplace import Laplace
