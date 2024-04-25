@@ -78,7 +78,7 @@ class PoissonRegressor(BaseProbaRegressor):
         max_iter=100,
         tol=1e-4,
         verbose=0,
-        warm_start=False
+        warm_start=False,
     ):
         self.alpha = alpha
         self.fit_intercept = fit_intercept
@@ -220,6 +220,6 @@ class PoissonRegressor(BaseProbaRegressor):
             "max_iter": 200,
             "tol": 2e-4,
             "verbose": 1,
-            "warm_start": True
+            "warm_start": True,
         }
         return [param1, param2]
