@@ -34,17 +34,6 @@ class _DistrDefaultMethodTester(BaseDistribution):
     def __init__(self, mu, sigma, index=None, columns=None):
         self.mu = mu
         self.sigma = sigma
-        self.index = index
-        self.columns = columns
-
-        self._mu, self._sigma = self._get_bc_params(self.mu, self.sigma)
-        shape = self._mu.shape
-
-        if index is None:
-            index = pd.RangeIndex(shape[0])
-
-        if columns is None:
-            columns = pd.RangeIndex(shape[1])
 
         super().__init__(index=index, columns=columns)
 
