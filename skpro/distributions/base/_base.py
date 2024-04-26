@@ -284,6 +284,32 @@ class BaseDistribution(BaseObject):
 
         return {k: params[k] for k in paramnames}
 
+    def get_params_df(self):
+        """Return distribution parameters as a DataFrame.
+
+        Currently only implemented for non-composites.
+        """
+        if hasattr(self, "_bc_params"):
+            bc_params = self._bc_params
+        else:
+            bc_params = self._get_bc_params_dict()
+
+        paramnames = list(bc_params.keys())
+
+        def to_df(x):
+            if self.ndim > 0:
+                return pd.DataFrame(x, index=self.index, columns=self.columns)
+            return pd.DataFrame([[x]])
+
+        vals_df = [to_df(bc_params[k]) for k in paramnames]
+
+        param_df = pd.concat(vals_df, axis=1, keys=paramnames)
+        param_df.columns = param_df.columns.swaplevel()
+        param_df = param_df.sort_index(axis=1)
+        if self.ndim == 0:
+            param_df.columns = paramnames
+        return param_df
+
     def to_str(self):
         """Return string representation of self."""
         params = self._get_dist_params()
