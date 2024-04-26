@@ -62,7 +62,7 @@ class Empirical(BaseDistribution):
         self._N = len(_spl_instances)
 
         if index is None:
-            index = pd.Index(_timestamps)
+            index = _timestamps
 
         if columns is None:
             columns = spl.columns
