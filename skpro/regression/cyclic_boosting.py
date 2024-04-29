@@ -7,19 +7,14 @@ Please read the official document for its detail
 https://cyclic-boosting.readthedocs.io/en/latest/
 """
 
-from __future__ import annotations
-
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = [
     "setoguchi-naoki"
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
-import typing
 import warnings
-
-if typing.TYPE_CHECKING:
-    from typing import Optional
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -118,8 +113,8 @@ class CyclicBoosting(BaseProbaRegressor):
         mode="multiplicative",
         lower=None,
         upper=None,
-        version: Optional[str] = "normal",
-        dist_shape: Optional[float] = 0.0,
+        version: Union[str, None] = "normal",
+        dist_shape: Union[float, None] = 0.0,
         maximal_iterations=10,
     ):
         self.feature_groups = feature_groups

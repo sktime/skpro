@@ -3,7 +3,6 @@
 import pytest
 
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
-
 from skpro.tests.test_switch import run_test_for_class
 
 

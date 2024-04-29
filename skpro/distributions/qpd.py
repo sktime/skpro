@@ -13,7 +13,7 @@ import typing
 import warnings
 
 if typing.TYPE_CHECKING:
-    from typing import Sequence, Optional, Union
+    from typing import Sequence, Union
 
     from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
     from pandas import DataFrame, Index
@@ -94,13 +94,13 @@ class QPD_Johnson(_DelegatedDistribution):
     def __init__(
         self,
         alpha: float,
-        qv_low: Union[float, Sequence],
-        qv_median: Union[float, Sequence],
-        qv_high: Union[float, Sequence],
-        lower: Optional[float] = None,
-        upper: Optional[float] = None,
-        version: Optional[str] = "normal",
-        dist_shape: Optional[float] = 0.0,
+        qv_low: float | Sequence,
+        qv_median: float | Sequence,
+        qv_high: float | Sequence,
+        lower: float | None = None,
+        upper: float | None = None,
+        version: str | None = "normal",
+        dist_shape: float | None = 0.0,
         index=None,
         columns=None,
     ):
@@ -230,16 +230,16 @@ class QPD_S(BaseDistribution):
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf"],
         "distr:measuretype": "continuous",
     }
 
     def __init__(
         self,
         alpha: float,
-        qv_low: Union[float, Sequence],
-        qv_median: Union[float, Sequence],
-        qv_high: Union[float, Sequence],
+        qv_low: float | Sequence,
+        qv_median: float | Sequence,
+        qv_high: float | Sequence,
         lower: float,
         version: str | None = "normal",
         index=None,
@@ -438,16 +438,16 @@ class QPD_B(BaseDistribution):
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf"],
         "distr:measuretype": "continuous",
     }
 
     def __init__(
         self,
         alpha: float,
-        qv_low: Union[float, Sequence],
-        qv_median: Union[float, Sequence],
-        qv_high: Union[float, Sequence],
+        qv_low: float | Sequence,
+        qv_median: float | Sequence,
+        qv_high: float | Sequence,
         lower: float,
         upper: float,
         version: str | None = "normal",
@@ -600,6 +600,7 @@ class QPD_B(BaseDistribution):
 
 class QPD_U(BaseDistribution):
     """Johnson Quantile-Parameterized Distributions with bounded mode.
+
     see https://repositories.lib.utexas.edu/bitstream/handle/2152
         /63037/HADLOCK-DISSERTATION-2017.pdf
     (Due to the Python keyword, the parameter lambda from
@@ -645,18 +646,18 @@ class QPD_U(BaseDistribution):
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf"],
         "distr:measuretype": "continuous",
     }
 
     def __init__(
         self,
         alpha: float,
-        qv_low: Union[float, Sequence],
-        qv_median: Union[float, Sequence],
-        qv_high: Union[float, Sequence],
+        qv_low: float | Sequence,
+        qv_median: float | Sequence,
+        qv_high: float | Sequence,
         version: str | None = "normal",
-        dist_shape: Optional[float] = 0.0,
+        dist_shape: float | None = 0.0,
         index=None,
         columns=None,
     ):
