@@ -19,35 +19,35 @@ class _ScipyAdapter(BaseDistribution):
     def _get_scipy_object(self) -> Union[rv_continuous, rv_discrete]:
         raise NotImplementedError("abstract method")
 
-    def _get_scipy_param(self) -> dict:
+    def _get_scipy_param(self) -> tuple[list, dict]:
         raise NotImplementedError("abstract method")
 
-    def _mean(self, *args, **kwds):
+    def _mean(self):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        params = self._get_scipy_param()
-        return obj.mean(*args, **kwds, **params)
+        args, kwds = self._get_scipy_param()
+        return obj.mean(*args, **kwds)
 
-    def _var(self, *args, **kwds):
+    def _var(self):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        params = self._get_scipy_param()
-        return obj.var(*args, **kwds, **params)
+        args, kwds = self._get_scipy_param()
+        return obj.var(*args, **kwds)
 
-    def _pdf(self, x: pd.DataFrame, *args, **kwds):
+    def _pdf(self, x: pd.DataFrame):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        params = self._get_scipy_param()
-        return obj.pdf(x.values, *args, **kwds, **params)
+        args, kwds = self._get_scipy_param()
+        return obj.pdf(x, *args, **kwds)
 
-    def _log_pdf(self, x: pd.DataFrame, *args, **kwds):
+    def _log_pdf(self, x: pd.DataFrame):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        params = self._get_scipy_param()
-        return obj.logpdf(x.values, *args, **kwds, **params)
+        args, kwds = self._get_scipy_param()
+        return obj.logpdf(x, *args, **kwds)
 
-    def _cdf(self, x: pd.DataFrame, *args, **kwds):
+    def _cdf(self, x: pd.DataFrame):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        params = self._get_scipy_param()
-        return obj.cdf(x.values, *args, **kwds, **params)
+        args, kwds = self._get_scipy_param()
+        return obj.cdf(x, *args, **kwds)
 
-    def _ppf(self, q: pd.DataFrame, *args, **kwds):
+    def _ppf(self, q: pd.DataFrame):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        params = self._get_scipy_param()
-        return obj.ppf(q.values, *args, **kwds, **params)
+        args, kwds = self._get_scipy_param()
+        return obj.ppf(q, *args, **kwds)
