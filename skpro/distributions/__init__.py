@@ -4,7 +4,9 @@
 # adapted from sktime
 
 __all__ = [
+    "ChiSquared",
     "Empirical",
+    "Fisk",
     "Laplace",
     "Logistic",
     "LogNormal",
@@ -17,10 +19,13 @@ __all__ = [
     "QPD_U",
     "QPD_Johnson",
     "TDistribution",
+    "Uniform",
     "Weibull",
 ]
 
+from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.empirical import Empirical
+from skpro.distributions.fisk import Fisk
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.lognormal import LogNormal
@@ -30,4 +35,5 @@ from skpro.distributions.poisson import Poisson
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
 from skpro.distributions.qpd_empirical import QPD_Empirical
 from skpro.distributions.t import TDistribution
+from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull

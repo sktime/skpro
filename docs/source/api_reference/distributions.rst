@@ -35,6 +35,8 @@ Continuous support
     :toctree: auto_generated/
     :template: class.rst
 
+    ChiSquared
+    Fisk
     Laplace
     Logistic
     Normal

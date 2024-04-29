@@ -1,88 +1,78 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-"""Weibull probability distribution."""
+"""Log-logistic aka Fisk probability distribution."""
 
-__author__ = ["malikrafsan"]
+__author__ = ["fkiraly"]
 
-import numpy as np
 import pandas as pd
-from scipy.special import gamma
+from scipy.stats import fisk
 
 from skpro.distributions.base import BaseDistribution
 
 
-class Weibull(BaseDistribution):
-    r"""Weibull distribution.
+class Fisk(BaseDistribution):
+    r"""Fisk distribution, aka log-logistic distribution.
 
-    The Weibull distribution is parametrized by scale parameter :math:`\lambda`,
-    and shape parameter :math:`k`, such that the cdf is given by:
+    The Fisk distribution is parametrized by a scale parameter :math:`\alpha`
+    and a shape parameter :math:`\beta`, such that the cumulative distribution
+    function (CDF) is given by:
 
-    .. math:: F(x) = 1 - \exp\left(-\left(\frac{x}{\lambda}\right)^k\right)
-
-    The scale parameter :math:`\lambda` is represented by the parameter ``scale``,
-    and the shape parameter :math:`k` by the parameter ``k``.
+    .. math:: F(x) = 1 - \left(1 + \frac{x}{\alpha}\right)^{-\beta}\right)^{-1}
 
     Parameters
     ----------
-    scale : float or array of float (1D or 2D), must be positive
+    alpha : float or array of float (1D or 2D), must be positive
         scale parameter of the distribution
-    k : float or array of float (1D or 2D), must be positive
+    beta : float or array of float (1D or 2D), must be positive
         shape parameter of the distribution
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
     Example
     -------
-    >>> from skpro.distributions.weibull import Weibull
+    >>> from skpro.distributions.fisk import Fisk
 
-    >>> w = Weibull(scale=[[1, 1], [2, 3], [4, 5]], k=1)
+    >>> d = Fisk(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
         "broadcast_init": "on",
     }
 
-    def __init__(self, scale, k, index=None, columns=None):
-        self.scale = scale
-        self.k = k
+    def __init__(self, alpha=1, beta=1, index=None, columns=None):
+        self.alpha = alpha
+        self.beta = beta
 
         super().__init__(index=index, columns=columns)
 
     def _mean(self):
-        r"""Return expected value of the distribution.
-
-        For Weibull distribution, expectation is given by,
-        :math:`\lambda \Gamma (1+\frac{1}{k})`
+        """Return expected value of the distribution.
 
         Returns
         -------
         2D np.ndarray, same shape as ``self``
             expected value of distribution (entry-wise)
         """
-        scale = self._bc_params["scale"]
-        k = self._bc_params["k"]
-        mean_arr = scale * gamma(1 + 1 / k)
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
+
+        mean_arr = fisk.mean(scale=alpha, c=beta)
         return mean_arr
 
     def _var(self):
         r"""Return element/entry-wise variance of the distribution.
 
-        For Weibull distribution, variance is given by
-        :math:`\lambda^2 \left( \Gamma(1+\frac{2}{k}) - \Gamma^2(1+\frac{1}{k}) \right)`
-
         Returns
         -------
         2D np.ndarray, same shape as ``self``
-            pdf values at the given points
+            variance of the distribution (entry-wise)
         """
-        scale = self._bc_params["scale"]
-        k = self._bc_params["k"]
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
 
-        left_gamma = gamma(1 + 2 / k)
-        right_gamma = gamma(1 + 1 / k) ** 2
-        var_arr = scale**2 * (left_gamma - right_gamma)
+        var_arr = fisk.var(scale=alpha, c=beta)
         return var_arr
 
     def _pdf(self, x):
@@ -98,11 +88,10 @@ class Weibull(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
-        k = self._bc_params["k"]
-        scale = self._bc_params["scale"]
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
 
-        pdf_arr = (k / scale) * (x / scale) ** (k - 1) * np.exp(-((x / scale) ** k))
-        pdf_arr = pdf_arr * (x >= 0)  # if x < 0, pdf = 0
+        pdf_arr = fisk.pdf(x, scale=alpha, c=beta)
         return pdf_arr
 
     def _log_pdf(self, x):
@@ -118,11 +107,10 @@ class Weibull(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             log pdf values at the given points
         """
-        k = self._bc_params["k"]
-        scale = self._bc_params["scale"]
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
 
-        lpdf_arr = np.log(k / scale) + (k - 1) * np.log(x / scale) - (x / scale) ** k
-        lpdf_arr = lpdf_arr + np.log(x >= 0)  # if x < 0, pdf = 0, so log pdf = -inf
+        lpdf_arr = fisk.logpdf(x, scale=alpha, c=beta)
         return lpdf_arr
 
     def _cdf(self, x):
@@ -138,11 +126,10 @@ class Weibull(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             cdf values at the given points
         """
-        k = self._bc_params["k"]
-        scale = self._bc_params["scale"]
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
 
-        cdf_arr = 1 - np.exp(-((x / scale) ** k))
-        cdf_arr = cdf_arr * (x >= 0)  # if x < 0, cdf = 0
+        cdf_arr = fisk.cdf(x, scale=alpha, c=beta)
         return cdf_arr
 
     def _ppf(self, p):
@@ -158,24 +145,24 @@ class Weibull(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             ppf values at the given points
         """
-        k = self._bc_params["k"]
-        scale = self._bc_params["scale"]
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
 
-        ppf_arr = scale * (-np.log(1 - p)) ** (1 / k)
-        return ppf_arr
+        icdf_arr = fisk.ppf(p, scale=alpha, c=beta)
+        return icdf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
         # array case examples
-        params1 = {"scale": [[1, 1], [2, 3], [4, 5]], "k": 1}
+        params1 = {"alpha": [[1, 1], [2, 3], [4, 5]], "beta": 3}
         params2 = {
-            "scale": 1,
-            "k": 1,
+            "alpha": 2,
+            "beta": 3,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
         # scalar case examples
-        params3 = {"scale": 2, "k": 3}
+        params3 = {"alpha": 1.5, "beta": 2.1}
 
         return [params1, params2, params3]

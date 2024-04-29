@@ -229,8 +229,8 @@ class QPD_S(BaseDistribution):
         "python_dependencies": ["cyclic_boosting>=1.4.0"],
         # estimator tags
         # --------------
-        "capabilities:approx": [],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
         "distr:measuretype": "continuous",
     }
 
@@ -270,6 +270,8 @@ class QPD_S(BaseDistribution):
         if columns is None:
             columns = pd.RangeIndex(1)
             self.columns = columns
+
+        self._shape = (qv_low.shape[0], 1)
 
         if version == "normal":
             self.phi = norm()
@@ -408,7 +410,7 @@ class QPD_B(BaseDistribution):
         lower bound of semi-bounded range
     upper : float
         upper bound of supported range
-    version: str
+    version: str, optional, default="normal"
         options are ``normal`` (default) or ``logistic``
 
     Example
@@ -435,8 +437,8 @@ class QPD_B(BaseDistribution):
         "python_dependencies": ["cyclic_boosting>=1.4.0"],
         # estimator tags
         # --------------
-        "capabilities:approx": [],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
         "distr:measuretype": "continuous",
     }
 
@@ -614,9 +616,9 @@ class QPD_U(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    version: str
+    version: str, optional, default="normal"
         options are ``normal`` (default) or ``logistic``
-    dist_shape: str
+    dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
 
@@ -642,8 +644,8 @@ class QPD_U(BaseDistribution):
         "python_dependencies": "cyclic_boosting>=1.2.5",
         # estimator tags
         # --------------
-        "capabilities:approx": [],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm", "energy"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
         "distr:measuretype": "continuous",
     }
 
