@@ -59,13 +59,10 @@ class NGBoostRegressor(BaseProbaRegressor):
         "python_dependencies": "ngboost",
     }
 
-    from ngboost.distns import Laplace, LogNormal, Normal, T
-    from ngboost.scores import LogScore
-
     def __init__(
         self,
         dist="Normal",
-        score=LogScore,
+        score="LogScore",
         estimator=None,
         natural_gradient=True,
         n_estimators=500,
@@ -147,6 +144,7 @@ class NGBoostRegressor(BaseProbaRegressor):
         self : reference to self
         """
         from ngboost import NGBRegressor
+        from ngboost.scores import LogScore
         from sklearn.tree import DecisionTreeRegressor
 
         if self.estimator is None:
@@ -162,9 +160,17 @@ class NGBoostRegressor(BaseProbaRegressor):
 
         dist_ngboost = self.dist_to_ngboost_instance()
 
+        # Score argument for NGBRegressor
+        ngboost_score = {
+            "LogScore": LogScore,
+        }
+        score = None
+        if self.score in ngboost_score:
+            score = ngboost_score[self.score]
+
         self.ngb = NGBRegressor(
             Dist=dist_ngboost,
-            Score=self.score,
+            Score=score,
             Base=self.estimator,
             natural_gradient=True,
             n_estimators=self.n_estimators,
@@ -187,7 +193,7 @@ class NGBoostRegressor(BaseProbaRegressor):
     def _pred_dist(self, X):
         return self.ngb.pred_dist(X)
 
-    def _ngb_dist_to_skpro(self, pred_mean, pred_std, index, columns):
+    def _ngb_dist_to_skpro(self, **kwargs):
         """
         Convert NGBoost distribution object to skpro BaseDistribution object.
 
@@ -214,26 +220,13 @@ class NGBoostRegressor(BaseProbaRegressor):
             "LogNormal": LogNormal,
         }
 
+        kwargs["index"] = kwargs["mu"].index
+        kwargs["columns"] = kwargs["mu"].columns
+
         skpro_dist = None
 
-        mu_sigma = ["Normal", "TDistribution", "LogNormal"]
-        mu_scale = ["Laplace"]
-        mu_only = ["Poisson"]
-
-        if self.dist in ngboost_dists and self.dist in mu_sigma:
-            skpro_dist = ngboost_dists[self.dist](
-                mu=pred_mean, sigma=pred_std, index=index, columns=columns
-            )
-
-        elif self.dist in ngboost_dists and self.dist in mu_scale:
-            skpro_dist = ngboost_dists[self.dist](
-                mu=pred_mean, scale=pred_std, index=index, columns=columns
-            )
-
-        elif self.dist in ngboost_dists and self.dist in mu_only:
-            skpro_dist = ngboost_dists[self.dist](
-                mu=pred_mean, index=index, columns=columns
-            )
+        if self.dist in ngboost_dists:
+            skpro_dist = ngboost_dists[self.dist](**kwargs)
 
         return skpro_dist
 
@@ -270,38 +263,38 @@ class NGBoostRegressor(BaseProbaRegressor):
         #                   |     (see scipy.stats.lognorm)
         # Laplace           | loc = mean, scale = scale parameter
 
-        loc_scale_params = ["Normal", "Laplace", "TDistribution"]
-        mu_params = ["Poisson"]
-        s_scale = ["LogNormal"]
-        pred_mean = None
-        pred_std = None
-        # Convert NGBoost distribution to skpro BaseDistribution
-        if self.dist in loc_scale_params:
-            pred_mean = self._pred_dist(X).params["loc"]
-            pred_std = self._pred_dist(X).params["scale"]
-            pred_std = self._check_y(y=pred_std)
-            # returns a tuple so taking only first index of the tuple
-            pred_std = pred_std[0]
-        elif self.dist in mu_params:
-            pred_mean = self._pred_dist(X).params["mu"]
-            pred_std = np.sqrt(pred_mean)
-        elif self.dist in s_scale:
-            pred_mean = np.log(self._pred_dist(X).params["scale"])
-            pred_std = self._pred_dist(X).params["s"]
+        dist_params = {
+            "Normal": ["loc", "scale"],
+            "Laplace": ["loc", "scale"],
+            "TDistribution": ["loc", "scale"],
+            "Poisson": ["mu"],
+            "LogNormal": ["scale", "s"],
+        }
 
-        pred_std = self._check_y(y=pred_std)
-        # returns a tuple so taking only first index of the tuple
-        pred_std = pred_std[0]
+        skpro_params = {
+            "Normal": ["mu", "sigma"],
+            "Laplace": ["mu", "scale"],
+            "TDistribution": ["mu", "sigma"],
+            "Poisson": ["mu"],
+            "LogNormal": ["mu", "sigma"],
+        }
 
-        pred_mean = self._check_y(y=pred_mean)
-        # returns a tuple so taking only first index of the tuple
-        pred_mean = pred_mean[0]
+        kwargs = {}
 
-        index = pred_mean.index
-        columns = pred_mean.columns
+        if self.dist in dist_params and self.dist in skpro_params:
+            ngboost_params = dist_params[self.dist]
+            skp_params = skpro_params[self.dist]
+            for ngboost_param, skp_param in zip(ngboost_params, skp_params):
+                kwargs[skp_param] = self._pred_dist(X).params[ngboost_param]
+                if self.dist == "LogNormal" and ngboost_param == "scale":
+                    kwargs[skp_param] = np.log(self._pred_dist(X).params[ngboost_param])
 
-        # converting the ngboost Distribution to an skpro equivalent BaseDistribution
-        pred_dist = self._ngb_dist_to_skpro(pred_mean, pred_std, index, columns)
+                kwargs[skp_param] = self._check_y(y=kwargs[skp_param])
+                # returns a tuple so taking only first index of the tuple
+                kwargs[skp_param] = kwargs[skp_param][0]
+
+        # Convert NGBoost Distribution to skpro BaseDistribution
+        pred_dist = self._ngb_dist_to_skpro(**kwargs)
 
         return pred_dist
 
@@ -328,40 +321,22 @@ class NGBoostRegressor(BaseProbaRegressor):
             "dist": "Laplace",
             "n_estimators": 800,
         }
+        params3 = {}
+        params4 = {
+            "dist": "Poisson",
+            "minibatch_frac": 0.8,
+            "early_stopping_rounds": 4,
+        }
+        params5 = {
+            "dist": "LogNormal",
+            "learning_rate": 0.001,
+            "validation_fraction": 0.2,
+        }
 
-        return [params1, params2]
+        params6 = {
+            "dist": "TDistribution",
+            "natural_gradient": False,
+            "verbose": False,
+        }
 
-
-# #Load Boston housing dataset
-# data_url = "http://lib.stat.cmu.edu/datasets/boston"
-# raw_df = pd.read_csv(data_url, sep="\s+", skiprows=22, header=None)
-# X = np.hstack([raw_df.values[::2, :], raw_df.values[1::2, :2]])
-# Y = raw_df.values[1::2, 2]
-# X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
-# from sklearn.datasets import load_diabetes
-# from sklearn.ensemble import RandomForestRegressor
-# from sklearn.linear_model import LinearRegression
-# from sklearn.model_selection import train_test_split
-# from sklearn.metrics import mean_squared_error
-
-# from skpro.regression.residual import ResidualDouble
-
-# # step 1: data specification
-# X, y = load_diabetes(return_X_y=True, as_frame=True)
-# X_train, X_test, Y_train, Y_test = train_test_split(X, y)
-# ngb = NGBoostRegressor()._fit(X_train, Y_train)
-# Y_preds = ngb._predict(X_test)
-
-# Y_dists = ngb._pred_dist(X_test)
-
-# print(Y_dists)
-# Y_pred_proba = ngb.predict_proba(X_test)
-# print(Y_pred_proba)
-
-# # test Mean Squared Error
-# test_MSE = mean_squared_error(Y_preds, Y_test)
-# print('Test MSE', test_MSE)
-
-# # test Negative Log Likelihood
-# test_NLL = -Y_dists.logpdf(Y_test).mean()
-# print('Test NLL', test_NLL)
+        return [params1, params2, params3, params4, params5, params6]
