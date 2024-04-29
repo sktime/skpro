@@ -23,10 +23,12 @@ class BaseProbaRegressor(BaseEstimator):
     _tags = {
         "object_type": "regressor_proba",  # type of object, e.g., "distribution"
         "estimator_type": "regressor_proba",  # type of estimator, e.g., "regressor"
+        "capability:survival": False,
         "capability:multioutput": False,
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
+        "C_inner_mtype": "pd_DataFrame_Table",
     }
 
     def __init__(self):
@@ -35,6 +37,7 @@ class BaseProbaRegressor(BaseEstimator):
 
         self._X_converter_store = {}
         self._y_converter_store = {}
+        self._C_converter_store = {}
 
     def __rmul__(self, other):
         """Magic * method, return (left) concatenated Pipeline.
@@ -61,7 +64,7 @@ class BaseProbaRegressor(BaseEstimator):
         else:
             return NotImplemented
 
-    def fit(self, X, y):
+    def fit(self, X, y, C=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -75,23 +78,39 @@ class BaseProbaRegressor(BaseEstimator):
             feature instances to fit regressor to
         y : pd.DataFrame, must be same length as X
             labels to fit regressor to
+        C : ignored, optional (default=None)
+            censoring information for survival analysis
+            All probabilistic regressors assume data to be uncensored
 
         Returns
         -------
         self : reference to self
         """
-        X, y, X_metadata, y_metadata = self._check_X_y(X, y, return_metadata=True)
+        capa_surv = self.get_tag("capability:survival")
+
+        check_ret = self._check_X_y(X, y, C, return_metadata=True)
+
+        # get inner X, y, C
+        X_inner = check_ret["X_inner"]
+        y_inner = check_ret["y_inner"]
+        if capa_surv:
+            C_inner = check_ret["C_inner"]
 
         # remember metadata
-        self._X_metadata = X_metadata
-        self._y_metadata = y_metadata
+        self._X_metadata = check_ret["X_metadata"]
+        self._y_metadata = check_ret["y_metadata"]
+        if capa_surv:
+            self._C_metadata = check_ret["C_metadata"]
 
         # set fitted flag to True
         self._is_fitted = True
 
-        return self._fit(X, y)
+        if not capa_surv:
+            return self._fit(X_inner, y_inner)
+        else:
+            return self._fit(X_inner, y_inner, C=C_inner)
 
-    def _fit(self, X, y):
+    def _fit(self, X, y, C=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -584,7 +603,7 @@ class BaseProbaRegressor(BaseEstimator):
 
         return pred_var
 
-    def _check_X_y(self, X, y, return_metadata=False):
+    def _check_X_y(self, X, y, C=None, return_metadata=False):
         X_inner, X_metadata = self._check_X(X, return_metadata=True)
         y_inner, y_metadata = self._check_y(y)
 
@@ -598,6 +617,22 @@ class BaseProbaRegressor(BaseEstimator):
                 f"but X had {len_X} rows, and y had {len_y} rows"
             )
 
+        # handle survival censoring indicator if passed and not ignored
+        # only used if capability:survival tag is True
+        capa_surv = self.get_tag("capability:survival")
+
+        if capa_surv and C is not None:
+            C_inner, C_metadata = self._check_C(C)
+            len_C = C_metadata["n_instances"]
+            if len_C != "NA" and not len_C == len_y:
+                raise ValueError(
+                    f"X, y, C in fit of {self} must have same number of rows, "
+                    f"but C had {len_C} rows, and y had {len_y} rows"
+                )
+        else:
+            C_inner = None
+            C_metadata = None
+
         # in case y gets an index through conversion and X already had one
         # we need to make sure that the index of y is the same as the index of X
         # example case: X was pd.DataFrame, y was np.ndarray
@@ -607,10 +642,24 @@ class BaseProbaRegressor(BaseEstimator):
             if isinstance(y_inner, (pd.DataFrame, pd.Series)):
                 y_inner.index = X_inner.index
 
+        if hasattr(X_inner, "index") and C is not None and not hasattr(C, "index"):
+            if isinstance(C_inner, (pd.DataFrame, pd.Series)):
+                C_inner.index = X_inner.index
+
+        ret_dict = {
+            "X_inner": X_inner,
+            "y_inner": y_inner,
+        }
+
         if return_metadata:
-            return X_inner, y_inner, X_metadata, y_metadata
-        else:
-            return X_inner, y_inner
+            ret_dict["X_metadata"] = X_metadata
+            ret_dict["y_metadata"] = y_metadata
+        if capa_surv:
+            ret_dict["C_inner"] = C_inner
+        if return_metadata and capa_surv:
+            ret_dict["C_metadata"] = C_metadata
+
+        return ret_dict
 
     def _check_X(self, X, return_metadata=False):
         """Check validity of X, convert to X_inner_mtype, and return.
@@ -706,7 +755,7 @@ class BaseProbaRegressor(BaseEstimator):
 
         # convert y to y_inner_mtype
         y_inner_mtype = self.get_tag("y_inner_mtype")
-        y = convert(
+        y_inner = convert(
             obj=y,
             from_type=metadata["mtype"],
             to_type=y_inner_mtype,
@@ -714,7 +763,34 @@ class BaseProbaRegressor(BaseEstimator):
             store=self._y_converter_store,
         )
 
-        return y, metadata
+        return y_inner, metadata
+
+    def _check_C(self, C):
+        # input validity check for C
+        valid, msg, metadata = check_is_mtype(
+            C,
+            ALLOWED_MTYPES,
+            "Table",
+            return_metadata=["n_instances"],
+            var_name="C",
+            msg_return_dict="list",
+        )
+
+        # update with clearer message
+        if not valid:
+            check_is_error_msg(msg, var_name="C", raise_exception=True)
+
+        # convert y to y_inner_mtype
+        C_inner_mtype = self.get_tag("C_inner_mtype")
+        C_inner = convert(
+            obj=C,
+            from_type=metadata["mtype"],
+            to_type=C_inner_mtype,
+            as_scitype="Table",
+            store=self._y_converter_store,
+        )
+
+        return C_inner, metadata
 
     def _check_alpha(self, alpha, name="alpha"):
         """Check that quantile or confidence level value, or list of values, is valid.
