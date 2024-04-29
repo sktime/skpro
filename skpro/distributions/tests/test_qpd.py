@@ -2,7 +2,8 @@
 
 import pytest
 
-from skpro.distributions.qpd import QPD_B, QPD_S
+from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
+
 from skpro.tests.test_switch import run_test_for_class
 
 
@@ -36,6 +37,22 @@ def test_qpd_s_simple_use():
         qv_median=[3, 4],
         qv_high=[5, 6],
         lower=0,
+    )
+
+    qpd.mean()
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(QPD_U),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
+def test_qpd_u_simple_use():
+    """Test simple use of qpd with un-bounded mode."""
+    qpd = QPD_U(
+        alpha=0.2,
+        qv_low=[1, 2],
+        qv_median=[3, 4],
+        qv_high=[5, 6],
     )
 
     qpd.mean()
