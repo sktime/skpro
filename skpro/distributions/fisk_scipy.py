@@ -1,9 +1,9 @@
 from scipy.stats import rv_continuous, fisk
-from skpro.distributions.adapters.scipy import _ScipyContinuousAdapter
+from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 __all__ = ["FiskScipy"]
 
-class FiskScipy(_ScipyContinuousAdapter):
+class FiskScipy(_ScipyAdapter):
     _tags = {
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
