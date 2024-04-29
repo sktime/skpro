@@ -18,7 +18,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from skpro.distributions.qpd import QPD_B, QPD_S
+from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -290,8 +290,10 @@ class CyclicBoosting(BaseProbaRegressor):
             params["lower"] = self.lower
             params["upper"] = self.upper
             qpd = QPD_B(**params)
+        elif self.bound == "U":
+            qpd = QPD_U(**params)
         else:
-            raise ValueError("bound need to be 'S' or 'B'")
+            raise ValueError("bound need to be 'S' or 'B' or 'U")
 
         return qpd
 
