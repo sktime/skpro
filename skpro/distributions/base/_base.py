@@ -96,10 +96,11 @@ class BaseDistribution(BaseObject):
 
         subset_param_dict = {}
         for param, val in params.items():
-            if val is not None:
-                arr = np.array(val)
-            else:
-                arr = None
+            if val is None:
+                subset_param_dict[param] = None
+                continue
+            # else:
+            arr = np.array(val)
             # if len(arr.shape) == 0:
             # do nothing with arr
             if len(arr.shape) >= 1 and rowidx is not None:
