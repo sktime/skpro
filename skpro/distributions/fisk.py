@@ -29,7 +29,7 @@ class Fisk(BaseDistribution):
 
     Example
     -------
-    >>> from skpro.distributions.fisk import Fisk
+    >>> from skpro.distributions.fisk import FiskScipy as Fisk
 
     >>> d = Fisk(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
     """
