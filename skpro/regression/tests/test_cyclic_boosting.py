@@ -72,7 +72,6 @@ def test_cyclic_boosting_with_manual_paramaters():
         maximal_iterations=5,
         alpha=0.25,
         mode="additive",
-        bound="S",
         lower=0.0,
     )
     reg_proba.fit(X_train, y_train)

@@ -13,7 +13,7 @@ import typing
 import warnings
 
 if typing.TYPE_CHECKING:
-    from typing import Sequence, Optional
+    from typing import Sequence, Optional, Union
 
     from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
     from pandas import DataFrame, Index
@@ -94,9 +94,9 @@ class QPD_Johnson(_DelegatedDistribution):
     def __init__(
         self,
         alpha: float,
-        qv_low: float or object,
-        qv_median: float or object,
-        qv_high: float or object,
+        qv_low: Union[float, Sequence],
+        qv_median: Union[float, Sequence],
+        qv_high: Union[float, Sequence],
         lower: Optional[float] = None,
         upper: Optional[float] = None,
         version: Optional[str] = "normal",
@@ -117,7 +117,7 @@ class QPD_Johnson(_DelegatedDistribution):
 
         if lower is None:
             delegate_cls = QPD_U
-            extra_params = {}
+            extra_params = {"dist_shape": dist_shape}
         elif upper is None:
             delegate_cls = QPD_S
             extra_params = {"lower": lower}
@@ -131,7 +131,6 @@ class QPD_Johnson(_DelegatedDistribution):
             "qv_median": qv_median,
             "qv_high": qv_high,
             "version": version,
-            "dist_shape": dist_shape,
             "index": index,
             "columns": columns,
             **extra_params,
@@ -238,9 +237,9 @@ class QPD_S(BaseDistribution):
     def __init__(
         self,
         alpha: float,
-        qv_low: float | Sequence,
-        qv_median: float | Sequence,
-        qv_high: float | Sequence,
+        qv_low: Union[float, Sequence],
+        qv_median: Union[float, Sequence],
+        qv_high: Union[float, Sequence],
         lower: float,
         version: str | None = "normal",
         index=None,
@@ -308,6 +307,8 @@ class QPD_S(BaseDistribution):
     def mean(self, lower: float = None, upper: float = None):
         """Return expected value of the distribution.
 
+        Please set the upper and lower limits of the random variable correctly.
+
         Returns
         -------
         pd.DataFrame with same rows, columns as `self`
@@ -324,6 +325,8 @@ class QPD_S(BaseDistribution):
 
     def var(self, lower: float = None, upper: float = None):
         """Return element/entry-wise variance of the distribution.
+
+        Please set the upper and lower limits of the random variable correctly.
 
         Returns
         -------
@@ -440,9 +443,9 @@ class QPD_B(BaseDistribution):
     def __init__(
         self,
         alpha: float,
-        qv_low: float | Sequence,
-        qv_median: float | Sequence,
-        qv_high: float | Sequence,
+        qv_low: Union[float, Sequence],
+        qv_median: Union[float, Sequence],
+        qv_high: Union[float, Sequence],
         lower: float,
         upper: float,
         version: str | None = "normal",
@@ -513,6 +516,8 @@ class QPD_B(BaseDistribution):
     def mean(self, lower: float = None, upper: float = None):
         """Return expected value of the distribution.
 
+        Please set the upper and lower limits of the random variable correctly.
+
         Returns
         -------
         pd.DataFrame with same rows, columns as `self`
@@ -530,6 +535,8 @@ class QPD_B(BaseDistribution):
     def var(self, lower: float = None, upper: float = None):
         """Return element/entry-wise variance of the distribution.
 
+        Please set the upper and lower limits of the random variable correctly.
+
         Returns
         -------
         pd.DataFrame with same rows, columns as `self`
@@ -538,7 +545,7 @@ class QPD_B(BaseDistribution):
         if not lower:
             lower = self.lower
         if not upper:
-            upper = 1e3
+            upper = self.upper
         mean = self.mean(lower, upper).values
         x = np.linspace(lower, upper, num=int(1e3))
         cdf_arr = self.qpd.cdf(x).T
@@ -643,9 +650,9 @@ class QPD_U(BaseDistribution):
     def __init__(
         self,
         alpha: float,
-        qv_low: float | Sequence,
-        qv_median: float | Sequence,
-        qv_high: float | Sequence,
+        qv_low: Union[float, Sequence],
+        qv_median: Union[float, Sequence],
+        qv_high: Union[float, Sequence],
         version: str | None = "normal",
         dist_shape: Optional[float] = 0.0,
         index=None,
@@ -717,6 +724,8 @@ class QPD_U(BaseDistribution):
     def mean(self, lower: float = -1e3, upper: float = 1e3):
         """Return expected value of the distribution.
 
+        Please set the upper and lower limits of the random variable correctly.
+
         Returns
         -------
         pd.DataFrame with same rows, columns as `self`
@@ -733,6 +742,8 @@ class QPD_U(BaseDistribution):
 
     def var(self, lower: float = -1e3, upper: float = 1e3):
         """Return element/entry-wise variance of the distribution.
+
+        Please set the upper and lower limits of the random variable correctly.
 
         Returns
         -------

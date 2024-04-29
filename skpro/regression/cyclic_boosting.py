@@ -7,18 +7,24 @@ Please read the official document for its detail
 https://cyclic-boosting.readthedocs.io/en/latest/
 """
 
+from __future__ import annotations
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = [
     "setoguchi-naoki"
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
+import typing
 import warnings
+
+if typing.TYPE_CHECKING:
+    from typing import Optional
 
 import numpy as np
 import pandas as pd
 
-from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
+from skpro.distributions.qpd import QPD_Johnson
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -48,14 +54,18 @@ class CyclicBoosting(BaseProbaRegressor):
         lower quantile for QPD's parameter alpha
     mode : str, default='multiplicative'
         the type of quantile regressor. 'multiplicative' or 'additive'
-    bound : str, default='U'
-        Different modes defined by supported target range, options are ``S``
-            (semi-bound), ``B`` (bound), and ``U`` (unbound).
-    lower : float, default=0.0
+    lower : float, default=None
         lower bound of supported range (only active for bound and semi-bound
-        modes)
-    upper : float, default=1.0
-        upper bound of supported range (only active for bound mode)
+        modes). If neither 'lower' nor 'upper' is specified, `QPD_U` will be used as
+        unbound-mode
+    upper : float, default=None
+        upper bound of supported range (only active for bound mode). If neither
+        'lower' nor 'upper' is specified, `QPD_U` will be used as unbound-mode
+    version: str, one of ``'normal'`` (default), ``'logistic'``
+        options are ``'normal'`` (default) or ``'logistic'``
+    dist_shape: float, optional, default=0.0
+        parameter modifying the logistic base distribution via
+        sinh/arcsinh-scaling (only active in sinhlogistic version)
     maximal_iterations : int, default=10
         number of iterations
 
@@ -106,9 +116,10 @@ class CyclicBoosting(BaseProbaRegressor):
         feature_properties=None,
         alpha=0.2,
         mode="multiplicative",
-        bound="S",
-        lower=0.0,
-        upper=1.0,
+        lower=None,
+        upper=None,
+        version: Optional[str] = "normal",
+        dist_shape: Optional[float] = 0.0,
         maximal_iterations=10,
     ):
         self.feature_groups = feature_groups
@@ -119,9 +130,10 @@ class CyclicBoosting(BaseProbaRegressor):
         self.quantile_est = list()
         self.qpd = None
         self.mode = mode
-        self.bound = bound
         self.lower = lower
         self.upper = upper
+        self.version = version
+        self.dist_shape = dist_shape
         self.maximal_iterations = maximal_iterations
 
         super().__init__()
@@ -280,20 +292,14 @@ class CyclicBoosting(BaseProbaRegressor):
             "qv_low": self.quantile_values[0],
             "qv_median": self.quantile_values[1],
             "qv_high": self.quantile_values[2],
+            "lower": self.lower,
+            "upper": self.upper,
+            "version": self.version,
+            "dist_shape": self.dist_shape,
             "index": index,
             "columns": y_cols,
         }
-        if self.bound == "S":
-            params["lower"] = self.lower
-            qpd = QPD_S(**params)
-        elif self.bound == "B":
-            params["lower"] = self.lower
-            params["upper"] = self.upper
-            qpd = QPD_B(**params)
-        elif self.bound == "U":
-            qpd = QPD_U(**params)
-        else:
-            raise ValueError("bound need to be 'S' or 'B' or 'U")
+        qpd = QPD_Johnson(**params)
 
         return qpd
 
@@ -455,14 +461,12 @@ class CyclicBoosting(BaseProbaRegressor):
         param1 = {
             "alpha": 0.2,
             "mode": "additive",
-            "bound": "S",
             "lower": 0.0,
             "maximal_iterations": 5,
         }
         param2 = {
             "alpha": 0.2,
             "mode": "additive",
-            "bound": "B",
             "lower": 0.0,
             "upper": 1000,
             "maximal_iterations": 5,
