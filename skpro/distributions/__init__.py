@@ -19,6 +19,7 @@ __all__ = [
     "TDistribution",
     "Uniform",
     "Weibull",
+    "FiskScipy",
 ]
 
 from skpro.distributions.chi_squared import ChiSquared
@@ -35,3 +36,4 @@ from skpro.distributions.qpd_empirical import QPD_Empirical
 from skpro.distributions.t import TDistribution
 from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
+from skpro.distributions.fisk_scipy import FiskScipy
