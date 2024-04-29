@@ -83,7 +83,7 @@ class CyclicBoosting(BaseProbaRegressor):
         Johnson Quantile-Parameterized Distributions instance
 
     Example
-    --------
+    -------
     >>> from skpro.regression.cyclic_boosting import CyclicBoosting
     >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
     >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP

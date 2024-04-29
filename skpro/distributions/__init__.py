@@ -15,6 +15,7 @@ __all__ = [
     "QPD_S",
     "QPD_B",
     "QPD_U",
+    "QPD_Johnson",
     "TDistribution",
     "Weibull",
 ]
@@ -26,7 +27,7 @@ from skpro.distributions.lognormal import LogNormal
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
 from skpro.distributions.poisson import Poisson
-from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
+from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
 from skpro.distributions.qpd_empirical import QPD_Empirical
 from skpro.distributions.t import TDistribution
 from skpro.distributions.weibull import Weibull
