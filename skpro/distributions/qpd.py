@@ -87,7 +87,7 @@ class QPD_Johnson(_DelegatedDistribution):
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
-        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf", "log_pdf"],
+        "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf"],
         "distr:measuretype": "continuous",
     }
 
