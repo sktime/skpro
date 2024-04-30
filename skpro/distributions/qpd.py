@@ -13,7 +13,7 @@ import typing
 import warnings
 
 if typing.TYPE_CHECKING:
-    from typing import Sequence, Union
+    from typing import Sequence
 
     from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
     from pandas import DataFrame, Index
@@ -306,7 +306,7 @@ class QPD_S(BaseDistribution):
             version=version,
         )
 
-    def mean(self, lower: float = None, upper: float = None):
+    def _mean(self, lower: float = None, upper: float = None):
         """Return expected value of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -325,7 +325,7 @@ class QPD_S(BaseDistribution):
         loc = exp_func(x, cdf_arr, self.index.shape[0])
         return pd.DataFrame(loc, index=self.index, columns=self.columns)
 
-    def var(self, lower: float = None, upper: float = None):
+    def _var(self, lower: float = None, upper: float = None):
         """Return element/entry-wise variance of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -345,7 +345,7 @@ class QPD_S(BaseDistribution):
         var = var_func(x, mean, cdf_arr, self.index.shape[0])
         return pd.DataFrame(var, index=self.index, columns=self.columns)
 
-    def pdf(self, x: pd.DataFrame):
+    def _pdf(self, x: pd.DataFrame):
         """Probability density function.
 
         this fucntion transform cdf to pdf
@@ -353,11 +353,11 @@ class QPD_S(BaseDistribution):
         """
         return pdf_func(x, self.qpd, self.index)
 
-    def ppf(self, p: pd.DataFrame):
+    def _ppf(self, p: pd.DataFrame):
         """Quantile function = percent point function = inverse cdf."""
         return ppf_func(p, self.qpd, self.index)
 
-    def cdf(self, x: pd.DataFrame):
+    def _cdf(self, x: pd.DataFrame):
         """Cumulative distribution function."""
         return cdf_func(x, self.qpd, self.index)
 
@@ -515,7 +515,7 @@ class QPD_B(BaseDistribution):
             version=version,
         )
 
-    def mean(self, lower: float = None, upper: float = None):
+    def _mean(self, lower: float = None, upper: float = None):
         """Return expected value of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -534,7 +534,7 @@ class QPD_B(BaseDistribution):
         loc = exp_func(x, cdf_arr, self.index.shape[0])
         return pd.DataFrame(loc, index=self.index, columns=self.columns)
 
-    def var(self, lower: float = None, upper: float = None):
+    def _var(self, lower: float = None, upper: float = None):
         """Return element/entry-wise variance of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -554,7 +554,7 @@ class QPD_B(BaseDistribution):
         var = var_func(x, mean, cdf_arr, self.index.shape[0])
         return pd.DataFrame(var, index=self.index, columns=self.columns)
 
-    def pdf(self, x: pd.DataFrame):
+    def _pdf(self, x: pd.DataFrame):
         """Probability density function.
 
         this fucntion transform cdf to pdf
@@ -562,11 +562,11 @@ class QPD_B(BaseDistribution):
         """
         return pdf_func(x, self.qpd, self.index)
 
-    def ppf(self, p: pd.DataFrame):
+    def _ppf(self, p: pd.DataFrame):
         """Quantile function = percent point function = inverse cdf."""
         return ppf_func(p, self.qpd, self.index)
 
-    def cdf(self, x: pd.DataFrame):
+    def _cdf(self, x: pd.DataFrame):
         """Cumulative distribution function."""
         return cdf_func(x, self.qpd, self.index)
 
@@ -724,7 +724,7 @@ class QPD_U(BaseDistribution):
             self.qpd.append(jqpd)
         self.qpd = pd.DataFrame(self.qpd, index=self.index)
 
-    def mean(self, lower: float = -1e3, upper: float = 1e3):
+    def _mean(self, lower: float = -1e3, upper: float = 1e3):
         """Return expected value of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -743,7 +743,7 @@ class QPD_U(BaseDistribution):
         loc = exp_func(x, cdf_arr, self.index.shape[0])
         return pd.DataFrame(loc, index=self.index, columns=self.columns)
 
-    def var(self, lower: float = -1e3, upper: float = 1e3):
+    def _var(self, lower: float = -1e3, upper: float = 1e3):
         """Return element/entry-wise variance of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -763,7 +763,7 @@ class QPD_U(BaseDistribution):
         var_arr = var_func(x, mean_arr, cdf_arr, self.index.shape[0])
         return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
 
-    def pdf(self, x: pd.DataFrame):
+    def _pdf(self, x: pd.DataFrame):
         """Probability density function.
 
         this fucntion transform cdf to pdf
@@ -771,11 +771,11 @@ class QPD_U(BaseDistribution):
         """
         return pdf_func(x, self.qpd, self.index)
 
-    def ppf(self, p: pd.DataFrame):
+    def _ppf(self, p: pd.DataFrame):
         """Quantile function = percent point function = inverse cdf."""
         return ppf_func(p, self.qpd, self.index)
 
-    def cdf(self, x: pd.DataFrame):
+    def _cdf(self, x: pd.DataFrame):
         """Cumulative distribution function."""
         return cdf_func(x, self.qpd, self.index)
 
