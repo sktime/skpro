@@ -92,6 +92,7 @@ class QPD_Johnson(_DelegatedDistribution):
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
     }
 
     def __init__(
