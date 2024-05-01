@@ -4,7 +4,6 @@
 __author__ = ["ShreeshaM07"]
 
 import numpy as np
-from sklearn.utils import check_random_state
 
 from skpro.regression.base import BaseProbaRegressor
 
@@ -102,7 +101,7 @@ class NGBoostRegressor(BaseProbaRegressor):
         self.verbose = verbose
         self.verbose_eval = verbose_eval
         self.tol = tol
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.validation_fraction = validation_fraction
         self.early_stopping_rounds = early_stopping_rounds
 
@@ -158,9 +157,11 @@ class NGBoostRegressor(BaseProbaRegressor):
         from ngboost.scores import LogScore
         from sklearn.tree import DecisionTreeRegressor
 
+        # coerce y to numpy array
         y = self._check_y(y=y)
         y = y[0]
-        self.y_columns = y.columns
+        # remember y columns to predict_proba
+        self._y_cols = y.columns
         y = y.values.ravel()
 
         if self.estimator is None:
@@ -184,7 +185,7 @@ class NGBoostRegressor(BaseProbaRegressor):
         if self.score in ngboost_score:
             score = ngboost_score[self.score]
 
-        self.ngb_ = NGBRegressor(
+        self.ngb = NGBRegressor(
             Dist=dist_ngboost,
             Score=score,
             Base=self.estimator,
@@ -202,15 +203,36 @@ class NGBoostRegressor(BaseProbaRegressor):
         )
         from sklearn.base import clone
 
-        self.ngb = clone(self.ngb_)
-        self.ngb.fit(X, y)
+        self.ngb_ = clone(self.ngb)
+        self.ngb_.fit(X, y)
         return self
 
     def _predict(self, X):
-        return self.ngb.predict(X)
+        """Predict labels for data from features.
+
+        State required:
+            Requires state to be "fitted" = self.is_fitted=True
+
+        Accesses in self:
+            Fitted model attributes ending in "_"
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+
+        Returns
+        -------
+        y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
+            labels predicted for `X`
+        """
+        import pandas as pd
+
+        df = pd.DataFrame(self.ngb_.predict(X), index=X.index, columns=self._y_cols)
+        return df
 
     def _pred_dist(self, X):
-        return self.ngb.pred_dist(X)
+        return self.ngb_.pred_dist(X)
 
     def _ngb_dist_to_skpro(self, **kwargs):
         """Convert NGBoost distribution object to skpro BaseDistribution object.
@@ -308,7 +330,7 @@ class NGBoostRegressor(BaseProbaRegressor):
                 # returns a tuple so taking only first index of the tuple
                 kwargs[skp_param] = kwargs[skp_param][0]
             kwargs["index"] = X.index
-            kwargs["columns"] = self.y_columns
+            kwargs["columns"] = self._y_cols
 
         # Convert NGBoost Distribution to skpro BaseDistribution
         pred_dist = self._ngb_dist_to_skpro(**kwargs)
