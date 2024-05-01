@@ -16,7 +16,6 @@ if typing.TYPE_CHECKING:
     from typing import Sequence
 
     from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
-    from pandas import DataFrame, Index
 
 import numpy as np
 import pandas as pd
@@ -53,10 +52,14 @@ class QPD_Johnson(_DelegatedDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    lower : float, default = None (no lower bound)
-        lower bound of semi-bounded range or bounded range
-    upper : float, default = None (no upper bound)
-        upper bound of bounded range
+    lower : float
+        lower bound of bounded range for QPD.
+        This is used when estimating QPD and calculating
+        expectation and variance
+    upper : float, default = None
+        upper bound of bounded range for QPD.
+        This is used when estimating QPD and calculating
+        expectation and variance
     version: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
     dist_shape: float, optional, default=0.0
@@ -202,7 +205,12 @@ class QPD_S(BaseDistribution):
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
     lower : float
-        lower bound of semi-bounded range
+        lower bound of semi-bounded range.
+        This is used when estimating QPD and calculating
+        expectation and variance
+    upper : float, default = None
+        upper bound of probability density function to
+        calculate expected value and variance
     version: str
         options are ``normal`` (default) or ``logistic``
 
@@ -241,6 +249,7 @@ class QPD_S(BaseDistribution):
         qv_median: float | Sequence,
         qv_high: float | Sequence,
         lower: float,
+        upper: float = None,
         version: str | None = "normal",
         index=None,
         columns=None,
@@ -251,11 +260,10 @@ class QPD_S(BaseDistribution):
         self.qv_median = qv_median
         self.qv_high = qv_high
         self.lower = lower
+        self.upper = upper if upper else 1e6
         self.version = version
         self.index = index
         self.columns = columns
-
-        super().__init__(index=index, columns=columns)
 
         from cyclic_boosting.quantile_matching import J_QPD_S
 
@@ -305,8 +313,9 @@ class QPD_S(BaseDistribution):
             l=self.lower,
             version=version,
         )
+        super().__init__(index=index, columns=columns)
 
-    def _mean(self, lower: float = None, upper: float = None):
+    def _mean(self):
         """Return expected value of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -316,16 +325,16 @@ class QPD_S(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
-        if not lower:
-            lower = self.lower
-        if not upper:
-            upper = 1e3
-        x = np.linspace(lower, upper, num=int(1e3))
+        params = self.get_params(deep=False)
+        lower = params["lower"]
+        upper = params["upper"]
+        index = params["index"]
+        x = np.linspace(lower, upper, num=int(1e6))
         cdf_arr = self.qpd.cdf(x).T
-        loc = exp_func(x, cdf_arr, self.index.shape[0])
-        return pd.DataFrame(loc, index=self.index, columns=self.columns)
+        loc = exp_func(x, cdf_arr, index.shape[0])
+        return loc
 
-    def _var(self, lower: float = None, upper: float = None):
+    def _var(self):
         """Return element/entry-wise variance of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -335,31 +344,31 @@ class QPD_S(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
-        if not lower:
-            lower = self.lower
-        if not upper:
-            upper = 1e3
-        mean = self.mean(lower, upper).values
-        x = np.linspace(lower, upper, num=int(1e3))
+        params = self.get_params(deep=False)
+        lower = params["lower"]
+        upper = params["upper"]
+        index = params["index"]
+        mean = self.mean().values
+        x = np.linspace(lower, upper, num=int(1e6))
         cdf_arr = self.qpd.cdf(x).T
-        var = var_func(x, mean, cdf_arr, self.index.shape[0])
-        return pd.DataFrame(var, index=self.index, columns=self.columns)
+        var = var_func(x, mean, cdf_arr, index.shape[0])
+        return var
 
-    def _pdf(self, x: pd.DataFrame):
+    def _pdf(self, x: np.ndarray):
         """Probability density function.
 
         this fucntion transform cdf to pdf
         because j-qpd's pdf calculation is bit complex
         """
-        return pdf_func(x, self.qpd, self.index)
+        return pdf_func(x, self.qpd)
 
-    def _ppf(self, p: pd.DataFrame):
+    def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
-        return ppf_func(p, self.qpd, self.index)
+        return ppf_func(p, self.qpd)
 
-    def _cdf(self, x: pd.DataFrame):
+    def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
-        return cdf_func(x, self.qpd, self.index)
+        return cdf_func(x, self.qpd)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -407,9 +416,13 @@ class QPD_B(BaseDistribution):
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
     lower : float
-        lower bound of semi-bounded range
-    upper : float
-        upper bound of supported range
+        lower bound of semi-bounded range.
+        This is used when estimating QPD and calculating
+        expectation and variance
+    upper : float, default = None
+        upper bound of semi-bounded range.
+        This is used when estimating QPD and calculating
+        expectation and variance
     version: str, optional, default="normal"
         options are ``normal`` (default) or ``logistic``
 
@@ -454,7 +467,7 @@ class QPD_B(BaseDistribution):
         index=None,
         columns=None,
     ):
-        self.qpd = []
+        # self.qpd = []
         self.alpha = alpha
         self.qv_low = qv_low
         self.qv_median = qv_median
@@ -464,8 +477,6 @@ class QPD_B(BaseDistribution):
         self.version = version
         self.index = index
         self.columns = columns
-
-        super().__init__(index=index, columns=columns)
 
         from cyclic_boosting.quantile_matching import J_QPD_B
 
@@ -515,7 +526,9 @@ class QPD_B(BaseDistribution):
             version=version,
         )
 
-    def _mean(self, lower: float = None, upper: float = None):
+        super().__init__(index=index, columns=columns)
+
+    def _mean(self):
         """Return expected value of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -525,16 +538,16 @@ class QPD_B(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
-        if not lower:
-            lower = self.lower
-        if not upper:
-            upper = self.upper
-        x = np.linspace(lower, upper, num=int(1e3))
+        params = self.get_params(deep=False)
+        lower = params["lower"]
+        upper = params["upper"]
+        index = params["index"]
+        x = np.linspace(lower, upper, num=int(1e6))
         cdf_arr = self.qpd.cdf(x).T
-        loc = exp_func(x, cdf_arr, self.index.shape[0])
-        return pd.DataFrame(loc, index=self.index, columns=self.columns)
+        loc = exp_func(x, cdf_arr, index.shape[0])
+        return loc
 
-    def _var(self, lower: float = None, upper: float = None):
+    def _var(self):
         """Return element/entry-wise variance of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -544,31 +557,31 @@ class QPD_B(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
-        if not lower:
-            lower = self.lower
-        if not upper:
-            upper = self.upper
-        mean = self.mean(lower, upper).values
-        x = np.linspace(lower, upper, num=int(1e3))
+        params = self.get_params(deep=False)
+        lower = params["lower"]
+        upper = params["upper"]
+        index = params["index"]
+        mean = self.mean().values
+        x = np.linspace(lower, upper, num=int(1e6))
         cdf_arr = self.qpd.cdf(x).T
-        var = var_func(x, mean, cdf_arr, self.index.shape[0])
-        return pd.DataFrame(var, index=self.index, columns=self.columns)
+        var = var_func(x, mean, cdf_arr, index.shape[0])
+        return var
 
-    def _pdf(self, x: pd.DataFrame):
+    def _pdf(self, x: np.ndarray):
         """Probability density function.
 
         this fucntion transform cdf to pdf
         because j-qpd's pdf calculation is bit complex
         """
-        return pdf_func(x, self.qpd, self.index)
+        return pdf_func(x, self.qpd)
 
-    def _ppf(self, p: pd.DataFrame):
+    def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
-        return ppf_func(p, self.qpd, self.index)
+        return ppf_func(p, self.qpd)
 
-    def _cdf(self, x: pd.DataFrame):
+    def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
-        return cdf_func(x, self.qpd, self.index)
+        return cdf_func(x, self.qpd)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -617,6 +630,13 @@ class QPD_U(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
+    lower : float
+        lower bound of probability density function to
+        calculate expected value and variance
+        expectation and variance
+    upper : float, default = None
+        upper bound of probability density function to
+        calculate expected value and variance
     version: str, optional, default="normal"
         options are ``normal`` (default) or ``logistic``
     dist_shape: float, optional, default=0.0
@@ -656,6 +676,8 @@ class QPD_U(BaseDistribution):
         qv_low: float | Sequence,
         qv_median: float | Sequence,
         qv_high: float | Sequence,
+        lower: float = None,
+        upper: float = None,
         version: str | None = "normal",
         dist_shape: float | None = 0.0,
         index=None,
@@ -666,12 +688,12 @@ class QPD_U(BaseDistribution):
         self.qv_low = qv_low
         self.qv_median = qv_median
         self.qv_high = qv_high
+        self.lower = lower if lower else -1e6
+        self.upper = upper if upper else 1e6
         self.version = version
         self.dist_shape = dist_shape
         self.index = index
         self.columns = columns
-
-        super().__init__(index=index, columns=columns)
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_U
 
@@ -724,7 +746,9 @@ class QPD_U(BaseDistribution):
             self.qpd.append(jqpd)
         self.qpd = pd.DataFrame(self.qpd, index=self.index)
 
-    def _mean(self, lower: float = -1e3, upper: float = 1e3):
+        super().__init__(index=index, columns=columns)
+
+    def _mean(self):
         """Return expected value of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -734,16 +758,21 @@ class QPD_U(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
+        params = self.get_params(deep=False)
+        lower = params["lower"]
+        upper = params["upper"]
+        index = params["index"]
+        columns = params["columns"]
         cdf_arr = []
-        x = np.linspace(lower, upper, num=int(1e3))
+        x = np.linspace(lower, upper, num=int(1e6))
         for idx in self.index:
             qpd = self.qpd.loc[idx, :].values[0]
             cdf_arr.append(qpd.cdf(x))
         cdf_arr = np.asarray(cdf_arr)
-        loc = exp_func(x, cdf_arr, self.index.shape[0])
-        return pd.DataFrame(loc, index=self.index, columns=self.columns)
+        loc = exp_func(x, cdf_arr, index.shape[0])
+        return pd.DataFrame(loc, index=index, columns=columns)
 
-    def _var(self, lower: float = -1e3, upper: float = 1e3):
+    def _var(self):
         """Return element/entry-wise variance of the distribution.
 
         Please set the upper and lower limits of the random variable correctly.
@@ -753,31 +782,35 @@ class QPD_U(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
-        mean_arr = self.mean(lower, upper).values
-        cdf_arr = []
-        x = np.linspace(lower, upper, num=int(1e3))
+        params = self.get_params(deep=False)
+        lower = params["lower"]
+        upper = params["upper"]
+        index = params["index"]
+        mean = self.mean().values
+        cdf_list = []
+        x = np.linspace(lower, upper, num=int(1e6))
         for idx in self.index:
             qpd = self.qpd.loc[idx, :].values[0]
-            cdf_arr.append(qpd.cdf(x))
-        cdf_arr = np.asarray(cdf_arr)
-        var_arr = var_func(x, mean_arr, cdf_arr, self.index.shape[0])
-        return pd.DataFrame(var_arr, index=self.index, columns=self.columns)
+            cdf_list.append(qpd.cdf(x))
+        cdf = np.asarray(cdf_list)
+        var = var_func(x, mean, cdf, index.shape[0])
+        return var
 
-    def _pdf(self, x: pd.DataFrame):
+    def _pdf(self, x: np.ndarray):
         """Probability density function.
 
         this fucntion transform cdf to pdf
         because j-qpd's pdf calculation is bit complex
         """
-        return pdf_func(x, self.qpd, self.index)
+        return pdf_func(x, self.qpd)
 
-    def _ppf(self, p: pd.DataFrame):
+    def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
-        return ppf_func(p, self.qpd, self.index)
+        return ppf_func(p, self.qpd)
 
-    def _cdf(self, x: pd.DataFrame):
+    def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
-        return cdf_func(x, self.qpd, self.index)
+        return cdf_func(x, self.qpd)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -817,86 +850,64 @@ def calc_pdf(x: np.ndarray, cdf: np.ndarray) -> np.ndarray:
 
 def exp_func(x: np.ndarray, cdf: np.ndarray, size: int):
     """Return Expectation."""
-    pdf_arr = calc_pdf(x, cdf)
+    pdf = calc_pdf(x, cdf)
     x = np.tile(x, (size, 1))
-    loc = np.trapz(x * pdf_arr, x, dx=1e-6, axis=1)
+    loc = np.trapz(x * pdf, x, dx=1e-6, axis=1)
     return loc
 
 
 def var_func(x: np.ndarray, mu: np.ndarray, cdf: np.ndarray, size: int):
     """Return Variance."""
-    pdf_arr = calc_pdf(x, cdf)
+    pdf = calc_pdf(x, cdf)
     x = np.tile(x, (size, 1))
-    var = np.trapz(((x - mu) ** 2) * pdf_arr, x, dx=1e-6, axis=1)
+    var = np.trapz(((x - mu) ** 2) * pdf, x, dx=1e-6, axis=1)
     return var
 
 
-def pdf_func(x: DataFrame, dist: J_QPD_S | J_QPD_B | pd.DataFrame, index: Index):
+def pdf_func(x: np.ndarray, dist: J_QPD_S | J_QPD_B | pd.DataFrame):
     """Return pdf value."""
     qpd = dist.values if isinstance(dist, pd.DataFrame) else dist
-    prob_var = np.unique(x.values)
-    pdf = np.zeros((x.index.shape[0], len(x.columns)))
+    prob_var = np.unique(x)
     for v in prob_var:
-        # all qpds
         x0 = np.linspace(v, v + 1e-3, num=3)
         if isinstance(dist, pd.DataFrame):
-            cdf_arr = np.asarray([func[0].cdf(x0) for func in qpd])
+            cdf = np.asarray([func[0].cdf(x0) for func in qpd])
         else:
-            cdf_arr = qpd.cdf(x0).T
-        pdf_arr = calc_pdf(x0, cdf_arr)[:, 0]
-        if pdf_arr.ndim < 1:
-            pdf_arr = pdf_arr[np.newaxis]
-        # pick up
-        rows, cols = np.where(x.values == v)
-        for r, c in zip(rows, cols):
-            id = x.index[r]
-            target = index.get_loc(id)
-            pdf[r][c] = pdf_arr[target]
-    return pd.DataFrame(pdf, index=x.index, columns=x.columns)
+            cdf = qpd.cdf(x0).T
+        pdf = calc_pdf(x0, cdf)[:, 0]
+        if pdf.ndim < 1:
+            pdf = pdf[np.newaxis]
+    return pdf
 
 
-def ppf_func(x: DataFrame, dist: J_QPD_S | J_QPD_B | pd.DataFrame, index: Index):
+def ppf_func(x: np.ndarray, dist: J_QPD_S | J_QPD_B | pd.DataFrame):
     """Return ppf value."""
     qpd = dist.values if isinstance(dist, pd.DataFrame) else dist
-    quantiles = np.unique(x.values)
-    ppf = np.zeros((x.index.shape[0], len(x.columns)))
+    quantiles = np.unique(x)
+    ppf = np.zeros((x.shape[0], x.shape[1]))
     for q in quantiles:
-        # all qpds
         if isinstance(dist, pd.DataFrame):
-            ppf_arr = np.asarray([func[0].ppf(q) for func in qpd])
+            ppf = np.asarray([func[0].ppf(q) for func in qpd])
         else:
-            ppf_arr = qpd.ppf(q).T
-        if ppf_arr.ndim < 1:
-            ppf_arr = ppf_arr[np.newaxis]
-        # pick up
-        rows, cols = np.where(x.values == q)
-        for r, c in zip(rows, cols):
-            id = x.index[r]
-            target = index.get_loc(id)
-            ppf[r][c] = ppf_arr[target]
-    return pd.DataFrame(ppf, index=x.index, columns=x.columns)
+            ppf = qpd.ppf(q).T
+        if ppf.ndim < 1:
+            ppf = ppf[np.newaxis]
+    return ppf
 
 
-def cdf_func(x: DataFrame, dist: J_QPD_S | J_QPD_B | pd.DataFrame, index: Index):
+def cdf_func(x: np.ndarray, dist: J_QPD_S | J_QPD_B | pd.DataFrame):
     """Return cdf value."""
     qpd = dist.values if isinstance(dist, pd.DataFrame) else dist
-    x_value = np.unique(x.values)
-    cdf = np.zeros((x.index.shape[0], len(x.columns)))
+    x_value = np.unique(x)
+    cdf = np.zeros((x.shape[0], x.shape[1]))
     for v in x_value:
-        # all qpds
         if isinstance(dist, pd.DataFrame):
-            cdf_arr = np.asarray([func[0].cdf(v) for func in qpd])
+            cdf = np.asarray([func[0].cdf(v) for func in qpd])
         else:
-            cdf_arr = qpd.cdf(v).T
-        if cdf_arr.ndim < 1:
-            cdf_arr = cdf_arr[np.newaxis]
-        # pick up
-        rows, cols = np.where(x.values == v)
-        for r, c in zip(rows, cols):
-            id = x.index[r]
-            target = index.get_loc(id)
-            cdf[r][c] = cdf_arr[target]
-    return pd.DataFrame(cdf, index=x.index, columns=x.columns)
+            cdf = qpd.cdf(v).T
+        if cdf.ndim < 1:
+            cdf = cdf[np.newaxis]
+    return cdf
 
 
 def _prep_qpd_params(self, alpha, qv_low, qv_median, qv_high):
