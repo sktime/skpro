@@ -1,16 +1,21 @@
-from typing import Union
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+"""Adapter for Scipy Distributions."""
 
-from skpro.distributions.base import BaseDistribution
+__author__ = ["malikrafsan"]
+
+from typing import Union
 
 import pandas as pd
 from scipy.stats import rv_continuous, rv_discrete
-from scipy.stats import rv_continuous
+
+from skpro.distributions.base import BaseDistribution
 
 __all__ = ["_ScipyAdapter", "_ScipyDiscreteAdapter"]
 
+
 class _ScipyAdapter(BaseDistribution):
     """Adapter for scipy distributions.
-    
+
     This class is an adapter for scipy distributions. It provides a common
     interface for all scipy distributions. The class is abstract
     and should not be instantiated directly.
@@ -25,7 +30,7 @@ class _ScipyAdapter(BaseDistribution):
 
     def _get_scipy_object(self) -> Union[rv_continuous, rv_discrete]:
         """Abstract method to get the scipy distribution object.
-        
+
         Should import the scipy distribution object and return it.
         """
         raise NotImplementedError("abstract method")
@@ -34,7 +39,7 @@ class _ScipyAdapter(BaseDistribution):
         """Abstract method to get the scipy distribution parameters.
 
         Should return a tuple with two elements: a list of positional arguments (args)
-        and a dictionary of keyword arguments (kwds).        
+        and a dictionary of keyword arguments (kwds).
         """
         raise NotImplementedError("abstract method")
 
@@ -68,6 +73,7 @@ class _ScipyAdapter(BaseDistribution):
         args, kwds = self._get_scipy_param()
         return obj.ppf(q, *args, **kwds)
 
+
 class _ScipyDiscreteAdapter(_ScipyAdapter):
     """Adapter for scipy discrete distributions.
 
@@ -78,17 +84,17 @@ class _ScipyDiscreteAdapter(_ScipyAdapter):
 
     def _get_scipy_object(self) -> rv_discrete:
         raise NotImplementedError("abstract method")
-    
+
     def _pmf(self, x: pd.DataFrame):
         """Return the probability mass function evaluated at x."""
         obj: rv_discrete = getattr(self, self._distribution_attr)
         args, kwds = self._get_scipy_param()
         return obj.pmf(x, *args, **kwds)
-    
+
     def pmf(self, x: pd.DataFrame):
         """Return the probability mass function evaluated at x."""
         return self._boilerplate("_pmf", x=x)
-    
+
     def _log_pmf(self, x: pd.DataFrame):
         """Return the log of the probability mass function evaluated at x."""
         obj: rv_discrete = getattr(self, self._distribution_attr)
