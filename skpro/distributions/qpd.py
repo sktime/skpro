@@ -250,7 +250,7 @@ class QPD_S(BaseDistribution):
         qv_median: float | Sequence,
         qv_high: float | Sequence,
         lower: float,
-        upper: float = None,
+        upper: float = 1e6,
         version: str | None = "normal",
         index=None,
         columns=None,
@@ -261,7 +261,7 @@ class QPD_S(BaseDistribution):
         self.qv_median = qv_median
         self.qv_high = qv_high
         self.lower = lower
-        self.upper = upper if upper else 1e6
+        self.upper = upper
         self.version = version
         self.index = index
         self.columns = columns
@@ -631,7 +631,7 @@ class QPD_U(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    lower : float
+    lower : float, default = None
         lower bound of probability density function to
         calculate expected value and variance
         expectation and variance
@@ -677,8 +677,8 @@ class QPD_U(BaseDistribution):
         qv_low: float | Sequence,
         qv_median: float | Sequence,
         qv_high: float | Sequence,
-        lower: float = None,
-        upper: float = None,
+        lower: float = -1e6,
+        upper: float = 1e6,
         version: str | None = "normal",
         dist_shape: float | None = 0.0,
         index=None,
@@ -689,8 +689,8 @@ class QPD_U(BaseDistribution):
         self.qv_low = qv_low
         self.qv_median = qv_median
         self.qv_high = qv_high
-        self.lower = lower if lower else -1e6
-        self.upper = upper if upper else 1e6
+        self.lower = lower
+        self.upper = upper
         self.version = version
         self.dist_shape = dist_shape
         self.index = index
@@ -819,18 +819,18 @@ class QPD_U(BaseDistribution):
         params1 = {
             "alpha": 0.2,
             "version": "normal",
-            "qv_low": 0.2,
-            "qv_median": 0.5,
-            "qv_high": 0.8,
+            "qv_low": -0.3,
+            "qv_median": 0.0,
+            "qv_high": 0.3,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a"]),
         }
         params2 = {
             "alpha": 0.2,
             "version": "normal",
-            "qv_low": [0.2, 0.2, 0.2],
-            "qv_median": [0.5, 0.5, 0.5],
-            "qv_high": [0.8, 0.8, 0.8],
+            "qv_low": [-0.3, -0.3, -0.3],
+            "qv_median": [0.0, 0.0, 0.0],
+            "qv_high": [0.3, 0.3, 0.3],
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a"]),
         }
