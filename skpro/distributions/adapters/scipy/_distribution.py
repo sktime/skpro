@@ -68,10 +68,10 @@ class _ScipyAdapter(BaseDistribution):
         args, kwds = self._get_scipy_param()
         return obj.cdf(x, *args, **kwds)
 
-    def _ppf(self, q: pd.DataFrame):
+    def _ppf(self, p: pd.DataFrame):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
         args, kwds = self._get_scipy_param()
-        return obj.ppf(q, *args, **kwds)
+        return obj.ppf(p, *args, **kwds)
 
 
 class _ScipyDiscreteAdapter(_ScipyAdapter):
