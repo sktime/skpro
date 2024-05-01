@@ -86,13 +86,13 @@ class QPD_Johnson(_DelegatedDistribution):
         # --------------
         "authors": ["setoguchi-naoki", "felix-wick", "fkiraly"],
         "maintainers": ["setoguchi-naoki"],
-        "python_dependencies": "cyclic_boosting>=1.2.5",
+        "python_dependencies": ["cyclic_boosting>=1.4.0", "findiff"],
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf"],
         "distr:measuretype": "continuous",
-        "broadcast_init": "on",
+        # "broadcast_init": "on",
     }
 
     def __init__(
@@ -235,7 +235,7 @@ class QPD_S(BaseDistribution):
         # --------------
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
-        "python_dependencies": ["cyclic_boosting>=1.4.0"],
+        "python_dependencies": ["cyclic_boosting>=1.4.0", "findiff"],
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
@@ -448,7 +448,7 @@ class QPD_B(BaseDistribution):
         # --------------
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
-        "python_dependencies": ["cyclic_boosting>=1.4.0"],
+        "python_dependencies": ["cyclic_boosting>=1.4.0", "findiff"],
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
@@ -663,7 +663,7 @@ class QPD_U(BaseDistribution):
         # --------------
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
-        "python_dependencies": "cyclic_boosting>=1.2.5",
+        "python_dependencies": ["cyclic_boosting>=1.4.0", "findiff"],
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
