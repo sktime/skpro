@@ -885,7 +885,6 @@ def ppf_func(x: np.ndarray, dist: J_QPD_S | J_QPD_B | pd.DataFrame):
     """Return ppf value."""
     qpd = dist.values if isinstance(dist, pd.DataFrame) else dist
     quantiles = np.unique(x)
-    ppf = np.zeros((x.shape[0], x.shape[1]))
     for q in quantiles:
         if isinstance(dist, pd.DataFrame):
             ppf = np.asarray([func[0].ppf(q) for func in qpd])
@@ -900,7 +899,6 @@ def cdf_func(x: np.ndarray, dist: J_QPD_S | J_QPD_B | pd.DataFrame):
     """Return cdf value."""
     qpd = dist.values if isinstance(dist, pd.DataFrame) else dist
     x_value = np.unique(x)
-    cdf = np.zeros((x.shape[0], x.shape[1]))
     for v in x_value:
         if isinstance(dist, pd.DataFrame):
             cdf = np.asarray([func[0].cdf(v) for func in qpd])
