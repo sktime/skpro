@@ -6,6 +6,7 @@ for both regression and classification tasks.
 Please read the official document for its detail
 https://cyclic-boosting.readthedocs.io/en/latest/
 """
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = [
@@ -50,6 +51,7 @@ class CyclicBoosting(BaseProbaRegressor):
     bound : str, default='U'
         Different modes defined by supported target range, options are ``S``
             (semi-bound), ``B`` (bound), and ``U`` (unbound).
+        ``bound`` will be removed in version X.X.X.
     lower : float, default=0.0
         lower bound of supported range (only active for bound and semi-bound
         modes)
@@ -122,6 +124,15 @@ class CyclicBoosting(BaseProbaRegressor):
         self.lower = lower
         self.upper = upper
         self.maximal_iterations = maximal_iterations
+
+        #  TODO <X.X.X>: change default of 'lower' and 'upper' to None and None
+        #  update docstring, and remove warning
+        comment = "Parameter 'bound' will be removed in version X.X.X. \
+                   The QPD used for estimation is determined by whether \
+                   data is given to 'lower' and 'upper'. and their default value \
+                   will change from 0.0, 1.0 to None, None. To retain prior behaviour, \
+                   set 'lower' and 'upper' to 0.0 and 1.0 explicitly"
+        warnings.warn(comment, DeprecationWarning)
 
         super().__init__()
 

@@ -1,4 +1,5 @@
 """Johnson Quantile-Parameterized Distributions."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = [
@@ -44,6 +45,7 @@ class QPD_S(BaseDistribution):
     dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
+        ``dist_shape`` will be removed in version X.X.X.
 
     Example
     -------
@@ -95,6 +97,22 @@ class QPD_S(BaseDistribution):
         self.dist_shape = dist_shape
         self.index = index
         self.columns = columns
+
+        #  TODO <X.X.X>: change default of 'lower' and to None
+        #  update docstring, and remove warning. related to PR-232
+        link = "https://github.com/Blue-Yonder-OSS/cyclic-boosting/ \
+                blob/a62eccffcd611e87a850b9bf38ea699fbea1fb31/ \
+                cyclic_boosting/quantile_matching.py#L12"
+        comment = f"Parameter 'dist_shape' of 'QPD_S' will be removed \
+                    in version X.X.X. \
+                   'J_QPD_S' is used instead of 'J_QPD_extended_S'. \
+                    See {link} for details"
+        warnings.warn(comment, DeprecationWarning)
+
+        comment = "Parameter 'lower' of 'QPD_S' will change \
+                   default value from 0.0 to None in version X.X.X. \
+                   To retain prior behaviour, set 'lower' to 0.0 explicitly"
+        warnings.warn(comment, DeprecationWarning)
 
         super().__init__(index=index, columns=columns)
 
@@ -160,6 +178,13 @@ class QPD_S(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
+        #  TODO <X.X.X>: remove warning
+        comment = "Parameter 'lower' and 'upper' will be moved to \
+                   class parameters in version X.X.X. \
+                   To retain prior behaviour, set 'lower' to 0.0 \
+                   and 'upper' to large number explicitly"
+        warnings.warn(comment, DeprecationWarning)
+
         loc = []
         for idx in self.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -176,6 +201,13 @@ class QPD_S(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
+        #  TODO <X.X.X>: remove warning
+        comment = "Parameter 'lower' and 'upper' will be moved to \
+                   class parameters in version X.X.X. \
+                   To retain prior behaviour, set 'lower' to 0.0 \
+                   and 'upper' to large number explicitly"
+        warnings.warn(comment, DeprecationWarning)
+
         mean = self.mean()
         var = []
         for idx in self.index:
@@ -273,6 +305,7 @@ class QPD_B(BaseDistribution):
     dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
+        ``dist_shape`` will be removed in version X.X.X.
 
     Example
     -------
@@ -327,6 +360,23 @@ class QPD_B(BaseDistribution):
         self.dist_shape = dist_shape
         self.index = index
         self.columns = columns
+
+        #  TODO <X.X.X>: change default of 'lower' and to None
+        #  update docstring, and remove warning
+        link = "https://github.com/Blue-Yonder-OSS/cyclic-boosting/ \
+                blob/a62eccffcd611e87a850b9bf38ea699fbea1fb31/ \
+            cyclic_boosting/quantile_matching.py#L168"
+        comment = f"Parameter 'dist_shape' of 'QPD_B' will be removed \
+                    in version X.X.X. \
+                   'J_QPD_B' is used instead of 'J_QPD_extended_B'. \
+                    See {link} for details"
+        warnings.warn(comment, DeprecationWarning)
+
+        comment = "Parameter 'lower' and 'upper' of 'QPD_B' will change \
+                   default value from 0.0 and 1.0 to None and None in version X.X.X. \
+                   To retain prior behaviour, set 'lower' and 'upper' to 0.0 and 1.0 \
+                   explicitly"
+        warnings.warn(comment, DeprecationWarning)
 
         super().__init__(index=index, columns=columns)
 
@@ -391,6 +441,13 @@ class QPD_B(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
+        #  TODO <X.X.X>: remove warning
+        comment = "Parameter 'lower' and 'upper' will be moved to \
+                   class parameters in version X.X.X. \
+                   To retain prior behaviour, set 'lower' to 0.0 \
+                   and 'upper' to large number explicitly"
+        warnings.warn(comment, DeprecationWarning)
+
         loc = []
         for idx in self.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -407,6 +464,13 @@ class QPD_B(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
+        #  TODO <X.X.X>: remove warning
+        comment = "Parameter 'lower' and 'upper' will be moved to \
+                   class parameters in version X.X.X. \
+                   To retain prior behaviour, set 'lower' to 0.0 \
+                   and 'upper' to large number explicitly"
+        warnings.warn(comment, DeprecationWarning)
+
         mean = self.mean()
         var = []
         for idx in self.index:
@@ -614,6 +678,13 @@ class QPD_U(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         expected value of distribution (entry-wise)
         """
+        #  TODO <X.X.X>: remove warning
+        comment = "Parameter 'lower' and 'upper' will be moved to \
+                   class parameters in version X.X.X. \
+                   To retain prior behaviour, set 'lower' to 0.0 \
+                   and 'upper' to large number explicitly"
+        warnings.warn(comment, DeprecationWarning)
+
         loc = []
         for idx in self.index:
             qpd = self.qpd.loc[idx, :].values[0]
@@ -630,6 +701,13 @@ class QPD_U(BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
+        #  TODO <X.X.X>: remove warning
+        comment = "Parameter 'lower' and 'upper' will be moved to \
+                   class parameters in version X.X.X. \
+                   To retain prior behaviour, set 'lower' to 0.0 \
+                   and 'upper' to large number explicitly"
+        warnings.warn(comment, DeprecationWarning)
+
         mean = self.mean()
         var = []
         for idx in self.index:
@@ -702,6 +780,9 @@ class QPD_U(BaseDistribution):
 def exp_func(x, qpd):
     """Return Expectation."""
     # TODO: scipy.integrate will be removed in scipy 1.12.0
+    comment = "Parameter 'qpd' will be removed to in version X.X.X."
+    warnings.warn(comment, DeprecationWarning)
+
     pdf = derivative(qpd.cdf, x, dx=1e-6)
     return x * pdf
 
@@ -709,6 +790,9 @@ def exp_func(x, qpd):
 def var_func(x, mu, qpd):
     """Return Variance."""
     # TODO: scipy.integrate will be removed in scipy 1.12.0
+    comment = "Parameter 'qpd' will be removed to in version X.X.X."
+    warnings.warn(comment, DeprecationWarning)
+
     pdf = derivative(qpd.cdf, x, dx=1e-6)
     return ((x - mu) ** 2) * pdf
 
