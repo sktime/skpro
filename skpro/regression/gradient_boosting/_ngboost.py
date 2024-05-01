@@ -165,7 +165,7 @@ class NGBoostRegressor(BaseProbaRegressor):
         y = y.values.ravel()
 
         if self.estimator is None:
-            self.estimator = DecisionTreeRegressor(
+            self.estimator_ = DecisionTreeRegressor(
                 criterion="friedman_mse",
                 min_samples_split=2,
                 min_samples_leaf=1,
@@ -188,7 +188,7 @@ class NGBoostRegressor(BaseProbaRegressor):
         self.ngb = NGBRegressor(
             Dist=dist_ngboost,
             Score=score,
-            Base=self.estimator,
+            Base=self.estimator_,
             natural_gradient=True,
             n_estimators=self.n_estimators,
             learning_rate=self.learning_rate,
