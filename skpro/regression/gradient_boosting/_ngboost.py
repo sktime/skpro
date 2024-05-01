@@ -10,62 +10,62 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class NGBoostRegressor(BaseProbaRegressor):
-    """
-    Constructor for all NGBoost models.
+    """Natural Gradient Boosting Regressor for probabilistic regressors.
 
+    It is an interface to the NGBRegressor.
     This class implements the methods that are common to all NGBoost models.
     Unless you are implementing a new kind of regression (e.g. interval-censored, etc.),
     you should probably use one of NGBRegressor, NGBClassifier, or NGBSurvival.
 
     Parameters
     ----------
-        dist              : string , default = "Normal"
-                            distribution that must be used for
-                            probabilistic prediction.
-                            Available distribution types
-                            1. "Normal"
-                            2. "Laplace"
-                            3. "LogNormal"
-                            4. "Poisson"
-                            5. "TDistribution"
-        score             : string , default = "LogScore"
-                            A score from ngboost.scores for LogScore
-                            rule to compare probabilistic
-                            predictions P̂ to the observed data y.
-        estimator         : default learner/estimator: DecisionTreeRegressor()
-                            base learner to use in the boosting algorithm.
-                            Any instantiated sklearn regressor,
-        natural_gradient  : boolean , default = True
-                            whether natural gradient must be used or not.
-        n_estimators      : int , default = 500
-                            the number of boosting iterations to fit
-        learning_rate     : float , default = 0.01
-                            the learning rate
-        minibatch_frac    : float, default = 1.0
-                            the percent subsample of rows to
-                            use in each boosting iteration
-        verbose           : boolean, default=True
-                            flag indicating whether output
-                            should be printed during fitting
-        verbose_eval      : int ,default=100
-                            increment (in boosting iterations) at
-                            which output should be printed
-        tol               : float, default = 1e-4
-                            numerical tolerance to be used in optimization
-        random_state      : int, RandomState instance or None, optional (default=None)
-        validation_fraction: Proportion of training data to
-                             set aside as validation data for early stopping.
-        early_stopping_rounds: int , default = None , optional
-                                The number of consecutive
-                                boosting iterations during which the
-                                loss has to increase before the algorithm stops early.
-                                Set to None to disable early stopping and validation
-                                None enables running over the full data set.
+    dist : string , default = "Normal"
+        distribution that must be used for
+        probabilistic prediction.
+        Available distribution types
+        1. "Normal"
+        2. "Laplace"
+        3. "LogNormal"
+        4. "Poisson"
+        5. "TDistribution"
+    score : string , default = "LogScore"
+        A score from ngboost.scores for LogScore
+        rule to compare probabilistic
+        predictions P̂ to the observed data y.
+    estimator : default learner/estimator: DecisionTreeRegressor()
+        base learner to use in the boosting algorithm.
+        Any instantiated sklearn regressor.
+    natural_gradient : boolean , default = True
+        whether natural gradient must be used or not.
+    n_estimators : int , default = 500
+        the number of boosting iterations to fit
+    learning_rate : float , default = 0.01
+        the learning rate
+    minibatch_frac : float, default = 1.0
+        the percent subsample of rows to
+        use in each boosting iteration
+    verbose : boolean, default=True
+        flag indicating whether output
+        should be printed during fitting
+    verbose_eval : int ,default=100
+        increment (in boosting iterations) at
+        which output should be printed
+    tol : float, default = 1e-4
+        numerical tolerance to be used in optimization
+    random_state : int, RandomState instance or None, optional (default=None)
+    validation_fraction : Proportion of training data to
+        set aside as validation data for early stopping.
+    early_stopping_rounds : int , default = None , optional
+        The number of consecutive
+        boosting iterations during which the
+        loss has to increase before the algorithm stops early.
+        Set to None to disable early stopping and validation
+        None enables running over the full data set.
 
 
     Returns
     -------
-        An NGBRegressor object that can be fit.
+    An NGBRegressor object that can be fit.
     """
 
     _tags = {
@@ -109,11 +109,13 @@ class NGBoostRegressor(BaseProbaRegressor):
         super().__init__()
 
     def _dist_to_ngboost_instance(self, dist):
-        """
-        Convert string to NGBoost object.
+        """Convert string to NGBoost object.
 
-        self.dist the input string for the type of Distribution.
-        It then creates an object of that particular NGBoost Distribution.
+        Parameters
+        ----------
+        dist : string
+            the input string for the type of Distribution.
+            It then creates an object of that particular NGBoost Distribution.
 
         Returns
         -------
@@ -155,6 +157,11 @@ class NGBoostRegressor(BaseProbaRegressor):
         from ngboost import NGBRegressor
         from ngboost.scores import LogScore
         from sklearn.tree import DecisionTreeRegressor
+
+        y = self._check_y(y=y)
+        y = y[0]
+        self.y_columns = y.columns
+        y = y.values.ravel()
 
         if self.estimator is None:
             self.estimator = DecisionTreeRegressor(
@@ -206,8 +213,7 @@ class NGBoostRegressor(BaseProbaRegressor):
         return self.ngb.pred_dist(X)
 
     def _ngb_dist_to_skpro(self, **kwargs):
-        """
-        Convert NGBoost distribution object to skpro BaseDistribution object.
+        """Convert NGBoost distribution object to skpro BaseDistribution object.
 
         Parameters
         ----------
@@ -302,7 +308,7 @@ class NGBoostRegressor(BaseProbaRegressor):
                 # returns a tuple so taking only first index of the tuple
                 kwargs[skp_param] = kwargs[skp_param][0]
             kwargs["index"] = X.index
-            kwargs["columns"] = X.columns
+            kwargs["columns"] = self.y_columns
 
         # Convert NGBoost Distribution to skpro BaseDistribution
         pred_dist = self._ngb_dist_to_skpro(**kwargs)
