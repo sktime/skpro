@@ -373,7 +373,7 @@ class NGBoostRegressor(BaseProbaRegressor):
         }
 
         params6 = {
-            "dist": "TDistribution",
+            "dist": "Normal",
             "natural_gradient": False,
             "verbose": False,
         }
