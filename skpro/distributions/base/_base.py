@@ -287,7 +287,15 @@ class BaseDistribution(BaseObject):
     def get_params_df(self):
         """Return distribution parameters as a DataFrame.
 
-        Currently only implemented for non-composites.
+        Available only for simple parametric distributions.
+
+        Returns
+        -------
+        dict of pd.DataFrame
+            Dictionary with all distribution parameters, as ``pd.DataFrame``.
+            Keys are the parameter names, values are the ``pd.DataFrame``.
+            Each ``DataFrame`` has the same index as ``self`` and columns as ``self``.
+            Entries are the values of the distribution parameters.
         """
         if hasattr(self, "_bc_params"):
             bc_params = self._bc_params
@@ -301,7 +309,25 @@ class BaseDistribution(BaseObject):
                 return pd.DataFrame(x, index=self.index, columns=self.columns)
             return pd.DataFrame([[x]])
 
-        vals_df = [to_df(bc_params[k]) for k in paramnames]
+        params_df = {k: to_df(bc_params[k]) for k in paramnames}
+        return params_df
+
+    def to_df(self):
+        """Return distribution parameters as a single DataFrame.
+
+        Available only for simple parametric distributions.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with all distribution parameters.
+            column is a MultiIndex (paramname, varname).
+            row index is the index of the distribution.
+            Entries are the values of the distribution parameters.
+        """
+        params_df = self.get_params_df()
+        paramnames = list(params_df.keys())
+        vals_df = [params_df[k] for k in paramnames]
 
         param_df = pd.concat(vals_df, axis=1, keys=paramnames)
         param_df.columns = param_df.columns.swaplevel()
