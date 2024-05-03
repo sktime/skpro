@@ -35,7 +35,7 @@ class _ScipyAdapter(BaseDistribution):
         """
         raise NotImplementedError("abstract method")
 
-    def _get_scipy_param(self) -> tuple[list, dict]:
+    def _get_scipy_param(self):
         """Abstract method to get the scipy distribution parameters.
 
         Should return a tuple with two elements: a list of positional arguments (args)

@@ -50,7 +50,7 @@ class Fisk(_ScipyAdapter):
     def _get_scipy_object(self) -> rv_continuous:
         return fisk
 
-    def _get_scipy_param(self) -> tuple[list, dict]:
+    def _get_scipy_param(self):
         alpha = self._bc_params["alpha"]
         beta = self._bc_params["beta"]
 
