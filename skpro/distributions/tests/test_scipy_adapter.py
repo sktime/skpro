@@ -4,6 +4,8 @@ from skbase.testing import QuickTester
 
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
+__author__ = ["malikrafsan"]
+
 
 class ScipyDistributionFixtureGenerator(BaseFixtureGenerator):
     """Fixture generator for scipy distributions adapter.
@@ -30,6 +32,8 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
         "DISCRETE": [("pmf", "pmf"), ("log_pmf", "logpmf")],
     }
 
+    X_VALUES = [0.1, 0.5, 0.99]
+
     @pytest.mark.parametrize("method,scipy_method", METHOD_TESTS["NO_PARAMS"])
     def test_method_no_params(self, object_instance, method, scipy_method):
         """Test method that doesn't need additional parameters."""
@@ -42,9 +46,9 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
         assert np.allclose(res, scipy_res)
 
     @pytest.mark.parametrize("method,scipy_method", METHOD_TESTS["X_PARAMS"])
-    def test_method_with_x_params(self, object_instance, method, scipy_method):
+    @pytest.mark.parametrize("x", X_VALUES)
+    def test_method_with_x_params(self, object_instance, method, scipy_method, x):
         """Test method that needs x as parameter."""
-        x = 0.5
         res = getattr(object_instance, method)(x)
         params = object_instance._get_scipy_param()
         scipy_obj = object_instance._get_scipy_object()
@@ -54,10 +58,9 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
         assert np.allclose(res, scipy_res)
 
     @pytest.mark.parametrize("method,scipy_method", METHOD_TESTS["CONTINUOUS"])
-    def test_method_continuous_dist(self, object_instance, method, scipy_method):
+    @pytest.mark.parametrize("x", X_VALUES)
+    def test_method_continuous_dist(self, object_instance, method, scipy_method, x):
         """Test continuous distribution method."""
-        x = 0.5
-
         res = getattr(object_instance, method)(x)
         if object_instance._tags["distr:measuretype"] != "continuous":
             scipy_res = 0
@@ -69,10 +72,9 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
         assert np.allclose(res, scipy_res)
 
     @pytest.mark.parametrize("method,scipy_method", METHOD_TESTS["DISCRETE"])
-    def test_method_discrete_dist(self, object_instance, method, scipy_method):
+    @pytest.mark.parametrize("x", X_VALUES)
+    def test_method_discrete_dist(self, object_instance, method, scipy_method, x):
         """Test discrete distribution method."""
-        x = 0.5
-
         res = getattr(object_instance, method)(x)
         if object_instance._tags["distr:measuretype"] != "discrete":
             scipy_res = 0
