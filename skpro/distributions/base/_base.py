@@ -545,8 +545,7 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("pdf", fill_in=approx_method))
 
-            if self.ndim > 0 and not isinstance(x, pd.DataFrame):
-                x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            x = self._coerce_to_self_index_df(x)
             res = self.log_pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
@@ -597,8 +596,7 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
-            if self.ndim > 0 and not isinstance(x, pd.DataFrame):
-                x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            x = self._coerce_to_self_index_df(x)
             res = self.pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
@@ -613,7 +611,8 @@ class BaseDistribution(BaseObject):
         taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
         By :math:`F_{X_{ij}}`, denote the marginal cdf of :math:`X` at the
-        :math:`(i,j)`-th entry.
+        :math:`(i,j)`-th entry,
+        i.e., :math:`F_{X_{ij}}(t) = \mathbb{P}(X_{ij} \leq t)`.
 
         The output of this method, for input ``x`` representing :math:`x`,
         is a ``DataFrame`` with same columns and indices as ``self``,
@@ -647,6 +646,75 @@ class BaseDistribution(BaseObject):
         sply = self.sample(N)
         spl = splx <= sply
         return self._sample_mean(spl)
+
+    def surv(self, x):
+        r"""Survival function.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`S_{X_{ij}}`, denote the marginal survival of :math:`X` at the
+        :math:`(i,j)`-th entry,
+        i.e., :math:`S_{X_{ij}}(t) = \mathbb{P}(X_{ij} \gneq t)`.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`F_{X_{ij}}(x_{ij})`.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`S_{X_{ij}}(x_{ij})`, as above
+        """
+        return self._boilerplate("_surv", x=x)
+
+    def _surv(self, x):
+        """Survival function.
+
+        Private method, to be implemented by subclasses.
+        """
+        x = self._coerce_to_self_index_df(x)
+        return 1 - self.cdf(x)
+
+    def haz(self, x):
+        r"""Hazard function.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`h_{X_{ij}}`, denote the marginal hazard of :math:`X` at the
+        :math:`(i,j)`-th entry,
+        i.e., :math:`h_{X_{ij}}(t) = \frac{f_{X_{ij}}(t)}{S_{X_{ij}}(t)}`,
+        where :math:`f_{X_{ij}}` is the marginal pdf, and :math:`S_{X_{ij}}`
+        is the marginal survival function at the :math:`(i,j)`-th entry.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`h_{X_{ij}}(x_{ij})`.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`h_{X_{ij}}(x_{ij})`, as above
+        """
+        return self._boilerplate("_haz", x=x)
+
+    def _haz(self, x):
+        """Hazard function.
+
+        Private method, to be implemented by subclasses.
+        """
+        return self.pdf(x) / self.surv(x)
 
     def ppf(self, p):
         r"""Quantile function = percent point function = inverse cdf.
