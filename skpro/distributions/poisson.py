@@ -6,10 +6,10 @@ __author__ = ["fkiraly", "malikrafsan"]
 import pandas as pd
 from scipy.stats import poisson, rv_discrete
 
-from skpro.distributions.adapters.scipy import _ScipyDiscreteAdapter
+from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-class Poisson(_ScipyDiscreteAdapter):
+class Poisson(_ScipyAdapter):
     """Poisson distribution.
 
     Parameters
