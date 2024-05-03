@@ -58,17 +58,11 @@ class _ScipyAdapter(BaseDistribution):
 
     def _pdf(self, x: pd.DataFrame):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        if isinstance(obj, rv_discrete):
-            return 0
-
         args, kwds = self._get_scipy_param()
         return obj.pdf(x, *args, **kwds)
 
     def _log_pdf(self, x: pd.DataFrame):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        if isinstance(obj, rv_discrete):
-            return 0
-
         args, kwds = self._get_scipy_param()
         return obj.logpdf(x, *args, **kwds)
 
@@ -85,25 +79,11 @@ class _ScipyAdapter(BaseDistribution):
     def _pmf(self, x: pd.DataFrame):
         """Return the probability mass function evaluated at x."""
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        if isinstance(obj, rv_continuous):
-            return 0
-
         args, kwds = self._get_scipy_param()
         return obj.pmf(x, *args, **kwds)
-
-    def pmf(self, x: pd.DataFrame):
-        """Return the probability mass function evaluated at x."""
-        return self._boilerplate("_pmf", x=x)
 
     def _log_pmf(self, x: pd.DataFrame):
         """Return the log of the probability mass function evaluated at x."""
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
-        if isinstance(obj, rv_continuous):
-            return 0
-
         args, kwds = self._get_scipy_param()
         return obj.logpmf(x, *args, **kwds)
-
-    def log_pmf(self, x: pd.DataFrame):
-        """Return the log of the probability mass function evaluated at x."""
-        return self._boilerplate("_log_pmf", x=x)
