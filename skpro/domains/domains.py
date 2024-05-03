@@ -163,16 +163,3 @@ class Product(Domain):
     @property
     def boundary(self):
         return tuple(element.boundary for element in self.product)
-
-
-if __name__ == '__main__':
-    a = Interval((1, 2))
-    b = Interval((-float("inf"), 23), parenthesis="left-closed")
-    c = Interval((-float("inf"), 23), parenthesis="right-closed")
-    d = Finite((1, 2, 3, 5, 4))
-    e = Product(elements=[a, b, c, d])
-    print(a, a.boundary, 5 in a)
-    print(b, b.boundary, 23 in b)
-    print(c, c.boundary, -float("inf") in c)
-    print(d, d.boundary, 34 in d)
-    print(e, e.boundary, (5, 23, -float("inf"), 34) in e)
