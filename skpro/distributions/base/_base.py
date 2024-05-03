@@ -545,7 +545,7 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("pdf", fill_in=approx_method))
 
-            x = self._coerce_to_self_index_df(x)
+            x = self._coerce_to_self_index_df(x, flatten=False)
             res = self.log_pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
@@ -596,7 +596,7 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
-            x = self._coerce_to_self_index_df(x)
+            x = self._coerce_to_self_index_df(x, flatten=False)
             res = self.pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
