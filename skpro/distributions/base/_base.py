@@ -644,7 +644,7 @@ class BaseDistribution(BaseObject):
         if distr_type == "continuous":
             return self._coerce_to_self_index_df(0, flatten=False)
 
-        return self._boilerplate("_pdf", x=x)
+        return self._boilerplate("_pmf", x=x)
 
     def _pmf(self, x):
         """Probability mass function.

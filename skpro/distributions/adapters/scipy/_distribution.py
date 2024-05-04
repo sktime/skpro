@@ -23,7 +23,7 @@ class _ScipyAdapter(BaseDistribution):
 
     _distribution_attr = "_dist"
     _tags = {
-        "object_type": ["distribution", "scipy_distribution_adapter"],
+        "object_type": "distribution",
     }
 
     def __init__(self, index=None, columns=None):
