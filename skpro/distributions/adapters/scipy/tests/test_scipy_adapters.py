@@ -79,8 +79,6 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
     @pytest.mark.parametrize("method,scipy_method", METHOD_TESTS["NO_PARAMS"])
     def test_method_no_params(self, object_instance, method, scipy_method):
         """Test method that doesn't need additional parameters."""
-        raise ValueError()
-
         res = getattr(object_instance, method)()
         params = object_instance._get_scipy_param()
         scipy_obj = object_instance._get_scipy_object()
