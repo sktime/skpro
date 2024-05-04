@@ -42,6 +42,7 @@ Continuous support
     Normal
     TDistribution
     Weibull
+    Beta
 
 
 Integer support
