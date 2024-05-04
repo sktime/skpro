@@ -105,7 +105,7 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
         """Test continuous distribution method."""
         res = getattr(object_instance, method)(x)
         if object_instance._tags["distr:measuretype"] != "continuous":
-            scipy_res = 0
+            return None  # in this case, scipy method is not defined
         else:
             params = object_instance._get_scipy_param()
             scipy_obj = object_instance._get_scipy_object()
@@ -119,7 +119,7 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
         """Test discrete distribution method."""
         res = getattr(object_instance, method)(x)
         if object_instance._tags["distr:measuretype"] != "discrete":
-            scipy_res = 0
+            return None  # in this case, scipy method is not defined
         else:
             params = object_instance._get_scipy_param()
             scipy_obj = object_instance._get_scipy_object()
