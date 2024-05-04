@@ -20,7 +20,7 @@ def test_run_test_for_class():
     from skpro.regression.mapie import MapieRegressor
 
     # estimator on the exception list
-    from skpro.tests._config import DummySkipped
+    from skpro.tests._config_test_dummy import DummySkipped
 
     # boolean flag for whether to run tests for all estimators
     from skpro.tests.test_all_estimators import ONLY_CHANGED_MODULES
