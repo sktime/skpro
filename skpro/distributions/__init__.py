@@ -19,8 +19,10 @@ __all__ = [
     "TDistribution",
     "Uniform",
     "Weibull",
+    "Beta",
 ]
 
+from skpro.distributions.beta import Beta
 from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.fisk import Fisk
