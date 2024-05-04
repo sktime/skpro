@@ -5,15 +5,16 @@ __author__ = ["fkiraly"]
 
 import numpy as np
 import pandas as pd
-from scipy.special import erf, erfinv
 
 from skpro.distributions.base import BaseDistribution
 
 
-class Normal(BaseDistribution):
-    r"""Delta distribution aka constant distibution.
+class Delta(BaseDistribution):
+    r"""Delta distribution aka constant distibution aka certain distribution.
 
-    This distribution always produces the same value when sampling.
+    This distribution always produces the same value when sampling - ``c``.
+    It it useful to represent a constant value as a distribution, e.g., as a baseline
+    method to create a probabilistic prediction from a point prediction.
 
     The delta distribution is parametrized by a constant value :math:`c`.
     For the cdf, we have:
@@ -34,6 +35,7 @@ class Normal(BaseDistribution):
     >>> from skpro.distributions.delta import Delta
 
     >>> delta = Delta(c=[[0, 1], [2, 3], [4, 5]])
+    >>> this_is_always_c = delta.sample()
     """
 
     _tags = {
