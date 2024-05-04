@@ -1,4 +1,4 @@
-# This Dockerfile is used to build sktime when launching binder.
+# This Dockerfile is used to build skpro when launching binder.
 # Find out more at: https://mybinder.readthedocs.io/en/latest/index.html
 
 FROM  jupyter/scipy-notebook:python-3.11.6
@@ -18,5 +18,5 @@ RUN chown -R ${NB_UID} ${HOME}
 USER ${USER}
 WORKDIR ${HOME}
 
-# Install extra requirements and sktime based on master branch
+# Install extra requirements and skpro based on main branch
 RUN pip install --upgrade pip --no-cache-dir && pip install .[binder]
