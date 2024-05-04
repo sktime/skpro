@@ -98,6 +98,21 @@ take one or multiple ``sklearn`` estimators and adda probabilistic prediction mo
 
     CyclicBoosting
 
+
+Naive regressors and baselines
+------------------------------
+
+This section lists simple regressors which can be used as baselines.
+
+.. currentmodule:: skpro.regression.delta
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    DeltaPointRegressor
+
+
 Linear regression
 -----------------
 
