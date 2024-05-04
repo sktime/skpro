@@ -13,14 +13,14 @@ def test_exclude_estimators():
 
 def test_run_test_for_class():
     """Test that run_test_for_class runs tests for various cases."""
-    # estimator on the exception list
-    from skpro.tests._config import DummySkipped
-
     # estimator without soft deps
     from skpro.regression.bootstrap import BootstrapRegressor
 
     # estimator with soft deps
     from skpro.regression.mapie import MapieRegressor
+
+    # estimator on the exception list
+    from skpro.tests._config import DummySkipped
 
     # boolean flag for whether to run tests for all estimators
     from skpro.tests.test_all_estimators import ONLY_CHANGED_MODULES
