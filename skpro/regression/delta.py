@@ -3,7 +3,6 @@
 __author__ = ["fkiraly"]
 __all__ = ["DeltaPointRegressor"]
 
-import numpy as np
 import pandas as pd
 from sklearn import clone
 
