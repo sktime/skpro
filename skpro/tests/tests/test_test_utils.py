@@ -31,9 +31,10 @@ def test_run_test_for_class():
     f_with_deps = MapieRegressor
 
     # test that assumptions on being on exception list are correct
-    assert f_on_excl_list in EXCLUDE_ESTIMATORS  # if this fails, switch the example
-    assert f_no_deps not in EXCLUDE_ESTIMATORS  # same here
-    assert f_with_deps not in EXCLUDE_ESTIMATORS  # same here
+    # if any of the below fail, switch the example
+    assert f_on_excl_list.__name__ in EXCLUDE_ESTIMATORS
+    assert f_no_deps.__name__ not in EXCLUDE_ESTIMATORS
+    assert f_with_deps.__name__ not in EXCLUDE_ESTIMATORS
 
     # check result for skipped estimator
     run = run_test_for_class(f_on_excl_list)
