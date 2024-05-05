@@ -47,6 +47,11 @@ class Delta(BaseDistribution):
 
     def __init__(self, c, index=None, columns=None):
         self.c = c
+        if index is None and hasattr(c, "index") and isinstance(c.index, pd.Index):
+            index = c.index
+        if columns is None and hasattr(c, "columns"):
+            if isinstance(c.columns, pd.Index):
+                columns = c.columns
 
         super().__init__(index=index, columns=columns)
 
