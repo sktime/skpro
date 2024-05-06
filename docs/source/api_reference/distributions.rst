@@ -35,6 +35,7 @@ Continuous support
     :toctree: auto_generated/
     :template: class.rst
 
+    Beta
     ChiSquared
     Fisk
     Laplace
@@ -42,7 +43,6 @@ Continuous support
     Normal
     TDistribution
     Weibull
-    Beta
 
 
 Integer support

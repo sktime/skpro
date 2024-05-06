@@ -3,6 +3,7 @@
 # adapted from sktime
 
 __all__ = [
+    "Beta",
     "ChiSquared",
     "Empirical",
     "Fisk",
@@ -19,7 +20,6 @@ __all__ = [
     "TDistribution",
     "Uniform",
     "Weibull",
-    "Beta",
 ]
 
 from skpro.distributions.beta import Beta
