@@ -12,6 +12,14 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Beta(_ScipyAdapter):
     r"""Beta distribution.
 
+    The Beta distribution is parametrized by two shape parameters :math:`\alpha`
+    and :math:`\beta`, such that the probability density function (PDF) is given by:
+
+    .. math:: f(x) = \frac{x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha, \beta)}
+
+    where :math:`B(\alpha, \beta)` is the beta function. The beta function
+    is a normalization constant to ensure that the total probability is 1.
+
     Parameters
     ----------
     alpha : float or array of float (1D or 2D), must be positive
