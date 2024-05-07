@@ -82,12 +82,13 @@ take one or multiple ``sklearn`` estimators and adda probabilistic prediction mo
 
     MapieRegressor
 
-.. currentmodule:: skpro.regression.gradient_boosting
+.. currentmodule:: skpro.regression.ensemble
 
 .. autosummary::
     :toctree: auto_generated/
     :template: class.rst
 
+    BaggingRegressor
     NGBoostRegressor
 
 .. currentmodule:: skpro.regression.cyclic_boosting
