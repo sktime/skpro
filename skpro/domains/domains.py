@@ -114,17 +114,17 @@ class Finite(Discrete):
                 raise TypeError(f"Expected `float`or `int`, but got {type(value)}.")
             if value in [-float("inf"), float("inf")]:
                 raise ValueError(f"Value {value} not accepted in finite set.")
-        return sorted(values)
+        return list(set(values))
 
     def __contains__(self, item) -> bool:
         return item in self.values
 
     def __str__(self) -> str:
-        return "{" + ", ".join([str(value) for value in self.values]) + "}"
+        return "{" + ", ".join([str(value) for value in sorted(self.values)]) + "}"
 
     @property
-    def boundary(self) -> Tuple[float, float]:
-        return self.values[0], self.values[1]
+    def boundary(self) -> Tuple[float, ...]:
+        return tuple(self.values)
 
 
 class Infinite(Discrete):
