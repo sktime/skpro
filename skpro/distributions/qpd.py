@@ -11,10 +11,9 @@ __author__ = [
 
 import typing
 import warnings
+from typing import Sequence
 
 if typing.TYPE_CHECKING:
-    from typing import Sequence
-
     from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
 
 import numpy as np
@@ -92,7 +91,6 @@ class QPD_Johnson(_DelegatedDistribution):
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf"],
         "distr:measuretype": "continuous",
-        # "broadcast_init": "on",
     }
 
     def __init__(
@@ -250,12 +248,11 @@ class QPD_S(BaseDistribution):
         qv_median: float | Sequence,
         qv_high: float | Sequence,
         lower: float,
-        upper: float = 1e6,
+        upper: float = 1e3,
         version: str | None = "normal",
         index=None,
         columns=None,
     ):
-        self.qpd = []
         self.alpha = alpha
         self.qv_low = qv_low
         self.qv_median = qv_median
@@ -268,9 +265,7 @@ class QPD_S(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_S
 
-        alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
-            self, alpha, qv_low, qv_median, qv_high
-        )
+        qv_low, qv_median, qv_high = _prep_qpd_params(qv_low, qv_median, qv_high)
 
         if index is None:
             index = pd.RangeIndex(qv_low.shape[0])
@@ -330,9 +325,11 @@ class QPD_S(BaseDistribution):
         lower = params["lower"]
         upper = params["upper"]
         index = params["index"]
-        x = np.linspace(lower, upper, num=int(1e6))
-        cdf_arr = self.qpd.cdf(x).T
-        loc = exp_func(x, cdf_arr, index.shape[0])
+        x = np.linspace(lower, upper, num=int(1e3))
+        cdf = self.qpd.cdf(x)
+        if cdf.ndim < 2:
+            cdf = cdf[:, np.newaxis]
+        loc = exp_func(x, cdf.T, index.shape[0])
         return loc
 
     def _var(self):
@@ -350,9 +347,11 @@ class QPD_S(BaseDistribution):
         upper = params["upper"]
         index = params["index"]
         mean = self.mean().values
-        x = np.linspace(lower, upper, num=int(1e6))
-        cdf_arr = self.qpd.cdf(x).T
-        var = var_func(x, mean, cdf_arr, index.shape[0])
+        x = np.linspace(lower, upper, num=int(1e3))
+        cdf = self.qpd.cdf(x)
+        if cdf.ndim < 2:
+            cdf = cdf[:, np.newaxis]
+        var = var_func(x, mean, cdf.T, index.shape[0])
         return var
 
     def _pdf(self, x: np.ndarray):
@@ -381,7 +380,7 @@ class QPD_S(BaseDistribution):
             "qv_median": 0.0,
             "qv_high": 0.3,
             "lower": -0.5,
-            "index": pd.RangeIndex(3),
+            "index": pd.RangeIndex(1),
             "columns": pd.Index(["a"]),
         }
         params2 = {
@@ -468,7 +467,6 @@ class QPD_B(BaseDistribution):
         index=None,
         columns=None,
     ):
-        # self.qpd = []
         self.alpha = alpha
         self.qv_low = qv_low
         self.qv_median = qv_median
@@ -481,9 +479,7 @@ class QPD_B(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_B
 
-        alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
-            self, alpha, qv_low, qv_median, qv_high
-        )
+        qv_low, qv_median, qv_high = _prep_qpd_params(qv_low, qv_median, qv_high)
 
         if index is None:
             index = pd.RangeIndex(qv_low.shape[0])
@@ -543,9 +539,11 @@ class QPD_B(BaseDistribution):
         lower = params["lower"]
         upper = params["upper"]
         index = params["index"]
-        x = np.linspace(lower, upper, num=int(1e6))
-        cdf_arr = self.qpd.cdf(x).T
-        loc = exp_func(x, cdf_arr, index.shape[0])
+        x = np.linspace(lower, upper, num=int(1e3))
+        cdf = self.qpd.cdf(x)
+        if cdf.ndim < 2:
+            cdf = cdf[:, np.newaxis]
+        loc = exp_func(x, cdf.T, index.shape[0])
         return loc
 
     def _var(self):
@@ -563,9 +561,11 @@ class QPD_B(BaseDistribution):
         upper = params["upper"]
         index = params["index"]
         mean = self.mean().values
-        x = np.linspace(lower, upper, num=int(1e6))
-        cdf_arr = self.qpd.cdf(x).T
-        var = var_func(x, mean, cdf_arr, index.shape[0])
+        x = np.linspace(lower, upper, num=int(1e3))
+        cdf = self.qpd.cdf(x)
+        if cdf.ndim < 2:
+            cdf = cdf[:, np.newaxis]
+        var = var_func(x, mean, cdf.T, index.shape[0])
         return var
 
     def _pdf(self, x: np.ndarray):
@@ -595,7 +595,7 @@ class QPD_B(BaseDistribution):
             "qv_high": 0.3,
             "lower": -0.5,
             "upper": 0.5,
-            "index": pd.RangeIndex(3),
+            "index": pd.RangeIndex(1),
             "columns": pd.Index(["a"]),
         }
         params2 = {
@@ -677,8 +677,8 @@ class QPD_U(BaseDistribution):
         qv_low: float | Sequence,
         qv_median: float | Sequence,
         qv_high: float | Sequence,
-        lower: float = -1e6,
-        upper: float = 1e6,
+        lower: float = -1e3,
+        upper: float = 1e3,
         version: str | None = "normal",
         dist_shape: float | None = 0.0,
         index=None,
@@ -698,9 +698,7 @@ class QPD_U(BaseDistribution):
 
         from cyclic_boosting.quantile_matching import J_QPD_extended_U
 
-        alpha, qv_low, qv_median, qv_high = _prep_qpd_params(
-            self, alpha, qv_low, qv_median, qv_high
-        )
+        qv_low, qv_median, qv_high = _prep_qpd_params(qv_low, qv_median, qv_high)
 
         if index is None:
             index = pd.RangeIndex(qv_low.shape[0])
@@ -745,7 +743,6 @@ class QPD_U(BaseDistribution):
                 shape=dist_shape,
             )
             self.qpd.append(jqpd)
-        self.qpd = pd.DataFrame(self.qpd, index=self.index)
 
         super().__init__(index=index, columns=columns)
 
@@ -763,15 +760,15 @@ class QPD_U(BaseDistribution):
         lower = params["lower"]
         upper = params["upper"]
         index = params["index"]
-        columns = params["columns"]
         cdf_arr = []
-        x = np.linspace(lower, upper, num=int(1e6))
-        for idx in self.index:
-            qpd = self.qpd.loc[idx, :].values[0]
+        x = np.linspace(lower, upper, num=int(1e3))
+        for qpd in self.qpd:
             cdf_arr.append(qpd.cdf(x))
-        cdf_arr = np.asarray(cdf_arr)
-        loc = exp_func(x, cdf_arr, index.shape[0])
-        return pd.DataFrame(loc, index=index, columns=columns)
+        cdf = np.asarray(cdf_arr)
+        if cdf.ndim < 2:
+            cdf = cdf[:, np.newaxis]
+        loc = exp_func(x, cdf, index.shape[0])
+        return loc
 
     def _var(self):
         """Return element/entry-wise variance of the distribution.
@@ -789,11 +786,12 @@ class QPD_U(BaseDistribution):
         index = params["index"]
         mean = self.mean().values
         cdf_list = []
-        x = np.linspace(lower, upper, num=int(1e6))
-        for idx in self.index:
-            qpd = self.qpd.loc[idx, :].values[0]
+        x = np.linspace(lower, upper, num=int(1e3))
+        for qpd in self.qpd:
             cdf_list.append(qpd.cdf(x))
         cdf = np.asarray(cdf_list)
+        if cdf.ndim < 2:
+            cdf = cdf[:, np.newaxis]
         var = var_func(x, mean, cdf, index.shape[0])
         return var
 
@@ -822,7 +820,7 @@ class QPD_U(BaseDistribution):
             "qv_low": -0.3,
             "qv_median": 0.0,
             "qv_high": 0.3,
-            "index": pd.RangeIndex(3),
+            "index": pd.RangeIndex(1),
             "columns": pd.Index(["a"]),
         }
         params2 = {
@@ -837,21 +835,19 @@ class QPD_U(BaseDistribution):
         return [params1, params2]
 
 
-def calc_pdf(x: np.ndarray, cdf: np.ndarray) -> np.ndarray:
+def calc_pdf(cdf: np.ndarray) -> np.ndarray:
     """Return pdf value for all samples."""
     from findiff import FinDiff
 
-    dx = x[1] - x[0]
+    dx = 1e-6
     derivative = FinDiff(1, dx, 1)
-    if cdf.ndim < 2:
-        cdf = cdf[np.newaxis, :]
     pdf = np.asarray(derivative(cdf))
     return pdf
 
 
 def exp_func(x: np.ndarray, cdf: np.ndarray, size: int):
     """Return Expectation."""
-    pdf = calc_pdf(x, cdf)
+    pdf = calc_pdf(cdf)
     x = np.tile(x, (size, 1))
     loc = np.trapz(x * pdf, x, dx=1e-6, axis=1)
     return loc
@@ -859,64 +855,67 @@ def exp_func(x: np.ndarray, cdf: np.ndarray, size: int):
 
 def var_func(x: np.ndarray, mu: np.ndarray, cdf: np.ndarray, size: int):
     """Return Variance."""
-    pdf = calc_pdf(x, cdf)
+    pdf = calc_pdf(cdf)
     x = np.tile(x, (size, 1))
     var = np.trapz(((x - mu) ** 2) * pdf, x, dx=1e-6, axis=1)
     return var
 
 
-def pdf_func(x: np.ndarray, dist: J_QPD_S | J_QPD_B | pd.DataFrame):
+def pdf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
     """Return pdf value."""
-    qpd = dist.values if isinstance(dist, pd.DataFrame) else dist
-    prob_var = np.unique(x)
-    for v in prob_var:
-        x0 = np.linspace(v, v + 1e-3, num=3)
-        if isinstance(dist, pd.DataFrame):
-            cdf = np.asarray([func[0].cdf(x0) for func in qpd])
-        else:
-            cdf = qpd.cdf(x0).T
-        pdf = calc_pdf(x0, cdf)[:, 0]
-        if pdf.ndim < 1:
-            pdf = pdf[np.newaxis]
+    pdf = np.zeros_like(x)
+    for r in range(x.shape[0]):
+        for c in range(x.shape[1]):
+            element = x[r][c]
+            x0 = np.linspace(element, element + 1e-3, num=3)
+            if isinstance(qpd, list):
+                cdf = np.asarray([func.cdf(x0) for func in qpd])
+                cdf = cdf.reshape(cdf.shape[0], -1)
+            else:
+                cdf = qpd.cdf(x0)
+                if cdf.ndim < 2:
+                    cdf = cdf[:, np.newaxis]
+                cdf = cdf.T
+            pdf_part = calc_pdf(cdf)
+            pdf[r][c] = pdf_part[0][0]
     return pdf
 
 
-def ppf_func(x: np.ndarray, dist: J_QPD_S | J_QPD_B | pd.DataFrame):
+def ppf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
     """Return ppf value."""
-    qpd = dist.values if isinstance(dist, pd.DataFrame) else dist
-    quantiles = np.unique(x)
-    for q in quantiles:
-        if isinstance(dist, pd.DataFrame):
-            ppf = np.asarray([func[0].ppf(q) for func in qpd])
-        else:
-            ppf = qpd.ppf(q).T
-        if ppf.ndim < 1:
+    if isinstance(qpd, list):
+        ppf = np.asarray([func.ppf(x) for func in qpd])
+        ppf = ppf.reshape(ppf.shape[0], -1)
+    else:
+        ppf = qpd.ppf(x)
+        if ppf.ndim < 2:
             ppf = ppf[np.newaxis]
+    ppf = ppf.T
     return ppf
 
 
-def cdf_func(x: np.ndarray, dist: J_QPD_S | J_QPD_B | pd.DataFrame):
+def cdf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
     """Return cdf value."""
-    qpd = dist.values if isinstance(dist, pd.DataFrame) else dist
-    x_value = np.unique(x)
-    for v in x_value:
-        if isinstance(dist, pd.DataFrame):
-            cdf = np.asarray([func[0].cdf(v) for func in qpd])
-        else:
-            cdf = qpd.cdf(v).T
-        if cdf.ndim < 1:
+    if isinstance(qpd, list):
+        cdf = np.asarray([func.cdf(x) for func in qpd])
+        cdf = cdf.reshape(cdf.shape[0], -1)
+    else:
+        cdf = qpd.cdf(x)
+        if cdf.ndim < 2:
             cdf = cdf[np.newaxis]
+    cdf = cdf.T
     return cdf
 
 
-def _prep_qpd_params(self, alpha, qv_low, qv_median, qv_high):
+def _prep_qpd_params(qv_low, qv_median, qv_high):
     """Prepare parameters for Johnson Quantile-Parameterized Distributions."""
-    if not isinstance(alpha, np.ndarray):
-        alpha = np.array([alpha])
-    qv_low, qv_median, qv_high = BaseDistribution._get_bc_params(
-        self, qv_low, qv_median, qv_high, oned_as="col"
-    )
-    qv_low = qv_low.flatten()
-    qv_median = qv_median.flatten()
-    qv_high = qv_high.flatten()
-    return alpha, qv_low, qv_median, qv_high
+    qv = [qv_low, qv_median, qv_high]
+    for i, instance in enumerate(qv):
+        if isinstance(instance, float):
+            qv[i] = np.array([qv[i]])
+        elif isinstance(instance, Sequence):
+            qv[i] = np.asarray(qv[i])
+    qv_low = qv[0].flatten()
+    qv_median = qv[1].flatten()
+    qv_high = qv[2].flatten()
+    return qv_low, qv_median, qv_high
