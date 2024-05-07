@@ -3,6 +3,7 @@
 # adapted from sktime
 
 __all__ = [
+    "Beta",
     "ChiSquared",
     "Delta",
     "Empirical",
@@ -22,6 +23,7 @@ __all__ = [
     "Weibull",
 ]
 
+from skpro.distributions.beta import Beta
 from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.delta import Delta
 from skpro.distributions.empirical import Empirical
