@@ -51,7 +51,7 @@ def _has_capability(distr, method):
 METHODS_SCALAR = ["mean", "var", "energy"]
 METHODS_SCALAR_POS = ["var", "energy"]  # result always non-negative?
 METHODS_X = ["energy", "pdf", "log_pdf", "pmf", "log_pmf", "cdf"]
-METHODS_X_POS = ["energy", "pdf", "pmf", "cdf"]  # result always non-negative?
+METHODS_X_POS = ["energy", "pdf", "pmf", "cdf", "surv", "haz"]  # result non-negative?
 METHODS_P = ["ppf"]
 METHODS_ROWWISE = ["energy"]  # results in one column
 
