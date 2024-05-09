@@ -206,6 +206,19 @@ class Empirical(BaseDistribution):
             columns=subs_colidx,
         )
 
+    def _iat(self, rowidx=None, colidx=None):
+        if rowidx is None or colidx is None:
+            raise ValueError("iat method requires both row and column index")
+        self_subset = self[[rowidx], [colidx]]
+        spl_subset = self_subsets.spl.droplevel(0)
+        if self.weights is not None:
+            wts_subset = self_subset.weights.droplevel(0)
+        else:
+            wts_subset = None
+
+        subset_params = {"spl": spl_subset, "weights": wts_subset}
+        return type(self)(**subset_params)
+
     def energy(self, x=None):
         r"""Energy of self, w.r.t. self or a constant frame x.
 
