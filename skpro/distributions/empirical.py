@@ -10,13 +10,30 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Empirical(BaseDistribution):
-    """Empirical distribution (skpro native).
+    """Empirical distribution, or weighted sum of delta distributions.
+
+    This distribution represents an empirical distribution, or, more generally,
+    a weighted sum of delta distributions.
+
+    The distribution is parameterized by support in ``spl``, and optionally
+    weights in ``weights``.
+
+    For the scalar case, the distribution is parameterized as follows:
+    let :math:`s_i, i = 1 \dots N` the entries of ``spl``,
+    and :math:`w_i, i = 1 \dots N` the entries of ``weights``; if ``weights=None``,
+    by default we define :math:`p_i = \frac{1}{N}`, otherwise we
+    define :math:`p_i := \frac{w_i}{\sum_{i=1}^N w_i}`
+
+    The distribution is the unique distribution that takes value :math:`s_i` with
+    probability :math:`p_i`. In particluar, if ``weights`` was ``None``,
+    the distribution is the uniform distribution supported on the :math:`s_i`.
 
     Parameters
     ----------
-    spl : pd.DataFrame with pd.MultiIndex
-        empirical sample
-        last (highest) index is instance, first (lowest) index is sample
+    spl : pd.DataFrame
+        empirical sample; for scalar distributions, rows are samples;
+        for dataframe-like distributions,
+        first (lowest) index is sample, further indices are instance indices
     weights : pd.Series, with same index and length as spl, optional, default=None
         if not passed, ``spl`` is assumed to be unweighted
     time_indep : bool, optional, default=True
@@ -42,7 +59,7 @@ class Empirical(BaseDistribution):
     >>> empirical_sample = dist.sample(3)
 
     scalar distribution:
-    >>> spl = pd.DataFrame([1, 2, 3, 4, 3])
+    >>> spl = pd.Series([1, 2, 3, 4, 3])
     >>> dist = Empirical(spl)
     >>> empirical_sample = dist.sample(3)
     """
