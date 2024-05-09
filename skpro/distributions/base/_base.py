@@ -293,7 +293,8 @@ class BaseDistribution(BaseObject):
     def get_params_df(self):
         """Return distribution parameters in a dict of DataFrame.
 
-        Available only for simple parametric distributions.
+        Available only for simple parametric distributions,
+        i.e., distributions with tag "distr:paramtype" having value "parametric".
 
         Returns
         -------
