@@ -217,7 +217,7 @@ def test_head_tail():
     assert (nt.columns == n.columns).all()
     assert (nt.index == n.index[1:]).all()
 
-    nt2 = nt.tail()
+    nt2 = n.tail()
     assert isinstance(nt2, Normal)
     assert nt2.shape == (3, 2)
     assert (nt2.columns == n.columns).all()
