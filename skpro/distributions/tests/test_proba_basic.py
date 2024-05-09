@@ -136,3 +136,34 @@ def test_proba_plotting(fun):
     n = Normal(mu=1, sigma=1)
     ax = n.plot(fun=fun)
     assert isinstance(ax, Axes)
+
+
+def test_to_df_parametric():
+    """Tests coercion to DataFrame via get_params_df and to_df."""
+    from skpro.distributions.normal import Normal
+
+    cols = ["foo", "bar"]
+
+    # default case, 2D distribution with n_columns>1
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=cols)
+
+    param_names = n.get_param_names()
+    params_df = n.get_params_df()
+    for k, v in params_df.items():
+        assert k in param_names
+        assert isinstance(v, pd.DataFrame)
+        assert (v.index == n.index).all()
+        assert (v.columns == n.columns).all()
+
+    all_params_df = n.to_df()
+    assert isinstance(all_params_df, pd.DataFrame)
+    assert (all_params_df.index == n.index).all()
+    assert isinstance(all_params_df.columns, pd.MultiIndex)
+
+    level0_vals = all_params_df.columns.get_level_values(0).unique()
+    level1_vals = all_params_df.columns.get_level_values(1).unique()
+
+    assert (level0_vals == n.columns).all()
+    for ix in level1_vals:
+        assert ix in param_names
+        assert ix not in ["index", "columns"]

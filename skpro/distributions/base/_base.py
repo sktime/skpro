@@ -326,6 +326,8 @@ class BaseDistribution(BaseObject):
             return pd.DataFrame([[x]])
 
         params_df = {k: to_df(bc_params[k]) for k in paramnames}
+        drop_keys = ["index", "columns"]
+        params_df = {k: params_df[k] for k in params_df if k not in drop_keys}
         return params_df
 
     def to_df(self):
@@ -347,9 +349,17 @@ class BaseDistribution(BaseObject):
 
         param_df = pd.concat(vals_df, axis=1, keys=paramnames)
         param_df.columns = param_df.columns.swaplevel()
-        param_df = param_df.sort_index(axis=1)
+
+        # sorting for consistency with columns of self
+        if self.columns is not None:
+            param_df = param_df.loc[:, self.columns]
+        else:
+            param_df = param_df.sort_index(axis=1)
+
         if self.ndim == 0:
-            param_df.columns = paramnames
+            # first level is superfluous in scalar case (always 0)
+            # and inconsistent with MultiIndex handling, so we remove it
+            param_df = param_df.droplevel(0, axis=1)
         return param_df
 
     def to_str(self):
