@@ -24,6 +24,7 @@ class _ScipyAdapter(BaseDistribution):
     _distribution_attr = "_dist"
     _tags = {
         "object_type": "distribution",
+        "distr:paramtype": "parametric",
     }
 
     def __init__(self, index=None, columns=None):
