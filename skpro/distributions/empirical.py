@@ -10,7 +10,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Empirical(BaseDistribution):
-    """Empirical distribution, or weighted sum of delta distributions.
+    r"""Empirical distribution, or weighted sum of delta distributions.
 
     This distribution represents an empirical distribution, or, more generally,
     a weighted sum of delta distributions.
