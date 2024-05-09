@@ -79,6 +79,7 @@ class Empirical(BaseDistribution):
         spl = self.spl
 
         is_scalar = not isinstance(spl.index, pd.MultiIndex)
+        is_scalar = is_scalar and (spl.ndim <= 1 or spl.shape[1] == 1)
 
         if is_scalar:
             self._shape = ()
@@ -227,7 +228,7 @@ class Empirical(BaseDistribution):
         res = pd.DataFrame(energy.sum(axis=1), columns=["energy"])
         return res
 
-    def mean(self):
+    def _mean(self):
         r"""Return expected value of the distribution.
 
         Let :math:`X` be a random variable with the distribution of `self`.
@@ -239,6 +240,16 @@ class Empirical(BaseDistribution):
         expected value of distribution (entry-wise)
         """
         spl = self.spl
+
+        # scalar case
+        if self.ndim == 0:
+            spl = spl.values.flatten()
+            if self.weights is None:
+                return np.mean(spl)
+            else:
+                return np.average(spl, weights=self.weights)
+
+        # dataframe case
         if self.weights is None:
             mean_df = spl.groupby(level=-1, sort=False).mean()
         else:
@@ -250,7 +261,7 @@ class Empirical(BaseDistribution):
 
         return mean_df
 
-    def var(self):
+    def _var(self):
         r"""Return element/entry-wise variance of the distribution.
 
         Let :math:`X` be a random variable with the distribution of `self`.
@@ -263,6 +274,18 @@ class Empirical(BaseDistribution):
         """
         spl = self.spl
         N = self._N
+
+        # scalar case
+        if self.ndim == 0:
+            spl = spl.values.flatten()
+            if self.weights is None:
+                return np.var(spl, ddof=0)
+            else:
+                mean = self.mean()
+                var = np.average((spl - mean) ** 2, weights=self.weights)
+                return var
+
+        # dataframe case
         if self.weights is None:
             var_df = spl.groupby(level=-1, sort=False).var(ddof=0)
         else:
@@ -371,7 +394,17 @@ class Empirical(BaseDistribution):
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2]
+
+        # params3 is scalar, unweighted
+        spl_scalar = pd.Series([1, 2, 3, 4, 3])
+        params3 = {"spl": spl_scalar}
+
+        # params4 is scalar, weighted
+        spl_scalar = pd.DataFrame([1, 2, 3, 4, 3])
+        wts_scalar = pd.Series([0.2, 0.2, 0.3, 0.3, 0.1])
+        params4 = {"spl": spl_scalar, "weights": wts_scalar}
+
+        return [params1, params2, params3, params4]
 
 
 def _energy_np(spl, x=None, weights=None, assume_sorted=False):
