@@ -173,6 +173,13 @@ class Empirical(BaseDistribution):
         return res.apply(pd.to_numeric)
 
     def _iloc(self, rowidx=None, colidx=None):
+        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
+            return self._iat(rowidx, colidx)
+        if is_scalar_notnone(rowidx):
+            rowidx = pd.Index([rowidx])
+        if is_scalar_notnone(colidx):
+            colidx = pd.Index([colidx])
+
         index = self.index
         columns = self.columns
         weights = self.weights
@@ -209,7 +216,7 @@ class Empirical(BaseDistribution):
     def _iat(self, rowidx=None, colidx=None):
         if rowidx is None or colidx is None:
             raise ValueError("iat method requires both row and column index")
-        self_subset = self[[rowidx], [colidx]]
+        self_subset = self.iloc[[rowidx], [colidx]]
         spl_subset = self_subset.spl.droplevel(0)
         if self.weights is not None:
             wts_subset = self_subset.weights.droplevel(0)
@@ -546,3 +553,8 @@ def _ppf_np(spl, x, weights=None, assume_sorted=False):
     ppf_val = spl[ix_val]
 
     return ppf_val
+
+
+def is_scalar_notnone(obj):
+    """Check if obj is scalar and not None."""
+    return obj is not None and np.isscalar(obj)
