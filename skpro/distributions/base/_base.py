@@ -25,6 +25,12 @@ class BaseDistribution(BaseObject):
         "object_type": "distribution",  # type of object, e.g., 'distribution'
         "python_version": None,  # PEP 440 python version specifier to limit versions
         "python_dependencies": None,  # string or str list of pkg soft dependencies
+        # property tags
+        # -------------
+        "distr:measuretype": "mixed",  # distribution type, mixed, continuous, discrete
+        "distr:paramtype": "general",
+        # parameterization type - parametric, nonparametric, composite
+        #
         # default parameter settings for MC estimates
         # -------------------------------------------
         # these are used in default implementations of mean, var, energy, pdfnorm, ppf
@@ -297,6 +303,16 @@ class BaseDistribution(BaseObject):
             Each ``DataFrame`` has the same index as ``self`` and columns as ``self``.
             Entries are the values of the distribution parameters.
         """
+        is_parametric = self.get_class_tag("distr:paramtype") == "parametric"
+
+        if not is_parametric:
+            raise RuntimeError(
+                f"Error in call of {type(self).__name__}.get_params_df, "
+                "DataFrame representation of parameters via get_params_df or to_df "
+                "is only available for parametric distributions, i.e., "
+                "distributions with tag 'distr:paramtype' being 'parametric'"
+            )
+
         if hasattr(self, "_bc_params"):
             bc_params = self._bc_params
         else:
