@@ -167,3 +167,24 @@ def test_to_df_parametric():
     for ix in level1_vals:
         assert ix in param_names
         assert ix not in ["index", "columns"]
+
+    # scalar case
+    n = Normal(mu=2, sigma=3)
+
+    param_names = n.get_param_names()
+    params_df = n.get_params_df()
+
+    for k, v in params_df.items():
+        assert k in param_names
+        assert isinstance(v, pd.DataFrame)
+        assert (v.index == pd.RangeIndex(1)).all()
+        assert (v.columns == pd.RangeIndex(1)).all()
+
+    all_params_df = n.to_df()
+    assert isinstance(all_params_df, pd.DataFrame)
+    assert (all_params_df.index == pd.RangeIndex(1)).all()
+    assert not isinstance(all_params_df.columns, pd.MultiIndex)
+
+    for ix in all_params_df.columns:
+        assert ix in param_names
+        assert ix not in ["index", "columns"]
