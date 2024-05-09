@@ -25,6 +25,12 @@ class BaseDistribution(BaseObject):
         "object_type": "distribution",  # type of object, e.g., 'distribution'
         "python_version": None,  # PEP 440 python version specifier to limit versions
         "python_dependencies": None,  # string or str list of pkg soft dependencies
+        # property tags
+        # -------------
+        "distr:measuretype": "mixed",  # distribution type, mixed, continuous, discrete
+        "distr:paramtype": "general",
+        # parameterization type - parametric, nonparametric, composite
+        #
         # default parameter settings for MC estimates
         # -------------------------------------------
         # these are used in default implementations of mean, var, energy, pdfnorm, ppf
@@ -283,6 +289,80 @@ class BaseDistribution(BaseObject):
         paramnames = [x for x in paramnames if x not in reserved_names]
 
         return {k: params[k] for k in paramnames}
+
+    def get_params_df(self):
+        """Return distribution parameters in a dict of DataFrame.
+
+        Available only for simple parametric distributions,
+        i.e., distributions with tag "distr:paramtype" having value "parametric".
+
+        Returns
+        -------
+        dict of pd.DataFrame
+            Dictionary with all distribution parameters, as ``pd.DataFrame``.
+            Keys are the parameter names, values are the ``pd.DataFrame``.
+            Each ``DataFrame`` has the same index as ``self`` and columns as ``self``.
+            Entries are the values of the distribution parameters.
+        """
+        is_parametric = self.get_class_tag("distr:paramtype") == "parametric"
+
+        if not is_parametric:
+            raise RuntimeError(
+                f"Error in call of {type(self).__name__}.get_params_df, "
+                "DataFrame representation of parameters via get_params_df or to_df "
+                "is only available for parametric distributions, i.e., "
+                "distributions with tag 'distr:paramtype' being 'parametric'"
+            )
+
+        if hasattr(self, "_bc_params"):
+            bc_params = self._bc_params
+        else:
+            bc_params = self._get_bc_params_dict()
+
+        paramnames = list(bc_params.keys())
+
+        def to_df(x):
+            if self.ndim > 0:
+                return pd.DataFrame(x, index=self.index, columns=self.columns)
+            return pd.DataFrame([[x]])
+
+        params_df = {k: to_df(bc_params[k]) for k in paramnames}
+        drop_keys = ["index", "columns"]
+        params_df = {k: params_df[k] for k in params_df if k not in drop_keys}
+        return params_df
+
+    def to_df(self):
+        """Return distribution parameters as a single DataFrame.
+
+        Available only for simple parametric distributions,
+        i.e., distributions with tag "distr:paramtype" having value "parametric".
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with all distribution parameters.
+            column is a MultiIndex (paramname, varname).
+            row index is the index of the distribution.
+            Entries are the values of the distribution parameters.
+        """
+        params_df = self.get_params_df()
+        paramnames = list(params_df.keys())
+        vals_df = [params_df[k] for k in paramnames]
+
+        param_df = pd.concat(vals_df, axis=1, keys=paramnames)
+        param_df.columns = param_df.columns.swaplevel()
+
+        # sorting for consistency with columns of self
+        if self.columns is not None:
+            param_df = param_df.loc[:, self.columns]
+        else:
+            param_df = param_df.sort_index(axis=1)
+
+        if self.ndim == 0:
+            # first level is superfluous in scalar case (always 0)
+            # and inconsistent with MultiIndex handling, so we remove it
+            param_df = param_df.droplevel(0, axis=1)
+        return param_df
 
     def to_str(self):
         """Return string representation of self."""
