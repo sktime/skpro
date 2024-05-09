@@ -219,7 +219,7 @@ class Empirical(BaseDistribution):
         subset_params = {"spl": spl_subset, "weights": wts_subset}
         return type(self)(**subset_params)
 
-    def energy(self, x=None):
+    def _energy_default(self, x=None):
         r"""Energy of self, w.r.t. self or a constant frame x.
 
         Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
@@ -237,8 +237,9 @@ class Empirical(BaseDistribution):
         pd.DataFrame with same rows as `self`, single column `"energy"`
         each row contains one float, self-energy/energy as described above.
         """
-        energy = self._apply_per_ix(_energy_np, {"assume_sorted": True}, x=x)
-        res = pd.DataFrame(energy.sum(axis=1), columns=["energy"])
+        energy_arr = self._apply_per_ix(_energy_np, {"assume_sorted": True}, x=x)
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
         return res
 
     def _mean(self):
