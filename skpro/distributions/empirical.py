@@ -40,6 +40,11 @@ class Empirical(BaseDistribution):
     ... )
     >>> dist = Empirical(spl)
     >>> empirical_sample = dist.sample(3)
+
+    scalar distribution:
+    >>> spl = pd.DataFrame([1, 2, 3, 4, 3])
+    >>> dist = Empirical(spl)
+    >>> empirical_sample = dist.sample(3)
     """
 
     _tags = {
@@ -52,31 +57,66 @@ class Empirical(BaseDistribution):
         self.spl = spl
         self.weights = weights
         self.time_indep = time_indep
-        self.index = index
-        self.columns = columns
 
-        _timestamps = spl.index.droplevel(0).unique()
-        _spl_instances = spl.index.get_level_values(0).unique()
-        self._timestamps = _timestamps
-        self._spl_instances = _spl_instances
-        self._N = len(_spl_instances)
-
-        if index is None:
-            index = _timestamps
-
-        if columns is None:
-            columns = spl.columns
-
-        self._shape = (len(index), len(columns))
+        index, columns = self._init_index(index, columns)
 
         super().__init__(index=index, columns=columns)
 
         # initialized sorted samples
         self._init_sorted()
 
+    def _init_index(self, index, columns):
+        """Initialize index and columns.
+
+        Sets the following attributes:
+
+        * ``_spl_indices`` - unique index for samples
+        * ``_shape`` - shape of self - 0D or 2D
+        * ``_N`` - number of samples
+        * only if array distribution: ``_instances``,
+          coerced index of ``self``, from ``spl`` index
+        """
+        spl = self.spl
+
+        is_scalar = not isinstance(spl.index, pd.MultiIndex)
+
+        if is_scalar:
+            self._shape = ()
+            _spl_indices = spl.index
+            self._spl_indices = _spl_indices
+            self._N = len(_spl_indices)
+            return None, None
+
+        _instances = spl.index.droplevel(0).unique()
+        _spl_indices = spl.index.get_level_values(0).unique()
+        self._instances = _instances
+        self._spl_indices = _spl_indices
+        self._N = len(_spl_indices)
+
+        if index is None:
+            index = _instances
+        if columns is None:
+            columns = spl.columns
+
+        self._shape = (len(index), len(columns))
+
+        return index, columns
+
     def _init_sorted(self):
         """Initialize sorted version of spl."""
-        times = self._timestamps
+        if self.ndim == 0:
+            spl = self.spl.values.flatten()
+            sorter = np.argsort(spl)
+            spl_sorted = spl[sorter]
+            if self.weights is not None:
+                weights_sorted = self.weights.values.flatten()[sorter]
+            else:
+                weights_sorted = np.ones_like(spl)
+            self._sorted = spl_sorted
+            self._weights = weights_sorted
+            return None
+
+        times = self._instances
         cols = self.columns
 
         sorted = {}
@@ -230,7 +270,7 @@ class Empirical(BaseDistribution):
             var_df = spl.groupby(level=-1, sort=False).var(ddof=0)
         else:
             mean = self.mean()
-            means = pd.concat([mean] * N, axis=0, keys=self._spl_instances)
+            means = pd.concat([mean] * N, axis=0, keys=self._spl_indices)
             var_df = spl.groupby(level=-1, sort=False).apply(
                 lambda x: np.average(
                     (x - means.loc[x.index]) ** 2,
@@ -271,7 +311,7 @@ class Empirical(BaseDistribution):
         and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
         """
         spl = self.spl
-        timestamps = self._timestamps
+        timestamps = self._instances
         weights = self.weights
 
         if n_samples is None:
