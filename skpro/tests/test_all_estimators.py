@@ -2,7 +2,7 @@
 import numbers
 import types
 from copy import deepcopy
-from inspect import getfullargspec, signature
+from inspect import getfullargspec, isclass, signature
 
 import joblib
 import numpy as np
@@ -82,12 +82,28 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
 
     # overrides object retrieval in scikit-base
     def _all_objects(self):
-        """Retrieve list of all object classes of type self.object_type_filter."""
+        """Retrieve list of all object classes of type self.object_type_filter.
+
+        If self.object_type_filter is None, retrieve all objects.
+        If class, retrieve all classes inheriting from self.object_type_filter.
+        Otherwise (assumed str or list of str), retrieve all classes with tags
+        object_type in self.object_type_filter.
+        """
+        filter = getattr(self, "object_type_filter", None)
+
+        if isclass(filter):
+            object_types = filter.get_class_tag("object_type", None)
+        else:
+            object_types = filter
+
         obj_list = all_objects(
-            object_types=getattr(self, "object_type_filter", None),
+            object_types=object_types,
             return_names=False,
             exclude_objects=self.exclude_objects,
         )
+
+        if isclass(filter):
+            obj_list = [obj for obj in obj_list if issubclass(obj, filter)]
 
         # run_test_for_class selects the estimators to run
         # based on whether they have changed, and whether they have all dependencies

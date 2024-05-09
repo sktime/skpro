@@ -82,6 +82,15 @@ take one or multiple ``sklearn`` estimators and adda probabilistic prediction mo
 
     MapieRegressor
 
+.. currentmodule:: skpro.regression.ensemble
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    BaggingRegressor
+    NGBoostRegressor
+
 .. currentmodule:: skpro.regression.cyclic_boosting
 
 .. autosummary::
@@ -89,6 +98,21 @@ take one or multiple ``sklearn`` estimators and adda probabilistic prediction mo
     :template: class.rst
 
     CyclicBoosting
+
+
+Naive regressors and baselines
+------------------------------
+
+This section lists simple regressors which can be used as baselines.
+
+.. currentmodule:: skpro.regression.delta
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    DeltaPointRegressor
+
 
 Linear regression
 -----------------

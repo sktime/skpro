@@ -581,6 +581,10 @@ class BaseDistribution(BaseObject):
         ``pd.DataFrame`` with same columns and index as ``self``
             containing :math:`p_{X_{ij}}(x_{ij})`, as above
         """
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if distr_type == "discrete":
+            return self._coerce_to_self_index_df(0, flatten=False)
+
         return self._boilerplate("_pdf", x=x)
 
     def _pdf(self, x):
@@ -597,8 +601,7 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("pdf", fill_in=approx_method))
 
-            if self.ndim > 0 and not isinstance(x, pd.DataFrame):
-                x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            x = self._coerce_to_self_index_df(x, flatten=False)
             res = self.log_pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
@@ -635,6 +638,10 @@ class BaseDistribution(BaseObject):
         ``pd.DataFrame`` with same columns and index as ``self``
             containing :math:`\log p_{X_{ij}}(x_{ij})`, as above
         """
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if distr_type == "discrete":
+            return self._coerce_to_self_index_df(-np.inf, flatten=False)
+
         return self._boilerplate("_log_pdf", x=x)
 
     def _log_pdf(self, x):
@@ -649,14 +656,125 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
-            if self.ndim > 0 and not isinstance(x, pd.DataFrame):
-                x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            x = self._coerce_to_self_index_df(x, flatten=False)
             res = self.pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
             return np.log(res)
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
+
+    def pmf(self, x):
+        r"""Probability mass function.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`m_{X_{ij}}`, denote the marginal mass of :math:`X` at the
+        :math:`(i,j)`-th entry, i.e.,
+        :math:`m_{X_{ij}}(x_{ij}) = \mathbb{P}(X_{ij} = x_{ij})`.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`m_{X_{ij}}(x_{ij})`.
+
+        If ``self`` has a mixed or discrete distribution, this returns
+        the weighted continuous part of `self`'s distribution instead of the pdf,
+        i.e., the marginal pdf integrate to the weight of the continuous part.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`p_{X_{ij}}(x_{ij})`, as above
+        """
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if distr_type == "continuous":
+            return self._coerce_to_self_index_df(0, flatten=False)
+
+        return self._boilerplate("_pmf", x=x)
+
+    def _pmf(self, x):
+        """Probability mass function.
+
+        Private method, to be implemented by subclasses.
+        """
+        self_has_logpmf = self._has_implementation_of("log_pmf")
+        self_has_logpmf = self_has_logpmf or self._has_implementation_of("_log_pmf")
+        if self_has_logpmf:
+            approx_method = (
+                "by exponentiating the output returned by the log_pmf method, "
+                "this may be numerically unstable"
+            )
+            warn(self._method_error_msg("pmf", fill_in=approx_method))
+
+            x = self._coerce_to_self_index_df(x, flatten=False)
+            res = self.log_pmf(x=x)
+            if isinstance(res, pd.DataFrame):
+                res = res.values
+            return np.exp(res)
+
+        raise NotImplementedError(self._method_error_msg("pmf", "error"))
+
+    def log_pmf(self, x):
+        r"""Logarithmic probability mass function.
+
+        Numerically more stable than calling pmf and then taking logartihms.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in `(N, n)` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`m_{X_{ij}}`, denote the marginal pdf of :math:`X` at the
+        :math:`(i,j)`-th entry, i.e.,
+        :math:`m_{X_{ij}}(x_{ij}) = \mathbb{P}(X_{ij} = x_{ij})`.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`\log m_{X_{ij}}(x_{ij})`.
+
+        If ``self`` has a mixed or discrete distribution, this returns
+        the weighted continuous part of `self`'s distribution instead of the pdf,
+        i.e., the marginal pdf integrate to the weight of the continuous part.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`\log m_{X_{ij}}(x_{ij})`, as above
+        """
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if distr_type == "continuous":
+            return self._coerce_to_self_index_df(-np.inf, flatten=False)
+
+        return self._boilerplate("_log_pmf", x=x)
+
+    def _log_pmf(self, x):
+        """Logarithmic probability mass function.
+
+        Private method, to be implemented by subclasses.
+        """
+        if self._has_implementation_of("pmf") or self._has_implementation_of("_pmf"):
+            approx_method = (
+                "by taking the logarithm of the output returned by the pdf method, "
+                "this may be numerically unstable"
+            )
+            warn(self._method_error_msg("log_pmf", fill_in=approx_method))
+
+            x = self._coerce_to_self_index_df(x, flatten=False)
+            res = self.pmf(x=x)
+            if isinstance(res, pd.DataFrame):
+                res = res.values
+            return np.log(res)
+
+        raise NotImplementedError(self._method_error_msg("log_pmf", "error"))
 
     def cdf(self, x):
         r"""Cumulative distribution function.
@@ -665,7 +783,8 @@ class BaseDistribution(BaseObject):
         taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
         By :math:`F_{X_{ij}}`, denote the marginal cdf of :math:`X` at the
-        :math:`(i,j)`-th entry.
+        :math:`(i,j)`-th entry,
+        i.e., :math:`F_{X_{ij}}(t) = \mathbb{P}(X_{ij} \leq t)`.
 
         The output of this method, for input ``x`` representing :math:`x`,
         is a ``DataFrame`` with same columns and indices as ``self``,
@@ -699,6 +818,76 @@ class BaseDistribution(BaseObject):
         sply = self.sample(N)
         spl = splx <= sply
         return self._sample_mean(spl)
+
+    def surv(self, x):
+        r"""Survival function.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`S_{X_{ij}}`, denote the marginal survival of :math:`X` at the
+        :math:`(i,j)`-th entry,
+        i.e., :math:`S_{X_{ij}}(t) = \mathbb{P}(X_{ij} \gneq t)`.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`F_{X_{ij}}(x_{ij})`.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`S_{X_{ij}}(x_{ij})`, as above
+        """
+        return self._boilerplate("_surv", x=x)
+
+    def _surv(self, x):
+        """Survival function.
+
+        Private method, to be implemented by subclasses.
+        """
+        x = self._coerce_to_self_index_df(x, flatten=False)
+        return 1 - self.cdf(x)
+
+    def haz(self, x):
+        r"""Hazard function.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`h_{X_{ij}}`, denote the marginal hazard of :math:`X` at the
+        :math:`(i,j)`-th entry,
+        i.e., :math:`h_{X_{ij}}(t) = \frac{f_{X_{ij}}(t)}{S_{X_{ij}}(t)}`,
+        where :math:`f_{X_{ij}}` is the marginal pdf, and :math:`S_{X_{ij}}`
+        is the marginal survival function at the :math:`(i,j)`-th entry.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`h_{X_{ij}}(x_{ij})`.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`h_{X_{ij}}(x_{ij})`, as above
+        """
+        return self._boilerplate("_haz", x=x)
+
+    def _haz(self, x):
+        """Hazard function.
+
+        Private method, to be implemented by subclasses.
+        """
+        x = self._coerce_to_self_index_df(x, flatten=False)
+        return self.pdf(x) / self.surv(x)
 
     def ppf(self, p):
         r"""Quantile function = percent point function = inverse cdf.
@@ -1278,7 +1467,7 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
-        x_arr = np.linspace(lower, upper, 100)
+        x_arr = np.linspace(lower, upper, 1000)
         y_arr = [getattr(self, fun)(x) for x in x_arr]
         y_arr = np.array(y_arr)
 
