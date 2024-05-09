@@ -188,3 +188,46 @@ def test_to_df_parametric():
     for ix in all_params_df.columns:
         assert ix in param_names
         assert ix not in ["index", "columns"]
+
+
+def test_head_tail():
+    """Test head and tail utility functions."""
+    from skpro.distributions.normal import Normal
+
+    cols = ["foo", "bar"]
+
+    # default case, 2D distribution with n_columns>1
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=cols)
+
+    nh = n.head(2)
+    assert isinstance(nh, Normal)
+    assert nh.shape == (2, 2)
+    assert (nh.columns == n.columns).all()
+    assert (nh.index == n.index[:2]).all()
+
+    nh2 = n.head()
+    assert isinstance(nh2, Normal)
+    assert nh2.shape == (3, 2)
+    assert (nh2.columns == n.columns).all()
+    assert (nh2.index == n.index).all()
+
+    nt = n.tail(2)
+    assert isinstance(nt, Normal)
+    assert nt.shape == (2, 2)
+    assert (nt.columns == n.columns).all()
+    assert (nt.index == n.index[1:]).all()
+
+    nt2 = nt.tail()
+    assert isinstance(nt2, Normal)
+    assert nt2.shape == (3, 2)
+    assert (nt2.columns == n.columns).all()
+    assert (nt2.index == n.index).all()
+
+    # scalar case
+    n = Normal(mu=2, sigma=3)
+
+    nh = n.head()
+    assert nh.ndim == 0
+
+    nt = n.tail(42)
+    assert nt.ndim == 0

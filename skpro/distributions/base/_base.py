@@ -178,6 +178,58 @@ class BaseDistribution(BaseObject):
             return 1
         return shape[0]
 
+    def head(self, n=5):
+        """Returns the first n rows.
+
+        If there are less than n rows in ``self``, returns clone of ``self``.
+
+        For negative n, returns all rows except the last n.
+
+        Parameters
+        ----------
+        n : int, default=5
+            Number of rows to return.
+
+        Returns
+        -------
+        ``self`` subset to the first n rows, i.e., ``self.iloc[0:min(n, len(self))]``
+        """
+        if self.ndim < 2:
+            return self
+        assert isinstance(n, int)
+        N = len(self)
+        if n < 0:
+            n = N - n
+        n = min(n, N)
+        return self.iloc[range(n)]
+
+    def tail(self, n=5):
+        """Returns the last n rows.
+
+        If there are less than n rows in ``self``, returns clone of ``self``.
+
+        For negative n, returns all rows except the first n.
+
+        Parameters
+        ----------
+        n : int, default=5
+            Number of rows to return.
+
+        Returns
+        -------
+        ``self`` subset to the last n rows, i.e., ``self.iloc[max(len(self) - n, 0):]``
+        """
+        if self.ndim < 2:
+            return self
+        assert isinstance(n, int)
+        N = len(self)
+        if n < 0:
+            start = n
+        else:
+            start = N - n
+        start = max(0, start)
+        return self.iloc[range(start, N)]
+
     def _loc(self, rowidx=None, colidx=None):
         if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
             return self._at(rowidx, colidx)
