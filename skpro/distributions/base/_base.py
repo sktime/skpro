@@ -291,7 +291,7 @@ class BaseDistribution(BaseObject):
         return {k: params[k] for k in paramnames}
 
     def get_params_df(self):
-        """Return distribution parameters as a DataFrame.
+        """Return distribution parameters in a dict of DataFrame.
 
         Available only for simple parametric distributions.
 
