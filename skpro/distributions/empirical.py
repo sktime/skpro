@@ -154,18 +154,12 @@ class Empirical(BaseDistribution):
         if self.ndim == 0:
             return func(spl=sorted, weights=weights, x=x, **params)
 
-        if x is not None and hasattr(x, "index"):
-            index = x.index
-        else:
-            index = self.index
-        if x is not None and hasattr(x, "columns"):
-            cols = x.columns
-        else:
-            cols = self.columns
+        index = self.index
+        cols = self.columns
 
         res = pd.DataFrame(index=index, columns=cols)
-        for ix in index:
-            for col in cols:
+        for i, ix in enumerate(index):
+            for j, col in enumerate(cols):
                 spl_t = sorted[ix][col]
                 weights_t = weights[ix][col]
                 if x is None:
@@ -173,7 +167,7 @@ class Empirical(BaseDistribution):
                 elif hasattr(x, "loc"):
                     x_t = x.loc[ix, col]
                 else:
-                    x_t = x
+                    x_t = x[i, j]
                 res.at[ix, col] = func(spl=spl_t, weights=weights_t, x=x_t, **params)
         return res.apply(pd.to_numeric)
 
@@ -286,12 +280,12 @@ class Empirical(BaseDistribution):
             )
         return var_df
 
-    def cdf(self, x):
+    def _cdf(self, x):
         """Cumulative distribution function."""
         cdf_val = self._apply_per_ix(_cdf_np, {"assume_sorted": True}, x=x)
         return cdf_val
 
-    def ppf(self, p):
+    def _ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
         ppf_val = self._apply_per_ix(_ppf_np, {"assume_sorted": True}, x=p)
         return ppf_val
@@ -313,6 +307,11 @@ class Empirical(BaseDistribution):
         in `pd-multiindex` mtype format convention, with same `columns` as `self`,
         and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
         """
+        # for now, always defaulting to the standard logic
+        # todo: address issue #283
+        if self.ndim >= 0:
+            return super().sample(n_samples=n_samples)
+
         spl = self.spl
         timestamps = self._instances
         weights = self.weights
