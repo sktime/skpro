@@ -333,7 +333,8 @@ class BaseDistribution(BaseObject):
     def to_df(self):
         """Return distribution parameters as a single DataFrame.
 
-        Available only for simple parametric distributions.
+        Available only for simple parametric distributions,
+        i.e., distributions with tag "distr:paramtype" having value "parametric".
 
         Returns
         -------
