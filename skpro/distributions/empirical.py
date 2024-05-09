@@ -151,6 +151,9 @@ class Empirical(BaseDistribution):
         sorted = self._sorted
         weights = self._weights
 
+        if self.ndim == 0:
+            return func(spl=sorted, weights=weights, x=x, **params)
+
         if x is not None and hasattr(x, "index"):
             index = x.index
         else:
