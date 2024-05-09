@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def empirical_from_rvdf(dist, index=None, columns=None):
-    """Convert a statsmodels rv_discrte_float to an skpro Empirical object.
+    """Convert a statsmodels rv_discrete_float to an skpro Empirical object.
 
     Parameters
     ----------
