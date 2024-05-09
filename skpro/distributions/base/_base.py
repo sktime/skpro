@@ -1415,7 +1415,7 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
-        x_arr = np.linspace(lower, upper, 100)
+        x_arr = np.linspace(lower, upper, 1000)
         y_arr = [getattr(self, fun)(x) for x in x_arr]
         y_arr = np.array(y_arr)
 
