@@ -210,7 +210,7 @@ class Empirical(BaseDistribution):
         if rowidx is None or colidx is None:
             raise ValueError("iat method requires both row and column index")
         self_subset = self[[rowidx], [colidx]]
-        spl_subset = self_subsets.spl.droplevel(0)
+        spl_subset = self_subset.spl.droplevel(0)
         if self.weights is not None:
             wts_subset = self_subset.weights.droplevel(0)
         else:
@@ -240,7 +240,7 @@ class Empirical(BaseDistribution):
         energy_arr = self._apply_per_ix(_energy_np, {"assume_sorted": True}, x=x)
         if energy_arr.ndim > 0:
             energy_arr = np.sum(energy_arr, axis=1)
-        return res
+        return energy_arr
 
     def _mean(self):
         r"""Return expected value of the distribution.
