@@ -179,7 +179,7 @@ class BaseDistribution(BaseObject):
         return shape[0]
 
     def head(self, n=5):
-        """Returns the first n rows.
+        """Return the first n rows.
 
         If there are less than n rows in ``self``, returns clone of ``self``.
 
@@ -204,7 +204,7 @@ class BaseDistribution(BaseObject):
         return self.iloc[range(n)]
 
     def tail(self, n=5):
-        """Returns the last n rows.
+        """Return the last n rows.
 
         If there are less than n rows in ``self``, returns clone of ``self``.
 
