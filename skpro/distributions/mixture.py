@@ -38,6 +38,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         "capabilities:approx": ["pdfnorm", "energy", "ppf"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf"],
         "distr:measuretype": "mixed",
+        "distr:paramtype": "composite",
         "named_object_parameters": "_distributions",
     }
 

@@ -30,6 +30,7 @@ class Poisson(_ScipyAdapter):
         "capabilities:approx": ["ppf", "energy"],
         "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf"],
         "distr:measuretype": "discrete",
+        "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
 
