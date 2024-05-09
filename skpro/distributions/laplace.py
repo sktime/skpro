@@ -47,6 +47,7 @@ class Laplace(BaseDistribution):
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
 

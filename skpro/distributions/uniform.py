@@ -41,6 +41,7 @@ class Uniform(BaseDistribution):
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["pdf", "log_pdf", "cdf", "ppf", "mean", "var", "energy"],
         "distr:measuretype": "continuous",
+        "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
 

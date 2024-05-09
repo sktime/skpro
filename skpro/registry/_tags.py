@@ -162,6 +162,12 @@ OBJECT_TAG_REGISTER = [
         "measure type of distr",
     ),
     (
+        "distr:paramtype",
+        "distribution",
+        ("str", ["general", "parametric", "nonparametric", "composite"]),
+        "parametrization type of distribution",
+    ),
+    (
         "approx_mean_spl",
         "distribution",
         "int",

@@ -42,6 +42,7 @@ class Delta(BaseDistribution):
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "energy", "pmf", "log_pmf", "cdf", "ppf"],
         "distr:measuretype": "discrete",
+        "distr:paramtype": "nonparametric",
         "broadcast_init": "on",
     }
 
