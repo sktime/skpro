@@ -150,7 +150,11 @@ class Empirical(BaseDistribution):
                 spl_t_sorted = spl_t[sorter]
                 sorted[t][col] = spl_t_sorted
                 if self.weights is not None:
-                    weights_t = self.weights.loc[(slice(None), t)].values
+                    if isinstance(t, tuple):
+                        sl = (slice(None),) + t
+                    else:
+                        sl = (slice(None), t)
+                    weights_t = self.weights.loc[sl].values
                     weights_t_sorted = weights_t[sorter]
                     weights[t][col] = weights_t_sorted
                 else:
