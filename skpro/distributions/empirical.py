@@ -227,9 +227,7 @@ class Empirical(BaseDistribution):
             prod_ix = [(v,) + (i,) for v in obj_vals for i in ix]
         prod_ix = pd.MultiIndex.from_tuples(prod_ix)
 
-        ilocs = prod_ix.get_indexer(obj_ix)
-        ilocs = ilocs[ilocs >= 0]
-        return obj.iloc[ilocs]
+        return obj.loc[prod_ix]
 
     def _iloc(self, rowidx=None, colidx=None):
         if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
