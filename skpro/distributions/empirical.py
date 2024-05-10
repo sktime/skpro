@@ -330,15 +330,17 @@ class Empirical(BaseDistribution):
                 return np.average(spl, weights=self.weights)
 
         # dataframe case
+        groupby_levels = list(range(1, spl.index.nlevels))
         if self.weights is None:
-            mean_df = spl.groupby(level=-1, sort=False).mean()
+            mean_df = spl.groupby(level=groupby_levels, sort=False).mean()
         else:
-            mean_df = spl.groupby(level=-1, sort=False).apply(
+            mean_df = spl.groupby(level=groupby_levels, sort=False).apply(
                 lambda x: np.average(x, weights=self.weights.loc[x.index], axis=0)
             )
             mean_df = pd.DataFrame(mean_df.tolist(), index=mean_df.index)
             mean_df.columns = spl.columns
 
+        mean_df = mean_df.loc[self.index]  # ensure consistent sorting
         return mean_df
 
     def _var(self):
@@ -366,12 +368,13 @@ class Empirical(BaseDistribution):
                 return var
 
         # dataframe case
+        groupby_levels = list(range(1, spl.index.nlevels))
         if self.weights is None:
-            var_df = spl.groupby(level=-1, sort=False).var(ddof=0)
+            var_df = spl.groupby(level=groupby_levels, sort=False).var(ddof=0)
         else:
             mean = self.mean()
             means = pd.concat([mean] * N, axis=0, keys=self._spl_indices)
-            var_df = spl.groupby(level=-1, sort=False).apply(
+            var_df = spl.groupby(level=groupby_levels, sort=False).apply(
                 lambda x: np.average(
                     (x - means.loc[x.index]) ** 2,
                     weights=self.weights.loc[x.index],
@@ -381,6 +384,8 @@ class Empirical(BaseDistribution):
             var_df = pd.DataFrame(
                 var_df.tolist(), index=var_df.index, columns=spl.columns
             )
+
+        var_df = var_df.loc[self.index]  # ensure consistent sorting
         return var_df
 
     def _cdf(self, x):
