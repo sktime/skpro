@@ -20,6 +20,14 @@ class Mixture(BaseMetaObject, BaseDistribution):
     weights : list of float, optional, default = None
         list of mixture weights, will be normalized to sum to 1
         if not provided, uniform mixture is assumed
+    indep_rows : bool, optional, default = True
+        if True, rows are sampled independently from the mixture components.
+        If False, the same component is used for all rows.
+        Relevant only in ``sample`` method and non-marginal outputs.
+    indep_cols : bool, optional, default = True
+        if True, columns are sampled independently from the mixture components.
+        If False, the same component is used for all columns.
+        Relevant only in ``sample`` method and non-marginal outputs.
     index : pd.Index, optional, default = inferred from component distributions
     columns : pd.Index, optional, default = inferred from component distributions
 
@@ -42,11 +50,19 @@ class Mixture(BaseMetaObject, BaseDistribution):
         "named_object_parameters": "_distributions",
     }
 
-    def __init__(self, distributions, weights=None, index=None, columns=None):
+    def __init__(
+            self,
+            distributions,
+            weights=None,
+            indep_rows=True,
+            indep_cols=True,
+            index=None,
+            columns=None,
+        ):
         self.distributions = distributions
         self.weights = weights
-        self.index = index
-        self.columns = columns
+        self.indep_rows = indep_rows
+        self.indep_cols = indep_cols
 
         self._distributions = self._coerce_to_named_object_tuples(distributions)
         n_dists = len(self._distributions)
@@ -80,7 +96,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
             columns=columns_subset,
         )
 
-    def mean(self):
+    def _mean(self):
         r"""Return expected value of the distribution.
 
         Let :math:`X` be a random variable with the distribution of `self`.
@@ -93,7 +109,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         """
         return self._average("mean")
 
-    def var(self):
+    def _var(self):
         r"""Return element/entry-wise variance of the distribution.
 
         Let :math:`X` be a random variable with the distribution of `self`.
@@ -110,7 +126,11 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         means = [d.mean() for _, d in self._distributions]
         mean_var = [(m - mixture_mean) ** 2 for m in means]
-        var_mean_var = self._average_df(mean_var, weights=weights)
+
+        if self.ndim > 0:
+            var_mean_var = self._average_df(mean_var, weights=weights)
+        else:
+            var_mean_var = np.average(mean_var, weights=weights)
 
         return var_mean + var_mean_var
 
@@ -123,7 +143,10 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         vals = [getattr(d, method)(*args) for _, d in self._distributions]
 
-        return self._average_df(vals, weights=weights)
+        if self.ndim > 0:
+            return self._average_df(vals, weights=weights)
+        else:
+            return np.average(vals, weights=weights)
 
     def _average_df(self, df_list, weights=None):
         """Average a list of `pd.DataFrame` objects, with weights."""
@@ -138,11 +161,11 @@ class Mixture(BaseMetaObject, BaseDistribution):
         df_res = df_concat.T.groupby(level=-1).sum().T
         return df_res
 
-    def pdf(self, x):
+    def _pdf(self, x):
         """Probability density function."""
         return self._average("pdf", x)
 
-    def cdf(self, x):
+    def _cdf(self, x):
         """Cumulative distribution function."""
         return self._average("cdf", x)
 
@@ -163,33 +186,91 @@ class Mixture(BaseMetaObject, BaseDistribution):
         in `pd-multiindex` mtype format convention, with same `columns` as `self`,
         and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
         """
+        indep_rows = self.indep_rows
+        indep_cols = self.indep_cols
+
+        if n_samples is None:
+            N = 1
+        else:
+            N = n_samples
+
+        # deal with fully dependent case
+        if not indep_rows and not indep_cols or self.ndim == 0:
+            return self._sample_blocked(n_samples=n_samples)
+
+        # we know that indep_rows and indep_cols are True, and self.ndim > 0
+        rd_size = list(self.shape)
+        full_size = list(self.shape)
+        rd_size[0] *= N
+        full_size[0] *= N
+
+        if indep_rows:
+            rd_size[0] = 1
+        if indep_cols:
+            rd_size[1] = 1
+
+        n_dist = len(self._distributions)
+        selector = np.random.choice(n_dist, size=rd_size, p=self._weights)
+        indicators = [selector == i for i in range(n_dist)]
+        indicators = [np.broadcast_to(ind, full_size) for ind in indicators]
+
+        dists = [d[1] for d in self._distributions]
+        raw_samples = [d.sample(N).values for d in dists]
+        masked_samples = [ind * raw for ind, raw in zip(indicators, raw_samples)]
+        sample = np.add(*masked_samples)
+
+        if n_samples is None:
+            spl_index = self.index
+        else:
+            spl_index = pd.MultiIndex.from_product([range(N), self.index])
+
+        spl = pd.DataFrame(sample, index=spl_index, columns=self.columns)
+        return spl
+
+    def _sample_blocked(self, n_samples):
+        """Sample from the distribution with blocked rows and columns."""
         if n_samples is None:
             N = 1
         else:
             N = n_samples
 
         n_dist = len(self._distributions)
+
         selector = np.random.choice(n_dist, size=N, p=self._weights)
 
         samples = [self._distributions[i][1].sample() for i in selector]
 
         if n_samples is None:
             return samples[0]
-        else:
+        elif self.ndim > 0:
             return pd.concat(samples, axis=0, keys=range(N))
+        else:  # if self.ndim == 0 and n_samples is not None
+            return pd.DataFrame(samples, columns=self.columns)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
         from skpro.distributions.normal import Normal
 
+        # 2D array case
         index = pd.RangeIndex(3)
         columns = pd.Index(["a", "b"])
         normal1 = Normal(mu=0, sigma=1, index=index, columns=columns)
         normal2 = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=columns)
 
         dists = [("normal1", normal1), ("normal2", normal2)]
+        dists2 = [normal1, normal2]  # to check case without names
 
         params1 = {"distributions": dists}
-        params2 = {"distributions": dists, "weights": [0.3, 0.7]}
-        return [params1, params2]
+        params2 = {"distributions": dists2, "weights": [0.3, 0.7]}
+
+        # scalar case
+        normal1 = Normal(mu=0, sigma=1)
+        normal2 = Normal(mu=3, sigma=2)
+        dists = [("normal1", normal1), ("normal2", normal2)]
+        dists2 = [normal1, normal2]
+
+        params3 = {"distributions": dists2}
+        params4 = {"distributions": dists, "weights": [0.3, 0.7]}
+
+        return [params1, params2, params3, params4]
