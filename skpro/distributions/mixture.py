@@ -96,6 +96,14 @@ class Mixture(BaseMetaObject, BaseDistribution):
             columns=columns_subset,
         )
 
+    def _iat(self, rowidx=None, colidx=None):
+        dists = self._distributions
+        weights = self.weights
+
+        dists_subset = [(x[0], x[1].iat[rowidx, colidx]) for x in dists]
+
+        return Mixture(distributions=dists_subset, weights=weights)
+
     def _mean(self):
         r"""Return expected value of the distribution.
 
