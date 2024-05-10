@@ -1017,7 +1017,7 @@ class BaseDistribution(BaseObject):
                 "by using the bisection method (scipy.optimize.bisect) on "
                 f"the cdf, at {max_iter} maximum iterations"
             )
-            warn(self._method_error_msg("cdf", fill_in=approx_method))
+            warn(self._method_error_msg("ppf", fill_in=approx_method))
 
             def bisect_unb(opt_fun, **kwargs):
                 """Unbound version of bisect."""
@@ -1037,7 +1037,7 @@ class BaseDistribution(BaseObject):
 
                 def opt_fun(x):
                     """Optimization function, to find x s.t. cdf(x) = p_ix."""
-                    return d_ix.cdf(x) - p  # noqa: B023
+                    return self.cdf(x) - p  # noqa: B023
 
                 result = bisect_unb(opt_fun)
                 return result
