@@ -150,7 +150,7 @@ class Empirical(BaseDistribution):
                 spl_t_sorted = spl_t[sorter]
                 sorted[t][col] = spl_t_sorted
                 if self.weights is not None:
-                    weights_t = self.weights.loc[(slice(None), t)].values
+                    weights_t = self.weights.loc[sl].values
                     weights_t_sorted = weights_t[sorter]
                     weights[t][col] = weights_t_sorted
                 else:
@@ -190,6 +190,45 @@ class Empirical(BaseDistribution):
                 res.at[ix, col] = func(spl=spl_t, weights=weights_t, x=x_t, **params)
         return res.apply(pd.to_numeric)
 
+    def _slice_ix(self, obj, ix):
+        """Slice obj by index ix, applied to MultiIndex levels 1 ... last.
+
+        obj is assumed to have MultiIndex, and slicing occurrs on the
+        last levels, 1 ... last.
+
+        ix can be a simple index or MultiIndex,
+        same number of levels as obj.index.droplevel(0).
+
+        This utility function is needed since pandas cannot do this?
+
+        Parameters
+        ----------
+        obj : pd.DataFrame or pd.Series, with pd.MultiIndex
+            object to slice
+        ix : pd.Index or pd.MultiIndex
+            index to slice by, loc references
+
+        Returns
+        -------
+        pd.DataFrame or pd.Series, same type as obj
+            obj sliced by levels 1 ... last, subset to levels in ix
+        """
+        if not isinstance(ix, pd.MultiIndex):
+            if isinstance(obj, pd.DataFrame):
+                return obj.loc[(slice(None), ix), :]
+            else:
+                return obj.loc[(slice(None), ix)]
+
+        obj_ix = obj.index
+        obj_vals = obj_ix.get_level_values(0).unique()
+        if isinstance(ix, pd.MultiIndex):
+            prod_ix = [(v,) + i for v in obj_vals for i in ix]
+        else:
+            prod_ix = [(v,) + (i,) for v in obj_vals for i in ix]
+        prod_ix = pd.MultiIndex.from_tuples(prod_ix)
+
+        return obj.loc[prod_ix]
+
     def _iloc(self, rowidx=None, colidx=None):
         if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
             return self._iat(rowidx, colidx)
@@ -207,9 +246,9 @@ class Empirical(BaseDistribution):
         if rowidx is not None:
             rowidx_loc = index[rowidx]
             # subset multiindex to rowidx by last level
-            spl_subset = self.spl.loc[(slice(None), rowidx_loc), :]
+            spl_subset = self._slice_ix(self.spl, rowidx_loc)
             if weights is not None:
-                weights_subset = weights.loc[(slice(None), rowidx_loc)]
+                weights_subset = self._slice_ix(weights, rowidx_loc)
             else:
                 weights_subset = None
             subs_rowidx = index[rowidx]
@@ -289,15 +328,17 @@ class Empirical(BaseDistribution):
                 return np.average(spl, weights=self.weights)
 
         # dataframe case
+        groupby_levels = list(range(1, spl.index.nlevels))
         if self.weights is None:
-            mean_df = spl.groupby(level=-1, sort=False).mean()
+            mean_df = spl.groupby(level=groupby_levels, sort=False).mean()
         else:
-            mean_df = spl.groupby(level=-1, sort=False).apply(
+            mean_df = spl.groupby(level=groupby_levels, sort=False).apply(
                 lambda x: np.average(x, weights=self.weights.loc[x.index], axis=0)
             )
             mean_df = pd.DataFrame(mean_df.tolist(), index=mean_df.index)
             mean_df.columns = spl.columns
 
+        mean_df = mean_df.loc[self.index]  # ensure consistent sorting
         return mean_df
 
     def _var(self):
@@ -325,12 +366,13 @@ class Empirical(BaseDistribution):
                 return var
 
         # dataframe case
+        groupby_levels = list(range(1, spl.index.nlevels))
         if self.weights is None:
-            var_df = spl.groupby(level=-1, sort=False).var(ddof=0)
+            var_df = spl.groupby(level=groupby_levels, sort=False).var(ddof=0)
         else:
             mean = self.mean()
             means = pd.concat([mean] * N, axis=0, keys=self._spl_indices)
-            var_df = spl.groupby(level=-1, sort=False).apply(
+            var_df = spl.groupby(level=groupby_levels, sort=False).apply(
                 lambda x: np.average(
                     (x - means.loc[x.index]) ** 2,
                     weights=self.weights.loc[x.index],
@@ -340,6 +382,8 @@ class Empirical(BaseDistribution):
             var_df = pd.DataFrame(
                 var_df.tolist(), index=var_df.index, columns=spl.columns
             )
+
+        var_df = var_df.loc[self.index]  # ensure consistent sorting
         return var_df
 
     def _cdf(self, x):
@@ -443,7 +487,21 @@ class Empirical(BaseDistribution):
         wts_scalar = pd.Series([0.2, 0.2, 0.3, 0.3, 0.1])
         params4 = {"spl": spl_scalar, "weights": wts_scalar}
 
-        return [params1, params2, params3, params4]
+        # hierarchical MultiIndex, important for sktime
+        spl_idx = pd.MultiIndex.from_product(
+            [[0, 1], [0, 1, 2], [0, 1]], names=["sample", "instance", "time"]
+        )
+        param5 = {"spl": pd.DataFrame(np.random.rand(12, 2), index=spl_idx)}
+
+        # hierarchical MultiIndex, important for sktime, weighted
+        spl_idx = pd.MultiIndex.from_product(
+            [[0, 1], [0, 1, 2], [0, 1]], names=["sample", "instance", "time"]
+        )
+        weights = pd.Series(list(range(1, 13)), index=spl_idx)
+        spl = pd.DataFrame(np.random.rand(12, 2), index=spl_idx)
+        param6 = {"spl": spl, "weights": weights}
+
+        return [params1, params2, params3, params4, param5, param6]
 
 
 def _energy_np(spl, x=None, weights=None, assume_sorted=False):

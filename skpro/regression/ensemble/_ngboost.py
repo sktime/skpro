@@ -5,16 +5,17 @@ __author__ = ["ShreeshaM07"]
 
 import numpy as np
 
+from skpro.regression.adapters.ngboost._ngboost_proba import NGBoostAdapter
 from skpro.regression.base import BaseProbaRegressor
 
 
-class NGBoostRegressor(BaseProbaRegressor):
+class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
     """Natural Gradient Boosting Regressor for probabilistic regressors.
 
     It is an interface to the NGBRegressor.
-    This class implements the methods that are common to all NGBoost models.
-    Unless you are implementing a new kind of regression (e.g. interval-censored, etc.),
-    you should probably use one of NGBRegressor, NGBClassifier, or NGBSurvival.
+    NGBRegressor is a wrapper for the generic NGBoost class that facilitates regression.
+    Use this class if you want to predict an outcome that could take an
+    infinite number of (ordered) values.
 
     Parameters
     ----------
@@ -107,35 +108,6 @@ class NGBoostRegressor(BaseProbaRegressor):
 
         super().__init__()
 
-    def _dist_to_ngboost_instance(self, dist):
-        """Convert string to NGBoost object.
-
-        Parameters
-        ----------
-        dist : string
-            the input string for the type of Distribution.
-            It then creates an object of that particular NGBoost Distribution.
-
-        Returns
-        -------
-        NGBoost Distribution object.
-        """
-        from ngboost.distns import Laplace, LogNormal, Normal, Poisson, T
-
-        ngboost_dists = {
-            "Normal": Normal,
-            "Laplace": Laplace,
-            "TDistribution": T,
-            "Poisson": Poisson,
-            "LogNormal": LogNormal,
-        }
-        # default Normal distribution
-        dist_ngboost = Normal
-        if dist in ngboost_dists:
-            dist_ngboost = ngboost_dists[dist]
-
-        return dist_ngboost
-
     def _fit(self, X, y):
         """Fit regressor to training data.
 
@@ -175,7 +147,7 @@ class NGBoostRegressor(BaseProbaRegressor):
                 random_state=None,
             )
 
-        dist_ngboost = self._dist_to_ngboost_instance(self.dist)
+        dist_ngboost = self._dist_to_ngboost_instance(self.dist, survival=False)
 
         # Score argument for NGBRegressor
         ngboost_score = {
@@ -233,39 +205,6 @@ class NGBoostRegressor(BaseProbaRegressor):
 
     def _pred_dist(self, X):
         return self.ngb_.pred_dist(X)
-
-    def _ngb_dist_to_skpro(self, **kwargs):
-        """Convert NGBoost distribution object to skpro BaseDistribution object.
-
-        Parameters
-        ----------
-        pred_mean, pred_std and index and columns.
-
-        Returns
-        -------
-        skpro_dist (skpro.distributions.BaseDistribution):
-        Converted skpro distribution object.
-        """
-        from skpro.distributions.laplace import Laplace
-        from skpro.distributions.lognormal import LogNormal
-        from skpro.distributions.normal import Normal
-        from skpro.distributions.poisson import Poisson
-        from skpro.distributions.t import TDistribution
-
-        ngboost_dists = {
-            "Normal": Normal,
-            "Laplace": Laplace,
-            "TDistribution": TDistribution,
-            "Poisson": Poisson,
-            "LogNormal": LogNormal,
-        }
-
-        skpro_dist = None
-
-        if self.dist in ngboost_dists:
-            skpro_dist = ngboost_dists[self.dist](**kwargs)
-
-        return skpro_dist
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
