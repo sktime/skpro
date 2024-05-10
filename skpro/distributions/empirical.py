@@ -190,6 +190,47 @@ class Empirical(BaseDistribution):
                 res.at[ix, col] = func(spl=spl_t, weights=weights_t, x=x_t, **params)
         return res.apply(pd.to_numeric)
 
+    def _slice_ix(self, obj, ix):
+        """Slice obj by index ix, applied to MultiIndex levels 1 ... last.
+
+        obj is assumed to have MultiIndex, and slicing occurrs on the
+        last levels, 1 ... last.
+
+        ix can be a simple index or MultiIndex,
+        same number of levels as obj.index.droplevel(0).
+
+        This utility function is needed since pandas cannot do this?
+
+        Parameters
+        ----------
+        obj : pd.DataFrame or pd.Series, with pd.MultiIndex
+            object to slice
+        ix : pd.Index or pd.MultiIndex
+            index to slice by, loc references
+
+        Returns
+        -------
+        pd.DataFrame or pd.Series, same type as obj
+            obj sliced by levels 1 ... last, subset to levels in ix
+        """
+        if not isinstance(ix, pd.MultiIndex):
+            if isinstance(obj, pd.DataFrame):
+                return obj.loc[(slice(None), ix), :]
+            else:
+                return obj.loc[(slice(None), ix)]
+
+        obj_ix = obj.index
+        obj_vals = obj_ix.get_level_values(0).unique()
+        if isinstance(ix, pd.MultiIndex):
+            prod_ix = [(v,) + i for v in obj_vals for i in ix]
+        else:
+            prod_ix = [(v,) + (i,) for v in obj_vals for i in ix]
+        prod_ix = pd.MultiIndex.from_tuples(prod_ix)
+
+        ilocs = prod_ix.get_indexer(obj_ix)
+        ilocs = ilocs[ilocs >= 0]
+        return obj.iloc[ilocs]
+
     def _iloc(self, rowidx=None, colidx=None):
         if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
             return self._iat(rowidx, colidx)
@@ -207,9 +248,9 @@ class Empirical(BaseDistribution):
         if rowidx is not None:
             rowidx_loc = index[rowidx]
             # subset multiindex to rowidx by last level
-            spl_subset = self.spl.loc[(slice(None), rowidx_loc), :]
+            spl_subset = self._slice_ix(self.spl, rowidx_loc)
             if weights is not None:
-                weights_subset = weights.loc[(slice(None), rowidx_loc)]
+                weights_subset = self._slice_ix(weights, rowidx_loc)
             else:
                 weights_subset = None
             subs_rowidx = index[rowidx]
@@ -443,7 +484,13 @@ class Empirical(BaseDistribution):
         wts_scalar = pd.Series([0.2, 0.2, 0.3, 0.3, 0.1])
         params4 = {"spl": spl_scalar, "weights": wts_scalar}
 
-        return [params1, params2, params3, params4]
+        # nested index, important for sktime
+        spl_idx = pd.MultiIndex.from_product(
+            [[0, 1], [0, 1, 2], [0, 1]], names=["sample", "instance", "time"]
+        )
+        param5 = {"spl": pd.DataFrame(np.random.rand(12, 2), index=spl_idx)}
+
+        return [params1, params2, params3, params4, param5]
 
 
 def _energy_np(spl, x=None, weights=None, assume_sorted=False):
