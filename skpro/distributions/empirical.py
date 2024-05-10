@@ -489,13 +489,21 @@ class Empirical(BaseDistribution):
         wts_scalar = pd.Series([0.2, 0.2, 0.3, 0.3, 0.1])
         params4 = {"spl": spl_scalar, "weights": wts_scalar}
 
-        # nested index, important for sktime
+        # hierarchical MultiIndex, important for sktime
         spl_idx = pd.MultiIndex.from_product(
             [[0, 1], [0, 1, 2], [0, 1]], names=["sample", "instance", "time"]
         )
         param5 = {"spl": pd.DataFrame(np.random.rand(12, 2), index=spl_idx)}
 
-        return [params1, params2, params3, params4, param5]
+        # hierarchical MultiIndex, important for sktime, weighted
+        spl_idx = pd.MultiIndex.from_product(
+            [[0, 1], [0, 1, 2], [0, 1]], names=["sample", "instance", "time"]
+        )
+        weights = pd.Series(list(range(1, 13)), index=spl_idx)
+        spl = pd.DataFrame(np.random.rand(12, 2), index=spl_idx)
+        param6 = {"spl": spl, "weights": weights}
+
+        return [params1, params2, params3, params4, param5, param6]
 
 
 def _energy_np(spl, x=None, weights=None, assume_sorted=False):
