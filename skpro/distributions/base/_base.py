@@ -178,6 +178,58 @@ class BaseDistribution(BaseObject):
             return 1
         return shape[0]
 
+    def head(self, n=5):
+        """Return the first n rows.
+
+        If there are less than n rows in ``self``, returns clone of ``self``.
+
+        For negative n, returns all rows except the last n.
+
+        Parameters
+        ----------
+        n : int, default=5
+            Number of rows to return.
+
+        Returns
+        -------
+        ``self`` subset to the first n rows, i.e., ``self.iloc[0:min(n, len(self))]``
+        """
+        if self.ndim < 2:
+            return self
+        assert isinstance(n, int)
+        N = len(self)
+        if n < 0:
+            n = N - n
+        n = min(n, N)
+        return self.iloc[range(n)]
+
+    def tail(self, n=5):
+        """Return the last n rows.
+
+        If there are less than n rows in ``self``, returns clone of ``self``.
+
+        For negative n, returns all rows except the first n.
+
+        Parameters
+        ----------
+        n : int, default=5
+            Number of rows to return.
+
+        Returns
+        -------
+        ``self`` subset to the last n rows, i.e., ``self.iloc[max(len(self) - n, 0):]``
+        """
+        if self.ndim < 2:
+            return self
+        assert isinstance(n, int)
+        N = len(self)
+        if n < 0:
+            start = n
+        else:
+            start = N - n
+        start = max(0, start)
+        return self.iloc[range(start, N)]
+
     def _loc(self, rowidx=None, colidx=None):
         if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
             return self._at(rowidx, colidx)
@@ -965,7 +1017,7 @@ class BaseDistribution(BaseObject):
                 "by using the bisection method (scipy.optimize.bisect) on "
                 f"the cdf, at {max_iter} maximum iterations"
             )
-            warn(self._method_error_msg("cdf", fill_in=approx_method))
+            warn(self._method_error_msg("ppf", fill_in=approx_method))
 
             def bisect_unb(opt_fun, **kwargs):
                 """Unbound version of bisect."""
@@ -985,7 +1037,7 @@ class BaseDistribution(BaseObject):
 
                 def opt_fun(x):
                     """Optimization function, to find x s.t. cdf(x) = p_ix."""
-                    return d_ix.cdf(x) - p  # noqa: B023
+                    return self.cdf(x) - p  # noqa: B023
 
                 result = bisect_unb(opt_fun)
                 return result
