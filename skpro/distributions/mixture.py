@@ -51,14 +51,14 @@ class Mixture(BaseMetaObject, BaseDistribution):
     }
 
     def __init__(
-            self,
-            distributions,
-            weights=None,
-            indep_rows=True,
-            indep_cols=True,
-            index=None,
-            columns=None,
-        ):
+        self,
+        distributions,
+        weights=None,
+        indep_rows=True,
+        indep_cols=True,
+        index=None,
+        columns=None,
+    ):
         self.distributions = distributions
         self.weights = weights
         self.indep_rows = indep_rows
