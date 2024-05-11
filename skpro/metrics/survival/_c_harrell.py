@@ -4,10 +4,10 @@
 import numpy as np
 import pandas as pd
 
-from skpro.metrics.base import BaseDistrMetric
+from skpro.metrics.base import BaseSurvDistrMetric
 
 
-class ConcordanceHarrell(BaseDistrMetric):
+class ConcordanceHarrell(BaseSurvDistrMetric):
     r"""Concordance index (Harrell).
 
     Fraction of concordant test index pairs among all comparale pairs,
