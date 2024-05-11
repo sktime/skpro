@@ -6,7 +6,7 @@ import pytest
 
 
 @pytest.mark.parametrize("concordant", [True, False])
-@pytest.mark.parametrize("pass_c", [True, False])
+@pytest.mark.parametrize("pass_c", ["True", "False", "None"])
 @pytest.mark.parametrize("normalization", ["overall", "index"])
 def test_charrell_logic(concordant, pass_c, normalization):
     """Test the logic of the Harrell's C-index metric.
@@ -17,8 +17,9 @@ def test_charrell_logic(concordant, pass_c, normalization):
         If True, the test examples are fully concordant.
         If False, the test examples are fully discordant.
     pass_c : bool, optional, default=True
-        If True, the `c_true` argument is passed to the metric.
-        If False, the `c_true` argument is not passed to the metric.
+        If True, the ``C_true`` argument is passed to the metric, with censoring data.
+        If None, the ``C_true`` argument is passed to the metric, with value None.
+        If False, the ``C_true`` argument is not passed to the metric.
     normalization : str, optional, default="overall"
         The normalization method for the metric.
     """
@@ -38,8 +39,10 @@ def test_charrell_logic(concordant, pass_c, normalization):
     # evaluate the metric
     metric = ConcordanceHarrell(normalization=normalization)
     metric_args = {"y_true": y_true, "y_pred": y_pred}
-    if pass_c:
-        metric_args["c_true"] = c_true
+    if pass_c == "True":
+        metric_args["C_true"] = c_true
+    elif pass_c == "None":
+        metric_args["C_true"] = c_true
 
     res = metric(**metric_args)
     res_by_index = metric.evaluate_by_index(**metric_args)
