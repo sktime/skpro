@@ -167,7 +167,8 @@ class ConcordanceHarrell(BaseDistrMetric):
                 rij = rj[i]
                 Cij = Cj[i]
                 nCij = ~Cij
-                one_unc = ~(Cj & Cij)
+                one_unc = ~(Cj & Cij)  # at least one uncensored in the pair
+                xone_unc = ~(Cj & Cij) & (Cj | Cij)  # exactly one uncensored
 
                 # mark concordant pairs (no ties)
                 comp1 = nCij & (yj > yij)  # comparable, > type
@@ -187,7 +188,7 @@ class ConcordanceHarrell(BaseDistrMetric):
                 if tie_score != 0:
                     nconc = nconc.astype(float)
                     nconc += np.sum((yj != yij) & (rj == rij)) * tie_score
-                    nconc += np.sum(one_unc & (yj == yij) & (rj == rij)) * tie_score
+                    nconc += np.sum(xone_unc & (yj == yij) & (rj == rij)) * tie_score
 
                 # count comparable pairs
                 comp3 = one_unc & (yj == yij)
