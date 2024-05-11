@@ -208,9 +208,9 @@ class ConcordanceHarrell(BaseDistrMetric):
             # weighting is such that rows contain simple fractions
             # but the average over rows is not the overall C-index,
             # as number of comparable pairs is in general not the same for each index
-            n_comp_mat[n_comp_mat==0] = 1  # handling of case 0 / 0, avoid nans
+            ncomp_mat[ncomp_mat == 0] = 1  # handling of case 0 / 0, avoid nans
             result = nconc_mat / ncomp_mat
-            result[n_comp_mat==1] = tie_score  # handling of case 0 / 0
+            result[ncomp_mat == 1] = tie_score  # handling of case 0 / 0
 
         res_df = pd.DataFrame(result, index=ix, columns=cols)
 
