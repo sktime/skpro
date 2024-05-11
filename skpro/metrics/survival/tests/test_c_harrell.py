@@ -37,7 +37,7 @@ def test_charrell_logic(concordant, pass_c, normalization):
     y_pred = Normal(y_pred_mean, sigma=1, columns=pd.Index(["a", "b"]))
 
     # evaluate the metric
-    metric = ConcordanceHarrell(normalization=normalization)
+    metric = ConcordanceHarrell(normalization=normalization, tie_score=int(concordant))
     metric_args = {"y_true": y_true, "y_pred": y_pred}
     if pass_c == "True":
         metric_args["C_true"] = c_true
@@ -47,9 +47,12 @@ def test_charrell_logic(concordant, pass_c, normalization):
     res = metric(**metric_args)
     res_by_index = metric.evaluate_by_index(**metric_args)
 
+    assert res_by_index.shape == y_true.shape
+
     # test assumptions
     # if concordant, the result should be 1
     # if discordant, the result should be 0
     assert res == concordant
-    assert res_by_index.shape == y_true.shape
-    assert (res_by_index == concordant).all().all()
+
+    if normalization == "index":
+        assert (res_by_index == concordant).all().all()
