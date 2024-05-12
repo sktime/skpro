@@ -132,7 +132,7 @@ class CyclicBoosting(BaseProbaRegressor):
                    data is given to 'lower' and 'upper'. and their default value \
                    will change from 0.0, 1.0 to None, None. To retain prior behaviour, \
                    set 'lower' and 'upper' to 0.0 and 1.0 explicitly"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         super().__init__()
 

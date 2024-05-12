@@ -107,12 +107,12 @@ class QPD_S(BaseDistribution):
                     in version X.X.X. \
                    'J_QPD_S' is used instead of 'J_QPD_extended_S'. \
                     See {link} for details"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         comment = "Parameter 'lower' of 'QPD_S' will change \
                    default value from 0.0 to None in version X.X.X. \
                    To retain prior behaviour, set 'lower' to 0.0 explicitly"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         super().__init__(index=index, columns=columns)
 
@@ -183,7 +183,7 @@ class QPD_S(BaseDistribution):
                    class parameters in version X.X.X. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         loc = []
         for idx in self.index:
@@ -206,7 +206,7 @@ class QPD_S(BaseDistribution):
                    class parameters in version X.X.X. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         mean = self.mean()
         var = []
@@ -370,13 +370,13 @@ class QPD_B(BaseDistribution):
                     in version X.X.X. \
                    'J_QPD_B' is used instead of 'J_QPD_extended_B'. \
                     See {link} for details"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         comment = "Parameter 'lower' and 'upper' of 'QPD_B' will change \
                    default value from 0.0 and 1.0 to None and None in version X.X.X. \
                    To retain prior behaviour, set 'lower' and 'upper' to 0.0 and 1.0 \
                    explicitly"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         super().__init__(index=index, columns=columns)
 
@@ -446,7 +446,7 @@ class QPD_B(BaseDistribution):
                    class parameters in version X.X.X. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         loc = []
         for idx in self.index:
@@ -469,7 +469,7 @@ class QPD_B(BaseDistribution):
                    class parameters in version X.X.X. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         mean = self.mean()
         var = []
@@ -683,7 +683,7 @@ class QPD_U(BaseDistribution):
                    class parameters in version X.X.X. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         loc = []
         for idx in self.index:
@@ -706,7 +706,7 @@ class QPD_U(BaseDistribution):
                    class parameters in version X.X.X. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
-        warnings.warn(comment, DeprecationWarning)
+        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         mean = self.mean()
         var = []
@@ -781,7 +781,7 @@ def exp_func(x, qpd):
     """Return Expectation."""
     # TODO: scipy.integrate will be removed in scipy 1.12.0
     comment = "Parameter 'qpd' will be removed to in version X.X.X."
-    warnings.warn(comment, DeprecationWarning)
+    warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
     pdf = derivative(qpd.cdf, x, dx=1e-6)
     return x * pdf
@@ -791,7 +791,7 @@ def var_func(x, mu, qpd):
     """Return Variance."""
     # TODO: scipy.integrate will be removed in scipy 1.12.0
     comment = "Parameter 'qpd' will be removed to in version X.X.X."
-    warnings.warn(comment, DeprecationWarning)
+    warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
     pdf = derivative(qpd.cdf, x, dx=1e-6)
     return ((x - mu) ** 2) * pdf
