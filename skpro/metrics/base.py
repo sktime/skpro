@@ -435,6 +435,8 @@ class BaseDistrMetric(BaseProbaMetric):
         obj : object
             Coerced object
         """
+        if obj is None:
+            return None
         obj = convert_to(obj, to_type="pd_DataFrame_Table", as_scitype="Table")
         obj = _coerce_to_df(obj)
         return obj

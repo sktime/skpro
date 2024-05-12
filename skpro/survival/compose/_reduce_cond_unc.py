@@ -78,7 +78,7 @@ class ConditionUncensored(BaseProbaRegressor):
         if C is None:
             C = pd.DataFrame(0, index=index, columns=columns)
         else:
-            C = C.copy()
+            C = C.copy().astype("float")
         X_and_C = pd.concat([X, C], axis=1)
         return X_and_C
 
