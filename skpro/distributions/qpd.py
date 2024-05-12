@@ -364,11 +364,37 @@ class QPD_S(BaseDistribution):
 
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
-        return ppf_func(p, self.qpd)
+        params = self.get_params(deep=False)
+        index = params["index"]
+        columns = params["columns"]
+        qv_low = params["qv_low"]
+        p_unique = np.unique(p)  # de-broadcast
+        ppf_all = ppf_func(p_unique, self.qpd)
+        ppf_map = np.tile(p_unique, (qv_low.size, 1)).T
+        ppf = np.zeros((index.shape[0], len(columns)))
+        for r in range(p.shape[0]):
+            for c in range(p.shape[1]):
+                t = np.where(ppf_map[:, c] == p[r][c])
+                ppf_part = ppf_all[t][c]
+                ppf[r][c] = ppf_part
+        return ppf
 
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
-        return cdf_func(x, self.qpd)
+        params = self.get_params(deep=False)
+        index = params["index"]
+        columns = params["columns"]
+        qv_low = params["qv_low"]
+        x_unique = np.unique(x)  # de-broadcast
+        cdf_all = cdf_func(x_unique, self.qpd)
+        cdf_map = np.tile(x_unique, (qv_low.size, 1)).T
+        cdf = np.zeros((index.shape[0], len(columns)))
+        for r in range(x.shape[0]):
+            for c in range(x.shape[1]):
+                t = np.where(cdf_map[:, c] == x[r][c])
+                cdf_part = cdf_all[t][c]
+                cdf[r][c] = cdf_part
+        return cdf
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -578,11 +604,37 @@ class QPD_B(BaseDistribution):
 
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
-        return ppf_func(p, self.qpd)
+        params = self.get_params(deep=False)
+        index = params["index"]
+        columns = params["columns"]
+        qv_low = params["qv_low"]
+        p_unique = np.unique(p)  # de-broadcast
+        ppf_all = ppf_func(p_unique, self.qpd)
+        ppf_map = np.tile(p_unique, (qv_low.size, 1)).T
+        ppf = np.zeros((index.shape[0], len(columns)))
+        for r in range(p.shape[0]):
+            for c in range(p.shape[1]):
+                t = np.where(ppf_map[:, c] == p[r][c])
+                ppf_part = ppf_all[t][c]
+                ppf[r][c] = ppf_part
+        return ppf
 
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
-        return cdf_func(x, self.qpd)
+        params = self.get_params(deep=False)
+        index = params["index"]
+        columns = params["columns"]
+        qv_low = params["qv_low"]
+        x_unique = np.unique(x)  # de-broadcast
+        cdf_all = cdf_func(x_unique, self.qpd)
+        cdf_map = np.tile(x_unique, (qv_low.size, 1)).T
+        cdf = np.zeros((index.shape[0], len(columns)))
+        for r in range(x.shape[0]):
+            for c in range(x.shape[1]):
+                t = np.where(cdf_map[:, c] == x[r][c])
+                cdf_part = cdf_all[t][c]
+                cdf[r][c] = cdf_part
+        return cdf
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -805,11 +857,37 @@ class QPD_U(BaseDistribution):
 
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
-        return ppf_func(p, self.qpd)
+        params = self.get_params(deep=False)
+        index = params["index"]
+        columns = params["columns"]
+        qv_low = params["qv_low"]
+        p_unique = np.unique(p)  # de-broadcast
+        ppf_all = ppf_func(p_unique, self.qpd)
+        ppf_map = np.tile(p_unique, (qv_low.size, 1)).T
+        ppf = np.zeros((index.shape[0], len(columns)))
+        for r in range(p.shape[0]):
+            for c in range(p.shape[1]):
+                t = np.where(ppf_map[:, c] == p[r][c])
+                ppf_part = ppf_all[t][c]
+                ppf[r][c] = ppf_part
+        return ppf
 
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
-        return cdf_func(x, self.qpd)
+        params = self.get_params(deep=False)
+        index = params["index"]
+        columns = params["columns"]
+        qv_low = params["qv_low"]
+        x_unique = np.unique(x)  # de-broadcast
+        cdf_all = cdf_func(x_unique, self.qpd)
+        cdf_map = np.tile(x_unique, (qv_low.size, 1)).T
+        cdf = np.zeros((index.shape[0], len(columns)))
+        for r in range(x.shape[0]):
+            for c in range(x.shape[1]):
+                t = np.where(cdf_map[:, c] == x[r][c])
+                cdf_part = cdf_all[t][c]
+                cdf[r][c] = cdf_part
+        return cdf
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -874,7 +952,8 @@ def pdf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
             else:
                 cdf = qpd.cdf(x0)
                 if cdf.ndim < 2:
-                    cdf = cdf[:, np.newaxis]
+                    for d in range(2 - cdf.ndim):
+                        cdf = cdf[np.newaxis]
                 cdf = cdf.T
             pdf_part = calc_pdf(cdf)
             pdf[r][c] = pdf_part[0][0]
@@ -889,7 +968,8 @@ def ppf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
     else:
         ppf = qpd.ppf(x)
         if ppf.ndim < 2:
-            ppf = ppf[np.newaxis]
+            for d in range(2 - ppf.ndim):
+                ppf = ppf[np.newaxis]
     ppf = ppf.T
     return ppf
 
@@ -902,7 +982,8 @@ def cdf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
     else:
         cdf = qpd.cdf(x)
         if cdf.ndim < 2:
-            cdf = cdf[np.newaxis]
+            for d in range(2 - cdf.ndim):
+                cdf = cdf[np.newaxis]
     cdf = cdf.T
     return cdf
 

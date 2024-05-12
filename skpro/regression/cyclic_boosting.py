@@ -418,11 +418,8 @@ class CyclicBoosting(BaseProbaRegressor):
         self.quantile_values = list()
         if is_given_proba:
             qpd = self.predict_proba(X.copy())
-            if isinstance(quantiles, list):
-                quantile = [quantiles]
-
-            p = pd.DataFrame(quantile, index=X.index, columns=columns)
-            quantiles = qpd.ppf(p)
+            pred = np.asarray([np.squeeze(qpd.ppf(q)) for q in quantiles]).T
+            quantiles = pd.DataFrame(pred, index=X.index, columns=columns)
 
         else:
             for est in self.quantile_est:
