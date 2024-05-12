@@ -952,7 +952,7 @@ def pdf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
                 cdf = qpd.cdf(x0)
                 if cdf.ndim < 2:
                     for _ in range(2 - cdf.ndim):
-                        cdf = cdf[np.newaxis]
+                        cdf = cdf[:, np.newaxis]
                 cdf = cdf.T
             pdf_part = calc_pdf(cdf)
             pdf[r][c] = pdf_part[0][0]
