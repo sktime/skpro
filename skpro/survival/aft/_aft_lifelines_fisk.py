@@ -145,7 +145,7 @@ class AFTFisk(_LifelinesAdapter, BaseSurvReg):
             if self.alpha_cols == "all":
                 return {"ancillary": True}
             else:
-                return {"ancillary": X[self.alpha_cols]}
+                return {"ancillary": prep_skl_df(X[self.alpha_cols])}
         else:
             return {}
 

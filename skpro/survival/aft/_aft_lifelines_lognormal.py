@@ -142,7 +142,7 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
             if self.mu_cols == "all":
                 return {"ancillary": True}
             else:
-                return {"ancillary": X[self.mu_cols]}
+                return {"ancillary": prep_skl_df(X[self.mu_cols])}
         else:
             return {}
 

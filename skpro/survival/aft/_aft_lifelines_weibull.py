@@ -152,7 +152,7 @@ class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
             if self.scale_cols == "all":
                 return {"ancillary": True}
             else:
-                return {"ancillary": X[self.scale_cols]}
+                return {"ancillary": prep_skl_df(X[self.scale_cols])}
         else:
             return {}
 
