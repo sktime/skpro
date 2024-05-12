@@ -175,7 +175,7 @@ class AFTFisk(_LifelinesAdapter, BaseSurvReg):
 
         if ancillary is not None:
             ancillary = prep_skl_df(ancillary)
-        df = prep_skl_df(ancillary)
+        df = prep_skl_df(df)
 
         lifelines_est = getattr(self, self._estimator_attr)
         ll_pred_proba = lifelines_est._prep_inputs_for_prediction_and_return_scores
