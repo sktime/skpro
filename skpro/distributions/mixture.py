@@ -225,7 +225,8 @@ class Mixture(BaseMetaObject, BaseDistribution):
         dists = [d[1] for d in self._distributions]
         raw_samples = [d.sample(N).values for d in dists]
         masked_samples = [ind * raw for ind, raw in zip(indicators, raw_samples)]
-        sample = np.add(*masked_samples)
+        masked_samples = np.array(masked_samples)
+        sample = masked_samples.sum(axis=0)
 
         if n_samples is None:
             spl_index = self.index

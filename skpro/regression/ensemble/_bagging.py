@@ -103,7 +103,7 @@ class BaggingRegressor(BaseProbaRegressor):
         tags_to_clone = ["capability:missing", "capability:survival"]
         self.clone_tags(estimator, tags_to_clone)
 
-    def _fit(self, X, y, C):
+    def _fit(self, X, y, C=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -222,6 +222,8 @@ class BaggingRegressor(BaseProbaRegressor):
         from sklearn.linear_model import LinearRegression
 
         from skpro.regression.residual import ResidualDouble
+        from skpro.survival.coxph import CoxPH
+        from skpro.utils.validation._dependencies import _check_estimator_deps
 
         regressor = ResidualDouble(LinearRegression())
 
@@ -238,8 +240,19 @@ class BaggingRegressor(BaseProbaRegressor):
             "bootstrap": False,
             "bootstrap_features": True,
         }
+        params = [params1, params2, params3]
 
-        return [params1, params2, params3]
+        if _check_estimator_deps(CoxPH, severity="none"):
+            params4 = {
+                "estimator": CoxPH(),
+                "n_samples": 5,
+                "n_features": 2,
+                "bootstrap": False,
+                "bootstrap_features": True,
+            }
+            params += [params4]
+
+        return params
 
 
 def _random_ss_ix(ix, size, replace=True):
