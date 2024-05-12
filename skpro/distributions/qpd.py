@@ -548,7 +548,6 @@ class QPD_B(BaseDistribution):
             u=self.upper,
             version=version,
         )
-
         super().__init__(index=index, columns=columns)
 
     def _mean(self):
@@ -952,7 +951,7 @@ def pdf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
             else:
                 cdf = qpd.cdf(x0)
                 if cdf.ndim < 2:
-                    for d in range(2 - cdf.ndim):
+                    for _ in range(2 - cdf.ndim):
                         cdf = cdf[np.newaxis]
                 cdf = cdf.T
             pdf_part = calc_pdf(cdf)
@@ -968,7 +967,7 @@ def ppf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
     else:
         ppf = qpd.ppf(x)
         if ppf.ndim < 2:
-            for d in range(2 - ppf.ndim):
+            for _ in range(2 - ppf.ndim):
                 ppf = ppf[np.newaxis]
     ppf = ppf.T
     return ppf
@@ -982,7 +981,7 @@ def cdf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
     else:
         cdf = qpd.cdf(x)
         if cdf.ndim < 2:
-            for d in range(2 - cdf.ndim):
+            for _ in range(2 - cdf.ndim):
                 cdf = cdf[np.newaxis]
     cdf = cdf.T
     return cdf
