@@ -222,7 +222,7 @@ class BaggingRegressor(BaseProbaRegressor):
         from sklearn.linear_model import LinearRegression
 
         from skpro.regression.residual import ResidualDouble
-        from skpro.survival.coxph import CoxPH
+        from skpro.survival.aft import AFTLogNormal
         from skpro.utils.validation._dependencies import _check_estimator_deps
 
         regressor = ResidualDouble(LinearRegression())
@@ -242,9 +242,9 @@ class BaggingRegressor(BaseProbaRegressor):
         }
         params = [params1, params2, params3]
 
-        if _check_estimator_deps(CoxPH, severity="none"):
+        if _check_estimator_deps(AFTLogNormal, severity="none"):
             params4 = {
-                "estimator": CoxPH(),
+                "estimator": AFTLogNormal(),
                 "n_samples": 5,
                 "n_features": 2,
                 "bootstrap": False,
