@@ -175,7 +175,7 @@ class QPD_Johnson(_DelegatedDistribution):
         params4 = {
             "alpha": 0.12,
             "version": "logistic",
-            "qv_low": [0.25, 0.2, 0.22],
+            "qv_low": [0.15, 0.1, 0.15],
             "qv_median": [0.45, 0.51, 0.54],
             "qv_high": [0.85, 0.83, 0.81],
             "lower": 0.05,
