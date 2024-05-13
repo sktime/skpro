@@ -4,10 +4,10 @@
 import numpy as np
 import pandas as pd
 
-from skpro.metrics.base import BaseDistrMetric
+from skpro.metrics.base import BaseSurvDistrMetric
 
 
-class SPLL(BaseDistrMetric):
+class SPLL(BaseSurvDistrMetric):
     r"""Survival Process Logarithmic Loss for distributional predictions.
 
     Same as the negative log-likelihood of the survival process (see [1]_),
