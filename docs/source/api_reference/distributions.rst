@@ -43,6 +43,7 @@ Continuous support
     Normal
     TDistribution
     Weibull
+    Exponential
 
 
 Integer support
