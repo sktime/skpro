@@ -12,11 +12,13 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Exponential(_ScipyAdapter):
     r"""Exponential Distribution.
 
-    .. math::
+    The Laplace distribution is parametrized by mean :math:`\mu` and
+    scale :math:`b`, such that the pdf is
 
-        f(x) = \exp(-x)
+    .. math:: f(x) = \exp\left(-\frac{x - \mu}{b}\right)
 
-    for :math:`x \ge 0`
+    The mean :math:`\mu` is represented by the parameter ``mu``,
+    and the scale :math:`b` by the parameter ``scale``.
 
     Parameter
     ---------
