@@ -433,7 +433,7 @@ class QPD_B(BaseDistribution):
 
     Parameters
     ----------
-    alpha : float
+    alpha : float or array_like[float]
         lower quantile of SPT (upper is ``1 - alpha``)
     qv_low : float or array_like[float]
         quantile function value of ``alpha``
@@ -441,11 +441,11 @@ class QPD_B(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    lower : float
+    lower : float or array_like[float]
         lower bound of semi-bounded range.
         This is used when estimating QPD and calculating
         expectation and variance
-    upper : float
+    upper : float or array_like[float]
         upper bound of semi-bounded range.
         This is used when estimating QPD and calculating
         expectation and variance
@@ -479,6 +479,10 @@ class QPD_B(BaseDistribution):
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
+        "broadcast_params": [
+            "alpha", "qv_low", "qv_median", "qv_high", "lower", "upper"
+        ],
     }
 
     def __init__(
@@ -503,95 +507,38 @@ class QPD_B(BaseDistribution):
         self.index = index
         self.columns = columns
 
-        from cyclic_boosting.quantile_matching import J_QPD_B
-
-        qv_low, qv_median, qv_high = _prep_qpd_params(qv_low, qv_median, qv_high)
-
-        if index is None:
-            index = pd.RangeIndex(qv_low.shape[0])
-            self.index = index
-
-        if columns is None:
-            columns = pd.RangeIndex(1)
-            self.columns = columns
-
-        if version == "normal":
-            self.phi = norm()
-        elif version == "logistic":
-            self.phi = logistic()
-        else:
-            raise Exception("Invalid version.")
-
-        if (np.any(qv_low > qv_median)) or np.any(qv_high < qv_median):
-            warnings.warn(
-                "The SPT values are not monotonically increasing, "
-                "each SPT is sorted by value",
-                stacklevel=2,
-            )
-            idx = np.where((qv_low > qv_median), True, False) + np.where(
-                (qv_high < qv_median), True, False
-            )
-            un_orderd_idx = np.argwhere(idx > 0).tolist()
-            warnings.warn(f"sorted index {un_orderd_idx}", stacklevel=2)
-            for idx in un_orderd_idx:
-                low, mid, high = sorted([qv_low[idx], qv_median[idx], qv_high[idx]])
-                qv_low[idx] = low
-                qv_median[idx] = mid
-                qv_high[idx] = high
-
-        self.qpd = J_QPD_B(
-            alpha=alpha,
-            qv_low=qv_low,
-            qv_median=qv_median,
-            qv_high=qv_high,
-            l=self.lower,
-            u=self.upper,
-            version=version,
-        )
         super().__init__(index=index, columns=columns)
 
-    def _mean(self):
-        """Return expected value of the distribution.
+        # precompute parameters for methods
+        phi = _resolve_phi(version)
+        self.phi = phi
 
-        Please set the upper and lower limits of the random variable correctly.
+        alpha = self._bc_params["alpha"]
+        qv_low = self._bc_params["qv_low"]
+        qv_median = self._bc_params["qv_median"]
+        qv_high = self._bc_params["qv_high"]
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
 
-        Returns
-        -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
-        """
-        params = self.get_params(deep=False)
-        lower = params["lower"]
-        upper = params["upper"]
-        index = params["index"]
-        x = np.linspace(lower, upper, num=int(1e3))
-        cdf = self.qpd.cdf(x)
-        if cdf.ndim < 2:
-            cdf = cdf[:, np.newaxis]
-        loc = exp_func(x, cdf.T, index.shape[0])
-        return loc
+        params = _prep_qpd_vars(alpha, qv_low, qv_median, qv_high, lower, upper, phi)
+        self.params = params
 
-    def _var(self):
-        """Return element/entry-wise variance of the distribution.
+    def _ppf(self, p: np.ndarray):
+        """Quantile function = percent point function = inverse cdf."""
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+        rnge = upper - lower
+        xi = self.params["xi"]
+        delta = self.params["delta"]
+        kappa = self.params["kappa"]
+        c = self.params["c"]
+        n = self.params["n"]
 
-        Please set the upper and lower limits of the random variable correctly.
+        phi = self.phi
 
-        Returns
-        -------
-        pd.DataFrame with same rows, columns as `self`
-        variance of distribution (entry-wise)
-        """
-        params = self.get_params(deep=False)
-        lower = params["lower"]
-        upper = params["upper"]
-        index = params["index"]
-        mean = self.mean().values
-        x = np.linspace(lower, upper, num=int(1e3))
-        cdf = self.qpd.cdf(x)
-        if cdf.ndim < 2:
-            cdf = cdf[:, np.newaxis]
-        var = var_func(x, mean, cdf.T, index.shape[0])
-        return var
+        in_cdf = xi + kappa * np.sinh(delta * (phi.ppf(p) + n * c))
+        ppf_arr = lower + rnge * phi.cdf(in_cdf)
+        return ppf_arr
 
     def _pdf(self, x: np.ndarray):
         """Probability density function.
@@ -599,41 +546,55 @@ class QPD_B(BaseDistribution):
         this fucntion transform cdf to pdf
         because j-qpd's pdf calculation is bit complex
         """
-        return pdf_func(x, self.qpd)
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+        rnge = upper - lower
+        xi = self.params["xi"]
+        delta = self.params["delta"]
+        kappa = self.params["kappa"]
+        c = self.params["c"]
+        n = self.params["n"]
 
-    def _ppf(self, p: np.ndarray):
-        """Quantile function = percent point function = inverse cdf."""
-        params = self.get_params(deep=False)
-        index = params["index"]
-        columns = params["columns"]
-        qv_low = params["qv_low"]
-        p_unique = np.unique(p)  # de-broadcast
-        ppf_all = ppf_func(p_unique, self.qpd)
-        ppf_map = np.tile(p_unique, (qv_low.size, 1)).T
-        ppf = np.zeros((index.shape[0], len(columns)))
-        for r in range(p.shape[0]):
-            for c in range(p.shape[1]):
-                t = np.where(ppf_map[:, c] == p[r][c])
-                ppf_part = ppf_all[t][c]
-                ppf[r][c] = ppf_part
-        return ppf
+        phi = self.phi
+
+        # we work through the chain rule for the entire nested expression in cdf
+        x_ = (x - lower) / rnge
+        x_der = 1 / rnge
+
+        phi_ppf = phi.ppf(x)
+        # derivative of ppf at z is 1 / pdf(ppf(z))
+        phi_ppf_der = 1 / phi.pdf(phi.ppf(x_)) * x_der
+
+        in_arcsinh = (phi_ppf - xi) / kappa
+        in_arcsinh_der = phi_ppf_der / kappa
+
+        in_cdf = np.arcsinh(in_arcsinh) / delta - n * c
+        in_cdf_der = arcsinh_der(in_arcsinh) * in_arcsinh_der / delta
+
+        # cdf_arr = phi.cdf(in_cdf)
+        cdf_arr_dev = phi.pdf(in_cdf) * in_cdf_der
+
+        pdf_arr = cdf_arr_dev
+        return pdf_arr
 
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
-        params = self.get_params(deep=False)
-        index = params["index"]
-        columns = params["columns"]
-        qv_low = params["qv_low"]
-        x_unique = np.unique(x)  # de-broadcast
-        cdf_all = cdf_func(x_unique, self.qpd)
-        cdf_map = np.tile(x_unique, (qv_low.size, 1)).T
-        cdf = np.zeros((index.shape[0], len(columns)))
-        for r in range(x.shape[0]):
-            for c in range(x.shape[1]):
-                t = np.where(cdf_map[:, c] == x[r][c])
-                cdf_part = cdf_all[t][c]
-                cdf[r][c] = cdf_part
-        return cdf
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+        rnge = upper - lower
+        xi = self.params["xi"]
+        delta = self.params["delta"]
+        kappa = self.params["kappa"]
+        c = self.params["c"]
+        n = self.params["n"]
+
+        phi = self.phi
+
+        phi_ppf = phi.ppf((x - lower) / rnge)
+        in_cdf = np.arcsinh((phi_ppf - xi) / kappa) / delta - n * c
+        cdf_arr = phi.cdf(in_cdf)
+
+        return cdf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -999,3 +960,60 @@ def _prep_qpd_params(qv_low, qv_median, qv_high):
     qv_median = qv[1].flatten()
     qv_high = qv[2].flatten()
     return qv_low, qv_median, qv_high
+
+
+def _resolve_phi(self, phi):
+    """Resolve base distribution."""
+    if phi == "normal":
+        return norm()
+    elif phi == "logistic":
+        return logistic()
+    else:
+        return phi
+
+
+def _prep_qpd_vars(alpha, qv_low, qv_high, qv_median, lower, upper, phi):
+    """Prepare parameters for Johnson Quantile-Parameterized Distributions.
+
+    Parameters
+    ----------
+    alpha : 2D np.array
+        lower quantile of SPT (upper is ``1 - alpha``)
+    qv_low : 2D np.array
+        quantile function value of ``alpha``
+    qv_median : 2D np.array
+        quantile function value of quantile 0.5
+    qv_high : 2D np.array
+        quantile function value of quantile ``1 - alpha``
+    lower : 2D np.array
+        lower bound of range.
+    upper : 2D np.array
+        upper bound of range.
+    phi : scipy.stats.rv_continuous
+        base distribution
+    """
+    c = phi.ppf(1 - alpha)
+    L = phi.ppf((qv_low - lower) / (upper - lower))
+    H = phi.ppf((qv_high - lower) / (upper - lower))
+    B = phi.ppf((qv_median - lower) / (upper - lower))
+    HL = H - L
+    BL = B - L
+    HB = H - B
+    LH2B = L + H - 2 * B
+
+    n = np.where(LH2B > 0, 1, -1)
+    xi = np.where(LH2B > 0, L, H)
+
+    n = np.where(LH2B == 0, 0, n)
+    xi = np.where(LH2B == 0, B, xi)
+
+    delta = np.arccosh(HL / (2 * np.where(BL < HB), BL, HB)) / c
+    kappa = HL / np.sinh(2 * delta * c)
+
+    params = {"L": L, "H": H, "B": B, "n": n, "xi": xi, "delta": delta, "kappa": kappa}
+    return params
+
+
+def arcsinh_der(x):
+    """Return derivative of arcsinh."""
+    return 1 / np.sqrt(1 + x ** 2)
