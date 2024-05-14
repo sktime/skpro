@@ -45,10 +45,10 @@ class Exponential(_ScipyAdapter):
         return expon
 
     def _get_scipy_param(self) -> dict:
-        loc = self._bc_params["loc"]
+        mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
 
-        return [], {"mu": loc, "scale": scale}
+        return [], {"loc": mu, "scale": scale}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
