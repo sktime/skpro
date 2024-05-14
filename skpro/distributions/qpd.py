@@ -51,7 +51,7 @@ class QPD_Johnson(_DelegatedDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    lower : float
+    lower : float, default = None
         lower bound of bounded range for QPD.
         This is used when estimating QPD and calculating
         expectation and variance
@@ -207,7 +207,7 @@ class QPD_S(BaseDistribution):
         lower bound of semi-bounded range.
         This is used when estimating QPD and calculating
         expectation and variance
-    upper : float, default = None
+    upper : float, default = 1e3
         upper bound of probability density function to
         calculate expected value and variance
     version: str
@@ -445,7 +445,7 @@ class QPD_B(BaseDistribution):
         lower bound of semi-bounded range.
         This is used when estimating QPD and calculating
         expectation and variance
-    upper : float, default = None
+    upper : float
         upper bound of semi-bounded range.
         This is used when estimating QPD and calculating
         expectation and variance
@@ -682,11 +682,11 @@ class QPD_U(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    lower : float, default = None
+    lower : float, default = -1e3
         lower bound of probability density function to
         calculate expected value and variance
         expectation and variance
-    upper : float, default = None
+    upper : float, default = 1e3
         upper bound of probability density function to
         calculate expected value and variance
     version: str, optional, default="normal"
