@@ -98,7 +98,7 @@ class QPD_S(BaseDistribution):
         self.index = index
         self.columns = columns
 
-        #  TODO <X.X.X>: change default of 'lower' and to None
+        #  TODO <X.X.X>: remove default value of 'lower'
         #  update docstring, and remove warning. related to PR-232
         link = "https://github.com/Blue-Yonder-OSS/cyclic-boosting/ \
                 blob/a62eccffcd611e87a850b9bf38ea699fbea1fb31/ \
@@ -107,11 +107,15 @@ class QPD_S(BaseDistribution):
                     in version X.X.X. \
                    'J_QPD_S' is used instead of 'J_QPD_extended_S'. \
                     See {link} for details"
-        warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
-        comment = "Parameter 'lower' of 'QPD_S' will change \
-                   default value from 0.0 to None in version X.X.X. \
-                   To retain prior behaviour, set 'lower' to 0.0 explicitly"
+        if self.dist_shape != 0.0:
+            warnings.warn(comment, DeprecationWarning, stacklevel=2)
+
+        comment = "The default value of parameter 'lower' of 'QPD_S' will be removed \
+                   in version X.X.X. \
+                   To retain prior behaviour, set 'lower' and 'upper' to 0.0 and \
+                   large number explicitly"
+
         warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         super().__init__(index=index, columns=columns)
@@ -361,8 +365,8 @@ class QPD_B(BaseDistribution):
         self.index = index
         self.columns = columns
 
-        #  TODO <X.X.X>: change default of 'lower' and to None
-        #  update docstring, and remove warning
+        #  TODO <X.X.X>: remove default value of 'lower' and 'upper'
+        #  update docstring, and remove warning. related to PR-232
         link = "https://github.com/Blue-Yonder-OSS/cyclic-boosting/ \
                 blob/a62eccffcd611e87a850b9bf38ea699fbea1fb31/ \
             cyclic_boosting/quantile_matching.py#L168"
@@ -370,10 +374,11 @@ class QPD_B(BaseDistribution):
                     in version X.X.X. \
                    'J_QPD_B' is used instead of 'J_QPD_extended_B'. \
                     See {link} for details"
-        warnings.warn(comment, DeprecationWarning, stacklevel=2)
+        if dist_shape != 0.0:
+            warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
-        comment = "Parameter 'lower' and 'upper' of 'QPD_B' will change \
-                   default value from 0.0 and 1.0 to None and None in version X.X.X. \
+        comment = "The default value of parameter 'lower' and 'upper' of 'QPD_B' will \
+                   be removed in version X.X.X. \
                    To retain prior behaviour, set 'lower' and 'upper' to 0.0 and 1.0 \
                    explicitly"
         warnings.warn(comment, DeprecationWarning, stacklevel=2)

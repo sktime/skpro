@@ -54,9 +54,12 @@ class CyclicBoosting(BaseProbaRegressor):
         ``bound`` will be removed in version X.X.X.
     lower : float, default=0.0
         lower bound of supported range (only active for bound and semi-bound
-        modes)
+        modes). the default value will change from 0.0 to None. To retain prior
+        behaviour, set 'lower' to 0.0 explicitly.
     upper : float, default=1.0
-        upper bound of supported range (only active for bound mode)
+        upper bound of supported range (only active for bound mode).
+        the default value will change from 1.0 to None. To retain prior
+        behaviour, set 'upper' to 1.0 explicitly.
     maximal_iterations : int, default=10
         number of iterations
 
