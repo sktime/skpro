@@ -85,7 +85,6 @@ class QPD_Johnson(_DelegatedDistribution):
         # --------------
         "authors": ["setoguchi-naoki", "felix-wick", "fkiraly"],
         "maintainers": ["setoguchi-naoki"],
-        "python_dependencies": ["cyclic_boosting>=1.4.0", "findiff"],
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
