@@ -295,8 +295,8 @@ class QPD_S(BaseDistribution):
 
         phi = self.phi
 
-        in_sinh = np.arcsinh(phi.ppf(p) * delta)
-        in_exp = kappa * np.sinh(in_sinh) + np.arcsinh(n * c * delta)
+        in_sinh = np.arcsinh(phi.ppf(p) * delta) + np.arcsinh(n * c * delta)
+        in_exp = kappa * np.sinh(in_sinh)
         ppf_arr = lower + theta * np.exp(in_exp)
 
         return ppf_arr
