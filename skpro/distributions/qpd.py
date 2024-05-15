@@ -785,7 +785,7 @@ def _prep_qpd_vars(
         in_arccosh = HL / (2 * HBL)
         delta_unn = np.arccosh(in_arccosh)
         if mode == "S":
-            delta = np.sinh(delta_unn)
+            delta_unn = np.sinh(delta_unn)
         delta = delta_unn / c
     elif mode == "U":
         delta = 1.0 / np.arccosh(1 / (2.0 * theta))
