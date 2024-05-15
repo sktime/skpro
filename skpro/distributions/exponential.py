@@ -15,17 +15,15 @@ class Exponential(_ScipyAdapter):
     The Exponential distribution is parametrized by mean :math:`\mu` and
     scale :math:`b`, such that the pdf is
 
-    .. math:: f(x) = \exp\left(-\frac{x - \mu}{b}\right)
+    .. math:: f(x) = \lambda*\exp\left(-\lambda*x\right)
 
-    The mean :math:`\mu` is represented by the parameter ``mu``,
-    and the scale :math:`b` by the parameter ``scale``.
+    The rate :math:`\lambda` is represented by the parameter ``rate``,
 
     Parameter
     ---------
-    mu : float or array of float (1D or 2D)
-        mean of the distribution
-    scale : float or array of float (1D or 2D), must be positive
-        scale parameter of the distribution, same as standard deviation / sqrt(2)
+    rate : float or array of float (1D or 2D)
+        rate of the distribution
+        rate = 1/scale
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
     """
