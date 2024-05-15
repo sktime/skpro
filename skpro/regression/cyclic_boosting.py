@@ -49,6 +49,9 @@ class CyclicBoosting(BaseProbaRegressor):
         lower quantile for QPD's parameter alpha
     mode : str, default='multiplicative'
         the type of quantile regressor. 'multiplicative' or 'additive'
+    bound : str, default='U', one of ``'S'``, ``'B'``, ``'U'``
+        Mode for the predictive distribution range, options are ``S``
+        (semi-bounded), ``B`` (bounded), and ``U`` (unbound).
     lower : float, default=None
         lower bound of supported range (only active for bound and semi-bound
         modes). If neither 'lower' nor 'upper' is specified, `QPD_U` will be used as
@@ -56,13 +59,13 @@ class CyclicBoosting(BaseProbaRegressor):
     upper : float, default=None
         upper bound of supported range (only active for bound mode). If neither
         'lower' nor 'upper' is specified, `QPD_U` will be used as unbound-mode
-    version: str, one of ``'normal'`` (default), ``'logistic'``
+    maximal_iterations : int, default=10
+        number of iterations
+    dist_type: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
     dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
-    maximal_iterations : int, default=10
-        number of iterations
 
     Attributes
     ----------
