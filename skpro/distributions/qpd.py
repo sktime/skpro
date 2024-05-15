@@ -234,7 +234,12 @@ class QPD_S(BaseDistribution):
         "distr:measuretype": "continuous",
         "broadcast_init": "on",
         "broadcast_params": [
-            "alpha", "qv_low", "qv_median", "qv_high", "lower", "upper"
+            "alpha",
+            "qv_low",
+            "qv_median",
+            "qv_high",
+            "lower",
+            "upper",
         ],
     }
 
@@ -417,7 +422,12 @@ class QPD_B(BaseDistribution):
         "distr:measuretype": "continuous",
         "broadcast_init": "on",
         "broadcast_params": [
-            "alpha", "qv_low", "qv_median", "qv_high", "lower", "upper"
+            "alpha",
+            "qv_low",
+            "qv_median",
+            "qv_high",
+            "lower",
+            "upper",
         ],
     }
 
@@ -604,7 +614,12 @@ class QPD_U(BaseDistribution):
         "distr:measuretype": "continuous",
         "broadcast_init": "on",
         "broadcast_params": [
-            "alpha", "qv_low", "qv_median", "qv_high", "lower", "upper"
+            "alpha",
+            "qv_low",
+            "qv_median",
+            "qv_high",
+            "lower",
+            "upper",
         ],
     }
 
@@ -728,7 +743,15 @@ def _resolve_phi(phi):
 
 
 def _prep_qpd_vars(
-    alpha, qv_low, qv_median, qv_high, lower, upper, phi, mode="B", **kwargs,
+    alpha,
+    qv_low,
+    qv_median,
+    qv_high,
+    lower,
+    upper,
+    phi,
+    mode="B",
+    **kwargs,
 ):
     """Prepare parameters for Johnson Quantile-Parameterized Distributions.
 
@@ -822,4 +845,4 @@ def _prep_qpd_vars(
 
 def arcsinh_der(x):
     """Return derivative of arcsinh."""
-    return 1 / np.sqrt(1 + x ** 2)
+    return 1 / np.sqrt(1 + x**2)
