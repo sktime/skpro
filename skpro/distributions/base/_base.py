@@ -1271,7 +1271,7 @@ class BaseDistribution(BaseObject):
         spl1 = self.sample(approx_spl_size)
         spl2 = self.sample(approx_spl_size)
         spl = (spl1 - spl2) ** 2
-        return self._sample_mean(spl)
+        return self._sample_mean(spl) / 2
 
     def pdfnorm(self, a=2):
         r"""a-norm of pdf, defaults to 2-norm.
