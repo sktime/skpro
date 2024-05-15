@@ -776,15 +776,30 @@ def _prep_qpd_vars(
         B = bounded mode, S = lower semi-bounded mode
     """
     c = phi.ppf(1 - alpha)
-    rnge = upper - lower
+
+    if mode == "U":
+        lower = 0
 
     qll = qv_low - lower
     qml = qv_median - lower
     qhl = qv_high - lower
 
-    L = phi.ppf(qll / rnge)
-    H = phi.ppf(qhl / rnge)
-    B = phi.ppf(qml / rnge)
+    if mode == "B":
+        rnge = upper - lower
+
+        def tfun(x):        
+            return phi.ppf(x / rnge)
+
+    elif mode == "S":
+        tfun = np.log
+    elif mode == "U":
+
+        def tfun(x):
+            return x
+
+    L = tfun(qll)
+    H = tfun(qhl)
+    B = tfun(qml)
     HL = H - L
     BL = B - L
     HB = H - B
@@ -824,7 +839,6 @@ def _prep_qpd_vars(
 
     params = {
         "c": c,
-        "rnge": rnge,
         "L": L,
         "H": H,
         "B": B,
@@ -835,6 +849,8 @@ def _prep_qpd_vars(
 
     if mode == "S":
         params["theta"] = theta
+    if mode == "B":
+        params["rnge"] = rnge
     if mode in ["B", "U"]:
         params["xi"] = xi
     if mode == "U":
