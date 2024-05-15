@@ -1151,6 +1151,8 @@ class BaseDistribution(BaseObject):
             qs = [np.abs(self.ppf(p) - x) for p in ps]
             en3D = np.array(qs)
             energy = np.mean(en3D, axis=0)
+            if self.ndim > 0:
+                energy = np.sum(energy, axis=1)
             return energy
 
         # we want to approximate E[abs(X-Y)]
