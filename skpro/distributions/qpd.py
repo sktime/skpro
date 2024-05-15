@@ -471,9 +471,8 @@ class QPD_B(BaseDistribution):
     _tags = {
         # packaging info
         # --------------
-        "authors": ["setoguchi-naoki", "felix-wick"],
+        "authors": ["setoguchi-naoki", "felix-wick", "fkiraly"],
         "maintainers": ["setoguchi-naoki"],
-        "python_dependencies": ["cyclic_boosting>=1.4.0", "findiff"],
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
@@ -526,8 +525,7 @@ class QPD_B(BaseDistribution):
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
         lower = self._bc_params["lower"]
-        upper = self._bc_params["upper"]
-        rnge = upper - lower
+        rnge = self.params["rnge"]
         xi = self.params["xi"]
         delta = self.params["delta"]
         kappa = self.params["kappa"]
@@ -547,8 +545,7 @@ class QPD_B(BaseDistribution):
         because j-qpd's pdf calculation is bit complex
         """
         lower = self._bc_params["lower"]
-        upper = self._bc_params["upper"]
-        rnge = upper - lower
+        rnge = self.params["rnge"]
         xi = self.params["xi"]
         delta = self.params["delta"]
         kappa = self.params["kappa"]
@@ -561,9 +558,9 @@ class QPD_B(BaseDistribution):
         x_ = (x - lower) / rnge
         x_der = 1 / rnge
 
-        phi_ppf = phi.ppf(x)
+        phi_ppf = phi.ppf(x_)
         # derivative of ppf at z is 1 / pdf(ppf(z))
-        phi_ppf_der = 1 / phi.pdf(phi.ppf(x_)) * x_der
+        phi_ppf_der = x_der / phi.pdf(phi.ppf(x_))
 
         in_arcsinh = (phi_ppf - xi) / kappa
         in_arcsinh_der = phi_ppf_der / kappa
@@ -580,8 +577,7 @@ class QPD_B(BaseDistribution):
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
         lower = self._bc_params["lower"]
-        upper = self._bc_params["upper"]
-        rnge = upper - lower
+        rnge = self.params["rnge"]
         xi = self.params["xi"]
         delta = self.params["delta"]
         kappa = self.params["kappa"]
@@ -613,9 +609,9 @@ class QPD_B(BaseDistribution):
         params2 = {
             "alpha": 0.2,
             "version": "normal",
-            "qv_low": [-0.3, -0.3, -0.3],
-            "qv_median": [0.0, 0.0, 0.0],
-            "qv_high": [0.3, 0.3, 0.3],
+            "qv_low": [[-0.3], [-0.2], [-0.1]],
+            "qv_median": [[-0.1], [0.0], [0.1]],
+            "qv_high": [[0.2], [0.3], [0.4]],
             "lower": -0.5,
             "upper": 0.5,
             "index": pd.RangeIndex(3),
@@ -962,7 +958,7 @@ def _prep_qpd_params(qv_low, qv_median, qv_high):
     return qv_low, qv_median, qv_high
 
 
-def _resolve_phi(self, phi):
+def _resolve_phi(phi):
     """Resolve base distribution."""
     if phi == "normal":
         return norm()
@@ -972,7 +968,7 @@ def _resolve_phi(self, phi):
         return phi
 
 
-def _prep_qpd_vars(alpha, qv_low, qv_high, qv_median, lower, upper, phi):
+def _prep_qpd_vars(alpha, qv_low, qv_median, qv_high, lower, upper, phi):
     """Prepare parameters for Johnson Quantile-Parameterized Distributions.
 
     Parameters
@@ -993,9 +989,10 @@ def _prep_qpd_vars(alpha, qv_low, qv_high, qv_median, lower, upper, phi):
         base distribution
     """
     c = phi.ppf(1 - alpha)
-    L = phi.ppf((qv_low - lower) / (upper - lower))
-    H = phi.ppf((qv_high - lower) / (upper - lower))
-    B = phi.ppf((qv_median - lower) / (upper - lower))
+    rnge = upper - lower
+    L = phi.ppf((qv_low - lower) / rnge)
+    H = phi.ppf((qv_high - lower) / rnge)
+    B = phi.ppf((qv_median - lower) / rnge)
     HL = H - L
     BL = B - L
     HB = H - B
@@ -1007,10 +1004,21 @@ def _prep_qpd_vars(alpha, qv_low, qv_high, qv_median, lower, upper, phi):
     n = np.where(LH2B == 0, 0, n)
     xi = np.where(LH2B == 0, B, xi)
 
-    delta = np.arccosh(HL / (2 * np.where(BL < HB), BL, HB)) / c
+    in_arccosh = HL / (2 * np.where(BL < HB, BL, HB))
+    delta = np.arccosh(in_arccosh) / c
     kappa = HL / np.sinh(2 * delta * c)
 
-    params = {"L": L, "H": H, "B": B, "n": n, "xi": xi, "delta": delta, "kappa": kappa}
+    params = {
+        "c": c,
+        "rnge": rnge,
+        "L": L,
+        "H": H,
+        "B": B,
+        "n": n,
+        "xi": xi,
+        "delta": delta,
+        "kappa": kappa,
+    }
     return params
 
 
