@@ -184,14 +184,16 @@ class CyclicBoosting(BaseProbaRegressor):
 
         # todo 2.4.0: remove this block
         # translate bound to lower and upper
-        if lower is None and bound in ["S", "B"]:
-            self._lower = 0.0
-        else:
-            self._lower = None
-        if upper is None and bound == "B":
-            self._upper = 1.0
-        else:
-            self._upper = upper
+        if lower is None:
+            if bound in ["S", "B"]:
+                self._lower = 0.0
+            else:
+                self._lower = None
+        if upper is None:
+            if bound == "B":
+                self._upper = 1.0
+            else:
+                self._upper = None
         # end block
 
         # check parameters
