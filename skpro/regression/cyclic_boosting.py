@@ -114,11 +114,12 @@ class CyclicBoosting(BaseProbaRegressor):
         feature_properties=None,
         alpha=0.2,
         mode="multiplicative",
+        bound="deprecated",
         lower=None,
         upper=None,
-        version: Union[str, None] = "normal",
-        dist_shape: Union[float, None] = 0.0,
         maximal_iterations=10,
+        dist_type: Union[str, None] = "normal",
+        dist_shape: Union[float, None] = 0.0,
     ):
         self.feature_groups = feature_groups
         self.feature_properties = feature_properties
@@ -130,11 +131,43 @@ class CyclicBoosting(BaseProbaRegressor):
         self.mode = mode
         self.lower = lower
         self.upper = upper
-        self.version = version
+        self.dist_type = dist_type
         self.dist_shape = dist_shape
         self.maximal_iterations = maximal_iterations
 
         super().__init__()
+
+        # todo 2.4.0: remove bound parameter and this deprecation warning
+        if bound == "deprecated":
+            warnings.warn(
+                "In CyclicBoosting, the 'bound' parameter is deprecated, "
+                "and will be removed in skpro version 2.4.0. "
+                "To retain the current behavior, and silence this warning, "
+                "do not set the 'bound' parameter "
+                "and set 'lower' and 'upper' parameters instead, "
+                "as follows: for unbounded mode, previously bound='U', "
+                "set 'lower' and 'upper' to None; "
+                "for semi-bounded mode, previously bound='S', "
+                "set 'lower' to lower bound and 'upper' to None; "
+                "for bounded mode, previously bound='B', "
+                "set 'lower' to lower bound and 'upper' to upper bound.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        # todo 2.4.0: remove this block
+        # translate bound to lower and upper
+        if lower is None:
+            if bound in ["S", "B"]:
+                self._lower = 0.0
+            else:
+                self._lower = None
+        if upper is None:
+            if bound == "B":
+                self._upper = 1.0
+            else:
+                self._upper = None
+        # end block
 
         # check parameters
         if (not isinstance(feature_groups, list)) and feature_groups is not None:
@@ -284,15 +317,16 @@ class CyclicBoosting(BaseProbaRegressor):
             yhat = est.predict(X.copy())
             self.quantile_values.append(yhat)
 
+        # todo 2.4.0: replace self._lower and self._upper with self.lower and self.upper
         # Johnson Quantile-Parameterized Distributions
         params = {
             "alpha": self.alpha,
             "qv_low": self.quantile_values[0],
             "qv_median": self.quantile_values[1],
             "qv_high": self.quantile_values[2],
-            "lower": self.lower,
-            "upper": self.upper,
-            "version": self.version,
+            "lower": self._lower,
+            "upper": self._upper,
+            "version": self.dist_type,
             "dist_shape": self.dist_shape,
             "index": index,
             "columns": y_cols,
