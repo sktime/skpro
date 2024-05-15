@@ -152,9 +152,9 @@ class QPD_Johnson(_DelegatedDistribution):
         params2 = {
             "alpha": 0.1,
             "version": "normal",
-            "qv_low": [0.2, 0.2, 0.2],
-            "qv_median": [0.5, 0.5, 0.5],
-            "qv_high": [0.8, 0.8, 0.8],
+            "qv_low": [[-0.3], [-0.2], [-0.1]],
+            "qv_median": [[-0.1], [0.0], [0.1]],
+            "qv_high": [[0.2], [0.3], [0.4]],
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a"]),
         }
