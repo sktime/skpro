@@ -9,12 +9,7 @@ __author__ = [
     "setoguchi-naoki",
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
-import typing
-import warnings
 from typing import Sequence
-
-if typing.TYPE_CHECKING:
-    from cyclic_boosting.quantile_matching import J_QPD_S, J_QPD_B
 
 import numpy as np
 import pandas as pd
@@ -720,81 +715,6 @@ class QPD_U(BaseDistribution):
             "columns": pd.Index(["a"]),
         }
         return [params1, params2]
-
-
-def calc_pdf(cdf: np.ndarray) -> np.ndarray:
-    """Return pdf value for all samples."""
-    from findiff import FinDiff
-
-    dx = 1e-6
-    derivative = FinDiff(1, dx, 1)
-    pdf = np.asarray(derivative(cdf))
-    return pdf
-
-
-def exp_func(x: np.ndarray, cdf: np.ndarray, size: int):
-    """Return Expectation."""
-    pdf = calc_pdf(cdf)
-    x = np.tile(x, (size, 1))
-    loc = np.trapz(x * pdf, x, dx=1e-6, axis=1)
-    return loc
-
-
-def var_func(x: np.ndarray, mu: np.ndarray, cdf: np.ndarray, size: int):
-    """Return Variance."""
-    pdf = calc_pdf(cdf)
-    x = np.tile(x, (size, 1))
-    var = np.trapz(((x - mu) ** 2) * pdf, x, dx=1e-6, axis=1)
-    return var
-
-
-def pdf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
-    """Return pdf value."""
-    pdf = np.zeros_like(x)
-    for r in range(x.shape[0]):
-        for c in range(x.shape[1]):
-            element = x[r][c]
-            x0 = np.linspace(element, element + 1e-3, num=3)
-            if isinstance(qpd, list):
-                cdf = np.asarray([func.cdf(x0) for func in qpd])
-                cdf = cdf.reshape(cdf.shape[0], -1)
-            else:
-                cdf = qpd.cdf(x0)
-                if cdf.ndim < 2:
-                    for _ in range(2 - cdf.ndim):
-                        cdf = cdf[:, np.newaxis]
-                cdf = cdf.T
-            pdf_part = calc_pdf(cdf)
-            pdf[r][c] = pdf_part[0][0]
-    return pdf
-
-
-def ppf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
-    """Return ppf value."""
-    if isinstance(qpd, list):
-        ppf = np.asarray([func.ppf(x) for func in qpd])
-        ppf = ppf.reshape(ppf.shape[0], -1)
-    else:
-        ppf = qpd.ppf(x)
-        if ppf.ndim < 2:
-            for _ in range(2 - ppf.ndim):
-                ppf = ppf[np.newaxis]
-    ppf = ppf.T
-    return ppf
-
-
-def cdf_func(x: np.ndarray, qpd: J_QPD_S | J_QPD_B | list):
-    """Return cdf value."""
-    if isinstance(qpd, list):
-        cdf = np.asarray([func.cdf(x) for func in qpd])
-        cdf = cdf.reshape(cdf.shape[0], -1)
-    else:
-        cdf = qpd.cdf(x)
-        if cdf.ndim < 2:
-            for _ in range(2 - cdf.ndim):
-                cdf = cdf[np.newaxis]
-    cdf = cdf.T
-    return cdf
 
 
 def _resolve_phi(phi):
