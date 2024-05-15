@@ -52,6 +52,7 @@ dependencies = [
 [project.optional-dependencies]
 all_extras = [
     "attrs",
+    "cyclic-boosting>=1.4.0; python_version < '3.12'",
     "distfit",
     "lifelines<0.29.0",
     "mapie",
@@ -63,8 +64,6 @@ all_extras = [
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
-    "cyclic-boosting>=1.4.0; python_version < '3.12'",
-    "findiff",
 ]
 
 dev = [
