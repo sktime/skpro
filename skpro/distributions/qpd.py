@@ -239,6 +239,10 @@ class QPD_S(BaseDistribution):
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "cdf", "ppf", "pdf"],
         "distr:measuretype": "continuous",
+        "broadcast_init": "on",
+        "broadcast_params": [
+            "alpha", "qv_low", "qv_median", "qv_high", "lower", "upper"
+        ],
     }
 
     def __init__(
@@ -263,104 +267,23 @@ class QPD_S(BaseDistribution):
         self.index = index
         self.columns = columns
 
-        from cyclic_boosting.quantile_matching import J_QPD_S
-
-        qv_low, qv_median, qv_high = _prep_qpd_params(qv_low, qv_median, qv_high)
-
-        if index is None:
-            index = pd.RangeIndex(qv_low.shape[0])
-            self.index = index
-
-        if columns is None:
-            columns = pd.RangeIndex(1)
-            self.columns = columns
-
-        self._shape = (qv_low.shape[0], 1)
-
-        if version == "normal":
-            self.phi = norm()
-        elif version == "logistic":
-            self.phi = logistic()
-        else:
-            raise Exception("Invalid version.")
-
-        if (np.any(qv_low > qv_median)) or np.any(qv_high < qv_median):
-            warnings.warn(
-                "The SPT values are not monotonically increasing, "
-                "each SPT is sorted by value",
-                stacklevel=2,
-            )
-            idx = np.where((qv_low > qv_median), True, False) + np.where(
-                (qv_high < qv_median), True, False
-            )
-            un_orderd_idx = np.argwhere(idx > 0).tolist()
-            warnings.warn(f"sorted index {un_orderd_idx}", stacklevel=2)
-            for idx in un_orderd_idx:
-                low, mid, high = sorted([qv_low[idx], qv_median[idx], qv_high[idx]])
-                qv_low[idx] = low
-                qv_median[idx] = mid
-                qv_high[idx] = high
-
-        self.qpd = J_QPD_S(
-            alpha=alpha,
-            qv_low=qv_low,
-            qv_median=qv_median,
-            qv_high=qv_high,
-            l=self.lower,
-            version=version,
-        )
         super().__init__(index=index, columns=columns)
 
-    def _mean(self):
-        """Return expected value of the distribution.
+        # precompute parameters for methods
+        phi = _resolve_phi(version)
+        self.phi = phi
 
-        Please set the upper and lower limits of the random variable correctly.
+        alpha = self._bc_params["alpha"]
+        qv_low = self._bc_params["qv_low"]
+        qv_median = self._bc_params["qv_median"]
+        qv_high = self._bc_params["qv_high"]
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
 
-        Returns
-        -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
-        """
-        params = self.get_params(deep=False)
-        lower = params["lower"]
-        upper = params["upper"]
-        index = params["index"]
-        x = np.linspace(lower, upper, num=int(1e3))
-        cdf = self.qpd.cdf(x)
-        if cdf.ndim < 2:
-            cdf = cdf[:, np.newaxis]
-        loc = exp_func(x, cdf.T, index.shape[0])
-        return loc
-
-    def _var(self):
-        """Return element/entry-wise variance of the distribution.
-
-        Please set the upper and lower limits of the random variable correctly.
-
-        Returns
-        -------
-        pd.DataFrame with same rows, columns as `self`
-        variance of distribution (entry-wise)
-        """
-        params = self.get_params(deep=False)
-        lower = params["lower"]
-        upper = params["upper"]
-        index = params["index"]
-        mean = self.mean().values
-        x = np.linspace(lower, upper, num=int(1e3))
-        cdf = self.qpd.cdf(x)
-        if cdf.ndim < 2:
-            cdf = cdf[:, np.newaxis]
-        var = var_func(x, mean, cdf.T, index.shape[0])
-        return var
-
-    def _pdf(self, x: np.ndarray):
-        """Probability density function.
-
-        this fucntion transform cdf to pdf
-        because j-qpd's pdf calculation is bit complex
-        """
-        return pdf_func(x, self.qpd)
+        params = _prep_qpd_vars(
+            alpha, qv_low, qv_median, qv_high, lower, upper, phi, mode="B",
+        )
+        self.params = params
 
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
@@ -378,6 +301,14 @@ class QPD_S(BaseDistribution):
                 ppf_part = ppf_all[t][c]
                 ppf[r][c] = ppf_part
         return ppf
+
+    def _pdf(self, x: np.ndarray):
+        """Probability density function.
+
+        this fucntion transform cdf to pdf
+        because j-qpd's pdf calculation is bit complex
+        """
+        return pdf_func(x, self.qpd)
 
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
@@ -519,18 +450,20 @@ class QPD_B(BaseDistribution):
         lower = self._bc_params["lower"]
         upper = self._bc_params["upper"]
 
-        params = _prep_qpd_vars(alpha, qv_low, qv_median, qv_high, lower, upper, phi)
+        params = _prep_qpd_vars(
+            alpha, qv_low, qv_median, qv_high, lower, upper, phi, mode="B",
+        )
         self.params = params
 
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
         lower = self._bc_params["lower"]
         rnge = self.params["rnge"]
-        xi = self.params["xi"]
         delta = self.params["delta"]
         kappa = self.params["kappa"]
         c = self.params["c"]
         n = self.params["n"]
+        xi = self.params["xi"]
 
         phi = self.phi
 
@@ -546,11 +479,11 @@ class QPD_B(BaseDistribution):
         """
         lower = self._bc_params["lower"]
         rnge = self.params["rnge"]
-        xi = self.params["xi"]
         delta = self.params["delta"]
         kappa = self.params["kappa"]
         c = self.params["c"]
         n = self.params["n"]
+        xi = self.params["xi"]
 
         phi = self.phi
 
@@ -578,11 +511,11 @@ class QPD_B(BaseDistribution):
         """Cumulative distribution function."""
         lower = self._bc_params["lower"]
         rnge = self.params["rnge"]
-        xi = self.params["xi"]
         delta = self.params["delta"]
         kappa = self.params["kappa"]
         c = self.params["c"]
         n = self.params["n"]
+        xi = self.params["xi"]
 
         phi = self.phi
 
@@ -968,7 +901,7 @@ def _resolve_phi(phi):
         return phi
 
 
-def _prep_qpd_vars(alpha, qv_low, qv_median, qv_high, lower, upper, phi):
+def _prep_qpd_vars(alpha, qv_low, qv_median, qv_high, lower, upper, phi, mode="B"):
     """Prepare parameters for Johnson Quantile-Parameterized Distributions.
 
     Parameters
@@ -987,26 +920,47 @@ def _prep_qpd_vars(alpha, qv_low, qv_median, qv_high, lower, upper, phi):
         upper bound of range.
     phi : scipy.stats.rv_continuous
         base distribution
+    mode : str
+        options are ``B`` (default) or ``S``
+        B = bounded mode, S = lower semi-bounded mode
     """
     c = phi.ppf(1 - alpha)
     rnge = upper - lower
-    L = phi.ppf((qv_low - lower) / rnge)
-    H = phi.ppf((qv_high - lower) / rnge)
-    B = phi.ppf((qv_median - lower) / rnge)
+
+    qll = qv_low - lower
+    qml = qv_median - lower
+    qhl = qv_high - lower
+
+    L = phi.ppf(qll / rnge)
+    H = phi.ppf(qhl / rnge)
+    B = phi.ppf(qml / rnge)
     HL = H - L
     BL = B - L
     HB = H - B
     LH2B = L + H - 2 * B
 
+    HBL = np.where(BL < HB, BL, HB)
+
     n = np.where(LH2B > 0, 1, -1)
-    xi = np.where(LH2B > 0, L, H)
-
     n = np.where(LH2B == 0, 0, n)
-    xi = np.where(LH2B == 0, B, xi)
 
-    in_arccosh = HL / (2 * np.where(BL < HB, BL, HB))
-    delta = np.arccosh(in_arccosh) / c
-    kappa = HL / np.sinh(2 * delta * c)
+    if mode == "B":
+        xi = np.where(LH2B > 0, L, H)
+        xi = np.where(LH2B == 0, B, xi)
+    elif mode == "S":
+        theta = np.where(LH2B > 0, qll, qhl)
+        theta = np.where(LH2B == 0, qml, theta)
+
+    in_arccosh = HL / (2 * HBL)
+    delta_unn = np.arccosh(in_arccosh)
+    if mode == "S":
+        delta = np.sinh(delta_unn)
+    delta = delta_unn / c
+
+    if mode == "B":
+        kappa = HL / np.sinh(2 * delta * c)
+    elif mode == "S":
+        kappa = HBL / (delta * c)
 
     params = {
         "c": c,
@@ -1015,10 +969,15 @@ def _prep_qpd_vars(alpha, qv_low, qv_median, qv_high, lower, upper, phi):
         "H": H,
         "B": B,
         "n": n,
-        "xi": xi,
         "delta": delta,
         "kappa": kappa,
     }
+
+    if mode == "S":
+        params["theta"] = theta
+    elif mode == "B":
+        params["xi"] = xi
+
     return params
 
 
