@@ -272,17 +272,17 @@ class QPD_S(BaseDistribution):
         phi = _resolve_phi(version)
         self.phi = phi
 
-        params = _prep_qpd_vars(phi=phi, mode="S", **self._bc_params)
-        self.params = params
+        qpd_params = _prep_qpd_vars(phi=phi, mode="S", **self._bc_params)
+        self._qpd_params = qpd_params
 
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
         lower = self._bc_params["lower"]
-        delta = self.params["delta"]
-        kappa = self.params["kappa"]
-        c = self.params["c"]
-        n = self.params["n"]
-        theta = self.params["theta"]
+        delta = self._qpd_params["delta"]
+        kappa = self._qpd_params["kappa"]
+        c = self._qpd_params["c"]
+        n = self._qpd_params["n"]
+        theta = self._qpd_params["theta"]
 
         phi = self.phi
 
@@ -295,11 +295,11 @@ class QPD_S(BaseDistribution):
     def _pdf(self, x: np.ndarray):
         """Probability density function."""
         lower = self._bc_params["lower"]
-        delta = self.params["delta"]
-        kappa = self.params["kappa"]
-        c = self.params["c"]
-        n = self.params["n"]
-        theta = self.params["theta"]
+        delta = self._qpd_params["delta"]
+        kappa = self._qpd_params["kappa"]
+        c = self._qpd_params["c"]
+        n = self._qpd_params["n"]
+        theta = self._qpd_params["theta"]
 
         phi = self.phi
 
@@ -325,11 +325,11 @@ class QPD_S(BaseDistribution):
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
         lower = self._bc_params["lower"]
-        delta = self.params["delta"]
-        kappa = self.params["kappa"]
-        c = self.params["c"]
-        n = self.params["n"]
-        theta = self.params["theta"]
+        delta = self._qpd_params["delta"]
+        kappa = self._qpd_params["kappa"]
+        c = self._qpd_params["c"]
+        n = self._qpd_params["n"]
+        theta = self._qpd_params["theta"]
 
         phi = self.phi
 
@@ -455,18 +455,18 @@ class QPD_B(BaseDistribution):
         phi = _resolve_phi(version)
         self.phi = phi
 
-        params = _prep_qpd_vars(phi=phi, mode="B", **self._bc_params)
-        self.params = params
+        qpd_params = _prep_qpd_vars(phi=phi, mode="B", **self._bc_params)
+        self._qpd_params = qpd_params
 
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
         lower = self._bc_params["lower"]
-        rnge = self.params["rnge"]
-        delta = self.params["delta"]
-        kappa = self.params["kappa"]
-        c = self.params["c"]
-        n = self.params["n"]
-        xi = self.params["xi"]
+        rnge = self._qpd_params["rnge"]
+        delta = self._qpd_params["delta"]
+        kappa = self._qpd_params["kappa"]
+        c = self._qpd_params["c"]
+        n = self._qpd_params["n"]
+        xi = self._qpd_params["xi"]
 
         phi = self.phi
 
@@ -477,12 +477,12 @@ class QPD_B(BaseDistribution):
     def _pdf(self, x: np.ndarray):
         """Probability density function."""
         lower = self._bc_params["lower"]
-        rnge = self.params["rnge"]
-        delta = self.params["delta"]
-        kappa = self.params["kappa"]
-        c = self.params["c"]
-        n = self.params["n"]
-        xi = self.params["xi"]
+        rnge = self._qpd_params["rnge"]
+        delta = self._qpd_params["delta"]
+        kappa = self._qpd_params["kappa"]
+        c = self._qpd_params["c"]
+        n = self._qpd_params["n"]
+        xi = self._qpd_params["xi"]
 
         phi = self.phi
 
@@ -509,12 +509,12 @@ class QPD_B(BaseDistribution):
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
         lower = self._bc_params["lower"]
-        rnge = self.params["rnge"]
-        delta = self.params["delta"]
-        kappa = self.params["kappa"]
-        c = self.params["c"]
-        n = self.params["n"]
-        xi = self.params["xi"]
+        rnge = self._qpd_params["rnge"]
+        delta = self._qpd_params["delta"]
+        kappa = self._qpd_params["kappa"]
+        c = self._qpd_params["c"]
+        n = self._qpd_params["n"]
+        xi = self._qpd_params["xi"]
 
         phi = self.phi
 
@@ -645,16 +645,16 @@ class QPD_U(BaseDistribution):
         phi = _resolve_phi(version)
         self.phi = phi
 
-        params = _prep_qpd_vars(phi=phi, mode="U", **self._bc_params)
-        self.params = params
+        qpd_params = _prep_qpd_vars(phi=phi, mode="U", **self._bc_params)
+        self._qpd_params = qpd_params
 
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
         alpha = self._bc_params["alpha"]
-        xi = self.params["xi"]
-        gamma = self.params["gamma"]
-        delta = self.params["delta"]
-        kappa = self.params["kappa"]
+        xi = self._qpd_params["xi"]
+        gamma = self._qpd_params["gamma"]
+        delta = self._qpd_params["delta"]
+        kappa = self._qpd_params["kappa"]
 
         phi = self.phi
 
@@ -667,10 +667,10 @@ class QPD_U(BaseDistribution):
     def _pdf(self, x: np.ndarray):
         """Probability density function."""
         alpha = self._bc_params["alpha"]
-        xi = self.params["xi"]
-        gamma = self.params["gamma"]
-        delta = self.params["delta"]
-        kappa = self.params["kappa"]
+        xi = self._qpd_params["xi"]
+        gamma = self._qpd_params["gamma"]
+        delta = self._qpd_params["delta"]
+        kappa = self._qpd_params["kappa"]
 
         phi = self.phi
 
@@ -686,10 +686,10 @@ class QPD_U(BaseDistribution):
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
         alpha = self._bc_params["alpha"]
-        xi = self.params["xi"]
-        gamma = self.params["gamma"]
-        delta = self.params["delta"]
-        kappa = self.params["kappa"]
+        xi = self._qpd_params["xi"]
+        gamma = self._qpd_params["gamma"]
+        delta = self._qpd_params["delta"]
+        kappa = self._qpd_params["kappa"]
 
         phi = self.phi
 
