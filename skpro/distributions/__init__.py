@@ -7,6 +7,7 @@ __all__ = [
     "ChiSquared",
     "Delta",
     "Empirical",
+    "Exponential",
     "Fisk",
     "Laplace",
     "Logistic",
@@ -21,7 +22,6 @@ __all__ = [
     "TDistribution",
     "Uniform",
     "Weibull",
-    "Exponential",
 ]
 
 from skpro.distributions.beta import Beta

@@ -37,13 +37,13 @@ Continuous support
 
     Beta
     ChiSquared
+    Exponential
     Fisk
     Laplace
     Logistic
     Normal
     TDistribution
     Weibull
-    Exponential
 
 
 Integer support
