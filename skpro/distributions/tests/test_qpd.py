@@ -37,8 +37,8 @@ def test_qpd_b_pdf():
         upper=0.5,
     )
     x = np.linspace(-0.45, 0.45, 100)
-    pdf = [qpd_linear.pdf(x_) for x_ in x]
-    assert np.testing.assert_allclose(np.sum(pdf), 1.0, rtol=1e-5)
+    pdf_vals = [qpd_linear.pdf(x_) for x_ in x]
+    np.testing.assert_allclose(pdf_vals, 1.0, rtol=1e-5)
 
 
 @pytest.mark.skipif(
