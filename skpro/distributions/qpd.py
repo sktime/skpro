@@ -787,7 +787,7 @@ def _prep_qpd_vars(
     if mode == "B":
         rnge = upper - lower
 
-        def tfun(x):        
+        def tfun(x):
             return phi.ppf(x / rnge)
 
     elif mode == "S":
