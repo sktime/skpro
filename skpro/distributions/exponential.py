@@ -12,7 +12,7 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Exponential(_ScipyAdapter):
     r"""Exponential Distribution.
 
-    The Laplace distribution is parametrized by mean :math:`\mu` and
+    The Exponential distribution is parametrized by mean :math:`\mu` and
     scale :math:`b`, such that the pdf is
 
     .. math:: f(x) = \exp\left(-\frac{x - \mu}{b}\right)
@@ -33,7 +33,7 @@ class Exponential(_ScipyAdapter):
     _tags = {
         "capabilities:approx": ["ppf", "energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf"],
-        "distr:measuretype": "discrete",
+        "distr:measuretype": "continuous",
         "broadcast_init": "on",
     }
 
@@ -46,7 +46,7 @@ class Exponential(_ScipyAdapter):
     def _get_scipy_object(self) -> rv_continuous:
         return expon
 
-    def _get_scipy_param(self) -> dict:
+    def _get_scipy_param(self):
         mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
 
