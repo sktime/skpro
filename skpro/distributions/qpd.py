@@ -233,7 +233,6 @@ class QPD_S(BaseDistribution):
         # --------------
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
-        "python_dependencies": ["cyclic_boosting>=1.4.0", "findiff"],
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy"],
@@ -281,26 +280,26 @@ class QPD_S(BaseDistribution):
         upper = self._bc_params["upper"]
 
         params = _prep_qpd_vars(
-            alpha, qv_low, qv_median, qv_high, lower, upper, phi, mode="B",
+            alpha, qv_low, qv_median, qv_high, lower, upper, phi, mode="S",
         )
         self.params = params
 
     def _ppf(self, p: np.ndarray):
         """Quantile function = percent point function = inverse cdf."""
-        params = self.get_params(deep=False)
-        index = params["index"]
-        columns = params["columns"]
-        qv_low = params["qv_low"]
-        p_unique = np.unique(p)  # de-broadcast
-        ppf_all = ppf_func(p_unique, self.qpd)
-        ppf_map = np.tile(p_unique, (qv_low.size, 1)).T
-        ppf = np.zeros((index.shape[0], len(columns)))
-        for r in range(p.shape[0]):
-            for c in range(p.shape[1]):
-                t = np.where(ppf_map[:, c] == p[r][c])
-                ppf_part = ppf_all[t][c]
-                ppf[r][c] = ppf_part
-        return ppf
+        lower = self._bc_params["lower"]
+        delta = self.params["delta"]
+        kappa = self.params["kappa"]
+        c = self.params["c"]
+        n = self.params["n"]
+        theta = self.params["theta"]
+
+        phi = self.phi
+
+        in_sinh = np.arcsinh(phi.ppf(p) * delta)
+        in_exp = kappa * np.sinh(in_sinh) + np.arcsinh(n * c * delta)
+        ppf_arr = lower + theta * np.exp(in_exp)
+
+        return ppf_arr
 
     def _pdf(self, x: np.ndarray):
         """Probability density function.
@@ -308,24 +307,50 @@ class QPD_S(BaseDistribution):
         this fucntion transform cdf to pdf
         because j-qpd's pdf calculation is bit complex
         """
-        return pdf_func(x, self.qpd)
+        lower = self._bc_params["lower"]
+        delta = self.params["delta"]
+        kappa = self.params["kappa"]
+        c = self.params["c"]
+        n = self.params["n"]
+        theta = self.params["theta"]
+
+        phi = self.phi
+
+        # we work through the chain rule for the entire nested expression in cdf
+        x_ = (x - lower) / theta
+        x_der = 1 / theta
+
+        in_arcsinh = np.log(x_) / kappa
+        in_arcsinh_der = x_der / (kappa * x_)
+
+        in_sinh = np.arcsinh(in_arcsinh) - np.arcsinh(n * c * delta)
+        in_sinh_der = arcsinh_der(in_arcsinh) * in_arcsinh_der
+
+        in_cdf = np.sinh(in_sinh) / delta
+        in_cdf_der = np.cosh(in_sinh) * in_sinh_der / delta
+
+        # cdf_arr = phi.cdf(in_cdf)
+        cdf_arr_der = phi.pdf(in_cdf) * in_cdf_der
+
+        pdf_arr = cdf_arr_der
+        return pdf_arr
 
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
-        params = self.get_params(deep=False)
-        index = params["index"]
-        columns = params["columns"]
-        qv_low = params["qv_low"]
-        x_unique = np.unique(x)  # de-broadcast
-        cdf_all = cdf_func(x_unique, self.qpd)
-        cdf_map = np.tile(x_unique, (qv_low.size, 1)).T
-        cdf = np.zeros((index.shape[0], len(columns)))
-        for r in range(x.shape[0]):
-            for c in range(x.shape[1]):
-                t = np.where(cdf_map[:, c] == x[r][c])
-                cdf_part = cdf_all[t][c]
-                cdf[r][c] = cdf_part
-        return cdf
+        lower = self._bc_params["lower"]
+        delta = self.params["delta"]
+        kappa = self.params["kappa"]
+        c = self.params["c"]
+        n = self.params["n"]
+        theta = self.params["theta"]
+
+        phi = self.phi
+
+        in_arcsinh = np.log((x - lower) / theta) / kappa
+        in_sinh = np.arcsinh(in_arcsinh) - np.arcsinh(n * c * delta)
+        cdf_arr = phi.cdf(np.sinh(in_sinh) / delta)
+
+        return cdf_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -343,9 +368,9 @@ class QPD_S(BaseDistribution):
         params2 = {
             "alpha": 0.2,
             "version": "normal",
-            "qv_low": [-0.3, -0.3, -0.3],
-            "qv_median": [0.0, 0.0, 0.0],
-            "qv_high": [0.3, 0.3, 0.3],
+            "qv_low": [[-0.3], [-0.2], [-0.1]],
+            "qv_median": [[-0.1], [0.0], [0.1]],
+            "qv_high": [[0.2], [0.3], [0.4]],
             "lower": -0.5,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a"]),
@@ -502,9 +527,9 @@ class QPD_B(BaseDistribution):
         in_cdf_der = arcsinh_der(in_arcsinh) * in_arcsinh_der / delta
 
         # cdf_arr = phi.cdf(in_cdf)
-        cdf_arr_dev = phi.pdf(in_cdf) * in_cdf_der
+        cdf_arr_der = phi.pdf(in_cdf) * in_cdf_der
 
-        pdf_arr = cdf_arr_dev
+        pdf_arr = cdf_arr_der
         return pdf_arr
 
     def _cdf(self, x: np.ndarray):
