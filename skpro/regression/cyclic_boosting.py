@@ -24,11 +24,24 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class CyclicBoosting(BaseProbaRegressor):
-    """Cyclic boosting regressor.
+    """Cyclic boosting regressor from ``cyclic-boosting`` library.
 
-    Estimates the parameters of Johnson Quantile-Parameterized Distributions
-    (JQPD) by quantile regression, which is one of the Cyclic boosting's functions
-    this method can more accurately approximate to the distribution of observed data
+    Direct interface to ``pipeline_CBAdditiveQuantileRegressor``
+    and ``pipeline_CBMultiplicativeQuantileRegressor`` from ``cyclic-boosting``.
+
+    The algorithms use boosting to create conditional distribution predictions
+    that are Johnson Quantile-Parameterized Distributions (JQPD),
+    with parameters estimated by quantile regression at quantile nodes.
+
+    The quantile nodes are ``[alpha, 0.5, 1-alpha]``, where ``alpha``
+    is a parameter of the model.
+
+    The cyclic boosting model performs boosted quantile regression for the quantiles
+    at the nodes, and then substitutes the quantile predictions into the paramtric
+    form of the Johnson QPD.
+
+    The model allows to select unbounded, left semi-bounded, and bounded
+    predictive distribution support.
 
     Parameters
     ----------
@@ -46,26 +59,38 @@ class CyclicBoosting(BaseProbaRegressor):
         for basic options, see https://cyclic-boosting.readthedocs.io/en/latest/\
         tutorial.html#set-feature-properties
     alpha : float, default=0.2
-        lower quantile for QPD's parameter alpha
+        lower quantile QPD parameter.
+        The three quantile nodes are uniquely determined by this parameter,
+        as ``[alpha, 0.5, 1-alpha]``.
     mode : str, default='multiplicative'
         the type of quantile regressor. 'multiplicative' or 'additive'
     bound : str, default='U', one of ``'S'``, ``'B'``, ``'U'``
-        Mode for the predictive distribution range, options are ``S``
-        (semi-bounded), ``B`` (bounded), and ``U`` (unbound).
+        Mode for the predictive distribution support, options are ``S``
+        (semi-bounded), ``B`` (bounded), and ``U`` (unbounded).
     lower : float, default=None
-        lower bound of supported range (only active for bound and semi-bound
-        modes). If neither 'lower' nor 'upper' is specified, `QPD_U` will be used as
-        unbound-mode
+        lower bound of predictive distribution support.
+        If ``None`` (default), ``upper`` should also be ``None``, and the
+        predictive distibution will have unbounded support, i.e., the entire reals.
+        If a float, and ``upper`` is ``None``, prediction will be of
+        semi-bounded support, with support between ``lower`` and infinity.
+        If a float, and ``upper`` is also a float, prediction will be on a bounded
+        interval, with support between ``lower`` and ``upper``.
     upper : float, default=None
-        upper bound of supported range (only active for bound mode). If neither
-        'lower' nor 'upper' is specified, `QPD_U` will be used as unbound-mode
+        upper bound of predictive distribution support.
+        If ``None`` (default), will use semi-bounded mode if ``lower`` is a float,
+        and unbounded if ``lower`` is ``None``.
+        If a float, assumes that ``lower`` is also a float, and prediction will
+        be on a bounded interval, with support between ``lower`` and ``upper``.
     maximal_iterations : int, default=10
-        number of iterations
+        maximum number of iterations for the cyclic boosting algorithm
     dist_type: str, one of ``'normal'`` (default), ``'logistic'``
-        options are ``'normal'`` (default) or ``'logistic'``
+        inner base distirbution to use for the Johnson QPD, i.e., before
+        arcosh and similar transformations.
+        Available options are ``'normal'`` (default), ``'logistic'``,
+        or ``'sinhlogistic'``.
     dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
-        sinh/arcsinh-scaling (only active in sinhlogistic version)
+        sinh/arcsinh-scaling - only relevant for ``dist_type='sinhlogistic'``
 
     Attributes
     ----------
