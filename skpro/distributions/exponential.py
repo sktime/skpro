@@ -37,9 +37,8 @@ class Exponential(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
-    def __init__(self, mu, scale, index=None, columns=None):
-        self.mu = mu
-        self.scale = scale
+    def __init__(self, rate, index=None, columns=None):
+        self.rate = rate
 
         super().__init__(index=index, columns=columns)
 
@@ -47,25 +46,17 @@ class Exponential(_ScipyAdapter):
         return expon
 
     def _get_scipy_param(self):
-        mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
-
-        return [], {"loc": mu, "scale": scale}
+        rate = self._bc_params["rate"]
+        scale = 1 / rate
+        return [], {"scale": scale}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the distribution."""
-        params1 = {"mu": [1, 2, 3, 4.2, 5], "scale": [1, 2, 2.5, 3.5, 5]}
-        params2 = {
-            "mu": 5,
-            "scale": 2,
-        }
+        params1 = {"rate": [1, 2, 2.5, 3.5, 5]}
+        params2 = {"rate": 2}
         params3 = {
-            "mu": [
-                [1, 2, 3],
-                [3, 4, 5],
-            ],
-            "scale": [
+            "rate": [
                 [2, 2, 2],
                 [4, 4, 4],
             ],
