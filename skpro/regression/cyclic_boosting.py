@@ -149,20 +149,18 @@ class CyclicBoosting(BaseProbaRegressor):
         self.feature_groups = feature_groups
         self.feature_properties = feature_properties
         self.alpha = alpha
-        self.mode = mode
-        self.bound = bound
-        self.lower = lower
-        self.upper = upper
-        self.maximal_iterations = maximal_iterations
-        self.dist_type = dist_type
-        self.dist_shape = dist_shape
-
-        super().__init__()
-
         self.quantiles = [self.alpha, 0.5, 1 - self.alpha]
         self.quantile_values = list()
         self.quantile_est = list()
         self.qpd = None
+        self.mode = mode
+        self.lower = lower
+        self.upper = upper
+        self.dist_type = dist_type
+        self.dist_shape = dist_shape
+        self.maximal_iterations = maximal_iterations
+
+        super().__init__()
 
         # todo 2.4.0: remove bound parameter and this deprecation warning
         if bound == "deprecated":
