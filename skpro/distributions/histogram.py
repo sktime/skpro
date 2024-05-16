@@ -36,15 +36,19 @@ class Histogram(BaseDistribution):
         # to include it in the histogram
         bins = []
         range_x = max(x) - min(x)
-        if isinstance(self.bin_width, int):
+        bin_width = self._bc_params["bin_width"]
+        if isinstance(bin_width, int):
             bins.append(min(x) - 0.001 * (range_x))
-            bin_width = self.bin_width
             nbins = range_x / bin_width
             for i in range(1, nbins):
                 bins.append(min(x) + i * bin_width)
             bins.append(max(x) + 0.001 * (range_x))
-        elif isinstance(self.bins, list):
-            bins = self.bins.copy()
+        elif isinstance(bin_width, list):
+            bins.append(min(x) - 0.001 * (range_x))
+            nbins = len(bin_width)
+            for bw in bin_width:
+                bins.append(min(x) + bw)
+            bins.append(max(x) + 0.001 * (range_x))
 
         self.bins = bins
         return bins
