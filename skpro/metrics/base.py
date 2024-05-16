@@ -343,7 +343,7 @@ class BaseProbaMetric(BaseObject):
         return alpha
 
     def _handle_multioutput(self, loss, multioutput):
-        """Specificies how multivariate outputs should be handled.
+        """Specifies how multivariate outputs should be handled.
 
         Parameters
         ----------

@@ -70,7 +70,7 @@ class CyclicBoosting(BaseProbaRegressor):
     lower : float, default=None
         lower bound of predictive distribution support.
         If ``None`` (default), ``upper`` should also be ``None``, and the
-        predictive distibution will have unbounded support, i.e., the entire reals.
+        predictive distribution will have unbounded support, i.e., the entire reals.
         If a float, and ``upper`` is ``None``, prediction will be of
         semi-bounded support, with support between ``lower`` and infinity.
         If a float, and ``upper`` is also a float, prediction will be on a bounded
@@ -84,7 +84,7 @@ class CyclicBoosting(BaseProbaRegressor):
     maximal_iterations : int, default=10
         maximum number of iterations for the cyclic boosting algorithm
     dist_type: str, one of ``'normal'`` (default), ``'logistic'``
-        inner base distirbution to use for the Johnson QPD, i.e., before
+        inner base distribution to use for the Johnson QPD, i.e., before
         arcosh and similar transformations.
         Available options are ``'normal'`` (default), ``'logistic'``,
         or ``'sinhlogistic'``.

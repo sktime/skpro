@@ -2,7 +2,7 @@
 Changelog
 =========
 
-All notable changes to this project beggining with version 0.1.0 will be
+All notable changes to this project beginning with version 0.1.0 will be
 documented in this file. The format is based on
 `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_ and we adhere
 to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_. The source
