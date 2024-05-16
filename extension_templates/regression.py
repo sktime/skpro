@@ -11,8 +11,9 @@ from skpro.regression.base import BaseProbaRegressor
 
 # todo: add any necessary imports here
 
-# todo: if any imports are skpro soft dependencies:
+# todo: for imports of skpro soft dependencies:
 # make sure to fill in the "python_dependencies" tag with the package import name
+# import soft dependencies only inside methods of the class, not at the top of the file
 
 
 # todo: change class name and write docstring
@@ -40,7 +41,28 @@ class ClassName(BaseProbaRegressor):
     # todo: fill out estimator tags here
     #  tags are inherited from parent class if they are not set
     # tags inherited from base are "safe defaults" which can usually be left as-is
-    _tags = {}
+    _tags = {
+        # packaging info
+        # --------------
+        "authors": ["author1", "author2"],  # authors, GitHub handles
+        "maintainers": ["maintainer1", "maintainer2"],  # maintainers, GitHub handles
+        # author = significant contribution to code at some point
+        # maintainer = algorithm maintainer role, "owner"
+        # specify one or multiple authors and maintainers, only for skpro contribution
+        # remove maintainer tag if maintained by skpro/sktim core team
+        #
+        "python_version": None,  # PEP 440 python version specifier to limit versions
+        "python_dependencies": None,  # PEP 440 python dependencies specifier,
+        # e.g., "numba>0.53", or a list, e.g., ["numba>0.53", "numpy>=1.19.0"]
+        # delete if no python dependencies or version limitations
+        #
+        # estimator tags
+        # --------------
+        "capability:multioutput": False,  # can the estimator handle multi-output data?
+        "capability:missing": True,  # can the estimator handle missing data?
+        "X_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit, _predict
+        "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
+    }
 
     # todo: fill init
     # params should be written to self and never changed
@@ -52,7 +74,7 @@ class ClassName(BaseProbaRegressor):
 
         # todo: write any hyper-parameters and components to self
         self.paramname = paramname
-        self.paramname2 = "paramname2default"
+        self.paramname2 = paramname2
 
         # leave this as is
         super().__init__()
@@ -297,8 +319,6 @@ class ClassName(BaseProbaRegressor):
         #
         # The parameter_set argument is not used for most automated, module level tests.
         #   It can be used in custom, estimator specific tests, for "special" settings.
-        #   For classification, this is also used in tests for reference settings,
-        #       such as published in benchmarking studies, or for identity testing.
         # A parameter dictionary must be returned *for all values* of parameter_set,
         #   i.e., "parameter_set not available" errors should never be raised.
         #

@@ -5,7 +5,6 @@ from skbase.testing import QuickTester
 
 from skpro.datatypes import check_is_mtype, check_raise
 from skpro.distributions.base import BaseDistribution
-from skpro.regression.base._base import BaseProbaRegressor
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
 TEST_ALPHAS = [0.05, [0.1], [0.25, 0.75], [0.3, 0.1, 0.9]]
@@ -17,8 +16,9 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
     # class variables which can be overridden by descendants
     # ------------------------------------------------------
 
-    # which object types are generated; None=all, or class (passed to all_objects)
-    object_type_filter = BaseProbaRegressor
+    # which object types are generated; None=all, or scitype string
+    # passed to skpro.registry.all_objects as object_type
+    object_type_filter = "regressor_proba"
 
     def test_input_output_contract(self, object_instance):
         """Tests that output of predict methods is as specified."""

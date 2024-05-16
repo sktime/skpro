@@ -1,6 +1,6 @@
 [project]
 name = "skpro"
-version = "2.1.3"
+version = "2.3.0"
 description = "A unified framework for probability distributions and probabilistic supervised regression"
 authors = [
     {name = "skpro developers", email = "sktime.toolbox@gmail.com"},
@@ -52,12 +52,15 @@ dependencies = [
 [project.optional-dependencies]
 all_extras = [
     "attrs",
+    "cyclic-boosting>=1.4.0; python_version < '3.12'",
     "distfit",
+    "lifelines<0.29.0",
     "mapie",
     "matplotlib>=3.3.2",
-    "ngboost",
+    "ngboost<0.6.0",
     "polars<0.21.0",
     "pyarrow<14.0.0; python_version < '3.12'",
+    "scikit-survival<0.23.0",
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
@@ -88,7 +91,7 @@ docs = [
     "sphinx<8.0.0,!=7.2.0",
     "sphinx-design<0.6.0",
     "sphinx-issues<5.0.0",
-    "sphinx-gallery<0.16.0",
+    "sphinx-gallery<0.17.0",
     "sphinx-panels",
     "tabulate",
 ]

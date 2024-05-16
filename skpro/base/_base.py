@@ -10,7 +10,11 @@ class _CommonTags:
     # config common to all estimators
     _config = {}
 
-    _tags = {"estimator_type": "estimator"}
+    _tags = {
+        "estimator_type": "estimator",
+        "authors": "skpro developers",
+        "maintainers": "skpro developers",
+    }
 
     @property
     def name(self):

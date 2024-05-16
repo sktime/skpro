@@ -67,7 +67,7 @@ class BootstrapRegressor(BaseProbaRegressor):
     >>> y_pred = reg_proba.predict_proba(X_test)
     """
 
-    _tags = {"capability:missing": True}
+    _tags = {"authors": "fkiraly", "capability:missing": True}
 
     def __init__(
         self,

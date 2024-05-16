@@ -1,10 +1,13 @@
 .. _regression_ref:
 
-Time series regression
-======================
+Probabilistic supervised regression
+===================================
 
 The :mod:`skpro.regression` module contains algorithms and composition tools for probabilistic supervised regression,
-i.e., tabular regression estimator with a probabilistic prediction mode.
+i.e., tabular regression estimation with a probabilistic prediction mode.
+
+This learning task is sometimes also known as conditional distribution predictions,
+or conditional density estimation, if predictive distributions are continuous.
 
 All regressors in ``skpro`` can be listed using the ``skpro.registry.all_objects`` utility,
 using ``object_types="regressor_proba"``, optionally filtered by tags.
@@ -79,6 +82,38 @@ take one or multiple ``sklearn`` estimators and adda probabilistic prediction mo
 
     MapieRegressor
 
+.. currentmodule:: skpro.regression.ensemble
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    BaggingRegressor
+    NGBoostRegressor
+
+.. currentmodule:: skpro.regression.cyclic_boosting
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    CyclicBoosting
+
+
+Naive regressors and baselines
+------------------------------
+
+This section lists simple regressors which can be used as baselines.
+
+.. currentmodule:: skpro.regression.delta
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    DeltaPointRegressor
+
+
 Linear regression
 -----------------
 
@@ -90,6 +125,8 @@ Linear regression
 
     ARDRegression
     BayesianRidge
+    GLMRegressor
+    PoissonRegressor
 
 Gaussian process and kernel regression
 --------------------------------------

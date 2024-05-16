@@ -99,6 +99,82 @@
         "doc",
         "ideas"
       ]
+    },
+    {
+      "login": "FelixWick",
+      "name": "Felix Wick",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7291058?v=4",
+      "profile": "https://github.com/FelixWick",
+      "contributions": [
+        "ideas",
+        "review"
+      ]
+    },
+    {
+      "login": "setoguchi-naoki",
+      "name": "Naoki Setoguchi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/104494531?v=4",
+      "profile": "https://github.com/setoguchi-naoki",
+      "contributions": [
+        "code",
+        "doc",
+        "test"
+      ]
+    },
+    {
+      "login": "ShreeshaM07",
+      "name": "Shreesha M",
+      "avatar_url": "https://avatars.githubusercontent.com/u/120820143?s=400&v=4",
+      "profile": "https://github.com/ShreeshaM07",
+      "contributions": [
+          "code",
+          "doc"
+      ]
+    },
+    {
+      "login": "julian-fong",
+      "name": "Julian Fong",
+      "avatar_url": "https://avatars.githubusercontent.com/u/44014224?v=4",
+      "profile": "https://github.com/julian-fongi",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "malikrafsan",
+      "name": "Malik Akbar Hashemi Rafsanjani",
+      "avatar_url": "https://avatars.githubusercontent.com/u/77711133?v=4",
+      "profile": "https://github.com/malikrafsan",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "sukjingitsit",
+      "name": "Sukrit Jindal",
+      "avatar_url": "https://avatars.githubusercontent.com/u/132339317?v=4",
+      "profile": "https://github.com/sukjingitsit",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "an20805",
+      "name": "Anshuman Dangwal",
+      "avatar_url": "https://avatars.githubusercontent.com/u/115940865?v=4",
+      "profile": "https://github.com/an20805",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "duydl",
+      "name": "Duy Do Le",
+      "avatar_url": "https://avatars.githubusercontent.com/u/56506156?v=4",
+      "profile": "https://github.com/duydl",
+      "contributions": [
+        "maintenance"
+      ]
     }
   ]
 }
