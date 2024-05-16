@@ -230,9 +230,12 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
         X = self._check_X(X)
 
         kwargs = {}
+        pred_dist = self._pred_dist(X)
+        index = X.index
+        columns = self._y_cols
 
         # Convert NGBoost Distribution return params into a dict
-        kwargs = self._ngb_skpro_dist_params(X, self._y_cols, **kwargs)
+        kwargs = self._ngb_skpro_dist_params(pred_dist, index, columns, **kwargs)
 
         # Convert NGBoost Distribution to skpro BaseDistribution
         pred_dist = self._ngb_dist_to_skpro(**kwargs)

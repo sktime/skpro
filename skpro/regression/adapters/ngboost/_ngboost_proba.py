@@ -55,8 +55,9 @@ class NGBoostAdapter:
 
     def _ngb_skpro_dist_params(
         self,
-        X,
-        y_cols,
+        pred_dist,
+        index,
+        columns,
         **kwargs,
     ):
         import numpy as np
@@ -98,17 +99,17 @@ class NGBoostAdapter:
             ngboost_params = dist_params[self.dist]
             skp_params = skpro_params[self.dist]
             for ngboost_param, skp_param in zip(ngboost_params, skp_params):
-                kwargs[skp_param] = self._pred_dist(X).params[ngboost_param]
+                kwargs[skp_param] = pred_dist.params[ngboost_param]
                 if self.dist == "LogNormal" and ngboost_param == "scale":
-                    kwargs[skp_param] = np.log(self._pred_dist(X).params[ngboost_param])
+                    kwargs[skp_param] = np.log(pred_dist.params[ngboost_param])
                 if self.dist == "Exponential" and ngboost_param == "scale":
-                    kwargs[skp_param] = 1 / self._pred_dist(X).params[ngboost_param]
+                    kwargs[skp_param] = 1 / pred_dist.params[ngboost_param]
 
                 kwargs[skp_param] = self._check_y(y=kwargs[skp_param])
                 # returns a tuple so taking only first index of the tuple
                 kwargs[skp_param] = kwargs[skp_param][0]
-            kwargs["index"] = X.index
-            kwargs["columns"] = y_cols
+            kwargs["index"] = index
+            kwargs["columns"] = columns
 
         return kwargs
 
