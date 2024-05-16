@@ -284,9 +284,9 @@ class CyclicBoosting(BaseProbaRegressor):
         # Johnson Quantile-Parameterized Distributions
         params = {
             "alpha": self.alpha,
-            "qv_low": self.quantile_values[0],
-            "qv_median": self.quantile_values[1],
-            "qv_high": self.quantile_values[2],
+            "qv_low": self.quantile_values[0].reshape(-1, 1),
+            "qv_median": self.quantile_values[1].reshape(-1, 1),
+            "qv_high": self.quantile_values[2].reshape(-1, 1),
             "lower": self.lower,
             "upper": self.upper,
             "version": self.version,
