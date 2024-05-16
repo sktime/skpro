@@ -21,7 +21,7 @@ For planned changes and upcoming releases, see roadmap in the
 * new tutorial notebooks for survival prediction and  probability distributions (:pr:`303`, :pr:`305`) :user:`fkiraly`
 * interface to ``ngboost`` probabilistic regressor and survival predictor (:pr:`215`, :pr:`301`, :pr:`309`, :pr:`332`) :user:`ShreeshaM07`
 * interface to Poisson regressor from ``sklearn`` (:pr:`213`) :user:`nilesh05apr`
-* probability distibutions rearchitecture, including scalar valued distributions, e.g., ``Normal(mu=0, sigma=1)`` - see "core interface changes"
+* probability distributions rearchitecture, including scalar valued distributions, e.g., ``Normal(mu=0, sigma=1)`` - see "core interface changes"
 * probability distributions: illustrative and didactic plotting functionality, e.g., ``my_normal.plot("pdf")`` (:pr:`275`) :user:`fkiraly`
 * more distributions: beta, chi-squared, delta, exponential, uniform - :user:`an20805`,
   :user:`malikrafsan`, :user:`ShreeshaM07`, :user:`sukjingitsit`
@@ -53,12 +53,12 @@ Probability distributions have been rearchitected with API improvements:
   inspecting the distribution object in a Jupyter notebook, in particular when
   combined with ``plot``.
 * distributions now possess ``at`` and ``iat`` subsetters, which can be used to
-  subset a DataFrame-like distibution to a scalar distibution at a given
+  subset a DataFrame-like distribution to a scalar distribution at a given
   integer index or location index, respectively.
 * all distributions now possess a ``pdf`` and ``pmf`` method, for probability density
   function and probability mass function. These are available for all distributions,
   continuous, discrete, and mixed. ``pdf`` returns the density of the continuous part
-  of the distirbution, ``pmf`` the mass of the discrete part. Continuous distributions
+  of the distribution, ``pmf`` the mass of the discrete part. Continuous distributions
   will return 0 for ``pmf``, discrete distributions will return 0 for ``pdf``.
   Logarithmic versions of these methods are available as ``log_pdf`` and ``log_pmf``,
   these may be more numerically stable.
@@ -72,7 +72,7 @@ Probability distributions have been rearchitected with API improvements:
   Non-parametric distributions may have further types of parameters such as data-like,
   but no distributions. Composite distributions have other distributions as parameters.
 * parametric distributions now provide methods ``to_df``, ``get_params_df``,
-  which allow to return distirbution parameters coerced to ``DataFrame``, or ``dict``
+  which allow to return distribution parameters coerced to ``DataFrame``, or ``dict``
   of ``DataFrame``, keyed by parameter names, respectively.
 * the extension contract for distributions has been changed to a boilerplate layered
   design. Extenders will now implement private methods such as ``_pdf``, ``_cdf``,
