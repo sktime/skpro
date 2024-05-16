@@ -15,8 +15,168 @@ You can also subscribe to ``skpro``'s
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
-[2.3.0] - 2024-05-10
+[2.3.0] - 2024-05-16
 ====================
+
+* new tutorial notebooks for survival prediction and  probability distributions (:pr:`303`, :pr:`305`) :user:`fkiraly`
+* interface to ``ngboost`` probabilistic regressor and survival predictor (:pr:`215`, :pr:`301`) :user:`ShreeshaM07`
+* interface to Poisson regressor from sklearn (:pr:`213`) :user:`nilesh05apr`
+* probability distibutions rearchitecture, including scalar valued distributions, e.g., ``Normal(mu=0, sigma=1)`` - see "core interface changes"
+* probability distributions: illustrative and didactic plotting functionality, e.g., ``my_normal.plot("pdf")`` (:pr:`275`) :user:`fkiraly`
+* more distributions: beta, chi-squared, delta, exponential, uniform - :user:`an20805`,
+  :user:`malikrafsan`, :user:`ShreeshaM07`, :user:`sukjingitsit`
+
+Core interface changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+Probability distributions have been rearchitected with API improvements:
+
+* all changes are fully downwards compatible with the previous API.
+* distributions can now be scalar valued, e.g., ``Normal(mu=0, sigma=1)``.
+  More generally, all distributions behave as scalar distributions if
+  ``index`` and ``columns`` are not passed and all parameters passed are scalar.
+  or scalar-like. In this case, methods such as ``pdf``,
+  ``cdf`` or ``sample`` will return scalar (float) values instead of ``pd.DataFrame``.
+* distributions now possess an ``ndim`` property, which evaluates to 0 for
+  scalar distributions, and 2 otherwise. The ``shape`` property evaluates to
+  the empty tuple for scalar distributions, and to a 2-tuple with the shape for
+  array-like distributions. This is in line with ``numpy`` conventions.
+* distributions now have a ``plot`` method, which can be used to plot any
+  method of the distribution. The method is called as ``my_distr.plot("pdf")``
+  or ``my_distribution.plot("cdf")``, or simsilar.
+  If the distribution is scalar, this will create a single ``matplotlib`` plot in
+  an ``ax`` object. DataFrame-like distributions will create a plot for each
+  marginal component, returning ``fig`` with an array of ``ax`` objects, of same
+  shape as the distribution object.
+* distributions now possess ``head`` and ``tail`` methods, which return the first
+  and last ``n`` rows of the distribution, respectively. This is useful for
+  inspecting the distribution object in a Jupyter notebook, in particular when
+  combined with ``plot``.
+* distributions now possess ``at`` and ``iat`` subsetters, which can be used to
+  subset a DataFrame-like distibution to a scalar distibution at a given
+  integer index or location index, respectively.
+* all distributions now possess a ``pdf`` and ``pmf`` method, for probability density
+  function and probability mass function. These are available for all distributions,
+  continuous, discrete, and mixed. ``pdf`` returns the density of the continuous part
+  of the distirbution, ``pmf`` the mass of the discrete part. Continuous distributions
+  will return 0 for ``pmf``, discrete distributions will return 0 for ``pdf``.
+  Logarithmic versions of these methods are available as ``log_pdf`` and ``log_pmf``,
+  these may be more numerically stable.
+* distributions now possess shorthand methods to return survival function evaluates,
+  ``surv``, and hazard function evaluates, ``haz``. These are available for
+  all distributions. In case of mixed distributions, hazard is computed with the
+  continuous part of the distribution.
+* distributions now have a new public tag: ``distr:paramtype`` indicates whether
+  the distribution is ``"parametric"``, ``"non-parametric"``, or ``"composite"``.
+  Parametric distributions have only numpy array-like or categorical parameters.
+  Non-parametric distributions may have further types of parameters such as data-like,
+  but no distributions. Composite distributions have other distributions as parameters.
+* parametric distributions now provide methods ``to_df``, ``get_params_df``,
+  which allow to return distirbution parameters coerced to ``DataFrame``, or ``dict``
+  of ``DataFrame``, keyed by parameter names, respectively.
+* the extension contract for distributions has been changed to a boilerplate layered
+  design. Extenders will now implement private methods such as ``_pdf``, ``_cdf``,
+  instead of overriding the public interface. This allows for more flexibility in
+  boilerplate design, and ensures more consistent behavior across distributions.
+  The new extension contract is documented in the new ``skpro`` extension template,
+  ``extension_templates/distribution_template.py``.
+
+Enhancements
+~~~~~~~~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] probability distributions - boilerplate refactor (:pr:`265`) :user:`fkiraly`
+* [ENH] probability distributions: convenience feature to coerce ``index`` and ``columns`` to ``pd.Index`` (:pr:`276`) :user:`fkiraly`
+* [ENH] distribution ``quantile`` method for scalar distributions (:pr:`277`) :user:`fkiraly`
+* [ENH] systematic suite tests for scalar probability distributions (:pr:`278`) :user:`fkiraly`
+* [ENH] scalar test cases for probability distributions (:pr:`279`) :user:`fkiraly`
+* [ENH] activate tests for distribution base class defaults (:pr:`266`) :user:`fkiraly`
+* [ENH] probability distributions: illustrative and didactic plotting functionality (:pr:`275`) :user:`fkiraly`
+* [ENH] Uniform Continuous distribution (:pr:`223`) :user:`an20805`
+* [ENH] Chi-Squared Distribution (:pr:`217`) :user:`sukjingitsit`
+* [ENH] Adapter for Scipy Distributions (:pr:`287`) :user:`malikrafsan`
+* [ENH] simplify coercion in ``BaseDistribution._log_pdf`` and ``_pdf`` default (:pr:`293`) :user:`fkiraly`
+* [ENH] Beta Distribution (:pr:`298`) :user:`malikrafsan`
+* [ENH] distributions: ``pmf`` and ``log_pmf`` method (:pr:`295`) :user:`fkiraly`
+* [ENH] Delta distribution (:pr:`299`) :user:`fkiraly`
+* [ENH] distributions: survival and hazard function and defaults (:pr:`294`) :user:`fkiraly`
+* [ENH] improved ``Empirical`` distribution - scalar mode, new API compatibility (:pr:`307`) :user:`fkiraly`
+* [ENH] increase distribution default ``plot`` resolution (:pr:`308`) :user:`fkiraly`
+* [ENH] distribution ``get_params`` in data frame format (:pr:`285`) :user:`fkiraly`
+* [ENH] ``head`` and ``tail`` for distribution objects (:pr:`310`) :user:`fkiraly`
+* [ENH] full support of hierarchical ``MultiIndex`` ``index`` in ``Empirical`` distribution, tests (:pr:`314`) :user:`fkiraly`
+* [ENH] ``at`` and ``iat`` subsetters for distributions (:pr:`274`) :user:`fkiraly`
+* [ENH] ``Exponential`` distribution (:pr:`325`) :user:`ShreeshaM07`
+* [ENH] ``Mixture`` distribution upgrade - refactor to new extension interface, support scalar case (:pr:`315`) :user:`fkiraly`
+* [ENH] improved defaults for ``BaseDistribution`` ``_mean``, ``_var``, and ``_energy_x`` (:pr:`330`) :user:`fkiraly`
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] interface to ``ngboost`` (:pr:`215`) :user:`ShreeshaM07`
+* [ENH] interfacing Poisson regressor from sklearn (:pr:`213`) :user:`nilesh05apr`
+* [MNT] refactor ``NGBoostRegressor`` to inherit ``NGBoostAdapter`` (:pr:`309`) :user:`ShreeshaM07`
+
+Survival and time-to-event prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] Delta point prediction baseline regressor (:pr:`300`) :user:`fkiraly`
+* [ENH] Interface ``NGBSurvival`` from ``ngboost`` (:pr:`301`) :user:`ShreeshaM07`
+* [ENH] in ``ConditionUncensored`` reducer, ensure coercion to float of ``C`` (:pr:`318`) :user:`fkiraly`
+
+Test framework
+~~~~~~~~~~~~~~
+
+* [MNT] faster collection of differential tests through caching, test if pyproject change (:pr:`296`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] bugfixes for distribution base class default methods (:pr:`281`) :user:`fkiraly`
+* [BUG] fix ``Empirical`` index to be ``pd.MultiIndex`` for hierarchical data index (:pr:`286`) :user:`fkiraly`
+* [BUG] update Johnson QPDistributions with bugfixes and vectorization (cyclic-boosting ver.1.4.0) (:pr:`232`) :user:`setoguchi-naoki`
+* [BUG] ``BaseDistribution._var``: fix missing factor 2 in Monte Carlo variance default method (:pr:`331`) :user:`fkiraly`
+
+Survival and time-to-event prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] fix ``CoxPH`` handling of ``statsmodels`` ``status`` variable (:pr:`306`) :user:`fkiraly`
+* [BUG] fix survival metrics if ``C_true=None`` is passed (:pr:`316`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update ``sphinx-gallery`` requirement from ``<0.16.0`` to ``<0.17.0`` (:pr:`288`) :user:`dependabot[bot]`
+* [MNT] fix binder environment (:pr:`297`) :user:`fkiraly`
+* [MNT] moving ensemble regressors to ``regression.ensemble`` (:pr:`302`) :user:`fkiraly`
+* [MNT] remove ``findiff`` soft dependency (:pr:`328`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] correcting 2024 changelog dates (:pr:`280`) :user:`fkiraly`
+* [DOC] add missing contributors to ``all-contributorsrc`` - :user:`an20805`, :user:`duydl`, :user:`sukjingitsit` (:pr:`284`) :user:`fkiraly`
+* [DOC] tutorial notebook for probability distributions (:pr:`303`) :user:`fkiraly`
+* [DOC] tutorial notebook for survival prediction (:pr:`305`) :user:`fkiraly`
+* [DOC] visualizations for first intro vignette in intro notebook and minor updates (:pr:`311`) :user:`fkiraly`
+* [DOC] improve docstrings of metrics (:pr:`317`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`an20805`,
+:user:`fkiraly`,
+:user:`malikrafsan`,
+:user:`nilesh05apr`,
+:user:`setoguchi-naoki`,
+:user:`ShreeshaM07`,
+:user:`sukjingitsit`
+
 
 [2.2.2] - 2024-04-20
 ====================
