@@ -43,7 +43,7 @@ Probability distributions have been rearchitected with API improvements:
   array-like distributions. This is in line with ``numpy`` conventions.
 * ``plot`` - distributions now have a ``plot`` method, which can be used to plot any
   method of the distribution. The method is called as ``my_distr.plot("pdf")``
-  or ``my_distribution.plot("cdf")``, or simsilar.
+  or ``my_distribution.plot("cdf")``, or similar.
   If the distribution is scalar, this will create a single ``matplotlib`` plot in
   an ``ax`` object. DataFrame-like distributions will create a plot for each
   marginal component, returning ``fig`` with an array of ``ax`` objects, of same
@@ -85,7 +85,7 @@ Probability distributions have been rearchitected with API improvements:
   instead of overriding the public interface. This allows for more flexibility in
   boilerplate design, and ensures more consistent behavior across distributions.
   The new extension contract is documented in the new ``skpro`` extension template,
-  ``extension_templates/distribution_template.py``.
+  ``extension_templates/distributions.py``.
 
 Deprecations and removals
 ~~~~~~~~~~~~~~~~~~~~~~~~~
