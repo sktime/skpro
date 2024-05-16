@@ -6,6 +6,7 @@ for both regression and classification tasks.
 Please read the official document for its detail
 https://cyclic-boosting.readthedocs.io/en/latest/
 """
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = [
@@ -13,11 +14,12 @@ __author__ = [
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
 import warnings
+from typing import Union
 
 import numpy as np
 import pandas as pd
 
-from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U
+from skpro.distributions.qpd import QPD_Johnson
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -47,14 +49,18 @@ class CyclicBoosting(BaseProbaRegressor):
         lower quantile for QPD's parameter alpha
     mode : str, default='multiplicative'
         the type of quantile regressor. 'multiplicative' or 'additive'
-    bound : str, default='U'
-        Different modes defined by supported target range, options are ``S``
-            (semi-bound), ``B`` (bound), and ``U`` (unbound).
-    lower : float, default=0.0
+    lower : float, default=None
         lower bound of supported range (only active for bound and semi-bound
-        modes)
-    upper : float, default=1.0
-        upper bound of supported range (only active for bound mode)
+        modes). If neither 'lower' nor 'upper' is specified, `QPD_U` will be used as
+        unbound-mode
+    upper : float, default=None
+        upper bound of supported range (only active for bound mode). If neither
+        'lower' nor 'upper' is specified, `QPD_U` will be used as unbound-mode
+    version: str, one of ``'normal'`` (default), ``'logistic'``
+        options are ``'normal'`` (default) or ``'logistic'``
+    dist_shape: float, optional, default=0.0
+        parameter modifying the logistic base distribution via
+        sinh/arcsinh-scaling (only active in sinhlogistic version)
     maximal_iterations : int, default=10
         number of iterations
 
@@ -72,7 +78,7 @@ class CyclicBoosting(BaseProbaRegressor):
         Johnson Quantile-Parameterized Distributions instance
 
     Example
-    --------
+    -------
     >>> from skpro.regression.cyclic_boosting import CyclicBoosting
     >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
     >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
@@ -90,7 +96,7 @@ class CyclicBoosting(BaseProbaRegressor):
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
         "estimator_type": "regressor_proba",
-        "python_dependencies": "cyclic_boosting>=1.2.5",
+        "python_dependencies": "cyclic_boosting>=1.4.0",
         # estimator tags
         # --------------
         "capability:multioutput": False,
@@ -105,9 +111,10 @@ class CyclicBoosting(BaseProbaRegressor):
         feature_properties=None,
         alpha=0.2,
         mode="multiplicative",
-        bound="U",
-        lower=0.0,
-        upper=1.0,
+        lower=None,
+        upper=None,
+        version: Union[str, None] = "normal",
+        dist_shape: Union[float, None] = 0.0,
         maximal_iterations=10,
     ):
         self.feature_groups = feature_groups
@@ -118,9 +125,10 @@ class CyclicBoosting(BaseProbaRegressor):
         self.quantile_est = list()
         self.qpd = None
         self.mode = mode
-        self.bound = bound
         self.lower = lower
         self.upper = upper
+        self.version = version
+        self.dist_shape = dist_shape
         self.maximal_iterations = maximal_iterations
 
         super().__init__()
@@ -279,20 +287,14 @@ class CyclicBoosting(BaseProbaRegressor):
             "qv_low": self.quantile_values[0],
             "qv_median": self.quantile_values[1],
             "qv_high": self.quantile_values[2],
+            "lower": self.lower,
+            "upper": self.upper,
+            "version": self.version,
+            "dist_shape": self.dist_shape,
             "index": index,
             "columns": y_cols,
         }
-        if self.bound == "U":
-            qpd = QPD_U(**params)
-        elif self.bound == "S":
-            params["lower"] = self.lower
-            qpd = QPD_S(**params)
-        elif self.bound == "B":
-            params["lower"] = self.lower
-            params["upper"] = self.upper
-            qpd = QPD_B(**params)
-        else:
-            raise ValueError("bound need to be 'U' or 'S' or 'B'")
+        qpd = QPD_Johnson(**params)
 
         return qpd
 
@@ -416,11 +418,8 @@ class CyclicBoosting(BaseProbaRegressor):
         self.quantile_values = list()
         if is_given_proba:
             qpd = self.predict_proba(X.copy())
-            if isinstance(quantiles, list):
-                quantile = [quantiles]
-
-            p = pd.DataFrame(quantile, index=X.index, columns=columns)
-            quantiles = qpd.ppf(p)
+            pred = np.asarray([np.squeeze(qpd.ppf(q)) for q in quantiles]).T
+            quantiles = pd.DataFrame(pred, index=X.index, columns=columns)
 
         else:
             for est in self.quantile_est:
@@ -451,5 +450,17 @@ class CyclicBoosting(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        param1 = {"alpha": 0.3, "mode": "additive", "bound": "S", "lower": 0.0}
-        return [param1]
+        param1 = {
+            "alpha": 0.2,
+            "mode": "additive",
+            "lower": 0.0,
+            "maximal_iterations": 5,
+        }
+        param2 = {
+            "alpha": 0.2,
+            "mode": "additive",
+            "lower": 0.0,
+            "upper": 1000,
+            "maximal_iterations": 5,
+        }
+        return [param1, param2]

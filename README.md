@@ -89,7 +89,7 @@ and for interfacing popular second- and third-party components, such as [cyclic-
 | **[Probabilistic tabular regression]** | maturing | [Tutorial](https://github.com/sktime/skpro/blob/main/examples/01_skpro_intro.ipynb) · [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/regression.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/regression.py) |
 | **[Time-to-event (survival) prediction]** | experimental | [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/survival.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/survival.py) |
 | **[Performance metrics]** | maturing | [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/metrics.html) |
-| **[Probability distributions]** | maturing | [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/distributions.html) |
+| **[Probability distributions]** | maturing | [Tutorial](https://github.com/sktime/skpro/blob/main/examples/03_skpro_distributions.ipynb) · [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/distributions.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/distributions.py) |
 
 [Probabilistic tabular regression]: https://github.com/sktime/skpro/tree/main/skpro/regression
 [Time-to-event (survival) prediction]: https://github.com/sktime/skpro/tree/main/skpro/survival

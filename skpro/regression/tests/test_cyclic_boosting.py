@@ -20,7 +20,7 @@ def test_cyclic_boosting_simple_use():
     y = pd.DataFrame(y)
     X = X.iloc[:200]
     y = y.iloc[:200]
-    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
     reg_proba = CyclicBoosting()
     reg_proba.fit(X_train, y_train)
@@ -43,7 +43,7 @@ def test_cyclic_boosting_with_manual_paramaters():
     y = pd.DataFrame(y)
     X = X.iloc[:200]
     y = y.iloc[:200]
-    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
     features = [
         "age",
@@ -53,23 +53,17 @@ def test_cyclic_boosting_with_manual_paramaters():
         "s1",
         "s2",
         "s3",
-        "s4",
-        "s5",
-        "s6",
         ("age", "sex"),
     ]
 
     fp = {
-        "age": flags.IS_CONTINUOUS,
-        "sex": flags.IS_CONTINUOUS,
+        "age": flags.IS_UNORDERED,
+        "sex": flags.IS_UNORDERED,
         "bmi": flags.IS_CONTINUOUS,
         "bp": flags.IS_CONTINUOUS,
         "s1": flags.IS_CONTINUOUS,
         "s2": flags.IS_CONTINUOUS,
         "s3": flags.IS_CONTINUOUS,
-        "s4": flags.IS_CONTINUOUS,
-        "s5": flags.IS_CONTINUOUS,
-        "s6": flags.IS_CONTINUOUS,
     }
 
     reg_proba = CyclicBoosting(
@@ -78,7 +72,6 @@ def test_cyclic_boosting_with_manual_paramaters():
         maximal_iterations=5,
         alpha=0.25,
         mode="additive",
-        bound="S",
         lower=0.0,
     )
     reg_proba.fit(X_train, y_train)

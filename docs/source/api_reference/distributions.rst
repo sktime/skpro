@@ -37,6 +37,7 @@ Continuous support
 
     Beta
     ChiSquared
+    Exponential
     Fisk
     Laplace
     Logistic
@@ -69,6 +70,7 @@ Non-parametric and empirical distributions
     Delta
     Empirical
     QPD_Empirical
+    QPD_Johnson
     QPD_U
     QPD_S
     QPD_B

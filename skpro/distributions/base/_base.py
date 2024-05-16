@@ -178,6 +178,58 @@ class BaseDistribution(BaseObject):
             return 1
         return shape[0]
 
+    def head(self, n=5):
+        """Return the first n rows.
+
+        If there are less than n rows in ``self``, returns clone of ``self``.
+
+        For negative n, returns all rows except the last n.
+
+        Parameters
+        ----------
+        n : int, default=5
+            Number of rows to return.
+
+        Returns
+        -------
+        ``self`` subset to the first n rows, i.e., ``self.iloc[0:min(n, len(self))]``
+        """
+        if self.ndim < 2:
+            return self
+        assert isinstance(n, int)
+        N = len(self)
+        if n < 0:
+            n = N - n
+        n = min(n, N)
+        return self.iloc[range(n)]
+
+    def tail(self, n=5):
+        """Return the last n rows.
+
+        If there are less than n rows in ``self``, returns clone of ``self``.
+
+        For negative n, returns all rows except the first n.
+
+        Parameters
+        ----------
+        n : int, default=5
+            Number of rows to return.
+
+        Returns
+        -------
+        ``self`` subset to the last n rows, i.e., ``self.iloc[max(len(self) - n, 0):]``
+        """
+        if self.ndim < 2:
+            return self
+        assert isinstance(n, int)
+        N = len(self)
+        if n < 0:
+            start = n
+        else:
+            start = N - n
+        start = max(0, start)
+        return self.iloc[range(start, N)]
+
     def _loc(self, rowidx=None, colidx=None):
         if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
             return self._at(rowidx, colidx)
@@ -965,7 +1017,7 @@ class BaseDistribution(BaseObject):
                 "by using the bisection method (scipy.optimize.bisect) on "
                 f"the cdf, at {max_iter} maximum iterations"
             )
-            warn(self._method_error_msg("cdf", fill_in=approx_method))
+            warn(self._method_error_msg("ppf", fill_in=approx_method))
 
             def bisect_unb(opt_fun, **kwargs):
                 """Unbound version of bisect."""
@@ -985,7 +1037,7 @@ class BaseDistribution(BaseObject):
 
                 def opt_fun(x):
                     """Optimization function, to find x s.t. cdf(x) = p_ix."""
-                    return d_ix.cdf(x) - p  # noqa: B023
+                    return self.cdf(x) - p  # noqa: B023
 
                 result = bisect_unb(opt_fun)
                 return result
@@ -1086,6 +1138,23 @@ class BaseDistribution(BaseObject):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
+        approx_spl_size = self.get_tag("approx_energy_spl")
+        if x is not None and self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the energy expectation by the integral "
+                "of the absolute difference of x to the ppf,"
+                f"with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("energy", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [np.abs(self.ppf(p) - x) for p in ps]
+            en3D = np.array(qs)
+            energy = np.mean(en3D, axis=0)
+            if self.ndim > 0:
+                energy = np.sum(energy, axis=1)
+            return energy
+
         # we want to approximate E[abs(X-Y)]
         # if x = None, X,Y are i.i.d. copies of self
         # if x is not None, X=x (constant), Y=self
@@ -1181,6 +1250,20 @@ class BaseDistribution(BaseObject):
         Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_mean_spl")
+        if self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the expected value by the integral of the ppf, "
+                f"with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("mean", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [self.ppf(p) for p in ps]
+            np3D = np.array(qs)
+            means = np.mean(np3D, axis=0)
+            return means
+
+        # else we have to rely on samples
         approx_method = (
             "by approximating the expected value by the arithmetic mean of "
             f"{approx_spl_size} samples"
@@ -1210,6 +1293,26 @@ class BaseDistribution(BaseObject):
         Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_var_spl")
+        if self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the variancee integrals of the ppf, "
+                "integral of ppf-squared minus square of integral of ppf, "
+                f"each with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("var", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [self.ppf(p) for p in ps]
+            qsq = [q**2 for q in qs]
+
+            mean3D = np.array(qs)
+            means = np.mean(mean3D, axis=0)
+
+            mom2s3D = np.array(qsq)
+            mom2s = np.mean(mom2s3D, axis=0)
+
+            return mom2s - means**2
+
         approx_method = (
             "by approximating the variance by the arithmetic mean of "
             f"{approx_spl_size} samples of squared differences"
@@ -1219,7 +1322,7 @@ class BaseDistribution(BaseObject):
         spl1 = self.sample(approx_spl_size)
         spl2 = self.sample(approx_spl_size)
         spl = (spl1 - spl2) ** 2
-        return self._sample_mean(spl)
+        return self._sample_mean(spl) / 2
 
     def pdfnorm(self, a=2):
         r"""a-norm of pdf, defaults to 2-norm.

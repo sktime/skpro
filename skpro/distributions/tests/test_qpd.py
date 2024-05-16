@@ -8,12 +8,10 @@ from skpro.tests.test_switch import run_test_for_class
 
 @pytest.mark.skipif(
     not run_test_for_class(QPD_B),
-    reason="run test only if softdeps are present and incrementally (if requested)",
+    reason="run test only if softdeps are present and incrementally (if requested)",  #
 )
 def test_qpd_b_simple_use():
     """Test simple use of qpd with bounded mode."""
-    from skpro.distributions.qpd import QPD_B
-
     qpd = QPD_B(
         alpha=0.2,
         qv_low=[1, 2],
@@ -32,8 +30,6 @@ def test_qpd_b_simple_use():
 )
 def test_qpd_s_simple_use():
     """Test simple use of qpd with semi-bounded mode."""
-    from skpro.distributions.qpd import QPD_S
-
     qpd = QPD_S(
         alpha=0.2,
         qv_low=[1, 2],
@@ -50,9 +46,7 @@ def test_qpd_s_simple_use():
     reason="run test only if softdeps are present and incrementally (if requested)",
 )
 def test_qpd_u_simple_use():
-    """Test simple use of qpd with unbounded mode."""
-    from skpro.distributions.qpd import QPD_U
-
+    """Test simple use of qpd with un-bounded mode."""
     qpd = QPD_U(
         alpha=0.2,
         qv_low=[1, 2],
