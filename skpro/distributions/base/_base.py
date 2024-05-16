@@ -1138,6 +1138,23 @@ class BaseDistribution(BaseObject):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
+        approx_spl_size = self.get_tag("approx_energy_spl")
+        if x is not None and self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the energy expectation by the integral "
+                "of the absolute difference of x to the ppf,"
+                f"with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("energy", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [np.abs(self.ppf(p) - x) for p in ps]
+            en3D = np.array(qs)
+            energy = np.mean(en3D, axis=0)
+            if self.ndim > 0:
+                energy = np.sum(energy, axis=1)
+            return energy
+
         # we want to approximate E[abs(X-Y)]
         # if x = None, X,Y are i.i.d. copies of self
         # if x is not None, X=x (constant), Y=self
@@ -1233,6 +1250,20 @@ class BaseDistribution(BaseObject):
         Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_mean_spl")
+        if self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the expected value by the integral of the ppf, "
+                f"with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("mean", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [self.ppf(p) for p in ps]
+            np3D = np.array(qs)
+            means = np.mean(np3D, axis=0)
+            return means
+
+        # else we have to rely on samples
         approx_method = (
             "by approximating the expected value by the arithmetic mean of "
             f"{approx_spl_size} samples"
@@ -1262,6 +1293,26 @@ class BaseDistribution(BaseObject):
         Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_var_spl")
+        if self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the variancee integrals of the ppf, "
+                "integral of ppf-squared minus square of integral of ppf, "
+                f"each with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("var", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [self.ppf(p) for p in ps]
+            qsq = [q**2 for q in qs]
+
+            mean3D = np.array(qs)
+            means = np.mean(mean3D, axis=0)
+
+            mom2s3D = np.array(qsq)
+            mom2s = np.mean(mom2s3D, axis=0)
+
+            return mom2s - means**2
+
         approx_method = (
             "by approximating the variance by the arithmetic mean of "
             f"{approx_spl_size} samples of squared differences"
