@@ -18,7 +18,7 @@ For planned changes and upcoming releases, see roadmap in the
 [2.3.0] - 2024-05-16
 ====================
 
-* new tutorial notebooks for survival prediction and  probability distributions (:pr:`303`, :pr:`305`) :user:`fkiraly`
+* new tutorial notebooks for survival prediction and probability distributions (:pr:`303`, :pr:`305`) :user:`fkiraly`
 * interface to ``ngboost`` probabilistic regressor and survival predictor (:pr:`215`, :pr:`301`, :pr:`309`, :pr:`332`) :user:`ShreeshaM07`
 * interface to Poisson regressor from ``sklearn`` (:pr:`213`) :user:`nilesh05apr`
 * probability distributions rearchitecture, including scalar valued distributions, e.g., ``Normal(mu=0, sigma=1)`` - see "core interface changes"
