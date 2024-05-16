@@ -173,6 +173,7 @@ Maintenance
 * [MNT] fix binder environment (:pr:`297`) :user:`fkiraly`
 * [MNT] moving ensemble regressors to ``regression.ensemble`` (:pr:`302`) :user:`fkiraly`
 * [MNT] remove ``findiff`` soft dependency (:pr:`328`) :user:`fkiraly`
+* [MNT] deprecation handling for ``CyclicBoosting`` (:pr:`329`) :user:`fkiraly`
 
 Documentation
 ~~~~~~~~~~~~~
