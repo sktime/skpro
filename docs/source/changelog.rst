@@ -37,41 +37,47 @@ Probability distributions have been rearchitected with API improvements:
   ``index`` and ``columns`` are not passed and all parameters passed are scalar.
   or scalar-like. In this case, methods such as ``pdf``,
   ``cdf`` or ``sample`` will return scalar (float) values instead of ``pd.DataFrame``.
-* distributions now possess an ``ndim`` property, which evaluates to 0 for
+* ``ndim`` and ``shape`` - distributions now possess an ``ndim`` property, which evaluates to 0 for
   scalar distributions, and 2 otherwise. The ``shape`` property evaluates to
   the empty tuple for scalar distributions, and to a 2-tuple with the shape for
   array-like distributions. This is in line with ``numpy`` conventions.
-* distributions now have a ``plot`` method, which can be used to plot any
+* ``plot`` - distributions now have a ``plot`` method, which can be used to plot any
   method of the distribution. The method is called as ``my_distr.plot("pdf")``
   or ``my_distribution.plot("cdf")``, or simsilar.
   If the distribution is scalar, this will create a single ``matplotlib`` plot in
   an ``ax`` object. DataFrame-like distributions will create a plot for each
   marginal component, returning ``fig`` with an array of ``ax`` objects, of same
   shape as the distribution object.
-* distributions now possess ``head`` and ``tail`` methods, which return the first
+* ``head``, ``tail`` - distributions now possess ``head`` and ``tail`` methods,
+  which return the first
   and last ``n`` rows of the distribution, respectively. This is useful for
   inspecting the distribution object in a Jupyter notebook, in particular when
   combined with ``plot``.
-* distributions now possess ``at`` and ``iat`` subsetters, which can be used to
+* ``at``, ``iat`` - distributions now possess ``at`` and ``iat`` subsetters,
+  which can be used to
   subset a DataFrame-like distribution to a scalar distribution at a given
   integer index or location index, respectively.
-* all distributions now possess a ``pdf`` and ``pmf`` method, for probability density
+* ``pdf``, ``pmf`` - all distributions
+  now possess a ``pdf`` and ``pmf`` method, for probability density
   function and probability mass function. These are available for all distributions,
   continuous, discrete, and mixed. ``pdf`` returns the density of the continuous part
   of the distribution, ``pmf`` the mass of the discrete part. Continuous distributions
   will return 0 for ``pmf``, discrete distributions will return 0 for ``pdf``.
   Logarithmic versions of these methods are available as ``log_pdf`` and ``log_pmf``,
   these may be more numerically stable.
-* distributions now possess shorthand methods to return survival function evaluates,
+* ``surv``, ``haz`` - distributions now possess
+  shorthand methods to return survival function evaluates,
   ``surv``, and hazard function evaluates, ``haz``. These are available for
   all distributions. In case of mixed distributions, hazard is computed with the
   continuous part of the distribution.
-* distributions now have a new public tag: ``distr:paramtype`` indicates whether
+* ``distr:paramtype`` tag - distributions are now annotated with a new public tag:
+  ``distr:paramtype`` indicates whether
   the distribution is ``"parametric"``, ``"non-parametric"``, or ``"composite"``.
   Parametric distributions have only numpy array-like or categorical parameters.
   Non-parametric distributions may have further types of parameters such as data-like,
   but no distributions. Composite distributions have other distributions as parameters.
-* parametric distributions now provide methods ``to_df``, ``get_params_df``,
+* ``to_df``, ``get_params_df`` - parametric distributions
+  now provide methods ``to_df``, ``get_params_df``,
   which allow to return distribution parameters coerced to ``DataFrame``, or ``dict``
   of ``DataFrame``, keyed by parameter names, respectively.
 * the extension contract for distributions has been changed to a boilerplate layered
