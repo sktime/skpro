@@ -32,7 +32,7 @@ class NGBoostAdapter:
         -------
         NGBoost Distribution object.
         """
-        from ngboost.distns import Laplace, LogNormal, Normal, Poisson, T
+        from ngboost.distns import Exponential, Laplace, LogNormal, Normal, Poisson, T
 
         ngboost_dists = {
             "Normal": Normal,
@@ -40,6 +40,7 @@ class NGBoostAdapter:
             "TDistribution": T,
             "Poisson": Poisson,
             "LogNormal": LogNormal,
+            "Exponential": Exponential,
         }
         # default Normal distribution
         dist_ngboost = Normal
@@ -64,6 +65,7 @@ class NGBoostAdapter:
         skpro_dist (skpro.distributions.BaseDistribution):
         Converted skpro distribution object.
         """
+        from skpro.distributions.exponential import Exponential
         from skpro.distributions.laplace import Laplace
         from skpro.distributions.lognormal import LogNormal
         from skpro.distributions.normal import Normal
@@ -76,6 +78,7 @@ class NGBoostAdapter:
             "TDistribution": TDistribution,
             "Poisson": Poisson,
             "LogNormal": LogNormal,
+            "Exponential": Exponential,
         }
 
         skpro_dist = None

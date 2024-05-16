@@ -25,6 +25,7 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
         A distribution from ngboost.distns, e.g. LogNormal
         Available distribution types
         1. "LogNormal"
+        2. "Exponential"
     score : string , default = "LogScore"
         rule to compare probabilistic predictions P̂ to the observed data y.
         A score from ngboost.scores, e.g. LogScore
@@ -239,6 +240,7 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
         # LogNormal         | s = standard deviation, scale = exp(mean)
         #                   |     (see scipy.stats.lognorm)
         # Laplace           | loc = mean, scale = scale parameter
+        # Exponential       | scale = 1/rate
         # Normal, Laplace, TDistribution and Poisson have not yet
         # been implemented for Survival analysis.
 
@@ -248,6 +250,7 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
             "TDistribution": ["loc", "scale"],
             "Poisson": ["mu"],
             "LogNormal": ["scale", "s"],
+            "Exponential": ["scale"],
         }
 
         skpro_params = {
@@ -256,6 +259,7 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
             "TDistribution": ["mu", "sigma"],
             "Poisson": ["mu"],
             "LogNormal": ["mu", "sigma"],
+            "Exponential": ["rate"],
         }
 
         kwargs = {}
@@ -267,6 +271,8 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
                 kwargs[skp_param] = self._pred_dist(X).params[ngboost_param]
                 if self.dist == "LogNormal" and ngboost_param == "scale":
                     kwargs[skp_param] = np.log(self._pred_dist(X).params[ngboost_param])
+                if self.dist == "Exponential" and ngboost_param == "scale":
+                    kwargs[skp_param] = 1 / self._pred_dist(X).params[ngboost_param]
 
                 kwargs[skp_param] = self._check_y(y=kwargs[skp_param])
                 # returns a tuple so taking only first index of the tuple
@@ -306,5 +312,9 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
             "n_estimators": 800,
             "minibatch_frac": 0.8,
         }
+        params4 = {
+            "dist": "Exponential",
+            "n_estimators": 600,
+        }
 
-        return [params1, params2, params3]
+        return [params1, params2, params3, params4]

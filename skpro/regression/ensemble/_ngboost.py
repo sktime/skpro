@@ -28,6 +28,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         3. "LogNormal"
         4. "Poisson"
         5. "TDistribution"
+        6. "Exponential"
     score : string , default = "LogScore"
         A score from ngboost.scores for LogScore
         rule to compare probabilistic
@@ -238,6 +239,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         # LogNormal         | s = standard deviation, scale = exp(mean)
         #                   |     (see scipy.stats.lognorm)
         # Laplace           | loc = mean, scale = scale parameter
+        # Exponential       | scale = 1/rate
 
         dist_params = {
             "Normal": ["loc", "scale"],
@@ -245,6 +247,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             "TDistribution": ["loc", "scale"],
             "Poisson": ["mu"],
             "LogNormal": ["scale", "s"],
+            "Exponential": ["scale"],
         }
 
         skpro_params = {
@@ -253,6 +256,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             "TDistribution": ["mu", "sigma"],
             "Poisson": ["mu"],
             "LogNormal": ["mu", "sigma"],
+            "Exponential": ["rate"],
         }
 
         kwargs = {}
@@ -264,6 +268,8 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
                 kwargs[skp_param] = self._pred_dist(X).params[ngboost_param]
                 if self.dist == "LogNormal" and ngboost_param == "scale":
                     kwargs[skp_param] = np.log(self._pred_dist(X).params[ngboost_param])
+                if self.dist == "Exponential" and ngboost_param == "scale":
+                    kwargs[skp_param] = 1 / self._pred_dist(X).params[ngboost_param]
 
                 kwargs[skp_param] = self._check_y(y=kwargs[skp_param])
                 # returns a tuple so taking only first index of the tuple
@@ -317,4 +323,10 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             "verbose": False,
         }
 
-        return [params1, params2, params3, params4, params5, params6]
+        params7 = {
+            "dist": "Exponential",
+            "n_estimators": 800,
+            "verbose_eval": 50,
+        }
+
+        return [params1, params2, params3, params4, params5, params6, params7]
