@@ -174,6 +174,7 @@ Maintenance
 * [MNT] moving ensemble regressors to ``regression.ensemble`` (:pr:`302`) :user:`fkiraly`
 * [MNT] remove ``findiff`` soft dependency (:pr:`328`) :user:`fkiraly`
 * [MNT] deprecation handling for ``CyclicBoosting`` (:pr:`329`) :user:`fkiraly`, :user:`setoguchi-naoki`
+* [MNT] fix repository variables in changelog generator (:pr:`333`) :user:`fkiraly`
 
 Documentation
 ~~~~~~~~~~~~~
