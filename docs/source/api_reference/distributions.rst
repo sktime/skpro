@@ -37,6 +37,7 @@ Continuous support
 
     Beta
     ChiSquared
+    Exponential
     Fisk
     Laplace
     Logistic
