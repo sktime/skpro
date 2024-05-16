@@ -53,6 +53,65 @@ class NGBoostAdapter:
 
         return dist_ngboost
 
+    def _ngb_skpro_dist_params(
+        self,
+        X,
+        y_cols,
+        **kwargs,
+    ):
+        import numpy as np
+
+        # The returned values of the Distributions from NGBoost
+        # are different. So based on that they are split into these
+        # categories of loc,scale,mu and s.
+        # Distribution type | Parameters
+        # ------------------|-----------
+        # Normal            | loc = mean, scale = standard deviation
+        # TDistribution     | loc = mean, scale = standard deviation
+        # Poisson           | mu = mean
+        # LogNormal         | s = standard deviation, scale = exp(mean)
+        #                   |     (see scipy.stats.lognorm)
+        # Laplace           | loc = mean, scale = scale parameter
+        # Exponential       | scale = 1/rate
+        # Normal, Laplace, TDistribution and Poisson have not yet
+        # been implemented for Survival analysis.
+
+        dist_params = {
+            "Normal": ["loc", "scale"],
+            "Laplace": ["loc", "scale"],
+            "TDistribution": ["loc", "scale"],
+            "Poisson": ["mu"],
+            "LogNormal": ["scale", "s"],
+            "Exponential": ["scale"],
+        }
+
+        skpro_params = {
+            "Normal": ["mu", "sigma"],
+            "Laplace": ["mu", "scale"],
+            "TDistribution": ["mu", "sigma"],
+            "Poisson": ["mu"],
+            "LogNormal": ["mu", "sigma"],
+            "Exponential": ["rate"],
+        }
+
+        if self.dist in dist_params and self.dist in skpro_params:
+            ngboost_params = dist_params[self.dist]
+            skp_params = skpro_params[self.dist]
+            for ngboost_param, skp_param in zip(ngboost_params, skp_params):
+                kwargs[skp_param] = self._pred_dist(X).params[ngboost_param]
+                if self.dist == "LogNormal" and ngboost_param == "scale":
+                    kwargs[skp_param] = np.log(self._pred_dist(X).params[ngboost_param])
+                if self.dist == "Exponential" and ngboost_param == "scale":
+                    kwargs[skp_param] = 1 / self._pred_dist(X).params[ngboost_param]
+
+                kwargs[skp_param] = self._check_y(y=kwargs[skp_param])
+                # returns a tuple so taking only first index of the tuple
+                kwargs[skp_param] = kwargs[skp_param][0]
+            kwargs["index"] = X.index
+            kwargs["columns"] = y_cols
+
+        return kwargs
+
     def _ngb_dist_to_skpro(self, **kwargs):
         """Convert NGBoost distribution object to skpro BaseDistribution object.
 
