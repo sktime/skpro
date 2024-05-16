@@ -19,8 +19,8 @@ For planned changes and upcoming releases, see roadmap in the
 ====================
 
 * new tutorial notebooks for survival prediction and  probability distributions (:pr:`303`, :pr:`305`) :user:`fkiraly`
-* interface to ``ngboost`` probabilistic regressor and survival predictor (:pr:`215`, :pr:`301`) :user:`ShreeshaM07`
-* interface to Poisson regressor from sklearn (:pr:`213`) :user:`nilesh05apr`
+* interface to ``ngboost`` probabilistic regressor and survival predictor (:pr:`215`, :pr:`301`, :pr:`309`, :pr:`332`) :user:`ShreeshaM07`
+* interface to Poisson regressor from ``sklearn`` (:pr:`213`) :user:`nilesh05apr`
 * probability distibutions rearchitecture, including scalar valued distributions, e.g., ``Normal(mu=0, sigma=1)`` - see "core interface changes"
 * probability distributions: illustrative and didactic plotting functionality, e.g., ``my_normal.plot("pdf")`` (:pr:`275`) :user:`fkiraly`
 * more distributions: beta, chi-squared, delta, exponential, uniform - :user:`an20805`,
@@ -110,6 +110,7 @@ Probability distributions
 * [ENH] ``at`` and ``iat`` subsetters for distributions (:pr:`274`) :user:`fkiraly`
 * [ENH] ``Exponential`` distribution (:pr:`325`) :user:`ShreeshaM07`
 * [ENH] ``Mixture`` distribution upgrade - refactor to new extension interface, support scalar case (:pr:`315`) :user:`fkiraly`
+* [ENH] native implementation of Johnson QPD family, explicit pdf (:pr:`327`) :user:`fkiraly`
 * [ENH] improved defaults for ``BaseDistribution`` ``_mean``, ``_var``, and ``_energy_x`` (:pr:`330`) :user:`fkiraly`
 
 Probabilistic regression
@@ -117,7 +118,8 @@ Probabilistic regression
 
 * [ENH] interface to ``ngboost`` (:pr:`215`) :user:`ShreeshaM07`
 * [ENH] interfacing Poisson regressor from sklearn (:pr:`213`) :user:`nilesh05apr`
-* [MNT] refactor ``NGBoostRegressor`` to inherit ``NGBoostAdapter`` (:pr:`309`) :user:`ShreeshaM07`
+* [ENH] refactor ``NGBoostRegressor`` to inherit ``NGBoostAdapter`` (:pr:`309`) :user:`ShreeshaM07`
+* [ENH] ``Exponential`` dist in ``NGBoostRegressor``, ``NGBoostSurvival`` (:pr:`332`) :user:`ShreeshaM07`
 
 Survival and time-to-event prediction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
