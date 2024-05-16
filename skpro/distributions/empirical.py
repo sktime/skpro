@@ -193,7 +193,7 @@ class Empirical(BaseDistribution):
     def _slice_ix(self, obj, ix):
         """Slice obj by index ix, applied to MultiIndex levels 1 ... last.
 
-        obj is assumed to have MultiIndex, and slicing occurrs on the
+        obj is assumed to have MultiIndex, and slicing occurs on the
         last levels, 1 ... last.
 
         ix can be a simple index or MultiIndex,

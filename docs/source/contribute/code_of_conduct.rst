@@ -5,7 +5,7 @@ Code of conduct
 ===============
 
 The ``skpro`` project believes that everyone should be able to participate
-in our community without fear of harrassment or discrimination. All contributors
+in our community without fear of harassment or discrimination. All contributors
 are expected to show respect and courtesy to other members of the community
 at all times.
 
@@ -22,4 +22,4 @@ to Dr. Franz Király by email at franz.kiraly@sktime.net.
     Code of Conduct processes (including how to report incidents).
     This may change as the project matures.
     However, ``skpro``'s Code of Conduct will remain
-    dedicated to promoting a community without harrassment and discrimination.
+    dedicated to promoting a community without harassment and discrimination.

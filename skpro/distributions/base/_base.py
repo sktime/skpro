@@ -67,7 +67,7 @@ class BaseDistribution(BaseObject):
         default broadcasting and pre-initialization is not desired or applicable,
         e.g., distribution parameters are not array-like.
 
-        If overriden, must set ``self._shape``: this should be an empty tuple
+        If overridden, must set ``self._shape``: this should be an empty tuple
         if the distribution is scalar, or a pair of integers otherwise.
         """
         if self.get_tags()["broadcast_init"] == "off":
@@ -1572,7 +1572,7 @@ class BaseDistribution(BaseObject):
             fig.supxlabel(f"{x_argname}")
             return fig, ax
 
-        # for now, all plots default ot this function
+        # for now, all plots default to this function
         # but this could be changed to a dispatch mechanism
         # e.g., using this line instead
         # plot_fun_name = f"_plot_{fun}"
