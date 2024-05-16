@@ -81,6 +81,20 @@ Probability distributions have been rearchitected with API improvements:
   The new extension contract is documented in the new ``skpro`` extension template,
   ``extension_templates/distribution_template.py``.
 
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* At version 2.4.0, the ``bound`` parameter will be removed
+  from the ``CyclicBoosting`` probabilistic
+  supervised regression estimator, and will be replaced by use of ``lower`` or
+  ``upper``. To retain previous behaviour, users should replace ``bound="U"``
+  with ``upper=None`` and ``lower=None``; ``bound="L"`` with ``upper=None`` and
+  ``lower`` set to the value of the lower bound; and ``bound="B"`` with both
+  ``upper`` and ``lower`` set to the respective values.
+  To silence the warnings and prevent exceptions occurring from 2.4.0,
+  users should not explicitly set ``bounds``, and ensure values for any subsequent
+  parameters are set as keyword arguments, not positional arguments.
+
 Enhancements
 ~~~~~~~~~~~~
 
