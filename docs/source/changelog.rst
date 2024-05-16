@@ -197,6 +197,7 @@ Documentation
 * [DOC] tutorial notebook for survival prediction (:pr:`305`) :user:`fkiraly`
 * [DOC] visualizations for first intro vignette in intro notebook and minor updates (:pr:`311`) :user:`fkiraly`
 * [DOC] improve docstrings of metrics (:pr:`317`) :user:`fkiraly`
+* [DOC] Fix typos throughout the codebase (:pr:`338`) :user:`szepeviktor`
 
 Contributors
 ~~~~~~~~~~~~
@@ -207,7 +208,8 @@ Contributors
 :user:`nilesh05apr`,
 :user:`setoguchi-naoki`,
 :user:`ShreeshaM07`,
-:user:`sukjingitsit`
+:user:`sukjingitsit`,
+:user:`szepeviktor`
 
 
 [2.2.2] - 2024-04-20
