@@ -152,6 +152,8 @@ Maintenance
 ~~~~~~~~~~~
 
 * [MNT] [Dependabot](deps): Update ``sphinx-gallery`` requirement from ``<0.16.0`` to ``<0.17.0`` (:pr:`288`) :user:`dependabot[bot]`
+* [MNT] move GHA runners consistently to ``ubuntu-latest``, ``windows-latest``, ``macos-13`` (:pr:`272`) :user:`fkiraly`
+* [MNT] set macos runner for release workflow to ``macos-13`` (:pr:`273`) :user:`fkiraly`
 * [MNT] fix binder environment (:pr:`297`) :user:`fkiraly`
 * [MNT] moving ensemble regressors to ``regression.ensemble`` (:pr:`302`) :user:`fkiraly`
 * [MNT] remove ``findiff`` soft dependency (:pr:`328`) :user:`fkiraly`
@@ -159,6 +161,12 @@ Maintenance
 Documentation
 ~~~~~~~~~~~~~
 
+* [DOC] add ``zenodo`` citation badge in README (:pr:`262`) :user:`fkiraly`
+* [DOC] fix typo in changelog link (:pr:`263`) :user:`fkiraly`
+* [DOC] typo fixes in Fisk AFT docstring (:pr:`264`) :user:`fkiraly`
+* [DOC] fix minor typos in the changelog (:pr:`268`) :user:`fkiraly`
+* [DOC] fixes to extension templates (:pr:`270`) :user:`fkiraly`
+* [DOC] remove legacy examples (:pr:`271`) :user:`fkiraly`
 * [DOC] correcting 2024 changelog dates (:pr:`280`) :user:`fkiraly`
 * [DOC] add missing contributors to ``all-contributorsrc`` - :user:`an20805`, :user:`duydl`, :user:`sukjingitsit` (:pr:`284`) :user:`fkiraly`
 * [DOC] tutorial notebook for probability distributions (:pr:`303`) :user:`fkiraly`
