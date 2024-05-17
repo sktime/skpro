@@ -3,7 +3,11 @@
 
 __author__ = ["ShreeshaM07"]
 
+import numpy as np
+
 from skpro.distributions.base import BaseDistribution
+
+# import pandas as pd
 
 
 class Histogram(BaseDistribution):
@@ -14,10 +18,10 @@ class Histogram(BaseDistribution):
 
     Parameters
     ----------
-    bin_width : int or array of int 1D
-        Equal width bins, bins will be an int.
-        variable width bins, bins will be an array of int.
-    bin_density: float or array of float 1D
+    bins : float or array of float 1D
+        array has the bin boundaries with 1st element the first bin's
+        starting point and rest are the bin ending points of all bins
+    bin_density: array of float 1D
         The density of bins.
         i.e., it is equal to the empirical probability divided
         by the interval length, or bin width.
@@ -25,33 +29,11 @@ class Histogram(BaseDistribution):
     columns : pd.Index, optional, default = RangeIndex
     """
 
-    def __init__(self, bin_width, bin_density, index=None, columns=None):
-        self.bin_width = bin_width
+    def __init__(self, bins, bin_density, index=None, columns=None):
+        self.bins = bins
         self.bin_density = bin_density
 
-        super.__init__(index=index, columns=columns)
-
-    def _cut(self, x):
-        # extends the min and max values by 0.1% of range
-        # to include it in the histogram
-        bins = []
-        range_x = max(x) - min(x)
-        bin_width = self._bc_params["bin_width"]
-        if isinstance(bin_width, int):
-            bins.append(min(x) - 0.001 * (range_x))
-            nbins = range_x / bin_width
-            for i in range(1, nbins):
-                bins.append(min(x) + i * bin_width)
-            bins.append(max(x) + 0.001 * (range_x))
-        elif isinstance(bin_width, list):
-            bins.append(min(x) - 0.001 * (range_x))
-            nbins = len(bin_width)
-            for bw in bin_width:
-                bins.append(min(x) + bw)
-            bins.append(max(x) + 0.001 * (range_x))
-
-        self.bins = bins
-        return bins
+        super().__init__(index=index, columns=columns)
 
     def _pdf(self, x):
         """Probability density function.
@@ -66,5 +48,26 @@ class Histogram(BaseDistribution):
         1D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
-        pdf_arr = self._bc_params["bin_density"].copy()
-        return pdf_arr
+        bin_density = np.array(self.bin_density.copy())
+        bins = self.bins
+        pdf = []
+        if isinstance(bins, list):
+            bin_width = []
+            for i in range(1, len(bins)):
+                bin_width.append(bins[i] - bins[i - 1])
+            bin_width = np.array(bin_width)
+            pdf_arr = bin_density / bin_width
+            for i in range(len(x)):
+                for j in range(1, len(bins)):
+                    if x[i] < bins[j] and x[i] >= bins[j - 1]:
+                        pdf.append(pdf_arr[j - 1])
+                        break
+            pdf = np.array(pdf)
+            return pdf
+
+
+# x=np.array([1,0.75,1.8,2.5,3,5,6,6.5])
+# hist = Histogram(bins=[0.5,2,7],bin_density=[0.3,0.7]
+# ,index=pd.Index(np.arange(3)),columns=pd.Index(np.arange(2)))
+# pdf = hist._pdf(x)
+# print(pdf)
