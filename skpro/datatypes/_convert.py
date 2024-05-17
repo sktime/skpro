@@ -4,7 +4,7 @@
 Exports
 -------
 convert_to(obj, to_type: str, as_scitype: str, store=None)
-    converts object "obj" to type "to_type", considerd as "as_scitype"
+    converts object "obj" to type "to_type", considered as "as_scitype"
 
 convert(obj, from_type: str, to_type: str, as_scitype: str, store=None)
     same as convert_to, without automatic identification of "from_type"
@@ -159,7 +159,7 @@ def convert(
         pass
     else:
         raise ValueError(
-            "bug: unrechable condition error, store_behaviour has unexpected value"
+            "bug: unreachable condition error, store_behaviour has unexpected value"
         )
 
     converted_obj = convert_dict[key](obj, store=store)
@@ -167,7 +167,7 @@ def convert(
     return converted_obj
 
 
-# conversion based on queriable type to specified target
+# conversion based on queryable type to specified target
 def convert_to(
     obj,
     to_type: str,

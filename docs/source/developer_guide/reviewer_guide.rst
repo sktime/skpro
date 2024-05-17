@@ -43,7 +43,7 @@ Code Review
 
 .. _reviewer_guide_doc:
 
-Documenation Review
+Documentation Review
 ====================
 
 * Are the docstrings complete and understandable to users?

@@ -2,7 +2,7 @@
 Changelog
 =========
 
-All notable changes to this project beggining with version 0.1.0 will be
+All notable changes to this project beginning with version 0.1.0 will be
 documented in this file. The format is based on
 `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_ and we adhere
 to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_. The source
@@ -43,7 +43,7 @@ Probability distributions have been rearchitected with API improvements:
   array-like distributions. This is in line with ``numpy`` conventions.
 * ``plot`` - distributions now have a ``plot`` method, which can be used to plot any
   method of the distribution. The method is called as ``my_distr.plot("pdf")``
-  or ``my_distribution.plot("cdf")``, or simsilar.
+  or ``my_distribution.plot("cdf")``, or similar.
   If the distribution is scalar, this will create a single ``matplotlib`` plot in
   an ``ax`` object. DataFrame-like distributions will create a plot for each
   marginal component, returning ``fig`` with an array of ``ax`` objects, of same
@@ -85,7 +85,7 @@ Probability distributions have been rearchitected with API improvements:
   instead of overriding the public interface. This allows for more flexibility in
   boilerplate design, and ensures more consistent behavior across distributions.
   The new extension contract is documented in the new ``skpro`` extension template,
-  ``extension_templates/distribution_template.py``.
+  ``extension_templates/distributions.py``.
 
 Deprecations and removals
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -197,6 +197,7 @@ Documentation
 * [DOC] tutorial notebook for survival prediction (:pr:`305`) :user:`fkiraly`
 * [DOC] visualizations for first intro vignette in intro notebook and minor updates (:pr:`311`) :user:`fkiraly`
 * [DOC] improve docstrings of metrics (:pr:`317`) :user:`fkiraly`
+* [DOC] Fix typos throughout the codebase (:pr:`338`) :user:`szepeviktor`
 
 Contributors
 ~~~~~~~~~~~~
@@ -207,7 +208,8 @@ Contributors
 :user:`nilesh05apr`,
 :user:`setoguchi-naoki`,
 :user:`ShreeshaM07`,
-:user:`sukjingitsit`
+:user:`sukjingitsit`,
+:user:`szepeviktor`
 
 
 [2.2.2] - 2024-04-20

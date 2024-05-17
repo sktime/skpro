@@ -33,8 +33,8 @@ def test_cyclic_boosting_simple_use():
     not run_test_for_class(CyclicBoosting),
     reason="run test only if softdeps are present and incrementally (if requested)",
 )
-def test_cyclic_boosting_with_manual_paramaters():
-    """Test use of cyclic boosting regressor with_manual_paramaters."""
+def test_cyclic_boosting_with_manual_parameters():
+    """Test use of cyclic boosting regressor with_manual_parameters."""
     from cyclic_boosting import flags
     from sklearn.datasets import load_diabetes
     from sklearn.model_selection import train_test_split
