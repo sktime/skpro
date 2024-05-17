@@ -4,9 +4,6 @@ import os
 from collections import defaultdict
 from typing import Dict, List
 
-import httpx
-from dateutil import parser
-
 HEADERS = {
     "Accept": "application/vnd.github.v3+json",
 }
@@ -21,6 +18,8 @@ GITHUB_REPOS = "https://api.github.com/repos"
 
 def fetch_merged_pull_requests(page: int = 1) -> List[Dict]:  # noqa
     "Fetch a page of pull requests"
+    import httpx
+
     params = {
         "base": "main",
         "state": "closed",
@@ -38,6 +37,8 @@ def fetch_merged_pull_requests(page: int = 1) -> List[Dict]:  # noqa
 
 
 def fetch_latest_release():  # noqa
+    import httpx
+
     response = httpx.get(
         f"{GITHUB_REPOS}/{OWNER}/{REPO}/releases/latest", headers=HEADERS
     )
@@ -50,6 +51,7 @@ def fetch_latest_release():  # noqa
 
 def fetch_pull_requests_since_last_release() -> List[Dict]:  # noqa
     "Fetch pull requests and filter based on merged date"
+    from dateutil import parser
 
     release = fetch_latest_release()
     published_at = parser.parse(release["published_at"])
@@ -72,6 +74,8 @@ def fetch_pull_requests_since_last_release() -> List[Dict]:  # noqa
 
 def github_compare_tags(tag_left: str, tag_right: str = "HEAD"):  # noqa
     "Compare commit between two tags"
+    import httpx
+
     response = httpx.get(
         f"{GITHUB_REPOS}/{OWNER}/{REPO}/compare/{tag_left}...{tag_right}"
     )
@@ -128,6 +132,8 @@ def render_row(pr):  # noqa
 def render_changelog(prs, assigned):  # noqa
     # sourcery skip: use-named-expression
     "Render changelog"
+    from dateutil import parser
+
     for title, _ in assigned.items():
         pr_group = [prs[i] for i in assigned[title]]
         if pr_group:
