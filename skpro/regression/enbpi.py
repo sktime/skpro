@@ -13,24 +13,29 @@ from skpro.utils.numpy import flatten_to_1D_if_colvector
 from skpro.utils.sklearn import prep_skl_df
 
 
-class BootstrapRegressor(BaseProbaRegressor):
-    """Bootstrap ensemble of a tabular regressor.
+class EnbpiRegressor(BaseProbaRegressor):
+    r"""EnbPI probabilistic regressor, for conformal prediction intervals.
 
     Wraps an ``sklearn`` regressor and turns it into an ``skpro`` regressor
     with access to all probabilistic prediction methods.
+
+    Follows the original algorithm in [1]_, in ``predict_proba`` a distribution
+    implied by the quantile predictions is returned, an ``Empirical`` distribution.
 
     Fits ``n_estimators`` clones of a tabular ``sklearn`` regressor on
     datasets which are bootstrap sub-samples, i.e.,
     independent row samples with replacement.
 
-    On ``predict_proba``, an empirical distribution with the bootstrap
-    sample is returned.
+    The clones are aggregated to predict quantiles of the target distribution,
+    following the original algorithm in [1]_. The parameters in the reference
+    map as follows: :math:`\mathcal{A}` is ``estimator``, :math:`B` is
+    ``n_bootstrap_samples``, :math:`x_i, i = 1, \dots, T` are the rows of
+    ``X`` in ``fit``, :math:`y_i, i = 1, \dots, T` are the rows of ``y`` in ``fit``,
+    :math:`x_i, i = T+1, \dots, T + T_1` are the rows of ``X`` in ``predict_interval``,
+    :math:`\phi` is ``agg_fun``.
 
-    The estimator allows to choose sample sizes for instances, variables,
-    and whether sampling is with or without replacement.
-
-    Direct generalization of ``sklearn``'s ``BaggingClassifier``
-    to the probabilistic regression task.
+    The :math:`C_{T, t}^{\phi, \alpha}(x_t), t = T+1, \dots, T + T_1` are encoded
+    in the prediction object returned by ``predict_interval`` or ``predict_proba``.
 
     Parameters
     ----------
@@ -41,6 +46,13 @@ class BootstrapRegressor(BaseProbaRegressor):
         If int, then indicates number of instances precisely
         Note: this is not the same as the size of each bootstrap sample.
         The size of the bootstrap sample is always equal to X.
+    agg_fun : callable, default=np.meean
+        function to aggregate the predictions of the bootstrap samples
+    symmetrize : bool, default=True
+        whether to symmetrize the prediction intervals and predictive quantiles
+        Default = True leads to the original algorithm in [1]_.
+        If False, the conformalized sample and the prediction intervals are not
+        symmetrized.
     random_state : int, RandomState instance or None, optional (default=None)
         If int, ``random_state`` is the seed used by the random number generator;
         If ``RandomState`` instance, ``random_state`` is the random number generator;
@@ -52,9 +64,16 @@ class BootstrapRegressor(BaseProbaRegressor):
     estimators_ : list of of skpro regressors
         clones of regressor in `estimator` fitted in the ensemble
 
+    References
+    ----------
+    .. [1] Xu, Chen and Yao Xie (2021).
+      Conformal prediction interval for dynamic time-series.
+      The Proceedings of the 38th International Conference on Machine Learning,
+      PMLR 139, 2021.
+
     Examples
     --------
-    >>> from skpro.regression.bootstrap import BootstrapRegressor
+    >>> from skpro.regression.enbpi import EnbpiRegressor
     >>> from sklearn.linear_model import LinearRegression
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.model_selection import train_test_split
@@ -64,9 +83,9 @@ class BootstrapRegressor(BaseProbaRegressor):
     >>>
     >>> reg_tabular = LinearRegression()
     >>>
-    >>> reg_proba = BootstrapRegressor(reg_tabular)
+    >>> reg_proba = EnbpiRegressor(reg_tabular)
     >>> reg_proba.fit(X_train, y_train)
-    BootstrapRegressor(...)
+    EnbpiRegressor(...)
     >>> y_pred = reg_proba.predict_proba(X_test)
     """
 
@@ -76,10 +95,14 @@ class BootstrapRegressor(BaseProbaRegressor):
         self,
         estimator,
         n_bootstrap_samples=100,
+        agg_fun="mean",
+        symmetrize=True,
         random_state=None,
     ):
         self.estimator = estimator
         self.n_bootstrap_samples = n_bootstrap_samples
+        self.agg_fun = agg_fun
+        self.symmetrize = symmetrize
         self.random_state = random_state
 
         super().__init__()
