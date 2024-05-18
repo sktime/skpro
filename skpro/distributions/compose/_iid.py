@@ -1,5 +1,5 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-"""Normal/Gaussian probability distribution."""
+"""I.i.d. sample from a distribution."""
 
 __author__ = ["fkiraly"]
 
