@@ -91,7 +91,10 @@ class EnbpiRegressor(BaseProbaRegressor):
     >>> y_pred = reg_proba.predict_proba(X_test)
     """
 
-    _tags = {"authors": "fkiraly", "capability:missing": True}
+    _tags = {
+        "authors": ["fkiraly", "hamrel-cxu"],
+        "capability:missing": True,
+    }
 
     def __init__(
         self,
