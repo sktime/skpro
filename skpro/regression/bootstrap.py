@@ -6,6 +6,7 @@ __all__ = ["BootstrapRegressor"]
 import numpy as np
 import pandas as pd
 from sklearn import clone
+from sklearn.utils import check_random_state
 
 from skpro.distributions.empirical import Empirical
 from skpro.regression.base import BaseProbaRegressor
@@ -16,7 +17,10 @@ from skpro.utils.sklearn import prep_skl_df
 class BootstrapRegressor(BaseProbaRegressor):
     """Bootstrap ensemble of a tabular regressor.
 
-    Fits ``n_estimators`` clones of an skpro regressor on
+    Wraps an ``sklearn`` regressor and turns it into an ``skpro`` regressor
+    with access to all probabilistic prediction methods.
+
+    Fits ``n_estimators`` clones of a tabular ``sklearn`` regressor on
     datasets which are bootstrap sub-samples, i.e.,
     independent row samples with replacement.
 
@@ -78,6 +82,7 @@ class BootstrapRegressor(BaseProbaRegressor):
         self.estimator = estimator
         self.n_bootstrap_samples = n_bootstrap_samples
         self.random_state = random_state
+        self._random_state = check_random_state(random_state)
 
         super().__init__()
 
@@ -118,7 +123,9 @@ class BootstrapRegressor(BaseProbaRegressor):
         for _i in range(n_bootstrap_samples):
             esti = clone(estimator)
             row_iloc = pd.RangeIndex(n)
-            row_ss = _random_ss_ix(row_iloc, size=n, replace=True)
+            row_ss = _random_ss_ix(
+                row_iloc, size=n, replace=True, random_state=self._random_state
+            )
             inst_ix_i = inst_ix[row_ss]
 
             Xi = X.loc[inst_ix_i]
@@ -198,8 +205,11 @@ class BootstrapRegressor(BaseProbaRegressor):
         return [params1, params2]
 
 
-def _random_ss_ix(ix, size, replace=True):
+def _random_ss_ix(ix, size, replace=True, random_state=None):
     """Randomly uniformly sample indices from a list of indices."""
+    if random_state is None:
+        random_state = np.random.RandomState()
+
     a = range(len(ix))
-    ixs = ix[np.random.choice(a, size=size, replace=replace)]
+    ixs = ix[random_state.choice(a, size=size, replace=replace)]
     return ixs
