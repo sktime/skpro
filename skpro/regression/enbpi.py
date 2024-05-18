@@ -1,7 +1,7 @@
 """Probabilistic regression by bootstrap."""
 
 __author__ = ["fkiraly"]
-__all__ = ["BootstrapRegressor"]
+__all__ = ["EnbpiRegressor"]
 
 import numpy as np
 import pandas as pd
@@ -46,8 +46,10 @@ class EnbpiRegressor(BaseProbaRegressor):
         If int, then indicates number of instances precisely
         Note: this is not the same as the size of each bootstrap sample.
         The size of the bootstrap sample is always equal to X.
-    agg_fun : callable, default=np.meean
+    agg_fun : str or callable, default="mean"
         function to aggregate the predictions of the bootstrap samples
+        If str, must be one of "mean" or "median", meaning np.mean or np.median
+        If callable, must be a function of signature (n, m) -> m, or (n) -> 1
     symmetrize : bool, default=True
         whether to symmetrize the prediction intervals and predictive quantiles
         Default = True leads to the original algorithm in [1]_.
@@ -111,6 +113,17 @@ class EnbpiRegressor(BaseProbaRegressor):
         # tags_to_clone = ["capability:missing"]
         # self.clone_tags(estimator, tags_to_clone)
 
+        aggfun_dict = {
+            "mean": np.nanmean,
+            "median": np.nanmedian,
+        }
+        if agg_fun is None:
+            self._agg_fun = np.nanmean
+        elif agg_fun in aggfun_dict:
+            self._agg_fun = aggfun_dict[agg_fun]
+        else:
+            self._agg_fun = agg_fun
+
     def _fit(self, X, y):
         """Fit regressor to training data.
 
@@ -141,7 +154,9 @@ class EnbpiRegressor(BaseProbaRegressor):
         # coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
-        for _i in range(n_bootstrap_samples):
+        y_pred_insample = np.ones((n_bootstrap_samples,) + y.shape) * np.nan
+
+        for i in range(n_bootstrap_samples):
             esti = clone(estimator)
             row_iloc = pd.RangeIndex(n)
             row_ss = _random_ss_ix(row_iloc, size=n, replace=True)
@@ -155,7 +170,45 @@ class EnbpiRegressor(BaseProbaRegressor):
 
             self.estimators_ += [esti.fit(Xi, yi)]
 
+            y_pred = esti.predict(Xi)
+            y_pred_insample[[i], row_ss] = _coerce_numpy2d(y_pred)
+
+        spl = self._agg_preds(y_pred_insample)
+
+        errs = y.values - spl
+        if self.symmetrize:
+            errs = np.abs(errs)
+
+        errs.sort(axis=0)
+        self._errs = errs
         return self
+
+    def _agg_preds(self, preds):
+        """Aggregate predictions of bootstrap samples.
+
+        Handles NaNs in the aggregated predictions
+        by replacing them with the aggregated value from the same column
+        (index of target variable), after the aggregation.
+
+        Parameters
+        ----------
+        preds : np.ndarray, shape (n_bootstrap_samples, n_samples, n_targets)
+            predictions of bootstrap samples
+
+        Returns
+        -------
+        agg_preds : np.ndarray, shape (n_samples, n_targets)
+            aggregated predictions
+        """
+        spl = self._agg_fun(preds, axis=0)
+        nans = np.isnan(spl)
+        if nans.any():
+            for j in range(spl.shape[1]):
+                colj = spl[:, j]
+                colj_agg = self._agg_fun(colj)
+                colj[nans[:, j]] = colj_agg
+                spl[:, j] = colj
+        return spl
 
     def _predict_proba(self, X) -> np.ndarray:
         """Predict distribution over labels for data from features.
@@ -176,23 +229,37 @@ class EnbpiRegressor(BaseProbaRegressor):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        cols = self._cols
+        cols = self._cols  # number of targets
 
         # coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
+        n = len(X)
 
-        y_preds = [est.predict(X) for est in self.estimators_]
+        y_preds = np.zeros((len(self.estimators_), n, len(cols)))
 
-        def _coerce_df(x):
-            if not isinstance(x, pd.DataFrame):
-                x = pd.DataFrame(x, columns=cols, index=X.index)
-            return x
+        for i, est in enumerate(self.estimators_):
+            y_preds[i] = _coerce_numpy2d(est.predict(X))
 
-        y_preds = [_coerce_df(x) for x in y_preds]
+        # y_preds now has shape (n_estimators, n_samples, len(cols))
+        # or, if symmetrize, (2 * n_estimators, n_samples, len(cols))
+        y_preds_agg = self._agg_preds(y_preds)
+        # y_preds_agg now has shape (n_samples, len(cols))
 
-        y_pred_df = pd.concat(y_preds, axis=0, keys=range(len(y_preds)))
+        if self.symmetrize:
+            errs = np.concatenate([self._errs, -self._errs], axis=0)
+        else:
+            errs = self._errs
 
-        y_proba = Empirical(y_pred_df)
+        n_emp_spl = len(errs)
+        y_preds_rep = np.tile(y_preds_agg, (n_emp_spl, 1))
+
+        errs = np.repeat(errs, n, axis=0)
+        emp_df_vals = y_preds_rep + errs
+
+        emp_ix = pd.MultiIndex.from_product([range(n_emp_spl), X.index])
+
+        spl_df = pd.DataFrame(emp_df_vals, index=emp_ix, columns=cols)
+        y_proba = Empirical(spl_df)
         return y_proba
 
     @classmethod
@@ -220,8 +287,14 @@ class EnbpiRegressor(BaseProbaRegressor):
             "estimator": LinearRegression(),
             "n_bootstrap_samples": 10,
         }
+        params3 = {
+            "estimator": LinearRegression(),
+            "n_bootstrap_samples": 12,
+            "agg_fun": "median",
+            "symmetrize": False,
+        }
 
-        return [params1, params2]
+        return [params1, params2, params3]
 
 
 def _random_ss_ix(ix, size, replace=True):
@@ -229,3 +302,9 @@ def _random_ss_ix(ix, size, replace=True):
     a = range(len(ix))
     ixs = ix[np.random.choice(a, size=size, replace=replace)]
     return ixs
+
+
+def _coerce_numpy2d(x):
+    if x.ndim == 1:
+        x = x.reshape(-1, 1)
+    return x

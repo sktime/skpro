@@ -74,6 +74,14 @@ take one or multiple ``sklearn`` estimators and adda probabilistic prediction mo
 
     MultipleQuantileRegressor
 
+.. currentmodule:: skpro.regression.enbpi
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    EnbpiRegressor
+
 .. currentmodule:: skpro.regression.mapie
 
 .. autosummary::
