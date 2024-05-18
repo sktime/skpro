@@ -6,6 +6,7 @@ __all__ = ["EnbpiRegressor"]
 import numpy as np
 import pandas as pd
 from sklearn import clone
+from sklearn.utils import check_random_state
 
 from skpro.distributions.empirical import Empirical
 from skpro.regression.base import BaseProbaRegressor
@@ -109,6 +110,7 @@ class EnbpiRegressor(BaseProbaRegressor):
         self.agg_fun = agg_fun
         self.symmetrize = symmetrize
         self.random_state = random_state
+        self._random_state = check_random_state(random_state)
 
         super().__init__()
 
@@ -162,7 +164,9 @@ class EnbpiRegressor(BaseProbaRegressor):
         for i in range(n_bootstrap_samples):
             esti = clone(estimator)
             row_iloc = pd.RangeIndex(n)
-            row_ss = _random_ss_ix(row_iloc, size=n, replace=True)
+            row_ss = _random_ss_ix(
+                row_iloc, size=n, replace=True, random_state=self._random_state
+            )
             inst_ix_i = inst_ix[row_ss]
 
             Xi = X.loc[inst_ix_i]
@@ -300,10 +304,13 @@ class EnbpiRegressor(BaseProbaRegressor):
         return [params1, params2, params3]
 
 
-def _random_ss_ix(ix, size, replace=True):
+def _random_ss_ix(ix, size, replace=True, random_state=None):
     """Randomly uniformly sample indices from a list of indices."""
+    if random_state is None:
+        random_state = np.random.RandomState()
+
     a = range(len(ix))
-    ixs = ix[np.random.choice(a, size=size, replace=replace)]
+    ixs = ix[random_state.choice(a, size=size, replace=replace)]
     return ixs
 
 
