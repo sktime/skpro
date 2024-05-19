@@ -319,7 +319,7 @@ class IID(BaseDistribution):
         target_shape = (n * self.shape[0], self.shape[1])
         samples = np.zeros(target_shape)
 
-        if self._bc_cols:
+        if self._bc_cols:            
             for i, j in np.ndindex(target_shape):
                 samples[i, j] = self.distribution.sample()
         else:
