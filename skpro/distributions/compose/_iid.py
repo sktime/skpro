@@ -91,7 +91,7 @@ class IID(BaseDistribution):
     # switch the method out to _broadcast_iid_future
     def _broadcast_iid(self, method, **kwargs):
         if self.ndim == 0:
-            return getattr(self.distribution, method, **kwargs)
+            return getattr(self.distribution, method)(**kwargs)
 
         def _to_numpy(v):
             if isinstance(v, pd.DataFrame):
@@ -123,21 +123,21 @@ class IID(BaseDistribution):
                 res = np.zeros((self.shape[0], 1))
                 for i in range(self.shape[0]):
                     kwargs_i = {k: v[i] for k, v in kwargs.items()}
-                    res[i] = getattr(self.distribution, method, **kwargs_i)
+                    res[i] = getattr(self.distribution, method)(**kwargs_i)
 
         if method in METHODS_TO_1D and res.shape[1] > 1:
             res = np.mean(res, axis=1)[:, np.newaxis]
         return res
 
     # this should work once outer product is implemented
-    def _broadcast_iid_future(self, method, **kwargs):
+    def _broadcast_iid_future(self, method, **kwargs):      
+        one_dist_res = getattr(self.distribution, method)(**kwargs)
         if self.ndim == 0:
-            return getattr(self.distribution, method, **kwargs)
+            return one_dist_res
 
         # methods that return a single column always
         METHODS_TO_1D = ["energy"]
 
-        one_dist_res = getattr(self.distribution, method, **kwargs)
         if isinstance(one_dist_res, pd.DataFrame):
             one_dist = one_dist_res.values
 
