@@ -10,7 +10,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Delta(BaseDistribution):
-    r"""Delta distribution aka constant distibution aka certain distribution.
+    r"""Delta distribution aka constant distribution aka certain distribution.
 
     This distribution always produces the same value when sampling - ``c``.
     It it useful to represent a constant value as a distribution, e.g., as a baseline

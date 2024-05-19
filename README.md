@@ -1,6 +1,6 @@
 <a href="https://skpro.readthedocs.io/en/latest"><img src="https://github.com/sktime/skpro/blob/main/docs/source/images/skpro-banner.png" width="500" align="right" /></a>
 
-:rocket: **Version 2.2.2 out now!** [Read the release notes here.](https://skpro.readthedocs.io/en/latest/changelog.html).
+:rocket: **Version 2.3.0 out now!** [Read the release notes here.](https://skpro.readthedocs.io/en/latest/changelog.html).
 
 `skpro` is a library for supervised probabilistic prediction in python.
 It provides `scikit-learn`-like, `scikit-base` compatible interfaces to:
@@ -59,7 +59,7 @@ We strongly believe in the value of sharing help publicly, as it allows a wider 
 | :woman_technologist: **Usage Questions**          | [GitHub Discussions] · [Stack Overflow] |
 | :speech_balloon: **General Discussion**        | [GitHub Discussions] |
 | :factory: **Contribution & Development** | `dev-chat` channel · [Discord] |
-| :globe_with_meridians: **Community collaboration session** | [Discord] - Fridays 4 pm UTC, dev/meet-ups channel |
+| :globe_with_meridians: **Community collaboration session** | [Discord] - Fridays 13 UTC, dev/meet-ups channel |
 
 [github issue tracker]: https://github.com/sktime/skpro/issues
 [github discussions]: https://github.com/sktime/skpro/discussions
