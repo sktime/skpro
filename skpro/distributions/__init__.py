@@ -10,6 +10,7 @@ __all__ = [
     "Empirical",
     "Exponential",
     "Fisk",
+    "IID",
     "Laplace",
     "Logistic",
     "LogNormal",
@@ -28,6 +29,7 @@ __all__ = [
 
 from skpro.distributions.beta import Beta
 from skpro.distributions.chi_squared import ChiSquared
+from skpro.distributions.compose import IID
 from skpro.distributions.delta import Delta
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.exponential import Exponential

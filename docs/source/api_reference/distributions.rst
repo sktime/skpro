@@ -84,4 +84,5 @@ Composite distributions
     :toctree: auto_generated/
     :template: class.rst
 
+    IID
     Mixture
