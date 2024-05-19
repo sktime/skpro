@@ -51,7 +51,7 @@ class CyclicBoosting(BaseProbaRegressor):
     bound : str, default='U'
         Different modes defined by supported target range, options are ``S``
             (semi-bound), ``B`` (bound), and ``U`` (unbound).
-        ``bound`` will be removed in version X.X.X.
+        ``bound`` will be removed in version 2.5.0
     lower : float, default=0.0
         lower bound of supported range (only active for bound and semi-bound
         modes). the default value will change from 0.0 to None. To retain prior
@@ -128,9 +128,9 @@ class CyclicBoosting(BaseProbaRegressor):
         self.upper = upper
         self.maximal_iterations = maximal_iterations
 
-        #  TODO <X.X.X>: change default of 'lower' and 'upper' to None and None
+        #  TODO <2.5.0>: change default of 'lower' and 'upper' to None and None
         #  update docstring, and remove warning
-        comment = "Parameter 'bound' will be removed in version X.X.X. \
+        comment = "Parameter 'bound' will be removed in version 2.5.0. \
                    The QPD used for estimation is determined by whether \
                    data is given to 'lower' and 'upper'. and their default value \
                    will change from 0.0, 1.0 to None, None. To retain prior behaviour, \

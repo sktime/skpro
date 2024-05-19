@@ -45,7 +45,7 @@ class QPD_S(BaseDistribution):
     dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
-        ``dist_shape`` will be removed in version X.X.X.
+        ``dist_shape`` will be removed in version 2.5.0
 
     Example
     -------
@@ -98,13 +98,13 @@ class QPD_S(BaseDistribution):
         self.index = index
         self.columns = columns
 
-        #  TODO <X.X.X>: remove default value of 'lower'
+        #  TODO <2.5.0>: remove default value of 'lower'
         #  update docstring, and remove warning. related to PR-232
         link = "https://github.com/Blue-Yonder-OSS/cyclic-boosting/ \
                 blob/a62eccffcd611e87a850b9bf38ea699fbea1fb31/ \
                 cyclic_boosting/quantile_matching.py#L12"
         comment = f"Parameter 'dist_shape' of 'QPD_S' will be removed \
-                    in version X.X.X. \
+                    in version 2.5.0 \
                    'J_QPD_S' is used instead of 'J_QPD_extended_S'. \
                     See {link} for details"
 
@@ -112,7 +112,7 @@ class QPD_S(BaseDistribution):
             warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         comment = "The default value of parameter 'lower' of 'QPD_S' will be removed \
-                   in version X.X.X. \
+                   in version 2.5.0. \
                    To retain prior behaviour, set 'lower' and 'upper' to 0.0 and \
                    large number explicitly"
 
@@ -184,7 +184,7 @@ class QPD_S(BaseDistribution):
         """
         #  TODO <X.X.X>: remove warning
         comment = "Parameter 'lower' and 'upper' will be moved to \
-                   class parameters in version X.X.X. \
+                   class parameters in version 2.5.0. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
         warnings.warn(comment, DeprecationWarning, stacklevel=2)
@@ -207,7 +207,7 @@ class QPD_S(BaseDistribution):
         """
         #  TODO <X.X.X>: remove warning
         comment = "Parameter 'lower' and 'upper' will be moved to \
-                   class parameters in version X.X.X. \
+                   class parameters in version 2.5.0. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
         warnings.warn(comment, DeprecationWarning, stacklevel=2)
@@ -309,7 +309,7 @@ class QPD_B(BaseDistribution):
     dist_shape: float, optional, default=0.0
         parameter modifying the logistic base distribution via
         sinh/arcsinh-scaling (only active in sinhlogistic version)
-        ``dist_shape`` will be removed in version X.X.X.
+        ``dist_shape`` will be removed in version 2.5.0
 
     Example
     -------
@@ -371,14 +371,14 @@ class QPD_B(BaseDistribution):
                 blob/a62eccffcd611e87a850b9bf38ea699fbea1fb31/ \
             cyclic_boosting/quantile_matching.py#L168"
         comment = f"Parameter 'dist_shape' of 'QPD_B' will be removed \
-                    in version X.X.X. \
+                    in version 2.5.0. \
                    'J_QPD_B' is used instead of 'J_QPD_extended_B'. \
                     See {link} for details"
         if dist_shape != 0.0:
             warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
         comment = "The default value of parameter 'lower' and 'upper' of 'QPD_B' will \
-                   be removed in version X.X.X. \
+                   be removed in version 2.5.0. \
                    To retain prior behaviour, set 'lower' and 'upper' to 0.0 and 1.0 \
                    explicitly"
         warnings.warn(comment, DeprecationWarning, stacklevel=2)
@@ -448,7 +448,7 @@ class QPD_B(BaseDistribution):
         """
         #  TODO <X.X.X>: remove warning
         comment = "Parameter 'lower' and 'upper' will be moved to \
-                   class parameters in version X.X.X. \
+                   class parameters in version 2.5.0. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
         warnings.warn(comment, DeprecationWarning, stacklevel=2)
@@ -471,7 +471,7 @@ class QPD_B(BaseDistribution):
         """
         #  TODO <X.X.X>: remove warning
         comment = "Parameter 'lower' and 'upper' will be moved to \
-                   class parameters in version X.X.X. \
+                   class parameters in version 2.5.0. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
         warnings.warn(comment, DeprecationWarning, stacklevel=2)
@@ -685,7 +685,7 @@ class QPD_U(BaseDistribution):
         """
         #  TODO <X.X.X>: remove warning
         comment = "Parameter 'lower' and 'upper' will be moved to \
-                   class parameters in version X.X.X. \
+                   class parameters in version 2.5.0. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
         warnings.warn(comment, DeprecationWarning, stacklevel=2)
@@ -708,7 +708,7 @@ class QPD_U(BaseDistribution):
         """
         #  TODO <X.X.X>: remove warning
         comment = "Parameter 'lower' and 'upper' will be moved to \
-                   class parameters in version X.X.X. \
+                   class parameters in version 2.5.0. \
                    To retain prior behaviour, set 'lower' to 0.0 \
                    and 'upper' to large number explicitly"
         warnings.warn(comment, DeprecationWarning, stacklevel=2)
@@ -785,7 +785,7 @@ class QPD_U(BaseDistribution):
 def exp_func(x, qpd):
     """Return Expectation."""
     # TODO: scipy.integrate will be removed in scipy 1.12.0
-    comment = "Parameter 'qpd' will be removed to in version X.X.X."
+    comment = "Parameter 'qpd' will be removed to in version 2.5.0."
     warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
     pdf = derivative(qpd.cdf, x, dx=1e-6)
@@ -795,7 +795,7 @@ def exp_func(x, qpd):
 def var_func(x, mu, qpd):
     """Return Variance."""
     # TODO: scipy.integrate will be removed in scipy 1.12.0
-    comment = "Parameter 'qpd' will be removed to in version X.X.X."
+    comment = "Parameter 'qpd' will be removed to in version 2.5.0."
     warnings.warn(comment, DeprecationWarning, stacklevel=2)
 
     pdf = derivative(qpd.cdf, x, dx=1e-6)
