@@ -64,14 +64,37 @@ class Histogram(BaseDistribution):
 
         Parameters
         ----------
-        x : 2D np.ndarray, same shape as ``self``
+        x : 1D np.ndarray, same shape as ``self``
             values to evaluate the cdf at
 
         Returns
         -------
-        2D np.ndarray, same shape as ``self``
+        1D np.ndarray, same shape as ``self``
             cdf values at the given points
         """
+        bins = self.bins
+        bin_mass = self.bin_mass
+        cdf = []
+        pdf = self._pdf(x)
+        if isinstance(bins, list):
+            for X in x:
+                # cum_bin_index is an array of all indices
+                # of the bins or bin edges that are less than X.
+                cum_bin_index = np.where(X >= bins)[0]
+                X_index_in_x = np.where(X == x)
+                if len(cum_bin_index) == len(bins):
+                    cdf.append(1)
+                elif len(cum_bin_index) > 1:
+                    cdf.append(
+                        np.cumsum(bin_mass)[-2]
+                        + pdf[X_index_in_x][0] * (X - bins[cum_bin_index[-1]])
+                    )
+                elif len(cum_bin_index) == 0:
+                    cdf.append(0)
+                elif len(cum_bin_index) == 1:
+                    cdf.append(pdf[X_index_in_x][0] * (X - bins[cum_bin_index[-1]]))
+            cdf = np.array(cdf)
+        return cdf
 
 
 # import pandas as pd
@@ -80,3 +103,5 @@ class Histogram(BaseDistribution):
 #    ,index=pd.Index(np.arange(3)),columns=pd.Index(np.arange(2)))
 # pdf = hist._pdf(x)
 # print(pdf)
+# cdf = hist._cdf(x)
+# print(cdf)
