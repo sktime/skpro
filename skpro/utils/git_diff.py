@@ -174,6 +174,6 @@ def _get_packages_with_changed_specs():
         packages.append(pkg)
 
     # make unique
-    packages = list(set(packages))
+    packages = tuple(set(packages))
 
     return packages
