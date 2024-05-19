@@ -58,6 +58,8 @@ class IID(BaseDistribution):
         else:  # not dist_scalar
             if distribution.shape[1] == 1 and columns is not None:
                 self._bc_cols = True
+            else:
+                self._bc_cols = False
 
         # what is the index of self?
         if not dist_scalar and index is None:
