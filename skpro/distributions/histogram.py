@@ -7,8 +7,6 @@ import numpy as np
 
 from skpro.distributions.base import BaseDistribution
 
-# import pandas as pd
-
 
 class Histogram(BaseDistribution):
     """Histogram Probability Distribution.
@@ -21,17 +19,16 @@ class Histogram(BaseDistribution):
     bins : float or array of float 1D
         array has the bin boundaries with 1st element the first bin's
         starting point and rest are the bin ending points of all bins
-    bin_density: array of float 1D
-        The density of bins.
-        i.e., it is equal to the empirical probability divided
-        by the interval length, or bin width.
+    bin_mass: array of float 1D
+        Mass of the bins or Area of the bins.
+        Sum of all the bin_mass must be 1.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
     """
 
-    def __init__(self, bins, bin_density, index=None, columns=None):
+    def __init__(self, bins, bin_mass, index=None, columns=None):
         self.bins = bins
-        self.bin_density = bin_density
+        self.bin_mass = bin_mass
 
         super().__init__(index=index, columns=columns)
 
@@ -48,26 +45,38 @@ class Histogram(BaseDistribution):
         1D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
-        bin_density = np.array(self.bin_density.copy())
+        bin_mass = np.array(self.bin_mass.copy())
         bins = self.bins
         pdf = []
         if isinstance(bins, list):
-            bin_width = []
-            for i in range(1, len(bins)):
-                bin_width.append(bins[i] - bins[i - 1])
-            bin_width = np.array(bin_width)
-            pdf_arr = bin_density / bin_width
-            for i in range(len(x)):
-                for j in range(1, len(bins)):
-                    if x[i] < bins[j] and x[i] >= bins[j - 1]:
-                        pdf.append(pdf_arr[j - 1])
-                        break
+            bin_width = np.diff(bins)
+            pdf_arr = bin_mass / bin_width
+            for X in x:
+                if len(np.where(X < bins)[0]) and len(np.where(X >= bins)[0]):
+                    pdf.append(pdf_arr[min(np.where(X < bins)[0]) - 1])
+                else:
+                    pdf.append(0)
             pdf = np.array(pdf)
             return pdf
 
+    def _cdf(self, x):
+        """Cumulative distribution function.
 
-# x=np.array([1,0.75,1.8,2.5,3,5,6,6.5])
-# hist = Histogram(bins=[0.5,2,7],bin_density=[0.3,0.7]
-# ,index=pd.Index(np.arange(3)),columns=pd.Index(np.arange(2)))
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+
+
+# import pandas as pd
+# x=np.array([100,1,0.75,1.8,2.5,3,5,6,6.5,0])
+# hist = Histogram(bins=[0.5,2,7],bin_mass=[0.3,0.7]
+#    ,index=pd.Index(np.arange(3)),columns=pd.Index(np.arange(2)))
 # pdf = hist._pdf(x)
 # print(pdf)
