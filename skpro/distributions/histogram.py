@@ -32,6 +32,35 @@ class Histogram(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
+    def _mean(self):
+        """Return expected value of the distribution.
+
+        Returns
+        -------
+        float, sum(bin_mass)/range(bins)
+            expected value of distribution (entry-wise)
+        """
+        bins = self.bins
+        # 1 is the cumulative sum of all bin_mass
+        return 1 / (max(bins) - min(bins))
+
+    def _var(self):
+        r"""Return element/entry-wise variance of the distribution.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            variance of the distribution (entry-wise)
+        """
+        bins = self.bins
+        bin_mass = self.bin_mass
+        bin_width = np.diff(bins)
+        mean = self._mean()
+        var = np.sum((bin_mass / bin_width - mean) * bin_width) / (
+            max(bins) - min(bins)
+        )
+        return var
+
     def _pdf(self, x):
         """Probability density function.
 
@@ -98,10 +127,19 @@ class Histogram(BaseDistribution):
 
 
 # import pandas as pd
-# x=np.array([100,1,0.75,1.8,2.5,3,5,6,6.5,0])
-# hist = Histogram(bins=[0.5,2,7],bin_mass=[0.3,0.7]
-#    ,index=pd.Index(np.arange(3)),columns=pd.Index(np.arange(2)))
+
+# x = np.array([100, 1, 0.75, 1.8, 2.5, 3, 5, 6, 6.5, 0])
+# hist = Histogram(
+#     bins=[0.5, 2, 7],
+#     bin_mass=[0.3, 0.7],
+#     index=pd.Index(np.arange(3)),
+#     columns=pd.Index(np.arange(2)),
+# )
 # pdf = hist._pdf(x)
 # print(pdf)
 # cdf = hist._cdf(x)
 # print(cdf)
+# mean = hist._mean()
+# print(mean)
+# var = hist._var()
+# print(var)
