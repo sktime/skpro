@@ -130,7 +130,7 @@ class IID(BaseDistribution):
         return res
 
     # this should work once outer product is implemented
-    def _broadcast_iid_future(self, method, **kwargs):      
+    def _broadcast_iid_future(self, method, **kwargs):
         one_dist_res = getattr(self.distribution, method)(**kwargs)
         if self.ndim == 0:
             return one_dist_res
