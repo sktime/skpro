@@ -43,7 +43,7 @@ class IID(BaseDistribution):
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
-        "distr:paramtype": "parametric",
+        "distr:paramtype": "composite",
     }
 
     def __init__(self, distribution, index=None, columns=None):
@@ -77,6 +77,11 @@ class IID(BaseDistribution):
                 assert len(dist_cols) == len(columns)
 
         super().__init__(index=index, columns=columns)
+
+        tags_to_clone = [
+            "distr:measuretype", "capabilities:exact", "capabilities:approx"
+        ]
+        self.clone_tags(distribution, tags_to_clone)
 
     # TODO - use outer product once implemented, see issue #341
     # switch the method out to _broadcast_iid_future
