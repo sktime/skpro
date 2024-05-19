@@ -79,7 +79,9 @@ class IID(BaseDistribution):
         super().__init__(index=index, columns=columns)
 
         tags_to_clone = [
-            "distr:measuretype", "capabilities:exact", "capabilities:approx"
+            "distr:measuretype",
+            "capabilities:exact",
+            "capabilities:approx",
         ]
         self.clone_tags(distribution, tags_to_clone)
 
