@@ -6,10 +6,12 @@ on:
       - 'docs/**'
     branches:
       - main
+      - sets
       - 'release**'
   pull_request:
     branches:
       - main
+      - sets
       - 'release**'
     paths-ignore:
       - 'docs/**'

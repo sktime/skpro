@@ -35,7 +35,9 @@ Continuous support
     :toctree: auto_generated/
     :template: class.rst
 
+    Beta
     ChiSquared
+    Exponential
     Fisk
     Laplace
     Logistic
@@ -65,8 +67,10 @@ Non-parametric and empirical distributions
     :toctree: auto_generated/
     :template: class.rst
 
+    Delta
     Empirical
     QPD_Empirical
+    QPD_Johnson
     QPD_U
     QPD_S
     QPD_B

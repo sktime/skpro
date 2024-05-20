@@ -33,6 +33,7 @@ class ChiSquared(BaseDistribution):
         # --------------
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
 

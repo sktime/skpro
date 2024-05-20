@@ -136,3 +136,98 @@ def test_proba_plotting(fun):
     n = Normal(mu=1, sigma=1)
     ax = n.plot(fun=fun)
     assert isinstance(ax, Axes)
+
+
+def test_to_df_parametric():
+    """Tests coercion to DataFrame via get_params_df and to_df."""
+    from skpro.distributions.normal import Normal
+
+    cols = ["foo", "bar"]
+
+    # default case, 2D distribution with n_columns>1
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=cols)
+
+    param_names = n.get_param_names()
+    params_df = n.get_params_df()
+    for k, v in params_df.items():
+        assert k in param_names
+        assert isinstance(v, pd.DataFrame)
+        assert (v.index == n.index).all()
+        assert (v.columns == n.columns).all()
+
+    all_params_df = n.to_df()
+    assert isinstance(all_params_df, pd.DataFrame)
+    assert (all_params_df.index == n.index).all()
+    assert isinstance(all_params_df.columns, pd.MultiIndex)
+
+    level0_vals = all_params_df.columns.get_level_values(0).unique()
+    level1_vals = all_params_df.columns.get_level_values(1).unique()
+
+    assert (level0_vals == n.columns).all()
+    for ix in level1_vals:
+        assert ix in param_names
+        assert ix not in ["index", "columns"]
+
+    # scalar case
+    n = Normal(mu=2, sigma=3)
+
+    param_names = n.get_param_names()
+    params_df = n.get_params_df()
+
+    for k, v in params_df.items():
+        assert k in param_names
+        assert isinstance(v, pd.DataFrame)
+        assert (v.index == pd.RangeIndex(1)).all()
+        assert (v.columns == pd.RangeIndex(1)).all()
+
+    all_params_df = n.to_df()
+    assert isinstance(all_params_df, pd.DataFrame)
+    assert (all_params_df.index == pd.RangeIndex(1)).all()
+    assert not isinstance(all_params_df.columns, pd.MultiIndex)
+
+    for ix in all_params_df.columns:
+        assert ix in param_names
+        assert ix not in ["index", "columns"]
+
+
+def test_head_tail():
+    """Test head and tail utility functions."""
+    from skpro.distributions.normal import Normal
+
+    cols = ["foo", "bar"]
+
+    # default case, 2D distribution with n_columns>1
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=cols)
+
+    nh = n.head(2)
+    assert isinstance(nh, Normal)
+    assert nh.shape == (2, 2)
+    assert (nh.columns == n.columns).all()
+    assert (nh.index == n.index[:2]).all()
+
+    nh2 = n.head()
+    assert isinstance(nh2, Normal)
+    assert nh2.shape == (3, 2)
+    assert (nh2.columns == n.columns).all()
+    assert (nh2.index == n.index).all()
+
+    nt = n.tail(2)
+    assert isinstance(nt, Normal)
+    assert nt.shape == (2, 2)
+    assert (nt.columns == n.columns).all()
+    assert (nt.index == n.index[1:]).all()
+
+    nt2 = n.tail()
+    assert isinstance(nt2, Normal)
+    assert nt2.shape == (3, 2)
+    assert (nt2.columns == n.columns).all()
+    assert (nt2.index == n.index).all()
+
+    # scalar case
+    n = Normal(mu=2, sigma=3)
+
+    nh = n.head()
+    assert nh.ndim == 0
+
+    nt = n.tail(42)
+    assert nt.ndim == 0
