@@ -138,6 +138,7 @@ Tree ensemble models
     SurvivalForestXtraSkSurv
     SurvGradBoostSkSurv
     SurvGradBoostCompSkSurv
+    NGBoostSurvival
 
 Base
 ----

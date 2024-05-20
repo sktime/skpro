@@ -1,6 +1,6 @@
 [project]
 name = "skpro"
-version = "2.2.2"
+version = "2.3.0"
 description = "A unified framework for probability distributions and probabilistic supervised regression"
 authors = [
     {name = "skpro developers", email = "sktime.toolbox@gmail.com"},
@@ -52,6 +52,7 @@ dependencies = [
 [project.optional-dependencies]
 all_extras = [
     "attrs",
+    "cyclic-boosting>=1.4.0; python_version < '3.12'",
     "distfit",
     "lifelines<0.29.0",
     "mapie",
@@ -63,7 +64,6 @@ all_extras = [
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
-    "cyclic-boosting>=1.2.5; python_version < '3.12'"
 ]
 
 dev = [

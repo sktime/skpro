@@ -33,7 +33,7 @@ Let's have a look at an example of Boston Housing price prediction (using sklear
 
 If you are familiar with scikit-learn you will recognise that we define and train a model on the boston housing dataset and obtain the test prediction ``y_pred``. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values -- nothing unexpected there.
 
-Crucially, however, the skpro model does not just return a list of numbers or point predictions here. Instead, ``y_pred`` is a probablistic prediction, i.e. it represents probability distributions for each individual data point.
+Crucially, however, the skpro model does not just return a list of numbers or point predictions here. Instead, ``y_pred`` is a probabilistic prediction, i.e. it represents probability distributions for each individual data point.
 We can, for instance, obtain the standard deviation of the predicted distribution that corresponds with the first (0th) test point (or any other test point distribution) ::
 
     >>> y_pred[0].std()
@@ -44,7 +44,7 @@ Notably, the interface represents all distributional properties, including the d
     >>> y_pred[0].pdf(x=42)
     0.00192808538756
 
-Furthermore, it is possible to conveniently access the distributional properties in their vectorized form accross the test sample::
+Furthermore, it is possible to conveniently access the distributional properties in their vectorized form across the test sample::
 
     >>> y_pred.std().shape
     (152,)
