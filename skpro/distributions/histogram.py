@@ -26,6 +26,14 @@ class Histogram(BaseDistribution):
     columns : pd.Index, optional, default = RangeIndex
     """
 
+    _tags = {
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": ["mean", "var", "pdf", "cdf", "ppf"],
+        "distr:measuretype": "continuous",
+        "distr:paramtype": "parametric",
+        "broadcast_init": "on",
+    }
+
     def __init__(self, bins, bin_mass, index=None, columns=None):
         self.bins = bins
         self.bin_mass = bin_mass
@@ -106,6 +114,7 @@ class Histogram(BaseDistribution):
         cdf = []
         pdf = self._pdf(x)
         if isinstance(bins, list):
+            cum_sum_mass = np.cumsum(bin_mass)
             for X in x:
                 # cum_bin_index is an array of all indices
                 # of the bins or bin edges that are less than X.
@@ -115,7 +124,7 @@ class Histogram(BaseDistribution):
                     cdf.append(1)
                 elif len(cum_bin_index) > 1:
                     cdf.append(
-                        np.cumsum(bin_mass)[-2]
+                        cum_sum_mass[cum_bin_index[-2]]
                         + pdf[X_index_in_x][0] * (X - bins[cum_bin_index[-1]])
                     )
                 elif len(cum_bin_index) == 0:
@@ -125,13 +134,56 @@ class Histogram(BaseDistribution):
             cdf = np.array(cdf)
         return cdf
 
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        bins = self.bins
+        bin_mass = self.bin_mass
+        ppf = []
+        if isinstance(bins, list):
+            cum_sum_mass = np.cumsum(bin_mass)
+            # print(cum_sum_mass)
+            pdf_bins = self._pdf(np.array(bins))
+            # print('pdf: ',pdf_bins)
+            for P in p:
+                cum_bin_index_P = np.where(P >= cum_sum_mass)[0]
+                # print(cum_bin_index_P[0])
+                if P < 0 or P > 1:
+                    ppf.append(np.NaN)
+                elif len(cum_bin_index_P) == 0:
+                    X = P / pdf_bins[len(cum_bin_index_P)]
+                    ppf.append(X)
+                elif len(cum_bin_index_P) > 0:
+                    if P - cum_sum_mass[cum_bin_index_P[-1]] > 0:
+                        X = (
+                            bins[cum_bin_index_P[-1] + 1]
+                            + (P - cum_sum_mass[cum_bin_index_P[-1]])
+                            / pdf_bins[len(cum_bin_index_P)]
+                        )
+                    else:
+                        X = bins[cum_bin_index_P[-1] + 1]
+                    ppf.append(X)
+
+        ppf = np.array(ppf)
+        return ppf
+
 
 # import pandas as pd
 
-# x = np.array([100, 1, 0.75, 1.8, 2.5, 3, 5, 6, 6.5, 0])
+# x = np.array([-1, 0, 0.2, 0.4, 1.1, 1.8, 2, 2.2, 3.5, 5])
 # hist = Histogram(
-#     bins=[0.5, 2, 7],
-#     bin_mass=[0.3, 0.7],
+#     bins=[0, 1, 2, 3, 4],
+#     bin_mass=[0.1, 0.2, 0, 0.7],
 #     index=pd.Index(np.arange(3)),
 #     columns=pd.Index(np.arange(2)),
 # )
@@ -143,3 +195,6 @@ class Histogram(BaseDistribution):
 # print(mean)
 # var = hist._var()
 # print(var)
+# p = np.array([-1, 0, 0.02, 0.04, 0.12, 0.26, 0.3, 0.3, 0.8, 1])
+# ppf = hist._ppf(p)
+# print(ppf)
