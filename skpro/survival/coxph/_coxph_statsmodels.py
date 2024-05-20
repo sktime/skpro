@@ -104,7 +104,7 @@ class CoxPH(BaseSurvReg):
 
         endog = y.to_numpy().flatten()
         exog = X
-        status = C.to_numpy().flatten() if C is not None else None
+        status = 1 - C.to_numpy().flatten() if C is not None else None
 
         params = {
             "ties": self.ties,

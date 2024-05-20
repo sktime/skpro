@@ -70,7 +70,7 @@ class ClassName(BaseProbaRegressor):
     # parameter checks can go after super call
     def __init__(self, paramname, paramname2="paramname2default"):
         # estimators should precede parameters
-        #  if estimators have default values, set None and initalize below
+        #  if estimators have default values, set None and initialize below
 
         # todo: write any hyper-parameters and components to self
         self.paramname = paramname
