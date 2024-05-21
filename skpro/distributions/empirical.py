@@ -274,9 +274,9 @@ class Empirical(BaseDistribution):
         if rowidx is None or colidx is None:
             raise ValueError("iat method requires both row and column index")
         self_subset = self.iloc[[rowidx], [colidx]]
-        spl_subset = self_subset.spl.droplevel(0)
+        spl_subset = self_subset.spl.droplevel(-1)
         if self.weights is not None:
-            wts_subset = self_subset.weights.droplevel(0)
+            wts_subset = self_subset.weights.droplevel(-1)
         else:
             wts_subset = None
 
