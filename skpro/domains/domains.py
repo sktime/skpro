@@ -31,7 +31,7 @@ class Interval(Domain):
     -------
     >>> from skpro.domains import Interval
 
-    >>> interval = Interval(values=[1, 2], parenthesis='()')
+    >>> interval = Interval(values=[1, 2], parenthesis='open')
     """
 
     _PARENTHESIS = {
@@ -126,6 +126,13 @@ class Interval(Domain):
         """Return the boundary of the interval, i.e., the extremities."""
         return self._left, self._right
 
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        return {
+            "values": [1, 2],
+            "parenthesis": "open",
+        }
+
 
 class Finite(Domain):
     r"""Finite set of the real line.
@@ -175,6 +182,12 @@ class Finite(Domain):
         """Return the boundary of the finite set, i.e., the finite set itself."""
         return tuple(sorted(self.values))
 
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        return {
+            "values": [1, 2, 3, 4, 5],
+        }
+
 
 class Product(Domain):
     r"""Direct product of sets.
@@ -192,7 +205,7 @@ class Product(Domain):
     -------
     >>> from skpro.domains import Product
 
-    >>> product = Product([Interval([1, 2]), Finite([3, 4, 5, 6], Interval([7, 9]))])
+    >>> product = Product([Interval([1, 2]), Finite([3, 4, 5, 6]), Interval([7, 9])])
     """
 
     def __init__(self, elements: List[Union[Interval, Finite]]):
@@ -246,3 +259,9 @@ class Product(Domain):
         the boundary of the elements.
         """
         return tuple(element.boundary for element in self.product)
+
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        return {
+            "elements": [Interval([1, 2]), Finite([3, 4, 5, 6]), Interval([7, 9])],
+        }
