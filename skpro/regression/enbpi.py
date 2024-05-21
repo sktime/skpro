@@ -15,12 +15,13 @@ from skpro.utils.sklearn import prep_skl_df
 
 
 class EnbpiRegressor(BaseProbaRegressor):
-    r"""EnbPI probabilistic regressor, for conformal prediction intervals.
+    r"""EnbPI regressor, aka Jackknife+-after-bootstrap, conformal intervals.
 
     Wraps an ``sklearn`` regressor and turns it into an ``skpro`` regressor
     with access to all probabilistic prediction methods.
 
-    Follows the original algorithm in [1]_, in ``predict_proba`` a distribution
+    Follows the original algorithms in [1]_ and [2]_.
+    In ``predict_proba``, a distribution
     implied by the quantile predictions is returned, an ``Empirical`` distribution.
 
     Fits ``n_estimators`` clones of a tabular ``sklearn`` regressor on
@@ -28,8 +29,10 @@ class EnbpiRegressor(BaseProbaRegressor):
     independent row samples with replacement.
 
     The clones are aggregated to predict quantiles of the target distribution,
-    following the original algorithm in [1]_. The parameters in the reference
-    map as follows: :math:`\mathcal{A}` is ``estimator``, :math:`B` is
+    following the original algorithms in [1]_ and [2]_.
+
+    The parameters in the reference [2]_ are mapped to the parameters of the
+    estimator as follows: :math:`\mathcal{A}` is ``estimator``, :math:`B` is
     ``n_bootstrap_samples``, :math:`x_i, i = 1, \dots, T` are the rows of
     ``X`` in ``fit``, :math:`y_i, i = 1, \dots, T` are the rows of ``y`` in ``fit``,
     :math:`x_i, i = T+1, \dots, T + T_1` are the rows of ``X`` in ``predict_interval``,
@@ -53,9 +56,12 @@ class EnbpiRegressor(BaseProbaRegressor):
         If callable, must be a function of signature (n, m) -> m, or (n) -> 1
     symmetrize : bool, default=True
         whether to symmetrize the prediction intervals and predictive quantiles
-        Default = True leads to the original algorithm in [1]_.
+        Default = True leads to the original algorithm in [2]_.
         If False, the conformalized sample and the prediction intervals are not
         symmetrized.
+    replace : bool, default=True
+        whether to sample the bootstrap sample with replacement or without replacement.
+        Default = True leads to the algorithm in [2]_.
     random_state : int, RandomState instance or None, optional (default=None)
         If int, ``random_state`` is the seed used by the random number generator;
         If ``RandomState`` instance, ``random_state`` is the random number generator;
@@ -69,7 +75,10 @@ class EnbpiRegressor(BaseProbaRegressor):
 
     References
     ----------
-    .. [1] Xu, Chen and Yao Xie (2021).
+    .. [1] Byol Kim, Chen Xu, and Rina Foygel Barber (2020).
+      Predictive Inference Is Free with the Jackknife+-after-Bootstrap.
+      Advances in Neural Information Processing Systems 33, 2020.
+    .. [2] Xu, Chen and Yao Xie (2021).
       Conformal prediction interval for dynamic time-series.
       The Proceedings of the 38th International Conference on Machine Learning,
       PMLR 139, 2021.
@@ -103,12 +112,14 @@ class EnbpiRegressor(BaseProbaRegressor):
         n_bootstrap_samples=100,
         agg_fun="mean",
         symmetrize=True,
+        replace=True,
         random_state=None,
     ):
         self.estimator = estimator
         self.n_bootstrap_samples = n_bootstrap_samples
         self.agg_fun = agg_fun
         self.symmetrize = symmetrize
+        self.replace = replace
         self.random_state = random_state
         self._random_state = check_random_state(random_state)
 
@@ -159,15 +170,17 @@ class EnbpiRegressor(BaseProbaRegressor):
         # coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
-        y_pred_insample = np.ones((n_bootstrap_samples,) + y.shape) * np.nan
+        y_pred_bs = np.ones((n_bootstrap_samples,) + y.shape) * np.nan
+        bs_vs_ix = np.zeros((n, n_bootstrap_samples))
 
         for i in range(n_bootstrap_samples):
             esti = clone(estimator)
             row_iloc = pd.RangeIndex(n)
             row_ss = _random_ss_ix(
-                row_iloc, size=n, replace=True, random_state=self._random_state
+                row_iloc, size=n, replace=self.replace, random_state=self._random_state
             )
             inst_ix_i = inst_ix[row_ss]
+            bs_vs_ix[np.unique(row_ss), i] = 1
 
             Xi = X.loc[inst_ix_i]
             Xi = Xi.reset_index(drop=True)
@@ -177,18 +190,33 @@ class EnbpiRegressor(BaseProbaRegressor):
 
             self.estimators_ += [esti.fit(Xi, yi)]
 
-            y_pred = esti.predict(Xi)
-            y_pred_insample[[i], row_ss] = _coerce_numpy2d(y_pred)
+            y_pred = esti.predict(X)
+            y_pred_bs[[i]] = _coerce_numpy2d(y_pred)
 
-        spl = self._agg_preds(y_pred_insample)
+        y_pred_insample = np.ones(y.shape) * np.nan
 
-        errs = y.values - spl
+        for i in range(n):
+            y_pred_insample[[i], :] = self._pred_phi_sans_i(
+                y_pred_bs[:, [i], :], i, bs_vs_ix
+            )
+
+        errs = y.values - y_pred_insample
         if self.symmetrize:
             errs = np.abs(errs)
 
-        errs.sort(axis=0)
         self._errs = errs
+        self._bs_vs_ix = bs_vs_ix
+        self._n_train = n
+
         return self
+
+    def _pred_phi_sans_i(self, y_preds, i, bs_vs_ix):
+        # y_preds - (n_bootstrap_samples, n_samples, n_vars)
+        # bs_vs_ix - (n_train_samples, n_bootstrap_samples)
+        # output: (n_samples, n_vars)
+        bs_wo_i = (bs_vs_ix[i] == 0).flatten()
+        y_preds_wo_i = y_preds[bs_wo_i]
+        return self._agg_preds(y_preds_wo_i)
 
     def _agg_preds(self, preds):
         """Aggregate predictions of bootstrap samples.
@@ -236,32 +264,40 @@ class EnbpiRegressor(BaseProbaRegressor):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        cols = self._cols  # number of targets
+        cols = self._cols
+        n_cols = len(cols)  # number of targets
+        n_est = self.n_bootstrap_samples
+        n_train = self._n_train
+        estimators_ = self.estimators_
+        bs_vs_ix = self._bs_vs_ix
+        _errs = self._errs
 
         # coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
         n = len(X)
 
-        y_preds = np.zeros((len(self.estimators_), n, len(cols)))
+        y_preds = np.zeros((n_est, n, n_cols))
 
-        for i, est in enumerate(self.estimators_):
+        for i, est in enumerate(estimators_):
             y_preds[i] = _coerce_numpy2d(est.predict(X))
 
-        # y_preds now has shape (n_estimators, n_samples, len(cols))
-        # or, if symmetrize, (2 * n_estimators, n_samples, len(cols))
-        y_preds_agg = self._agg_preds(y_preds)
-        # y_preds_agg now has shape (n_samples, len(cols))
+        # y_preds_agg - (n_train, n, len(cols))
+        y_preds_agg = np.zeros((n_train, n, n_cols))
+        for i in range(n_train):
+            y_preds_agg[[i], :, :] = self._pred_phi_sans_i(y_preds, i, bs_vs_ix)
 
         if self.symmetrize:
-            errs = np.concatenate([self._errs, -self._errs], axis=0)
+            errs = np.concatenate([_errs, -_errs], axis=0)
+            y_preds_rep = np.tile(y_preds_agg, (2, 1, 1))
         else:
-            errs = self._errs
+            errs = _errs
+            y_preds_rep = y_preds_agg
+
+        errs = np.expand_dims(errs, axis=1)
 
         n_emp_spl = len(errs)
-        y_preds_rep = np.tile(y_preds_agg, (n_emp_spl, 1))
-
-        errs = np.repeat(errs, n, axis=0)
         emp_df_vals = y_preds_rep + errs
+        emp_df_vals = np.reshape(emp_df_vals, (n_emp_spl * n, n_cols))
 
         emp_ix = pd.MultiIndex.from_product([range(n_emp_spl), X.index])
 
