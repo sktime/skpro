@@ -29,13 +29,13 @@ class Histogram(BaseDistribution):
     columns : pd.Index, optional, default = RangeIndex
     """
 
-    # _tags = {
-    #     "capabilities:approx": ["pdfnorm"],
-    #     "capabilities:exact": ["mean", "var", "pdf", "cdf", "ppf"],
-    #     "distr:measuretype": "continuous",
-    #     "distr:paramtype": "parametric",
-    #     "broadcast_init": "on",
-    # }
+    _tags = {
+        #     "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        #     "distr:measuretype": "continuous",
+        #     "distr:paramtype": "parametric",
+        #     "broadcast_init": "on",
+    }
 
     def __init__(self, bins, bin_mass, index=None, columns=None):
         self.bins = bins
@@ -52,6 +52,7 @@ class Histogram(BaseDistribution):
             expected value of distribution (entry-wise)
         """
         bins = self.bins
+        bin_mass = np.array(self.bin_mass)
         # convert the bins into a list
         if isinstance(bins, tuple):
             bins_to_list = (bins[0], bins[1], bins[2])
@@ -60,8 +61,13 @@ class Histogram(BaseDistribution):
             for b in range(bins_to_list[2]):
                 bins.append(bins_to_list[0] + b * bin_width)
             bins.append(bins_to_list[1])
-        # 1 is the cumulative sum of all bin_mass
-        return 1 / (max(bins) - min(bins))
+
+        if isinstance(bins, list):
+            from numpy.lib.stride_tricks import sliding_window_view
+
+            win_sum_bins = np.sum(sliding_window_view(bins, window_shape=2), axis=1)
+            mean = 0.5 * np.dot(win_sum_bins, bin_mass)
+            return mean
 
     def _var(self):
         r"""Return element/entry-wise variance of the distribution.
@@ -72,7 +78,7 @@ class Histogram(BaseDistribution):
             variance of the distribution (entry-wise)
         """
         bins = self.bins
-        bin_mass = self.bin_mass
+        bin_mass = np.array(self.bin_mass)
 
         # convert the bins into a list
         if isinstance(bins, tuple):
@@ -85,10 +91,12 @@ class Histogram(BaseDistribution):
 
         if isinstance(bins, list):
             bin_width = np.diff(bins)
+            from numpy.lib.stride_tricks import sliding_window_view
+
+            win_sum_bins = np.sum(sliding_window_view(bins, window_shape=2), axis=1)
             mean = self._mean()
-            var = np.sum(((bin_mass / bin_width - mean) * bin_width) ** 2) / (
-                max(bins) - min(bins)
-            )
+            win_prod_bins = np.prod(sliding_window_view(bins, window_shape=2), axis=1)
+            var = np.dot(bin_mass / 3, (win_sum_bins**2 - win_prod_bins)) - mean**2
             return var
 
     def _pdf(self, x):
@@ -235,14 +243,14 @@ class Histogram(BaseDistribution):
         # array case examples
         params1 = {
             "bins": [0, 1, 2, 3, 4],
-            "bin_mass": [0.1, 0.2, 0, 0.7, 1],
+            "bin_mass": [0.1, 0.2, 0.3, 0.4],
             "index": pd.Index([1, 2, 3, 4]),
             "columns": pd.Index(["a"]),
         }
 
         params2 = {
             "bins": (0, 4, 4),
-            "bin_mass": [0.1, 0.2, 0, 0.7, 1],
+            "bin_mass": [0.1, 0.2, 0, 0.7],
         }
 
         return [params1, params2]
