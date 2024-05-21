@@ -241,8 +241,8 @@ class Histogram(BaseDistribution):
         }
 
         params2 = {
-            "bins": 0,
-            "bin_mass": 1,
+            "bins": (0, 4, 4),
+            "bin_mass": [0.1, 0.2, 0, 0.7, 1],
         }
 
         return [params1, params2]
