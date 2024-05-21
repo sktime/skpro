@@ -1,15 +1,15 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Log-logistic aka Fisk probability distribution."""
 
-__author__ = ["fkiraly"]
+__author__ = ["fkiraly", "malikrafsan"]
 
 import pandas as pd
-from scipy.stats import fisk
+from scipy.stats import fisk, rv_continuous
 
-from skpro.distributions.base import BaseDistribution
+from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-class Fisk(BaseDistribution):
+class Fisk(_ScipyAdapter):
     r"""Fisk distribution, aka log-logistic distribution.
 
     The Fisk distribution is parametrized by a scale parameter :math:`\alpha`
@@ -38,6 +38,7 @@ class Fisk(BaseDistribution):
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
+        "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
 
@@ -47,109 +48,14 @@ class Fisk(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def _mean(self):
-        """Return expected value of the distribution.
+    def _get_scipy_object(self) -> rv_continuous:
+        return fisk
 
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            expected value of distribution (entry-wise)
-        """
+    def _get_scipy_param(self):
         alpha = self._bc_params["alpha"]
         beta = self._bc_params["beta"]
 
-        mean_arr = fisk.mean(scale=alpha, c=beta)
-        return mean_arr
-
-    def _var(self):
-        r"""Return element/entry-wise variance of the distribution.
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            variance of the distribution (entry-wise)
-        """
-        alpha = self._bc_params["alpha"]
-        beta = self._bc_params["beta"]
-
-        var_arr = fisk.var(scale=alpha, c=beta)
-        return var_arr
-
-    def _pdf(self, x):
-        """Probability density function.
-
-        Parameters
-        ----------
-        x : 2D np.ndarray, same shape as ``self``
-            values to evaluate the pdf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            pdf values at the given points
-        """
-        alpha = self._bc_params["alpha"]
-        beta = self._bc_params["beta"]
-
-        pdf_arr = fisk.pdf(x, scale=alpha, c=beta)
-        return pdf_arr
-
-    def _log_pdf(self, x):
-        """Logarithmic probability density function.
-
-        Parameters
-        ----------
-        x : 2D np.ndarray, same shape as ``self``
-            values to evaluate the pdf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            log pdf values at the given points
-        """
-        alpha = self._bc_params["alpha"]
-        beta = self._bc_params["beta"]
-
-        lpdf_arr = fisk.logpdf(x, scale=alpha, c=beta)
-        return lpdf_arr
-
-    def _cdf(self, x):
-        """Cumulative distribution function.
-
-        Parameters
-        ----------
-        x : 2D np.ndarray, same shape as ``self``
-            values to evaluate the cdf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            cdf values at the given points
-        """
-        alpha = self._bc_params["alpha"]
-        beta = self._bc_params["beta"]
-
-        cdf_arr = fisk.cdf(x, scale=alpha, c=beta)
-        return cdf_arr
-
-    def _ppf(self, p):
-        """Quantile function = percent point function = inverse cdf.
-
-        Parameters
-        ----------
-        p : 2D np.ndarray, same shape as ``self``
-            values to evaluate the ppf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            ppf values at the given points
-        """
-        alpha = self._bc_params["alpha"]
-        beta = self._bc_params["beta"]
-
-        icdf_arr = fisk.ppf(p, scale=alpha, c=beta)
-        return icdf_arr
+        return [], {"c": beta, "scale": alpha}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

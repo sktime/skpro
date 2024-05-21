@@ -122,6 +122,16 @@
       ]
     },
     {
+      "login": "ShreeshaM07",
+      "name": "Shreesha M",
+      "avatar_url": "https://avatars.githubusercontent.com/u/120820143?s=400&v=4",
+      "profile": "https://github.com/ShreeshaM07",
+      "contributions": [
+          "code",
+          "doc"
+      ]
+    },
+    {
       "login": "julian-fong",
       "name": "Julian Fong",
       "avatar_url": "https://avatars.githubusercontent.com/u/44014224?v=4",
@@ -164,6 +174,15 @@
       "profile": "https://github.com/duydl",
       "contributions": [
         "maintenance"
+      ]
+    },
+    {
+      "login": "szepeviktor",
+      "name": "Viktor Szépe",
+      "avatar_url": "https://avatars.githubusercontent.com/u/952007?v=4",
+      "profile": "https://github.com/szepeviktor",
+      "contributions": [
+        "doc"
       ]
     }
   ]
