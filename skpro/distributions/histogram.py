@@ -4,6 +4,7 @@
 __author__ = ["ShreeshaM07"]
 
 import numpy as np
+import pandas as pd
 
 from skpro.distributions.base import BaseDistribution
 
@@ -16,23 +17,25 @@ class Histogram(BaseDistribution):
 
     Parameters
     ----------
-    bins : float or array of float 1D
-        array has the bin boundaries with 1st element the first bin's
+    bins : tuple(float,float,int) or array of float 1D
+        1. tuple(first bin's start point, last bin's end point, number of bins)
+        Used when bin widths are equal.
+        2. array has the bin boundaries with 1st element the first bin's
         starting point and rest are the bin ending points of all bins
     bin_mass: array of float 1D
         Mass of the bins or Area of the bins.
-        Sum of all the bin_mass must be 1.
+        Note: Sum of all the bin_mass must be 1.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
     """
 
-    _tags = {
-        "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "pdf", "cdf", "ppf"],
-        "distr:measuretype": "continuous",
-        "distr:paramtype": "parametric",
-        "broadcast_init": "on",
-    }
+    # _tags = {
+    #     "capabilities:approx": ["pdfnorm"],
+    #     "capabilities:exact": ["mean", "var", "pdf", "cdf", "ppf"],
+    #     "distr:measuretype": "continuous",
+    #     "distr:paramtype": "parametric",
+    #     "broadcast_init": "on",
+    # }
 
     def __init__(self, bins, bin_mass, index=None, columns=None):
         self.bins = bins
@@ -49,6 +52,14 @@ class Histogram(BaseDistribution):
             expected value of distribution (entry-wise)
         """
         bins = self.bins
+        # convert the bins into a list
+        if isinstance(bins, tuple):
+            bins_to_list = (bins[0], bins[1], bins[2])
+            bins = []
+            bin_width = (bins_to_list[1] - bins_to_list[0]) / bins_to_list[2]
+            for b in range(bins_to_list[2]):
+                bins.append(bins_to_list[0] + b * bin_width)
+            bins.append(bins_to_list[1])
         # 1 is the cumulative sum of all bin_mass
         return 1 / (max(bins) - min(bins))
 
@@ -62,12 +73,23 @@ class Histogram(BaseDistribution):
         """
         bins = self.bins
         bin_mass = self.bin_mass
-        bin_width = np.diff(bins)
-        mean = self._mean()
-        var = np.sum((bin_mass / bin_width - mean) * bin_width) / (
-            max(bins) - min(bins)
-        )
-        return var
+
+        # convert the bins into a list
+        if isinstance(bins, tuple):
+            bins_to_list = (bins[0], bins[1], bins[2])
+            bins = []
+            bin_width = (bins_to_list[1] - bins_to_list[0]) / bins_to_list[2]
+            for b in range(bins_to_list[2]):
+                bins.append(bins_to_list[0] + b * bin_width)
+            bins.append(bins_to_list[1])
+
+        if isinstance(bins, list):
+            bin_width = np.diff(bins)
+            mean = self._mean()
+            var = np.sum(((bin_mass / bin_width - mean) * bin_width) ** 2) / (
+                max(bins) - min(bins)
+            )
+            return var
 
     def _pdf(self, x):
         """Probability density function.
@@ -85,6 +107,16 @@ class Histogram(BaseDistribution):
         bin_mass = np.array(self.bin_mass.copy())
         bins = self.bins
         pdf = []
+
+        # convert the bins into a list
+        if isinstance(bins, tuple):
+            bins_to_list = (bins[0], bins[1], bins[2])
+            bins = []
+            bin_width = (bins_to_list[1] - bins_to_list[0]) / bins_to_list[2]
+            for b in range(bins_to_list[2]):
+                bins.append(bins_to_list[0] + b * bin_width)
+            bins.append(bins_to_list[1])
+
         if isinstance(bins, list):
             bin_width = np.diff(bins)
             pdf_arr = bin_mass / bin_width
@@ -113,6 +145,16 @@ class Histogram(BaseDistribution):
         bin_mass = self.bin_mass
         cdf = []
         pdf = self._pdf(x)
+
+        # convert the bins into a list
+        if isinstance(bins, tuple):
+            bins_to_list = (bins[0], bins[1], bins[2])
+            bins = []
+            bin_width = (bins_to_list[1] - bins_to_list[0]) / bins_to_list[2]
+            for b in range(bins_to_list[2]):
+                bins.append(bins_to_list[0] + b * bin_width)
+            bins.append(bins_to_list[1])
+
         if isinstance(bins, list):
             cum_sum_mass = np.cumsum(bin_mass)
             for X in x:
@@ -150,6 +192,16 @@ class Histogram(BaseDistribution):
         bins = self.bins
         bin_mass = self.bin_mass
         ppf = []
+
+        # convert the bins into a list
+        if isinstance(bins, tuple):
+            bins_to_list = (bins[0], bins[1], bins[2])
+            bins = []
+            bin_width = (bins_to_list[1] - bins_to_list[0]) / bins_to_list[2]
+            for b in range(bins_to_list[2]):
+                bins.append(bins_to_list[0] + b * bin_width)
+            bins.append(bins_to_list[1])
+
         if isinstance(bins, list):
             cum_sum_mass = np.cumsum(bin_mass)
             # print(cum_sum_mass)
@@ -177,24 +229,20 @@ class Histogram(BaseDistribution):
         ppf = np.array(ppf)
         return ppf
 
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        # array case examples
+        params1 = {
+            "bins": [0, 1, 2, 3, 4],
+            "bin_mass": [0.1, 0.2, 0, 0.7, 1],
+            "index": pd.Index([1, 2, 3, 4]),
+            "columns": pd.Index(["a"]),
+        }
 
-# import pandas as pd
+        params2 = {
+            "bins": 0,
+            "bin_mass": 1,
+        }
 
-# x = np.array([-1, 0, 0.2, 0.4, 1.1, 1.8, 2, 2.2, 3.5, 5])
-# hist = Histogram(
-#     bins=[0, 1, 2, 3, 4],
-#     bin_mass=[0.1, 0.2, 0, 0.7],
-#     index=pd.Index(np.arange(3)),
-#     columns=pd.Index(np.arange(2)),
-# )
-# pdf = hist._pdf(x)
-# print(pdf)
-# cdf = hist._cdf(x)
-# print(cdf)
-# mean = hist._mean()
-# print(mean)
-# var = hist._var()
-# print(var)
-# p = np.array([-1, 0, 0.02, 0.04, 0.12, 0.26, 0.3, 0.3, 0.8, 1])
-# ppf = hist._ppf(p)
-# print(ppf)
+        return [params1, params2]
