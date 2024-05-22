@@ -42,6 +42,9 @@ class Interval(Domain):
     }
 
     def __init__(self, values: List[float], parenthesis: str = "open"):
+        self.values = values
+        self._parenthesis = parenthesis
+
         self._left, self._right = self._validate_interval(values=values)
         self._parenthesis = self._resolve_parenthesis(parenthesis=parenthesis)
 
@@ -153,7 +156,9 @@ class Finite(Domain):
     """
 
     def __init__(self, values: List[Union[int, float]]):
-        self.values = self._validate_values(values=values)
+        self.values = values
+
+        self._values = self._validate_values(values=values)
         super().__init__()
 
     def _validate_values(self, values: List[Union[int, float]]) -> List[float]:
@@ -167,7 +172,7 @@ class Finite(Domain):
 
     def __contains__(self, item) -> bool:
         """Implement `in` operator for the class `Interval`."""
-        return item in self.values
+        return item in self._values
 
     def __str__(self) -> str:
         r"""Return string representation of `Finite`.
@@ -181,7 +186,7 @@ class Finite(Domain):
     @property
     def boundary(self) -> Tuple[float, ...]:
         """Return the boundary of the finite set, i.e., the finite set itself."""
-        return tuple(sorted(self.values))
+        return tuple(sorted(self._values))
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -211,6 +216,8 @@ class Product(Domain):
     """
 
     def __init__(self, elements: List[Union[Interval, Finite]]):
+        self.elements = elements
+
         self.product = self._validate_elements(elements=elements)
         super().__init__()
 
