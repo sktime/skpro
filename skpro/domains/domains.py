@@ -126,6 +126,7 @@ class Interval(Domain):
         """Return the boundary of the interval, i.e., the extremities."""
         return self._left, self._right
 
+    @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
         return {
@@ -182,6 +183,7 @@ class Finite(Domain):
         """Return the boundary of the finite set, i.e., the finite set itself."""
         return tuple(sorted(self.values))
 
+    @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
         return {
@@ -260,6 +262,7 @@ class Product(Domain):
         """
         return tuple(element.boundary for element in self.product)
 
+    @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
         return {
