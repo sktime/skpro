@@ -75,8 +75,12 @@ Non-parametric and empirical distributions
     QPD_S
     QPD_B
 
+
 Composite distributions
 -----------------------
+
+Mixture composition
+~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -85,3 +89,15 @@ Composite distributions
     :template: class.rst
 
     Mixture
+
+
+Sampling and multivariate composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    IID
