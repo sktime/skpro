@@ -93,7 +93,7 @@ class QPD_Johnson(_DelegatedDistribution):
         lower: float | None = None,
         upper: float | None = None,
         version: str | None = "normal",
-        dist_shape: str = "deplicated",
+        dist_shape: float = 0.0,
         index=None,
         columns=None,
     ):
@@ -112,7 +112,7 @@ class QPD_Johnson(_DelegatedDistribution):
         # TODO <2.5.0>: remove parameter 'dist_shape'
         # TODO <2.5.0>: update docstring, and remove warning
         message = "Parameter 'dist_shape' will be removed in version 2.5.0."
-        if self.dist_shape != "deplicated":
+        if self.dist_shape != 0.0:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         message = "Parameter 'version' will be renamed to 'base_dist' in version 2.5.0."
@@ -210,7 +210,7 @@ class QPD_S(BaseDistribution):
         This is used when estimating QPD and calculating
         expectation and variance
     upper : deplicated
-        ``upper`` will be removed to 'base_dist' in version 2.5.0.
+        ``upper`` will be removed in version 2.5.0.
     version: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
         ``version`` will be renamed to 'base_dist' in version 2.5.0.
@@ -258,7 +258,7 @@ class QPD_S(BaseDistribution):
         qv_median: float | Sequence,
         qv_high: float | Sequence,
         lower: float,
-        upper: str = "deplicated",
+        upper: float = 1e3,
         version: str | None = "normal",
         index=None,
         columns=None,
@@ -281,7 +281,7 @@ class QPD_S(BaseDistribution):
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         message = "Parameter 'upper' will be removed in version 2.5.0."
-        if self.upper != "deplicated":
+        if self.upper != 1e3:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         super().__init__(index=index, columns=columns)
@@ -648,10 +648,10 @@ class QPD_U(BaseDistribution):
         qv_low: float | Sequence,
         qv_median: float | Sequence,
         qv_high: float | Sequence,
-        lower: str = "deplicated",
-        upper: str = "deplicated",
+        lower: float = -1e3,
+        upper: float = 1e3,
         version: str | None = "normal",
-        dist_shape: str = "deplicated",
+        dist_shape: float = 0.0,
         index=None,
         columns=None,
     ):
@@ -673,7 +673,7 @@ class QPD_U(BaseDistribution):
         # TODO <2.5.0>: remove parameter 'lower'
         # TODO <2.5.0>: update docstring, and remove warning
         message = "Parameter 'dist_shape' will be removed in version 2.5.0."
-        if self.dist_shape != "deplicated":
+        if self.dist_shape != 0.0:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         message = "Parameter 'version' will be renamed to 'base_dist' in version 2.5.0."
@@ -681,11 +681,11 @@ class QPD_U(BaseDistribution):
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         message = "Parameter 'upper' will be removed in version 2.5.0."
-        if self.upper != "deplicated":
+        if self.upper != 1e3:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         message = "Parameter 'lower' will be removed in version 2.5.0."
-        if self.lower != "deplicated":
+        if self.lower != -1e3:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         super().__init__(index=index, columns=columns)
