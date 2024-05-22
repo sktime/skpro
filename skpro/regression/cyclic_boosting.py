@@ -157,15 +157,6 @@ class CyclicBoosting(BaseProbaRegressor):
         self.dist_type = dist_type
         self.dist_shape = dist_shape
 
-        #  TODO <2.5.0>: change default of 'lower' and 'upper' to None and None
-        #  update docstring, and remove warning
-        comment = "Parameter 'bound' will be removed in version 2.5.0. \
-                   The QPD used for estimation is determined by whether \
-                   data is given to 'lower' and 'upper'. and their default value \
-                   will change from 0.0, 1.0 to None, None. To retain prior behaviour, \
-                   set 'lower' and 'upper' to 0.0 and 1.0 explicitly"
-        warnings.warn(comment, DeprecationWarning, stacklevel=2)
-
         super().__init__()
 
         self.quantiles = [self.alpha, 0.5, 1 - self.alpha]
