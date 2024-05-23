@@ -17,8 +17,8 @@ class Gamma(_ScipyAdapter):
 
     ..math:: f(x) = \frac{x^(\alpha-1)*\exp\left(-\beta*x)*\beta^\alpha}{\tau(\alpha)}
 
-    where `\tau(\alpha)` is the Gamma function.
-    For all positive integers,`\tau(\alpha) = (alpha-1)!`.
+    where :math:`\tau(\alpha)` is the Gamma function.
+    For all positive integers, :math:`\tau(\alpha) = (\alpha-1)!`.
 
     Parameters
     ----------
