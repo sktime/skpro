@@ -43,7 +43,7 @@ class Interval(Domain):
 
     def __init__(self, values: List[float], parenthesis: str = "open"):
         self.values = values
-        self._parenthesis = parenthesis
+        self.parenthesis = parenthesis
 
         self._left, self._right = self._validate_interval(values=values)
         self._parenthesis = self._resolve_parenthesis(parenthesis=parenthesis)
@@ -134,7 +134,7 @@ class Interval(Domain):
         """Return testing parameter settings for the estimator."""
         return {
             "values": [1, 2],
-            "_parenthesis": "open",
+            "parenthesis": "open",
         }
 
 
