@@ -10,6 +10,7 @@ __all__ = [
     "Empirical",
     "Exponential",
     "Fisk",
+    "Gamma",
     "IID",
     "Laplace",
     "Logistic",
@@ -34,6 +35,7 @@ from skpro.distributions.delta import Delta
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.exponential import Exponential
 from skpro.distributions.fisk import Fisk
+from skpro.distributions.gamma import Gamma
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.lognormal import LogNormal
