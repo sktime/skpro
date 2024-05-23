@@ -10,12 +10,18 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
 class Alpha(_ScipyAdapter):
-    """Alpha distribution.
+    r"""Alpha distribution.
+
+    The alpha distribution is characterized by its shape parameter :math:`\a`,
+    which determines its skewness and tail behavior.
+    It is often used for modeling data with heavy right tails,
+    unlike the Gaussian distribution(which is symmetric and bell-shaped).
 
     Parameters
     ----------
     a : float or array of float (1D or 2D), must be positive
-        shape parameter of the distribution
+        Shape parameter controlling skewness and tail behavior.
+        Higher values result in heavier tails and greater skewness towards the right.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -42,7 +48,7 @@ class Alpha(_ScipyAdapter):
     def _get_scipy_object(self) -> rv_continuous:
         return alpha
 
-    def _get_scipy_param(self) -> dict:
+    def _get_scipy_param(self):
         a = self._bc_params["a"]
 
         return [a], {}
