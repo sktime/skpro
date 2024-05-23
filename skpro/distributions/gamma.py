@@ -65,7 +65,7 @@ class Gamma(_ScipyAdapter):
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
         # array case examples
-        params1 = {"alpha": [[1, 2]], "beta": [[1, 1], [2, 3], [4, 5]]}
+        params1 = {"alpha": [6, 2.5], "beta": [[1, 1], [2, 3], [4, 5]]}
         params2 = {
             "alpha": 2,
             "beta": 3,
