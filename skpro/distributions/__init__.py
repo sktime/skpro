@@ -4,6 +4,7 @@
 # adapted from sktime
 
 __all__ = [
+    "Alpha",
     "Beta",
     "ChiSquared",
     "Delta",
@@ -27,6 +28,7 @@ __all__ = [
     "Weibull",
 ]
 
+from skpro.distributions.alpha import Alpha
 from skpro.distributions.beta import Beta
 from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.compose import IID
