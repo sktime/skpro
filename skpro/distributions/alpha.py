@@ -10,7 +10,7 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
 class Alpha(_ScipyAdapter):
-    r"""Alpha distribution.
+    """Alpha distribution.
 
     Parameters
     ----------
