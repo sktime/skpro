@@ -1,5 +1,5 @@
 """
-Note: this is WIP; to be converted into an skpro class
+Note: this is WIP; to be converted into an skpro class inside the `bayesian.py`
 """
 
 import numpy as np
@@ -104,8 +104,7 @@ class BayesianLinearRegression:
     def plot_posterior_predictive(self, X_new):
         if not self.fitted:
             raise RuntimeError("The model must be fitted before plotting predictions.")
-
-        quantile_df = model.predict_quantile(X_new, alpha = [0.25, 0.5, 0.75])
+        quantile_df = self.predict_quantile(X_new, alpha = [0.25, 0.5, 0.75])
         plt.plot(quantile_df.index, quantile_df["target"][0.50], label='0.50 Quantile', color='blue')
         plt.fill_between(quantile_df.index, quantile_df["target"][0.25], quantile_df["target"][0.75], color='blue', alpha=0.2, label='0.25-0.75 Quantile')
 
@@ -114,3 +113,10 @@ class BayesianLinearRegression:
         plt.title('Quantiles with Shading')
         plt.legend()
         plt.show()
+
+    """
+    Other planned methods:
+        - plot_prior_predictive
+        - plot_priors
+        - plot_posteriors
+    """

@@ -1,3 +1,8 @@
+"""
+Note: this is WIP; it will be filled in with the codes from `bayesian_wip.py`
+"""
+
+
 """Probabilistic linear regression by PyMC"""
 
 
@@ -65,13 +70,14 @@ class BayesianLinearRegression(BaseProbaRegressor):
     # params should be written to self and never changed
     # super call must not be removed, change class name
     # parameter checks can go after super call
-    def __init__(self, paramname, paramname2="paramname2default"):
+    def __init__(self):
         # estimators should precede parameters
         #  if estimators have default values, set None and initialize below
 
         # todo: write any hyper-parameters and components to self
-        self.paramname = paramname
-        self.paramname2 = paramname2
+        self.model = None
+        self.trace = None
+        self.fitted = False
 
         # leave this as is
         super().__init__()
@@ -118,6 +124,43 @@ class BayesianLinearRegression(BaseProbaRegressor):
         # fitted parameters should be written to parameters ending in underscore
 
         # self must be returned at the end
+        assert isinstance(X, pd.DataFrame), "X must be a pd.DataFrame!"
+        assert isinstance(y, pd.DataFrame), "y must be a pd.DataFrame!"
+        assert len(y.columns) == 1, "y must have only one column!"
+        self.X = X
+        self.y = y
+        self.y_vals = y.values[:,0] # we need a 1-dimensional array for compatibility with pymc 
+        self.X_cols = X.columns
+        self.y_cols = y.columns
+
+        with pm.Model() as self.model:
+            # Mutable data containers
+            X_data = pm.MutableData("X", self.X, dims = ("obs_id", "pred_id"))
+            y_data = pm.MutableData("y", self.y_vals, dims = ("obs_id"))
+
+            # Priors for unknown model parameters
+            self.intercepts = pm.Normal("intercepts", mu=0, sigma=1)
+            self.slopes = pm.Normal("slopes", mu=0, sigma=1, dims=("pred_id"))
+            self.sigma = pm.HalfNormal("sigma", sigma=1)
+
+            # Expected value of outcome
+            self.mu = pm.Deterministic("mu", self.intercepts + pm.math.dot(X_data, self.slopes))
+
+            # Likelihood (sampling distribution) of observations
+            Y_obs = pm.Normal("y_obs", mu=self.mu, sigma=self.sigma, observed=y_data, dims =("obs_id"))
+
+            # Sample from the posterior
+            self.trace = pm.sample(
+                draws=2000,            
+                tune=1500,             
+                chains=1,              
+                random_seed=42,             
+                target_accept=0.90, # Target acceptance probability; higher value leads to higher accuracy but slower sampling
+                return_inferencedata=True,  # Return an InferenceData object 
+                progressbar=True            
+            )
+
+        self.fitted = True
         return self
 
     # todo: implement this, mandatory
