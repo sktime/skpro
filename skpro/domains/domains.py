@@ -134,7 +134,7 @@ class Interval(Domain):
         """Return testing parameter settings for the estimator."""
         return {
             "values": [1, 2],
-            "parenthesis": "open",
+            "_parenthesis": "open",
         }
 
 
