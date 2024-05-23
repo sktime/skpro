@@ -15,7 +15,9 @@ class Gamma(_ScipyAdapter):
     The Gamma Distribution is parameterized by shape :math:`\alpha` and
     rate :math:`\beta`, such that the pdf is
 
-    ..math:: f(x) = \frac{x^(\alpha-1)*\exp\left(-\beta*x)*\beta^\alpha}{\tau(\alpha)}
+    .. math::
+    f(x) = \\frac{x^{\\alpha-1} \\exp\\left(-\\beta x\\right)
+    \\beta^{\\alpha}}{\\Gamma(\\alpha)}
 
     where :math:`\tau(\alpha)` is the Gamma function.
     For all positive integers, :math:`\tau(\alpha) = (\alpha-1)!`.
