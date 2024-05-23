@@ -12,19 +12,6 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Alpha(_ScipyAdapter):
     r"""Alpha distribution.
 
-    This distribution is univariate, without correlation between dimensions
-    for the array-valued case.
-
-    The Alpha distribution, also known as the Inverse Gamma distribution,
-    is parametrized by shape :math:`\alpha` and scale :math:`\beta`,
-    such that the pdf is
-
-    .. math:: f(x; \alpha, \beta) = (\frac{\beta^\alpha}{\\Gamma(\alpha)})
-                                    (x^{-\alpha-1} \\exp\\left(-\frac{\beta}{x}\right))
-
-    The shape :math:`\alpha` is represented by the parameter ``shape``,
-    and the scale :math:`\beta` by the parameter ``scale``.
-
     Parameters
     ----------
     a : float or array of float (1D or 2D), must be positive
