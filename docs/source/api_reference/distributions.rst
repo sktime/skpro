@@ -42,7 +42,6 @@ Continuous support
     Gamma
     Laplace
     Logistic
-    LogNormal
     Normal
     TDistribution
     Weibull
