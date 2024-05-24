@@ -16,7 +16,7 @@ class Gamma(_ScipyAdapter):
     rate :math:`\beta`, such that the pdf is
 
     .. math::
-    f(x) = \frac{x^{\alpha-1}\exp\left(-\beta x\right)\beta^{\alpha}}{\tau(\alpha)}
+    f(x) = \frac{x^{\alpha-1} \exp\left(-\beta x\right) \beta^{\alpha}}{\tau(\alpha)}
 
     where :math:`\tau(\alpha)` is the Gamma function.
     For all positive integers, :math:`\tau(\alpha) = (\alpha-1)!`.
