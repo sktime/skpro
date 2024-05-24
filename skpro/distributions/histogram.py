@@ -90,7 +90,6 @@ class Histogram(BaseDistribution):
             energy values w.r.t. the given points
         """
         bins = self.bins
-        bin_mass = self.bin_mass
         energy_arr = []
         # convert the bins into a list
         if isinstance(bins, tuple):
@@ -103,7 +102,7 @@ class Histogram(BaseDistribution):
             # is_inside = 1 - is_outside
 
             if is_outside:
-                energy_arr = abs(mean - x * bin_mass)
+                energy_arr = abs(mean - x)
             # else:
             #     bin_idx_pre_x = np.where(x >= bins)[0][-1]
             #     still in progress ...
