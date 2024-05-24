@@ -90,6 +90,7 @@ class Histogram(BaseDistribution):
             energy values w.r.t. the given points
         """
         bins = self.bins
+        bin_mass = np.array(self.bin_mass)
         energy_arr = []
         # convert the bins into a list
         if isinstance(bins, tuple):
@@ -99,14 +100,33 @@ class Histogram(BaseDistribution):
             mean = self._mean()
 
             is_outside = np.logical_or(x < bins[0], x > bins[-1])
-            # is_inside = 1 - is_outside
 
             if is_outside:
                 energy_arr = abs(mean - x)
-            # else:
-            #     bin_idx_pre_x = np.where(x >= bins)[0][-1]
-            #     still in progress ...
+            else:
+                # consider x lies in kth bin
+                # so kth bin's start index is
+                k_1_bins = np.where(x >= bins)[0][-1]
+                cdf = self._cdf(x)
+                pdf = self._pdf(x)
+                from numpy.lib.stride_tricks import sliding_window_view
 
+                win_sum_bins = np.sum(sliding_window_view(bins, window_shape=2), axis=1)
+                # upto kth bin excluding kth
+                X_upto_x = x * cdf - 0.5 * np.dot(
+                    win_sum_bins[:k_1_bins], bin_mass[:k_1_bins]
+                )
+                # after kth bin excluding kth
+                X_after_x = 0.5 * np.dot(
+                    win_sum_bins[k_1_bins + 1 :], bin_mass[k_1_bins + 1 :]
+                ) - x * (1 - cdf)
+                # in the kth bin
+                X_in_k = (
+                    0.5
+                    * pdf
+                    * (bins[k_1_bins] ** 2 + bins[k_1_bins + 1] ** 2 - 2 * x**2)
+                )
+                energy_arr = X_upto_x + X_in_k + X_after_x
             return energy_arr
 
     def _mean(self):
