@@ -161,7 +161,9 @@ class Finite(Domain):
         self._values = self._validate_values(values=values)
         super().__init__()
 
-    def _validate_values(self, values: List[Union[int, float]]) -> List[float]:
+    def _validate_values(
+        self, values: List[Union[int, float]]
+    ) -> List[Union[int, float]]:
         """Check if a tuple of numbers is elegible to be a finite set."""
         for value in values:
             if not isinstance(value, (float, int)):
@@ -170,7 +172,7 @@ class Finite(Domain):
                 raise ValueError(f"Value {value} not accepted in finite set.")
         if len(values) != len(set(values)):
             raise ValueError(f"Detected duplicated values in {values}!")
-        return list(set(values))
+        return values
 
     def __contains__(self, item) -> bool:
         """Implement `in` operator for the class `Interval`."""
