@@ -39,6 +39,7 @@ Continuous support
     ChiSquared
     Exponential
     Fisk
+    Gamma
     Laplace
     Logistic
     Normal
