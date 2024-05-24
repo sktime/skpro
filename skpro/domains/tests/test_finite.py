@@ -7,7 +7,6 @@ from skpro.domains import Finite
     "values, expected_value",
     [
         ([1, 2], "{1, 2}"),
-        ([1, 2, 2], "{1, 2}"),
         ([1.32, 2], "{1.32, 2}"),
         ([11, 1, 78], "{1, 11, 78}"),
     ],
@@ -36,7 +35,7 @@ def test_init_error(values, error, msg):
     "values, expected_value",
     [
         ([1, 2, 3], (1, 2, 3)),
-        ([2, 2, 1], (1, 2)),
+        ([2, 1], (1, 2)),
     ],
 )
 def test_boundary(values, expected_value):
@@ -50,7 +49,7 @@ def test_boundary(values, expected_value):
     "values, element, expected_value",
     [
         ([1, 2], 2, True),
-        ([1, 2, 2], 15, False),
+        ([1, 2], 15, False),
     ],
 )
 def test_contains(values, element, expected_value):

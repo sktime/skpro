@@ -168,6 +168,8 @@ class Finite(Domain):
                 raise TypeError(f"Expected `float`or `int`, but got {type(value)}.")
             if value in [-float("inf"), float("inf")]:
                 raise ValueError(f"Value {value} not accepted in finite set.")
+        if len(values) != len(set(values)):
+            raise ValueError(f"Detected duplicated values in {values}!")
         return list(set(values))
 
     def __contains__(self, item) -> bool:
