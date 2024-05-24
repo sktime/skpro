@@ -15,8 +15,7 @@ class Gamma(_ScipyAdapter):
     The Gamma Distribution is parameterized by shape :math:`\alpha` and
     rate :math:`\beta`, such that the pdf is
 
-    pdf, $f(x) = \frac{x^{\alpha-1}\exp\left(-\beta x\right)\beta^{\alpha}}{\tau(\alpha)}$ # noqa E501
-
+    .. math:: f(x) = \frac{x^{\alpha-1}\exp\left(-\beta x\right)(\beta^{\alpha})}{\tau(\alpha)}
 
     where :math:`\tau(\alpha)` is the Gamma function.
     For all positive integers, :math:`\tau(\alpha) = (\alpha-1)!`.
@@ -36,7 +35,7 @@ class Gamma(_ScipyAdapter):
     >>> from skpro.distributions.gamma import Gamma
 
     >>> d = Gamma(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
-    """
+    """  # noqa: E501
 
     _tags = {
         "capabilities:approx": ["energy", "pdfnorm"],
