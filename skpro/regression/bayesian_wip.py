@@ -26,8 +26,8 @@ class BayesianLinearRegression:
 
         with pm.Model() as self.model:
             # Mutable data containers
-            X_data = pm.MutableData("X", self.X, dims = ("obs_id", "pred_id"))
-            y_data = pm.MutableData("y", self.y_vals, dims = ("obs_id"))
+            X_data = pm.Data("X", self.X, dims = ("obs_id", "pred_id"))
+            y_data = pm.Data("y", self.y_vals, dims = ("obs_id"))
 
             # Priors for unknown model parameters
             self.intercepts = pm.Normal("intercepts", mu=0, sigma=1)
