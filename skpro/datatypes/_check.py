@@ -78,14 +78,13 @@ def _coerce_list_of_str(obj, var_name="obj"):
     return obj
 
 
-# todo 2.3.0: change default for msg_return_dict to "dict", update docstring
 def check_is_mtype(
     obj,
     mtype,
     scitype: str = None,
     return_metadata=False,
     var_name="obj",
-    msg_return_dict=None,
+    msg_return_dict="dict",
 ):
     """Check object for compliance with mtype specification, return metadata.
 
@@ -103,47 +102,52 @@ def check_is_mtype(
         if str, list of str, metadata return dict is subset to keys in return_metadata
     var_name: str, optional, default="obj"
         name of input in error messages
-    msg_return_dict: str, "list" or "dict", optional, default="list"
-        whether returned msg, if returned is a str, dict or list
-        if "list", msg is str if mtype is str, list of str if mtype is list
-        if "dict", msg is dict if mtype is str, list of str if mtype is list,
-        if dict, has with mtype as key and error message for mtype as value
+
+    msg_return_dict: str, one of ``"list"`` or ``"dict"``, optional, default="dict"
+        whether returned msg, if returned, is a str, dict or list
+
+        * if ``msg_return_dict="list"``,
+          returned ``msg`` is ``str`` if ``mtype`` is ``str``,
+          returned ``msg`` is ``list`` of ``str`` if ``mtype`` is ``list``
+
+        * if ``msg_return_dict="dict"``,
+          returned ``msg`` is ``str`` if ``mtype`` is ``str``,
+          returned ``msg`` is ``dict`` of ``str`` if ``mtype`` is ``list``.
+          If ``dict``, has str in ``mtype`` as key,
+          and error message for mtype as value.
 
     Returns
     -------
-    valid: bool - whether obj is a valid object of mtype/scitype
-    msg: str or list/dict of str - error messages if object is not valid, otherwise None
-        list or dict type is controlled via msg_return_dict
-        if str: error message for tested mtype
-        it list: list of len(mtype) with message per mtype if list, same order as mtype
-        if dict: dict with mtype as key and error message for mtype as value
+    valid: bool
+        whether obj is a valid object of mtype/scitype
+    msg: str or list/dict of str
+        error messages if object is not valid, otherwise None,
         returned only if return_metadata is True or str, list of str
+
+        whether ``list`` or ``dict`` type is controlled via msg_return_dict
+
+        * if ``str``: error message for tested mtype
+        * if ``list``:
+          list of len(mtype) with message per mtype if list, same order as mtype
+        * if ``dict``: dict with mtype as key and error message for mtype as value
+
     metadata: dict - metadata about obj if valid, otherwise None
-            returned only if return_metadata is True or str, list of str
+        returned only if ``return_metadata`` is True or str, list of str
+
         Keys populated depend on (assumed, otherwise identified) scitype of obj.
+
         Always returned:
-            "mtype": str, mtype of obj (assumed or inferred)
-            "scitype": str, scitype of obj (assumed or inferred)
-        For scitype "Series":
-            "is_univariate": bool, True iff series has one variable
-            "is_equally_spaced": bool, True iff series index is equally spaced
-            "is_empty": bool, True iff series has no variables or no instances
-            "has_nans": bool, True iff the series contains NaN values
-        For scitype "Panel":
-            "is_univariate": bool, True iff all series in panel have one variable
-            "is_equally_spaced": bool, True iff all series indices are equally spaced
-            "is_equal_length": bool, True iff all series in panel are of equal length
-            "is_empty": bool, True iff one or more of the series in the panel are empty
-            "is_one_series": bool, True iff there is only one series in the panel
-            "has_nans": bool, True iff the panel contains NaN values
-            "n_instances": int, number of instances in the panel
+        * "mtype": str, mtype of obj (assumed or inferred)
+        * "scitype": str, scitype of obj (assumed or inferred)
+
         For scitype "Table":
-            "is_univariate": bool, True iff table has one variable
-            "is_empty": bool, True iff table has no variables or no instances
-            "has_nans": bool, True iff the panel contains NaN values
-            "n_instances": int, number of instances/rows in the table
-        For scitype "Alignment":
-            currently none
+
+        * "is_univariate": bool, True iff table has one variable
+        * "is_empty": bool, True iff table has no variables or no instances
+        * "has_nans": bool, True iff the panel contains NaN values
+        * "n_instances": int, number of instances/rows in the table
+        * "n_features": int, number of variables in table
+        * "feature_names": list of int or object, names of variables in table
 
     Raises
     ------
@@ -156,23 +160,15 @@ def check_is_mtype(
 
     # we loop through individual mtypes in mtype and see whether they pass the check
     #  for each check we remember whether it passed and what it returned
-
-    # initialize loop variables
-    if msg_return_dict is None:
-        # todo 2.3.0: remove this warning, and change default to "dict"
-        warn(
-            "From skpro 2.3.0 onwards, msg return of check_is_mtype "
-            "will default to dict if mtype is a list. "
-            "To retain the old behaviour, set msg_return_dict='list' explicitly. "
-            "To move to the new behaviour, set msg_return_dict='dict' explicitly. "
-            "Setting msg_return_dict explicitly will silence the warning."
-        )
-        msg = []
-        msg_return_dict = "list"
-    elif msg_return_dict == "list":
+    if msg_return_dict == "list":
         msg = []
     elif msg_return_dict == "dict":
         msg = dict()
+    else:
+        raise ValueError(
+            f"Error in check_is_mtype, msg_return_dict argument "
+            f"must be 'list' or 'dict', found {msg_return_dict}"
+        )
 
     found_mtype = []
     found_scitype = []
