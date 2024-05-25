@@ -18,9 +18,25 @@ For planned changes and upcoming releases, see roadmap in the
 [2.3.1] - 2024-05-26
 ====================
 
+Maintenance release, ``scikit-learn 1.5.X`` and ``scikit-base 0.8.X`` compatibility,
+and minor enhancements.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.9.0``.
+* ``scikit-learn`` bounds have been updated to ``>=0.24.0,<1.6.0``.
+
 
 Deprecations and removals
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* in probabilistic regressor tuners ``GridSearchCV``, ``RandomizedSearchCV``,
+  use of ``joblib`` backend specific parameters ``n_jobs``,
+  ``pre_dispatch`` has been deprecated, and will be removed in ``skpro`` 2.5.0.
+  Users should pass backend parameters via the ``backend_params`` parameter instead.
+
+
 
 [2.3.0] - 2024-05-16
 ====================
