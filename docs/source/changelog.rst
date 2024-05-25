@@ -67,6 +67,8 @@ Maintenance
   ``<0.7.0`` (:pr:`357`) :user:`dependabot[bot]`
 * [MNT] [Dependabot](deps): Update scikit-learn requirement from ``<1.5.0,>=0.24.0``
   to ``>=0.24.0,<1.6.0`` (:pr:`354`) :user:`dependabot[bot]`
+* [MNT] Update ``scikit-base`` requirement from
+  ``<0.8.0,>=0.6.1`` to ``>=0.6.1,<0.9.0`` (:pr:`366`) :user:`fkiraly`
 
 Documentation
 ~~~~~~~~~~~~~
