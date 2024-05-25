@@ -15,6 +15,13 @@ You can also subscribe to ``skpro``'s
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
+[2.3.1] - 2024-05-26
+====================
+
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 [2.3.0] - 2024-05-16
 ====================
 
