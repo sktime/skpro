@@ -15,6 +15,77 @@ You can also subscribe to ``skpro``'s
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
+[2.3.1] - 2024-05-26
+====================
+
+Maintenance release with ``scikit-learn 1.5.X`` and ``scikit-base 0.8.X``
+compatibility and minor enhancements.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.9.0``.
+* ``scikit-learn`` bounds have been updated to ``>=0.24.0,<1.6.0``.
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* in probabilistic regressor tuners ``GridSearchCV``, ``RandomizedSearchCV``,
+  use of ``joblib`` backend specific parameters ``n_jobs``,
+  ``pre_dispatch`` has been deprecated, and will be removed in ``skpro`` 2.5.0.
+  Users should pass backend parameters via the ``backend_params`` parameter instead.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] make ``get_packages_with_changed_specs`` safe to mutation of return
+  (:pr:`348`) :user:`fkiraly`
+* [ENH] EnbPI regressor for conformal prediction
+  intervals (:pr:`343`) :user:`fkiraly`
+* [ENH] improved default function to plot via ``BaseDistribution.plot``,
+  depending on distribution type (:pr:`353`) :user:`fkiraly`
+* [ENH] iid array distribution (:pr:`347`) :user:`fkiraly`
+* [ENH] Correct algorithm in ``EnbpiRegressor`` (:pr:`351`) :user:`fkiraly`
+* [ENH] Gamma Distribution (:pr:`355`) :user:`ShreeshaM07`
+* [ENH] Alpha distribution (:pr:`356`) :user:`SaiRevanth25`
+
+Fixes
+~~~~~
+
+* [BUG] fix ``test_run_test_for_class`` test logic (:pr:`345`) :user:`fkiraly`
+* [BUG] fix ``random_state`` handling in ``BootstrapRegressor``
+  (:pr:`344`) :user:`fkiraly`
+* [BUG] fix ``spl`` index when subsetting ``Empirical`` distribution
+  via ``iat`` (:pr:`352`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] isolate imports in ``changelog.py`` build util (:pr:`339`) :user:`fkiraly`
+* [MNT] remove legacy base modules (:pr:`80`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update sphinx-design requirement from ``<0.6.0`` to
+  ``<0.7.0`` (:pr:`357`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update scikit-learn requirement from ``<1.5.0,>=0.24.0``
+  to ``>=0.24.0,<1.6.0`` (:pr:`354`) :user:`dependabot[bot]`
+* [MNT] Update ``scikit-base`` requirement from
+  ``<0.8.0,>=0.6.1`` to ``>=0.6.1,<0.9.0`` (:pr:`366`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] minor docs improvements (:pr:`359`) :user:`fkiraly`
+* [DOC] fix download shields in readme (:pr:`360`) :user:`fkiraly`
+* [DOC] fixing download shields in README (:pr:`361`) :user:`fkiraly`
+* [DOC] fixing download shields in README (:pr:`362`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`SaiRevanth25`,
+:user:`ShreeshaM07`
+
+
 [2.3.0] - 2024-05-16
 ====================
 
