@@ -1,6 +1,6 @@
 [project]
 name = "skpro"
-version = "2.0.0"
+version = "2.3.0"
 description = "A unified framework for probability distributions and probabilistic supervised regression"
 authors = [
     {name = "skpro developers", email = "sktime.toolbox@gmail.com"},
@@ -37,23 +37,30 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.8,<3.13"
 dependencies = [
-    "numpy>=1.21.0,<1.25",
-    "pandas>=1.1.0",
+    "numpy>=1.21.0,<1.27",
+    "pandas>=1.1.0,<2.3.0",
     "packaging",
-    "scikit-base>=0.4.3",
-    "scikit-learn>=0.24.0,<1.4.0",
+    "scikit-base>=0.6.1,<0.8.0",
+    "scikit-learn>=0.24.0,<1.5.0",
     "scipy<2.0.0,>=1.2.0",
 ]
 
 [project.optional-dependencies]
 all_extras = [
     "attrs",
+    "cyclic-boosting>=1.4.0; python_version < '3.12'",
     "distfit",
+    "lifelines<0.29.0",
+    "mapie",
     "matplotlib>=3.3.2",
-    "ngboost",
+    "ngboost<0.6.0",
+    "polars<0.21.0",
+    "pyarrow<14.0.0; python_version < '3.12'",
+    "scikit-survival<0.23.0",
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
@@ -81,10 +88,11 @@ docs = [
     "nbsphinx>=0.8.6",
     "numpydoc",
     "pydata-sphinx-theme",
-    "sphinx_issues==1.2.0",
-    "sphinx-gallery==0.6.0",
-    "sphinx-design==0.3.0",
-    "sphinx==4.1.1",
+    "sphinx<8.0.0,!=7.2.0",
+    "sphinx-design<0.7.0",
+    "sphinx-issues<5.0.0",
+    "sphinx-gallery<0.17.0",
+    "sphinx-panels",
     "tabulate",
 ]
 

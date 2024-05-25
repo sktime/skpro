@@ -15,7 +15,7 @@ def flatten_to_1D_if_colvector(y):
     -------
     y_flat : numpy array
         1D flattened array if y was 2D column vector, or 1D already
-        otherwise, returne y unchanged
+        otherwise, return y unchanged
     """
     if len(y.shape) == 2 and y.shape[1] == 1:
         y_flat = y.flatten()

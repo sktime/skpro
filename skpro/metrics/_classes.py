@@ -236,9 +236,9 @@ class LogLoss(BaseDistrMetric):
     and a ground truth value :math:`y`, the logarithmic loss is
     defined as :math:`L(y, d) := -\log p_d(y)`.
 
-    `evaluate` computes the average test sample loss.
-    `evaluate_by_index` produces the loss sample by test data point
-    `multivariate` controls averaging over variables.
+    * ``evaluate`` computes the average test sample loss.
+    * ``evaluate_by_index`` produces the loss sample by test data point.
+    * ``multivariate`` controls averaging over variables.
 
     Parameters
     ----------
@@ -268,6 +268,76 @@ class LogLoss(BaseDistrMetric):
         else:
             return res
 
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Retrieve test parameters."""
+        params1 = {}
+        params2 = {"multivariate": True}
+        return [params1, params2]
+
+
+class LinearizedLogLoss(BaseDistrMetric):
+    r"""Lineararized logarithmic loss for distributional predictions.
+
+    For a predictive distribution :math:`d` with pdf :math:`p_d`
+    and a ground truth value :math:`y`, the linearized logarithmic loss is
+    defined as :math:`L(y, d) := -\log p_d(y)` if :math:`p_d(y) \geq r`,
+    and :math:`L(y, d) := -\log p_d(r) + 1 - \frac{1}{r} p_d(r)` otherwise,
+    where :math:`r` is the range of linearization parameter, `range` below.
+
+    * ``evaluate`` computes the average test sample loss.
+    * ``evaluate_by_index`` produces the loss sample by test data point.
+    * ``multivariate`` controls averaging over variables.
+
+    Parameters
+    ----------
+    range : positive float, optional, default=1
+        range of linearization, i.e., where to linearize the log-loss
+        for values smaller than range, the log-loss is linearized
+    multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
+            (n_outputs,), default='uniform_average'
+        Defines whether and how to aggregate metric for across variables.
+        If 'uniform_average' (default), errors are mean-averaged across variables.
+        If array-like, errors are weighted averaged across variables, values as weights.
+        If 'raw_values', does not average errors across variables, columns are retained.
+    multivariate : bool, optional, default=False
+        if True, behaves as multivariate log-loss
+        log-loss is computed for entire row, results one score per row
+        if False, is univariate log-loss
+        log-loss is computed per variable marginal, results in many scores per row
+    """
+
+    def __init__(self, range=1, multioutput="uniform_average", multivariate=False):
+        self.range = range
+        self.multivariate = multivariate
+        super().__init__(multioutput=multioutput)
+
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+        range = self.range
+
+        pdf = y_pred.pdf(y_true)
+        pdf_smaller_range = pdf < range
+        pdf_greater_range = pdf >= range
+
+        logloss = -y_pred.log_pdf(y_true)
+        linear = (-1 / range) * pdf - np.log(range) + 1
+
+        res = pdf_smaller_range * linear + pdf_greater_range * logloss
+
+        # replace this by multivariate log_pdf once distr implements
+        # i.e., pass multivariate on to log_pdf
+        if self.multivariate:
+            return pd.DataFrame(res.mean(axis=1), columns=["density"])
+        else:
+            return res
+
+    @classmethod
+    def get_test_params(self):
+        """Test parameter settings."""
+        params1 = {}
+        params2 = {"range": 0.1}
+        return [params1, params2]
+
 
 class SquaredDistrLoss(BaseDistrMetric):
     r"""Squared loss for distributional predictions.
@@ -284,9 +354,9 @@ class SquaredDistrLoss(BaseDistrMetric):
     defined as :math:`L(y, d) := -2 p_d(y) + \|p_d\|^2`,
     where :math:`\|p_d\|^2` is the (function) L2-norm of :math:`p_d`.
 
-    `evaluate` computes the average test sample loss.
-    `evaluate_by_index` produces the loss sample by test data point
-    `multivariate` controls averaging over variables.
+    * ``evaluate`` computes the average test sample loss.
+    * ``evaluate_by_index`` produces the loss sample by test data point.
+    * ``multivariate`` controls averaging over variables.
 
     Parameters
     ----------
@@ -316,6 +386,13 @@ class SquaredDistrLoss(BaseDistrMetric):
         else:
             return res
 
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Retrieve test parameters."""
+        params1 = {}
+        params2 = {"multivariate": True}
+        return [params1, params2]
+
 
 class CRPS(BaseDistrMetric):
     r"""Continuous rank probability score for distributional predictions.
@@ -328,11 +405,11 @@ class CRPS(BaseDistrMetric):
 
     For a predictive distribution :math:`d` and a ground truth value :math:`y`,
     the CRPS is defined as
-    :math:`L(y, d) := \mathbb{E}_{Y \sim d}|Y-y| - \frac{1}{2} \mathbb{E}_{X,Y \sim d}|X-Y|`.  # noqa: E501
+    :math:`L(y, d) := \mathbb{E}_{Y \sim d}|Y-y| - \frac{1}{2} \mathbb{E}_{X,Y \sim d}|X-Y|`.
 
-    `evaluate` computes the average test sample loss.
-    `evaluate_by_index` produces the loss sample by test data point
-    `multivariate` controls averaging over variables.
+    * ``evaluate`` computes the average test sample loss.
+    * ``evaluate_by_index`` produces the loss sample by test data point.
+    * ``multivariate`` controls averaging over variables.
 
     Parameters
     ----------
@@ -347,7 +424,7 @@ class CRPS(BaseDistrMetric):
         CRPS is computed for entire row, results one score per row
         if False, is univariate log-loss, per variable
         CRPS is computed per variable marginal, results in many scores per row
-    """
+    """  # noqa: E501
 
     def __init__(self, multioutput="uniform_average", multivariate=False):
         self.multivariate = multivariate
@@ -356,3 +433,10 @@ class CRPS(BaseDistrMetric):
     def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         # CRPS(d, y) = E_X,Y as d [abs(Y-y) - 0.5 abs(X-Y)]
         return y_pred.energy(y_true) - y_pred.energy() / 2
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Retrieve test parameters."""
+        params1 = {}
+        params2 = {"multivariate": True}
+        return [params1, params2]

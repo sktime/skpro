@@ -2,7 +2,7 @@
 """Utility for benchmark evaluation of probabilistic regression models."""
 # based on the sktime utility of the same name
 
-__author__ = ["fkiraly"]
+__author__ = ["fkiraly", "hazrulakmal"]
 __all__ = ["evaluate"]
 
 import time
@@ -11,21 +11,25 @@ import warnings
 import numpy as np
 import pandas as pd
 
+from skpro.utils.parallel import parallelize
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
-PANDAS_MTYPES = ["pd.DataFrame", "pd.Series", "pd-multiindex", "pd_multiindex_hier"]
 
-
-def _split(X, y, train, test):
+def _split(X, y, C, train, test):
+    results = dict()
     # split data according to cv
-    X_train, X_test = X.iloc[train], X.iloc[test]
+    results["X_train"] = X.iloc[train]
+    results["X_test"] = X.iloc[test]
 
-    if y is None:
-        y_train, y_test = None, None
-    else:
-        y_train, y_test = y.iloc[train], y.iloc[test]
+    if y is not None:
+        results["y_train"] = y.iloc[train]
+        results["y_test"] = y.iloc[test]
 
-    return X_train, X_test, y_train, y_test
+    if C is not None:
+        results["C_train"] = C.iloc[train]
+        results["C_test"] = C.iloc[test]
+
+    return results
 
 
 def evaluate(
@@ -38,6 +42,8 @@ def evaluate(
     error_score=np.nan,
     backend=None,
     compute=True,
+    backend_params=None,
+    C=None,
     **kwargs,
 ):
     r"""Evaluate estimator using re-sample folds.
@@ -88,41 +94,76 @@ def evaluate(
         Value to assign to the score if an exception occurs in estimator fitting. If set
         to "raise", the exception is raised. If a numeric value is given,
         FitFailedWarning is raised.
+
     backend : {"dask", "loky", "multiprocessing", "threading"}, by default None.
         Runs parallel evaluate if specified and `strategy` is set as "refit".
-        - "loky", "multiprocessing" and "threading": uses `joblib` Parallel loops
-        - "dask": uses `dask`, requires `dask` package in environment
+
+        - "None": executes loop sequentally, simple list comprehension
+        - "loky", "multiprocessing" and "threading": uses ``joblib.Parallel`` loops
+        - "joblib": custom and 3rd party ``joblib`` backends, e.g., ``spark``
+        - "dask": uses ``dask``, requires ``dask`` package in environment
+        - "dask_lazy": same as "dask",
+          but changes the return to (lazy) ``dask.dataframe.DataFrame``.
+
         Recommendation: Use "dask" or "loky" for parallel evaluate.
         "threading" is unlikely to see speed ups due to the GIL and the serialization
-        backend (`cloudpickle`) for "dask" and "loky" is generally more robust than the
-        standard `pickle` library used in "multiprocessing".
+        backend (``cloudpickle``) for "dask" and "loky" is generally more robust
+        than the standard ``pickle`` library used in "multiprocessing".
+
     compute : bool, default=True
         If backend="dask", whether returned DataFrame is computed.
         If set to True, returns `pd.DataFrame`, otherwise `dask.dataframe.DataFrame`.
-    **kwargs : Keyword arguments
-        Only relevant if backend is specified. Additional kwargs are passed into
-        `dask.distributed.get_client` or `dask.distributed.Client` if backend is
-        set to "dask", otherwise kwargs are passed into `joblib.Parallel`.
+
+    backend_params : dict, optional
+        additional parameters passed to the backend as config.
+        Directly passed to ``utils.parallel.parallelize``.
+        Valid keys depend on the value of ``backend``:
+
+        - "None": no additional parameters, ``backend_params`` is ignored
+        - "loky", "multiprocessing" and "threading": default ``joblib`` backends
+          any valid keys for ``joblib.Parallel`` can be passed here, e.g., ``n_jobs``,
+          with the exception of ``backend`` which is directly controlled by ``backend``.
+          If ``n_jobs`` is not passed, it will default to ``-1``, other parameters
+          will default to ``joblib`` defaults.
+        - "joblib": custom and 3rd party ``joblib`` backends, e.g., ``spark``.
+          any valid keys for ``joblib.Parallel`` can be passed here, e.g., ``n_jobs``,
+          ``backend`` must be passed as a key of ``backend_params`` in this case.
+          If ``n_jobs`` is not passed, it will default to ``-1``, other parameters
+          will default to ``joblib`` defaults.
+        - "dask": any valid keys for ``dask.compute`` can be passed,
+          e.g., ``scheduler``
+
+    C : pd.DataFrame, optional (default=None)
+        censoring information to use in the evaluation experiment,
+        should have same column name as y, same length as X and y
+        should have entries 0 and 1 (float or int)
+        0 = uncensored, 1 = (right) censored
+        if None, all observations are assumed to be uncensored
+        Can be passed to any probabilistic regressor,
+        but is ignored if capability:survival tag is False.
 
     Returns
     -------
     results : pd.DataFrame or dask.dataframe.DataFrame
         DataFrame that contains several columns with information regarding each
         refit/update and prediction of the estimator.
-        Row index is splitter index of train/test fold in `cv`.
-        Entries in the i-th row are for the i-th train/test split in `cv`.
+        Row index is splitter index of train/test fold in ``cv``.
+        Entries in the i-th row are for the i-th train/test split in ``cv``.
         Columns are as follows:
-        - test_{scoring.name}: (float) Model performance score. If `scoring` is a list,
-            then there is a column withname `test_{scoring.name}` for each scorer.
-        - fit_time: (float) Time in sec for `fit` or `update` on train fold.
-        - pred_time: (float) Time in sec to `predict` from fitted estimator.
+        - test_{scoring.name}: (float) Model performance score.
+          If ``scoring`` is a list,
+          then there is a column withname ``test_{scoring.name}`` for each scorer.
+        - fit_time: (float) Time in sec for ``fit`` on train fold.
+        - pred_time: (float) Time in sec to ``predict`` from fitted estimator.
+        - pred_[method]_time: (float)
+          Time in sec to run ``predict_[method]`` from fitted estimator.
         - len_y_train: (int) length of y_train.
-        - y_train: (pd.Series) only present if see `return_data=True`
-          train fold of the i-th split in `cv`, used to fit the estimator.
-        - y_pred: (pd.Series) present if see `return_data=True`
-          predictions from fitted estimator for the i-th test fold indices of `cv`.
-        - y_test: (pd.Series) present if see `return_data=True`
-          testing fold of the i-th split in `cv`, used to compute the metric.
+        - y_train: (pd.Series) only present if see ``return_data=True``
+          train fold of the i-th split in ``cv``, used to fit the estimator.
+        - y_pred: (pd.Series) present if see ``return_data=True``
+          predictions from fitted estimator for the i-th test fold indices of ``cv``.
+        - y_test: (pd.Series) present if see ``return_data=True``
+          testing fold of the i-th split in ``cv``, used to compute the metric.
 
     Examples
     --------
@@ -151,147 +192,96 @@ def evaluate(
 
     # todo: input checks and coercions
     # cv = check_cv(cv, enforce_start_with_window=True)
-    # if isinstance(scoring, list):
-    #    scoring = [check_scoring(s) for s in scoring]
-    # else:
-    #     scoring = check_scoring(scoring)
 
-    score_name = (
-        f"test_{scoring.name}"
-        if not isinstance(scoring, list)
-        else f"test_{scoring[0].name}"
-    )
+    scoring = _check_scores(scoring)
 
     _evaluate_fold_kwargs = {
         "estimator": estimator,
-        "scoring": scoring if not isinstance(scoring, list) else scoring[0],
-        "return_data": True,
+        "scoring": scoring,
+        "return_data": return_data,
         "error_score": error_score,
-        "score_name": score_name,
     }
 
-    def gen_X_y_train_test(X, y, cv):
+    def gen_X_y_train_test(X, y, C, cv):
         """Generate joint splits of X, y as per cv.
 
         Yields
         ------
-        X_train : i-th train split of y as per cv. None if X was None.
-        X_test : i-th test split of y as per cv. None if X was None.
-        y_train : i-th train split of y as per cv
-        y_test : i-th test split of y as per cv
+        X_train : i-th train split of y as per cv.
+        X_test : i-th test split of y as per cv.
+        y_train : i-th train split of y as per cv. None if y was None.
+        y_test : i-th test split of y as per cv. None if y was None.
+        C_train : i-th train split of C as per cv. None if C was None.
+        C_test : i-th test split of C as per cv. None if C was None.
         """
         for train, test in cv.split(X):
-            yield _split(X, y, train, test)
+            yield _split(X, y, C, train, test)
 
     # generator for X and y splits to iterate over below
-    xy_splits = gen_X_y_train_test(X, y, cv)
+    xy_splits = gen_X_y_train_test(X, y, C, cv)
+
+    if backend == "dask":
+        backend_in = "dask_lazy"
+    else:
+        backend_in = backend
 
     # dispatch by backend
-    if backend is None:
-        # Run temporal cross-validation sequentially
-        results = []
-        for X_train, X_test, y_train, y_test in xy_splits:
-            result = _evaluate_fold(
-                X_train,
-                X_test,
-                y_train,
-                y_test,
-                **_evaluate_fold_kwargs,
-            )
-            results.append(result)
-        results = pd.concat(results)
+    results = parallelize(
+        fun=_evaluate_fold,
+        iter=xy_splits,
+        meta=_evaluate_fold_kwargs,
+        backend=backend_in,
+        backend_params=backend_params,
+    )
 
-    elif backend == "dask":
-        # Use Dask delayed instead of joblib,
-        # which uses Futures under the hood
+    # final formatting of dask dataframes
+    if backend in ["dask", "dask_lazy"]:
         import dask.dataframe as dd
-        from dask import delayed as dask_delayed
 
-        results = []
-        for X_train, X_test, y_train, y_test in xy_splits:
-            results.append(
-                dask_delayed(_evaluate_fold)(
-                    X_train,
-                    X_test,
-                    y_train,
-                    y_test,
-                    **_evaluate_fold_kwargs,
-                )
-            )
-        results = dd.from_delayed(
-            results,
-            meta={
-                score_name: "float",
-                "fit_time": "float",
-                "pred_time": "float",
-                "len_y_train": "int",
-                "y_train": "object",
-                "y_test": "object",
-                "y_pred": "object",
-            },
-        )
-        if compute:
+        metadata = _get_column_order_and_datatype(scoring, return_data)
+
+        results = dd.from_delayed(results, meta=metadata)
+        if backend == "dask":
             results = results.compute()
-
     else:
-        # Otherwise use joblib
-        from joblib import Parallel, delayed
-
-        results = Parallel(backend=backend, **kwargs)(
-            delayed(_evaluate_fold)(
-                X_train,
-                X_test,
-                y_train,
-                y_test,
-                **_evaluate_fold_kwargs,
-            )
-            for X_train, X_test, y_train, y_test in xy_splits
-        )
         results = pd.concat(results)
 
     # final formatting of results DataFrame
     results = results.reset_index(drop=True)
-    if isinstance(scoring, list):
-        for s in scoring[1:]:
-            results[f"test_{s.name}"] = np.nan
-            for row in results.index:
-                results.loc[row, f"test_{s.name}"] = s(
-                    results["y_test"].loc[row],
-                    results["y_pred"].loc[row],
-                    y_train=results["y_train"].loc[row],
-                )
-
-    # drop pointer to data if not requested
-    if not return_data:
-        results = results.drop(columns=["y_train", "y_test", "y_pred"])
-    results = results.astype({"len_y_train": int})
 
     return results
 
 
-def _evaluate_fold(
-    X_train,
-    X_test,
-    y_train,
-    y_test,
-    estimator,
-    scoring,
-    return_data,
-    score_name,
-    error_score,
-):
+def _evaluate_fold(x, meta):
+    # unpack args
+    X_train = x["X_train"]
+    X_test = x["X_test"]
+    y_train = x["y_train"]
+    y_test = x["y_test"]
+    C_train = x.get("C_train", None)
+    C_test = x.get("C_test", None)
+
+    estimator = meta["estimator"]
+    scoring = meta["scoring"]
+    return_data = meta["return_data"]
+    error_score = meta["error_score"]
+
     # set default result values in case estimator fitting fails
     score = error_score
     fit_time = np.nan
     pred_time = np.nan
     y_pred = pd.NA
 
+    # results and cache dictionaries
+    temp_result = dict()
+    y_preds_cache = dict()
+
     try:
         # fit/update
         start_fit = time.perf_counter()
 
         estimator = estimator.clone()
-        estimator.fit(X_train, y_train)
+        estimator.fit(X_train, y_train, C=C_train)
 
         fit_time = time.perf_counter() - start_fit
 
@@ -303,27 +293,34 @@ def _evaluate_fold(
         }
         # predict
         start_pred = time.perf_counter()
+        # cache prediction from the first scitype and reuse it to compute other metrics
+        for scitype in scoring:
+            method = getattr(estimator, pred_type[scitype])
+            for metric in scoring.get(scitype):
+                pred_args = _get_pred_args_from_metric(scitype, metric)
+                if pred_args == {}:
+                    time_key = f"{scitype}_time"
+                    result_key = f"test_{metric.name}"
+                    y_pred_key = f"y_{scitype}"
+                else:
+                    argval = list(pred_args.values())[0]
+                    time_key = f"{scitype}_{argval}_time"
+                    result_key = f"test_{metric.name}_{argval}"
+                    y_pred_key = f"y_{scitype}_{argval}"
 
-        if hasattr(scoring, "metric_args"):
-            metric_args = scoring.metric_args
-        else:
-            metric_args = {}
+                # make prediction
+                if y_pred_key not in y_preds_cache.keys():
+                    start_pred = time.perf_counter()
+                    y_pred = method(X_test, **pred_args)
+                    pred_time = time.perf_counter() - start_pred
+                    temp_result[time_key] = [pred_time]
+                    y_preds_cache[y_pred_key] = [y_pred]
+                else:
+                    y_pred = y_preds_cache[y_pred_key][0]
 
-        if hasattr(scoring, "get_tag"):
-            scitype = scoring.get_tag("scitype:y_pred", raise_error=False)
-        else:
-            # If no scitype exists then metric is not proba and no args needed
-            scitype = None
-
-        methodname = pred_type[scitype]
-        method = getattr(estimator, methodname)
-
-        y_pred = method(X_test, **metric_args)
-
-        pred_time = time.perf_counter() - start_pred
-
-        # score
-        score = scoring(y_test, y_pred, y_train=y_train)
+                # score prediction and store score
+                score = metric(y_test, y_pred, y_train=y_train, C_true=C_test)
+                temp_result[result_key] = [score]
 
     except Exception as e:
         if error_score == "raise":
@@ -340,16 +337,92 @@ def _evaluate_fold(
                 stacklevel=2,
             )
 
-    result = pd.DataFrame(
-        {
-            score_name: [score],
-            "fit_time": [fit_time],
-            "pred_time": [pred_time],
-            "len_y_train": [len(y_train)],
-            "y_train": [y_train if return_data else pd.NA],
-            "y_test": [y_test if return_data else pd.NA],
-            "y_pred": [y_pred if return_data else pd.NA],
-        }
-    )
+    # format results data frame and return
+    temp_result["fit_time"] = [fit_time]
+    temp_result["pred_time"] = [pred_time]
+    temp_result["len_y_train"] = [len(y_train)]
+    if return_data:
+        temp_result["y_train"] = [y_train]
+        temp_result["y_test"] = [y_test]
+        temp_result.update(y_preds_cache)
+    result = pd.DataFrame(temp_result)
+    result = result.astype({"len_y_train": int})
+
+    column_order = _get_column_order_and_datatype(scoring, return_data)
+    result = result.reindex(columns=column_order.keys())
 
     return result
+
+
+def _get_pred_args_from_metric(scitype, metric):
+    pred_args = {
+        "pred_quantiles": "alpha",
+        "pred_interval": "coverage",
+    }
+    if scitype in pred_args.keys():
+        val = getattr(metric, pred_args[scitype], None)
+        if val is not None:
+            return {pred_args[scitype]: val}
+    return {}
+
+
+def _get_column_order_and_datatype(metric_types, return_data=True):
+    """Get the ordered column name and input datatype of results."""
+    others_metadata = {"len_y_train": "int"}
+    y_metadata = {
+        "y_train": "object",
+        "y_test": "object",
+    }
+    fit_metadata, metrics_metadata = {"fit_time": "float"}, {}
+    for scitype in metric_types:
+        for metric in metric_types.get(scitype):
+            pred_args = _get_pred_args_from_metric(scitype, metric)
+            if pred_args == {}:
+                time_key = f"{scitype}_time"
+                result_key = f"test_{metric.name}"
+                y_pred_key = f"y_{scitype}"
+            else:
+                argval = list(pred_args.values())[0]
+                time_key = f"{scitype}_{argval}_time"
+                result_key = f"test_{metric.name}_{argval}"
+                y_pred_key = f"y_{scitype}_{argval}"
+            fit_metadata[time_key] = "float"
+            metrics_metadata[result_key] = "float"
+            if return_data:
+                y_metadata[y_pred_key] = "object"
+    fit_metadata.update(others_metadata)
+    if return_data:
+        fit_metadata.update(y_metadata)
+    metrics_metadata.update(fit_metadata)
+    return metrics_metadata.copy()
+
+
+def _check_scores(metrics):
+    """Validate and coerce to BaseMetric and segregate them based on predict type.
+
+    Parameters
+    ----------
+    metrics : sktime accepted metrics object or a list of them or None
+
+    Return
+    ------
+    metrics_type : Dict
+        The key is metric types and its value is a list of its corresponding metrics.
+    """
+    if not isinstance(metrics, list):
+        metrics = [metrics]
+
+    metrics_type = {}
+    for metric in metrics:
+        # collect predict type
+        if hasattr(metric, "get_tag"):
+            scitype = metric.get_tag(
+                "scitype:y_pred", raise_error=False, tag_value_default="pred"
+            )
+        else:  # If no scitype exists then metric is a point forecast type
+            scitype = "pred"
+        if scitype not in metrics_type.keys():
+            metrics_type[scitype] = [metric]
+        else:
+            metrics_type[scitype].append(metric)
+    return metrics_type

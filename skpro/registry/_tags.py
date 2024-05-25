@@ -61,6 +61,20 @@ OBJECT_TAG_REGISTER = [
         "str",
         "type of estimator, e.g., 'regressor', 'transformer'",
     ),
+    # packaging information
+    # ---------------------
+    (
+        "maintainers",
+        "object",
+        ("list", "str"),
+        "list of current maintainers of the object, each maintainer a GitHub handle",
+    ),
+    (
+        "authors",
+        "object",
+        ("list", "str"),
+        "list of authors of the object, each author a GitHub handle",
+    ),
     (
         "python_version",
         "object",
@@ -80,9 +94,22 @@ OBJECT_TAG_REGISTER = [
         "should be provided if import name differs from package name, \
         key-value pairs are package name, import name",
     ),
+    (
+        "license_type",
+        "object",
+        "str",
+        "license type for interfaced packages: 'copyleft', 'permissive', 'copyright'. \
+        may be incorrect, NO LIABILITY assumed for this field",
+    ),
     # ------------------
     # BaseProbaRegressor
     # ------------------
+    (
+        "capability:survival",
+        "regressor_proba",
+        "bool",
+        "whether estimator can use censoring information, for survival analysis",
+    ),
     (
         "capability:multioutput",
         "regressor_proba",
@@ -94,6 +121,24 @@ OBJECT_TAG_REGISTER = [
         "regressor_proba",
         "bool",
         "whether estimator supports missing values",
+    ),
+    (
+        "X_inner_mtype",
+        "regressor_proba",
+        ("list", "str"),
+        "which machine type(s) is the internal _fit/_predict able to deal with?",
+    ),
+    (
+        "y_inner_mtype",
+        "regressor_proba",
+        ("list", "str"),
+        "which machine type(s) is the internal _fit/_predict able to deal with?",
+    ),
+    (
+        "C_inner_mtype",
+        "regressor_proba",
+        ("list", "str"),
+        "which machine type(s) is the internal _fit/_predict able to deal with?",
     ),
     # ----------------
     # BaseDistribution
@@ -115,6 +160,12 @@ OBJECT_TAG_REGISTER = [
         "distribution",
         ("str", ["continuous", "discrete", "mixed"]),
         "measure type of distr",
+    ),
+    (
+        "distr:paramtype",
+        "distribution",
+        ("str", ["general", "parametric", "nonparametric", "composite"]),
+        "parametrization type of distribution",
     ),
     (
         "approx_mean_spl",
@@ -146,6 +197,24 @@ OBJECT_TAG_REGISTER = [
         "int",
         "max iters for bisection method in ppf",
     ),
+    (
+        "broadcast_params",
+        "distribution",
+        ("list", "str"),
+        "distribution parameters to broadcast, complement is not broadcast",
+    ),
+    (
+        "broadcast_init",
+        "distribution",
+        ("str", ["on", "off"]),
+        "whether to initialize broadcast parameters in __init__, 'on' or 'off'",
+    ),
+    (
+        "broadcast_inner",
+        "distribution",
+        ("str", ["array", "scalar"]),
+        "if inner logic is vectorized ('array') or scalar ('scalar')",
+    ),
     # ---------------
     # BaseProbaMetric
     # ---------------
@@ -160,6 +229,12 @@ OBJECT_TAG_REGISTER = [
         "metric",
         "bool",
         "whether lower (True) or higher (False) is better",
+    ),
+    (
+        "capability:survival",
+        "metric",
+        "bool",
+        "whether metric uses censoring information, for survival analysis",
     ),
     # ----------------------------
     # BaseMetaObject reserved tags

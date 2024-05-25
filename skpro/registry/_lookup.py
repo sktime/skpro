@@ -48,35 +48,46 @@ def all_objects(
         Which kind of objects should be returned.
         if None, no filter is applied and all objects are returned.
         if str or list of str, strings define scitypes specified in search
-                only objects that are of (at least) one of the scitypes are returned
-            possible str values are entries of registry.BASE_CLASS_REGISTER (first col)
-                for instance 'classifier', 'regressor', 'transformer', 'forecaster'
+        only objects that are of (at least) one of the scitypes are returned
+        possible str values are entries of registry.BASE_CLASS_REGISTER (first col)
+        for instance 'regrssor_proba', 'distribution, 'metric'
+
     return_names: bool, optional (default=True)
-        if True, object class name is included in the all_objects()
-            return in the order: name, object class, optional tags, either as
-            a tuple or as pandas.DataFrame columns
-        if False, object class name is removed from the all_objects()
-            return.
+
+        if True, estimator class name is included in the ``all_objects``
+        return in the order: name, estimator class, optional tags, either as
+        a tuple or as pandas.DataFrame columns
+
+        if False, estimator class name is removed from the ``all_objects`` return.
+
     filter_tags: dict of (str or list of str), optional (default=None)
         For a list of valid tag strings, use the registry.all_tags utility.
-        subsets the returned objects as follows:
-            each key/value pair is statement in "and"/conjunction
-                key is tag name to sub-set on
-                value str or list of string are tag values
-                condition is "key must be equal to value, or in set(value)"
-    exclude_objects: str, list of str, optional (default=None)
-        Names of objects to exclude.
+
+        ``filter_tags`` subsets the returned estimators as follows:
+
+        * each key/value pair is statement in "and"/conjunction
+        * key is tag name to sub-set on
+        * value str or list of string are tag values
+        * condition is "key must be equal to value, or in set(value)"
+
+    exclude_estimators: str, list of str, optional (default=None)
+        Names of estimators to exclude.
+
     as_dataframe: bool, optional (default=False)
-        if True, all_objects will return a pandas.DataFrame with named
-            columns for all of the attributes being returned.
-        if False, all_objects will return a list (either a list of
-            objects or a list of tuples, see Returns)
+
+        True: ``all_objects`` will return a pandas.DataFrame with named
+        columns for all of the attributes being returned.
+
+        False: ``all_objects`` will return a list (either a list of
+        estimators or a list of tuples, see Returns)
+
     return_tags: str or list of str, optional (default=None)
-        Names of tags to fetch and return each object's value of.
+        Names of tags to fetch and return each estimator's value of.
         For a list of valid tag strings, use the registry.all_tags utility.
         if str or list of str,
-            the tag values named in return_tags will be fetched for each
-            object and will be appended as either columns or tuple entries.
+        the tag values named in return_tags will be fetched for each
+        estimator and will be appended as either columns or tuple entries.
+
     suppress_import_stdout : bool, optional. Default=True
         whether to suppress stdout printout upon import.
 
@@ -85,7 +96,7 @@ def all_objects(
     all_objects will return one of the following:
         1. list of objects, if return_names=False, and return_tags is None
         2. list of tuples (optional object name, class, ~optional object
-                tags), if return_names=True or return_tags is not None.
+          tags), if return_names=True or return_tags is not None.
         3. pandas.DataFrame if as_dataframe = True
         if list of objects:
             entries are objects matching the query,
@@ -143,7 +154,13 @@ def all_objects(
 
     if object_types:
         if filter_tags and "object_type" not in filter_tags.keys():
-            object_tag_filter = {}
+            object_tag_filter = {"object_type": object_types}
+        elif filter_tags:
+            filter_tags_filter = filter_tags.get("object_type", [])
+            if isinstance(object_types, str):
+                object_types = [object_types]
+            object_tag_update = {"object_type": object_types + filter_tags_filter}
+            filter_tags.update(object_tag_update)
         else:
             object_tag_filter = {"object_type": object_types}
         if filter_tags:
