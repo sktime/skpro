@@ -19,9 +19,7 @@ It provides `scikit-learn`-like, `scikit-base` compatible interfaces to:
 | **Community** | [![!discord](https://img.shields.io/static/v1?logo=discord&label=discord&message=chat&color=lightgreen)](https://discord.com/invite/54ACzaFsn7) [![!slack](https://img.shields.io/static/v1?logo=linkedin&label=LinkedIn&message=news&color=lightblue)](https://www.linkedin.com/company/scikit-time/) |
 | **CI/CD** | [![github-actions](https://img.shields.io/github/actions/workflow/status/sktime/sktime/wheels.yml?logo=github)](https://github.com/sktime/skpro/actions/workflows/wheels.yml) [![!codecov](https://img.shields.io/codecov/c/github/sktime/skpro?label=codecov&logo=codecov)](https://codecov.io/gh/sktime/skpro) [![readthedocs](https://img.shields.io/readthedocs/skpro?logo=readthedocs)](https://skpro.readthedocs.io/en/latest/) [![platform](https://img.shields.io/conda/pn/conda-forge/skpro)](https://github.com/sktime/skpro) |
 | **Code** |  [![!pypi](https://img.shields.io/pypi/v/skpro?color=orange)](https://pypi.org/project/skpro/) [![!conda](https://img.shields.io/conda/vn/conda-forge/skpro)](https://anaconda.org/conda-forge/skpro) [![!python-versions](https://img.shields.io/pypi/pyversions/skpro)](https://www.python.org/) [![!black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) |
-| **Downloads** | ![PyPI - Downloads](https://img.shields.io/pypi/dw/skpro)
- ![PyPI - Downloads](https://img.shields.io/pypi/dm/skpro)
- [![Downloads](https://static.pepy.tech/personalized-badge/skpro?period=total&units=international_system&left_color=grey&right_color=blue&left_text=cumulative%20(pypi))](https://pepy.tech/project/skpro) |
+| **Downloads** | ![PyPI - Downloads](https://img.shields.io/pypi/dw/skpro) ![PyPI - Downloads](https://img.shields.io/pypi/dm/skpro) [![Downloads](https://static.pepy.tech/personalized-badge/skpro?period=total&units=international_system&left_color=grey&right_color=blue&left_text=cumulative%20(pypi))](https://pepy.tech/project/skpro) |
 | **Citation** | [![DOI](https://zenodo.org/badge/103107372.svg)](https://zenodo.org/doi/10.5281/zenodo.11002671) |
 
 ## :books: Documentation
