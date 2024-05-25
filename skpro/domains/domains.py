@@ -31,7 +31,7 @@ class Interval(Domain):
     -------
     >>> from skpro.domains import Interval
 
-    >>> interval = Interval(values=[1, 2], parenthesis='()')
+    >>> interval = Interval(values=[1, 2], parenthesis='open')
     """
 
     _PARENTHESIS = {
@@ -42,6 +42,9 @@ class Interval(Domain):
     }
 
     def __init__(self, values: List[float], parenthesis: str = "open"):
+        self.values = values
+        self.parenthesis = parenthesis
+
         self._left, self._right = self._validate_interval(values=values)
         self._parenthesis = self._resolve_parenthesis(parenthesis=parenthesis)
 
@@ -126,6 +129,14 @@ class Interval(Domain):
         """Return the boundary of the interval, i.e., the extremities."""
         return self._left, self._right
 
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        return {
+            "values": [1, 2],
+            "parenthesis": "open",
+        }
+
 
 class Finite(Domain):
     r"""Finite set of the real line.
@@ -145,21 +156,27 @@ class Finite(Domain):
     """
 
     def __init__(self, values: List[Union[int, float]]):
-        self.values = self._validate_values(values=values)
+        self.values = values
+
+        self._values = self._validate_values(values=values)
         super().__init__()
 
-    def _validate_values(self, values: List[Union[int, float]]) -> List[float]:
+    def _validate_values(
+        self, values: List[Union[int, float]]
+    ) -> List[Union[int, float]]:
         """Check if a tuple of numbers is elegible to be a finite set."""
         for value in values:
             if not isinstance(value, (float, int)):
                 raise TypeError(f"Expected `float`or `int`, but got {type(value)}.")
             if value in [-float("inf"), float("inf")]:
                 raise ValueError(f"Value {value} not accepted in finite set.")
-        return list(set(values))
+        if len(values) != len(set(values)):
+            raise ValueError(f"Detected duplicated values in {values}!")
+        return values
 
     def __contains__(self, item) -> bool:
         """Implement `in` operator for the class `Interval`."""
-        return item in self.values
+        return item in self._values
 
     def __str__(self) -> str:
         r"""Return string representation of `Finite`.
@@ -173,7 +190,14 @@ class Finite(Domain):
     @property
     def boundary(self) -> Tuple[float, ...]:
         """Return the boundary of the finite set, i.e., the finite set itself."""
-        return tuple(sorted(self.values))
+        return tuple(sorted(self._values))
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        return {
+            "values": [1, 2, 3, 4, 5],
+        }
 
 
 class Product(Domain):
@@ -192,10 +216,12 @@ class Product(Domain):
     -------
     >>> from skpro.domains import Product
 
-    >>> product = Product([Interval([1, 2]), Finite([3, 4, 5, 6], Interval([7, 9]))])
+    >>> product = Product([Interval([1, 2]), Finite([3, 4, 5, 6]), Interval([7, 9])])
     """
 
     def __init__(self, elements: List[Union[Interval, Finite]]):
+        self.elements = elements
+
         self.product = self._validate_elements(elements=elements)
         super().__init__()
 
@@ -246,3 +272,10 @@ class Product(Domain):
         the boundary of the elements.
         """
         return tuple(element.boundary for element in self.product)
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        return {
+            "elements": [Interval([1, 2]), Finite([3, 4, 5, 6]), Interval([7, 9])],
+        }
