@@ -22,13 +22,10 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         "capability:missing": True,
     }
 
-    # todo 2.3.0: remove pre_dispatch and n_jobs params
     def __init__(
         self,
         estimator,
         cv,
-        n_jobs=None,
-        pre_dispatch=None,
         backend="loky",
         refit=True,
         scoring=None,
@@ -117,22 +114,8 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         scoring = self.scoring
         scoring_name = f"test_{scoring.name}"
 
-        # todo 2.3.0: remove this logic and only use backend_params
         backend = self.backend
         backend_params = self.backend_params if self.backend_params else {}
-        if backend in ["threading", "multiprocessing", "loky"]:
-            n_jobs = self.n_jobs
-            pre_dispatch = self.pre_dispatch
-            backend_params["n_jobs"] = n_jobs
-            backend_params["pre_dispatch"] = pre_dispatch
-            if n_jobs is not None or pre_dispatch is not None:
-                warn(
-                    f"in {self.__class__.__name__}, n_jobs and pre_dispatch "
-                    "parameters are deprecated and will be removed in 2.3.0. "
-                    "Please use n_jobs and pre_dispatch directly in the backend_params "
-                    "argument instead.",
-                    stacklevel=2,
-                )
 
         def _fit_and_score(params, meta):
             # Clone estimator.
