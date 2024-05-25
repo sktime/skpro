@@ -35,6 +35,7 @@ Continuous support
     :toctree: auto_generated/
     :template: class.rst
 
+    Alpha
     Beta
     ChiSquared
     Exponential
