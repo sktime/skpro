@@ -17,6 +17,18 @@ class Alpha(_ScipyAdapter):
     It is often used for modeling data with heavy right tails,
     unlike the Gaussian distribution(which is symmetric and bell-shaped).
 
+    The probability density function (PDF) of the Alpha distribution is given by:
+    .. math::
+
+        f(x) = \frac{1}{x^2 \Phi(a) \sqrt{2\pi}}
+                \exp\left(-\frac{1}{2}\left(\frac{a - 1}{x}\right)^2\right)
+
+    where:
+       - :math:`a` is the shape parameter.
+       - :math:`Phi` is the cumulative distribution function (CDF) of the
+                    standard normal distribution.
+
+
     Parameters
     ----------
     a : float or array of float (1D or 2D), must be positive
