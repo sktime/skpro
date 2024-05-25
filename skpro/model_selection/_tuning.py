@@ -22,7 +22,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         "capability:missing": True,
     }
 
-    # todo 2.4.0: remove pre_dispatch and n_jobs params
+    # todo 2.5.0: remove pre_dispatch and n_jobs params
     def __init__(
         self,
         estimator,
@@ -117,7 +117,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         scoring = self.scoring
         scoring_name = f"test_{scoring.name}"
 
-        # todo 2.4.0: remove this logic and only use backend_params
+        # todo 2.5.0: remove this logic and only use backend_params
         backend = self.backend
         backend_params = self.backend_params if self.backend_params else {}
         if backend in ["threading", "multiprocessing", "loky"]:
@@ -129,7 +129,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
                 warn(
                     f"in {self.__class__.__name__}, n_jobs and pre_dispatch "
                     "parameters in skpro GridSearchCV and RandomizedSearchCV "
-                    "are deprecated and will be removed in 2.4.0. "
+                    "are deprecated and will be removed in skpro 2.5.0. "
                     "Please use n_jobs and pre_dispatch directly in the backend_params "
                     "argument instead.",
                     stacklevel=2,
@@ -256,7 +256,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         return getattr(self, self._delegate_name)
 
 
-# todo 2.4.0: remove pre_dispatch and n_jobs params
+# todo 2.5.0: remove pre_dispatch and n_jobs params
 class GridSearchCV(BaseGridSearch):
     """Perform grid-search cross-validation to find optimal model parameters.
 
@@ -526,7 +526,7 @@ class GridSearchCV(BaseGridSearch):
         return params
 
 
-# todo 2.4.0: remove pre_dispatch and n_jobs params
+# todo 2.5.0: remove pre_dispatch and n_jobs params
 class RandomizedSearchCV(BaseGridSearch):
     """Perform randomized-search cross-validation to find optimal model parameters.
 
