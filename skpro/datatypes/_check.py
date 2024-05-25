@@ -23,8 +23,6 @@ __all__ = [
     "mtype",
 ]
 
-from warnings import warn
-
 import numpy as np
 
 from skpro.datatypes._common import _metadata_requested, _ret
