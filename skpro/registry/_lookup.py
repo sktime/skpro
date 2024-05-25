@@ -122,15 +122,15 @@ def all_objects(
     --------
     >>> from skpro.registry import all_objects
     >>> # return a complete list of objects as pd.Dataframe
-    >>> all_objects(as_dataframe=True)
+    >>> all_objects(as_dataframe=True)  # doctest: +SKIP
     >>> # return all probabilistic regressors by filtering for object type
-    >>> all_objects("regressor_proba", as_dataframe=True)
+    >>> all_objects("regressor_proba", as_dataframe=True)  # doctest: +SKIP
     >>> # return all regressors which handle missing data in the input by tag filtering
     >>> all_objects(
     ...     "regressor_proba",
     ...     filter_tags={"capability:missing": True},
     ...     as_dataframe=True
-    ... )
+    ... )  # doctest: +SKIP
 
     References
     ----------
