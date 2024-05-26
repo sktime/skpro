@@ -40,6 +40,7 @@ Continuous support
     Exponential
     Fisk
     Gamma
+    HalfNormal
     Laplace
     Logistic
     Normal
