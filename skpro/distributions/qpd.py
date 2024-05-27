@@ -51,15 +51,8 @@ class QPD_Johnson(_DelegatedDistribution):
         lower bound of bounded range for QPD.
     upper : float, default = None
         upper bound of bounded range for QPD.
-    version: deprecated
-        options are ``'normal'`` (default) or ``'logistic'``
-        ``version`` will be renamed to 'base_dist' in version 2.5.0.
     base_dist: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
-        ``base_dist`` will be renamed from 'version' in version 2.5.0.
-        If you want to proactively modify your code, you can use ``base_dist``.
-    dist_shape: deprecated
-        ``dist_shape`` will be removed in version 2.5.0.
 
     Example
     -------
@@ -117,16 +110,24 @@ class QPD_Johnson(_DelegatedDistribution):
         # TODO <2.5.0>: rename parameter 'version' to 'base_dist
         # TODO <2.5.0>: remove parameter 'dist_shape'
         # TODO <2.5.0>: update docstring, and remove warning
-        message = "Parameter 'dist_shape' will be removed in version 2.5.0."
+        message = (
+            "In QPD_Johnson, parameter 'dist_shape' will be removed in version 2.5.0."
+            "To retain the current behavior, set parameters in the base_dist "
+            "argument."
+        )
         if self.dist_shape != 0.0:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
-        message = "Parameter 'version' will be renamed to 'base_dist' in version 2.5.0."
-        if self.version != "depracated":
+        message = (
+            "In QPD_Johnson, parameter 'version' will be renamed to 'base_dist' "
+            "in version 2.5.0. To retain the current behavior, pass the base_dist "
+            "argument instead."
+        )
+        if self.version != "deprecated":
             warnings.warn(message, DeprecationWarning, stacklevel=2)
-            self._parameter = self.version
+            self._base_dist = self.version
         else:
-            self._parameter = self.base_dist
+            self._base_dist = self.base_dist
 
         if lower is None:
             delegate_cls = QPD_U
@@ -143,7 +144,7 @@ class QPD_Johnson(_DelegatedDistribution):
             "qv_low": qv_low,
             "qv_median": qv_median,
             "qv_high": qv_high,
-            "version": self._parameter,
+            "version": self._base_dist,
             "index": index,
             "columns": columns,
             **extra_params,
@@ -216,17 +217,8 @@ class QPD_S(BaseDistribution):
         quantile function value of quantile ``1 - alpha``
     lower : float
         lower bound of semi-bounded range.
-        This is used when estimating QPD and calculating
-        expectation and variance
-    upper : deprecated
-        ``upper`` will be removed in version 2.5.0.
-    version: deprecated
-        options are ``'normal'`` (default) or ``'logistic'``
-        ``version`` will be renamed to 'base_dist' in version 2.5.0.
     base_dist: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
-        ``base_dist`` will be renamed from 'version' in version 2.5.0.
-        If you want to proactively modify your code, you can use ``base_dist``.
 
     Example
     -------
@@ -291,21 +283,29 @@ class QPD_S(BaseDistribution):
         # TODO <2.5.0>: rename parameter 'version' to 'base_dist
         # TODO <2.5.0>: remove parameter 'upper'
         # TODO <2.5.0>: update docstring, and remove warning
-        message = "Parameter 'version' will be renamed to 'base_dist' in version 2.5.0."
+        message = (
+            "In QPD_S, parameter 'version' will be renamed to 'base_dist' "
+            "in version 2.5.0. To retain the current behavior, pass the base_dist "
+            "argument instead."
+        )
         if self.version != "deprecated":
             warnings.warn(message, DeprecationWarning, stacklevel=2)
-            self._parameter = self.version
+            self._base_dist = self.version
         else:
-            self._parameter = self.base_dist
+            self._base_dist = self.base_dist
 
-        message = "Parameter 'upper' will be removed in version 2.5.0."
+        message = (
+            "In QPD_S, parameter 'upper' will be removed "
+            "in version 2.5.0. The parameter has no effect in the current version, "
+            "and should be removed entirely."
+        )
         if self.upper != 1e3:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         super().__init__(index=index, columns=columns)
 
         # precompute parameters for methods
-        phi = _resolve_phi(self._parameter)
+        phi = _resolve_phi(self._base_dist)
         self.phi = phi
 
         qpd_params = _prep_qpd_vars(phi=phi, mode="S", **self._bc_params)
@@ -422,15 +422,8 @@ class QPD_B(BaseDistribution):
         quantile function value of quantile ``1 - alpha``
     lower : float or array_like[float]
         lower bound of semi-bounded range.
-    upper : float or array_like[float]
-        upper bound of semi-bounded range.
-    version: deprecated
-        options are ``'normal'`` (default) or ``'logistic'``
-        ``version`` will be renamed to 'base_dist' in version 2.5.0.
     base_dist: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
-        ``base_dist`` will be renamed from 'version' in version 2.5.0.
-        If you want to proactively modify your code, you can use ``base_dist``.
 
     Example
     -------
@@ -495,17 +488,21 @@ class QPD_B(BaseDistribution):
 
         # TODO <2.5.0>: rename parameter 'version' to 'base_dist
         # TODO <2.5.0>: update docstring, and remove warning
-        message = "Parameter 'version' will be renamed to 'base_dist' in version 2.5.0."
+        message = (
+            "In QPD_B, parameter 'version' will be renamed to 'base_dist' "
+            "in version 2.5.0. To retain the current behavior, pass the base_dist "
+            "argument instead."
+        )
         if self.version != "deprecated":
             warnings.warn(message, DeprecationWarning, stacklevel=2)
-            self._parameter = self.version
+            self._base_dist = self.version
         else:
-            self._parameter = self.base_dist
+            self._base_dist = self.base_dist
 
         super().__init__(index=index, columns=columns)
 
         # precompute parameters for methods
-        phi = _resolve_phi(self._parameter)
+        phi = _resolve_phi(self._base_dist)
         self.phi = phi
 
         qpd_params = _prep_qpd_vars(phi=phi, mode="B", **self._bc_params)
@@ -624,19 +621,8 @@ class QPD_U(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    lower : deprecated
-        ``lower`` will be removed in version 2.5.0.
-    upper : deprecated
-        ``upper`` will be removed in version 2.5.0.
-    version: deprecated
-        options are ``'normal'`` (default) or ``'logistic'``
-        ``version`` will be renamed to 'base_dist' in version 2.5.0.
     base_dist: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
-        ``base_dist`` will be renamed from 'version' in version 2.5.0.
-        If you want to proactively modify your code, you can use ``base_dist``.
-    dist_shape: deprecated
-        ``dist_shape`` will be removed in version 2.5.0.
 
     Example
     -------
@@ -705,29 +691,45 @@ class QPD_U(BaseDistribution):
         # TODO <2.5.0>: remove parameter 'upper'
         # TODO <2.5.0>: remove parameter 'lower'
         # TODO <2.5.0>: update docstring, and remove warning
-        message = "Parameter 'dist_shape' will be removed in version 2.5.0."
+        message = (
+            "In QPD_U, parameter 'dist_shape' will be removed in version 2.5.0."
+            "To retain the current behavior, set parameters in the base_dist "
+            "argument."
+        )
         if self.dist_shape != 0.0:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
-        message = "Parameter 'version' will be renamed to 'base_dist' in version 2.5.0."
+        message = (
+            "In QPD_U, parameter 'version' will be renamed to 'base_dist' "
+            "in version 2.5.0. To retain the current behavior, pass the base_dist "
+            "argument instead."
+        )
         if self.version != "deprecated":
             warnings.warn(message, DeprecationWarning, stacklevel=2)
-            self._parameter = self.version
+            self._base_dist = self.version
         else:
-            self._parameter = self.base_dist
+            self._base_dist = self.base_dist
 
-        message = "Parameter 'upper' will be removed in version 2.5.0."
+        message = (
+            "In QPD_U, parameter 'upper' will be removed "
+            "in version 2.5.0. The parameter has no effect in the current version, "
+            "and should be removed entirely."
+        )
         if self.upper != 1e3:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
-        message = "Parameter 'lower' will be removed in version 2.5.0."
+        message = (
+            "In QPD_U, parameter 'lower' will be removed "
+            "in version 2.5.0. The parameter has no effect in the current version, "
+            "and should be removed entirely."
+        )
         if self.lower != -1e3:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         super().__init__(index=index, columns=columns)
 
         # precompute parameters for methods
-        phi = _resolve_phi(self._parameter)
+        phi = _resolve_phi(self._base_dist)
         self.phi = phi
 
         qpd_params = _prep_qpd_vars(phi=phi, mode="U", **self._bc_params)
