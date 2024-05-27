@@ -15,8 +15,8 @@ class HalfNormal(_ScipyAdapter):
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
 
-    The pdf is defined only for \( x \geq 0 \). For \( x < 0 \), \( f(x) = 0 \).
-    The distribution is "cut off" at \( x = 0 \). There is no mass assigned to
+    The pdf is defined only for :math:`\( x \geq 0 \)`. For :math:`\( x < 0 \), \( f(x) = 0 \)`.
+    The distribution is `cut off` at :math:`\( x = 0 \)`. There is no mass assigned to
     negative values; they are entirely excluded from the distribution.
 
     The half-normal distribution is parametrized by the standard deviation
