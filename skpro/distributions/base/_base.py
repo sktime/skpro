@@ -1456,16 +1456,22 @@ class BaseDistribution(BaseObject):
         Parameters
         ----------
         n_samples : int, optional, default = None
+            number of samples to draw from the distribution
 
         Returns
         -------
-        if `n_samples` is `None`:
-        returns a sample that contains a single sample from `self`,
-        in `pd.DataFrame` mtype format convention, with `index` and `columns` as `self`
-        if n_samples is `int`:
-        returns a `pd.DataFrame` that contains `n_samples` i.i.d. samples from `self`,
-        in `pd-multiindex` mtype format convention, with same `columns` as `self`,
-        and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
+        pd.DataFrame
+            samples from the distribution
+
+            * if ``n_samples`` is ``None``:
+            returns a sample that contains a single sample from ``self``,
+            in ``pd.DataFrame`` mtype format convention, with ``index`` and ``columns``
+            as ``self``
+            * if n_samples is ``int``:
+            returns a ``pd.DataFrame`` that contains ``n_samples`` i.i.d.
+            samples from ``self``, in ``pd-multiindex`` mtype format convention,
+            with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
+            of ``RangeIndex(n_samples)`` and ``self.index``
         """
 
         def gen_unif():
@@ -1488,7 +1494,7 @@ class BaseDistribution(BaseObject):
 
         raise NotImplementedError(self._method_error_msg("sample", "error"))
 
-    def plot(self, fun="pdf", ax=None, **kwargs):
+    def plot(self, fun=None, ax=None, **kwargs):
         """Plot the distribution.
 
         Different distribution defining functions can be selected for plotting
@@ -1501,7 +1507,7 @@ class BaseDistribution(BaseObject):
 
         Parameters
         ----------
-        fun : str, optional, default="pdf"
+        fun : str, optional, default="pdf" for continuous distributions, otherwise "cdf"
             the function to plot, one of "pdf", "cdf", "ppf"
         ax : matplotlib Axes object, optional
             matplotlib Axes to plot in
@@ -1519,6 +1525,12 @@ class BaseDistribution(BaseObject):
         _check_soft_dependencies("matplotlib", obj="distribution plot")
 
         from matplotlib.pyplot import subplots
+
+        if fun is None:
+            if self.get_tag("distr:measuretype", "mixed") == "continuous":
+                fun = "pdf"
+            else:
+                fun = "cdf"
 
         if self.ndim > 0:
             if "x_bounds" not in kwargs:
@@ -1768,16 +1780,22 @@ class _BaseTFDistribution(BaseDistribution):
         Parameters
         ----------
         n_samples : int, optional, default = None
+            number of samples to draw from the distribution
 
         Returns
         -------
-        if `n_samples` is `None`:
-        returns a sample that contains a single sample from `self`,
-        in `pd.DataFrame` mtype format convention, with `index` and `columns` as `self`
-        if n_samples is `int`:
-        returns a `pd.DataFrame` that contains `n_samples` i.i.d. samples from `self`,
-        in `pd-multiindex` mtype format convention, with same `columns` as `self`,
-        and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
+        pd.DataFrame
+            samples from the distribution
+
+            * if ``n_samples`` is ``None``:
+            returns a sample that contains a single sample from ``self``,
+            in ``pd.DataFrame`` mtype format convention, with ``index`` and ``columns``
+            as ``self``
+            * if n_samples is ``int``:
+            returns a ``pd.DataFrame`` that contains ``n_samples`` i.i.d.
+            samples from ``self``, in ``pd-multiindex`` mtype format convention,
+            with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
+            of ``RangeIndex(n_samples)`` and ``self.index``
         """
         if n_samples is None:
             np_spl = self.distr.sample().numpy()

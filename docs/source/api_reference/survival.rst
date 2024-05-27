@@ -112,7 +112,7 @@ Generalized additive survival models
     :toctree: auto_generated/
     :template: class.rst
 
-    AalenAdditiveLifelines
+    AalenAdditive
 
 Tree models
 -----------
