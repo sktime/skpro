@@ -15,7 +15,6 @@ class HalfNormal(_ScipyAdapter):
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
 
-    The pdf is defined only for :math:`\( x \geq 0 \)`. For :math:`\( x < 0 \), \( f(x) = 0 \)`.
     The distribution is `cut off` at :math:`\( x = 0 \)`. There is no mass assigned to
     negative values; they are entirely excluded from the distribution.
 
@@ -23,7 +22,7 @@ class HalfNormal(_ScipyAdapter):
     :math:`\sigma`, such that the pdf is
 
     .. math:: f(x) = \frac{\sqrt{2}}{\sigma \sqrt{\pi}}
-                    \exp\left(-\frac{x^2}{2\sigma^2}\right)
+                    \exp\left(-\frac{x^2}{2\sigma^2}\right), x>0 otherwise 0
 
     The standard deviation :math:`\sigma` is represented by the parameter ``sigma``.
 
