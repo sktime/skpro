@@ -1,9 +1,9 @@
 """Test file for polars dataframes"""
 
 import pytest
-from sktime.utils.validation._dependencies import _check_soft_dependencies
 
 from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
+from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
 @pytest.mark.skipif(
