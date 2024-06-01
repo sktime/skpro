@@ -6,10 +6,10 @@ __author__ = ["ShreeshaM07"]
 import numpy as np
 import pandas as pd
 
-from skpro.distributions.base import BaseDistribution
+from skpro.distributions.base import BaseArrayDistribution
 
 
-class Histogram(BaseDistribution):
+class Histogram(BaseArrayDistribution):
     """Histogram Probability Distribution.
 
     The histogram probability distribution is parameterized
@@ -35,14 +35,8 @@ class Histogram(BaseDistribution):
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
-        # "broadcast_init": "on",
+        "broadcast_init": "on",
     }
-
-    def __init__(self, bins, bin_mass, index=None, columns=None):
-        self.bins = bins
-        self.bin_mass = bin_mass
-
-        super().__init__(index=index, columns=columns)
 
     def _convert_tuple_to_array(self, bins):
         bins_to_list = (bins[0], bins[1], bins[2])
@@ -52,6 +46,23 @@ class Histogram(BaseDistribution):
             bins.append(bins_to_list[0] + b * bin_width)
         bins.append(bins_to_list[1])
         return bins
+
+    def __init__(self, bins, bin_mass, index=None, columns=None):
+        # convert the bins into a list
+        for i in range(len(bins)):
+            for j in range(len(bins[i])):
+                if isinstance(bins[i][j], tuple):
+                    bins[i][j] = self._convert_tuple_to_array(bins[i][j])
+                bins[i][j] = np.array(bins[i][j])
+                bin_mass[i][j] = np.array(bin_mass[i][j])
+
+        # bins = [[self._convert_tuple_to_array(item) if
+        # isinstance(item, tuple) else item
+        #      for item in inner_list] for inner_list in bins]
+        self.bins = bins
+        self.bin_mass = bin_mass
+
+        super().__init__(index=index, columns=columns)
 
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
@@ -81,53 +92,61 @@ class Histogram(BaseDistribution):
 
         Parameters
         ----------
-        x : 1D np.ndarray, same shape as ``self``
+        x : 2D np.ndarray, same shape as ``self``
             values to compute energy w.r.t. to
 
         Returns
         -------
-        1D np.ndarray, same shape as ``self``
+        2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
+        # still needs work
         bins = self.bins
-        bin_mass = np.array(self.bin_mass)
+        bin_mass = self.bin_mass
         energy_arr = []
-        # convert the bins into a list
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
+        mean = self._mean()
+        cdf = self._cdf(x)
+        pdf = self._pdf(x)
+        from numpy.lib.stride_tricks import sliding_window_view
 
-        if isinstance(bins, list):
-            mean = self._mean()
-
-            is_outside = np.logical_or(x < bins[0], x > bins[-1])
-
-            if is_outside:
-                energy_arr = abs(mean - x)
-            else:
-                # consider x lies in kth bin
-                # so kth bin's start index is
-                k_1_bins = np.where(x >= bins)[0][-1]
-                cdf = self._cdf(x)
-                pdf = self._pdf(x)
-                from numpy.lib.stride_tricks import sliding_window_view
-
-                win_sum_bins = np.sum(sliding_window_view(bins, window_shape=2), axis=1)
-                # upto kth bin excluding kth
-                X_upto_x = x * cdf - 0.5 * np.dot(
-                    win_sum_bins[:k_1_bins], bin_mass[:k_1_bins]
-                )
-                # after kth bin excluding kth
-                X_after_x = 0.5 * np.dot(
-                    win_sum_bins[k_1_bins + 1 :], bin_mass[k_1_bins + 1 :]
-                ) - x * (1 - cdf)
-                # in the kth bin
-                X_in_k = (
-                    0.5
-                    * pdf
-                    * (bins[k_1_bins] ** 2 + bins[k_1_bins + 1] ** 2 - 2 * x**2)
-                )
-                energy_arr = X_upto_x + X_in_k + X_after_x
-            return energy_arr
+        for i in range(len(bins)):
+            energy_arr_row = []
+            for j in range(len(bins[0])):
+                bins_hist = bins[i][j]
+                bin_mass_hist = bin_mass[i][j]
+                X = x[i][j]
+                is_outside = X < bins_hist[0] or X > bins_hist[-1]
+                if is_outside:
+                    energy_arr_row.append(abs(mean[i][j] - X))
+                else:
+                    # consider X lies in kth bin
+                    # so kth bin's start index is
+                    k_1_bins = np.where(X >= bins_hist)[0][-1]
+                    win_sum_bins = np.sum(
+                        sliding_window_view(bins_hist, window_shape=2), axis=1
+                    )
+                    # upto kth bin excluding kth
+                    X_upto_k = X * cdf[i][j] - 0.5 * np.dot(
+                        win_sum_bins[:k_1_bins], bin_mass_hist[:k_1_bins]
+                    )
+                    # after kth bin excluding kth
+                    X_after_k = 0.5 * np.dot(
+                        win_sum_bins[k_1_bins + 1 :], bin_mass_hist[k_1_bins + 1 :]
+                    ) - X * (1 - cdf[i][j])
+                    # in the kth bin
+                    X_in_k = (
+                        0.5
+                        * pdf[i][j]
+                        * (
+                            bins_hist[k_1_bins] ** 2
+                            + bins_hist[k_1_bins + 1] ** 2
+                            - 2 * X**2
+                        )
+                    )
+                    energy_arr_row.append(X_upto_k + X_in_k + X_after_k)
+            energy_arr.append(energy_arr_row)
+        energy_arr = np.array(energy_arr)
+        return energy_arr
 
     def _mean(self):
         """Return expected value of the distribution.
@@ -138,17 +157,21 @@ class Histogram(BaseDistribution):
             expected value of distribution (entry-wise)
         """
         bins = self.bins
-        bin_mass = np.array(self.bin_mass)
-        # convert the bins into a list
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
+        bin_mass = self.bin_mass
+        mean = []
+        from numpy.lib.stride_tricks import sliding_window_view
 
-        if isinstance(bins, list):
-            from numpy.lib.stride_tricks import sliding_window_view
-
-            win_sum_bins = np.sum(sliding_window_view(bins, window_shape=2), axis=1)
-            mean = 0.5 * np.dot(win_sum_bins, bin_mass)
-            return mean
+        for i in range(len(bins)):
+            mean_row = []
+            for j in range(len(bins[0])):
+                bins_hist = bins[i][j]
+                bin_mass_hist = bin_mass[i][j]
+                win_sum_bins = np.sum(
+                    sliding_window_view(bins_hist, window_shape=2), axis=1
+                )
+                mean_row.append(0.5 * np.dot(win_sum_bins, bin_mass_hist))
+            mean.append(mean_row)
+        return np.array(mean)
 
     def _var(self):
         r"""Return element/entry-wise variance of the distribution.
@@ -159,52 +182,62 @@ class Histogram(BaseDistribution):
             variance of the distribution (entry-wise)
         """
         bins = self.bins
-        bin_mass = np.array(self.bin_mass)
+        bin_mass = self.bin_mass
+        var = []
+        mean = self._mean()
+        from numpy.lib.stride_tricks import sliding_window_view
 
-        # convert the bins into a list
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
-
-        if isinstance(bins, list):
-            from numpy.lib.stride_tricks import sliding_window_view
-
-            win_sum_bins = np.sum(sliding_window_view(bins, window_shape=2), axis=1)
-            mean = self._mean()
-            win_prod_bins = np.prod(sliding_window_view(bins, window_shape=2), axis=1)
-            var = np.dot(bin_mass / 3, (win_sum_bins**2 - win_prod_bins)) - mean**2
-            return var
+        for i in range(len(bins)):
+            var_row = []
+            for j in range(len(bins[0])):
+                bins_hist = bins[i][j]
+                bin_mass_hist = bin_mass[i][j]
+                win_sum_bins = np.sum(
+                    sliding_window_view(bins_hist, window_shape=2), axis=1
+                )
+                win_prod_bins = np.prod(
+                    sliding_window_view(bins_hist, window_shape=2), axis=1
+                )
+                var_row.append(
+                    np.dot(bin_mass_hist / 3, (win_sum_bins**2 - win_prod_bins))
+                    - mean[i][j] ** 2
+                )
+            var.append(var_row)
+        var = np.array(var)
+        return var
 
     def _pdf(self, x):
         """Probability density function.
 
         Parameters
         ----------
-        x : 1D np.ndarray, same shape as ``self``
+        x : 2D np.ndarray, same shape as ``self``
             values to evaluate the pdf at
 
         Returns
         -------
-        1D np.ndarray, same shape as ``self``
+        2D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
-        bin_mass = np.array(self.bin_mass.copy())
+        bin_mass = self.bin_mass
         bins = self.bins
         pdf = []
-
-        # convert the bins into a list
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
-
-        if isinstance(bins, list):
-            bin_width = np.diff(bins)
-            pdf_arr = bin_mass / bin_width
-            for X in x:
-                if len(np.where(X < bins)[0]) and len(np.where(X >= bins)[0]):
-                    pdf.append(pdf_arr[min(np.where(X < bins)[0]) - 1])
+        # bins_hist contains the bins edges of each histogram
+        for i in range(len(bins)):
+            pdf_row = []
+            for j in range(len(bins[i])):
+                bins_hist = bins[i][j]
+                bin_mass_hist = bin_mass[i][j]
+                bin_width = np.diff(bins_hist)
+                pdf_arr = bin_mass_hist / bin_width
+                X = x[i][j]
+                if len(np.where(X < bins_hist)[0]) and len(np.where(X >= bins_hist)[0]):
+                    pdf_row.append(pdf_arr[min(np.where(X < bins_hist)[0]) - 1])
                 else:
-                    pdf.append(0)
-            pdf = np.array(pdf)
-            return pdf
+                    pdf_row.append(0)
+            pdf.append(pdf_row)
+        pdf = np.array(pdf)
+        return pdf
 
     def _log_pdf(self, x):
         """Logarithmic probability density function.
@@ -219,36 +252,37 @@ class Histogram(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             log pdf values at the given points
         """
-        bin_mass = np.array(self.bin_mass.copy())
+        bin_mass = self.bin_mass
         bins = self.bins
         lpdf = []
 
-        # convert the bins into a list
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
-
-        if isinstance(bins, list):
-            bin_width = np.diff(bins)
-            lpdf_arr = np.log(bin_mass / bin_width)
-            for X in x:
-                if len(np.where(X < bins)[0]) and len(np.where(X >= bins)[0]):
-                    lpdf.append(lpdf_arr[min(np.where(X < bins)[0]) - 1])
+        for i in range(len(bins)):
+            lpdf_row = []
+            for j in range(len(bins[0])):
+                X = x[i][j]
+                bins_hist = bins[i][j]
+                bin_mass_hist = bin_mass[i][j]
+                bin_width = np.diff(bins_hist)
+                lpdf_arr = np.log(bin_mass_hist / bin_width)
+                if len(np.where(X < bins_hist)[0]) and len(np.where(X >= bins_hist)[0]):
+                    lpdf_row.append(lpdf_arr[min(np.where(X < bins_hist)[0]) - 1])
                 else:
-                    lpdf.append(0)
-            lpdf = np.array(lpdf)
-            return lpdf
+                    lpdf_row.append(0)
+            lpdf.append(lpdf_row)
+        lpdf = np.array(lpdf)
+        return lpdf
 
     def _cdf(self, x):
         """Cumulative distribution function.
 
         Parameters
         ----------
-        x : 1D np.ndarray, same shape as ``self``
+        x : 2D np.ndarray, same shape as ``self``
             values to evaluate the cdf at
 
         Returns
         -------
-        1D np.ndarray, same shape as ``self``
+        2D np.ndarray, same shape as ``self``
             cdf values at the given points
         """
         bins = self.bins
@@ -256,29 +290,29 @@ class Histogram(BaseDistribution):
         cdf = []
         pdf = self._pdf(x)
 
-        # convert the bins into a list
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
-
-        if isinstance(bins, list):
-            cum_sum_mass = np.cumsum(bin_mass)
-            for X in x:
+        for i in range(len(bins)):
+            cdf_row = []
+            for j in range(len(bins[0])):
+                X = x[i][j]
+                bins_hist = bins[i][j]
+                bin_mass_hist = bin_mass[i][j]
+                cum_sum_mass = np.cumsum(bin_mass_hist)
                 # cum_bin_index is an array of all indices
                 # of the bins or bin edges that are less than X.
-                cum_bin_index = np.where(X >= bins)[0]
-                X_index_in_x = np.where(X == x)
-                if len(cum_bin_index) == len(bins):
-                    cdf.append(1)
+                cum_bin_index = np.where(X >= bins_hist)[0]
+                if len(cum_bin_index) == len(bins_hist):
+                    cdf_row.append(1)
                 elif len(cum_bin_index) > 1:
-                    cdf.append(
+                    cdf_row.append(
                         cum_sum_mass[cum_bin_index[-2]]
-                        + pdf[X_index_in_x][0] * (X - bins[cum_bin_index[-1]])
+                        + pdf[i][j] * (X - bins_hist[cum_bin_index[-1]])
                     )
                 elif len(cum_bin_index) == 0:
-                    cdf.append(0)
+                    cdf_row.append(0)
                 elif len(cum_bin_index) == 1:
-                    cdf.append(pdf[X_index_in_x][0] * (X - bins[cum_bin_index[-1]]))
-            cdf = np.array(cdf)
+                    cdf_row.append(pdf[i][j] * (X - bins_hist[cum_bin_index[-1]]))
+            cdf.append(cdf_row)
+        cdf = np.array(cdf)
         return cdf
 
     def _ppf(self, p):
@@ -298,34 +332,43 @@ class Histogram(BaseDistribution):
         bin_mass = self.bin_mass
         ppf = []
 
-        # convert the bins into a list
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
-
-        if isinstance(bins, list):
-            cum_sum_mass = np.cumsum(bin_mass)
-            # print(cum_sum_mass)
-            pdf_bins = self._pdf(np.array(bins))
-            # print('pdf: ',pdf_bins)
-            for P in p:
+        for i in range(len(bins)):
+            ppf_row = []
+            for j in range(len(bins[0])):
+                P = p[i][j]
+                bins_hist = bins[i][j]
+                bin_mass_hist = bin_mass[i][j]
+                cum_sum_mass = np.cumsum(bin_mass_hist)
+                # manually finding pdf of 1D array at all bin edges
+                pdf_bins = []
+                bin_width = np.diff(bins_hist)
+                pdf_arr = bin_mass_hist / bin_width
+                for bh in bins_hist:
+                    if len(np.where(bh < bins_hist)[0]) and len(
+                        np.where(bh >= bins_hist)[0]
+                    ):
+                        pdf_bins.append(pdf_arr[min(np.where(bh < bins_hist)[0]) - 1])
+                    else:
+                        pdf_bins.append(0)
+                pdf_bins = np.array(pdf_bins)
+                # find a way to calculate pdf for 1D array ...
                 cum_bin_index_P = np.where(P >= cum_sum_mass)[0]
-                # print(cum_bin_index_P[0])
                 if P < 0 or P > 1:
-                    ppf.append(np.NaN)
+                    ppf_row.append(np.NaN)
                 elif len(cum_bin_index_P) == 0:
                     X = P / pdf_bins[len(cum_bin_index_P)]
-                    ppf.append(X)
+                    ppf_row.append(round(X, 4))
                 elif len(cum_bin_index_P) > 0:
                     if P - cum_sum_mass[cum_bin_index_P[-1]] > 0:
                         X = (
-                            bins[cum_bin_index_P[-1] + 1]
+                            bins_hist[cum_bin_index_P[-1] + 1]
                             + (P - cum_sum_mass[cum_bin_index_P[-1]])
                             / pdf_bins[len(cum_bin_index_P)]
                         )
                     else:
-                        X = bins[cum_bin_index_P[-1] + 1]
-                    ppf.append(X)
-
+                        X = bins_hist[cum_bin_index_P[-1] + 1]
+                    ppf_row.append(round(X, 4))
+            ppf.append(ppf_row)
         ppf = np.array(ppf)
         return ppf
 
