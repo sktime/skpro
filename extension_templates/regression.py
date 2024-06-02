@@ -11,8 +11,9 @@ from skpro.regression.base import BaseProbaRegressor
 
 # todo: add any necessary imports here
 
-# todo: if any imports are skpro soft dependencies:
+# todo: for imports of skpro soft dependencies:
 # make sure to fill in the "python_dependencies" tag with the package import name
+# import soft dependencies only inside methods of the class, not at the top of the file
 
 
 # todo: change class name and write docstring
@@ -69,11 +70,11 @@ class ClassName(BaseProbaRegressor):
     # parameter checks can go after super call
     def __init__(self, paramname, paramname2="paramname2default"):
         # estimators should precede parameters
-        #  if estimators have default values, set None and initalize below
+        #  if estimators have default values, set None and initialize below
 
         # todo: write any hyper-parameters and components to self
         self.paramname = paramname
-        self.paramname2 = "paramname2default"
+        self.paramname2 = paramname2
 
         # leave this as is
         super().__init__()
@@ -318,8 +319,6 @@ class ClassName(BaseProbaRegressor):
         #
         # The parameter_set argument is not used for most automated, module level tests.
         #   It can be used in custom, estimator specific tests, for "special" settings.
-        #   For classification, this is also used in tests for reference settings,
-        #       such as published in benchmarking studies, or for identity testing.
         # A parameter dictionary must be returned *for all values* of parameter_set,
         #   i.e., "parameter_set not available" errors should never be raised.
         #

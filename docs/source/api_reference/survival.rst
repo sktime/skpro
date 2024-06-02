@@ -86,6 +86,59 @@ Proportional hazards models
     :template: class.rst
 
     CoxPH
+    CoxPHlifelines
+    CoxPHSkSurv
+    CoxNet
+
+Accelerated failure time models
+-------------------------------
+
+.. currentmodule:: skpro.survival.aft
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    AFTFisk
+    AFTLogNormal
+    AFTWeibull
+
+Generalized additive survival models
+------------------------------------
+
+.. currentmodule:: skpro.survival.additive
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    AalenAdditive
+
+Tree models
+-----------
+
+.. currentmodule:: skpro.survival.tree
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    SurvivalTree
+
+Tree ensemble models
+--------------------
+
+.. currentmodule:: skpro.survival.ensemble
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    SurvivalForestSkSurv
+    SurvivalForestXtraSkSurv
+    SurvGradBoostSkSurv
+    SurvGradBoostCompSkSurv
+    NGBoostSurvival
 
 Base
 ----

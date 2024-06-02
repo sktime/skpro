@@ -11,7 +11,7 @@ TEST_DISTS = [Normal]
 
 
 class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
-    """Generic tests for all regressors in the mini package."""
+    """Generic tests for all probabilistic regression metrics in the package."""
 
     # class variables which can be overridden by descendants
     # ------------------------------------------------------

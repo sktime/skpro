@@ -50,8 +50,8 @@ def _has_capability(distr, method):
 
 METHODS_SCALAR = ["mean", "var", "energy"]
 METHODS_SCALAR_POS = ["var", "energy"]  # result always non-negative?
-METHODS_X = ["energy", "pdf", "log_pdf", "cdf"]
-METHODS_X_POS = ["energy", "pdf", "cdf"]  # result always non-negative?
+METHODS_X = ["energy", "pdf", "log_pdf", "pmf", "log_pmf", "cdf"]
+METHODS_X_POS = ["energy", "pdf", "pmf", "cdf", "surv", "haz"]  # result non-negative?
 METHODS_P = ["ppf"]
 METHODS_ROWWISE = ["energy"]  # results in one column
 
@@ -61,8 +61,35 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
 
     # TEMPORARY skip for CyclicBoosting and QPD classes
     # due to silent failures on main, se #190
-    exclude_objects = ["QPD_S", "QPD_B", "QPD_U"]
+    exclude_objects = ["QPD_B"]
     # remove this when fixing failures to re-enable testing
+
+    def test_shape(self, object_instance):
+        """Test index, columns, len and shape of distribution."""
+        d = object_instance
+
+        assert hasattr(d, "shape")
+        assert isinstance(d.shape, tuple)
+        assert len(d.shape) in [0, 2]
+
+        if len(d.shape) == 2:
+            assert all(isinstance(n, int) for n in d.shape)
+
+            assert isinstance(d.index, pd.Index)
+            assert isinstance(d.columns, pd.Index)
+
+            assert d.shape[0] == len(d.index)
+            assert d.shape[1] == len(d.columns)
+
+        assert isinstance(len(d), int)
+
+        if len(d.shape) == 2:
+            assert len(d) == d.shape[0]
+        else:
+            assert len(d) == 1
+
+        assert hasattr(d, "ndim")
+        assert d.ndim == len(d.shape)
 
     @pytest.mark.parametrize("shuffled", [False, True])
     def test_sample(self, object_instance, shuffled):
@@ -74,12 +101,18 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
 
         res = d.sample()
 
-        assert d.shape == res.shape
-        assert (res.index == d.index).all()
-        assert (res.columns == d.columns).all()
+        if d.ndim > 0:
+            assert d.shape == res.shape
+            assert (res.index == d.index).all()
+            assert (res.columns == d.columns).all()
+        else:  # d.ndim = 0
+            assert np.isscalar(res)
 
         res_panel = d.sample(3)
-        dummy_panel = pd.concat([res, res, res], keys=range(3))
+        if d.ndim > 0:
+            dummy_panel = pd.concat([res, res, res], keys=range(3))
+        else:
+            dummy_panel = pd.DataFrame(index=range(3), columns=range(1))
         assert dummy_panel.shape == res_panel.shape
         assert (res_panel.index == dummy_panel.index).all()
         assert (res_panel.columns == dummy_panel.columns).all()
@@ -129,7 +162,11 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             d = _shuffle_distr(d)
 
         np_unif = np.random.uniform(size=d.shape)
-        p = pd.DataFrame(np_unif, index=d.index, columns=d.columns)
+        if d.ndim > 0:
+            p = pd.DataFrame(np_unif, index=d.index, columns=d.columns)
+        else:
+            p = np_unif
+
         res = getattr(object_instance, method)(p)
 
         _check_output_format(res, d, method)
@@ -146,11 +183,18 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             assert check_is_mtype(
                 obj, "pred_quantiles", "Proba", msg_return_dict="list"
             )
-            assert (obj.index == d.index).all()
+            if d.ndim == 0:
+                expected_index = pd.RangeIndex(1)
+                vars = [d.__class__.__name__]
+            else:
+                expected_index = d.index
+                vars = d.columns
+
+            assert (obj.index == expected_index).all()
 
             if not isinstance(q, list):
                 q = [q]
-            expected_columns = pd.MultiIndex.from_product([d.columns, q])
+            expected_columns = pd.MultiIndex.from_product([vars, q])
             assert (obj.columns == expected_columns).all()
 
         res = d.quantile(q)
@@ -161,6 +205,8 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
     def test_subsetting(self, object_instance, subset_row, subset_col):
         """Test subsetting of distribution."""
         d = object_instance
+        if d.ndim == 0:  # no subsetting to test if example is scalar
+            return None
 
         if subset_row:
             ix_loc = random_ss_ix(d.index, 3)
@@ -202,6 +248,18 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         log_pdf = d.log_pdf(x)
         assert np.allclose(np.log(pdf), log_pdf)
 
+    def test_log_pmf_and_pmf(self, object_instance):
+        """Test that the log of the pmf and log_pmf function are similar."""
+        d = object_instance
+        capabilities_exact = d.get_tags()["capabilities:exact"]
+
+        if "log_pmf" not in capabilities_exact or "pmf" not in capabilities_exact:
+            return
+        x = d.sample()
+        pmf = d.pmf(x)
+        log_pmf = d.log_pmf(x)
+        assert np.allclose(np.log(pmf), log_pmf)
+
     def test_ppf_and_cdf(self, object_instance):
         """Test that the ppf is the inverse of the cdf."""
         d = object_instance
@@ -211,11 +269,23 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             return
         x = d.sample()
         x_approx = d.ppf(d.cdf(x))
-        assert np.allclose(x.values, x_approx.values)
+        if d.ndim > 0:
+            assert np.allclose(x.values, x_approx.values)
+        else:
+            assert np.allclose(x, x_approx)
 
 
 def _check_output_format(res, dist, method):
     """Check output format expectations for BaseDistribution tests."""
+    if dist.shape == ():  # scalar distribution case
+        # check if numpy float
+        assert np.isscalar(res)
+        assert np.isreal(res)
+        if method in METHODS_SCALAR_POS or method in METHODS_X_POS:
+            assert res >= 0
+        return None
+
+    # array distribution case
     if method in METHODS_ROWWISE:
         exp_shape = (dist.shape[0], 1)
     else:
@@ -238,5 +308,9 @@ def _check_output_format(res, dist, method):
 
 def _shuffle_distr(d):
     """Shuffle distribution row index."""
-    shuffled_index = pd.DataFrame(d.index).sample(frac=1).index
+    if d.shape == ():  # nothing to shuffle if scalar
+        return d
+    # shuffle rows otherwise
+    shuffled_df = pd.DataFrame(d.index).sample(frac=1)
+    shuffled_index = pd.Index(shuffled_df.values.flatten())
     return d.loc[shuffled_index]

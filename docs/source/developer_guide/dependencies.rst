@@ -18,7 +18,7 @@ Types of dependencies
 
 Making it easy to install and use ``skpro`` in a variety of projects is
 on of ``skpro``'s goals. Therefore, we seeks to minimizing the number of
-dependencies needed to provide the proejct's functionality.
+dependencies needed to provide the project's functionality.
 
 Soft Dependencies
 =================

@@ -1,4 +1,4 @@
-"""Adapters to sklearnn linear regressors with probabilistic components."""
+"""Adapters to sklearn linear regressors with probabilistic components."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # based on sktime pipelines
 
