@@ -86,13 +86,13 @@ def test_polars_eager_regressor_in_predict_interval(estimator):
     y_train_pl = convert_pandas_to_polars_eager(y_train)
 
     estimator.fit(X_train_pl, y_train_pl)
-    y_pred_interval_pl = estimator.predict_interval(X_test_pl)
+    y_pred_interval = estimator.predict_interval(X_test_pl)
 
-    assert isinstance(y_pred_interval_pl, pd.DataFrame)
-    assert y_pred_interval_pl.columns[0] == ("target", 0.9, "lower")
-    assert y_pred_interval_pl.columns[1] == ("target", 0.9, "upper")
+    assert isinstance(y_pred_interval, pd.DataFrame)
+    assert y_pred_interval.columns[0] == ("target", 0.9, "lower")
+    assert y_pred_interval.columns[1] == ("target", 0.9, "upper")
     assert check_raise(
-        y_pred_interval_pl, "pred_interval", "Proba", "predict_interval return"
+        y_pred_interval, "pred_interval", "Proba", "predict_interval return"
     )
 
 
@@ -106,12 +106,12 @@ def test_polars_eager_regressor_in_predict_quantiles(estimator):
     y_train_pl = convert_pandas_to_polars_eager(y_train)
 
     estimator.fit(X_train_pl, y_train_pl)
-    y_pred_quantile_pl = estimator.predict_quantiles(X_test_pl, alpha=TEST_ALPHAS)
+    y_pred_quantile = estimator.predict_quantiles(X_test_pl, alpha=TEST_ALPHAS)
 
-    assert isinstance(y_pred_quantile_pl, pd.DataFrame)
-    assert y_pred_quantile_pl.columns[0] == ("target", 0.05)
-    assert y_pred_quantile_pl.columns[1] == ("target", 0.1)
-    assert y_pred_quantile_pl.columns[2] == ("target", 0.25)
+    assert isinstance(y_pred_quantile, pd.DataFrame)
+    assert y_pred_quantile.columns[0] == ("target", 0.05)
+    assert y_pred_quantile.columns[1] == ("target", 0.1)
+    assert y_pred_quantile.columns[2] == ("target", 0.25)
     assert check_raise(
-        y_pred_quantile_pl, "pred_quantiles", "Proba", "predict_quantiles return"
+        y_pred_quantile, "pred_quantiles", "Proba", "predict_quantiles return"
     )
