@@ -7,6 +7,7 @@ from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
 from skpro.datatypes import check_raise
+from skpro.datatypes._table._check import check_polars_table
 from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
@@ -36,6 +37,9 @@ def test_polars_eager_conversion_methods():
     X_test_pl = convert_pandas_to_polars_eager(X_test)
     y_train_pl = convert_pandas_to_polars_eager(y_train)
 
+    assert check_polars_table(X_train_pl)
+    assert check_polars_table(X_test_pl)
+    assert check_polars_table(y_train_pl)
     assert (X_train.values == X_train_pl.to_numpy()).all()
     assert (X_test.values == X_test_pl.to_numpy()).all()
     assert (y_train.values == y_train_pl.to_numpy()).all()
