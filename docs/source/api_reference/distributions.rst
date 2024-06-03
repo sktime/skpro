@@ -41,6 +41,7 @@ Continuous support
     Exponential
     Fisk
     Gamma
+    HalfCauchy
     HalfNormal
     Laplace
     Logistic
