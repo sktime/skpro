@@ -49,6 +49,8 @@ class Histogram(BaseArrayDistribution):
 
     def __init__(self, bins, bin_mass, index=None, columns=None):
         # convert the bins into a list
+        # if type(bins) == np.ndarray and type(bin_mass) == np.ndarray:
+        #     print(bins.ndim,bin_mass.ndim)
         for i in range(len(bins)):
             for j in range(len(bins[i])):
                 if isinstance(bins[i][j], tuple):
@@ -56,9 +58,6 @@ class Histogram(BaseArrayDistribution):
                 bins[i][j] = np.array(bins[i][j])
                 bin_mass[i][j] = np.array(bin_mass[i][j])
 
-        # bins = [[self._convert_tuple_to_array(item) if
-        # isinstance(item, tuple) else item
-        #      for item in inner_list] for inner_list in bins]
         self.bins = bins
         self.bin_mass = bin_mass
 
@@ -107,6 +106,7 @@ class Histogram(BaseArrayDistribution):
         mean = self._mean()
         cdf = self._cdf(x)
         pdf = self._pdf(x)
+        x = np.array(x)
         from numpy.lib.stride_tricks import sliding_window_view
 
         for i in range(len(bins)):
@@ -255,6 +255,7 @@ class Histogram(BaseArrayDistribution):
         bin_mass = self.bin_mass
         bins = self.bins
         lpdf = []
+        x = np.array(x)
 
         for i in range(len(bins)):
             lpdf_row = []
@@ -289,6 +290,7 @@ class Histogram(BaseArrayDistribution):
         bin_mass = self.bin_mass
         cdf = []
         pdf = self._pdf(x)
+        x = np.array(x)
 
         for i in range(len(bins)):
             cdf_row = []
@@ -331,6 +333,7 @@ class Histogram(BaseArrayDistribution):
         bins = self.bins
         bin_mass = self.bin_mass
         ppf = []
+        p = np.array(p)
 
         for i in range(len(bins)):
             ppf_row = []
@@ -377,15 +380,18 @@ class Histogram(BaseArrayDistribution):
         """Return testing parameter settings for the estimator."""
         # array case examples
         params1 = {
-            "bins": [0, 1, 2, 3, 4],
-            "bin_mass": [0.1, 0.2, 0.3, 0.4],
-            "index": pd.Index([1, 2, 3, 4]),
-            "columns": pd.Index(["a"]),
+            "bins": [
+                [[0, 1, 2, 3, 4], [5, 5.5, 5.8, 6.5, 7, 7.5]],
+                [(2, 12, 5), [0, 1, 2, 3, 4]],
+                [[1.5, 2.5, 3.1, 4, 5.4], [-4, -2, -1.5, 5, 10]],
+            ],
+            "bin_mass": [
+                [[0.1, 0.2, 0.3, 0.4], [0.25, 0.1, 0, 0.4, 0.25]],
+                [[0.1, 0.2, 0.4, 0.2, 0.1], [0.4, 0.3, 0.2, 0.1]],
+                [[0.06, 0.15, 0.09, 0.7], [0.4, 0.15, 0.325, 0.125]],
+            ],
+            "index": pd.Index(np.arange(3)),
+            "columns": pd.Index(np.arange(2)),
         }
 
-        params2 = {
-            "bins": (0, 4, 4),
-            "bin_mass": [0.1, 0.2, 0, 0.7],
-        }
-
-        return [params1, params2]
+        return [params1]

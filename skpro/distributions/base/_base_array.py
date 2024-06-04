@@ -239,13 +239,14 @@ class BaseArrayDistribution(BaseObject):
             colidx = pd.Index([colidx])
 
         if rowidx is not None:
-            row_iloc = self.index.get_indexer_for(rowidx)
+            row_iloc = pd.Index(self.index.get_indexer_for(rowidx))
         else:
             row_iloc = None
         if colidx is not None:
-            col_iloc = self.columns.get_indexer_for(colidx)
+            col_iloc = pd.Index(self.columns.get_indexer_for(colidx))
         else:
             col_iloc = None
+        # print("self._iloc", self._iloc(rowidx=row_iloc, colidx=col_iloc))
         return self._iloc(rowidx=row_iloc, colidx=col_iloc)
 
     def _at(self, rowidx=None, colidx=None):
@@ -284,19 +285,24 @@ class BaseArrayDistribution(BaseObject):
             if val is None:
                 subset_param_dict[param] = None
                 continue
-            arr = np.array(val)
+            arr = val
             # if len(arr.shape) == 0:
             # do nothing with arr
-            if len(arr.shape) == 2 and rowidx is not None:
-                arr = arr[rowidx, :]
-            if len(arr.shape) == 1 and colidx is not None:
-                arr = arr[colidx]
-            if len(arr.shape) >= 2 and colidx is not None:
-                arr = arr[:, colidx]
+            arr_shape = 2
+            # assume 2D array with array distribution in it for now
+            # if arr_shape == 2 and rowidx is not None:
+            #     print(arr)
+            #     arr = arr[rowidx, :]
+            # if arr_shape == 1 and colidx is not None:
+            #     arr = arr[colidx]
+            # if arr_shape >= 2 and colidx is not None:
+            #     arr = arr[:, colidx]
+            if arr_shape == 2 and rowidx is not None and colidx is not None:
+                arr = arr[rowidx[0]][colidx[0]]
             if np.issubdtype(arr.dtype, np.integer):
                 arr = arr.astype("float")
             if coerce_scalar:
-                arr = arr[(0,) * len(arr.shape)]
+                arr = arr[(0,) * arr_shape]
             subset_param_dict[param] = arr
         return subset_param_dict
 
@@ -320,7 +326,7 @@ class BaseArrayDistribution(BaseObject):
 
         def subset_not_none(idx, subs):
             if subs is not None:
-                return idx.take(subs)
+                return idx.take(pd.Index(subs))
             else:
                 return idx
 
@@ -328,6 +334,14 @@ class BaseArrayDistribution(BaseObject):
         columns_subset = subset_not_none(self.columns, colidx)
 
         sk_distr_type = type(self)
+        # print(subset_params)
+        # print(
+        #     sk_distr_type(
+        #         index=index_subset,
+        #         columns=columns_subset,
+        #         **subset_params,
+        #     )
+        # )
         return sk_distr_type(
             index=index_subset,
             columns=columns_subset,
@@ -683,6 +697,7 @@ class BaseArrayDistribution(BaseObject):
             containing :math:`p_{X_{ij}}(x_{ij})`, as above
         """
         distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        x = np.array(x)
         if distr_type == "discrete":
             return self._coerce_to_self_index_df(0, flatten=False)
 
@@ -740,6 +755,7 @@ class BaseArrayDistribution(BaseObject):
             containing :math:`\log p_{X_{ij}}(x_{ij})`, as above
         """
         distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        x = np.array(x)
         if distr_type == "discrete":
             return self._coerce_to_self_index_df(-np.inf, flatten=False)
 
@@ -901,6 +917,7 @@ class BaseArrayDistribution(BaseObject):
         ``pd.DataFrame`` with same columns and index as ``self``
             containing :math:`F_{X_{ij}}(x_{ij})`, as above
         """
+        x = np.array(x)
         return self._boilerplate("_cdf", x=x)
 
     def _cdf(self, x):
@@ -1013,6 +1030,7 @@ class BaseArrayDistribution(BaseObject):
         ``pd.DataFrame`` with same columns and index as ``self``
             containing :math:`F_{X_{ij}}(x_{ij})`, as above
         """
+        p = np.array(p)
         return self._boilerplate("_ppf", p=p)
 
     def _ppf(self, p):
@@ -1441,7 +1459,7 @@ class BaseArrayDistribution(BaseObject):
         def gen_unif():
             np_unif = np.random.uniform(size=self.shape)
             if self.ndim > 0:
-                return pd.DataFrame(np_unif, index=self.index, columns=self.columns)
+                return np.array(np_unif)
             return np_unif
 
         # if ppf is implemented, we use inverse transform sampling
