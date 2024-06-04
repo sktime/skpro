@@ -12,6 +12,7 @@ __all__ = [
     "Exponential",
     "Fisk",
     "Gamma",
+    "HalfCauchy",
     "HalfNormal",
     "IID",
     "Laplace",
@@ -39,6 +40,7 @@ from skpro.distributions.empirical import Empirical
 from skpro.distributions.exponential import Exponential
 from skpro.distributions.fisk import Fisk
 from skpro.distributions.gamma import Gamma
+from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halfnormal import HalfNormal
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
