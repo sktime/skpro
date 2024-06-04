@@ -42,6 +42,7 @@ Continuous support
     Fisk
     Gamma
     HalfCauchy
+    HalfLogistic
     HalfNormal
     Laplace
     Logistic
