@@ -29,6 +29,7 @@ __all__ = [
     "TDistribution",
     "Uniform",
     "Weibull",
+    "Multivariate Normal",
 ]
 
 from skpro.distributions.alpha import Alpha
@@ -53,3 +54,4 @@ from skpro.distributions.qpd_empirical import QPD_Empirical
 from skpro.distributions.t import TDistribution
 from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
+from skpro.distributions.multivariate_normal import Multivariate_Normal
