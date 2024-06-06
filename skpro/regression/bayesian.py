@@ -155,6 +155,17 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             slopes = prior["slopes"].values.squeeze()
             noise = prior["noise"].values.squeeze()
             return pd.DataFrame({"intercept": intercept, "slopes": slopes, "noise": noise})
+
+    def get_prior_summary(self):
+        """
+        Get the summary statistics of the prior
+        """
+        import arviz as az
+        import pymc as pm
+        # if we've previously used the model for prediction, we need to reset the reference of 'X' to the training data
+        if self._predict_done:
+            pm.set_data({"X": self._X}, coords={"obs_id": self._X.index, "pred_id": self._X.columns})
+        return az.summary(self.trace.prior, var_names = ["intercept", "slopes", "noise"])
   
     def get_posterior(self, return_type = "xarray"):
         """Extracts the prior distribution"""
@@ -177,7 +188,17 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             slopes = posterior["slopes"].stack({"sample":("chain", "draw")}).values
             noise = posterior["noise"].stack({"sample":("chain", "draw")}).values
             return pd.DataFrame({"intercept": intercept, "slopes": slopes, "noise": noise})
-
+    
+    def get_posterior_summary(self):
+        """
+        Get the summary statistics of the posterior
+        """
+        import arviz as az
+        import pymc as pm
+        # if we've previously used the model for prediction, we need to reset the reference of 'X' to the training data
+        assert self._is_fitted,"The model must be fitted before posterior summary can be returned."
+        return az.summary(self.trace.posterior, var_names = ["intercept", "slopes", "noise"])
+    
     def _predict(self, X):
         """Predict labels for data from features.
 
