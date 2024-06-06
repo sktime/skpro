@@ -27,6 +27,19 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         Number of MCMC chains to run.
     draws : int, optional (default=2000)
         Number of MCMC draws to sample from each chain.
+
+    Example
+    -------
+    >>> from skpro.regression.bayesian import BayesianLinearRegressor
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
+
+    >>> bayes_model= BayesianLinearRegressor()  # doctest: +SKIP
+    >>> bayes_model.fit(X_train, y_train)  # doctest: +SKIP
+    >>> y_test_pred_proba = bayes_model.predict_proba(X_test)  # doctest: +SKIP
+    >>> y_test_pred = bayes_model.predict(X_test)  # doctest: +SKIP
     """
     _tags = {
         # packaging info
@@ -134,7 +147,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        
+
         assert X.columns.equals(self._X_cols), f"The columns of X must be the same as the columns of the training data: {self._X_cols}"
         y_pred = self._predict_proba(X).mean()
         return y_pred
