@@ -105,7 +105,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         self._X_cols = X.columns
         self._y_cols = y.columns
 
-        with pm.Model() as self.model:
+        with pm.Model(coords={"obs_id": X.index, "pred_id": X.columns}) as self.model:
 
             # Mutable data containers
             X_data = pm.Data("X", self._X, dims = ("obs_id", "pred_id"))
@@ -183,7 +183,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         index = X.index
         with self.model:
             # Set the X to be the new 'X' variable and then sample posterior predictive
-            pm.set_data({"X": X})
+            pm.set_data({"X": X}, coords={"obs_id": X.index, "pred_id": X.columns})
             self.trace.extend(pm.sample_posterior_predictive(self.trace, random_seed=42, predictions=True))
         
         # Extract posterior predictive distributions as an xarray DataArray 
