@@ -1,4 +1,4 @@
-"""Simple bayesian linear regression with normal priors; coded on pymc backend"""
+"""Simple Bayesian Linear Regressor with normal priors for slopes and intercept and half-normal prior for noise; coded on pymc backend"""
 # copyright: skpro developers
 
 __author__ = ["meraldoantonio"]
@@ -8,33 +8,26 @@ from skpro.regression.base import BaseProbaRegressor
 import pandas as pd
 import numpy as np
 
-# todo: for imports of skpro soft dependencies:
-# make sure to fill in the "python_dependencies" tag with the package import name
-# import soft dependencies only inside methods of the class, not at the top of the file
-
-
-# todo: change class name and write docstring
 class BayesianLinearRegressor(BaseProbaRegressor):
-    """BayesianLinearRegression with normal priors for slopes and intercept and halfnormal prior for noise.
+    """Bayesian Linear Regressor with normal priors for slopes and intercept and half-normal prior for noise.
 
     Parameters
     ----------
-    (to do)
-    parama : int
-        descriptive explanation of parama
-    paramb : string, optional (default='default')
-        descriptive explanation of paramb
-    paramc : boolean, optional (default= whether paramb is not the default)
-        descriptive explanation of paramc
-
-    parama : int
-        descriptive explanation of parama
-    paramb : string, optional (default='default')
-        descriptive explanation of paramb
-    paramc : boolean, optional (default= whether paramb is not the default)
-        descriptive explanation of paramc
+    intercept_mu : float, optional (default=0)
+        Mean of the normal prior for the intercept.
+    intercept_sigma : float, optional (default=10)
+        Standard deviation of the normal prior for the intercept.
+    slopes_mu : float, optional (default=0)
+        Mean of the normal prior for the slopes.
+    slopes_sigma : float, optional (default=10)
+        Standard deviation of the normal prior for the slopes.
+    noise_sigma : float, optional (default=10)
+        Standard deviation of the half-normal prior for the noise.
+    chains : int, optional (default=2)
+        Number of MCMC chains to run.
+    draws : int, optional (default=2000)
+        Number of MCMC draws to sample from each chain.
     """
-
     _tags = {
         # packaging info
         # --------------
@@ -51,16 +44,26 @@ class BayesianLinearRegressor(BaseProbaRegressor):
     }
 
 
-    def __init__(self, intercept_sigma=10, slopes_sigma=10, noise_sigma=10, chains=2, draws=2000):
+    def __init__(self, intercept_mu=0, intercept_sigma=10, slopes_mu=0, slopes_sigma=10, noise_sigma=10, chains=2, draws=2000):
 
-        # priors
+        # hyperparameters for priors
         self.intercept_sigma = intercept_sigma
+        self.intercept_mu = intercept_mu
         self.slopes_sigma = slopes_sigma
+        self.slopes_mu = slopes_mu
         self.noise_sigma = noise_sigma
         self.chains = chains
         self.draws = draws
 
         super().__init__()
+
+        # Assertions to check validity of input parameters
+        assert self.intercept_sigma > 0, "intercept_sigma must be positive"
+        assert self.slopes_sigma > 0, "slopes_sigma must be positive"
+        assert self.noise_sigma > 0, "noise_sigma must be positive"
+        assert isinstance(self.chains, int) and self.chains > 0, "chains must be a positive integer"
+        assert isinstance(self.draws, int) and self.draws > 0, "draws must be a positive integer"
+
 
         # todo: optional, parameter checking logic (if applicable) should happen here
         # if writes derived values to self, should *not* overwrite self.parama etc
@@ -96,21 +99,21 @@ class BayesianLinearRegressor(BaseProbaRegressor):
 
         import pymc as pm
         assert len(y.columns) == 1, "y must have only one column!"
-        self.X = X
-        self.y = y
-        self.y_vals = y.values[:,0] # we need a 1-dimensional array for compatibility with pymc
-        self.X_cols = X.columns
+        self._X = X
+        self._y = y
+        self._y_vals = y.values[:,0] # we need a 1-dimensional array for compatibility with pymc
+        self._X_cols = X.columns
         self._y_cols = y.columns
 
         with pm.Model() as self.model:
 
             # Mutable data containers
-            X_data = pm.MutableData("X", self.X, dims = ("obs_id", "pred_id"))
-            y_data = pm.MutableData("y", self.y_vals, dims = ("obs_id"))
+            X_data = pm.Data("X", self._X, dims = ("obs_id", "pred_id"))
+            y_data = pm.Data("y", self._y_vals, dims = ("obs_id"))
 
             # Priors for unknown model parameters
-            self.intercept = pm.Normal("intercept", mu=0, sigma=self.intercept_sigma)
-            self.slopes = pm.Normal("slopes", mu=0, sigma=self.slopes_sigma, shape = X.shape[1], dims=("pred_id"))
+            self.intercept = pm.Normal("intercept", mu=self.intercept_mu, sigma=self.intercept_sigma)
+            self.slopes = pm.Normal("slopes", mu=self.slopes_mu, sigma=self.slopes_sigma, shape = self._X.shape[1], dims=("pred_id"))
             self.noise = pm.HalfNormal("noise", sigma=self.noise_sigma)
 
             # Expected value of outcome
@@ -149,17 +152,10 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         # implement logic for prediction here
         # this can read out parameters fitted in fit, or hyperparameters from init
         # no attributes should be written to self
-
+        assert X.columns.equals(self._X_cols), f"The columns of X must be the same as the columns of the training data: {self._X_cols}"
         y_pred = self._predict_proba(X).mean()
         return y_pred
 
-    # todo: implement at least one of the probabilistic prediction methods
-    # _predict_proba, _predict_interval, _predict_quantiles
-    # if one is implemented, the other two are filled in by default
-    # implementation of _predict_proba is preferred, if possible
-    #
-    # CAVEAT: if not implemented, _predict_proba assumes normal distribution
-    # this can be inconsistent with _predict_interval or _predict_quantiles
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
 
@@ -176,38 +172,36 @@ class BayesianLinearRegressor(BaseProbaRegressor):
 
         Returns
         -------
-        y_pred : skpro BaseDistribution, same length as `X`
+        pred_proba_dist : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        # if implementing _predict_proba (otherwise delete this method)
-        # todo: adapt the following by filling in logic to produce prediction values
 
-        # boilerplate code to create correct output index
-        index = X.index
-        y_cols = self._y_cols  # columns from y in fit, not automatically stored
-        columns = y_cols
-
-        # values = logic to produce prediction values
-        # replace this import by the distribution you are using
-        # the distribution type can be conditional, e.g., data or parameter dependent
         import pymc as pm
         from skpro.distributions import Empirical
-
+        
+        y_cols = self._y_cols  # columns from y in fit, not automatically stored
+        index = X.index
         with self.model:
             # Set the X to be the new 'X' variable and then sample posterior predictive
             pm.set_data({"X": X})
             self.trace.extend(pm.sample_posterior_predictive(self.trace, random_seed=42, predictions=True))
         
-        # Note: returns y_obs as xarray.core.dataarray.DataArray containing the posterior predictive samples
-        predict_proba = self.trace.predictions["y_obs"] 
-        predict_proba_df = predict_proba.to_dataframe()
-        predict_proba_df = predict_proba_df.reset_index()
-        predict_proba_df["sample_id"] = predict_proba_df["chain"]*self.draws + predict_proba_df["draw"]
-        predict_proba_df = predict_proba_df[["obs_id", "sample_id", "y_obs"]]
-        predict_proba_df = predict_proba_df.set_index(["sample_id", "obs_id"])
-        y_pred = Empirical(spl=predict_proba_df)
+        # Extract posterior predictive distributions as an xarray DataArray 
+        pred_proba_xarray = self.trace.predictions["y_obs"] 
 
-        return y_pred
+        # Convert data to pd.DataFrame and format it appropriately for subsequent conversion into a skpro Empirical distribution
+        pred_proba_df = pred_proba_xarray.to_dataframe()
+        pred_proba_df = pred_proba_df.reset_index()
+
+        # Create a new 'sample_id' column by combining the 'chain' and 'draw' columns
+        pred_proba_df["sample_id"] = pred_proba_df["chain"] * self.draws + pred_proba_df["draw"]
+        pred_proba_df = pred_proba_df[["obs_id", "sample_id", "y_obs"]]
+        pred_proba_df = pred_proba_df.rename(columns = {"y_obs": y_cols[0]})
+        pred_proba_df = pred_proba_df.set_index(["sample_id", "obs_id"])
+
+        # Convert data to skpro Empirical distribution
+        pred_proba_dist = Empirical(spl=pred_proba_df, index = index, columns = y_cols)
+        return pred_proba_dist
 
 
     # todo: return default parameters, so that a test instance can be created
