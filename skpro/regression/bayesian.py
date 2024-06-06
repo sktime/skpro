@@ -1,17 +1,12 @@
-"""
-Note: this is WIP; it will be filled in with the codes from `bayesian_wip.py`
-"""
-
-
-"""Probabilistic linear regression by PyMC"""
-
+"""Simple bayesian linear regression with normal priors; coded on pymc backend"""
+# copyright: skpro developers
 
 __author__ = ["meraldoantonio"]
 
 from skpro.regression.base import BaseProbaRegressor
-import pymc as pm
+
+import pandas as pd
 import numpy as np
-import arviz as az
 
 # todo: for imports of skpro soft dependencies:
 # make sure to fill in the "python_dependencies" tag with the package import name
@@ -19,45 +14,34 @@ import arviz as az
 
 
 # todo: change class name and write docstring
-class BayesianLinearRegression(BaseProbaRegressor):
-    """Custom probabilistic supervised regressor. todo: write docstring.
-
-    todo: describe your custom regressor here
+class BayesianLinearRegressor(BaseProbaRegressor):
+    """BayesianLinearRegression with normal priors for slopes and intercept and halfnormal prior for noise.
 
     Parameters
     ----------
+    (to do)
     parama : int
         descriptive explanation of parama
     paramb : string, optional (default='default')
         descriptive explanation of paramb
     paramc : boolean, optional (default= whether paramb is not the default)
         descriptive explanation of paramc
-    and so on
-    est : skpro.estimator, BaseEstimator descendant
-        descriptive explanation of est
-    est2: another estimator
-        descriptive explanation of est2
-    and so on
+
+    parama : int
+        descriptive explanation of parama
+    paramb : string, optional (default='default')
+        descriptive explanation of paramb
+    paramc : boolean, optional (default= whether paramb is not the default)
+        descriptive explanation of paramc
     """
 
-    # todo: fill out estimator tags here
-    #  tags are inherited from parent class if they are not set
-    # tags inherited from base are "safe defaults" which can usually be left as-is
     _tags = {
         # packaging info
         # --------------
         "authors": ["meraldoantonio"],  # authors, GitHub handles
-        "maintainers": ["maintainer1", "maintainer2"],  # maintainers, GitHub handles
-        # author = significant contribution to code at some point
-        # maintainer = algorithm maintainer role, "owner"
-        # specify one or multiple authors and maintainers, only for skpro contribution
-        # remove maintainer tag if maintained by skpro/sktim core team
-        #
-        "python_version": None,  # PEP 440 python version specifier to limit versions
-        "python_dependencies": None,  # PEP 440 python dependencies specifier,
-        # e.g., "numba>0.53", or a list, e.g., ["numba>0.53", "numpy>=1.19.0"]
-        # delete if no python dependencies or version limitations
-        #
+        "python_version": None,
+        "python_dependencies": ["pymc"],
+
         # estimator tags
         # --------------
         "capability:multioutput": False,  # can the estimator handle multi-output data?
@@ -66,32 +50,21 @@ class BayesianLinearRegression(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
     }
 
-    # todo: fill init
-    # params should be written to self and never changed
-    # super call must not be removed, change class name
-    # parameter checks can go after super call
-    def __init__(self):
-        # estimators should precede parameters
-        #  if estimators have default values, set None and initialize below
 
-        # todo: write any hyper-parameters and components to self
-        self.model = None
-        self.trace = None
-        self.fitted = False
+    def __init__(self, intercept_sigma=10, slopes_sigma=10, noise_sigma=10, chains=2, draws=2000):
 
-        # leave this as is
+        # priors
+        self.intercept_sigma = intercept_sigma
+        self.slopes_sigma = slopes_sigma
+        self.noise_sigma = noise_sigma
+        self.chains = chains
+        self.draws = draws
+
         super().__init__()
 
         # todo: optional, parameter checking logic (if applicable) should happen here
         # if writes derived values to self, should *not* overwrite self.parama etc
         # instead, write to self._parama, self._newparam (starting with _)
-
-        # todo: default estimators should have None arg defaults
-        #  and be initialized here
-        #  do this only with default estimators, not with parameters
-        # if est2 is None:
-        #     self.estimator = MyDefaultEstimator()
-
         # todo: if tags of estimator depend on component tags, set these here
         #  only needed if estimator is a composite
         #  tags set in the constructor apply to the object and override the class
@@ -120,50 +93,40 @@ class BayesianLinearRegression(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        # insert logic for estimator here
-        # fitted parameters should be written to parameters ending in underscore
 
-        # self must be returned at the end
-        assert isinstance(X, pd.DataFrame), "X must be a pd.DataFrame!"
-        assert isinstance(y, pd.DataFrame), "y must be a pd.DataFrame!"
+        import pymc as pm
         assert len(y.columns) == 1, "y must have only one column!"
         self.X = X
         self.y = y
-        self.y_vals = y.values[:,0] # we need a 1-dimensional array for compatibility with pymc 
+        self.y_vals = y.values[:,0] # we need a 1-dimensional array for compatibility with pymc
         self.X_cols = X.columns
-        self.y_cols = y.columns
+        self._y_cols = y.columns
 
         with pm.Model() as self.model:
+
             # Mutable data containers
             X_data = pm.MutableData("X", self.X, dims = ("obs_id", "pred_id"))
             y_data = pm.MutableData("y", self.y_vals, dims = ("obs_id"))
 
             # Priors for unknown model parameters
-            self.intercepts = pm.Normal("intercepts", mu=0, sigma=1)
-            self.slopes = pm.Normal("slopes", mu=0, sigma=1, dims=("pred_id"))
-            self.sigma = pm.HalfNormal("sigma", sigma=1)
+            self.intercept = pm.Normal("intercept", mu=0, sigma=self.intercept_sigma)
+            self.slopes = pm.Normal("slopes", mu=0, sigma=self.slopes_sigma, shape = X.shape[1], dims=("pred_id"))
+            self.noise = pm.HalfNormal("noise", sigma=self.noise_sigma)
 
             # Expected value of outcome
-            self.mu = pm.Deterministic("mu", self.intercepts + pm.math.dot(X_data, self.slopes))
+            self.mu = pm.Deterministic("mu", self.intercept + pm.math.dot(X_data, self.slopes))
 
             # Likelihood (sampling distribution) of observations
-            Y_obs = pm.Normal("y_obs", mu=self.mu, sigma=self.sigma, observed=y_data, dims =("obs_id"))
+            y_obs = pm.Normal("y_obs", mu=self.mu, sigma=self.noise, observed=y_data, dims =("obs_id"))
 
-            # Sample from the posterior
-            self.trace = pm.sample(
-                draws=2000,            
-                tune=1500,             
-                chains=1,              
-                random_seed=42,             
-                target_accept=0.90, # Target acceptance probability; higher value leads to higher accuracy but slower sampling
-                return_inferencedata=True,  # Return an InferenceData object 
-                progressbar=True            
-            )
+            # Constructing the posterior
+            self.trace = pm.sample(chains = self.chains, draws = self.draws)
 
-        self.fitted = True
+            # Constructing the in-sample posterior predictive
+            self.trace.extend(pm.sample_posterior_predictive(self.trace))
+            
         return self
 
-    # todo: implement this, mandatory
     def _predict(self, X):
         """Predict labels for data from features.
 
@@ -187,9 +150,7 @@ class BayesianLinearRegression(BaseProbaRegressor):
         # this can read out parameters fitted in fit, or hyperparameters from init
         # no attributes should be written to self
 
-        y_pred = "placeholder"
-        # returned object should be pd.DataFrame
-        # same length as X, same columns as y in fit
+        y_pred = self._predict_proba(X).mean()
         return y_pred
 
     # todo: implement at least one of the probabilistic prediction methods
@@ -229,103 +190,25 @@ class BayesianLinearRegression(BaseProbaRegressor):
         # values = logic to produce prediction values
         # replace this import by the distribution you are using
         # the distribution type can be conditional, e.g., data or parameter dependent
-        from skpro.distributions import SomeDistribution
+        import pymc as pm
+        from skpro.distributions import Empirical
 
-        values = None  # fill in values
-        y_pred = SomeDistribution(values, index=index, columns=columns)
+        with self.model:
+            # Set the X to be the new 'X' variable and then sample posterior predictive
+            pm.set_data({"X": X})
+            self.trace.extend(pm.sample_posterior_predictive(self.trace, random_seed=42, predictions=True))
+        
+        # Note: returns y_obs as xarray.core.dataarray.DataArray containing the posterior predictive samples
+        predict_proba = self.trace.predictions["y_obs"] 
+        predict_proba_df = predict_proba.to_dataframe()
+        predict_proba_df = predict_proba_df.reset_index()
+        predict_proba_df["sample_id"] = predict_proba_df["chain"]*self.draws + predict_proba_df["draw"]
+        predict_proba_df = predict_proba_df[["obs_id", "sample_id", "y_obs"]]
+        predict_proba_df = predict_proba_df.set_index(["sample_id", "obs_id"])
+        y_pred = Empirical(spl=predict_proba_df)
 
         return y_pred
 
-    # todo: implement at least one of the probabilistic prediction methods, see above
-    # delete the methods that are not implemented and filled by default
-    def _predict_interval(self, X, coverage):
-        """Compute/return interval predictions.
-
-        private _predict_interval containing the core logic,
-            called from predict_interval and default _predict_quantiles
-
-        Parameters
-        ----------
-        X : pandas DataFrame, must have same columns as X in `fit`
-            data to predict labels for
-        coverage : guaranteed list of float of unique values
-           nominal coverage(s) of predictive interval(s)
-
-        Returns
-        -------
-        pred_int : pd.DataFrame
-            Column has multi-index: first level is variable name from ``y`` in fit,
-            second level coverage fractions for which intervals were computed,
-            in the same order as in input `coverage`.
-            Third level is string "lower" or "upper", for lower/upper interval end.
-            Row index is equal to row index of ``X``.
-            Entries are lower/upper bounds of interval predictions,
-            for var in col index, at nominal coverage in second col index,
-            lower/upper depending on third col index, for the row index.
-            Upper/lower interval end are equivalent to
-            quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
-        """
-        # if implementing _predict_interval (otherwise delete this method)
-        # todo: adapt the following by filling in logic to produce prediction values
-
-        # boilerplate code to create correct pandas output index
-        # only if using pandas, for other mtypes, use appropriate data structure
-        import pandas as pd
-
-        index = X.index
-        y_cols = self._y_cols  # columns from y in fit, not automatically stored
-        columns = pd.MultiIndex.from_product(
-            [y_cols, coverage, ["lower", "upper"]],
-        )
-
-        # values = logic to produce prediction values
-        values = None  # fill in values
-        pred_int = pd.DataFrame(values, index=index, columns=columns)
-
-        return pred_int
-
-    # todo: implement at least one of the probabilistic prediction methods, see above
-    # delete the methods that are not implemented and filled by default
-    def _predict_quantiles(self, X, alpha):
-        """Compute/return quantile predictions.
-
-        private _predict_quantiles containing the core logic,
-            called from predict_quantiles and default _predict_interval
-
-        Parameters
-        ----------
-        X : pandas DataFrame, must have same columns as X in `fit`
-            data to predict labels for
-        alpha : guaranteed list of float
-            A list of probabilities at which quantile predictions are computed.
-
-        Returns
-        -------
-        quantiles : pd.DataFrame
-            Column has multi-index: first level is variable name from ``y`` in fit,
-                second level being the values of alpha passed to the function.
-            Row index is equal to row index of ``X``.
-            Entries are quantile predictions, for var in col index,
-                at quantile probability in second col index, for the row index.
-        """
-        # if implementing _predict_quantiles (otherwise delete this method)
-        # todo: adapt the following by filling in logic to produce prediction values
-
-        # boilerplate code to create correct pandas output index
-        # only if using pandas, for other mtypes, use appropriate data structure
-        import pandas as pd
-
-        index = X.index
-        y_cols = self._y_cols  # columns from y in fit, not automatically stored
-        columns = pd.MultiIndex.from_product(
-            [y_cols, alpha],
-        )
-
-        # values = logic to produce prediction values
-        values = None  # fill in values
-        quantiles = pd.DataFrame(values, index=index, columns=columns)
-
-        return quantiles
 
     # todo: return default parameters, so that a test instance can be created
     #   required for automated unit and integration testing of estimator
