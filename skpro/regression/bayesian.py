@@ -26,7 +26,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
     chains : int, optional (default=2)
         Number of MCMC chains to run.
     draws : int, optional (default=2000)
-        Number of MCMC draws to sample from each chain.
+        Number of MCMC draws to sample from each chain; will be applied to all sampling steps.
 
     Example
     -------
@@ -132,14 +132,14 @@ class BayesianLinearRegressor(BaseProbaRegressor):
     def get_prior(self, return_type = "xarray"):
         """Extracts the prior distribution"""
         import pymc as pm
-        from skpro.distributions import Empirical
 
         assert return_type in ["xarray", "numpy", "dataframe"], "return_type must be one of 'xarray', 'numpy' or 'dataframe"
-
+        
         with self.model:
             # if we've previously used the model for prediction, we need to reset the reference of 'X' to the training data
             if self._predict_done:
                 pm.set_data({"X": self._X}, coords={"obs_id": self._X.index, "pred_id": self._X.columns})
+                # todo: uniformize the number of chains during sampling
             self.trace.extend(pm.sample_prior_predictive(samples=self.draws))
             prior = self.trace.prior
 
@@ -155,10 +155,28 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             slopes = prior["slopes"].values.squeeze()
             noise = prior["noise"].values.squeeze()
             return pd.DataFrame({"intercept": intercept, "slopes": slopes, "noise": noise})
+  
+    def get_posterior(self, return_type = "xarray"):
+        """Extracts the prior distribution"""
+        import pymc as pm
 
-            
-        
-        
+        assert self._is_fitted,"The model must be fitted before posterior can be returned."
+        assert return_type in ["xarray", "numpy", "dataframe"], "return_type must be one of 'xarray', 'numpy' or 'dataframe"
+
+        posterior = self.trace.posterior
+
+        if return_type == "xarray":
+            return posterior
+        elif return_type == "numpy":
+            intercept = posterior["intercept"].stack({"sample":("chain", "draw")}).values
+            slopes = posterior["slopes"].stack({"sample":("chain", "draw")}).values
+            noise = posterior["noise"].stack({"sample":("chain", "draw")}).values
+            return {"intercept": intercept, "slopes": slopes, "noise": noise}
+        else:
+            intercept = posterior["intercept"].stack({"sample":("chain", "draw")}).values
+            slopes = posterior["slopes"].stack({"sample":("chain", "draw")}).values
+            noise = posterior["noise"].stack({"sample":("chain", "draw")}).values
+            return pd.DataFrame({"intercept": intercept, "slopes": slopes, "noise": noise})
 
     def _predict(self, X):
         """Predict labels for data from features.
@@ -301,6 +319,5 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         Use graphviz to visualize the composition of the model
         """
         import pymc as pm
-        if not self._is_fitted:
-            raise RuntimeError("The model must be fitted before visualization can be done.")
+        assert self._is_fitted,"The model must be fitted before visualization can be done."
         return pm.model_to_graphviz(self.model)
