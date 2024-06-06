@@ -262,3 +262,12 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         # # "default" params
         # params = {"est": value3, "parama": value4}
         # return params
+
+    def visualize_model(self):
+        """
+        Use graphviz to visualize the composition of the model
+        """
+        import pymc as pm
+        if not self._is_fitted:
+            raise RuntimeError("The model must be fitted before visualization can be done.")
+        return pm.model_to_graphviz(self.model)
