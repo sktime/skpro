@@ -64,21 +64,6 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         assert isinstance(self.chains, int) and self.chains > 0, "chains must be a positive integer"
         assert isinstance(self.draws, int) and self.draws > 0, "draws must be a positive integer"
 
-
-        # todo: optional, parameter checking logic (if applicable) should happen here
-        # if writes derived values to self, should *not* overwrite self.parama etc
-        # instead, write to self._parama, self._newparam (starting with _)
-        # todo: if tags of estimator depend on component tags, set these here
-        #  only needed if estimator is a composite
-        #  tags set in the constructor apply to the object and override the class
-        #
-        # example 1: conditional setting of a tag
-        # if est.foo == 42:
-        #   self.set_tags(handles-missing-data=True)
-        # example 2: cloning tags from component
-        #   self.clone_tags(est2, ["enforce_index_type", "handles-missing-data"])
-
-    # todo: implement this, mandatory
     def _fit(self, X, y):
         """Fit regressor to training data.
 
@@ -149,9 +134,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        # implement logic for prediction here
-        # this can read out parameters fitted in fit, or hyperparameters from init
-        # no attributes should be written to self
+        
         assert X.columns.equals(self._X_cols), f"The columns of X must be the same as the columns of the training data: {self._X_cols}"
         y_pred = self._predict_proba(X).mean()
         return y_pred
