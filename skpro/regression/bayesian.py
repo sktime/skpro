@@ -167,6 +167,11 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             pm.set_data({"X": self._X}, coords={"obs_id": self._X.index, "pred_id": self._X.columns})
         return az.summary(self.trace.prior, var_names = ["intercept", "slopes", "noise"])
   
+    def plot_ppc(self, **kwargs):
+        """Plot the prior predictive check"""
+        import arviz as az
+        return az.plot_ppc(self.trace, **kwargs)
+    
     def get_posterior(self, return_type = "xarray"):
         """Extracts the prior distribution"""
         import pymc as pm
