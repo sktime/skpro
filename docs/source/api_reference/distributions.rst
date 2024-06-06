@@ -45,6 +45,7 @@ Continuous support
     HalfNormal
     Laplace
     Logistic
+    LogLaplace
     Normal
     TDistribution
     Weibull
