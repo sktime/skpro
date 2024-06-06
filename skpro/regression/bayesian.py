@@ -102,6 +102,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         self._y_vals = y.values[:,0] # we need a 1-dimensional array for compatibility with pymc
         self._X_cols = X.columns
         self._y_cols = y.columns
+        self._predict_done = False
 
         with pm.Model(coords={"obs_id": X.index, "pred_id": X.columns}) as self.model:
 
@@ -127,6 +128,37 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             self.trace.extend(pm.sample_posterior_predictive(self.trace))
             
         return self
+
+    def get_prior(self, return_type = "xarray"):
+        """Extracts the prior distribution"""
+        import pymc as pm
+        from skpro.distributions import Empirical
+
+        assert return_type in ["xarray", "numpy", "dataframe"], "return_type must be one of 'xarray', 'numpy' or 'dataframe"
+
+        with self.model:
+            # if we've previously used the model for prediction, we need to reset the reference of 'X' to the training data
+            if self._predict_done:
+                pm.set_data({"X": self._X}, coords={"obs_id": self._X.index, "pred_id": self._X.columns})
+            self.trace.extend(pm.sample_prior_predictive(samples=self.draws))
+            prior = self.trace.prior
+
+        if return_type == "xarray":
+            return prior
+        elif return_type == "numpy":
+            intercept = prior["intercept"].values.squeeze()
+            slopes = prior["slopes"].values.squeeze()
+            noise = prior["noise"].values.squeeze()
+            return {"intercept": intercept, "slopes": slopes, "noise": noise}
+        else:
+            intercept = prior["intercept"].values.squeeze()
+            slopes = prior["slopes"].values.squeeze()
+            noise = prior["noise"].values.squeeze()
+            return pd.DataFrame({"intercept": intercept, "slopes": slopes, "noise": noise})
+
+            
+        
+        
 
     def _predict(self, X):
         """Predict labels for data from features.
@@ -181,6 +213,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             # Set the X to be the new 'X' variable and then sample posterior predictive
             pm.set_data({"X": X}, coords={"obs_id": X.index, "pred_id": X.columns})
             self.trace.extend(pm.sample_posterior_predictive(self.trace, random_seed=42, predictions=True))
+            self._predict_done = True # a flag
         
         # Extract posterior predictive distributions as an xarray DataArray 
         pred_proba_xarray = self.trace.predictions["y_obs"] 
