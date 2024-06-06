@@ -106,8 +106,8 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         with pm.Model(coords={"obs_id": X.index, "pred_id": X.columns}) as self.model:
 
             # Mutable data containers
-            X_data = pm.Data("X", self._X, dims = ("obs_id", "pred_id"))
-            y_data = pm.Data("y", self._y_vals, dims = ("obs_id"))
+            X_data = pm.Data("X", self._X, dims = ("obs_id", "pred_id"), mutable=True)
+            y_data = pm.Data("y", self._y_vals, dims = ("obs_id"), mutable=True)
 
             # Priors for unknown model parameters
             self.intercept = pm.Normal("intercept", mu=self.intercept_mu, sigma=self.intercept_sigma)
