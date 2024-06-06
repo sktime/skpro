@@ -519,6 +519,14 @@ class BaseArrayDistribution(BaseObject):
             return bc, shape, is_scalar
         return bc
 
+    def _check_single_arr_distr(self, value):
+        return (
+            isinstance(value[0], int)
+            or isinstance(value[0], np.integer)
+            or isinstance(value[0], float)
+            or isinstance(value[0], np.float128)
+        )
+
     def _get_bc_params_dict(
         self, dtype=None, oned_as="row", return_shape=False, **kwargs
     ):
@@ -577,6 +585,17 @@ class BaseArrayDistribution(BaseObject):
             bc_params = kwargs_as_np.keys()
 
         args_as_np = [kwargs_as_np[k] for k in bc_params]
+
+        if all(self._check_single_arr_distr(value) for value in kwargs_as_np.values()):
+            # Convert all values in kwargs_as_np to np.array
+            kwargs_as_np = {key: np.array(value) for key, value in kwargs_as_np.items()}
+            shape = ()
+
+            if return_shape:
+                is_scalar = tuple([True] * (len(args_as_np) - 2))
+                # print(kwargs_as_np,shape,is_scalar)
+                return kwargs_as_np, shape, is_scalar
+            return kwargs_as_np
 
         shape = (len(args_as_np[0]), len(args_as_np[0][0]))
         # create broadcast_array which will be same shape as the original bins

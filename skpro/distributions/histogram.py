@@ -48,20 +48,47 @@ class Histogram(BaseArrayDistribution):
         return bins
 
     def __init__(self, bins, bin_mass, index=None, columns=None):
-        # convert the bins into a list
-        # if type(bins) == np.ndarray and type(bin_mass) == np.ndarray:
-        #     print(bins.ndim,bin_mass.ndim)
-        for i in range(len(bins)):
-            for j in range(len(bins[i])):
-                if isinstance(bins[i][j], tuple):
-                    bins[i][j] = self._convert_tuple_to_array(bins[i][j])
-                bins[i][j] = np.array(bins[i][j])
-                bin_mass[i][j] = np.array(bin_mass[i][j])
-
-        self.bins = bins
-        self.bin_mass = bin_mass
+        if isinstance(bins, tuple):
+            bins = self._convert_tuple_to_array(bins)
+            self.bins = np.array(bins)
+            self.bin_mass = np.array(bin_mass)
+        elif (
+            isinstance(bins[0], int)
+            or isinstance(bins[0], np.integer)
+            or isinstance(bins[0], float)
+            or isinstance(bins[0], np.float128)
+        ):
+            self.bins = np.array(bins)
+            self.bin_mass = np.array(bin_mass)
+        else:
+            # convert the bins into a list
+            for i in range(len(bins)):
+                for j in range(len(bins[i])):
+                    if isinstance(bins[i][j], tuple):
+                        bins[i][j] = self._convert_tuple_to_array(bins[i][j])
+                    bins[i][j] = np.array(bins[i][j])
+                    bin_mass[i][j] = np.array(bin_mass[i][j])
+            self.bins = bins
+            self.bin_mass = bin_mass
 
         super().__init__(index=index, columns=columns)
+
+    def _check_single_array_distr(self, bins, bin_mass):
+        all1Ds = (
+            isinstance(bins[0], float)
+            or isinstance(bins[0], np.float128)
+            or isinstance(bins[0], int)
+            or isinstance(bins[0], np.integer)
+        )
+        all1Ds = (
+            all1Ds
+            and isinstance(bin_mass[0], int)
+            or isinstance(bin_mass[0], np.integer)
+            or isinstance(bin_mass[0], float)
+            or isinstance(bin_mass[0], np.float128)
+            and np.array(bin_mass).ndim == 1
+        )
+        return all1Ds
 
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
@@ -222,6 +249,17 @@ class Histogram(BaseArrayDistribution):
         bin_mass = self.bin_mass
         bins = self.bins
         pdf = []
+        if self._check_single_array_distr(bins, bin_mass):
+            bins = np.array(bins)
+            bin_mass = np.array(bin_mass)
+            bin_width = np.diff(bins)
+            pdf_arr = bin_mass / bin_width
+            X = x
+            if len(np.where(X < bins)[0]) and len(np.where(X >= bins)[0]):
+                pdf = pdf_arr[min(np.where(X < bins)[0]) - 1]
+            else:
+                pdf = 0
+            return pdf
         # bins_hist contains the bins edges of each histogram
         for i in range(len(bins)):
             pdf_row = []
@@ -255,8 +293,20 @@ class Histogram(BaseArrayDistribution):
         bin_mass = self.bin_mass
         bins = self.bins
         lpdf = []
-        x = np.array(x)
 
+        if self._check_single_array_distr(bins, bin_mass):
+            bins = np.array(bins)
+            bin_mass = np.array(bin_mass)
+            bin_width = np.diff(bins)
+            lpdf_arr = np.log(bin_mass / bin_width)
+            X = x
+            if len(np.where(X < bins)[0]) and len(np.where(X >= bins)[0]):
+                lpdf = lpdf_arr[min(np.where(X < bins)[0]) - 1]
+            else:
+                lpdf = 0
+            return lpdf
+
+        x = np.array(x)
         for i in range(len(bins)):
             lpdf_row = []
             for j in range(len(bins[0])):
@@ -290,6 +340,26 @@ class Histogram(BaseArrayDistribution):
         bin_mass = self.bin_mass
         cdf = []
         pdf = self._pdf(x)
+
+        if self._check_single_array_distr(bins, bin_mass):
+            bins = np.array(bins)
+            bin_mass = np.array(bin_mass)
+            # cum_bin_index is an array of all indices
+            # of the bins or bin edges that are less than X.
+            X = x
+            cum_bin_index = np.where(X >= bins)[0]
+            if len(cum_bin_index) == len(bins):
+                cdf = 1
+            elif len(cum_bin_index) > 1:
+                cdf = np.cumsum(bin_mass)[-2] + pdf * (X - bins[cum_bin_index[-1]])
+
+            elif len(cum_bin_index) == 0:
+                cdf = 0
+            elif len(cum_bin_index) == 1:
+                cdf = pdf * (X - bins[cum_bin_index[-1]])
+
+            return cdf
+
         x = np.array(x)
 
         for i in range(len(bins)):
@@ -334,6 +404,32 @@ class Histogram(BaseArrayDistribution):
         bin_mass = self.bin_mass
         ppf = []
         p = np.array(p)
+
+        if self._check_single_array_distr(bins, bin_mass):
+            bins = np.array(bins)
+            bin_mass = np.array(bin_mass)
+            cum_sum_mass = np.cumsum(bin_mass)
+            # print(cum_sum_mass)
+            pdf_bins = []
+            for bin in bins:
+                pdf_bins.append(self._pdf(bin))
+            P = p
+            cum_bin_index_P = np.where(P >= cum_sum_mass)[0]
+            if P < 0 or P > 1:
+                X = np.NaN
+            elif len(cum_bin_index_P) == 0:
+                X = P / pdf_bins[len(cum_bin_index_P)]
+            elif len(cum_bin_index_P) > 0:
+                if P - cum_sum_mass[cum_bin_index_P[-1]] > 0:
+                    X = (
+                        bins[cum_bin_index_P[-1] + 1]
+                        + (P - cum_sum_mass[cum_bin_index_P[-1]])
+                        / pdf_bins[len(cum_bin_index_P)]
+                    )
+                else:
+                    X = bins[cum_bin_index_P[-1] + 1]
+
+                return X
 
         for i in range(len(bins)):
             ppf_row = []
