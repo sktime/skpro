@@ -19,18 +19,18 @@ class LogLaplace(_ScipyAdapter):
     taking the logarithm of the Laplace distribution, commonly used in finance and
     hydrology due to its heavy tails and asymmetry.
 
-    The log-Laplace distribution is parametrized by the scale parameter
-    :math:`\c`, such that the pdf is
+    The log-Laplace distribution is parametrized by the shape parameter
+    :math:`\shape`, such that the pdf is
 
     .. math:: f(x) = \frac{c}{2} x^{c-1}, 0<x<1
     and
     .. math:: f(x) = \frac{c}{2} x^{-c-1}, x >= 1
 
-    The scale parameter :math:`c` is represented by the parameter ``c``.
+    The shape parameter :math:`shape` is represented by the parameter ``c``
 
     Parameters
     ----------
-    scale : float or array of float (1D or 2D), must be positive
+    shape : float or array of float (1D or 2D), must be positive
         scale parameter of the log-Laplace distribution
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
@@ -39,7 +39,7 @@ class LogLaplace(_ScipyAdapter):
     -------
     >>> from skpro.distributions.loglaplace import LogLaplace
 
-    >>> ll = LogLaplace(scale=1)
+    >>> ll = LogLaplace(shape=1)
     """
 
     _tags = {
@@ -50,8 +50,8 @@ class LogLaplace(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
-    def __init__(self, scale, index=None, columns=None):
-        self.scale = scale
+    def __init__(self, shape, index=None, columns=None):
+        self.shape = shape
 
         super().__init__(index=index, columns=columns)
 
@@ -59,19 +59,19 @@ class LogLaplace(_ScipyAdapter):
         return loglaplace
 
     def _get_scipy_param(self):
-        scale = self._bc_params["scale"]
-        return [scale], {}
+        shape = self._bc_params["shape"]
+        return [shape], {}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
         # array case examples
-        params1 = {"scale": [[1, 2], [3, 4]]}
+        params1 = {"shape": [[1, 2], [3, 4]]}
         params2 = {
-            "scale": 1,
+            "shape": 1,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
         # scalar case examples
-        params3 = {"scale": 2}
+        params3 = {"shape": 2}
         return [params1, params2, params3]
