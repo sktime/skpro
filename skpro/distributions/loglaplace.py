@@ -22,9 +22,11 @@ class LogLaplace(_ScipyAdapter):
     The log-Laplace distribution is parametrized by the scale parameter
     :math:`\c`, such that the pdf is
 
-    .. math:: f(x) = \frac{c}{2} x^{c-1}, 0<x<1
+    .. math:: f(x) = \frac{c}{2} x^{c-1}, \quad 0<x<1
+
     and
-    .. math:: f(x) = \frac{c}{2} x^{-c-1}, x >= 1
+
+    .. math:: f(x) = \frac{c}{2} x^{-c-1}, \quad x >= 1
 
     The scale parameter :math:`c` is represented by the parameter ``c``.
 
