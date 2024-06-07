@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Poisson(_ScipyAdapter):
     """Poisson distribution.
 
+    Most methods wrap ``scipy.stats.poisson``.
+
     Parameters
     ----------
     mu : float or array of float (1D or 2D)

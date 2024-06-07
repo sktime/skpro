@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class HalfNormal(_ScipyAdapter):
     r"""Half-Normal distribution.
 
+    Most methods wrap ``scipy.stats.halfnorm``.
+
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
 

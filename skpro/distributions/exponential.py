@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Exponential(_ScipyAdapter):
     r"""Exponential Distribution.
 
+    Most methods wrap ``scipy.stats.expon``.
+
     The Exponential distribution is parametrized by mean :math:`\mu` and
     scale :math:`b`, such that the pdf is
 
