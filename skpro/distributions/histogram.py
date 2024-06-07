@@ -465,7 +465,7 @@ class Histogram(BaseArrayDistribution):
                 if P < 0 or P > 1:
                     ppf_row.append(np.NaN)
                 elif len(cum_bin_index_P) == 0:
-                    X = P / pdf_bins[len(cum_bin_index_P)]
+                    X = bins_hist[0] + P / pdf_bins[len(cum_bin_index_P)]
                     ppf_row.append(round(X, 4))
                 elif len(cum_bin_index_P) > 0:
                     if P - cum_sum_mass[cum_bin_index_P[-1]] > 0:
