@@ -17,14 +17,27 @@ class Histogram(BaseArrayDistribution):
 
     Parameters
     ----------
-    bins : tuple(float,float,int) or array of float 1D
+    bins : tuple(float,float,int) or numpy.array of float 1D or 2D list of size m x n
         1. tuple(first bin's start point, last bin's end point, number of bins)
         Used when bin widths are equal.
         2. array has the bin boundaries with 1st element the first bin's
         starting point and rest are the bin ending points of all bins
-    bin_mass: array of float 1D
-        Mass of the bins or Area of the bins.
+        3. 2D list of size m x n containing m*n float numpy.arrays or tuple like case 1.
+        example : "bins": [
+            [[0, 1, 2, 3, 4], [5, 5.5, 5.8, 6.5, 7, 7.5]],
+            [(2, 12, 5), [0, 1, 2, 3, 4]],
+            [[1.5, 2.5, 3.1, 4, 5.4], [-4, -2, -1.5, 5, 10]],
+        ]
+    bin_mass: array of float 1D or 2D list of size m x n containing
+        1. Array has the mass of the bins or area of the bins.
+        Note: len(bin_mass) will be (len(bins)-1).
         Note: Sum of all the bin_mass must be 1.
+        2. 2D list of size m x n containing m*n float numpy.arrays satisfying case 1.
+        example : "bin_mass": [
+            [[0.1, 0.2, 0.3, 0.4], [0.25, 0.1, 0, 0.4, 0.25]],
+            [[0.1, 0.2, 0.4, 0.2, 0.1], [0.4, 0.3, 0.2, 0.1]],
+            [[0.06, 0.15, 0.09, 0.7], [0.4, 0.15, 0.325, 0.125]],
+        ]
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
     """
