@@ -16,7 +16,7 @@ class HalfLogistic(_ScipyAdapter):
     for the array-valued case.
 
     The half-logistic distribution is a continuous probability distribution derived
-    from the logistic distribution by taking only the positive half.It is particularly
+    from the logistic distribution by taking only the positive half. It is particularly
     useful in reliability analysis, lifetime modeling, and other applications where
     non-negative values are required.
 
