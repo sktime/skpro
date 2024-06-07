@@ -47,32 +47,6 @@ class Histogram(BaseArrayDistribution):
         bins.append(bins_to_list[1])
         return bins
 
-    def __init__(self, bins, bin_mass, index=None, columns=None):
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
-            self.bins = np.array(bins)
-            self.bin_mass = np.array(bin_mass)
-        elif (
-            isinstance(bins[0], int)
-            or isinstance(bins[0], np.integer)
-            or isinstance(bins[0], float)
-            or isinstance(bins[0], np.float128)
-        ):
-            self.bins = np.array(bins)
-            self.bin_mass = np.array(bin_mass)
-        else:
-            # convert the bins into a list
-            for i in range(len(bins)):
-                for j in range(len(bins[i])):
-                    if isinstance(bins[i][j], tuple):
-                        bins[i][j] = self._convert_tuple_to_array(bins[i][j])
-                    bins[i][j] = np.array(bins[i][j])
-                    bin_mass[i][j] = np.array(bin_mass[i][j])
-            self.bins = bins
-            self.bin_mass = bin_mass
-
-        super().__init__(index=index, columns=columns)
-
     def _check_single_array_distr(self, bins, bin_mass):
         all1Ds = (
             isinstance(bins[0], float)
@@ -89,6 +63,27 @@ class Histogram(BaseArrayDistribution):
             and np.array(bin_mass).ndim == 1
         )
         return all1Ds
+
+    def __init__(self, bins, bin_mass, index=None, columns=None):
+        if isinstance(bins, tuple):
+            bins = self._convert_tuple_to_array(bins)
+            self.bins = np.array(bins)
+            self.bin_mass = np.array(bin_mass)
+        elif self._check_single_array_distr(bins, bin_mass):
+            self.bins = np.array(bins)
+            self.bin_mass = np.array(bin_mass)
+        else:
+            # convert the bins into a list
+            for i in range(len(bins)):
+                for j in range(len(bins[i])):
+                    if isinstance(bins[i][j], tuple):
+                        bins[i][j] = self._convert_tuple_to_array(bins[i][j])
+                    bins[i][j] = np.array(bins[i][j])
+                    bin_mass[i][j] = np.array(bin_mass[i][j])
+            self.bins = bins
+            self.bin_mass = bin_mass
+
+        super().__init__(index=index, columns=columns)
 
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
@@ -429,7 +424,7 @@ class Histogram(BaseArrayDistribution):
                 else:
                     X = bins[cum_bin_index_P[-1] + 1]
 
-                return X
+            return X
 
         for i in range(len(bins)):
             ppf_row = []

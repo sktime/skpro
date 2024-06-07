@@ -298,11 +298,7 @@ class BaseArrayDistribution(BaseObject):
             # if arr_shape >= 2 and colidx is not None:
             #     arr = arr[:, colidx]
             if arr_shape == 2 and rowidx is not None and colidx is not None:
-                arr = arr[rowidx[0]][colidx[0]]
-            if np.issubdtype(arr.dtype, np.integer):
-                arr = arr.astype("float")
-            if coerce_scalar:
-                arr = arr[(0,) * arr_shape]
+                arr = arr[rowidx][colidx]
             subset_param_dict[param] = arr
         return subset_param_dict
 
@@ -334,14 +330,6 @@ class BaseArrayDistribution(BaseObject):
         columns_subset = subset_not_none(self.columns, colidx)
 
         sk_distr_type = type(self)
-        # print(subset_params)
-        # print(
-        #     sk_distr_type(
-        #         index=index_subset,
-        #         columns=columns_subset,
-        #         **subset_params,
-        #     )
-        # )
         return sk_distr_type(
             index=index_subset,
             columns=columns_subset,
