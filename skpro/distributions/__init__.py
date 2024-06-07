@@ -17,6 +17,7 @@ __all__ = [
     "IID",
     "Laplace",
     "Logistic",
+    "LogLaplace",
     "LogNormal",
     "Mixture",
     "Normal",
@@ -44,6 +45,7 @@ from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halfnormal import HalfNormal
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
+from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
