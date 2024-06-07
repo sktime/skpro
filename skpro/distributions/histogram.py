@@ -183,6 +183,13 @@ class Histogram(BaseArrayDistribution):
         mean = []
         from numpy.lib.stride_tricks import sliding_window_view
 
+        if self._check_single_array_distr(bins, bin_mass):
+            bins = np.array(bins)
+            bin_mass = np.array(bin_mass)
+            win_sum_bins = np.sum(sliding_window_view(bins, window_shape=2), axis=1)
+            mean = 0.5 * np.dot(win_sum_bins, bin_mass)
+            return mean
+
         for i in range(len(bins)):
             mean_row = []
             for j in range(len(bins[0])):
@@ -208,6 +215,14 @@ class Histogram(BaseArrayDistribution):
         var = []
         mean = self._mean()
         from numpy.lib.stride_tricks import sliding_window_view
+
+        if self._check_single_array_distr(bins, bin_mass):
+            bins = np.array(bins)
+            bin_mass = np.array(bin_mass)
+            win_sum_bins = np.sum(sliding_window_view(bins, window_shape=2), axis=1)
+            win_prod_bins = np.prod(sliding_window_view(bins, window_shape=2), axis=1)
+            var = np.dot(bin_mass / 3, (win_sum_bins**2 - win_prod_bins)) - mean**2
+            return var
 
         for i in range(len(bins)):
             var_row = []
