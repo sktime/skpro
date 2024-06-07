@@ -11,31 +11,47 @@ from skpro.datatypes._table._check import check_polars_table
 from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
-X, y = load_diabetes(return_X_y=True, as_frame=True)
-X = X.iloc[:75]
-y = y.iloc[:75]
-
-# typically y is returned as a pd.Series to we call y as a Dataframe here
-y = pd.DataFrame(y)
-
-X_train, X_test, y_train, _ = train_test_split(X, y, test_size=0.33, random_state=42)
-
 TEST_ALPHAS = [0.05, 0.1, 0.25]
+
+
+@pytest.fixture
+def polars_load_diabetes_pandas():
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
+    X = X.iloc[:75]
+    y = y.iloc[:75]
+
+    # typically y is returned as a pd.Series to we call y as a Dataframe here
+    y = pd.DataFrame(y)
+
+    X_train, X_test, y_train, _ = train_test_split(
+        X, y, test_size=0.33, random_state=42
+    )
+    return [X_train, X_test, y_train]
+
+
+@pytest.fixture
+def polars_load_diabetes_polars(polars_load_diabetes_pandas):
+    X_train, X_test, y_train = polars_load_diabetes_pandas
+    X_train_pl = convert_pandas_to_polars_eager(X_train)
+    X_test_pl = convert_pandas_to_polars_eager(X_test)
+    y_train_pl = convert_pandas_to_polars_eager(y_train)
+
+    return [X_train_pl, X_test_pl, y_train_pl]
 
 
 @pytest.mark.skipif(
     not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
-def test_polars_eager_conversion_methods():
+def test_polars_eager_conversion_methods(
+    polars_load_diabetes_pandas, polars_load_diabetes_polars
+):
     """
     Tests to ensure that given a pandas dataframe, the conversion methods
     convert properly to polars dataframe
     """
-    # y_train returns a pandas series so the skpro conversion function does not work
-    X_train_pl = convert_pandas_to_polars_eager(X_train)
-    X_test_pl = convert_pandas_to_polars_eager(X_test)
-    y_train_pl = convert_pandas_to_polars_eager(y_train)
+    X_train, X_test, y_train = polars_load_diabetes_pandas
+    X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
     assert check_polars_table(X_train_pl)
     assert check_polars_table(X_test_pl)
@@ -49,7 +65,9 @@ def test_polars_eager_conversion_methods():
     not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
-def test_polars_eager_regressor_in_fit_predict(estimator):
+def test_polars_eager_regressor_in_fit_predict(
+    estimator, polars_load_diabetes_pandas, polars_load_diabetes_polars
+):
     """
     Tests to ensure that given a polars dataframe, the regression estimator
     can fit and predict and return the correct set of outputs
@@ -62,10 +80,8 @@ def test_polars_eager_regressor_in_fit_predict(estimator):
     """
     # create a copy of estimator to run further checks
     estimator_copy = estimator
-
-    X_train_pl = convert_pandas_to_polars_eager(X_train)
-    X_test_pl = convert_pandas_to_polars_eager(X_test)
-    y_train_pl = convert_pandas_to_polars_eager(y_train)
+    X_train, X_test, y_train = polars_load_diabetes_pandas
+    X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
     estimator.fit(X_train_pl, y_train_pl)
     y_pred = estimator.predict(X_test_pl)
@@ -84,10 +100,10 @@ def test_polars_eager_regressor_in_fit_predict(estimator):
     not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
-def test_polars_eager_regressor_in_predict_interval(estimator):
-    X_train_pl = convert_pandas_to_polars_eager(X_train)
-    X_test_pl = convert_pandas_to_polars_eager(X_test)
-    y_train_pl = convert_pandas_to_polars_eager(y_train)
+def test_polars_eager_regressor_in_predict_interval(
+    estimator, polars_load_diabetes_polars
+):
+    X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
     estimator.fit(X_train_pl, y_train_pl)
     y_pred_interval = estimator.predict_interval(X_test_pl)
@@ -105,9 +121,7 @@ def test_polars_eager_regressor_in_predict_interval(estimator):
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_predict_quantiles(estimator):
-    X_train_pl = convert_pandas_to_polars_eager(X_train)
-    X_test_pl = convert_pandas_to_polars_eager(X_test)
-    y_train_pl = convert_pandas_to_polars_eager(y_train)
+    X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
     estimator.fit(X_train_pl, y_train_pl)
     y_pred_quantile = estimator.predict_quantiles(X_test_pl, alpha=TEST_ALPHAS)
