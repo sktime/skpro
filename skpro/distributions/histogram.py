@@ -317,13 +317,13 @@ class Histogram(BaseArrayDistribution):
         bins = self.bins
         lpdf = []
 
+        from warnings import warn
+
         if self._check_single_array_distr(bins, bin_mass):
             bins = np.array(bins)
             bin_mass = np.array(bin_mass)
             bin_width = np.diff(bins)
             if 0 in bin_mass:
-                from warnings import warn
-
                 warn(
                     "Zero values detected in bin_mass. These values",
                     "will be replaced with a small positive constant.",
@@ -346,6 +346,12 @@ class Histogram(BaseArrayDistribution):
                 bins_hist = bins[i][j]
                 bin_mass_hist = bin_mass[i][j]
                 bin_width = np.diff(bins_hist)
+                if 0 in bin_mass_hist:
+                    warn("0 value detected in bin_mass is replaced by a positive const")
+                    small_value = 1e-100
+                    bin_mass_hist = np.where(
+                        bin_mass_hist == 0, small_value, bin_mass_hist
+                    )
                 lpdf_arr = np.log(bin_mass_hist / bin_width)
                 if len(np.where(X < bins_hist)[0]) and len(np.where(X >= bins_hist)[0]):
                     lpdf_row.append(lpdf_arr[min(np.where(X < bins_hist)[0]) - 1])
