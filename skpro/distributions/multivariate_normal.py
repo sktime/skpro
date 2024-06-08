@@ -1,7 +1,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Multivariate Normal/Gaussian probability distribution."""
 
-__author__ = ["bhavikar04","fkiraly"]
+__author__ = ["bhavikar04", "fkiraly"]
 
 import numpy as np
 import pandas as pd
@@ -9,7 +9,7 @@ from scipy.special import erf, erfinv
 from scipy.stats import multivariate_normal
 
 from skpro.distributions.base import BaseDistribution
-class Multivariate_Normal(BaseDistribution):
+class MultivariateNormal(BaseDistribution):
     r"""Multivariate Normal distribution (skpro native).
 
     This distribution is multivariate, without correlation between dimensions
@@ -130,7 +130,9 @@ class Multivariate_Normal(BaseDistribution):
         """
         mu = self._bc_params["mu"]
         cov = self._bc_params["cov"]
-        pdf_arr = (1 / ((np.linalg.det(cov))**(1/2) * (2*np.pi)**(len(x)/2))) * np.exp(-0.5 * (x - mu).T @ np.linalg.inv(cov) @ (x - mu).cov())  
+        pdf_arr = (
+            1 / ((np.linalg.det(cov))**(1/2) * (2*np.pi)**(len(x)/2))
+        ) * np.exp(-0.5 * (x - mu).T @ np.linalg.inv(cov) @ (x - mu).cov())  
     
         return pdf_arr
 
@@ -150,7 +152,11 @@ class Multivariate_Normal(BaseDistribution):
         mu = self._bc_params["mu"]
         cov = self._bc_params["cov"]
 
-        lpdf_arr = -0.5 * [np.log(np.linalg.det(cov))+(x - mu).T @ np.linalg.inv(cov) @ (x - mu)+(len(x)/2)*np.log((2*np.pi))]
+        lpdf_arr = -0.5 * [
+            np.log(np.linalg.det(cov))
+            +(x - mu).T @ np.linalg.inv(cov) @ (x - mu)
+            +(len(x)/2)*np.log(2*np.pi)
+        ]
         
         return lpdf_arr
 
@@ -170,8 +176,7 @@ class Multivariate_Normal(BaseDistribution):
         mu = self._bc_params["mu"]
         cov = self._bc_params["cov"]
         
-        cdf_arr= multivariate_normal.cdf(x,mu,cov,allow_singular=False)
-
+        cdf_arr= multivariate_normal.cdf(x, mu, cov, allow_singular=False)
         
         return cdf_arr
 
@@ -188,7 +193,7 @@ class Multivariate_Normal(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             ppf values at the given points
         """
-       #Does not exist since closed form of cdf does not exist
+    #Does not exist since closed form of cdf does not exist
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
