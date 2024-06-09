@@ -69,19 +69,36 @@ class BaseArrayDistribution(BaseDistribution, BaseObject):
                 subset_param_dict[param] = None
                 continue
             arr = val
-            # if len(arr.shape) == 0:
-            # do nothing with arr
             arr_shape = 2
-            # assume 2D array with array distribution in it for now
-            # if arr_shape == 2 and rowidx is not None:
-            #     print(arr)
-            #     arr = arr[rowidx, :]
-            # if arr_shape == 1 and colidx is not None:
-            #     arr = arr[colidx]
-            # if arr_shape >= 2 and colidx is not None:
-            #     arr = arr[:, colidx]
-            if arr_shape == 2 and rowidx is not None and colidx is not None:
-                arr = arr[rowidx][colidx]
+            # subset the 2D distributions
+            if arr_shape == 2 and rowidx is not None:
+                _arr_shift = []
+                if rowidx.values is not None and colidx is None:
+                    rowidx_list = rowidx.values
+                    for row in rowidx:
+                        _arr_shift.append(arr[row])
+
+                elif rowidx.values is not None and colidx.values is not None:
+                    rowidx_list = rowidx.values
+                    colidx_list = colidx.values
+                    for row in rowidx_list:
+                        _arr_shift_row = []
+                        for col in colidx_list:
+                            _arr_shift_row.append(arr[row][col])
+                        _arr_shift.append(_arr_shift_row)
+                arr = _arr_shift
+
+            if arr_shape == 2 and rowidx is None:
+                _arr_shift = []
+                if colidx is not None:
+                    colidx_list = colidx.values
+                    for row in range(len(arr)):
+                        _arr_shift_row = []
+                        for col in colidx_list:
+                            _arr_shift_row.append(arr[row][col])
+                        _arr_shift.append(_arr_shift_row)
+                    arr = _arr_shift
+
             subset_param_dict[param] = arr
         return subset_param_dict
 
@@ -93,6 +110,8 @@ class BaseArrayDistribution(BaseDistribution, BaseObject):
         if is_scalar_notnone(colidx):
             colidx = pd.Index([colidx])
 
+        rowidx = pd.Index(rowidx)
+        colidx = pd.Index(colidx)
         subset_params = self._subset_params(rowidx=rowidx, colidx=colidx)
 
         def subset_not_none(idx, subs):
