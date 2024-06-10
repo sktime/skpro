@@ -70,6 +70,11 @@ class BaseArrayDistribution(BaseDistribution, BaseObject):
                 continue
             arr = val
             arr_shape = 2
+            # when rowidx and colidx are integer while plotting
+            if coerce_scalar:
+                arr = arr[rowidx][colidx]
+                subset_param_dict[param] = arr
+                continue
             # subset the 2D distributions
             if arr_shape == 2 and rowidx is not None:
                 _arr_shift = []

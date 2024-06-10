@@ -20,8 +20,10 @@ class Histogram(BaseArrayDistribution):
     bins : tuple(float,float,int) or numpy.array of float 1D or 2D list of size m x n
         1. tuple(first bin's start point, last bin's end point, number of bins)
         Used when bin widths are equal.
+        example: bins:(0,4,4),
         2. array has the bin boundaries with 1st element the first bin's
         starting point and rest are the bin ending points of all bins
+        example: bins:[0, 1, 2, 3, 4],
         3. 2D list of size m x n containing m*n float numpy.arrays or tuple like case 1.
         example : "bins": [
             [[0, 1, 2, 3, 4], [5, 5.5, 5.8, 6.5, 7, 7.5]],
@@ -30,6 +32,7 @@ class Histogram(BaseArrayDistribution):
         ]
     bin_mass: array of float 1D or 2D list of size m x n containing
         1. Array has the mass of the bins or area of the bins.
+        example: bin_mass:[0.1, 0.2, 0.3, 0.4],
         Note: len(bin_mass) will be (len(bins)-1).
         Note: Sum of all the bin_mass must be 1.
         2. 2D list of size m x n containing m*n float numpy.arrays satisfying case 1.
