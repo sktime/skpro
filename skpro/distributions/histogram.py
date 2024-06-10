@@ -114,10 +114,49 @@ class Histogram(BaseArrayDistribution):
             energy values w.r.t. the given points
         """
         bins = self.bins
-        # bin_mass = self.bin_mass
-        # convert the bins into a list
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
+        bin_mass = self.bin_mass
+        energy_arr = []
+        from numpy.lib.stride_tricks import sliding_window_view
+
+        if self._check_single_array_distr(bins, bin_mass):
+            bins_hist = bins
+            bin_mass_hist = bin_mass
+            win_centre_bins = 0.5 * np.sum(
+                sliding_window_view(bins_hist, window_shape=2), axis=1
+            )
+            expected_value = 0
+            for i in range(len(bin_mass_hist)):
+                for j in range(len(bin_mass_hist)):
+                    expected_value += (
+                        bin_mass_hist[i]
+                        * bin_mass_hist[j]
+                        * abs(win_centre_bins[i] - win_centre_bins[j])
+                    )
+            energy_arr = expected_value
+            return expected_value
+
+        for row in range(len(bins)):
+            energy_arr_row = []
+            for col in range(len(bins[0])):
+                bins_hist = bins[row][col]
+                bin_mass_hist = bin_mass[row][col]
+                win_centre_bins = 0.5 * np.sum(
+                    sliding_window_view(bins_hist, window_shape=2), axis=1
+                )
+                expected_value = 0
+                for i in range(len(bin_mass_hist)):
+                    for j in range(len(bin_mass_hist)):
+                        expected_value += (
+                            bin_mass_hist[i]
+                            * bin_mass_hist[j]
+                            * abs(win_centre_bins[i] - win_centre_bins[j])
+                        )
+                energy_arr_row.append(expected_value)
+            energy_arr.append(energy_arr_row)
+        energy_arr = np.array(energy_arr)
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
+        return energy_arr
 
     def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
@@ -137,7 +176,6 @@ class Histogram(BaseArrayDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        # still needs work
         bins = self.bins
         bin_mass = self.bin_mass
         energy_arr = []
@@ -505,7 +543,7 @@ class Histogram(BaseArrayDistribution):
             if P < 0 or P > 1:
                 X = np.NaN
             elif len(cum_bin_index_P) == 0:
-                X = P / pdf_bins[len(cum_bin_index_P)]
+                X = bins[0] + P / pdf_bins[len(cum_bin_index_P)]
             elif len(cum_bin_index_P) > 0:
                 if P - cum_sum_mass[cum_bin_index_P[-1]] > 0:
                     X = (

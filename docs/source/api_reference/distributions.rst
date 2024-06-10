@@ -85,3 +85,17 @@ Composite distributions
     :template: class.rst
 
     Mixture
+
+Array distributions
+------------------------
+
+Continuous support
+~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    Histogram
