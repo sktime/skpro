@@ -35,12 +35,18 @@ Continuous support
     :toctree: auto_generated/
     :template: class.rst
 
+    Alpha
     Beta
     ChiSquared
     Exponential
     Fisk
+    Gamma
+    HalfCauchy
+    HalfLogistic
+    HalfNormal
     Laplace
     Logistic
+    LogLaplace
     Normal
     TDistribution
     Weibull
@@ -75,8 +81,12 @@ Non-parametric and empirical distributions
     QPD_S
     QPD_B
 
+
 Composite distributions
 -----------------------
+
+Mixture composition
+~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -86,11 +96,23 @@ Composite distributions
 
     Mixture
 
+
+Sampling and multivariate composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    IID
+
 Array distributions
-------------------------
+~~~~~~~~~~~~~~~~~~~
 
 Continuous support
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 

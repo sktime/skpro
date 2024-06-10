@@ -4,15 +4,22 @@
 # adapted from sktime
 
 __all__ = [
+    "Alpha",
     "Beta",
     "ChiSquared",
     "Delta",
     "Empirical",
     "Exponential",
     "Fisk",
+    "Gamma",
+    "HalfCauchy",
+    "HalfLogistic",
+    "HalfNormal",
     "Histogram",
+    "IID",
     "Laplace",
     "Logistic",
+    "LogLaplace",
     "LogNormal",
     "Mixture",
     "Normal",
@@ -27,15 +34,22 @@ __all__ = [
     "Weibull",
 ]
 
+from skpro.distributions.alpha import Alpha
 from skpro.distributions.beta import Beta
 from skpro.distributions.chi_squared import ChiSquared
+from skpro.distributions.compose import IID
 from skpro.distributions.delta import Delta
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.exponential import Exponential
 from skpro.distributions.fisk import Fisk
+from skpro.distributions.gamma import Gamma
+from skpro.distributions.halfcauchy import HalfCauchy
+from skpro.distributions.halflogistic import HalfLogistic
+from skpro.distributions.halfnormal import HalfNormal
 from skpro.distributions.histogram import Histogram
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
+from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
