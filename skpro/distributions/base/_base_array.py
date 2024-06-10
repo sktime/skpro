@@ -110,8 +110,11 @@ class BaseArrayDistribution(BaseDistribution, BaseObject):
         if is_scalar_notnone(colidx):
             colidx = pd.Index([colidx])
 
-        rowidx = pd.Index(rowidx)
-        colidx = pd.Index(colidx)
+        if rowidx is not None:
+            rowidx = pd.Index(rowidx)
+        if colidx is not None:
+            colidx = pd.Index(colidx)
+
         subset_params = self._subset_params(rowidx=rowidx, colidx=colidx)
 
         def subset_not_none(idx, subs):
