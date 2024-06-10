@@ -143,7 +143,7 @@ class BaseArrayDistribution(BaseDistribution, BaseObject):
             isinstance(value[0], int)
             or isinstance(value[0], np.integer)
             or isinstance(value[0], float)
-            or isinstance(value[0], np.float128)
+            or isinstance(value[0], np.floating)
         )
 
     def _get_bc_params_dict(

@@ -66,7 +66,7 @@ class Histogram(BaseArrayDistribution):
     def _check_single_array_distr(self, bins, bin_mass):
         all1Ds = (
             isinstance(bins[0], float)
-            or isinstance(bins[0], np.float128)
+            or isinstance(bins[0], np.floating)
             or isinstance(bins[0], int)
             or isinstance(bins[0], np.integer)
         )
@@ -75,7 +75,7 @@ class Histogram(BaseArrayDistribution):
             and isinstance(bin_mass[0], int)
             or isinstance(bin_mass[0], np.integer)
             or isinstance(bin_mass[0], float)
-            or isinstance(bin_mass[0], np.float128)
+            or isinstance(bin_mass[0], np.floating)
             and np.array(bin_mass).ndim == 1
         )
         return all1Ds
