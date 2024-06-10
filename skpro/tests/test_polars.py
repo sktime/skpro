@@ -30,6 +30,14 @@ def polars_load_diabetes_pandas():
 
 
 @pytest.fixture
+def estimator():
+    from skpro.regression.mapie import MapieRegressor
+
+    _estimator = MapieRegressor()
+    return _estimator
+
+
+@pytest.fixture
 def polars_load_diabetes_polars(polars_load_diabetes_pandas):
     X_train, X_test, y_train = polars_load_diabetes_pandas
     X_train_pl = convert_pandas_to_polars_eager(X_train)
@@ -78,6 +86,7 @@ def test_polars_eager_regressor_in_fit_predict(
     estimator: a given regression estimator
 
     """
+    # TODO - expand estimator to include a list of regression models to test
     # create a copy of estimator to run further checks
     estimator_copy = estimator
     X_train, X_test, y_train = polars_load_diabetes_pandas
@@ -104,7 +113,7 @@ def test_polars_eager_regressor_in_predict_interval(
     estimator, polars_load_diabetes_polars
 ):
     X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
-
+    # TODO - expand estimator to include a list of regression models to test
     estimator.fit(X_train_pl, y_train_pl)
     y_pred_interval = estimator.predict_interval(X_test_pl)
 
