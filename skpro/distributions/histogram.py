@@ -147,6 +147,46 @@ class Histogram(BaseArrayDistribution):
         x = np.array(x)
         from numpy.lib.stride_tricks import sliding_window_view
 
+        if self._check_single_array_distr(bins, bin_mass):
+            bins_hist = np.array(bins)
+            bin_mass_hist = np.array(bin_mass)
+            X = x
+            is_outside = X < bins_hist[0] or X > bins_hist[-1]
+            if is_outside:
+                energy_arr = abs(mean - X)
+                return energy_arr
+            else:
+                # consider X lies in kth bin
+                # so kth bin's start index is
+                k_1_bins = np.where(X >= bins_hist)[0][-1]
+                win_sum_bins = np.sum(
+                    sliding_window_view(bins_hist, window_shape=2), axis=1
+                )
+                # upto kth bin excluding kth
+                X_upto_k = X * cdf - 0.5 * np.dot(
+                    win_sum_bins[:k_1_bins], bin_mass_hist[:k_1_bins]
+                )
+                # if X is in last bin
+                if k_1_bins >= len(bin_mass_hist) - 1:
+                    energy_arr = X_upto_k
+                    return energy_arr
+                # in the kth bin
+                X_in_k = (
+                    0.5
+                    * pdf
+                    * (
+                        bins_hist[k_1_bins] ** 2
+                        + bins_hist[k_1_bins + 1] ** 2
+                        - 2 * X**2
+                    )
+                )
+                # after kth bin excluding kth
+                X_after_k = 0.5 * np.dot(
+                    win_sum_bins[k_1_bins + 1 :], bin_mass_hist[k_1_bins + 1 :]
+                ) - X * (1 - cdf)
+                energy_arr = X_upto_k + X_in_k + X_after_k
+                return energy_arr
+
         for i in range(len(bins)):
             energy_arr_row = []
             for j in range(len(bins[0])):
@@ -167,10 +207,10 @@ class Histogram(BaseArrayDistribution):
                     X_upto_k = X * cdf[i][j] - 0.5 * np.dot(
                         win_sum_bins[:k_1_bins], bin_mass_hist[:k_1_bins]
                     )
-                    # after kth bin excluding kth
-                    X_after_k = 0.5 * np.dot(
-                        win_sum_bins[k_1_bins + 1 :], bin_mass_hist[k_1_bins + 1 :]
-                    ) - X * (1 - cdf[i][j])
+                    # if X is in last bin
+                    if k_1_bins >= len(bin_mass_hist) - 1:
+                        energy_arr_row.append(X_upto_k)
+                        continue
                     # in the kth bin
                     X_in_k = (
                         0.5
@@ -181,9 +221,15 @@ class Histogram(BaseArrayDistribution):
                             - 2 * X**2
                         )
                     )
+                    # after kth bin excluding kth
+                    X_after_k = 0.5 * np.dot(
+                        win_sum_bins[k_1_bins + 1 :], bin_mass_hist[k_1_bins + 1 :]
+                    ) - X * (1 - cdf[i][j])
                     energy_arr_row.append(X_upto_k + X_in_k + X_after_k)
             energy_arr.append(energy_arr_row)
         energy_arr = np.array(energy_arr)
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
         return energy_arr
 
     def _mean(self):

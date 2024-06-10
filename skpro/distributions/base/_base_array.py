@@ -463,4 +463,5 @@ class BaseArrayDistribution(BaseDistribution, BaseObject):
         """
         if x is None:
             return self._boilerplate("_energy_self", columns=["energy"])
+        x = np.array(x)
         return self._boilerplate("_energy_x", x=x, columns=["energy"])
