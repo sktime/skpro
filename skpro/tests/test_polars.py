@@ -1,12 +1,17 @@
 """Test file for polars dataframes"""
 
 import pandas as pd
-import polars as pl
 import pytest
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
 from skpro.utils.validation._dependencies import _check_soft_dependencies
+
+if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
+    import polars as pl
+
+    from skpro.datatypes._table._check import check_polars_table
+    from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
 
 TEST_ALPHAS = [0.05, 0.1, 0.25]
 
@@ -48,8 +53,6 @@ def estimator():
 )
 @pytest.fixture
 def polars_load_diabetes_polars(polars_load_diabetes_pandas):
-    from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
-
     X_train, X_test, y_train = polars_load_diabetes_pandas
     X_train_pl = convert_pandas_to_polars_eager(X_train)
     X_test_pl = convert_pandas_to_polars_eager(X_test)
@@ -69,7 +72,6 @@ def test_polars_eager_conversion_methods(
     Tests to ensure that given a pandas dataframe, the conversion methods
     convert properly to polars dataframe
     """
-    from skpro.datatypes._table._check import check_polars_table
 
     X_train, X_test, y_train = polars_load_diabetes_pandas
     X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
