@@ -15,7 +15,7 @@ TEST_ALPHAS = [0.05, 0.1, 0.25]
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not _check_soft_dependencies("polars", severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 @pytest.fixture
@@ -34,7 +34,7 @@ def polars_load_diabetes_pandas():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not _check_soft_dependencies("polars", severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 @pytest.fixture
@@ -46,7 +46,7 @@ def estimator():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not _check_soft_dependencies("polars", severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 @pytest.fixture
@@ -60,7 +60,7 @@ def polars_load_diabetes_polars(polars_load_diabetes_pandas):
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not _check_soft_dependencies("polars", severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_conversion_methods(
@@ -82,7 +82,7 @@ def test_polars_eager_conversion_methods(
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not _check_soft_dependencies("polars", severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_fit_predict(
@@ -118,7 +118,7 @@ def test_polars_eager_regressor_in_fit_predict(
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not _check_soft_dependencies("polars", severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_predict_interval(
@@ -138,7 +138,7 @@ def test_polars_eager_regressor_in_predict_interval(
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not _check_soft_dependencies("polars", severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_predict_quantiles(
