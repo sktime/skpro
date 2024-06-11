@@ -129,7 +129,9 @@ def test_polars_eager_regressor_in_predict_interval(
     not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
-def test_polars_eager_regressor_in_predict_quantiles(estimator):
+def test_polars_eager_regressor_in_predict_quantiles(
+    estimator, polars_load_diabetes_polars
+):
     X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
     estimator.fit(X_train_pl, y_train_pl)
