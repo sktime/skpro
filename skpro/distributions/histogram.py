@@ -10,7 +10,7 @@ from skpro.distributions.base import BaseArrayDistribution
 
 
 class Histogram(BaseArrayDistribution):
-    r"""Histogram Probability Distribution.
+    """Histogram Probability Distribution.
 
     The histogram probability distribution is parameterized
     by the bins and bin densities.
