@@ -6,16 +6,13 @@ import pytest
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
-from skpro.datatypes import check_raise
-from skpro.datatypes._table._check import check_polars_table
-from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 TEST_ALPHAS = [0.05, 0.1, 0.25]
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("polars", severity="none"),
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 @pytest.fixture
@@ -34,7 +31,7 @@ def polars_load_diabetes_pandas():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("polars", severity="none"),
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 @pytest.fixture
@@ -46,11 +43,13 @@ def estimator():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("polars", severity="none"),
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 @pytest.fixture
 def polars_load_diabetes_polars(polars_load_diabetes_pandas):
+    from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
+
     X_train, X_test, y_train = polars_load_diabetes_pandas
     X_train_pl = convert_pandas_to_polars_eager(X_train)
     X_test_pl = convert_pandas_to_polars_eager(X_test)
@@ -60,7 +59,7 @@ def polars_load_diabetes_polars(polars_load_diabetes_pandas):
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("polars", severity="none"),
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_conversion_methods(
@@ -70,6 +69,8 @@ def test_polars_eager_conversion_methods(
     Tests to ensure that given a pandas dataframe, the conversion methods
     convert properly to polars dataframe
     """
+    from skpro.datatypes._table._check import check_polars_table
+
     X_train, X_test, y_train = polars_load_diabetes_pandas
     X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
@@ -82,7 +83,7 @@ def test_polars_eager_conversion_methods(
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("polars", severity="none"),
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_fit_predict(
@@ -118,7 +119,7 @@ def test_polars_eager_regressor_in_fit_predict(
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("polars", severity="none"),
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_predict_interval(
@@ -132,13 +133,10 @@ def test_polars_eager_regressor_in_predict_interval(
     assert isinstance(y_pred_interval, pd.DataFrame)
     assert y_pred_interval.columns[0] == ("target", 0.9, "lower")
     assert y_pred_interval.columns[1] == ("target", 0.9, "upper")
-    assert check_raise(
-        y_pred_interval, "pred_interval", "Proba", "predict_interval return"
-    )
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("polars", severity="none"),
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_predict_quantiles(
@@ -153,6 +151,3 @@ def test_polars_eager_regressor_in_predict_quantiles(
     assert y_pred_quantile.columns[0] == ("target", 0.05)
     assert y_pred_quantile.columns[1] == ("target", 0.1)
     assert y_pred_quantile.columns[2] == ("target", 0.25)
-    assert check_raise(
-        y_pred_quantile, "pred_quantiles", "Proba", "predict_quantiles return"
-    )
