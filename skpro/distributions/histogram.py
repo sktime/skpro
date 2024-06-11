@@ -419,10 +419,7 @@ class Histogram(BaseArrayDistribution):
             bin_mass = np.array(bin_mass)
             bin_width = np.diff(bins)
             if 0 in bin_mass:
-                warn(
-                    "Zero values detected in bin_mass. These values",
-                    "will be replaced with a small positive constant.",
-                )
+                warn("0 value detected in bin_mass is replaced by a positive const")
                 small_value = 1e-100
                 bin_mass = np.where(bin_mass == 0, small_value, bin_mass)
             lpdf_arr = np.log(bin_mass / bin_width)
@@ -475,21 +472,23 @@ class Histogram(BaseArrayDistribution):
         pdf = self._pdf(x)
 
         if self._check_single_array_distr(bins, bin_mass):
-            bins = np.array(bins)
-            bin_mass = np.array(bin_mass)
+            X = x
+            bins_hist = bins
+            bin_mass_hist = bin_mass
+            cum_sum_mass = np.cumsum(bin_mass_hist)
             # cum_bin_index is an array of all indices
             # of the bins or bin edges that are less than X.
-            X = x
-            cum_bin_index = np.where(X >= bins)[0]
-            if len(cum_bin_index) == len(bins):
+            cum_bin_index = np.where(X >= bins_hist)[0]
+            if len(cum_bin_index) == len(bins_hist):
                 cdf = 1
             elif len(cum_bin_index) > 1:
-                cdf = np.cumsum(bin_mass)[-2] + pdf * (X - bins[cum_bin_index[-1]])
-
+                cdf = cum_sum_mass[cum_bin_index[-2]] + pdf * (
+                    X - bins_hist[cum_bin_index[-1]]
+                )
             elif len(cum_bin_index) == 0:
                 cdf = 0
             elif len(cum_bin_index) == 1:
-                cdf = pdf * (X - bins[cum_bin_index[-1]])
+                cdf_row = pdf * (X - bins_hist[cum_bin_index[-1]])
 
             return cdf
 
