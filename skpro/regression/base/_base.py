@@ -6,16 +6,22 @@ import pandas as pd
 
 from skpro.base import BaseEstimator
 from skpro.datatypes import check_is_error_msg, check_is_mtype, convert
-from skpro.utils.validation._dependencies import _check_estimator_deps
+from skpro.utils.validation._dependencies import (
+    _check_estimator_deps,
+    _check_soft_dependencies,
+)
 
 # allowed input mtypes
+# include mtypes that are core dependencies
 ALLOWED_MTYPES = [
     "pd_DataFrame_Table",
     "pd_Series_Table",
     "numpy1D",
     "numpy2D",
-    "polars_eager_table",
 ]
+# include polars eager table if the soft dependency is installed
+if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
+    ALLOWED_MTYPES.append("polars_eager_table")
 
 
 class BaseProbaRegressor(BaseEstimator):
