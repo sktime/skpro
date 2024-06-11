@@ -14,7 +14,6 @@ ALLOWED_MTYPES = [
     "pd_Series_Table",
     "numpy1D",
     "numpy2D",
-    "polars_eager_table",
 ]
 
 
