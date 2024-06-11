@@ -107,3 +107,17 @@ Sampling and multivariate composition
     :template: class.rst
 
     IID
+
+Array distributions
+-------------------
+
+Continuous support
+~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    Histogram
