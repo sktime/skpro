@@ -22,6 +22,7 @@ Base
     :template: class.rst
 
     BaseDistribution
+    BaseArrayDistribution
 
 Parametric distributions
 ------------------------
