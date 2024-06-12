@@ -192,7 +192,7 @@ class GLMRegressor(BaseProbaRegressor):
 
     def __init__(
         self,
-        family=None,
+        family="Normal",
         missing="none",
         start_params=None,
         maxiter=100,
