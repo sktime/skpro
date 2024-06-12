@@ -343,16 +343,41 @@ class GLMRegressor(BaseProbaRegressor):
 
     def _params_sm_to_skpro(self, y_predictions_df, index, columns, family):
         """Convert the statsmodels output to equivalent skpro distribution."""
-        # from skpro.distributions.gamma import Gamma
-        # from skpro.distributions.normal import Normal
-        # from skpro.distributions.poisson import Poisson
+        from skpro.distributions.gamma import Gamma
+        from skpro.distributions.normal import Normal
+        from skpro.distributions.poisson import Poisson
 
-        # skpro_distr = {
-        #     "Normal": Normal,
-        #     "Poisson": Poisson,
-        #     "Gamma": Gamma,
-        # }
-        # params = {}
+        skpro_distr = {
+            "Normal": Normal,
+            "Poisson": Poisson,
+            "Gamma": Gamma,
+        }
+
+        params = {}
+        skp_dist = Normal
+
+        if family in skpro_distr:
+            skp_dist = skpro_distr[family]
+
+        if skp_dist == Normal:
+            y_mu = y_predictions_df["mean"].rename("mu").to_frame()
+            y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
+            params["mu"] = y_mu
+            params["sigma"] = y_sigma
+        elif skp_dist == Poisson:
+            y_mu = y_predictions_df["mean"].rename("mu").to_frame()
+            params["mu"] = y_mu
+        elif skp_dist == Gamma:
+            y_alpha = y_predictions_df["mean"].rename("alpha").to_frame()
+            y_beta = y_predictions_df["mean_se"].rename("beta").to_frame()
+            params["alpha"] = y_alpha
+            params["beta"] = y_beta
+
+        params["index"] = index
+        params["columns"] = columns
+
+        y_pred = skp_dist(**params)
+        return y_pred
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
@@ -373,8 +398,6 @@ class GLMRegressor(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        from skpro.distributions.normal import Normal
-
         X_ = self._prep_x(X)
 
         # instead of using the conventional predict() method, we use statsmodels
@@ -388,17 +411,7 @@ class GLMRegressor(BaseProbaRegressor):
         index = X_.index
         columns = y_column
 
-        y_pred = self._params_sm_to_skpro(y_predictions_df, family, index, columns)
-
-        y_mu = y_predictions_df["mean"].rename("mu").to_frame()
-        y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
-        params = {
-            "mu": y_mu,
-            "sigma": y_sigma,
-            "index": X_.index,
-            "columns": y_column,
-        }
-        y_pred = Normal(**params)
+        y_pred = self._params_sm_to_skpro(y_predictions_df, index, columns, family)
         return y_pred
 
     def _prep_x(self, X):
