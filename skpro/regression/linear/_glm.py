@@ -1,5 +1,7 @@
-"""Interface adapter for the Generalized Linear Model Regressor with Gaussian Link."""
+"""Interface adapter for the Generalized Linear Model Regressor."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+
+__author__ = ["ShreeshaM07", "julian-fong"]
 
 import pandas as pd
 
@@ -18,6 +20,11 @@ class GLMRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
+    family : str
+        Available options are
+        1.Normal
+        2.Poisson
+        3.Gamma
     missing : str
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
@@ -157,8 +164,8 @@ class GLMRegressor(BaseProbaRegressor):
     """
 
     _tags = {
-        "authors": ["julian-fong"],
-        "maintainers": ["julian-fong"],
+        "authors": ["ShreeshaM07", "julian-fong"],
+        "maintainers": ["ShreeshaM07", "julian-fong"],
         "python_version": None,
         "python_dependencies": "statsmodels",
         "capability:multioutput": False,
@@ -168,15 +175,20 @@ class GLMRegressor(BaseProbaRegressor):
     }
 
     def _str_to_sm_family(self, family):
+        """Convert the string to a statsmodel object.
+
+        If the link function is also explcitly mentioned then include then
+        that must be passed to the family/distribution object.
+        """
         from statsmodels.genmod.families.family import Gamma, Gaussian, Poisson
 
         sm_fmly = {
-            "Gaussian": Gaussian,
+            "Normal": Gaussian,
             "Poisson": Poisson,
             "Gamma": Gamma,
         }
 
-        return sm_fmly[family]
+        return sm_fmly[family]()
 
     def __init__(
         self,
@@ -198,7 +210,7 @@ class GLMRegressor(BaseProbaRegressor):
         super().__init__()
 
         if family is None:
-            family = "Gaussian"
+            family = "Normal"
         self.family = family
         self.missing = missing
         self.start_params = start_params
@@ -329,6 +341,19 @@ class GLMRegressor(BaseProbaRegressor):
 
         return y_pred
 
+    def _params_sm_to_skpro(self, y_predictions_df, index, columns, family):
+        """Convert the statsmodels output to equivalent skpro distribution."""
+        # from skpro.distributions.gamma import Gamma
+        # from skpro.distributions.normal import Normal
+        # from skpro.distributions.poisson import Poisson
+
+        # skpro_distr = {
+        #     "Normal": Normal,
+        #     "Poisson": Poisson,
+        #     "Gamma": Gamma,
+        # }
+        # params = {}
+
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
 
@@ -357,6 +382,14 @@ class GLMRegressor(BaseProbaRegressor):
         # the prediction and prediction variance i.e mu and sigma
         y_column = self.y_col
         y_predictions_df = self.glm_fit_.get_prediction(X_).summary_frame()
+
+        # convert the returned values to skpro equivalent distribution
+        family = self.family
+        index = X_.index
+        columns = y_column
+
+        y_pred = self._params_sm_to_skpro(y_predictions_df, family, index, columns)
+
         y_mu = y_predictions_df["mean"].rename("mu").to_frame()
         y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
         params = {
