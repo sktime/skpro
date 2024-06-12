@@ -488,7 +488,7 @@ class Histogram(BaseArrayDistribution):
             elif len(cum_bin_index) == 0:
                 cdf = 0
             elif len(cum_bin_index) == 1:
-                cdf_row = pdf * (X - bins_hist[cum_bin_index[-1]])
+                cdf = pdf * (X - bins_hist[cum_bin_index[-1]])
 
             return cdf
 
