@@ -167,8 +167,20 @@ class GLMRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
+    def _str_to_sm_family(self, family):
+        from statsmodels.genmod.families.family import Gamma, Gaussian, Poisson
+
+        sm_fmly = {
+            "Gaussian": Gaussian,
+            "Poisson": Poisson,
+            "Gamma": Gamma,
+        }
+
+        return sm_fmly[family]
+
     def __init__(
         self,
+        family=None,
         missing="none",
         start_params=None,
         maxiter=100,
@@ -184,9 +196,10 @@ class GLMRegressor(BaseProbaRegressor):
         add_constant=False,
     ):
         super().__init__()
-        from statsmodels.genmod.families.family import Gaussian
 
-        self._family = Gaussian()
+        if family is None:
+            family = "Gaussian"
+        self.family = family
         self.missing = missing
         self.start_params = start_params
         self.maxiter = maxiter
@@ -231,10 +244,13 @@ class GLMRegressor(BaseProbaRegressor):
 
         y_col = y.columns
 
+        family = self.family
+        sm_family = self._str_to_sm_family(family)
+
         glm_estimator = GLM(
             endog=y,
             exog=X_,
-            family=self._family,
+            family=sm_family,
             missing=self.missing,
         )
 
