@@ -25,6 +25,11 @@ class GLMRegressor(BaseProbaRegressor):
         1.Normal
         2.Poisson
         3.Gamma
+    link : str
+        Available safe options are
+        Normal : Log, Identity, InversePower
+        Poisson : Log, Identity, Sqrt
+        Gamma : Log, Identity, InversePower
     missing : str
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
@@ -174,13 +179,16 @@ class GLMRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def _str_to_sm_family(self, family):
+    def _str_to_sm_family(self, family, link):
         """Convert the string to a statsmodel object.
 
         If the link function is also explcitly mentioned then include then
         that must be passed to the family/distribution object.
         """
+        from warnings import warn
+
         from statsmodels.genmod.families.family import Gamma, Gaussian, Poisson
+        from statsmodels.genmod.families.links import Identity, InversePower, Log, Sqrt
 
         sm_fmly = {
             "Normal": Gaussian,
@@ -188,11 +196,27 @@ class GLMRegressor(BaseProbaRegressor):
             "Gamma": Gamma,
         }
 
+        links = {
+            "Log": Log,
+            "Identity": Identity,
+            "InversePower": InversePower,
+            "Sqrt": Sqrt,
+        }
+
+        if link in links:
+            link_function = links[link]()
+            try:
+                return sm_fmly[family](link_function)
+            except Exception:
+                msg = "Invalid link for family, default link will be used"
+                warn(msg)
+
         return sm_fmly[family]()
 
     def __init__(
         self,
         family="Normal",
+        link=None,
         missing="none",
         start_params=None,
         maxiter=100,
@@ -212,6 +236,7 @@ class GLMRegressor(BaseProbaRegressor):
         if family is None:
             family = "Normal"
         self.family = family
+        self.link = link
         self.missing = missing
         self.start_params = start_params
         self.maxiter = maxiter
@@ -257,7 +282,8 @@ class GLMRegressor(BaseProbaRegressor):
         y_col = y.columns
 
         family = self.family
-        sm_family = self._str_to_sm_family(family)
+        link = self.link
+        sm_family = self._str_to_sm_family(family=family, link=link)
 
         glm_estimator = GLM(
             endog=y,
@@ -465,5 +491,14 @@ class GLMRegressor(BaseProbaRegressor):
             "add_constant": True,
         }
         params4 = {"family": "Gamma"}
+        params5 = {
+            "family": "Normal",
+            "link": "InversePower",
+        }
+        params6 = {
+            "family": "Poisson",
+            "link": "Log",
+            "add_constant": True,
+        }
 
-        return [params1, params2, params3, params4]
+        return [params1, params2, params3, params4, params5, params6]
