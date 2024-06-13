@@ -368,8 +368,11 @@ class GLMRegressor(BaseProbaRegressor):
             y_mu = y_predictions_df["mean"].rename("mu").to_frame()
             params["mu"] = y_mu
         elif skp_dist == Gamma:
-            y_alpha = y_predictions_df["mean"].rename("alpha").to_frame()
-            y_beta = y_predictions_df["mean_se"].rename("beta").to_frame()
+            y_mean = y_predictions_df["mean"]
+            y_sd = y_predictions_df["mean_se"]
+            y_alpha = (y_mean / y_sd) ** 2
+            y_beta = (y_alpha / y_mean).rename("beta").to_frame()
+            y_alpha = y_alpha.rename("alpha").to_frame()
             params["alpha"] = y_alpha
             params["beta"] = y_beta
 
@@ -457,5 +460,10 @@ class GLMRegressor(BaseProbaRegressor):
         """
         params1 = {}
         params2 = {"add_constant": True}
+        params3 = {
+            "family": "Poisson",
+            "add_constant": True,
+        }
+        params4 = {"family": "Gamma"}
 
-        return [params1, params2]
+        return [params1, params2, params3, params4]
