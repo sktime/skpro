@@ -167,7 +167,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         else:
             p = np_unif
 
-        res = getattr(object_instance, method)(p)
+        res = getattr(d, method)(p)
 
         _check_output_format(res, d, method)
 
