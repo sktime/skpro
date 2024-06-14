@@ -16,10 +16,6 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
 TEST_ALPHAS = [0.05, 0.1, 0.25]
 
 
-@pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
-    reason="skip test if polars/pyarrow is not installed in environment",
-)
 @pytest.fixture
 def polars_load_diabetes_pandas():
     X, y = load_diabetes(return_X_y=True, as_frame=True)
@@ -35,22 +31,17 @@ def polars_load_diabetes_pandas():
     return [X_train, X_test, y_train]
 
 
-@pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
-    reason="skip test if polars/pyarrow is not installed in environment",
-)
 @pytest.fixture
 def estimator():
-    from skpro.regression.mapie import MapieRegressor
+    from sklearn.linear_model import LinearRegression
 
-    _estimator = MapieRegressor()
+    from skpro.regression.residual import ResidualDouble
+
+    # refactor to use ResidualDouble with Linear Regression
+    _estimator = ResidualDouble(LinearRegression())
     return _estimator
 
 
-@pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
-    reason="skip test if polars/pyarrow is not installed in environment",
-)
 @pytest.fixture
 def polars_load_diabetes_polars(polars_load_diabetes_pandas):
     X_train, X_test, y_train = polars_load_diabetes_pandas
