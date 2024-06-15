@@ -13,10 +13,12 @@ __all__ = [
     "Fisk",
     "Gamma",
     "HalfCauchy",
+    "HalfLogistic",
     "HalfNormal",
     "IID",
     "Laplace",
     "Logistic",
+    "LogLaplace",
     "LogNormal",
     "Mixture",
     "Normal",
@@ -42,9 +44,11 @@ from skpro.distributions.exponential import Exponential
 from skpro.distributions.fisk import Fisk
 from skpro.distributions.gamma import Gamma
 from skpro.distributions.halfcauchy import HalfCauchy
+from skpro.distributions.halflogistic import HalfLogistic
 from skpro.distributions.halfnormal import HalfNormal
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
+from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.multivariate_normal import MultivariateNormal

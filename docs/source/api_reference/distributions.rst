@@ -42,9 +42,11 @@ Continuous support
     Fisk
     Gamma
     HalfCauchy
+    HalfLogistic
     HalfNormal
     Laplace
     Logistic
+    LogLaplace
     Normal
     TDistribution
     Weibull
