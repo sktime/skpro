@@ -5,10 +5,11 @@ __author__ = ["bhavikar04", "fkiraly"]
 
 import numpy as np
 import pandas as pd
-from scipy.special import erf, erfinv
 from scipy.stats import multivariate_normal
 
 from skpro.distributions.base import BaseDistribution
+
+
 class MultivariateNormal(BaseDistribution):
     r"""Multivariate Normal distribution (skpro native).
 
@@ -27,7 +28,8 @@ class MultivariateNormal(BaseDistribution):
     Parameters
     ----------
     mu : array of float (px1)
-        population mean vector 
+
+        population mean vector
     cov : array of float (2D)
         variance-covariance matrix
     index : pd.Index, optional, default = RangeIndex
@@ -65,9 +67,10 @@ class MultivariateNormal(BaseDistribution):
         -------
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
-        
 
-        return energy_arr"""
+
+        return energy_arr
+        """
 
     def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
@@ -92,7 +95,7 @@ class MultivariateNormal(BaseDistribution):
 
         cdf = self.cdf(x)
         pdf = self.pdf(x)
-       
+
         return energy_arr """
 
     def _mean(self):
@@ -111,7 +114,7 @@ class MultivariateNormal(BaseDistribution):
         Returns
         -------
         2D np.ndarray, square matrix with dimensions equal to size of mean vector
-           
+
         """
         return self._bc_params["cov"]
 
@@ -131,9 +134,9 @@ class MultivariateNormal(BaseDistribution):
         mu = self._bc_params["mu"]
         cov = self._bc_params["cov"]
         pdf_arr = (
-            1 / ((np.linalg.det(cov))**(1/2) * (2*np.pi)**(len(x)/2))
-        ) * np.exp(-0.5 * (x - mu).T @ np.linalg.inv(cov) @ (x - mu).cov())  
-    
+            1 / ((np.linalg.det(cov)) ** (1 / 2) * (2 * np.pi) ** (len(x) / 2))
+        ) * np.exp(-0.5 * (x - mu).T @ np.linalg.inv(cov) @ (x - mu).cov())
+
         return pdf_arr
 
     def _log_pdf(self, x):
@@ -154,10 +157,10 @@ class MultivariateNormal(BaseDistribution):
 
         lpdf_arr = -0.5 * [
             np.log(np.linalg.det(cov))
-            +(x - mu).T @ np.linalg.inv(cov) @ (x - mu)
-            +(len(x)/2)*np.log(2*np.pi)
+            + (x - mu).T @ np.linalg.inv(cov) @ (x - mu)
+            + (len(x) / 2) * np.log(2 * np.pi)
         ]
-        
+
         return lpdf_arr
 
     def _cdf(self, x):
@@ -175,9 +178,9 @@ class MultivariateNormal(BaseDistribution):
         """
         mu = self._bc_params["mu"]
         cov = self._bc_params["cov"]
-        
-        cdf_arr= multivariate_normal.cdf(x, mu, cov, allow_singular=False)
-        
+
+        cdf_arr = multivariate_normal.cdf(x, mu, cov, allow_singular=False)
+
         return cdf_arr
 
     def _ppf(self, p):
@@ -193,7 +196,8 @@ class MultivariateNormal(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             ppf values at the given points
         """
-    #Does not exist since closed form of cdf does not exist
+
+    # Does not exist since closed form of cdf does not exist
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
