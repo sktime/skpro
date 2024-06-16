@@ -3,7 +3,6 @@
 
 __author__ = ["ShreeshaM07", "julian-fong"]
 
-import numpy as np
 import pandas as pd
 
 from skpro.regression.base import BaseProbaRegressor
@@ -35,16 +34,11 @@ class GLMRegressor(BaseProbaRegressor):
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
         If 'raise', an error is raised. Default = 'none'
-    offset : bool, default = False
-        If True, then the exog or ``X`` passed while ``fit``ting must have an additional
-        column with column name ``offset`` with any values against each row.
-        When ``predict``ing have an additional column with name ``offset``
-        in X with all the ``offset`` values stored in the column for each row.
-    exposure : bool, default = False
-        If True, then the exog or ``X`` passed while ``fit``ting must have an additional
-        column with column name ``exposure`` with any values against each row.
-        When ``predict``ing have an additional column with name ``exposure``
-        in X with all the ``exposure`` values stored in the column for each row.
+    offset : 1D float array or None (optional)
+        1D array same size as X or exog while ``predict``ing.
+    exposure : 1D float array or None (optional)
+        1D array same size as X or exog while ``predict``ing.
+        used only when link is 'Log'.
     start_params : array_like (optional)
         Initial guess of the solution for the loglikelihood maximization.
         The default is family-specific and is given by the
@@ -228,8 +222,8 @@ class GLMRegressor(BaseProbaRegressor):
         family="Normal",
         link=None,
         missing="none",
-        offset=False,
-        exposure=False,
+        offset=None,
+        exposure=None,
         start_params=None,
         maxiter=100,
         method="IRLS",
@@ -290,15 +284,6 @@ class GLMRegressor(BaseProbaRegressor):
         self : reference to self
         """
         from statsmodels.genmod.generalized_linear_model import GLM
-
-        # remove the offset and exposure columns which
-        # was inserted to maintain the shape
-        offset = self.offset
-        exposure = self.exposure
-        if offset is True:
-            X = X.drop(["offset"], axis=1)
-        if exposure is True:
-            X = X.drop(["exposure"], axis=1)
 
         X_ = self._prep_x(X)
 
@@ -381,23 +366,14 @@ class GLMRegressor(BaseProbaRegressor):
         -------
         y : pandas DataFrame, same length as `X`, with same columns as y in fit
         """
+        X_ = self._prep_x(X)
+
         offset = self.offset
         exposure = self.exposure
-        offset_arr = None
-        exposure_arr = None
-        if offset is True:
-            offset_arr = np.array(X["offset"])
-            X = X.drop(["offset"], axis=1)
-        if exposure is True:
-            exposure_arr = np.array(X["exposure"])
-            X = X.drop(["exposure"], axis=1)
-        X_ = self._prep_x(X)
 
         index = X_.index
         y_column = self.y_col
-        y_pred_series = self.glm_fit_.predict(
-            X_, offset=offset_arr, exposure=exposure_arr
-        )
+        y_pred_series = self.glm_fit_.predict(X_, offset=offset, exposure=exposure)
         y_pred = pd.DataFrame(y_pred_series, index=index, columns=y_column)
 
         return y_pred
@@ -462,15 +438,6 @@ class GLMRegressor(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        # remove the offset and exposure columns
-        # which was inserted to maintain the shape
-        offset = self.offset
-        exposure = self.exposure
-        if offset is True:
-            X = X.drop(["offset"], axis=1)
-        if exposure is True:
-            X = X.drop(["exposure"], axis=1)
-
         X_ = self._prep_x(X)
 
         # instead of using the conventional predict() method, we use statsmodels
