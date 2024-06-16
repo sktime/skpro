@@ -34,11 +34,7 @@ class GLMRegressor(BaseProbaRegressor):
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
         If 'raise', an error is raised. Default = 'none'
-    offset : 1D float array or None (optional)
-        1D array same size as X or exog while ``predict``ing.
-    exposure : 1D float array or None (optional)
-        1D array same size as X or exog while ``predict``ing.
-        used only when link is 'Log'.
+
     start_params : array_like (optional)
         Initial guess of the solution for the loglikelihood maximization.
         The default is family-specific and is given by the
@@ -222,8 +218,6 @@ class GLMRegressor(BaseProbaRegressor):
         family="Normal",
         link=None,
         missing="none",
-        offset=None,
-        exposure=None,
         start_params=None,
         maxiter=100,
         method="IRLS",
@@ -244,8 +238,6 @@ class GLMRegressor(BaseProbaRegressor):
         self.family = family
         self.link = link
         self.missing = missing
-        self.offset = offset
-        self.exposure = exposure
         self.start_params = start_params
         self.maxiter = maxiter
         self.method = method
@@ -368,12 +360,9 @@ class GLMRegressor(BaseProbaRegressor):
         """
         X_ = self._prep_x(X)
 
-        offset = self.offset
-        exposure = self.exposure
-
         index = X_.index
         y_column = self.y_col
-        y_pred_series = self.glm_fit_.predict(X_, offset=offset, exposure=exposure)
+        y_pred_series = self.glm_fit_.predict(X_)
         y_pred = pd.DataFrame(y_pred_series, index=index, columns=y_column)
 
         return y_pred
