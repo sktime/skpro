@@ -229,11 +229,7 @@ class GLMRegressor(BaseProbaRegressor):
 
     def __init__(
         self,
-        family="Normal",
-        link=None,
         missing="none",
-        offset_var=None,
-        exposure_var=None,
         start_params=None,
         maxiter=100,
         method="IRLS",
@@ -246,6 +242,10 @@ class GLMRegressor(BaseProbaRegressor):
         disp=False,
         max_start_irls=3,
         add_constant=False,
+        family="Normal",
+        link=None,
+        offset_var=None,
+        exposure_var=None,
     ):
         super().__init__()
 
