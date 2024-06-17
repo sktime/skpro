@@ -35,16 +35,20 @@ class GLMRegressor(BaseProbaRegressor):
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
         If 'raise', an error is raised. Default = 'none'
-    offset : bool, default = False
-        If True, then the exog or ``X`` passed while ``fit``ting must have an additional
-        column with column name ``offset`` with any values against each row.
-        When ``predict``ing have an additional column with name ``offset``
+    offset : pd.Index([string]) or int, default = None
+        If ``pd.Index([string])``, then the exog or ``X`` passed while ``fit``ting
+        must have an additional column with column name passed through
+        ``offset`` with any values against each row. When ``predict``ing
+        have an additional column with name same as string passed through ``offset``
         in X with all the ``offset`` values stored in the column for each row.
-    exposure : bool, default = False
-        If True, then the exog or ``X`` passed while ``fit``ting must have an additional
-        column with column name ``exposure`` with any values against each row.
-        When ``predict``ing have an additional column with name ``exposure``
+        If ``int`` it corresponding column number will be considered.
+    exposure : pd.Index([string]) or int, default = None
+        If ```pd.Index([string])``, then the exog or ``X`` passed while ``fit``ting
+        must have an additional column with column name passed through
+        ``exposure`` with any values against each row. When ``predict``ing
+        have an additional column with name same as string passed through ``exposure``
         in X with all the ``exposure`` values stored in the column for each row.
+        If ``int`` it corresponding column number will be considered.
     start_params : array_like (optional)
         Initial guess of the solution for the loglikelihood maximization.
         The default is family-specific and is given by the
@@ -228,8 +232,8 @@ class GLMRegressor(BaseProbaRegressor):
         family="Normal",
         link=None,
         missing="none",
-        offset=False,
-        exposure=False,
+        offset_var=None,
+        exposure_var=None,
         start_params=None,
         maxiter=100,
         method="IRLS",
@@ -249,6 +253,8 @@ class GLMRegressor(BaseProbaRegressor):
             family = "Normal"
         self.family = family
         self.link = link
+        self.offset_var = offset_var
+        self.exposure_var = exposure_var
         self.missing = missing
         self.start_params = start_params
         self.maxiter = maxiter
@@ -291,12 +297,21 @@ class GLMRegressor(BaseProbaRegressor):
 
         # remove the offset and exposure columns which
         # was inserted to maintain the shape
-        offset = self.offset
-        exposure = self.exposure
-        if offset is True:
-            X = X.drop(["offset"], axis=1)
-        if exposure is True:
-            X = X.drop(["exposure"], axis=1)
+        offset_var = self.offset_var
+        exposure_var = self.exposure_var
+
+        if offset_var is not None:
+            if isinstance(offset_var, int):
+                offset_var = pd.Index([X.iloc[:, offset_var].name])
+        if exposure_var is not None:
+            if isinstance(exposure_var, int):
+                exposure_var = pd.Index([X.iloc[:, exposure_var].name])
+        if offset_var is not None and exposure_var is not None:
+            X = X.drop([offset_var[0], exposure_var[0]], axis=1)
+        elif offset_var is not None:
+            X = X.drop(offset_var, axis=1)
+        elif exposure_var is not None:
+            X = X.drop(exposure_var, axis=1)
 
         X_ = self._prep_x(X)
 
@@ -379,16 +394,30 @@ class GLMRegressor(BaseProbaRegressor):
         -------
         y : pandas DataFrame, same length as `X`, with same columns as y in fit
         """
-        offset = self.offset
-        exposure = self.exposure
+        offset_var = self.offset_var
+        exposure_var = self.exposure_var
         offset_arr = None
         exposure_arr = None
-        if offset is True:
-            offset_arr = np.array(X["offset"])
-            X = X.drop(["offset"], axis=1)
-        if exposure is True:
-            exposure_arr = np.array(X["exposure"])
-            X = X.drop(["exposure"], axis=1)
+
+        if offset_var is not None:
+            if isinstance(offset_var, pd.Index):
+                offset_arr = np.array(X[offset_var]).flatten()
+            elif isinstance(offset_var, int):
+                offset_arr = np.array(X.iloc[:, offset_var]).flatten()
+                offset_var = pd.Index([X.iloc[:, offset_var].name])
+        if exposure_var is not None:
+            if isinstance(exposure_var, pd.Index):
+                offset_arr = np.array(X[exposure_var]).flatten()
+            elif isinstance(exposure_var, int):
+                exposure_arr = np.array(X.iloc[:, exposure_var]).flatten()
+                exposure_var = pd.Index([X.iloc[:, exposure_var].name])
+        if offset_var is not None and exposure_var is not None:
+            X = X.drop([offset_var[0], exposure_var[0]], axis=1)
+        elif offset_var is not None:
+            X = X.drop(offset_var, axis=1)
+        elif exposure_var is not None:
+            X = X.drop(exposure_var, axis=1)
+
         X_ = self._prep_x(X)
 
         index = X_.index
@@ -462,12 +491,21 @@ class GLMRegressor(BaseProbaRegressor):
         """
         # remove the offset and exposure columns
         # which was inserted to maintain the shape
-        offset = self.offset
-        exposure = self.exposure
-        if offset is True:
-            X = X.drop(["offset"], axis=1)
-        if exposure is True:
-            X = X.drop(["exposure"], axis=1)
+        offset_var = self.offset_var
+        exposure_var = self.exposure_var
+
+        if offset_var is not None:
+            if isinstance(offset_var, int):
+                offset_var = pd.Index([X.iloc[:, offset_var].name])
+        if exposure_var is not None:
+            if isinstance(exposure_var, int):
+                exposure_var = pd.Index([X.iloc[:, exposure_var].name])
+        if offset_var is not None and exposure_var is not None:
+            X = X.drop([offset_var[0], exposure_var[0]], axis=1)
+        elif offset_var is not None:
+            X = X.drop(offset_var, axis=1)
+        elif exposure_var is not None:
+            X = X.drop(exposure_var, axis=1)
 
         X_ = self._prep_x(X)
 
