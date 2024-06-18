@@ -181,7 +181,7 @@ class IntervalWidth(BaseProbaMetric):
         self.multioutput = multioutput
         super().__init__(score_average=score_average, multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
