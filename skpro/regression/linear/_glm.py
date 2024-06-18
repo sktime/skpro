@@ -35,19 +35,19 @@ class GLMRegressor(BaseProbaRegressor):
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
         If 'raise', an error is raised. Default = 'none'
-    offset : pd.Index([string]) or int, default = None
-        If ``pd.Index([string])``, then the exog or ``X`` passed while ``fit``ting
+    offset_var : pd.Index([str]) or int, default = None
+        If ``pd.Index([str])``, then the exog or ``X`` passed while ``fit``-ting
         must have an additional column with column name passed through
-        ``offset`` with any values against each row. When ``predict``ing
-        have an additional column with name same as string passed through ``offset``
-        in X with all the ``offset`` values stored in the column for each row.
+        ``offset_var`` with any values against each row. When ``predict``ing
+        have an additional column with name same as string passed through ``offset_var``
+        in X with all the ``offset_var`` values stored in the column for each row.
         If ``int`` it corresponding column number will be considered.
-    exposure : pd.Index([string]) or int, default = None
-        If ```pd.Index([string])``, then the exog or ``X`` passed while ``fit``ting
+    exposure_var : pd.Index([str]) or int, default = None
+        If ```pd.Index([str])``, then the exog or ``X`` passed while ``fit``-ting
         must have an additional column with column name passed through
-        ``exposure`` with any values against each row. When ``predict``ing
-        have an additional column with name same as string passed through ``exposure``
-        in X with all the ``exposure`` values stored in the column for each row.
+        ``exposure_var`` with any values against each row. When ``predict``ing
+        have additional column with name same as string passed through ``exposure_var``
+        in X with all the ``exposure_var`` values stored in the column for each row.
         If ``int`` it corresponding column number will be considered.
     start_params : array_like (optional)
         Initial guess of the solution for the loglikelihood maximization.
