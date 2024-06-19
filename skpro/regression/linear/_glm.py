@@ -401,7 +401,7 @@ class GLMRegressor(BaseProbaRegressor):
         else:
             self._add_constant = add_constant
 
-        from sktime.utils.warnings import warn
+        from warnings import warn
 
         l1 = "Note: in `GLMRegressor`, the sequence of the parameters will change "
         l2 = "in skpro version 2.4.0. It will be as per the order present in the"
