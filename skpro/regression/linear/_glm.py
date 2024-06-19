@@ -21,7 +21,7 @@ class GLMRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    family : str
+    family : str, default : "Normal"
         Available options are
         1.Normal
         2.Poisson
@@ -31,10 +31,6 @@ class GLMRegressor(BaseProbaRegressor):
         Normal : Log, Identity, InversePower
         Poisson : Log, Identity, Sqrt
         Gamma : Log, Identity, InversePower
-    missing : str
-        Available options are 'none', 'drop' and 'raise'. If 'none', no nan
-        checking is done. If 'drop', any observations with nans are dropped.
-        If 'raise', an error is raised. Default = 'none'
     offset_var : pd.Index([str]) or int, default = None
         If ``pd.Index([str])``, then the exog or ``X`` passed while ``fit``-ting
         must have an additional column with column name passed through
@@ -49,6 +45,10 @@ class GLMRegressor(BaseProbaRegressor):
         have additional column with name same as string passed through ``exposure_var``
         in X with all the ``exposure_var`` values stored in the column for each row.
         If ``int`` it corresponding column number will be considered.
+    missing : str
+        Available options are 'none', 'drop' and 'raise'. If 'none', no nan
+        checking is done. If 'drop', any observations with nans are dropped.
+        If 'raise', an error is raised. Default = 'none'
     start_params : array_like (optional)
         Initial guess of the solution for the loglikelihood maximization.
         The default is family-specific and is given by the
@@ -227,30 +227,93 @@ class GLMRegressor(BaseProbaRegressor):
 
         return sm_fmly[family]()
 
+    # TODO (release 2.4.0)
+    # replace the existing definition of `__init__` with
+    # the below definition for `__init__`.
+    # def __init__(
+    #     self,
+    #     family="Normal",
+    #     link=None,
+    #     offset_var=None,
+    #     exposure_var=None,
+    #     missing="none",
+    #     start_params=None,
+    #     maxiter=100,
+    #     method="IRLS",
+    #     tol=1e-8,
+    #     scale=None,
+    #     cov_type="nonrobust",
+    #     cov_kwds=None,
+    #     use_t=None,
+    #     full_output=True,
+    #     disp=False,
+    #     max_start_irls=3,
+    #     add_constant=False,
+    # ):
+    #     super().__init__()
+
+    #     self.family = family
+    #     self.link = link
+    #     self.offset_var = offset_var
+    #     self.exposure_var = exposure_var
+    #     self.missing = missing
+    #     self.start_params = start_params
+    #     self.maxiter = maxiter
+    #     self.method = method
+    #     self.tol = tol
+    #     self.scale = scale
+    #     self.cov_type = cov_type
+    #     self.cov_kwds = cov_kwds
+    #     self.use_t = use_t
+    #     self.full_output = full_output
+    #     self.disp = disp
+    #     self.max_start_irls = max_start_irls
+    #     self.add_constant = add_constant
+
+    #     self._family = self.family
+    #     self._link = self.link
+    #     self._offset_var = self.offset_var
+    #     self._exposure_var = self.exposure_var
+    #     self._missing = self.missing
+    #     self._start_params = self.start_params
+    #     self._maxiter = self.maxiter
+    #     self._method = self.method
+    #     self._tol = self.tol
+    #     self._scale = self.scale
+    #     self._cov_type = self.cov_type
+    #     self._cov_kwds = self.cov_kwds
+    #     self._use_t = self.use_t
+    #     self._full_output = self.full_output
+    #     self._disp = self.disp
+    #     self._max_start_irls = self.max_start_irls
+    #     self._add_constant = self.add_constant
+
     def __init__(
         self,
-        missing="none",
-        start_params=None,
-        maxiter=100,
-        method="IRLS",
-        tol=1e-8,
-        scale=None,
-        cov_type="nonrobust",
-        cov_kwds=None,
-        use_t=None,
-        full_output=True,
-        disp=False,
-        max_start_irls=3,
-        add_constant=False,
-        family="Normal",
-        link=None,
-        offset_var=None,
-        exposure_var=None,
+        missing="4",
+        start_params="5",
+        maxiter="6",
+        method="7",
+        tol="8",
+        scale="9",
+        cov_type="10",
+        cov_kwds="11",
+        use_t="12",
+        full_output="13",
+        disp="14",
+        max_start_irls="15",
+        add_constant="16",
+        family="0",
+        link="1",
+        offset_var="2",
+        exposure_var="3",
     ):
+        # The default values of the parameters
+        # are replaced with the changed sequence
+        # of parameters ranking for each of them
+        # from 0 to 16(total 17 parameters).
         super().__init__()
 
-        if family is None:
-            family = "Normal"
         self.family = family
         self.link = link
         self.offset_var = offset_var
@@ -268,6 +331,88 @@ class GLMRegressor(BaseProbaRegressor):
         self.disp = disp
         self.max_start_irls = max_start_irls
         self.add_constant = add_constant
+
+        if family == "0":
+            self._family = "Normal"
+        else:
+            self._family = family
+        if link == "1":
+            self._link = None
+        else:
+            self._link = link
+        if offset_var == "2":
+            self._offset_var = None
+        else:
+            self._offset_var = offset_var
+        if exposure_var == "3":
+            self._exposure_var = None
+        else:
+            self._exposure_var = exposure_var
+        if missing == "4":
+            self._missing = "none"
+        else:
+            self._missing = missing
+        if start_params == "5":
+            self._start_params = None
+        else:
+            self._start_params = start_params
+        if maxiter == "6":
+            self._maxiter = 100
+        else:
+            self._maxiter = maxiter
+        if method == "7":
+            self._method = "IRLS"
+        else:
+            self._method = method
+        if tol == "8":
+            self._tol = 1e-8
+        else:
+            self._tol = self.tol
+        if scale == "9":
+            self._scale = None
+        else:
+            self._scale = scale
+        if cov_type == "10":
+            self._cov_type = "nonrobust"
+        else:
+            self._cov_type = cov_type
+        if cov_kwds == "11":
+            self._cov_kwds = None
+        else:
+            self._cov_kwds = cov_kwds
+        if use_t == "12":
+            self._use_t = None
+        else:
+            self._use_t = use_t
+        if full_output == "13":
+            self._full_output = True
+        else:
+            self._full_output = full_output
+        if disp == "14":
+            self._disp = False
+        else:
+            self._disp = disp
+        if max_start_irls == "15":
+            self._max_start_irls = 3
+        else:
+            self._max_start_irls = max_start_irls
+        if add_constant == "16":
+            self._add_constant = False
+        else:
+            self._add_constant = add_constant
+
+        from sktime.utils.warnings import warn
+
+        l1 = "Note: in `GLMRegressor`, the sequence of the parameters will change "
+        l2 = "in skpro version 2.4.0. It will be as per the order present in the"
+        l3 = "current docstring with the top one being the first parameter.\n"
+        l4 = "The defaults for the parameters will remain same and "
+        l5 = "there will be no changes.\n"
+        l6 = "Please use the `kwargs` calls instead of positional calls for the"
+        l7 = "parameters until the release of skpro 2.4.0 "
+        l8 = "as this will avoid any discrepancies."
+        warn_msg = l1 + l2 + l3 + l4 + l5 + l6 + l7 + l8
+        warn(warn_msg)
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -297,8 +442,8 @@ class GLMRegressor(BaseProbaRegressor):
 
         # remove the offset and exposure columns which
         # was inserted to maintain the shape
-        offset_var = self.offset_var
-        exposure_var = self.exposure_var
+        offset_var = self._offset_var
+        exposure_var = self._exposure_var
 
         if offset_var is not None:
             if isinstance(offset_var, int):
@@ -317,31 +462,31 @@ class GLMRegressor(BaseProbaRegressor):
 
         y_col = y.columns
 
-        family = self.family
-        link = self.link
+        family = self._family
+        link = self._link
         sm_family = self._str_to_sm_family(family=family, link=link)
 
         glm_estimator = GLM(
             endog=y,
             exog=X_,
             family=sm_family,
-            missing=self.missing,
+            missing=self._missing,
         )
 
         self._estimator = glm_estimator
 
         fitted_glm_model = glm_estimator.fit(
-            self.start_params,
-            self.maxiter,
-            self.method,
-            self.tol,
-            self.scale,
-            self.cov_type,
-            self.cov_kwds,
-            self.use_t,
-            self.full_output,
-            self.disp,
-            self.max_start_irls,
+            self._start_params,
+            self._maxiter,
+            self._method,
+            self._tol,
+            self._scale,
+            self._cov_type,
+            self._cov_kwds,
+            self._use_t,
+            self._full_output,
+            self._disp,
+            self._max_start_irls,
         )
 
         PARAMS_TO_FORWARD = {
@@ -394,8 +539,8 @@ class GLMRegressor(BaseProbaRegressor):
         -------
         y : pandas DataFrame, same length as `X`, with same columns as y in fit
         """
-        offset_var = self.offset_var
-        exposure_var = self.exposure_var
+        offset_var = self._offset_var
+        exposure_var = self._exposure_var
         offset_arr = None
         exposure_arr = None
 
@@ -491,8 +636,8 @@ class GLMRegressor(BaseProbaRegressor):
         """
         # remove the offset and exposure columns
         # which was inserted to maintain the shape
-        offset_var = self.offset_var
-        exposure_var = self.exposure_var
+        offset_var = self._offset_var
+        exposure_var = self._exposure_var
 
         if offset_var is not None:
             if isinstance(offset_var, int):
@@ -516,7 +661,7 @@ class GLMRegressor(BaseProbaRegressor):
         y_predictions_df = self.glm_fit_.get_prediction(X_).summary_frame()
 
         # convert the returned values to skpro equivalent distribution
-        family = self.family
+        family = self._family
         index = X_.index
         columns = y_column
 
@@ -540,7 +685,7 @@ class GLMRegressor(BaseProbaRegressor):
         """
         from statsmodels.tools import add_constant
 
-        if self.add_constant:
+        if self._add_constant:
             X_ = add_constant(X)
             return X_
         else:
