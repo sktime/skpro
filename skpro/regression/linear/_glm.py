@@ -301,19 +301,19 @@ class GLMRegressor(BaseProbaRegressor):
 
     def __init__(
         self,
-        missing="4",
-        start_params="5",
-        maxiter="6",
-        method="7",
-        tol="8",
-        scale="9",
-        cov_type="10",
-        cov_kwds="11",
-        use_t="12",
-        full_output="13",
-        disp="14",
-        max_start_irls="15",
-        add_constant="16",
+        missing="none",
+        start_params=None,
+        maxiter=100,
+        method="IRLS",
+        tol=1e-8,
+        scale=None,
+        cov_type="nonrobust",
+        cov_kwds=None,
+        use_t=None,
+        full_output=True,
+        disp=False,
+        max_start_irls=3,
+        add_constant=False,
         family="0",
         link="1",
         offset_var="2",
@@ -359,58 +359,19 @@ class GLMRegressor(BaseProbaRegressor):
             self._exposure_var = None
         else:
             self._exposure_var = exposure_var
-        if missing == "4":
-            self._missing = "none"
-        else:
-            self._missing = missing
-        if start_params == "5":
-            self._start_params = None
-        else:
-            self._start_params = start_params
-        if maxiter == "6":
-            self._maxiter = 100
-        else:
-            self._maxiter = maxiter
-        if method == "7":
-            self._method = "IRLS"
-        else:
-            self._method = method
-        if tol == "8":
-            self._tol = 1e-8
-        else:
-            self._tol = self.tol
-        if scale == "9":
-            self._scale = None
-        else:
-            self._scale = scale
-        if cov_type == "10":
-            self._cov_type = "nonrobust"
-        else:
-            self._cov_type = cov_type
-        if cov_kwds == "11":
-            self._cov_kwds = None
-        else:
-            self._cov_kwds = cov_kwds
-        if use_t == "12":
-            self._use_t = None
-        else:
-            self._use_t = use_t
-        if full_output == "13":
-            self._full_output = True
-        else:
-            self._full_output = full_output
-        if disp == "14":
-            self._disp = False
-        else:
-            self._disp = disp
-        if max_start_irls == "15":
-            self._max_start_irls = 3
-        else:
-            self._max_start_irls = max_start_irls
-        if add_constant == "16":
-            self._add_constant = False
-        else:
-            self._add_constant = add_constant
+        self._missing = self.missing
+        self._start_params = self.start_params
+        self._maxiter = self.maxiter
+        self._method = self.method
+        self._tol = self.tol
+        self._scale = self.scale
+        self._cov_type = self.cov_type
+        self._cov_kwds = self.cov_kwds
+        self._use_t = self.use_t
+        self._full_output = self.full_output
+        self._disp = self.disp
+        self._max_start_irls = self.max_start_irls
+        self._add_constant = self.add_constant
 
         from warnings import warn
 
