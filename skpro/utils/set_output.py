@@ -134,7 +134,11 @@ def check_transform_config(estimator):
             Possible values are located in SUPPORTED_OUTPUTS in
             `skpro.utils.set_output`
     """
-    if estimator.get_config()["transform"] not in SUPPORTED_OUTPUTS:
-        raise ValueError(f"set_output container must be in {SUPPORTED_OUTPUTS}, ")
+    transform_output = estimator.get_config()["transform"]
+    if transform_output not in SUPPORTED_OUTPUTS:
+        raise ValueError(
+            f"set_output container must be in {SUPPORTED_OUTPUTS}, "
+            f"found {transform_output}."
+        )
 
     return {"dense": estimator.get_config()["transform"]}
