@@ -8,6 +8,11 @@ import pandas as pd
 
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
+SUPPORTED_OUTPUTS = ["pandas"]
+
+if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
+    SUPPORTED_OUTPUTS.append("polars")
+
 
 def check_column_level_of_dataframe(X_input, index_pandas=False):
     """Convert function to check the number of levels inside a pandas Frame.
@@ -113,3 +118,23 @@ def convert_pandas_dataframe_to_polars_eager_with_index(X_input):
         X_polars = pl.from_pandas(X_input, include_index=True)
 
     return X_polars
+
+
+def check_transform_config(estimator):
+    """Given an estimator, verify the transform key in _config is available.
+
+    Parameters
+    ----------
+    estimator : a given regression estimator
+
+    Returns
+    -------
+    dense_config : a dict containing keys with supported outputs.
+        - "dense": specifies the data container in the transform config
+            Possible values are located in SUPPORTED_OUTPUTS in
+            `skpro.utils.set_output`
+    """
+    if estimator.get_config()["transform"] not in SUPPORTED_OUTPUTS:
+        raise ValueError(f"set_output container must be in {SUPPORTED_OUTPUTS}, ")
+
+    return {"dense": estimator.get_config()["transform"]}
