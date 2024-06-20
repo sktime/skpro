@@ -314,10 +314,10 @@ class GLMRegressor(BaseProbaRegressor):
         disp=False,
         max_start_irls=3,
         add_constant=False,
-        family="0",
-        link="1",
-        offset_var="2",
-        exposure_var="3",
+        family="Normal",
+        link=None,
+        offset_var=None,
+        exposure_var=None,
     ):
         # The default values of the parameters
         # are replaced with the changed sequence
@@ -343,22 +343,10 @@ class GLMRegressor(BaseProbaRegressor):
         self.max_start_irls = max_start_irls
         self.add_constant = add_constant
 
-        if family == "0":
-            self._family = "Normal"
-        else:
-            self._family = family
-        if link == "1":
-            self._link = None
-        else:
-            self._link = link
-        if offset_var == "2":
-            self._offset_var = None
-        else:
-            self._offset_var = offset_var
-        if exposure_var == "3":
-            self._exposure_var = None
-        else:
-            self._exposure_var = exposure_var
+        self._family = self.family
+        self._link = self.link
+        self._offset_var = self.offset_var
+        self._exposure_var = self.exposure_var
         self._missing = self.missing
         self._start_params = self.start_params
         self._maxiter = self.maxiter
@@ -377,12 +365,12 @@ class GLMRegressor(BaseProbaRegressor):
 
         warn(
             "Note: in `GLMRegressor`, the sequence of the parameters will change "
-            "in skpro version 2.4.0. It will be as per the order present in the"
+            "in skpro version 2.5.0. It will be as per the order present in the"
             "current docstring with the top one being the first parameter.\n"
             "The defaults for the parameters will remain same and "
             "there will be no changes.\n"
             "Please use the `kwargs` calls instead of positional calls for the"
-            "parameters until the release of skpro 2.4.0 "
+            "parameters until the release of skpro 2.5.0 "
             "as this will avoid any discrepancies."
         )
 
