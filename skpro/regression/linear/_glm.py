@@ -21,29 +21,40 @@ class GLMRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    family : str, default : "Normal"
-        Available options are
-        1.Normal
-        2.Poisson
-        3.Gamma
-    link : str
-        Available safe options are
-        Normal : Log, Identity, InversePower
-        Poisson : Log, Identity, Sqrt
-        Gamma : Log, Identity, InversePower
-    offset_var : pd.Index([str]) or int, default = None
-        If ``pd.Index([str])``, then the exog or ``X`` passed while ``fit``-ting
+    family : string, default : "Normal"
+        The family parameter denotes the type of distribution
+        that will be used.
+        Available family/distributions are
+        1."Normal"
+        2."Poisson"
+        3."Gamma"
+    link : string, default : None
+        This parameter is used to represent the link function to be
+        used with the distribution.
+        If default is None it will internally replace with default of the
+        respective family. The default is the first string
+        against each family below.
+        Available safe options for the respective family are:
+        ``Normal`` : "Identity", "Log", "InversePower";
+        ``Poisson`` : "Log", "Identity", "Sqrt";
+        ``Gamma`` : "InversePower", "Log", "Identity";
+    offset_var : string or int, default = None
+        Pass the column name as a string or column number as an int in X.
+        If string, then the exog or ``X`` passed while ``fit``-ting
         must have an additional column with column name passed through
         ``offset_var`` with any values against each row. When ``predict``ing
         have an additional column with name same as string passed through ``offset_var``
-        in X with all the ``offset_var`` values stored in the column for each row.
+        in X with all the ``offset_var`` values for predicting
+        stored in the column for each row.
         If ``int`` it corresponding column number will be considered.
-    exposure_var : pd.Index([str]) or int, default = None
-        If ```pd.Index([str])``, then the exog or ``X`` passed while ``fit``-ting
+    exposure_var : string or int, default = None
+        Pass the column name as a string or column number as an int in X.
+        If string, then the exog or ``X`` passed while ``fit``-ting
         must have an additional column with column name passed through
         ``exposure_var`` with any values against each row. When ``predict``ing
         have additional column with name same as string passed through ``exposure_var``
-        in X with all the ``exposure_var`` values stored in the column for each row.
+        in X with all the ``exposure_var`` values for predicting
+        stored in the column for each row.
         If ``int`` it corresponding column number will be considered.
     missing : str
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
@@ -403,16 +414,16 @@ class GLMRegressor(BaseProbaRegressor):
 
         from warnings import warn
 
-        l1 = "Note: in `GLMRegressor`, the sequence of the parameters will change "
-        l2 = "in skpro version 2.4.0. It will be as per the order present in the"
-        l3 = "current docstring with the top one being the first parameter.\n"
-        l4 = "The defaults for the parameters will remain same and "
-        l5 = "there will be no changes.\n"
-        l6 = "Please use the `kwargs` calls instead of positional calls for the"
-        l7 = "parameters until the release of skpro 2.4.0 "
-        l8 = "as this will avoid any discrepancies."
-        warn_msg = l1 + l2 + l3 + l4 + l5 + l6 + l7 + l8
-        warn(warn_msg)
+        warn(
+            "Note: in `GLMRegressor`, the sequence of the parameters will change "
+            "in skpro version 2.4.0. It will be as per the order present in the"
+            "current docstring with the top one being the first parameter.\n"
+            "The defaults for the parameters will remain same and "
+            "there will be no changes.\n"
+            "Please use the `kwargs` calls instead of positional calls for the"
+            "parameters until the release of skpro 2.4.0 "
+            "as this will avoid any discrepancies."
+        )
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -445,20 +456,7 @@ class GLMRegressor(BaseProbaRegressor):
         offset_var = self._offset_var
         exposure_var = self._exposure_var
 
-        if offset_var is not None:
-            if isinstance(offset_var, int):
-                offset_var = pd.Index([X.iloc[:, offset_var].name])
-        if exposure_var is not None:
-            if isinstance(exposure_var, int):
-                exposure_var = pd.Index([X.iloc[:, exposure_var].name])
-        if offset_var is not None and exposure_var is not None:
-            X = X.drop([offset_var[0], exposure_var[0]], axis=1)
-        elif offset_var is not None:
-            X = X.drop(offset_var, axis=1)
-        elif exposure_var is not None:
-            X = X.drop(exposure_var, axis=1)
-
-        X_ = self._prep_x(X)
+        X_ = self._prep_x(X, offset_var, exposure_var, False)
 
         y_col = y.columns
 
@@ -475,19 +473,21 @@ class GLMRegressor(BaseProbaRegressor):
 
         self._estimator = glm_estimator
 
-        fitted_glm_model = glm_estimator.fit(
-            self._start_params,
-            self._maxiter,
-            self._method,
-            self._tol,
-            self._scale,
-            self._cov_type,
-            self._cov_kwds,
-            self._use_t,
-            self._full_output,
-            self._disp,
-            self._max_start_irls,
-        )
+        glm_fit_params = {
+            "start_params": self._start_params,
+            "maxiter": self._maxiter,
+            "method": self._method,
+            "tol": self._tol,
+            "scale": self._scale,
+            "cov_type": self._cov_type,
+            "cov_kwds": self._cov_kwds,
+            "use_t": self._use_t,
+            "full_output": self._full_output,
+            "disp": self._disp,
+            "max_start_irls": self._max_start_irls,
+        }
+
+        fitted_glm_model = glm_estimator.fit(**glm_fit_params)
 
         PARAMS_TO_FORWARD = {
             "df_model_": glm_estimator.df_model,
@@ -544,26 +544,7 @@ class GLMRegressor(BaseProbaRegressor):
         offset_arr = None
         exposure_arr = None
 
-        if offset_var is not None:
-            if isinstance(offset_var, pd.Index):
-                offset_arr = np.array(X[offset_var]).flatten()
-            elif isinstance(offset_var, int):
-                offset_arr = np.array(X.iloc[:, offset_var]).flatten()
-                offset_var = pd.Index([X.iloc[:, offset_var].name])
-        if exposure_var is not None:
-            if isinstance(exposure_var, pd.Index):
-                offset_arr = np.array(X[exposure_var]).flatten()
-            elif isinstance(exposure_var, int):
-                exposure_arr = np.array(X.iloc[:, exposure_var]).flatten()
-                exposure_var = pd.Index([X.iloc[:, exposure_var].name])
-        if offset_var is not None and exposure_var is not None:
-            X = X.drop([offset_var[0], exposure_var[0]], axis=1)
-        elif offset_var is not None:
-            X = X.drop(offset_var, axis=1)
-        elif exposure_var is not None:
-            X = X.drop(exposure_var, axis=1)
-
-        X_ = self._prep_x(X)
+        X_, offset_arr, exposure_arr = self._prep_x(X, offset_var, exposure_var, True)
 
         index = X_.index
         y_column = self.y_col
@@ -604,7 +585,7 @@ class GLMRegressor(BaseProbaRegressor):
             y_mean = y_predictions_df["mean"]
             y_sd = y_predictions_df["mean_se"]
             y_alpha = (y_mean / y_sd) ** 2
-            y_beta = (y_alpha / y_mean).rename("beta").to_frame()
+            y_beta = (y_mean / (y_sd**2)).rename("beta").to_frame()
             y_alpha = y_alpha.rename("alpha").to_frame()
             params["alpha"] = y_alpha
             params["beta"] = y_beta
@@ -639,20 +620,7 @@ class GLMRegressor(BaseProbaRegressor):
         offset_var = self._offset_var
         exposure_var = self._exposure_var
 
-        if offset_var is not None:
-            if isinstance(offset_var, int):
-                offset_var = pd.Index([X.iloc[:, offset_var].name])
-        if exposure_var is not None:
-            if isinstance(exposure_var, int):
-                exposure_var = pd.Index([X.iloc[:, exposure_var].name])
-        if offset_var is not None and exposure_var is not None:
-            X = X.drop([offset_var[0], exposure_var[0]], axis=1)
-        elif offset_var is not None:
-            X = X.drop(offset_var, axis=1)
-        elif exposure_var is not None:
-            X = X.drop(exposure_var, axis=1)
-
-        X_ = self._prep_x(X)
+        X_ = self._prep_x(X, offset_var, exposure_var, False)
 
         # instead of using the conventional predict() method, we use statsmodels
         # get_prediction method, which returns a pandas df that contains
@@ -668,9 +636,12 @@ class GLMRegressor(BaseProbaRegressor):
         y_pred = self._params_sm_to_skpro(y_predictions_df, index, columns, family)
         return y_pred
 
-    def _prep_x(self, X):
+    def _prep_x(self, X, offset_var, exposure_var, rtn_off_exp_arr):
         """
         Return a copy of X with an added constant of self.add_constant = True.
+
+        If rtn_off_exp_arr is True it will also return offset and exposure
+        arrays along with updated X.
 
         Parameters
         ----------
@@ -682,13 +653,46 @@ class GLMRegressor(BaseProbaRegressor):
         X_ : pandas DataFrame
             A copy of the input X with an added column 'const' with is an
             array of len(X) of 1s
+        offset_arr : numpy.array
+            The copy of column which is meant for offsetting present in X.
+        exposure_arr : numpy.array
+            The copy of column which is meant for exposure present in X.
         """
         from statsmodels.tools import add_constant
 
+        offset_arr = None
+        exposure_arr = None
+        if offset_var is not None:
+            if isinstance(offset_var, str):
+                offset_var = pd.Index([offset_var])
+                offset_arr = np.array(X[offset_var]).flatten()
+            elif isinstance(offset_var, int):
+                offset_arr = np.array(X.iloc[:, offset_var]).flatten()
+                offset_var = pd.Index([X.iloc[:, offset_var].name])
+        if exposure_var is not None:
+            if isinstance(exposure_var, str):
+                exposure_var = pd.Index([exposure_var])
+                exposure_arr = np.array(X[exposure_var]).flatten()
+            elif isinstance(exposure_var, int):
+                exposure_arr = np.array(X.iloc[:, exposure_var]).flatten()
+                exposure_var = pd.Index([X.iloc[:, exposure_var].name])
+        # drop the offset and exposure columns from X
+        columns_to_drop = []
+        if offset_var is not None:
+            columns_to_drop.append(offset_var[0])
+        if exposure_var is not None:
+            columns_to_drop.append(exposure_var[0])
+        if columns_to_drop:
+            X = X.drop(columns_to_drop, axis=1)
+
         if self._add_constant:
             X_ = add_constant(X)
+            if rtn_off_exp_arr:
+                return X_, offset_arr, exposure_arr
             return X_
         else:
+            if rtn_off_exp_arr:
+                return X, offset_arr, exposure_arr
             return X
 
     @classmethod
