@@ -38,6 +38,8 @@ class BaseProbaRegressor(BaseEstimator):
         "C_inner_mtype": "pd_DataFrame_Table",
     }
 
+    _config = {"transform": None}  # accepted values : ["pandas", "polars", None]
+
     def __init__(self):
         super().__init__()
         _check_estimator_deps(self)
@@ -845,3 +847,27 @@ class BaseProbaRegressor(BaseEstimator):
             raise ValueError(f"values in {name} must be unique, but found duplicates")
 
         return alpha
+
+    def set_output(self, transform):
+        """Set output container.
+
+        Parameters
+        ----------
+        transform : {"polars", "pandas", None} default = None
+
+            Configures the out of any _predict_* function in regression estimators
+                - None : assumes no transform has been passed in, will use
+                default settings
+
+                - "pandas" : all outputs will be converted into pandas DataFrames
+                - "polars" : all outputs will be converted into polars DataFrames
+
+        Returns
+        -------
+        self : estimator instance
+        """
+        if transform is None:
+            return self
+
+        self.set_config(**{"transform": transform})
+        return self
