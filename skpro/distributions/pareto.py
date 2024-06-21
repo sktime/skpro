@@ -16,6 +16,10 @@ class Pareto(BaseDistribution):
     and the Pareto index (or shape parameter) :math:`\alpha`
     by the parameter ``alpha``.
 
+    The CDF can be represented as,
+    :math:`F(x) = 1-\left(\frac{\text{scale}}{x}\right)^\alpha
+    \text{ if } x>0, 0 \text{ if } x<0`
+
     Parameters
     ----------
     scale : float or array of float (1D or 2D), must be positive
