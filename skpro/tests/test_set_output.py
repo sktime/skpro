@@ -113,7 +113,12 @@ def test_check_transform_config_happy(estimator):
 
 
 def test_check_transform_config_negative():
-    pass
+    estimator.set_output(transform="foo")
+    with pytest.raises(
+        ValueError,
+        match='set_output container must be in ["polars", "pandas"], found foo.',
+    ):
+        check_transform_config(estimator)
 
 
 def test_convert_pandas_dataframe_to_polars_eager_with_index():
