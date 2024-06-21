@@ -118,9 +118,10 @@ def test_check_transform_config_happy(estimator):
     assert estimator.get_config()["transform"] == "pandas"
     assert check_transform_config(estimator)["dense"] == "pandas"
 
-    estimator.set_output(transform="polars")
-    assert estimator.get_config()["transform"] == "polars"
-    assert check_transform_config(estimator)["dense"] == "polars"
+    if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
+        estimator.set_output(transform="polars")
+        assert estimator.get_config()["transform"] == "polars"
+        assert check_transform_config(estimator)["dense"] == "polars"
 
 
 def test_check_transform_config_negative(estimator):
