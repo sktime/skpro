@@ -64,10 +64,9 @@ def estimator():
     return _estimator
 
 
-def test_check_column_level_of_dataframe(
+def test_check_column_level_of_dataframe_pandas(
     load_pandas_multi_index_column_fixture,
     load_pandas_simple_column_fixture,
-    load_polars_simple_fixture,
 ):
     pd_multi_column_fixture = load_pandas_multi_index_column_fixture
     pd_simple_column_fixture = load_pandas_simple_column_fixture
@@ -78,11 +77,17 @@ def test_check_column_level_of_dataframe(
     assert n_levels_multi_pd == 3
     assert n_levels_simple_pd == 1
 
-    if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
-        pl_simple_column_fixture = load_polars_simple_fixture
-        n_levels_simple_pl = check_n_level_of_dataframe(pl_simple_column_fixture)
 
-        assert n_levels_simple_pl == 1
+@pytest.mark.skipif(
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_check_column_level_of_dataframe_polars(
+    load_polars_simple_fixture,
+):
+    pl_simple_column_fixture = load_polars_simple_fixture
+    n_levels_simple_pl = check_n_level_of_dataframe(pl_simple_column_fixture)
+    assert n_levels_simple_pl == 1
 
 
 def test_convert_multiindex_columns_to_single_column(
@@ -142,7 +147,6 @@ def test_convert_pandas_dataframe_to_polars_eager_with_index(
 ):
     pd_simple_column_fixture1 = load_pandas_simple_column_fixture
     pd_simple_column_fixture2 = pd_simple_column_fixture1.copy(deep=True)
-
     pd_simple_column_fixture2.index.name = "foo"
 
     X_out1 = convert_pandas_dataframe_to_polars_eager_with_index(
