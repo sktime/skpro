@@ -31,6 +31,7 @@ Quantile and interval prediction metrics
     PinballLoss
     EmpiricalCoverage
     ConstraintViolation
+    IntervalWidth
 
 Distribution prediction metrics
 -------------------------------
@@ -46,9 +47,9 @@ Distribution predictions are also known as conditional distribution predictions.
 
     CRPS
     LogLoss
-    SquaredDistrLoss
     LinearizedLogLoss
     SquaredDistrLoss
+    AUCalibration
 
 Survival prediction metrics
 ---------------------------
