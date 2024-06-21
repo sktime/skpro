@@ -2,6 +2,7 @@
 
 __author__ = ["julian-fong"]
 
+import warnings
 from copy import deepcopy
 
 import pandas as pd
@@ -14,7 +15,7 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     SUPPORTED_OUTPUTS.append("polars")
 
 
-def check_column_level_of_dataframe(X_input, index_pandas=False):
+def check_n_level_of_dataframe(X_input, index_pandas=False):
     """Convert function to check the number of levels inside a pandas Frame.
 
     Parameters
@@ -33,8 +34,8 @@ def check_column_level_of_dataframe(X_input, index_pandas=False):
     levels : int
         An integer specifying the number of levels given a DataFrame
     """
+    levels = None
     if isinstance(X_input, pd.DataFrame):
-        levels = None
         if index_pandas:
             levels = X_input.index.nlevels
         else:
@@ -65,7 +66,7 @@ def convert_multiindex_columns_to_single_column(X_input: pd.DataFrame):
     """
     df_cols = []
     for col in X_input.columns:
-        df_cols.append("__" + "__".join(str(x) for x in col) + "__")
+        df_cols.append("__" + "__".join(str(x) for x in col if x != "") + "__")
 
     return df_cols
 
@@ -92,7 +93,7 @@ def convert_pandas_index_to_column(X_input):
     return X_out
 
 
-def convert_pandas_dataframe_to_polars_eager_with_index(X_input):
+def convert_pandas_dataframe_to_polars_eager_with_index(X_input, include_index=False):
     """Given a pandas DataFrame, converts the Frame into a pl Frame with index.
 
     Assumes the input pandas DataFrame has a one-level index.
@@ -101,6 +102,10 @@ def convert_pandas_dataframe_to_polars_eager_with_index(X_input):
     ----------
     X_input : pandas DataFrame
         pandas DataFrame containing a single-level index
+
+    include_index : bool
+        Bool whether or not to include the index from the pandas DataFrame
+        default = False
 
     Returns
     -------
@@ -115,7 +120,15 @@ def convert_pandas_dataframe_to_polars_eager_with_index(X_input):
     if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
         import polars as pl
 
-        X_polars = pl.from_pandas(X_input, include_index=True)
+        if include_index:
+            n_level = check_n_level_of_dataframe(X_input, index_pandas=True)
+            if n_level != 1:
+                warnings.warn(
+                    "pandas DataFrame does not contain a flat single level index. ",
+                    " Converting the index may not have intended results.",
+                    stacklevel=2,
+                )
+        X_polars = pl.from_pandas(X_input_, include_index=include_index)
 
     return X_polars
 

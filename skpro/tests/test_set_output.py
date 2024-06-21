@@ -6,8 +6,8 @@ from skpro.utils.validation._dependencies import _check_soft_dependencies
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
-from skpro.utils.set_output import (
-    check_column_level_of_dataframe,
+from skpro.utils.set_output import (  # SUPPORTED_OUTPUTS,
+    check_n_level_of_dataframe,
     check_transform_config,
     convert_multiindex_columns_to_single_column,
     convert_pandas_dataframe_to_polars_eager_with_index,
@@ -37,7 +37,7 @@ def load_pandas_simple_column_fixture():
 
     # Create the DataFrame with a custom index
     pd_simple_column_fixture = pd.DataFrame(
-        data, index=pd.Index(["row1", "row2", "row3"], name="foo")
+        data, index=pd.Index(["row1", "row2", "row3"])
     )
 
     return pd_simple_column_fixture
@@ -69,18 +69,18 @@ def test_check_column_level_of_dataframe(
     load_pandas_simple_column_fixture,
     load_polars_simple_fixture,
 ):
-    pd_multi_column_fixture = load_pandas_multi_index_column_fixture()
-    pd_simple_column_fixture = load_pandas_simple_column_fixture()
+    pd_multi_column_fixture = load_pandas_multi_index_column_fixture
+    pd_simple_column_fixture = load_pandas_simple_column_fixture
 
-    n_levels_multi_pd = check_column_level_of_dataframe(pd_multi_column_fixture)
-    n_levels_simple_pd = check_column_level_of_dataframe(pd_simple_column_fixture)
+    n_levels_multi_pd = check_n_level_of_dataframe(pd_multi_column_fixture)
+    n_levels_simple_pd = check_n_level_of_dataframe(pd_simple_column_fixture)
 
     assert n_levels_multi_pd == 3
     assert n_levels_simple_pd == 1
 
     if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
-        pl_simple_column_fixture = load_polars_simple_fixture()
-        n_levels_simple_pl = check_column_level_of_dataframe(pl_simple_column_fixture)
+        pl_simple_column_fixture = load_polars_simple_fixture
+        n_levels_simple_pl = check_n_level_of_dataframe(pl_simple_column_fixture)
 
         assert n_levels_simple_pl == 1
 
@@ -88,9 +88,20 @@ def test_check_column_level_of_dataframe(
 def test_convert_multiindex_columns_to_single_column(
     load_pandas_multi_index_column_fixture,
 ):
-    pd_multi_column_fixture = load_pandas_multi_index_column_fixture
-    df_list = convert_multiindex_columns_to_single_column(pd_multi_column_fixture)
-    assert df_list == [
+    pd_multi_column_fixture1 = load_pandas_multi_index_column_fixture
+    df_list1 = convert_multiindex_columns_to_single_column(pd_multi_column_fixture1)
+    assert df_list1 == [
+        "__A__Foo__One__",
+        "__A__Foo__Two__",
+        "__A__Bar__One__",
+        "__A__Bar__Two__",
+    ]
+
+    pd_multi_column_fixture2 = load_pandas_multi_index_column_fixture
+    pd_multi_column_fixture2 = pd_multi_column_fixture2.reset_index(names="index")
+    df_list2 = convert_multiindex_columns_to_single_column(pd_multi_column_fixture2)
+    assert df_list2 == [
+        "__index__",
         "__A__Foo__One__",
         "__A__Foo__Two__",
         "__A__Bar__One__",
@@ -112,18 +123,48 @@ def test_check_transform_config_happy(estimator):
     assert check_transform_config(estimator)["dense"] == "polars"
 
 
-def test_check_transform_config_negative():
+def test_check_transform_config_negative(estimator):
     estimator.set_output(transform="foo")
     with pytest.raises(
         ValueError,
-        match='set_output container must be in ["polars", "pandas"], found foo.',
+        # match=f"set_output container must be in {SUPPORTED_OUTPUTS}, found foo.",
     ):
         check_transform_config(estimator)
 
 
-def test_convert_pandas_dataframe_to_polars_eager_with_index():
-    convert_pandas_dataframe_to_polars_eager_with_index
+@pytest.mark.skipif(
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_convert_pandas_dataframe_to_polars_eager_with_index(
+    load_pandas_simple_column_fixture,
+):
+    pd_simple_column_fixture1 = load_pandas_simple_column_fixture
+    pd_simple_column_fixture2 = pd_simple_column_fixture1.copy(deep=True)
+
+    pd_simple_column_fixture2.index.name = "foo"
+
+    X_out1 = convert_pandas_dataframe_to_polars_eager_with_index(
+        pd_simple_column_fixture1, include_index=True
+    )
+    X_out2 = convert_pandas_dataframe_to_polars_eager_with_index(
+        pd_simple_column_fixture2, include_index=True
+    )
+    X_out3 = convert_pandas_dataframe_to_polars_eager_with_index(
+        pd_simple_column_fixture1, include_index=False
+    )
+
+    assert "__index__" in X_out1.columns
+    assert "foo" in X_out2.columns
+
+    assert all(X_out1["__index__"].to_numpy() == pd_simple_column_fixture1.index)
+    assert all(X_out2["foo"].to_numpy() == pd_simple_column_fixture2.index)
+    assert all(X_out3.to_numpy() == pd_simple_column_fixture1.values)
 
 
-def test_convert_pandas_index_to_column():
-    convert_pandas_index_to_column
+def test_convert_pandas_index_to_column(load_pandas_simple_column_fixture):
+    pd_simple_column_fixture = load_pandas_simple_column_fixture
+    X_out = convert_pandas_index_to_column(pd_simple_column_fixture)
+
+    assert "__index__" in X_out.columns
+    assert all(X_out["__index__"].values == pd_simple_column_fixture.index)
