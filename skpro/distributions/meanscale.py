@@ -39,7 +39,7 @@ class MeanScale(BaseDistribution):
     -------
     >>> from skpro.distributions.normal import Normal
 
-    >>> n = Normal(mu=[[0, 1], [2, 3], [4, 5]])
+    >>> n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=2)
     >>> d = MeanScale(d=n, mu=2, sigma=3)
     """
 
