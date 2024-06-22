@@ -27,8 +27,23 @@ Base
 Parametric distributions
 ------------------------
 
-Continuous support
-~~~~~~~~~~~~~~~~~~
+Continuous support - full reals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    Laplace
+    Logistic
+    Normal
+    TDistribution
+
+
+Continuous support - non-negative reals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -45,12 +60,8 @@ Continuous support
     HalfCauchy
     HalfLogistic
     HalfNormal
-    Laplace
-    Logistic
     LogLaplace
-    Normal
     Pareto
-    TDistribution
     Weibull
 
 
@@ -77,6 +88,7 @@ Non-parametric and empirical distributions
 
     Delta
     Empirical
+    Histogram
     QPD_Empirical
     QPD_Johnson
     QPD_U
@@ -109,17 +121,3 @@ Sampling and multivariate composition
     :template: class.rst
 
     IID
-
-Array distributions
--------------------
-
-Continuous support
-~~~~~~~~~~~~~~~~~~
-
-.. currentmodule:: skpro.distributions
-
-.. autosummary::
-    :toctree: auto_generated/
-    :template: class.rst
-
-    Histogram
