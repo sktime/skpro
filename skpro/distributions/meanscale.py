@@ -4,7 +4,6 @@
 __author__ = ["fkiraly"]
 
 import numpy as np
-import pandas as pd
 
 from skpro.distributions.base import BaseDistribution
 
@@ -64,14 +63,50 @@ class MeanScale(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def _iloc(self, rowidx=None, colidx=None):
-        dist_subset = self.d.iloc[rowidx, colidx]
+    # def _iloc(self, rowidx=None, colidx=None):
+    #     dist_subset = self.d.iloc[rowidx, colidx]
 
-        return MeanScale(d=dist_subset, mu=self.mu, sigma=self.sigma)
+    #     return MeanScale(d=dist_subset, mu=self.mu, sigma=self.sigma)
 
-    def _iat(self, rowidx=None, colidx=None):
-        dist_subset = self.d.iat[rowidx, colidx]
-        return MeanScale(d=dist_subset, mu=self.mu, sigma=self.sigma)
+    # def _iat(self, rowidx=None, colidx=None):
+    #     dist_subset = self.d.iat[rowidx, colidx]
+    #     return MeanScale(d=dist_subset, mu=self.mu, sigma=self.sigma)
+
+    def _subset_params(self, rowidx, colidx, coerce_scalar=False):
+        """Subset distribution parameters to given rows and columns.
+
+        Parameters
+        ----------
+        rowidx : None, numpy index/slice coercible, or int
+            Rows to subset to. If None, no subsetting is done.
+        colidx : None, numpy index/slice coercible, or int
+            Columns to subset to. If None, no subsetting is done.
+        coerce_scalar : bool, optional, default=False
+            If True, and the subsetted parameter is a scalar, coerce it to a scalar.
+
+        Returns
+        -------
+        dict
+            Dictionary with subsetted distribution parameters.
+            Keys are parameter names of ``self``, values are the subsetted parameters.
+        """
+        params = self.get_params()
+        subset_params = ["mu", "sigma"]
+
+        subset_param_dict = {}
+        for param in subset_params:
+            val = params[param]
+            subset_param_dict[param] = self._subset_param(
+                val=val,
+                rowidx=rowidx,
+                colidx=colidx,
+                coerce_scalar=coerce_scalar,
+            )
+        if coerce_scalar:
+            subset_param_dict["d"] = self.d.iat[rowidx, colidx]
+        else:
+            subset_param_dict["d"] = self.d.iloc[rowidx, colidx]
+        return subset_param_dict
 
     def _mean(self):
         """Return expected value of the distribution.
