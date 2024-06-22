@@ -48,6 +48,7 @@ Continuous support
     Logistic
     LogLaplace
     Normal
+    Pareto
     TDistribution
     Weibull
 
