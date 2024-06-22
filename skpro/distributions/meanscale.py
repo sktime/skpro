@@ -177,7 +177,7 @@ class MeanScale(BaseDistribution):
         """Return testing parameter settings for the estimator."""
         from skpro.distributions.normal import Normal
 
-        d = Normal(mu=[[0, 1], [2, 3], [4, 5]])
+        d = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=2)
         dsc = Normal(0, 1)
 
         # array case examples
