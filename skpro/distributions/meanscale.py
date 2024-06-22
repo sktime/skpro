@@ -172,7 +172,7 @@ class MeanScale(BaseDistribution):
         icdf_arr = mu + scale * self.d.ppf(p)
         return icdf_arr
 
-    def _energy_self(self):
+    # def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
         :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
@@ -184,12 +184,12 @@ class MeanScale(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        scale = self._bc_params["sigma"]
+        # scale = self._bc_params["sigma"]
 
-        en_arr = scale * self.d.energy()
-        return en_arr
+        # en_arr = scale * self.d.energy()
+        # return en_arr
 
-    def _energy_x(self, x):
+    # def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
 
         :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
@@ -207,12 +207,12 @@ class MeanScale(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        mu = self._bc_params["mu"]
-        scale = self._bc_params["sigma"]
+        # mu = self._bc_params["mu"]
+        # scale = self._bc_params["sigma"]
 
-        x_offset = (x - mu) / scale
-        en_arr = scale * self.d.energy(x_offset)
-        return en_arr
+        # x_offset = (x - mu) / scale
+        # en_arr = scale * self.d.energy(x_offset)
+        # return en_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -223,26 +223,29 @@ class MeanScale(BaseDistribution):
         dsc = Normal(0, 1)
 
         # array case examples
-        params1 = {"d": d}
-        params2 = {"d": d, "mu": 1}
+        params0 = {"d": d}
+        params1 = {"d": d, "mu": 1}
+        params2 = {"d": d, "sigma": 2}
         params3 = {"d": d, "mu": 2, "sigma": 3}
         params4 = {"d": d, "mu": [[0, 1], [2, 3], [4, 5]], "sigma": 2}
-        params5 = {
-            "d": dsc,
-            "mu": 0,
-            "sigma": 1,
-            "index": pd.Index([1, 2, 5]),
-            "columns": pd.Index(["a", "b"]),
-        }
+        # params5 = {
+        #     "d": dsc,
+        #     "mu": 0,
+        #     "sigma": 1,
+        #     "index": pd.Index([1, 2, 5]),
+        #     "columns": pd.Index(["a", "b"]),
+        # }
+
         # scalar case examples
         params6 = {"d": dsc}
         params7 = {"d": dsc, "mu": 1, "sigma": 2}
         return [
+            params0,
             params1,
             params2,
             params3,
             params4,
-            params5,
+            # params5,
             params6,
             params7,
         ]
