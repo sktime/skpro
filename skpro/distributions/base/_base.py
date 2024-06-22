@@ -584,6 +584,12 @@ class BaseDistribution(BaseObject):
         bc_params = self.get_tags()["broadcast_params"]
         if bc_params is None:
             bc_params = kwargs_as_np.keys()
+        else:
+            bc_params = bc_params.copy()
+            if "index" in kwargs_as_np:
+                bc_params.append("index")
+            if "columns" in kwargs_as_np:
+                bc_params.append("columns")
 
         args_as_np = [kwargs_as_np[k] for k in bc_params]
         bc = np.broadcast_arrays(*args_as_np)
