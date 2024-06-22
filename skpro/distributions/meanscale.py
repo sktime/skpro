@@ -130,7 +130,7 @@ class MeanScale(BaseDistribution):
         scale = self._bc_params["sigma"]
 
         x_inner = (x - mu) / scale
-        lpdf_arr = self.d.lpdf(x_inner) - np.log(scale)
+        lpdf_arr = self.d.log_pdf(x_inner) - np.log(scale)
         return lpdf_arr
 
     def _cdf(self, x):
