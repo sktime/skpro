@@ -57,9 +57,9 @@ class MeanScale(BaseDistribution):
         self.mu = mu
         self.sigma = sigma
 
-        if d.index is not None:
+        if d.index is not None and index is None:
             index = d.index
-        if d.columns is not None:
+        if d.columns is not None and columns is None:
             columns = d.columns
 
         super().__init__(index=index, columns=columns)
