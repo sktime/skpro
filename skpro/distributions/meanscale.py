@@ -175,14 +175,32 @@ class MeanScale(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        from skpro.distributions.normal import Normal
+
+        d = Normal(mu=[[0, 1], [2, 3], [4, 5]])
+        dsc = Normal(0, 1)
+
         # array case examples
-        params1 = {"mu": [[0, 1], [2, 3], [4, 5]], "sigma": 1}
-        params2 = {
+        params1 = {"d": d}
+        params2 = {"d": d, "mu": 1}
+        params3 = {"d": d, "mu": 2, "sigma": 3}
+        params4 = {"d": d, "mu": [[0, 1], [2, 3], [4, 5]], "sigma": 2}
+        params5 = {
+            "d": dsc,
             "mu": 0,
             "sigma": 1,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
         # scalar case examples
-        params3 = {"mu": 1, "sigma": 2}
-        return [params1, params2, params3]
+        params6 = {"d": dsc}
+        params7 = {"d": dsc, "mu": 1, "sigma": 2}
+        return [
+            params1,
+            params2,
+            params3,
+            params4,
+            params5,
+            params6,
+            params7,
+        ]
