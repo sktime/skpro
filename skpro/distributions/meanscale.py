@@ -91,7 +91,7 @@ class MeanScale(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             variance of the distribution (entry-wise)
         """
-        return self._bc_params["scale"] ** 2 * self.d.var()
+        return self._bc_params["sigma"] ** 2 * self.d.var()
 
     def _pdf(self, x):
         """Probability density function.
@@ -107,7 +107,7 @@ class MeanScale(BaseDistribution):
             pdf values at the given points
         """
         mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
+        scale = self._bc_params["sigma"]
 
         x_inner = (x - mu) / scale
         pdf_arr = self.d.pdf(x_inner) / scale
@@ -127,7 +127,7 @@ class MeanScale(BaseDistribution):
             log pdf values at the given points
         """
         mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
+        scale = self._bc_params["sigma"]
 
         x_inner = (x - mu) / scale
         lpdf_arr = self.d.lpdf(x_inner) - np.log(scale)
@@ -147,7 +147,7 @@ class MeanScale(BaseDistribution):
             cdf values at the given points
         """
         mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
+        scale = self._bc_params["sigma"]
 
         x_inner = (x - mu) / scale
         cdf_arr = self.d.cdf(x_inner)
@@ -167,7 +167,7 @@ class MeanScale(BaseDistribution):
             ppf values at the given points
         """
         mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
+        scale = self._bc_params["sigma"]
 
         icdf_arr = mu + scale * self.d.ppf(p)
         return icdf_arr
