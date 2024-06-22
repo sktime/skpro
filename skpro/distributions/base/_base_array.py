@@ -3,7 +3,7 @@
 
 __author__ = ["ShreeshaM07"]
 
-__all__ = ["BaseArrayDistribution"]
+__all__ = ["_BaseArrayDistribution"]
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ from skpro.distributions.base._base import (
 )
 
 
-class BaseArrayDistribution(BaseDistribution, BaseObject):
+class _BaseArrayDistribution(BaseDistribution, BaseObject):
     """Base Array probability distribution."""
 
     def __init__(self, index=None, columns=None):

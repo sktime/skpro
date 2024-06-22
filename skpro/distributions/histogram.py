@@ -6,10 +6,10 @@ __author__ = ["ShreeshaM07"]
 import numpy as np
 import pandas as pd
 
-from skpro.distributions.base import BaseArrayDistribution
+from skpro.distributions.base import _BaseArrayDistribution
 
 
-class Histogram(BaseArrayDistribution):
+class Histogram(_BaseArrayDistribution):
     """Histogram Probability Distribution.
 
     The histogram probability distribution is parameterized
