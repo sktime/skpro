@@ -172,6 +172,48 @@ class MeanScale(BaseDistribution):
         icdf_arr = mu + scale * self.d.ppf(p)
         return icdf_arr
 
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
+
+        Private method, to be implemented by subclasses.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
+        """
+        scale = self._bc_params["sigma"]
+
+        en_arr = scale * self.d.energy()
+        return en_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
+        and :math:`x` is a constant.
+
+        Private method, to be implemented by subclasses.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to compute energy w.r.t. to
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            energy values w.r.t. the given points
+        """
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["sigma"]
+
+        x_offset = (x - mu) / scale
+        en_arr = scale * self.d.energy(x_offset)
+        return en_arr
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
