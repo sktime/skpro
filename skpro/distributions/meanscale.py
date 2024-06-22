@@ -48,6 +48,7 @@ class MeanScale(BaseDistribution):
         "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
         "broadcast_init": "on",
+        "broadcast_params": ["mu", "sigma"],
     }
 
     def __init__(self, d, mu=0, sigma=1, index=None, columns=None):
@@ -61,6 +62,15 @@ class MeanScale(BaseDistribution):
             columns = d.columns
 
         super().__init__(index=index, columns=columns)
+
+    def _iloc(self, rowidx=None, colidx=None):
+        dist_subset = self.d.iloc[rowidx, colidx]
+
+        return MeanScale(d=dist_subset, mu=self.mu, sigma=self.sigma)
+
+    def _iat(self, rowidx=None, colidx=None):
+        dist_subset = self.d.iat[rowidx, colidx]
+        return MeanScale(d=dist_subset, mu=self.mu, sigma=self.sigma)
 
     def _mean(self):
         """Return expected value of the distribution.
