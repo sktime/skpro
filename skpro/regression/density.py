@@ -53,7 +53,7 @@ def step_function(xs, ys):
 
 class DensityAdapter(BaseEstimator, metaclass=abc.ABCMeta):
     """
-    Abtract base class for density adapter
+    Abstract base class for density adapter
     that transform an input into an
     density cdf/pdf interface
     """

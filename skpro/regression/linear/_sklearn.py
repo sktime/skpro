@@ -1,4 +1,4 @@
-"""Adapters to sklearnn linear regressors with probabilistic components."""
+"""Adapters to sklearn linear regressors with probabilistic components."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # based on sktime pipelines
 
@@ -19,8 +19,8 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
 
     Parameters
     ----------
-    max_iter : int, default=None
-        Maximum number of iterations. If `None`, it corresponds to `max_iter=300`.
+    max_iter : int, default=300
+        Maximum number of iterations.
 
     tol : float, default=1e-3
         Stop the algorithm if w has converged.
@@ -90,7 +90,7 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
 
     def __init__(
         self,
-        max_iter=None,
+        max_iter=300,
         tol=1e-3,
         alpha_1=1e-6,
         alpha_2=1e-6,
@@ -188,10 +188,9 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
 
     Parameters
     ----------
-    max_iter : int, default=None
+    max_iter : int, default=300
         Maximum number of iterations over the complete dataset before
-        stopping independently of any early stopping criterion. If `None`, it
-        corresponds to `max_iter=300`.
+        stopping independently of any early stopping criterion.
 
     tol : float, default=1e-3
         Stop the algorithm if w has converged.
@@ -272,7 +271,7 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
 
     def __init__(
         self,
-        max_iter=None,
+        max_iter=300,
         tol=1e-3,
         alpha_1=1e-6,
         alpha_2=1e-6,

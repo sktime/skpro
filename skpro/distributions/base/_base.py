@@ -25,6 +25,12 @@ class BaseDistribution(BaseObject):
         "object_type": "distribution",  # type of object, e.g., 'distribution'
         "python_version": None,  # PEP 440 python version specifier to limit versions
         "python_dependencies": None,  # string or str list of pkg soft dependencies
+        # property tags
+        # -------------
+        "distr:measuretype": "mixed",  # distribution type, mixed, continuous, discrete
+        "distr:paramtype": "general",
+        # parameterization type - parametric, nonparametric, composite
+        #
         # default parameter settings for MC estimates
         # -------------------------------------------
         # these are used in default implementations of mean, var, energy, pdfnorm, ppf
@@ -61,7 +67,7 @@ class BaseDistribution(BaseObject):
         default broadcasting and pre-initialization is not desired or applicable,
         e.g., distribution parameters are not array-like.
 
-        If overriden, must set ``self._shape``: this should be an empty tuple
+        If overridden, must set ``self._shape``: this should be an empty tuple
         if the distribution is scalar, or a pair of integers otherwise.
         """
         if self.get_tags()["broadcast_init"] == "off":
@@ -171,6 +177,58 @@ class BaseDistribution(BaseObject):
         if len(shape) == 0:
             return 1
         return shape[0]
+
+    def head(self, n=5):
+        """Return the first n rows.
+
+        If there are less than n rows in ``self``, returns clone of ``self``.
+
+        For negative n, returns all rows except the last n.
+
+        Parameters
+        ----------
+        n : int, default=5
+            Number of rows to return.
+
+        Returns
+        -------
+        ``self`` subset to the first n rows, i.e., ``self.iloc[0:min(n, len(self))]``
+        """
+        if self.ndim < 2:
+            return self
+        assert isinstance(n, int)
+        N = len(self)
+        if n < 0:
+            n = N - n
+        n = min(n, N)
+        return self.iloc[range(n)]
+
+    def tail(self, n=5):
+        """Return the last n rows.
+
+        If there are less than n rows in ``self``, returns clone of ``self``.
+
+        For negative n, returns all rows except the first n.
+
+        Parameters
+        ----------
+        n : int, default=5
+            Number of rows to return.
+
+        Returns
+        -------
+        ``self`` subset to the last n rows, i.e., ``self.iloc[max(len(self) - n, 0):]``
+        """
+        if self.ndim < 2:
+            return self
+        assert isinstance(n, int)
+        N = len(self)
+        if n < 0:
+            start = n
+        else:
+            start = N - n
+        start = max(0, start)
+        return self.iloc[range(start, N)]
 
     def _loc(self, rowidx=None, colidx=None):
         if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
@@ -283,6 +341,80 @@ class BaseDistribution(BaseObject):
         paramnames = [x for x in paramnames if x not in reserved_names]
 
         return {k: params[k] for k in paramnames}
+
+    def get_params_df(self):
+        """Return distribution parameters in a dict of DataFrame.
+
+        Available only for simple parametric distributions,
+        i.e., distributions with tag "distr:paramtype" having value "parametric".
+
+        Returns
+        -------
+        dict of pd.DataFrame
+            Dictionary with all distribution parameters, as ``pd.DataFrame``.
+            Keys are the parameter names, values are the ``pd.DataFrame``.
+            Each ``DataFrame`` has the same index as ``self`` and columns as ``self``.
+            Entries are the values of the distribution parameters.
+        """
+        is_parametric = self.get_class_tag("distr:paramtype") == "parametric"
+
+        if not is_parametric:
+            raise RuntimeError(
+                f"Error in call of {type(self).__name__}.get_params_df, "
+                "DataFrame representation of parameters via get_params_df or to_df "
+                "is only available for parametric distributions, i.e., "
+                "distributions with tag 'distr:paramtype' being 'parametric'"
+            )
+
+        if hasattr(self, "_bc_params"):
+            bc_params = self._bc_params
+        else:
+            bc_params = self._get_bc_params_dict()
+
+        paramnames = list(bc_params.keys())
+
+        def to_df(x):
+            if self.ndim > 0:
+                return pd.DataFrame(x, index=self.index, columns=self.columns)
+            return pd.DataFrame([[x]])
+
+        params_df = {k: to_df(bc_params[k]) for k in paramnames}
+        drop_keys = ["index", "columns"]
+        params_df = {k: params_df[k] for k in params_df if k not in drop_keys}
+        return params_df
+
+    def to_df(self):
+        """Return distribution parameters as a single DataFrame.
+
+        Available only for simple parametric distributions,
+        i.e., distributions with tag "distr:paramtype" having value "parametric".
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with all distribution parameters.
+            column is a MultiIndex (paramname, varname).
+            row index is the index of the distribution.
+            Entries are the values of the distribution parameters.
+        """
+        params_df = self.get_params_df()
+        paramnames = list(params_df.keys())
+        vals_df = [params_df[k] for k in paramnames]
+
+        param_df = pd.concat(vals_df, axis=1, keys=paramnames)
+        param_df.columns = param_df.columns.swaplevel()
+
+        # sorting for consistency with columns of self
+        if self.columns is not None:
+            param_df = param_df.loc[:, self.columns]
+        else:
+            param_df = param_df.sort_index(axis=1)
+
+        if self.ndim == 0:
+            # first level is superfluous in scalar case (always 0)
+            # and inconsistent with MultiIndex handling, so we remove it
+            param_df = param_df.droplevel(0, axis=1)
+        return param_df
 
     def to_str(self):
         """Return string representation of self."""
@@ -529,6 +661,10 @@ class BaseDistribution(BaseObject):
         ``pd.DataFrame`` with same columns and index as ``self``
             containing :math:`p_{X_{ij}}(x_{ij})`, as above
         """
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if distr_type == "discrete":
+            return self._coerce_to_self_index_df(0, flatten=False)
+
         return self._boilerplate("_pdf", x=x)
 
     def _pdf(self, x):
@@ -545,8 +681,7 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("pdf", fill_in=approx_method))
 
-            if self.ndim > 0 and not isinstance(x, pd.DataFrame):
-                x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            x = self._coerce_to_self_index_df(x, flatten=False)
             res = self.log_pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
@@ -583,6 +718,10 @@ class BaseDistribution(BaseObject):
         ``pd.DataFrame`` with same columns and index as ``self``
             containing :math:`\log p_{X_{ij}}(x_{ij})`, as above
         """
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if distr_type == "discrete":
+            return self._coerce_to_self_index_df(-np.inf, flatten=False)
+
         return self._boilerplate("_log_pdf", x=x)
 
     def _log_pdf(self, x):
@@ -597,14 +736,125 @@ class BaseDistribution(BaseObject):
             )
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
-            if self.ndim > 0 and not isinstance(x, pd.DataFrame):
-                x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            x = self._coerce_to_self_index_df(x, flatten=False)
             res = self.pdf(x=x)
             if isinstance(res, pd.DataFrame):
                 res = res.values
             return np.log(res)
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
+
+    def pmf(self, x):
+        r"""Probability mass function.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`m_{X_{ij}}`, denote the marginal mass of :math:`X` at the
+        :math:`(i,j)`-th entry, i.e.,
+        :math:`m_{X_{ij}}(x_{ij}) = \mathbb{P}(X_{ij} = x_{ij})`.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`m_{X_{ij}}(x_{ij})`.
+
+        If ``self`` has a mixed or discrete distribution, this returns
+        the weighted continuous part of `self`'s distribution instead of the pdf,
+        i.e., the marginal pdf integrate to the weight of the continuous part.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`p_{X_{ij}}(x_{ij})`, as above
+        """
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if distr_type == "continuous":
+            return self._coerce_to_self_index_df(0, flatten=False)
+
+        return self._boilerplate("_pmf", x=x)
+
+    def _pmf(self, x):
+        """Probability mass function.
+
+        Private method, to be implemented by subclasses.
+        """
+        self_has_logpmf = self._has_implementation_of("log_pmf")
+        self_has_logpmf = self_has_logpmf or self._has_implementation_of("_log_pmf")
+        if self_has_logpmf:
+            approx_method = (
+                "by exponentiating the output returned by the log_pmf method, "
+                "this may be numerically unstable"
+            )
+            warn(self._method_error_msg("pmf", fill_in=approx_method))
+
+            x = self._coerce_to_self_index_df(x, flatten=False)
+            res = self.log_pmf(x=x)
+            if isinstance(res, pd.DataFrame):
+                res = res.values
+            return np.exp(res)
+
+        raise NotImplementedError(self._method_error_msg("pmf", "error"))
+
+    def log_pmf(self, x):
+        r"""Logarithmic probability mass function.
+
+        Numerically more stable than calling pmf and then taking logartihms.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in `(N, n)` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`m_{X_{ij}}`, denote the marginal pdf of :math:`X` at the
+        :math:`(i,j)`-th entry, i.e.,
+        :math:`m_{X_{ij}}(x_{ij}) = \mathbb{P}(X_{ij} = x_{ij})`.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`\log m_{X_{ij}}(x_{ij})`.
+
+        If ``self`` has a mixed or discrete distribution, this returns
+        the weighted continuous part of `self`'s distribution instead of the pdf,
+        i.e., the marginal pdf integrate to the weight of the continuous part.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`\log m_{X_{ij}}(x_{ij})`, as above
+        """
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if distr_type == "continuous":
+            return self._coerce_to_self_index_df(-np.inf, flatten=False)
+
+        return self._boilerplate("_log_pmf", x=x)
+
+    def _log_pmf(self, x):
+        """Logarithmic probability mass function.
+
+        Private method, to be implemented by subclasses.
+        """
+        if self._has_implementation_of("pmf") or self._has_implementation_of("_pmf"):
+            approx_method = (
+                "by taking the logarithm of the output returned by the pdf method, "
+                "this may be numerically unstable"
+            )
+            warn(self._method_error_msg("log_pmf", fill_in=approx_method))
+
+            x = self._coerce_to_self_index_df(x, flatten=False)
+            res = self.pmf(x=x)
+            if isinstance(res, pd.DataFrame):
+                res = res.values
+            return np.log(res)
+
+        raise NotImplementedError(self._method_error_msg("log_pmf", "error"))
 
     def cdf(self, x):
         r"""Cumulative distribution function.
@@ -613,7 +863,8 @@ class BaseDistribution(BaseObject):
         taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
         By :math:`F_{X_{ij}}`, denote the marginal cdf of :math:`X` at the
-        :math:`(i,j)`-th entry.
+        :math:`(i,j)`-th entry,
+        i.e., :math:`F_{X_{ij}}(t) = \mathbb{P}(X_{ij} \leq t)`.
 
         The output of this method, for input ``x`` representing :math:`x`,
         is a ``DataFrame`` with same columns and indices as ``self``,
@@ -647,6 +898,76 @@ class BaseDistribution(BaseObject):
         sply = self.sample(N)
         spl = splx <= sply
         return self._sample_mean(spl)
+
+    def surv(self, x):
+        r"""Survival function.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`S_{X_{ij}}`, denote the marginal survival of :math:`X` at the
+        :math:`(i,j)`-th entry,
+        i.e., :math:`S_{X_{ij}}(t) = \mathbb{P}(X_{ij} \gneq t)`.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`F_{X_{ij}}(x_{ij})`.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`S_{X_{ij}}(x_{ij})`, as above
+        """
+        return self._boilerplate("_surv", x=x)
+
+    def _surv(self, x):
+        """Survival function.
+
+        Private method, to be implemented by subclasses.
+        """
+        x = self._coerce_to_self_index_df(x, flatten=False)
+        return 1 - self.cdf(x)
+
+    def haz(self, x):
+        r"""Hazard function.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`h_{X_{ij}}`, denote the marginal hazard of :math:`X` at the
+        :math:`(i,j)`-th entry,
+        i.e., :math:`h_{X_{ij}}(t) = \frac{f_{X_{ij}}(t)}{S_{X_{ij}}(t)}`,
+        where :math:`f_{X_{ij}}` is the marginal pdf, and :math:`S_{X_{ij}}`
+        is the marginal survival function at the :math:`(i,j)`-th entry.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`h_{X_{ij}}(x_{ij})`.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`h_{X_{ij}}(x_{ij})`, as above
+        """
+        return self._boilerplate("_haz", x=x)
+
+    def _haz(self, x):
+        """Hazard function.
+
+        Private method, to be implemented by subclasses.
+        """
+        x = self._coerce_to_self_index_df(x, flatten=False)
+        return self.pdf(x) / self.surv(x)
 
     def ppf(self, p):
         r"""Quantile function = percent point function = inverse cdf.
@@ -696,7 +1017,7 @@ class BaseDistribution(BaseObject):
                 "by using the bisection method (scipy.optimize.bisect) on "
                 f"the cdf, at {max_iter} maximum iterations"
             )
-            warn(self._method_error_msg("cdf", fill_in=approx_method))
+            warn(self._method_error_msg("ppf", fill_in=approx_method))
 
             def bisect_unb(opt_fun, **kwargs):
                 """Unbound version of bisect."""
@@ -716,7 +1037,7 @@ class BaseDistribution(BaseObject):
 
                 def opt_fun(x):
                     """Optimization function, to find x s.t. cdf(x) = p_ix."""
-                    return d_ix.cdf(x) - p  # noqa: B023
+                    return self.cdf(x) - p  # noqa: B023
 
                 result = bisect_unb(opt_fun)
                 return result
@@ -817,6 +1138,23 @@ class BaseDistribution(BaseObject):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
+        approx_spl_size = self.get_tag("approx_energy_spl")
+        if x is not None and self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the energy expectation by the integral "
+                "of the absolute difference of x to the ppf,"
+                f"with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("energy", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [np.abs(self.ppf(p) - x) for p in ps]
+            en3D = np.array(qs)
+            energy = np.mean(en3D, axis=0)
+            if self.ndim > 0:
+                energy = np.sum(energy, axis=1)
+            return energy
+
         # we want to approximate E[abs(X-Y)]
         # if x = None, X,Y are i.i.d. copies of self
         # if x is not None, X=x (constant), Y=self
@@ -912,6 +1250,20 @@ class BaseDistribution(BaseObject):
         Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_mean_spl")
+        if self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the expected value by the integral of the ppf, "
+                f"with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("mean", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [self.ppf(p) for p in ps]
+            np3D = np.array(qs)
+            means = np.mean(np3D, axis=0)
+            return means
+
+        # else we have to rely on samples
         approx_method = (
             "by approximating the expected value by the arithmetic mean of "
             f"{approx_spl_size} samples"
@@ -941,6 +1293,26 @@ class BaseDistribution(BaseObject):
         Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_var_spl")
+        if self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the variancee integrals of the ppf, "
+                "integral of ppf-squared minus square of integral of ppf, "
+                f"each with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("var", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [self.ppf(p) for p in ps]
+            qsq = [q**2 for q in qs]
+
+            mean3D = np.array(qs)
+            means = np.mean(mean3D, axis=0)
+
+            mom2s3D = np.array(qsq)
+            mom2s = np.mean(mom2s3D, axis=0)
+
+            return mom2s - means**2
+
         approx_method = (
             "by approximating the variance by the arithmetic mean of "
             f"{approx_spl_size} samples of squared differences"
@@ -950,7 +1322,7 @@ class BaseDistribution(BaseObject):
         spl1 = self.sample(approx_spl_size)
         spl2 = self.sample(approx_spl_size)
         spl = (spl1 - spl2) ** 2
-        return self._sample_mean(spl)
+        return self._sample_mean(spl) / 2
 
     def pdfnorm(self, a=2):
         r"""a-norm of pdf, defaults to 2-norm.
@@ -1084,16 +1456,22 @@ class BaseDistribution(BaseObject):
         Parameters
         ----------
         n_samples : int, optional, default = None
+            number of samples to draw from the distribution
 
         Returns
         -------
-        if `n_samples` is `None`:
-        returns a sample that contains a single sample from `self`,
-        in `pd.DataFrame` mtype format convention, with `index` and `columns` as `self`
-        if n_samples is `int`:
-        returns a `pd.DataFrame` that contains `n_samples` i.i.d. samples from `self`,
-        in `pd-multiindex` mtype format convention, with same `columns` as `self`,
-        and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
+        pd.DataFrame
+            samples from the distribution
+
+            * if ``n_samples`` is ``None``:
+            returns a sample that contains a single sample from ``self``,
+            in ``pd.DataFrame`` mtype format convention, with ``index`` and ``columns``
+            as ``self``
+            * if n_samples is ``int``:
+            returns a ``pd.DataFrame`` that contains ``n_samples`` i.i.d.
+            samples from ``self``, in ``pd-multiindex`` mtype format convention,
+            with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
+            of ``RangeIndex(n_samples)`` and ``self.index``
         """
 
         def gen_unif():
@@ -1116,7 +1494,7 @@ class BaseDistribution(BaseObject):
 
         raise NotImplementedError(self._method_error_msg("sample", "error"))
 
-    def plot(self, fun="pdf", ax=None, **kwargs):
+    def plot(self, fun=None, ax=None, **kwargs):
         """Plot the distribution.
 
         Different distribution defining functions can be selected for plotting
@@ -1129,7 +1507,7 @@ class BaseDistribution(BaseObject):
 
         Parameters
         ----------
-        fun : str, optional, default="pdf"
+        fun : str, optional, default="pdf" for continuous distributions, otherwise "cdf"
             the function to plot, one of "pdf", "cdf", "ppf"
         ax : matplotlib Axes object, optional
             matplotlib Axes to plot in
@@ -1147,6 +1525,12 @@ class BaseDistribution(BaseObject):
         _check_soft_dependencies("matplotlib", obj="distribution plot")
 
         from matplotlib.pyplot import subplots
+
+        if fun is None:
+            if self.get_tag("distr:measuretype", "mixed") == "continuous":
+                fun = "pdf"
+            else:
+                fun = "cdf"
 
         if self.ndim > 0:
             if "x_bounds" not in kwargs:
@@ -1200,7 +1584,7 @@ class BaseDistribution(BaseObject):
             fig.supxlabel(f"{x_argname}")
             return fig, ax
 
-        # for now, all plots default ot this function
+        # for now, all plots default to this function
         # but this could be changed to a dispatch mechanism
         # e.g., using this line instead
         # plot_fun_name = f"_plot_{fun}"
@@ -1226,7 +1610,7 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
-        x_arr = np.linspace(lower, upper, 100)
+        x_arr = np.linspace(lower, upper, 1000)
         y_arr = [getattr(self, fun)(x) for x in x_arr]
         y_arr = np.array(y_arr)
 
@@ -1396,16 +1780,22 @@ class _BaseTFDistribution(BaseDistribution):
         Parameters
         ----------
         n_samples : int, optional, default = None
+            number of samples to draw from the distribution
 
         Returns
         -------
-        if `n_samples` is `None`:
-        returns a sample that contains a single sample from `self`,
-        in `pd.DataFrame` mtype format convention, with `index` and `columns` as `self`
-        if n_samples is `int`:
-        returns a `pd.DataFrame` that contains `n_samples` i.i.d. samples from `self`,
-        in `pd-multiindex` mtype format convention, with same `columns` as `self`,
-        and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
+        pd.DataFrame
+            samples from the distribution
+
+            * if ``n_samples`` is ``None``:
+            returns a sample that contains a single sample from ``self``,
+            in ``pd.DataFrame`` mtype format convention, with ``index`` and ``columns``
+            as ``self``
+            * if n_samples is ``int``:
+            returns a ``pd.DataFrame`` that contains ``n_samples`` i.i.d.
+            samples from ``self``, in ``pd-multiindex`` mtype format convention,
+            with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
+            of ``RangeIndex(n_samples)`` and ``self.index``
         """
         if n_samples is None:
             np_spl = self.distr.sample().numpy()

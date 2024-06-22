@@ -22,6 +22,7 @@ Base
     :template: class.rst
 
     BaseDistribution
+    BaseArrayDistribution
 
 Parametric distributions
 ------------------------
@@ -35,10 +36,20 @@ Continuous support
     :toctree: auto_generated/
     :template: class.rst
 
+    Alpha
+    Beta
+    ChiSquared
+    Exponential
     Fisk
+    Gamma
+    HalfCauchy
+    HalfLogistic
+    HalfNormal
     Laplace
     Logistic
+    LogLaplace
     Normal
+    Pareto
     TDistribution
     Weibull
 
@@ -64,14 +75,31 @@ Non-parametric and empirical distributions
     :toctree: auto_generated/
     :template: class.rst
 
+    Delta
     Empirical
     QPD_Empirical
+    QPD_Johnson
     QPD_U
     QPD_S
     QPD_B
 
+
 Composite distributions
 -----------------------
+
+Parametric families
+~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MeanScale
+
+Mixture composition
+~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -80,4 +108,28 @@ Composite distributions
     :template: class.rst
 
     Mixture
-    MeanScale
+
+Sampling and multivariate composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    IID
+
+Array distributions
+-------------------
+
+Continuous support
+~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    Histogram

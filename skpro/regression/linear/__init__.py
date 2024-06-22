@@ -3,9 +3,11 @@
 
 from skpro.regression.linear._glm import GLMRegressor
 from skpro.regression.linear._sklearn import ARDRegression, BayesianRidge
+from skpro.regression.linear._sklearn_poisson import PoissonRegressor
 
 __all__ = [
     "ARDRegression",
     "BayesianRidge",
     "GLMRegressor",
+    "PoissonRegressor",
 ]

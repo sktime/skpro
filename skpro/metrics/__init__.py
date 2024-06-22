@@ -5,21 +5,26 @@
 __author__ = ["fkiraly", "euanenticott-shell"]
 
 __all__ = [
-    "PinballLoss",
-    "EmpiricalCoverage",
-    "ConstraintViolation",
     "CRPS",
+    "AUCalibration",
+    "ConstraintViolation",
+    "EmpiricalCoverage",
+    "IntervalWidth",
     "LogLoss",
     "LinearizedLogLoss",
+    "PinballLoss",
     "SquaredDistrLoss",
+    # survival metrics
     "ConcordanceHarrell",
     "SPLL",
 ]
 
 from skpro.metrics._classes import (
     CRPS,
+    AUCalibration,
     ConstraintViolation,
     EmpiricalCoverage,
+    IntervalWidth,
     LinearizedLogLoss,
     LogLoss,
     PinballLoss,
