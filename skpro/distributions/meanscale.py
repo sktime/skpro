@@ -207,7 +207,7 @@ class MeanScale(BaseDistribution):
         icdf_arr = mu + scale * self.d.ppf(p)
         return icdf_arr
 
-    # def _energy_self(self):
+        # def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
         :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
@@ -224,7 +224,7 @@ class MeanScale(BaseDistribution):
         # en_arr = scale * self.d.energy()
         # return en_arr
 
-    # def _energy_x(self, x):
+        # def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
 
         :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
