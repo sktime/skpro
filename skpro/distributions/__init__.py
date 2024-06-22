@@ -16,6 +16,7 @@ __all__ = [
     "HalfLogistic",
     "HalfNormal",
     "IID",
+    "Histogram",
     "Laplace",
     "Logistic",
     "LogLaplace",
@@ -46,6 +47,7 @@ from skpro.distributions.gamma import Gamma
 from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halflogistic import HalfLogistic
 from skpro.distributions.halfnormal import HalfNormal
+from skpro.distributions.histogram import Histogram
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.loglaplace import LogLaplace
