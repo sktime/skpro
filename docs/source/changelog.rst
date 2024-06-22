@@ -15,6 +15,56 @@ You can also subscribe to ``skpro``'s
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
+
+[2.3.2] - 2024-06-22
+====================
+
+Highlights
+----------
+
+Core interface changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Enhancements
+~~~~~~~~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Survival and time-to-event prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Test framework
+~~~~~~~~~~~~~~
+
+Fixes
+~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Survival and time-to-event prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Maintenance
+~~~~~~~~~~~
+
+Documentation
+~~~~~~~~~~~~~
+
+Contributors
+~~~~~~~~~~~~
+
+
 [2.3.1] - 2024-05-26
 ====================
 
@@ -88,6 +138,9 @@ Contributors
 
 [2.3.0] - 2024-05-16
 ====================
+
+Highlights
+----------
 
 * new tutorial notebooks for survival prediction and probability distributions (:pr:`303`, :pr:`305`) :user:`fkiraly`
 * interface to ``ngboost`` probabilistic regressor and survival predictor (:pr:`215`, :pr:`301`, :pr:`309`, :pr:`332`) :user:`ShreeshaM07`
