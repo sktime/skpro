@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Gamma(_ScipyAdapter):
     r"""Gamma Distribution.
 
+    Most methods wrap ``scipy.stats.gamma``.
+
     The Gamma Distribution is parameterized by shape :math:`\alpha` and
     rate :math:`\beta`, such that the pdf is
 

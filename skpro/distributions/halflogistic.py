@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class HalfLogistic(_ScipyAdapter):
     r"""Half-Logistic distribution.
 
+    Most methods wrap ``scipy.stats.halflogistic``.
+
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
 
