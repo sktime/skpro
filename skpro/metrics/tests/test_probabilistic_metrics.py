@@ -4,7 +4,12 @@ import pytest
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
-from skpro.metrics._classes import ConstraintViolation, EmpiricalCoverage, PinballLoss
+from skpro.metrics._classes import (
+    ConstraintViolation,
+    EmpiricalCoverage,
+    IntervalWidth,
+    PinballLoss,
+)
 from skpro.regression.residual import ResidualDouble
 
 quantile_metrics = [
@@ -14,6 +19,7 @@ quantile_metrics = [
 interval_metrics = [
     EmpiricalCoverage,
     ConstraintViolation,
+    IntervalWidth,
 ]
 
 all_metrics = quantile_metrics + interval_metrics
