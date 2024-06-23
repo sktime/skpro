@@ -1,4 +1,4 @@
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Base class for data types."""
 
 __author__ = ["fkiraly"]

@@ -1,3 +1,4 @@
+"""Utility functions for retrieving objects from modules."""
 import importlib
 import inspect
 import pkgutil
