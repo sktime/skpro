@@ -21,6 +21,7 @@ __all__ = [
     "Logistic",
     "LogLaplace",
     "LogNormal",
+    "MeanScale",
     "Mixture",
     "Normal",
     "Pareto",
@@ -52,6 +53,7 @@ from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal
+from skpro.distributions.meanscale import MeanScale
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
 from skpro.distributions.pareto import Pareto
