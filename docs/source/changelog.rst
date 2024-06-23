@@ -16,6 +16,16 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.4.0] - 2024-06-23
+====================
+
+Maintenance release with ``numpy 2.0.X`` compatibility and minor enhancements.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``numpy`` bounds have been updated to ``>=1.21.0,<2.1.0``.
+
 [2.3.2] - 2024-06-22
 ====================
 
