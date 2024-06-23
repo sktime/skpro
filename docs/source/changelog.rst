@@ -34,14 +34,24 @@ Enhancements
 Probability distributions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* [ENH] mean-scale family of distributions, composite (:pr:`282`) :user:`fkiraly`
+* [ENH] Half Normal Distribution (:pr:`363`) :user:`SaiRevanth25`
+* [ENH] Half Cauchy Distribution (:pr:`371`) :user:`SaiRevanth25`
+* [ENH] Half Logistic Distribution (:pr:`373`) :user:`SaiRevanth25`
+* [ENH] Log Laplace Distribution (:pr:`374`) :user:`SaiRevanth25`
+* [ENH] Histogram distribution (:pr:`382`) :user:`ShreeshaM07`
+* [ENH] Pareto distribution (:pr:`396`) :user:`sukjingitsit`
+
 Probabilistic regression
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Survival and time-to-event prediction
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* [ENH] ``GLM`` with multiple ``distributions`` and ``link`` function support (:pr:`384`) :user:`ShreeshaM07`
+* [ENH] interval width and area under calibration curve metrics (:pr:`391`) :user:`fkiraly`
 
 Test framework
 ~~~~~~~~~~~~~~
+
+* [ENH] Tests for polars support for estimators (:pr:`370`) :user:`julian-fong`
 
 Fixes
 ~~~~~
@@ -49,20 +59,41 @@ Fixes
 Probability distributions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* [BUG] fix ``test_methods_p`` logic when ``shuffle`` is ``True`` (:pr:`381`) :user:`ShreeshaM07`
+* [BUG] ensure ``index`` and ``columns`` are taken into account in broadcasting if ``bc_params`` are set (:pr:`403`) :user:`fkiraly`
+
 Probabilistic regression
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] bugfix when ``None`` was specified for ``max_iter`` parameter in sklearn regressors (:pr:`386`) :user:`julian-fong`
 
 Survival and time-to-event prediction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* [BUG] bugfix on #387 - changed paramset 3 to use ``ConditionUncensored`` instead of ``CoxPH`` (:pr:`388`) :user:`julian-fong`
+
 Maintenance
 ~~~~~~~~~~~
+
+* [MNT] Deprecation message for ``CyclicBoosting`` changes (:pr:`320`) :user:`setoguchi-naoki`
+* [MNT] make ``BaseArrayDistribution`` private (:pr:`401`) :user:`fkiraly`
 
 Documentation
 ~~~~~~~~~~~~~
 
+* [DOC] fix typo in survival models API reference (:pr:`368`) :user:`fkiraly`
+* [DOC] add ``scipy`` reference to interfaced distributions (:pr:`379`) :user:`fkiraly`
+* [DOC] in API reference, order distributions by support (:pr:`400`) :user:`fkiraly`
+
 Contributors
 ~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`julian-fong`,
+:user:`SaiRevanth25`,
+:user:`setoguchi-naoki`,
+:user:`ShreeshaM07`,
+:user:`sukjingitsit`
 
 
 [2.3.1] - 2024-05-26
