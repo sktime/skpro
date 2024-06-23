@@ -19,12 +19,21 @@ For planned changes and upcoming releases, see roadmap in the
 [2.4.0] - 2024-06-23
 ====================
 
-Maintenance release with ``numpy 2.0.X`` compatibility and minor enhancements.
+Maintenance release with ``numpy 2.0.X`` compatibility, scheduled
+deprecations and updates.
 
 Dependency changes
 ~~~~~~~~~~~~~~~~~~
 
 * ``numpy`` bounds have been updated to ``>=1.21.0,<2.1.0``.
+
+Contents
+--------
+
+* [MNT] increase ``numpy`` bound to ``numpy < 2.1``, ``numpy 2`` compatibility
+  (:pr:`393`) :user:`fkiraly`
+* [MNT] 2.4.0 deprecations and change actions (:pr:`404`) :user:`fkiraly`
+
 
 [2.3.2] - 2024-06-22
 ====================
