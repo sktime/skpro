@@ -281,24 +281,49 @@ class BaseDistribution(BaseObject):
 
         subset_param_dict = {}
         for param, val in params.items():
-            if val is None:
-                subset_param_dict[param] = None
-                continue
-            arr = np.array(val)
-            # if len(arr.shape) == 0:
-            # do nothing with arr
-            if len(arr.shape) == 2 and rowidx is not None:
-                arr = arr[rowidx, :]
-            if len(arr.shape) == 1 and colidx is not None:
-                arr = arr[colidx]
-            if len(arr.shape) >= 2 and colidx is not None:
-                arr = arr[:, colidx]
-            if np.issubdtype(arr.dtype, np.integer):
-                arr = arr.astype("float")
-            if coerce_scalar:
-                arr = arr[(0,) * len(arr.shape)]
-            subset_param_dict[param] = arr
+            subset_param_dict[param] = self._subset_param(
+                val=val,
+                rowidx=rowidx,
+                colidx=colidx,
+                coerce_scalar=coerce_scalar,
+            )
         return subset_param_dict
+
+    def _subset_param(self, val, rowidx, colidx, coerce_scalar=False):
+        """Subset a single distribution parameter value to given rows and columns.
+
+        Parameters
+        ----------
+        val : scalar, 1D, 2D, array-like, or None
+            Distribution parameter that is to be subsetted.
+        rowidx : None, numpy index/slice coercible, or int
+            Rows to subset to. If None, no subsetting is done.
+        colidx : None, numpy index/slice coercible, or int
+            Columns to subset to. If None, no subsetting is done.
+        coerce_scalar : bool, optional, default=False
+            If True, and the subsetted parameter is a scalar, coerce it to a scalar.
+
+        Returns
+        -------
+        scalar, 1D, 2D, array-like, or None
+            Subsetted distribution parameter.
+        """
+        if val is None:
+            return None
+        arr = np.array(val)
+        # if len(arr.shape) == 0:
+        # do nothing with arr
+        if len(arr.shape) == 2 and rowidx is not None:
+            arr = arr[rowidx, :]
+        if len(arr.shape) == 1 and colidx is not None:
+            arr = arr[colidx]
+        if len(arr.shape) >= 2 and colidx is not None:
+            arr = arr[:, colidx]
+        if np.issubdtype(arr.dtype, np.integer):
+            arr = arr.astype("float")
+        if coerce_scalar:
+            arr = arr[(0,) * len(arr.shape)]
+        return arr
 
     def _iat(self, rowidx=None, colidx=None):
         if rowidx is None or colidx is None:
@@ -559,6 +584,12 @@ class BaseDistribution(BaseObject):
         bc_params = self.get_tags()["broadcast_params"]
         if bc_params is None:
             bc_params = kwargs_as_np.keys()
+        else:
+            bc_params = bc_params.copy()
+            if "index" in kwargs_as_np:
+                bc_params.append("index")
+            if "columns" in kwargs_as_np:
+                bc_params.append("columns")
 
         args_as_np = [kwargs_as_np[k] for k in bc_params]
         bc = np.broadcast_arrays(*args_as_np)
@@ -1456,16 +1487,22 @@ class BaseDistribution(BaseObject):
         Parameters
         ----------
         n_samples : int, optional, default = None
+            number of samples to draw from the distribution
 
         Returns
         -------
-        if `n_samples` is `None`:
-        returns a sample that contains a single sample from `self`,
-        in `pd.DataFrame` mtype format convention, with `index` and `columns` as `self`
-        if n_samples is `int`:
-        returns a `pd.DataFrame` that contains `n_samples` i.i.d. samples from `self`,
-        in `pd-multiindex` mtype format convention, with same `columns` as `self`,
-        and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
+        pd.DataFrame
+            samples from the distribution
+
+            * if ``n_samples`` is ``None``:
+            returns a sample that contains a single sample from ``self``,
+            in ``pd.DataFrame`` mtype format convention, with ``index`` and ``columns``
+            as ``self``
+            * if n_samples is ``int``:
+            returns a ``pd.DataFrame`` that contains ``n_samples`` i.i.d.
+            samples from ``self``, in ``pd-multiindex`` mtype format convention,
+            with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
+            of ``RangeIndex(n_samples)`` and ``self.index``
         """
 
         def gen_unif():
@@ -1488,7 +1525,7 @@ class BaseDistribution(BaseObject):
 
         raise NotImplementedError(self._method_error_msg("sample", "error"))
 
-    def plot(self, fun="pdf", ax=None, **kwargs):
+    def plot(self, fun=None, ax=None, **kwargs):
         """Plot the distribution.
 
         Different distribution defining functions can be selected for plotting
@@ -1501,7 +1538,7 @@ class BaseDistribution(BaseObject):
 
         Parameters
         ----------
-        fun : str, optional, default="pdf"
+        fun : str, optional, default="pdf" for continuous distributions, otherwise "cdf"
             the function to plot, one of "pdf", "cdf", "ppf"
         ax : matplotlib Axes object, optional
             matplotlib Axes to plot in
@@ -1519,6 +1556,12 @@ class BaseDistribution(BaseObject):
         _check_soft_dependencies("matplotlib", obj="distribution plot")
 
         from matplotlib.pyplot import subplots
+
+        if fun is None:
+            if self.get_tag("distr:measuretype", "mixed") == "continuous":
+                fun = "pdf"
+            else:
+                fun = "cdf"
 
         if self.ndim > 0:
             if "x_bounds" not in kwargs:
@@ -1768,16 +1811,22 @@ class _BaseTFDistribution(BaseDistribution):
         Parameters
         ----------
         n_samples : int, optional, default = None
+            number of samples to draw from the distribution
 
         Returns
         -------
-        if `n_samples` is `None`:
-        returns a sample that contains a single sample from `self`,
-        in `pd.DataFrame` mtype format convention, with `index` and `columns` as `self`
-        if n_samples is `int`:
-        returns a `pd.DataFrame` that contains `n_samples` i.i.d. samples from `self`,
-        in `pd-multiindex` mtype format convention, with same `columns` as `self`,
-        and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
+        pd.DataFrame
+            samples from the distribution
+
+            * if ``n_samples`` is ``None``:
+            returns a sample that contains a single sample from ``self``,
+            in ``pd.DataFrame`` mtype format convention, with ``index`` and ``columns``
+            as ``self``
+            * if n_samples is ``int``:
+            returns a ``pd.DataFrame`` that contains ``n_samples`` i.i.d.
+            samples from ``self``, in ``pd-multiindex`` mtype format convention,
+            with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
+            of ``RangeIndex(n_samples)`` and ``self.index``
         """
         if n_samples is None:
             np_spl = self.distr.sample().numpy()
