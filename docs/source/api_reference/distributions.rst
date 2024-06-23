@@ -98,6 +98,17 @@ Non-parametric and empirical distributions
 Composite distributions
 -----------------------
 
+Parametric families
+~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MeanScale
+
 Mixture composition
 ~~~~~~~~~~~~~~~~~~~
 
@@ -108,7 +119,6 @@ Mixture composition
     :template: class.rst
 
     Mixture
-
 
 Sampling and multivariate composition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
