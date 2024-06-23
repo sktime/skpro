@@ -22,11 +22,16 @@ For planned changes and upcoming releases, see roadmap in the
 Highlights
 ----------
 
-Core interface changes
-~~~~~~~~~~~~~~~~~~~~~~
-
-Deprecations and removals
-~~~~~~~~~~~~~~~~~~~~~~~~~
+* ``GLM`` now supports multiple ``distributions`` and ``link`` function
+  (:pr:`384`) :user:`ShreeshaM07`
+* new metrics: interval width, area under calibration curve (:pr:`391`) :user:`fkiraly`
+* histogram distribution (:pr:`382`) :user:`ShreeshaM07`
+* new distributions with non-negative support:
+  Half Normal, Half Cauchy, Half Logistic, Log Laplace, Pareto
+  (:pr:`363`, :pr:`371`, :pr:`373`, :pr:`374`, :pr:`396`)
+  :user:`SaiRevanth25`, :user:`sukjingitsit`
+* mean-scale family of distributions, composable with any real distribution
+  (:pr:`282`) :user:`fkiraly`
 
 Enhancements
 ~~~~~~~~~~~~
