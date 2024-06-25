@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class HalfCauchy(_ScipyAdapter):
     r"""Half-Cauchy distribution.
 
+    Most methods wrap ``scipy.stats.halfcauchy``.
+
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
 

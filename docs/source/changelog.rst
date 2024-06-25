@@ -15,6 +15,111 @@ You can also subscribe to ``skpro``'s
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
+
+[2.4.0] - 2024-06-23
+====================
+
+Maintenance release with ``numpy 2.0.X`` compatibility, scheduled
+deprecations and updates.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``numpy`` bounds have been updated to ``>=1.21.0,<2.1.0``.
+
+Contents
+--------
+
+* [MNT] increase ``numpy`` bound to ``numpy < 2.1``, ``numpy 2`` compatibility
+  (:pr:`393`) :user:`fkiraly`
+* [MNT] 2.4.0 deprecations and change actions (:pr:`404`) :user:`fkiraly`
+
+
+[2.3.2] - 2024-06-22
+====================
+
+Highlights
+----------
+
+* ``GLM`` now supports multiple ``distributions`` and ``link`` function
+  (:pr:`384`) :user:`ShreeshaM07`
+* new metrics: interval width, area under calibration curve (:pr:`391`) :user:`fkiraly`
+* histogram distribution (:pr:`382`) :user:`ShreeshaM07`
+* new distributions with non-negative support:
+  Half Normal, Half Cauchy, Half Logistic, Log Laplace, Pareto
+  (:pr:`363`, :pr:`371`, :pr:`373`, :pr:`374`, :pr:`396`)
+  :user:`SaiRevanth25`, :user:`sukjingitsit`
+* mean-scale family of distributions, composable with any real distribution
+  (:pr:`282`) :user:`fkiraly`
+
+Enhancements
+~~~~~~~~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] mean-scale family of distributions, composite (:pr:`282`) :user:`fkiraly`
+* [ENH] Half Normal Distribution (:pr:`363`) :user:`SaiRevanth25`
+* [ENH] Half Cauchy Distribution (:pr:`371`) :user:`SaiRevanth25`
+* [ENH] Half Logistic Distribution (:pr:`373`) :user:`SaiRevanth25`
+* [ENH] Log Laplace Distribution (:pr:`374`) :user:`SaiRevanth25`
+* [ENH] Histogram distribution (:pr:`382`) :user:`ShreeshaM07`
+* [ENH] Pareto distribution (:pr:`396`) :user:`sukjingitsit`
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] ``GLM`` with multiple ``distributions`` and ``link`` function support (:pr:`384`) :user:`ShreeshaM07`
+* [ENH] interval width and area under calibration curve metrics (:pr:`391`) :user:`fkiraly`
+
+Test framework
+~~~~~~~~~~~~~~
+
+* [ENH] Tests for polars support for estimators (:pr:`370`) :user:`julian-fong`
+
+Fixes
+~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] fix ``test_methods_p`` logic when ``shuffle`` is ``True`` (:pr:`381`) :user:`ShreeshaM07`
+* [BUG] ensure ``index`` and ``columns`` are taken into account in broadcasting if ``bc_params`` are set (:pr:`403`) :user:`fkiraly`
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] bugfix when ``None`` was specified for ``max_iter`` parameter in sklearn regressors (:pr:`386`) :user:`julian-fong`
+
+Survival and time-to-event prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] bugfix on #387 - changed paramset 3 to use ``ConditionUncensored`` instead of ``CoxPH`` (:pr:`388`) :user:`julian-fong`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] Deprecation message for ``CyclicBoosting`` changes (:pr:`320`) :user:`setoguchi-naoki`
+* [MNT] make ``BaseArrayDistribution`` private (:pr:`401`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] fix typo in survival models API reference (:pr:`368`) :user:`fkiraly`
+* [DOC] add ``scipy`` reference to interfaced distributions (:pr:`379`) :user:`fkiraly`
+* [DOC] in API reference, order distributions by support (:pr:`400`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`julian-fong`,
+:user:`SaiRevanth25`,
+:user:`setoguchi-naoki`,
+:user:`ShreeshaM07`,
+:user:`sukjingitsit`
+
+
 [2.3.1] - 2024-05-26
 ====================
 
@@ -88,6 +193,9 @@ Contributors
 
 [2.3.0] - 2024-05-16
 ====================
+
+Highlights
+----------
 
 * new tutorial notebooks for survival prediction and probability distributions (:pr:`303`, :pr:`305`) :user:`fkiraly`
 * interface to ``ngboost`` probabilistic regressor and survival predictor (:pr:`215`, :pr:`301`, :pr:`309`, :pr:`332`) :user:`ShreeshaM07`

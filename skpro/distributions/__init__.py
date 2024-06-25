@@ -16,12 +16,15 @@ __all__ = [
     "HalfLogistic",
     "HalfNormal",
     "IID",
+    "Histogram",
     "Laplace",
     "Logistic",
     "LogLaplace",
     "LogNormal",
+    "MeanScale",
     "Mixture",
     "Normal",
+    "Pareto",
     "Poisson",
     "QPD_Empirical",
     "QPD_S",
@@ -45,12 +48,15 @@ from skpro.distributions.gamma import Gamma
 from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halflogistic import HalfLogistic
 from skpro.distributions.halfnormal import HalfNormal
+from skpro.distributions.histogram import Histogram
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal
+from skpro.distributions.meanscale import MeanScale
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
+from skpro.distributions.pareto import Pareto
 from skpro.distributions.poisson import Poisson
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
 from skpro.distributions.qpd_empirical import QPD_Empirical
