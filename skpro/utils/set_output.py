@@ -67,6 +67,8 @@ def convert_multiindex_columns_to_single_column(X_input: pd.DataFrame):
     df_cols = []
     for col in X_input.columns:
         df_cols.append("__" + "__".join(str(x) for x in col if x != "") + "__")
+    # in case "__index__" is in one of the tuples inside X_input
+    df_cols = [col.replace("____", "__") for col in df_cols]
 
     return df_cols
 
@@ -153,5 +155,5 @@ def check_transform_config(estimator):
             f"set_output container must be in {SUPPORTED_OUTPUTS}, "
             f"found {transform_output}."
         )
-
-    return {"dense": estimator.get_config()["transform"]}
+    valid = True
+    return valid, {"dense": estimator.get_config()["transform"]}
