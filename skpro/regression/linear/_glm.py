@@ -238,7 +238,7 @@ class GLMRegressor(BaseProbaRegressor):
 
         return sm_fmly[family]()
 
-    # TODO (release 2.4.0)
+    # TODO (release 2.5.0)
     # replace the existing definition of `__init__` with
     # the below definition for `__init__`.
     # def __init__(

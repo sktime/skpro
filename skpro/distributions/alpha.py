@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Alpha(_ScipyAdapter):
     r"""Alpha distribution.
 
+    Most methods wrap ``scipy.stats.alpha``.
+
     The alpha distribution is characterized by its shape parameter :math:`\a`,
     which determines its skewness and tail behavior.
     It is often used for modeling data with heavy right tails,
@@ -27,7 +29,6 @@ class Alpha(_ScipyAdapter):
        - :math:`a` is the shape parameter.
        - :math:`Phi` is the cumulative distribution function (CDF) of the
                     standard normal distribution.
-
 
     Parameters
     ----------

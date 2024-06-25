@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class LogLaplace(_ScipyAdapter):
     r"""Log-Laplace distribution.
 
+    Most methods wrap ``scipy.stats.loglaplace``.
+
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
 
