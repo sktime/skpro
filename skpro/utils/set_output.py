@@ -150,10 +150,13 @@ def check_transform_config(estimator):
             `skpro.utils.set_output`
     """
     transform_output = estimator.get_config()["transform"]
+    if not transform_output:  # probably refactoring this to defaults instead of None
+        valid = False
     if transform_output not in SUPPORTED_OUTPUTS:
         raise ValueError(
             f"set_output container must be in {SUPPORTED_OUTPUTS}, "
             f"found {transform_output}."
         )
-    valid = True
+    else:
+        valid = True
     return valid, {"dense": estimator.get_config()["transform"]}
