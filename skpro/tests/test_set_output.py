@@ -103,7 +103,7 @@ def test_convert_multiindex_columns_to_single_column(
     ]
 
     pd_multi_column_fixture2 = load_pandas_multi_index_column_fixture
-    pd_multi_column_fixture2 = pd_multi_column_fixture2.reset_index(names="index")
+    pd_multi_column_fixture2 = convert_pandas_index_to_column(pd_multi_column_fixture2)
     df_list2 = convert_multiindex_columns_to_single_column(pd_multi_column_fixture2)
     assert df_list2 == [
         "__index__",
@@ -121,12 +121,16 @@ def test_check_transform_config_happy(estimator):
 
     estimator.set_output(transform="pandas")
     assert estimator.get_config()["transform"] == "pandas"
-    assert check_transform_config(estimator)["dense"] == "pandas"
+    valid, dense_config = check_transform_config(estimator)
+    assert valid
+    assert dense_config["dense"] == "pandas"
 
     if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
         estimator.set_output(transform="polars")
         assert estimator.get_config()["transform"] == "polars"
-        assert check_transform_config(estimator)["dense"] == "polars"
+        valid, dense_config = check_transform_config(estimator)
+        assert valid
+        assert dense_config["dense"] == "polars"
 
 
 def test_check_transform_config_negative(estimator):
