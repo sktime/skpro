@@ -22,9 +22,10 @@ class SklearnProbaClassifier(BaseProbaRegressor):
 
     def __init__(self, clf, bins=10):
         self.clf = clf
+        self.bins = bins
         if isinstance(bins, int) or isinstance(bins, np.integer):
             bins = np.arange(bins + 1)
-        self.bins = bins
+        self._bins = bins
 
         super().__init__()
 
@@ -59,6 +60,7 @@ class SklearnProbaClassifier(BaseProbaRegressor):
             y = y[:, 0]
 
         self.clf_.fit(X, y)
+        self.classes_ = self.clf_.classes_
         return self
 
     def _predict(self, X):
@@ -129,16 +131,35 @@ class SklearnProbaClassifier(BaseProbaRegressor):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
+        from warnings import warn
+
         X = prep_skl_df(X)
-        # print(X)
-        y_pred_proba = self.clf_.predict_proba(X)
-        bin_mass = y_pred_proba[0]
-        # print(bin_mass)
-        self.classes_ = self.clf_.classes_
+        bins = self._bins
         classes_ = self.classes_
-        bins = self.bins
-        # print(bins)
+
         if len(bins) != len(classes_) + 1:
+            warn(
+                f"len of `bins` is {len(bins)} != len of classes {len(classes_)}+1."
+                " Ensure the bins has all the bin boundaries resulting in"
+                " number of bins + 1 elements."
+            )
             bins = np.arange(len(classes_) + 1)
-        pred_proba = Histogram(bins=bins, bin_mass=bin_mass)
+
+        y_pred_proba = self.clf_.predict_proba(X)
+
+        if len(X) == 1:
+            bin_mass = y_pred_proba[0]
+            pred_proba = Histogram(bins=bins, bin_mass=bin_mass)
+            return pred_proba
+
+        # converting it to a 2D shape
+        bin_mass = np.array([y_pred_proba])
+        # Reshape and swap axes to get the desired structure
+        bin_mass = bin_mass.swapaxes(0, 1).reshape(-1, 1, bin_mass.shape[-1])
+
+        bins = np.array([[bins]] * len(X))
+
+        pred_proba = Histogram(
+            bins=bins, bin_mass=bin_mass, index=X.index, columns=self._y_cols
+        )
         return pred_proba
