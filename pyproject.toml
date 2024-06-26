@@ -52,7 +52,7 @@ all_extras = [
     "attrs",
     "cyclic-boosting>=1.4.0; python_version < '3.12'",
     "distfit",
-    "lifelines<0.29.0",
+    "lifelines<0.30.0",
     "mapie",
     "matplotlib>=3.3.2",
     "ngboost<0.6.0",
