@@ -16,12 +16,6 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
-[2.4.1] - 2024-06-26
-====================
-
-Maintenance hotfix release with ``scipy 1.14.X`` compatibility.
-
-
 [2.4.0] - 2024-06-23
 ====================
 
