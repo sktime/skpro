@@ -146,6 +146,12 @@ def test_check_transform_config_negative(estimator):
         check_transform_config(estimator)
 
 
+def test_check_transform_config_none(estimator):
+    valid, dense = check_transform_config(estimator)
+    assert not valid
+    assert not dense["dense"]
+
+
 @pytest.mark.skipif(
     not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",

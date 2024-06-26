@@ -9,7 +9,7 @@ import pandas as pd
 
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
-SUPPORTED_OUTPUTS = ["pandas"]
+SUPPORTED_OUTPUTS = ["pandas", None]
 
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     SUPPORTED_OUTPUTS.append("polars")
