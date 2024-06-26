@@ -13,9 +13,9 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
 from skpro.utils.set_output import (  # SUPPORTED_OUTPUTS,
     check_n_level_of_dataframe,
     check_transform_config,
-    convert_multiindex_columns_to_single_column,
     convert_pandas_dataframe_to_polars_eager_with_index,
     convert_pandas_index_to_column,
+    convert_pandas_multiindex_columns_to_single_column,
 )
 
 
@@ -98,7 +98,9 @@ def test_convert_multiindex_columns_to_single_column(
     load_pandas_multi_index_column_fixture,
 ):
     pd_multi_column_fixture1 = load_pandas_multi_index_column_fixture
-    df_list1 = convert_multiindex_columns_to_single_column(pd_multi_column_fixture1)
+    df_list1 = convert_pandas_multiindex_columns_to_single_column(
+        pd_multi_column_fixture1
+    )
     assert df_list1 == [
         "__A__Foo__One__",
         "__A__Foo__Two__",
@@ -108,7 +110,9 @@ def test_convert_multiindex_columns_to_single_column(
 
     pd_multi_column_fixture2 = load_pandas_multi_index_column_fixture
     pd_multi_column_fixture2 = convert_pandas_index_to_column(pd_multi_column_fixture2)
-    df_list2 = convert_multiindex_columns_to_single_column(pd_multi_column_fixture2)
+    df_list2 = convert_pandas_multiindex_columns_to_single_column(
+        pd_multi_column_fixture2
+    )
     assert df_list2 == [
         "__index__",
         "__A__Foo__One__",

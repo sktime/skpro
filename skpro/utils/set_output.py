@@ -16,7 +16,7 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
 
 
 def check_n_level_of_dataframe(X_input, index_pandas=False):
-    """Convert function to check the number of levels inside a pandas Frame.
+    """Convert function to check the number of levels inside a pd/pl frame.
 
     Parameters
     ----------
@@ -50,7 +50,7 @@ def check_n_level_of_dataframe(X_input, index_pandas=False):
     return levels
 
 
-def convert_multiindex_columns_to_single_column(X_input: pd.DataFrame):
+def convert_pandas_multiindex_columns_to_single_column(X_input: pd.DataFrame):
     """Convert function to return a list containing melted columns.
 
     Assumes a multi-index column pandas DataFrame
