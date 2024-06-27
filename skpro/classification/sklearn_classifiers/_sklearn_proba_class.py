@@ -46,9 +46,13 @@ class SklearnProbaClassifier(BaseProbaRegressor):
         -------
         self : reference to self
         """
+        from warnings import warn
+
+        from numpy.lib.stride_tricks import sliding_window_view
         from sklearn import clone
 
         self.clf_ = clone(self.clf)
+        bins = self._bins
         self._y_cols = y.columns
 
         X = prep_skl_df(X)
@@ -61,6 +65,24 @@ class SklearnProbaClassifier(BaseProbaRegressor):
 
         self.clf_.fit(X, y)
         self.classes_ = self.clf_.classes_
+        classes_ = self.classes_
+
+        if len(bins) != len(classes_) + 1:
+            warn(
+                f"len of `bins` is {len(bins)} != len of classes {len(classes_)}+1."
+                " Ensure the bins has all the bin boundaries resulting in"
+                " number of bins + 1 elements."
+            )
+            bins = np.arange(len(classes_) + 1)
+
+        bins_hist = sliding_window_view(bins, window_shape=2)
+
+        # maps the bin boundaries [bin start,bin end] to the classes
+        class_bin_map_ = {}
+        for i in range(len(bins_hist)):
+            class_bin_map_[classes_[i]] = bins_hist[i]
+        self.class_bin_map_ = class_bin_map_
+
         return self
 
     def _predict(self, X):
@@ -146,6 +168,10 @@ class SklearnProbaClassifier(BaseProbaRegressor):
             bins = np.arange(len(classes_) + 1)
 
         y_pred_proba = self.clf_.predict_proba(X)
+
+        # map classes probabilities/bin_mass to class names
+        classes_proba_ = pd.DataFrame(y_pred_proba, columns=classes_)
+        self.classes_proba_ = classes_proba_
 
         if len(X) == 1:
             bin_mass = y_pred_proba[0]
