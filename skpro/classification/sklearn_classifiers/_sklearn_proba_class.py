@@ -109,31 +109,6 @@ class SklearnProbaClassifier(BaseProbaRegressor):
         y_pred_df = pd.DataFrame(y_pred, index=X.index, columns=self._y_cols)
         return y_pred_df
 
-    def _predict_var(self, X):
-        """Compute/return variance predictions.
-
-        private _predict_var containing the core logic, called from predict_var
-
-        Parameters
-        ----------
-        X : pandas DataFrame, must have same columns as X in `fit`
-            data to predict labels for
-
-        Returns
-        -------
-        pred_var : pd.DataFrame
-            Column names are exactly those of ``y`` passed in ``fit``.
-            Row index is equal to row index of ``X``.
-            Entries are variance prediction, for var in col index.
-            A variance prediction for given variable and fh index is a predicted
-            variance for that variable and index, given observed data.
-        """
-        X = prep_skl_df(X)
-        _, y_std = self.clf_.predict(X, return_std=True)
-        y_std = pd.DataFrame(y_std, index=X.index, columns=self._y_cols)
-        y_var = y_std**2
-        return y_var
-
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
 
