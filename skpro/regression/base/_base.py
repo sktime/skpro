@@ -38,7 +38,9 @@ class BaseProbaRegressor(BaseEstimator):
         "C_inner_mtype": "pd_DataFrame_Table",
     }
 
-    _config = {"transform": None}  # accepted values : ["pandas", "polars", None]
+    _config = {
+        "transform": "default"
+    }  # accepted values : ["pandas", "polars", "default"]
 
     def __init__(self):
         super().__init__()

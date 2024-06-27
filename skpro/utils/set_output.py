@@ -9,13 +9,13 @@ import pandas as pd
 
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
-SUPPORTED_OUTPUTS = ["pandas", None]
+SUPPORTED_OUTPUTS = ["pandas", "default"]
 
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     SUPPORTED_OUTPUTS.append("polars")
 
 
-def check_n_level_of_dataframe(X_input, index_pandas=False):
+def check_n_level_of_dataframe(X_input, axis=1):
     """Convert function to check the number of levels inside a pd/pl frame.
 
     Parameters
@@ -24,9 +24,9 @@ def check_n_level_of_dataframe(X_input, index_pandas=False):
         A given polars or pandas DataFrame. Note that the polars portion of this
         code requires the soft dependencies polars and pyarrow to be installed
 
-    index_pandas : bool
-        Specify the index or columns of a pandas DataFrame. If True, uses the index
-        If false, uses the columns. This parameter is ignored if X_input is not
+    axis : [0,1]
+        Specify the index or columns of a pandas DataFrame. If 0, uses the index
+        If 1, uses the columns. This parameter is ignored if X_input is not
         a pandas DataFrame.
 
     Returns
@@ -34,11 +34,13 @@ def check_n_level_of_dataframe(X_input, index_pandas=False):
     levels : int
         An integer specifying the number of levels given a DataFrame
     """
+    if axis not in [0, 1]:
+        raise ValueError(f"axis must be in [0,1] " f"found {axis}.")
     levels = None
     if isinstance(X_input, pd.DataFrame):
-        if index_pandas:
+        if axis == 0:
             levels = X_input.index.nlevels
-        else:
+        elif axis == 1:
             levels = X_input.columns.nlevels
 
     if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
@@ -123,7 +125,7 @@ def convert_pandas_dataframe_to_polars_eager_with_index(X_input, include_index=F
         import polars as pl
 
         if include_index:
-            n_level = check_n_level_of_dataframe(X_input, index_pandas=True)
+            n_level = check_n_level_of_dataframe(X_input, axis=0)
             if n_level != 1:
                 warnings.warn(
                     "pandas DataFrame does not contain a flat single level index. ",
@@ -150,13 +152,13 @@ def check_transform_config(estimator):
             `skpro.utils.set_output`
     """
     transform_output = estimator.get_config()["transform"]
-    if not transform_output:  # probably refactoring this to defaults instead of None
-        valid = False
     if transform_output not in SUPPORTED_OUTPUTS:
         raise ValueError(
             f"set_output container must be in {SUPPORTED_OUTPUTS}, "
             f"found {transform_output}."
         )
-    else:
+    elif transform_output != "default":
         valid = True
-    return valid, {"dense": estimator.get_config()["transform"]}
+    else:
+        valid = False
+    return valid, {"dense": transform_output}

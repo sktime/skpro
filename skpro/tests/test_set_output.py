@@ -77,9 +77,13 @@ def test_check_column_level_of_dataframe_pandas(
 
     n_levels_multi_pd = check_n_level_of_dataframe(pd_multi_column_fixture)
     n_levels_simple_pd = check_n_level_of_dataframe(pd_simple_column_fixture)
+    n_levels_simple_pd_index = check_n_level_of_dataframe(
+        pd_simple_column_fixture, axis=0
+    )
 
     assert n_levels_multi_pd == 3
     assert n_levels_simple_pd == 1
+    assert n_levels_simple_pd_index == 1
 
 
 @pytest.mark.skipif(
@@ -124,8 +128,8 @@ def test_convert_multiindex_columns_to_single_column(
 
 def test_check_transform_config_happy(estimator):
     # check to make sure that regression estimators have the transform config
-    # with default value None
-    assert not estimator.get_config()["transform"]
+    # with default value "default"
+    assert estimator.get_config()["transform"] == "default"
 
     estimator.set_output(transform="pandas")
     assert estimator.get_config()["transform"] == "pandas"
@@ -152,8 +156,9 @@ def test_check_transform_config_negative(estimator):
 
 def test_check_transform_config_none(estimator):
     valid, dense = check_transform_config(estimator)
+    dense
     assert not valid
-    assert not dense["dense"]
+    assert dense["dense"] == "default"
 
 
 @pytest.mark.skipif(
