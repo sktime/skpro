@@ -6,7 +6,6 @@ and half-normal prior for noise; coded on pymc backend.
 """
 
 # copyright: skpro developers
-
 __author__ = ["meraldoantonio"]
 
 import pandas as pd
@@ -15,7 +14,9 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class BayesianLinearRegressor(BaseProbaRegressor):
-    """Bayesian Linear Regression defined with normal priors for slopes and intercept and inverse gamma prior for noise variance; coded on pymc backend.
+    """Bayesian Linear Regression class.
+    Defined with normal priors for slopes and intercept and 
+    inverse gamma prior for noise variance; coded on pymc backend.
 
     Parameters
     ----------
@@ -144,7 +145,9 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                 shape=self._X.shape[1],
                 dims=("pred_id"),
             )
-            self.noise_var = pm.InverseGamma("noise_var", alpha=self.noise_alpha, beta=self.noise_beta)
+            self.noise_var = pm.InverseGamma(
+                "noise_var", alpha=self.noise_alpha, beta=self.noise_beta
+            )
             self.noise = pm.Deterministic("noise", self.noise_var**0.5)
 
             # Expected value of outcome
@@ -194,14 +197,24 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             slopes = prior["slopes"].values.squeeze()
             noise_var = prior["noise_var"].values.squeeze()
             noise = prior["noise"].values.squeeze()
-            return {"intercept": intercept, "slopes": slopes, "noise_var": noise_var, "noise": noise}
+            return {
+                "intercept": intercept,
+                "slopes": slopes,
+                "noise_var": noise_var,
+                "noise": noise,
+            }
         else:
             intercept = prior["intercept"].values.squeeze()
             slopes = prior["slopes"].values.squeeze()
             noise_var = prior["noise_var"].values.squeeze()
             noise = prior["noise"].values.squeeze()
             return pd.DataFrame(
-                {"intercept": intercept, "slopes": slopes, "noise_var": noise_var, "noise": noise}
+                {
+                    "intercept": intercept,
+                    "slopes": slopes,
+                    "noise_var": noise_var,
+                    "noise": noise,
+                }
             )
 
     def get_prior_summary(self):
@@ -216,7 +229,9 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                 {"X": self._X},
                 coords={"obs_id": self._X.index, "pred_id": self._X.columns},
             )
-        return az.summary(self.trace.prior, var_names=["intercept", "slopes", "noise_var", "noise"])
+        return az.summary(
+            self.trace.prior, var_names=["intercept", "slopes", "noise_var", "noise"]
+        )
 
     def plot_ppc(self, **kwargs):
         """Plot the prior predictive check."""
@@ -244,18 +259,32 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                 posterior["intercept"].stack({"sample": ("chain", "draw")}).values
             )
             slopes = posterior["slopes"].stack({"sample": ("chain", "draw")}).values
-            noise_var = posterior["noise_var"].stack({"sample": ("chain", "draw")}).values
+            noise_var = (
+                posterior["noise_var"].stack({"sample": ("chain", "draw")}).values
+            )
             noise = posterior["noise"].stack({"sample": ("chain", "draw")}).values
-            return {"intercept": intercept, "slopes": slopes, "noise_var": noise_var, "noise": noise}
+            return {
+                "intercept": intercept,
+                "slopes": slopes,
+                "noise_var": noise_var,
+                "noise": noise,
+            }
         else:
             intercept = (
                 posterior["intercept"].stack({"sample": ("chain", "draw")}).values
             )
             slopes = posterior["slopes"].stack({"sample": ("chain", "draw")}).values
-            noise_var = posterior["noise_var"].stack({"sample": ("chain", "draw")}).values
+            noise_var = (
+                posterior["noise_var"].stack({"sample": ("chain", "draw")}).values
+            )
             noise = posterior["noise"].stack({"sample": ("chain", "draw")}).values
             return pd.DataFrame(
-                {"intercept": intercept, "slopes": slopes, "noise_var": noise_var, "noise": noise}
+                {
+                    "intercept": intercept,
+                    "slopes": slopes,
+                    "noise_var": noise_var,
+                    "noise": noise,
+                }
             )
 
     def get_posterior_summary(self):
@@ -268,7 +297,8 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             self._is_fitted
         ), "The model must be fitted before posterior summary can be returned."
         return az.summary(
-            self.trace.posterior, var_names=["intercept", "slopes", "noise_var", "noise"]
+            self.trace.posterior,
+            var_names=["intercept", "slopes", "noise_var", "noise"],
         )
 
     def _predict(self, X):
