@@ -22,7 +22,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         "capability:missing": True,
     }
 
-    # todo 2.3.0: remove pre_dispatch and n_jobs params
+    # todo 2.5.0: remove pre_dispatch and n_jobs params
     def __init__(
         self,
         estimator,
@@ -117,7 +117,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         scoring = self.scoring
         scoring_name = f"test_{scoring.name}"
 
-        # todo 2.3.0: remove this logic and only use backend_params
+        # todo 2.5.0: remove this logic and only use backend_params
         backend = self.backend
         backend_params = self.backend_params if self.backend_params else {}
         if backend in ["threading", "multiprocessing", "loky"]:
@@ -128,7 +128,8 @@ class BaseGridSearch(_DelegatedProbaRegressor):
             if n_jobs is not None or pre_dispatch is not None:
                 warn(
                     f"in {self.__class__.__name__}, n_jobs and pre_dispatch "
-                    "parameters are deprecated and will be removed in 2.3.0. "
+                    "parameters in skpro GridSearchCV and RandomizedSearchCV "
+                    "are deprecated and will be removed in skpro 2.5.0. "
                     "Please use n_jobs and pre_dispatch directly in the backend_params "
                     "argument instead.",
                     stacklevel=2,
@@ -255,6 +256,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         return getattr(self, self._delegate_name)
 
 
+# todo 2.5.0: remove pre_dispatch and n_jobs params
 class GridSearchCV(BaseGridSearch):
     """Perform grid-search cross-validation to find optimal model parameters.
 
@@ -421,6 +423,7 @@ class GridSearchCV(BaseGridSearch):
         pre_dispatch="2*n_jobs",
         backend="loky",
         error_score=np.nan,
+        backend_params=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -433,6 +436,7 @@ class GridSearchCV(BaseGridSearch):
             pre_dispatch=pre_dispatch,
             backend=backend,
             error_score=error_score,
+            backend_params=backend_params,
         )
         self.param_grid = param_grid
 
@@ -484,8 +488,7 @@ class GridSearchCV(BaseGridSearch):
 
         from skpro.metrics import CRPS, PinballLoss
         from skpro.regression.residual import ResidualDouble
-        from skpro.survival.coxph import CoxPH
-        from skpro.utils.validation._dependencies import _check_estimator_deps
+        from skpro.survival.compose._reduce_cond_unc import ConditionUncensored
 
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
@@ -506,22 +509,19 @@ class GridSearchCV(BaseGridSearch):
             "error_score": "raise",
         }
 
-        params = [param1, param2]
-
-        # testing with survival predictor
-        if _check_estimator_deps(CoxPH, severity="none"):
-            param3 = {
-                "estimator": CoxPH(alpha=0.05),
-                "cv": KFold(n_splits=4),
-                "param_grid": {"method": ["lpl", "elastic_net"]},
-                "scoring": PinballLoss(),
-                "error_score": "raise",
-            }
-            params.append(param3)
+        params3 = {
+            "estimator": ConditionUncensored(ResidualDouble(LinearRegression())),
+            "cv": KFold(n_splits=4),
+            "param_grid": {"estimator__fit_intercept": [True, False]},
+            "scoring": PinballLoss(),
+            "error_score": "raise",
+        }
+        params = [param1, param2, params3]
 
         return params
 
 
+# todo 2.5.0: remove pre_dispatch and n_jobs params
 class RandomizedSearchCV(BaseGridSearch):
     """Perform randomized-search cross-validation to find optimal model parameters.
 
@@ -696,6 +696,7 @@ class RandomizedSearchCV(BaseGridSearch):
         pre_dispatch="2*n_jobs",
         backend="loky",
         error_score=np.nan,
+        backend_params=None,
     ):
         super().__init__(
             estimator=estimator,
@@ -708,6 +709,7 @@ class RandomizedSearchCV(BaseGridSearch):
             pre_dispatch=pre_dispatch,
             backend=backend,
             error_score=error_score,
+            backend_params=backend_params,
         )
         self.param_distributions = param_distributions
         self.n_iter = n_iter
@@ -740,8 +742,7 @@ class RandomizedSearchCV(BaseGridSearch):
 
         from skpro.metrics import CRPS, PinballLoss
         from skpro.regression.residual import ResidualDouble
-        from skpro.survival.coxph import CoxPH
-        from skpro.utils.validation._dependencies import _check_estimator_deps
+        from skpro.survival.compose._reduce_cond_unc import ConditionUncensored
 
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
@@ -762,17 +763,13 @@ class RandomizedSearchCV(BaseGridSearch):
             "error_score": "raise",
         }
 
-        params = [param1, param2]
-
-        # testing with survival predictor
-        if _check_estimator_deps(CoxPH, severity="none"):
-            param3 = {
-                "estimator": CoxPH(alpha=0.05),
-                "cv": KFold(n_splits=4),
-                "param_distributions": {"method": ["lpl", "elastic_net"]},
-                "scoring": PinballLoss(),
-                "error_score": "raise",
-            }
-            params += [param3]
+        params3 = {
+            "estimator": ConditionUncensored(ResidualDouble(LinearRegression())),
+            "cv": KFold(n_splits=4),
+            "param_distributions": {"estimator__fit_intercept": [True, False]},
+            "scoring": PinballLoss(),
+            "error_score": "raise",
+        }
+        params = [param1, param2, params3]
 
         return params

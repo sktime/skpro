@@ -5,7 +5,27 @@
     "url": "https://skpro.readthedocs.io/en/latest/"
   },
   {
-    "name": "2.3.0 (stable)",
+    "name": "2.4.1 (stable)",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.4.1/"
+  },
+  {
+    "name": "2.4.0",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.4.0/"
+  },
+  {
+    "name": "2.3.2",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.3.2/"
+  },
+  {
+    "name": "2.3.1",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.3.1/"
+  },
+  {
+    "name": "2.3.0",
     "version": "stable",
     "url": "https://skpro.readthedocs.io/en/v2.3.0/"
   },

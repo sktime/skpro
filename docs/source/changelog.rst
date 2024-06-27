@@ -15,8 +15,193 @@ You can also subscribe to ``skpro``'s
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
+
+[2.4.1] - 2024-06-26
+====================
+
+Maintenance hotfix release with ``scipy 1.14.X`` compatibility.
+
+
+[2.4.0] - 2024-06-23
+====================
+
+Maintenance release with ``numpy 2.0.X`` compatibility, scheduled
+deprecations and updates.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``numpy`` bounds have been updated to ``>=1.21.0,<2.1.0``.
+
+Contents
+--------
+
+* [MNT] increase ``numpy`` bound to ``numpy < 2.1``, ``numpy 2`` compatibility
+  (:pr:`393`) :user:`fkiraly`
+* [MNT] 2.4.0 deprecations and change actions (:pr:`404`) :user:`fkiraly`
+
+
+[2.3.2] - 2024-06-22
+====================
+
+Highlights
+----------
+
+* ``GLM`` now supports multiple ``distributions`` and ``link`` function
+  (:pr:`384`) :user:`ShreeshaM07`
+* new metrics: interval width, area under calibration curve (:pr:`391`) :user:`fkiraly`
+* histogram distribution (:pr:`382`) :user:`ShreeshaM07`
+* new distributions with non-negative support:
+  Half Normal, Half Cauchy, Half Logistic, Log Laplace, Pareto
+  (:pr:`363`, :pr:`371`, :pr:`373`, :pr:`374`, :pr:`396`)
+  :user:`SaiRevanth25`, :user:`sukjingitsit`
+* mean-scale family of distributions, composable with any real distribution
+  (:pr:`282`) :user:`fkiraly`
+
+Enhancements
+~~~~~~~~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] mean-scale family of distributions, composite (:pr:`282`) :user:`fkiraly`
+* [ENH] Half Normal Distribution (:pr:`363`) :user:`SaiRevanth25`
+* [ENH] Half Cauchy Distribution (:pr:`371`) :user:`SaiRevanth25`
+* [ENH] Half Logistic Distribution (:pr:`373`) :user:`SaiRevanth25`
+* [ENH] Log Laplace Distribution (:pr:`374`) :user:`SaiRevanth25`
+* [ENH] Histogram distribution (:pr:`382`) :user:`ShreeshaM07`
+* [ENH] Pareto distribution (:pr:`396`) :user:`sukjingitsit`
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [ENH] ``GLM`` with multiple ``distributions`` and ``link`` function support (:pr:`384`) :user:`ShreeshaM07`
+* [ENH] interval width and area under calibration curve metrics (:pr:`391`) :user:`fkiraly`
+
+Test framework
+~~~~~~~~~~~~~~
+
+* [ENH] Tests for polars support for estimators (:pr:`370`) :user:`julian-fong`
+
+Fixes
+~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] fix ``test_methods_p`` logic when ``shuffle`` is ``True`` (:pr:`381`) :user:`ShreeshaM07`
+* [BUG] ensure ``index`` and ``columns`` are taken into account in broadcasting if ``bc_params`` are set (:pr:`403`) :user:`fkiraly`
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] bugfix when ``None`` was specified for ``max_iter`` parameter in sklearn regressors (:pr:`386`) :user:`julian-fong`
+
+Survival and time-to-event prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [BUG] bugfix on #387 - changed paramset 3 to use ``ConditionUncensored`` instead of ``CoxPH`` (:pr:`388`) :user:`julian-fong`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] Deprecation message for ``CyclicBoosting`` changes (:pr:`320`) :user:`setoguchi-naoki`
+* [MNT] make ``BaseArrayDistribution`` private (:pr:`401`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] fix typo in survival models API reference (:pr:`368`) :user:`fkiraly`
+* [DOC] add ``scipy`` reference to interfaced distributions (:pr:`379`) :user:`fkiraly`
+* [DOC] in API reference, order distributions by support (:pr:`400`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`julian-fong`,
+:user:`SaiRevanth25`,
+:user:`setoguchi-naoki`,
+:user:`ShreeshaM07`,
+:user:`sukjingitsit`
+
+
+[2.3.1] - 2024-05-26
+====================
+
+Maintenance release with ``scikit-learn 1.5.X`` and ``scikit-base 0.8.X``
+compatibility and minor enhancements.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.9.0``.
+* ``scikit-learn`` bounds have been updated to ``>=0.24.0,<1.6.0``.
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* in probabilistic regressor tuners ``GridSearchCV``, ``RandomizedSearchCV``,
+  use of ``joblib`` backend specific parameters ``n_jobs``,
+  ``pre_dispatch`` has been deprecated, and will be removed in ``skpro`` 2.5.0.
+  Users should pass backend parameters via the ``backend_params`` parameter instead.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] make ``get_packages_with_changed_specs`` safe to mutation of return
+  (:pr:`348`) :user:`fkiraly`
+* [ENH] EnbPI regressor for conformal prediction
+  intervals (:pr:`343`) :user:`fkiraly`
+* [ENH] improved default function to plot via ``BaseDistribution.plot``,
+  depending on distribution type (:pr:`353`) :user:`fkiraly`
+* [ENH] iid array distribution (:pr:`347`) :user:`fkiraly`
+* [ENH] Correct algorithm in ``EnbpiRegressor`` (:pr:`351`) :user:`fkiraly`
+* [ENH] Gamma Distribution (:pr:`355`) :user:`ShreeshaM07`
+* [ENH] Alpha distribution (:pr:`356`) :user:`SaiRevanth25`
+
+Fixes
+~~~~~
+
+* [BUG] fix ``test_run_test_for_class`` test logic (:pr:`345`) :user:`fkiraly`
+* [BUG] fix ``random_state`` handling in ``BootstrapRegressor``
+  (:pr:`344`) :user:`fkiraly`
+* [BUG] fix ``spl`` index when subsetting ``Empirical`` distribution
+  via ``iat`` (:pr:`352`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] isolate imports in ``changelog.py`` build util (:pr:`339`) :user:`fkiraly`
+* [MNT] remove legacy base modules (:pr:`80`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update sphinx-design requirement from ``<0.6.0`` to
+  ``<0.7.0`` (:pr:`357`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update scikit-learn requirement from ``<1.5.0,>=0.24.0``
+  to ``>=0.24.0,<1.6.0`` (:pr:`354`) :user:`dependabot[bot]`
+* [MNT] Update ``scikit-base`` requirement from
+  ``<0.8.0,>=0.6.1`` to ``>=0.6.1,<0.9.0`` (:pr:`366`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] minor docs improvements (:pr:`359`) :user:`fkiraly`
+* [DOC] fix download shields in readme (:pr:`360`) :user:`fkiraly`
+* [DOC] fixing download shields in README (:pr:`361`) :user:`fkiraly`
+* [DOC] fixing download shields in README (:pr:`362`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`SaiRevanth25`,
+:user:`ShreeshaM07`
+
+
 [2.3.0] - 2024-05-16
 ====================
+
+Highlights
+----------
 
 * new tutorial notebooks for survival prediction and probability distributions (:pr:`303`, :pr:`305`) :user:`fkiraly`
 * interface to ``ngboost`` probabilistic regressor and survival predictor (:pr:`215`, :pr:`301`, :pr:`309`, :pr:`332`) :user:`ShreeshaM07`

@@ -26,8 +26,8 @@ Base
 Parametric distributions
 ------------------------
 
-Continuous support
-~~~~~~~~~~~~~~~~~~
+Continuous support - full reals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -35,14 +35,32 @@ Continuous support
     :toctree: auto_generated/
     :template: class.rst
 
-    Beta
-    ChiSquared
-    Exponential
-    Fisk
     Laplace
     Logistic
     Normal
     TDistribution
+
+
+Continuous support - non-negative reals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    Alpha
+    Beta
+    ChiSquared
+    Exponential
+    Fisk
+    Gamma
+    HalfCauchy
+    HalfLogistic
+    HalfNormal
+    LogLaplace
+    Pareto
     Weibull
 
 
@@ -69,14 +87,30 @@ Non-parametric and empirical distributions
 
     Delta
     Empirical
+    Histogram
     QPD_Empirical
     QPD_Johnson
     QPD_U
     QPD_S
     QPD_B
 
+
 Composite distributions
 -----------------------
+
+Parametric families
+~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MeanScale
+
+Mixture composition
+~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -85,3 +119,14 @@ Composite distributions
     :template: class.rst
 
     Mixture
+
+Sampling and multivariate composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    IID

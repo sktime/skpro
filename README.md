@@ -1,6 +1,6 @@
 <a href="https://skpro.readthedocs.io/en/latest"><img src="https://github.com/sktime/skpro/blob/main/docs/source/images/skpro-banner.png" width="500" align="right" /></a>
 
-:rocket: **Version 2.3.0 out now!** [Read the release notes here.](https://skpro.readthedocs.io/en/latest/changelog.html).
+:rocket: **Version 2.4.1 out now!** [Read the release notes here.](https://skpro.readthedocs.io/en/latest/changelog.html).
 
 `skpro` is a library for supervised probabilistic prediction in python.
 It provides `scikit-learn`-like, `scikit-base` compatible interfaces to:
@@ -19,7 +19,7 @@ It provides `scikit-learn`-like, `scikit-base` compatible interfaces to:
 | **Community** | [![!discord](https://img.shields.io/static/v1?logo=discord&label=discord&message=chat&color=lightgreen)](https://discord.com/invite/54ACzaFsn7) [![!slack](https://img.shields.io/static/v1?logo=linkedin&label=LinkedIn&message=news&color=lightblue)](https://www.linkedin.com/company/scikit-time/) |
 | **CI/CD** | [![github-actions](https://img.shields.io/github/actions/workflow/status/sktime/sktime/wheels.yml?logo=github)](https://github.com/sktime/skpro/actions/workflows/wheels.yml) [![!codecov](https://img.shields.io/codecov/c/github/sktime/skpro?label=codecov&logo=codecov)](https://codecov.io/gh/sktime/skpro) [![readthedocs](https://img.shields.io/readthedocs/skpro?logo=readthedocs)](https://skpro.readthedocs.io/en/latest/) [![platform](https://img.shields.io/conda/pn/conda-forge/skpro)](https://github.com/sktime/skpro) |
 | **Code** |  [![!pypi](https://img.shields.io/pypi/v/skpro?color=orange)](https://pypi.org/project/skpro/) [![!conda](https://img.shields.io/conda/vn/conda-forge/skpro)](https://anaconda.org/conda-forge/skpro) [![!python-versions](https://img.shields.io/pypi/pyversions/skpro)](https://www.python.org/) [![!black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) |
-| **Downloads** | [![Downloads](https://static.pepy.tech/personalized-badge/skpro?period=week&units=international_system&left_color=grey&right_color=blue&left_text=weekly%20(pypi))](https://pepy.tech/project/skpro) [![Downloads](https://static.pepy.tech/personalized-badge/skpro?period=month&units=international_system&left_color=grey&right_color=blue&left_text=monthly%20(pypi))](https://pepy.tech/project/skpro) [![Downloads](https://static.pepy.tech/personalized-badge/skpro?period=total&units=international_system&left_color=grey&right_color=blue&left_text=cumulative%20(pypi))](https://pepy.tech/project/skpro) |
+| **Downloads** | ![PyPI - Downloads](https://img.shields.io/pypi/dw/skpro) ![PyPI - Downloads](https://img.shields.io/pypi/dm/skpro) [![Downloads](https://static.pepy.tech/personalized-badge/skpro?period=total&units=international_system&left_color=grey&right_color=blue&left_text=cumulative%20(pypi))](https://pepy.tech/project/skpro) |
 | **Citation** | [![DOI](https://zenodo.org/badge/103107372.svg)](https://zenodo.org/doi/10.5281/zenodo.11002671) |
 
 ## :books: Documentation
@@ -87,7 +87,7 @@ and for interfacing popular second- and third-party components, such as [cyclic-
 | Module | Status | Links |
 |---|---|---|
 | **[Probabilistic tabular regression]** | maturing | [Tutorial](https://github.com/sktime/skpro/blob/main/examples/01_skpro_intro.ipynb) · [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/regression.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/regression.py) |
-| **[Time-to-event (survival) prediction]** | experimental | [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/survival.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/survival.py) |
+| **[Time-to-event (survival) prediction]** | maturing | [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/survival.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/survival.py) |
 | **[Performance metrics]** | maturing | [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/metrics.html) |
 | **[Probability distributions]** | maturing | [Tutorial](https://github.com/sktime/skpro/blob/main/examples/03_skpro_distributions.ipynb) · [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/distributions.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/distributions.py) |
 

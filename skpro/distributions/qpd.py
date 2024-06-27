@@ -9,6 +9,7 @@ __author__ = [
     "setoguchi-naoki",
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
+import warnings
 from typing import Sequence
 
 import numpy as np
@@ -48,17 +49,10 @@ class QPD_Johnson(_DelegatedDistribution):
         quantile function value of quantile ``1 - alpha``
     lower : float, default = None
         lower bound of bounded range for QPD.
-        This is used when estimating QPD and calculating
-        expectation and variance
     upper : float, default = None
         upper bound of bounded range for QPD.
-        This is used when estimating QPD and calculating
-        expectation and variance
-    version: str, one of ``'normal'`` (default), ``'logistic'``
+    base_dist: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
-    dist_shape: float, optional, default=0.0
-        parameter modifying the logistic base distribution via
-        sinh/arcsinh-scaling (only active in sinhlogistic version)
 
     Example
     -------
@@ -95,8 +89,9 @@ class QPD_Johnson(_DelegatedDistribution):
         qv_high: float | Sequence,
         lower: float | None = None,
         upper: float | None = None,
-        version: str | None = "normal",
-        dist_shape: float | None = 0.0,
+        version: str = "deprecated",
+        base_dist: str | None = "normal",
+        dist_shape: float = 0.0,
         index=None,
         columns=None,
     ):
@@ -107,9 +102,32 @@ class QPD_Johnson(_DelegatedDistribution):
         self.lower = lower
         self.upper = upper
         self.version = version
+        self.base_dist = base_dist
         self.dist_shape = dist_shape
         self.index = index
         self.columns = columns
+
+        # TODO <2.5.0>: rename parameter 'version' to 'base_dist
+        # TODO <2.5.0>: remove parameter 'dist_shape'
+        # TODO <2.5.0>: update docstring, and remove warning
+        message = (
+            "In QPD_Johnson, parameter 'dist_shape' will be removed in version 2.5.0."
+            "To retain the current behavior, set parameters in the base_dist "
+            "argument."
+        )
+        if self.dist_shape != 0.0:
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+
+        message = (
+            "In QPD_Johnson, parameter 'version' will be renamed to 'base_dist' "
+            "in version 2.5.0. To retain the current behavior, pass the base_dist "
+            "argument instead."
+        )
+        if self.version != "deprecated":
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+            self._base_dist = self.version
+        else:
+            self._base_dist = self.base_dist
 
         if lower is None:
             delegate_cls = QPD_U
@@ -126,7 +144,7 @@ class QPD_Johnson(_DelegatedDistribution):
             "qv_low": qv_low,
             "qv_median": qv_median,
             "qv_high": qv_high,
-            "version": version,
+            "version": self._base_dist,
             "index": index,
             "columns": columns,
             **extra_params,
@@ -199,13 +217,8 @@ class QPD_S(BaseDistribution):
         quantile function value of quantile ``1 - alpha``
     lower : float
         lower bound of semi-bounded range.
-        This is used when estimating QPD and calculating
-        expectation and variance
-    upper : float, default = 1e3
-        upper bound of probability density function to
-        calculate expected value and variance
-    version: str
-        options are ``normal`` (default) or ``logistic``
+    base_dist: str, one of ``'normal'`` (default), ``'logistic'``
+        options are ``'normal'`` (default) or ``'logistic'``
 
     Example
     -------
@@ -251,7 +264,8 @@ class QPD_S(BaseDistribution):
         qv_high: float | Sequence,
         lower: float,
         upper: float = 1e3,
-        version: str | None = "normal",
+        version: str = "deprecated",
+        base_dist: str | None = "normal",
         index=None,
         columns=None,
     ):
@@ -262,13 +276,36 @@ class QPD_S(BaseDistribution):
         self.lower = lower
         self.upper = upper
         self.version = version
+        self.base_dist = base_dist
         self.index = index
         self.columns = columns
+
+        # TODO <2.5.0>: rename parameter 'version' to 'base_dist
+        # TODO <2.5.0>: remove parameter 'upper'
+        # TODO <2.5.0>: update docstring, and remove warning
+        message = (
+            "In QPD_S, parameter 'version' will be renamed to 'base_dist' "
+            "in version 2.5.0. To retain the current behavior, pass the base_dist "
+            "argument instead."
+        )
+        if self.version != "deprecated":
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+            self._base_dist = self.version
+        else:
+            self._base_dist = self.base_dist
+
+        message = (
+            "In QPD_S, parameter 'upper' will be removed "
+            "in version 2.5.0. The parameter has no effect in the current version, "
+            "and should be removed entirely."
+        )
+        if self.upper != 1e3:
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         super().__init__(index=index, columns=columns)
 
         # precompute parameters for methods
-        phi = _resolve_phi(version)
+        phi = _resolve_phi(self._base_dist)
         self.phi = phi
 
         qpd_params = _prep_qpd_vars(phi=phi, mode="S", **self._bc_params)
@@ -385,14 +422,8 @@ class QPD_B(BaseDistribution):
         quantile function value of quantile ``1 - alpha``
     lower : float or array_like[float]
         lower bound of semi-bounded range.
-        This is used when estimating QPD and calculating
-        expectation and variance
-    upper : float or array_like[float]
-        upper bound of semi-bounded range.
-        This is used when estimating QPD and calculating
-        expectation and variance
-    version: str, optional, default="normal"
-        options are ``normal`` (default) or ``logistic``
+    base_dist: str, one of ``'normal'`` (default), ``'logistic'``
+        options are ``'normal'`` (default) or ``'logistic'``
 
     Example
     -------
@@ -439,7 +470,8 @@ class QPD_B(BaseDistribution):
         qv_high: float | Sequence,
         lower: float,
         upper: float,
-        version: str | None = "normal",
+        version: str = "deprecated",
+        base_dist: str | None = "normal",
         index=None,
         columns=None,
     ):
@@ -450,13 +482,27 @@ class QPD_B(BaseDistribution):
         self.lower = lower
         self.upper = upper
         self.version = version
+        self.base_dist = base_dist
         self.index = index
         self.columns = columns
+
+        # TODO <2.5.0>: rename parameter 'version' to 'base_dist
+        # TODO <2.5.0>: update docstring, and remove warning
+        message = (
+            "In QPD_B, parameter 'version' will be renamed to 'base_dist' "
+            "in version 2.5.0. To retain the current behavior, pass the base_dist "
+            "argument instead."
+        )
+        if self.version != "deprecated":
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+            self._base_dist = self.version
+        else:
+            self._base_dist = self.base_dist
 
         super().__init__(index=index, columns=columns)
 
         # precompute parameters for methods
-        phi = _resolve_phi(version)
+        phi = _resolve_phi(self._base_dist)
         self.phi = phi
 
         qpd_params = _prep_qpd_vars(phi=phi, mode="B", **self._bc_params)
@@ -575,18 +621,8 @@ class QPD_U(BaseDistribution):
         quantile function value of quantile 0.5
     qv_high : float or array_like[float]
         quantile function value of quantile ``1 - alpha``
-    lower : float, default = -1e3
-        lower bound of probability density function to
-        calculate expected value and variance
-        expectation and variance
-    upper : float, default = 1e3
-        upper bound of probability density function to
-        calculate expected value and variance
-    version: str, optional, default="normal"
-        options are ``normal`` (default) or ``logistic``
-    dist_shape: float, optional, default=0.0
-        parameter modifying the logistic base distribution via
-        sinh/arcsinh-scaling (only active in sinhlogistic version)
+    base_dist: str, one of ``'normal'`` (default), ``'logistic'``
+        options are ``'normal'`` (default) or ``'logistic'``
 
     Example
     -------
@@ -631,8 +667,9 @@ class QPD_U(BaseDistribution):
         qv_high: float | Sequence,
         lower: float = -1e3,
         upper: float = 1e3,
-        version: str | None = "normal",
-        dist_shape: float | None = 0.0,
+        version: str = "deprecated",
+        base_dist: str | None = "normal",
+        dist_shape: float = 0.0,
         index=None,
         columns=None,
     ):
@@ -644,14 +681,55 @@ class QPD_U(BaseDistribution):
         self.lower = lower
         self.upper = upper
         self.version = version
+        self.base_dist = base_dist
         self.dist_shape = dist_shape
         self.index = index
         self.columns = columns
 
+        # TODO <2.5.0>: rename parameter 'version' to 'base_dist
+        # TODO <2.5.0>: remove parameter 'dist_shape'
+        # TODO <2.5.0>: remove parameter 'upper'
+        # TODO <2.5.0>: remove parameter 'lower'
+        # TODO <2.5.0>: update docstring, and remove warning
+        message = (
+            "In QPD_U, parameter 'dist_shape' will be removed in version 2.5.0."
+            "To retain the current behavior, set parameters in the base_dist "
+            "argument."
+        )
+        if self.dist_shape != 0.0:
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+
+        message = (
+            "In QPD_U, parameter 'version' will be renamed to 'base_dist' "
+            "in version 2.5.0. To retain the current behavior, pass the base_dist "
+            "argument instead."
+        )
+        if self.version != "deprecated":
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+            self._base_dist = self.version
+        else:
+            self._base_dist = self.base_dist
+
+        message = (
+            "In QPD_U, parameter 'upper' will be removed "
+            "in version 2.5.0. The parameter has no effect in the current version, "
+            "and should be removed entirely."
+        )
+        if self.upper != 1e3:
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+
+        message = (
+            "In QPD_U, parameter 'lower' will be removed "
+            "in version 2.5.0. The parameter has no effect in the current version, "
+            "and should be removed entirely."
+        )
+        if self.lower != -1e3:
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+
         super().__init__(index=index, columns=columns)
 
         # precompute parameters for methods
-        phi = _resolve_phi(version)
+        phi = _resolve_phi(self._base_dist)
         self.phi = phi
 
         qpd_params = _prep_qpd_vars(phi=phi, mode="U", **self._bc_params)
