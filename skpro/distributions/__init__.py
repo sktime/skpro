@@ -6,6 +6,7 @@
 __all__ = [
     "Alpha",
     "Beta",
+    "Binomial",
     "ChiSquared",
     "Delta",
     "Empirical",
@@ -14,6 +15,7 @@ __all__ = [
     "Gamma",
     "HalfNormal",
     "IID",
+    "InverseGamma",
     "Laplace",
     "Logistic",
     "LogNormal",
@@ -32,6 +34,7 @@ __all__ = [
 
 from skpro.distributions.alpha import Alpha
 from skpro.distributions.beta import Beta
+from skpro.distributions.binomial import Binomial
 from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.compose import IID
 from skpro.distributions.delta import Delta
@@ -40,6 +43,7 @@ from skpro.distributions.exponential import Exponential
 from skpro.distributions.fisk import Fisk
 from skpro.distributions.gamma import Gamma
 from skpro.distributions.halfnormal import HalfNormal
+from skpro.distributions.inversegamma import InverseGamma
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.lognormal import LogNormal
