@@ -10,7 +10,7 @@ from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.sklearn import prep_skl_df
 
 
-class SklearnProbaClassifier(BaseProbaRegressor):
+class MulticlassSklearnProbaClassifier(BaseProbaRegressor):
     """A multiclass classifier fitting a histogram distribution."""
 
     _tags = {
@@ -20,11 +20,20 @@ class SklearnProbaClassifier(BaseProbaRegressor):
         "capability:missing": True,
     }
 
-    def __init__(self, clf, bins=10):
+    def _convert_tuple_to_array(self, bins):
+        bins_to_list = (bins[0], bins[1], bins[2])
+        bins = []
+        bin_width = (bins_to_list[1] - bins_to_list[0]) / bins_to_list[2]
+        for b in range(bins_to_list[2]):
+            bins.append(bins_to_list[0] + b * bin_width)
+        bins.append(bins_to_list[1])
+        return bins
+
+    def __init__(self, clf, bins=(-500, 500, 10)):
         self.clf = clf
         self.bins = bins
-        if isinstance(bins, int) or isinstance(bins, np.integer):
-            bins = np.arange(bins + 1)
+        if isinstance(bins, tuple):
+            bins = self._convert_tuple_to_array(bins)
         self._bins = bins
 
         super().__init__()
@@ -55,15 +64,21 @@ class SklearnProbaClassifier(BaseProbaRegressor):
         bins = self._bins
         self._y_cols = y.columns
 
+        # Generate class names based on bins
+        classes_ = [f"class{i}" for i in range(len(bins) - 1)]
+
+        class_series = pd.cut(y.iloc[:, 0], bins=bins, labels=classes_, right=True)
+        y_binned = pd.DataFrame(class_series, columns=self._y_cols)
+
         X = prep_skl_df(X)
-        y = prep_skl_df(y)
+        y_binned = prep_skl_df(y_binned)
 
-        if isinstance(y, pd.DataFrame) and len(y.columns) == 1:
-            y = y.iloc[:, 0]
-        elif len(y.shape) > 1 and y.shape[1] == 1:
-            y = y[:, 0]
+        if isinstance(y_binned, pd.DataFrame) and len(y_binned.columns) == 1:
+            y_binned = y_binned.iloc[:, 0]
+        elif len(y_binned.shape) > 1 and y_binned.shape[1] == 1:
+            y_binned = y_binned[:, 0]
 
-        self.clf_.fit(X, y)
+        self.clf_.fit(X, y_binned)
         self.classes_ = self.clf_.classes_
         classes_ = self.classes_
 
@@ -186,7 +201,7 @@ class SklearnProbaClassifier(BaseProbaRegressor):
         from sklearn.naive_bayes import GaussianNB
         from sklearn.tree import DecisionTreeClassifier
 
-        param1 = {"clf": DecisionTreeClassifier(), "bins": 4}
+        param1 = {"clf": DecisionTreeClassifier(), "bins": (-500, 500, 4)}
         param2 = {"clf": GaussianNB()}
 
         return [param1, param2]

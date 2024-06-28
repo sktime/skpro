@@ -2,7 +2,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 from skpro.classification.sklearn_classifiers._sklearn_proba_class import (
-    SklearnProbaClassifier,
+    MulticlassSklearnProbaClassifier,
 )
 
-__all__ = ["SklearnProbaClassifier"]
+__all__ = ["MulticlassSklearnProbaClassifier"]
