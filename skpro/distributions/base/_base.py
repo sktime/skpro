@@ -281,24 +281,49 @@ class BaseDistribution(BaseObject):
 
         subset_param_dict = {}
         for param, val in params.items():
-            if val is None:
-                subset_param_dict[param] = None
-                continue
-            arr = np.array(val)
-            # if len(arr.shape) == 0:
-            # do nothing with arr
-            if len(arr.shape) == 2 and rowidx is not None:
-                arr = arr[rowidx, :]
-            if len(arr.shape) == 1 and colidx is not None:
-                arr = arr[colidx]
-            if len(arr.shape) >= 2 and colidx is not None:
-                arr = arr[:, colidx]
-            if np.issubdtype(arr.dtype, np.integer):
-                arr = arr.astype("float")
-            if coerce_scalar:
-                arr = arr[(0,) * len(arr.shape)]
-            subset_param_dict[param] = arr
+            subset_param_dict[param] = self._subset_param(
+                val=val,
+                rowidx=rowidx,
+                colidx=colidx,
+                coerce_scalar=coerce_scalar,
+            )
         return subset_param_dict
+
+    def _subset_param(self, val, rowidx, colidx, coerce_scalar=False):
+        """Subset a single distribution parameter value to given rows and columns.
+
+        Parameters
+        ----------
+        val : scalar, 1D, 2D, array-like, or None
+            Distribution parameter that is to be subsetted.
+        rowidx : None, numpy index/slice coercible, or int
+            Rows to subset to. If None, no subsetting is done.
+        colidx : None, numpy index/slice coercible, or int
+            Columns to subset to. If None, no subsetting is done.
+        coerce_scalar : bool, optional, default=False
+            If True, and the subsetted parameter is a scalar, coerce it to a scalar.
+
+        Returns
+        -------
+        scalar, 1D, 2D, array-like, or None
+            Subsetted distribution parameter.
+        """
+        if val is None:
+            return None
+        arr = np.array(val)
+        # if len(arr.shape) == 0:
+        # do nothing with arr
+        if len(arr.shape) == 2 and rowidx is not None:
+            arr = arr[rowidx, :]
+        if len(arr.shape) == 1 and colidx is not None:
+            arr = arr[colidx]
+        if len(arr.shape) >= 2 and colidx is not None:
+            arr = arr[:, colidx]
+        if np.issubdtype(arr.dtype, np.integer):
+            arr = arr.astype("float")
+        if coerce_scalar:
+            arr = arr[(0,) * len(arr.shape)]
+        return arr
 
     def _iat(self, rowidx=None, colidx=None):
         if rowidx is None or colidx is None:
@@ -559,6 +584,12 @@ class BaseDistribution(BaseObject):
         bc_params = self.get_tags()["broadcast_params"]
         if bc_params is None:
             bc_params = kwargs_as_np.keys()
+        else:
+            bc_params = bc_params.copy()
+            if "index" in kwargs_as_np:
+                bc_params.append("index")
+            if "columns" in kwargs_as_np:
+                bc_params.append("columns")
 
         args_as_np = [kwargs_as_np[k] for k in bc_params]
         bc = np.broadcast_arrays(*args_as_np)
