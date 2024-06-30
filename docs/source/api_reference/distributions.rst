@@ -59,6 +59,7 @@ Continuous support - non-negative reals
     HalfCauchy
     HalfLogistic
     HalfNormal
+    InverseGamma
     LogLaplace
     Pareto
     Weibull
@@ -73,6 +74,7 @@ Integer support
     :toctree: auto_generated/
     :template: class.rst
 
+    Binomial
     Poisson
 
 
