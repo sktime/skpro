@@ -11,6 +11,7 @@ from skpro.utils.create_container import (
     get_config_adapter,
 )
 from skpro.utils.set_output import check_transform_config
+from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
 # test following cases, numpy input, polars input, pandas input
@@ -88,7 +89,7 @@ def estimator():
     return _estimator
 
 
-def test_get_config_adapter(estimator, load_diabetes_pandas):
+def test_get_config_adapter_pandas(estimator, load_diabetes_pandas):
     estimator.set_output(transform="pandas")
     X_train, X_test, y_train = load_diabetes_pandas
 
@@ -112,7 +113,20 @@ def test_get_config_adapter(estimator, load_diabetes_pandas):
     assert isinstance(adapter, PandasAdapter)
     assert (columns == y_pred_v.columns).all()
 
+
+@pytest.mark.skipif(
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_get_config_adapter_polars(estimator, load_diabetes_pandas):
     estimator.set_output(transform="polars")
+    X_train, X_test, y_train = load_diabetes_pandas
+
+    estimator.fit(X_train, y_train)
+    y_pred_q = estimator.predict_quantiles(X_test)[:5]
+    y_pred_i = estimator.predict_interval(X_test)[:5]
+    y_pred_v = estimator.predict_var(X_test)[:5]
+
     _, output_config = check_transform_config(estimator)
     transform_adapter = output_config["dense"]
 
@@ -160,6 +174,10 @@ def test_create_container_to_pandas(estimator, load_diabetes_pandas):
     assert (y_pred_v_out.index == y_pred_v.index).all()
 
 
+@pytest.mark.skipif(
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
 def test_create_container_to_polars(estimator, load_diabetes_pandas):
     estimator.set_output(transform="polars")
     X_train, X_test, y_train = load_diabetes_pandas
