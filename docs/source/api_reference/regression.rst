@@ -159,6 +159,17 @@ Adapters to other interfaces
 
     SklearnProbaReg
 
+Adapters to other classifiers
+----------------------------
+
+.. currentmodule:: skpro.classification.sklearn_classifiers._sklearn_proba_class
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MulticlassSklearnProbaClassifier
+
 
 Base classes
 ------------
