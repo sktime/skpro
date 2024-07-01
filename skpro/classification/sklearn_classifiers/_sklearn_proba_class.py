@@ -205,6 +205,7 @@ class MulticlassSklearnProbaClassifier(BaseProbaRegressor):
             )
 
         self.classes_proba_ = classes_proba_
+        y_pred_proba = np.array(classes_proba_)
 
         if len(X) == 1:
             bin_mass = y_pred_proba[0]
