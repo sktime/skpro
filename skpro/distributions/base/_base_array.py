@@ -229,7 +229,7 @@ class _BaseArrayDistribution(BaseDistribution, BaseObject):
         index_column_broadcast.append(kwargs_as_np["index"])
         index_column_broadcast.append(kwargs_as_np["columns"])
 
-        bc = np.broadcast_arrays(*index_column_broadcast)
+        bc = list(np.broadcast_arrays(*index_column_broadcast))
         if dtype is not None:
             bc = [array.astype(dtype) for array in bc]
 
