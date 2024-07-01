@@ -58,7 +58,7 @@ all_extras = [
     "ngboost<0.6.0",
     "polars<0.21.0",
     "pyarrow<14.0.0; python_version < '3.12'",
-    "scikit-survival<0.23.0",
+    "scikit-survival<0.24.0",
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
