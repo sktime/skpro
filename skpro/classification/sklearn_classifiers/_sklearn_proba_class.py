@@ -11,7 +11,37 @@ from skpro.utils.sklearn import prep_skl_df
 
 
 class MulticlassSklearnProbaClassifier(BaseProbaRegressor):
-    """A multiclass classifier fitting a histogram distribution."""
+    """A multiclass classifier fitting a histogram distribution.
+
+    Wraps an sklearn classifier and constructs an skpro classifier from it.
+    It can be used for predicting the class that a set of X belongs to and
+    predict_proba can be used to represent the predicted probabilites of
+    each class for respective values in X in the form of a Histogram
+    Distribution.
+
+    The ``bins`` will be used to bin the ``y`` values in fit into the respective
+    bins. It then uses these bins as the classes for the classifier and predicts
+    the probabilites for each class.
+
+    Parameters
+    ----------
+    clf : instance of a sklearn classifier
+        Classifier to wrap, must have ``predict`` and ``predict_proba``.
+    bins : int or 1D array of float, default: 10
+        1. If ``int`` then it will be considered as the number of bins.
+        2. Else if it is an array then it will be used as the bin boundaries.
+        If the requirement is ``n`` bins then the ``len(bins)`` must be ``n+1``.
+
+    Attributes
+    ----------
+    classes_ : np.array
+        Contains the names of the classes that it was fit on.
+    class_bin_map_ : dict
+        The key contains the class names. It maps the bin boundaries
+        [bin start,bin end] to the classes.
+    classes_proba_ : pd.DataFrame
+        Contains the class probabilites.
+    """
 
     _tags = {
         "authors": ["ShreeshaM07"],
@@ -20,23 +50,18 @@ class MulticlassSklearnProbaClassifier(BaseProbaRegressor):
         "capability:missing": True,
     }
 
-    def _convert_tuple_to_array(self, bins):
-        bins_to_list = (bins[0], bins[1], bins[2])
-        bins = []
-        bin_width = (bins_to_list[1] - bins_to_list[0]) / bins_to_list[2]
-        for b in range(bins_to_list[2]):
-            bins.append(bins_to_list[0] + b * bin_width)
-        bins.append(bins_to_list[1])
-        return bins
-
-    def __init__(self, clf, bins=(-500, 500, 10)):
+    def __init__(self, clf, bins=10):
         self.clf = clf
         self.bins = bins
-        if isinstance(bins, tuple):
-            bins = self._convert_tuple_to_array(bins)
-        self._bins = bins
 
         super().__init__()
+
+    def _bins_int_arr(self, bins, y):
+        y = np.array(y).flatten()
+        start = min(y) * 0.999
+        stop = max(y) * 1.001
+        bins = np.linspace(start=start, stop=stop, num=bins + 1)
+        return bins
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -61,13 +86,36 @@ class MulticlassSklearnProbaClassifier(BaseProbaRegressor):
         from sklearn import clone
 
         self.clf_ = clone(self.clf)
-        bins = self._bins
+        bins = self.bins
         self._y_cols = y.columns
 
-        # Generate class names based on bins
-        classes_ = [f"class{i}" for i in range(len(bins) - 1)]
+        # create bins array in case of bins being an `int`
+        if isinstance(bins, int) or isinstance(bins, np.integer):
+            bins = self._bins_int_arr(bins, y)
 
-        class_series = pd.cut(y.iloc[:, 0], bins=bins, labels=classes_, right=True)
+        # in case of int it will be internally replaced in fit
+        self._bins = bins
+
+        # Generate class names based on bins
+        class_bins = [f"class{i}" for i in range(len(bins) - 1)]
+        self._class_bins = class_bins
+
+        if len(bins) != len(class_bins) + 1:
+            warn(
+                f"len of `bins` is {len(bins)} != len of classes {len(class_bins)}+1."
+                " Ensure the bins has all the bin boundaries resulting in"
+                " number of bins + 1 elements."
+            )
+
+        bins_hist = sliding_window_view(bins, window_shape=2)
+        # maps the bin boundaries [bin start,bin end] to the classes
+        class_bin_map_ = {}
+        for i in range(len(bins_hist)):
+            class_bin_map_[class_bins[i]] = bins_hist[i]
+        self.class_bin_map_ = class_bin_map_
+
+        # bins the y values into classes.
+        class_series = pd.cut(y.iloc[:, 0], bins=bins, labels=class_bins, right=True)
         y_binned = pd.DataFrame(class_series, columns=self._y_cols)
 
         X = prep_skl_df(X)
@@ -80,23 +128,6 @@ class MulticlassSklearnProbaClassifier(BaseProbaRegressor):
 
         self.clf_.fit(X, y_binned)
         self.classes_ = self.clf_.classes_
-        classes_ = self.classes_
-
-        if len(bins) != len(classes_) + 1:
-            warn(
-                f"len of `bins` is {len(bins)} != len of classes {len(classes_)}+1."
-                " Ensure the bins has all the bin boundaries resulting in"
-                " number of bins + 1 elements."
-            )
-            bins = np.arange(len(classes_) + 1)
-
-        bins_hist = sliding_window_view(bins, window_shape=2)
-
-        # maps the bin boundaries [bin start,bin end] to the classes
-        class_bin_map_ = {}
-        for i in range(len(bins_hist)):
-            class_bin_map_[classes_[i]] = bins_hist[i]
-        self.class_bin_map_ = class_bin_map_
 
         return self
 
@@ -148,19 +179,31 @@ class MulticlassSklearnProbaClassifier(BaseProbaRegressor):
         X = prep_skl_df(X)
         bins = self._bins
         classes_ = self.classes_
+        class_bins = self._class_bins
 
-        if len(bins) != len(classes_) + 1:
+        if len(bins) != len(class_bins) + 1:
             warn(
-                f"len of `bins` is {len(bins)} != len of classes {len(classes_)}+1."
+                f"len of `bins` is {len(bins)} != len of classes {len(class_bins)}+1."
                 " Ensure the bins has all the bin boundaries resulting in"
                 " number of bins + 1 elements."
             )
-            bins = np.arange(len(classes_) + 1)
 
         y_pred_proba = self.clf_.predict_proba(X)
-
         # map classes probabilities/bin_mass to class names
         classes_proba_ = pd.DataFrame(y_pred_proba, columns=classes_)
+
+        # Identify missing classes
+        missing_classes = set(class_bins) - set(classes_)
+        if missing_classes:
+            # Add missing classes with 0 values
+            for missing_class in missing_classes:
+                classes_proba_[missing_class] = 0
+            # Sort columns based on the numerical part of the class names
+            # in order to match with the bins while calling Histogram distribution
+            classes_proba_ = classes_proba_.reindex(
+                sorted(classes_proba_.columns, key=lambda x: int(x[5:])), axis=1
+            )
+
         self.classes_proba_ = classes_proba_
 
         if len(X) == 1:
@@ -201,7 +244,7 @@ class MulticlassSklearnProbaClassifier(BaseProbaRegressor):
         from sklearn.naive_bayes import GaussianNB
         from sklearn.tree import DecisionTreeClassifier
 
-        param1 = {"clf": DecisionTreeClassifier(), "bins": (-500, 500, 4)}
+        param1 = {"clf": DecisionTreeClassifier(), "bins": 4}
         param2 = {"clf": GaussianNB()}
 
         return [param1, param2]
