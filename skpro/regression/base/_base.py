@@ -6,6 +6,8 @@ import pandas as pd
 
 from skpro.base import BaseEstimator
 from skpro.datatypes import check_is_error_msg, check_is_mtype, convert
+from skpro.utils.create_container import get_config_adapter
+from skpro.utils.set_output import check_transform_config
 from skpro.utils.validation._dependencies import (
     _check_estimator_deps,
     _check_soft_dependencies,
@@ -37,6 +39,10 @@ class BaseProbaRegressor(BaseEstimator):
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
     }
+
+    _config = {
+        "transform": "default"
+    }  # accepted values : ["pandas", "polars", "default"]
 
     def __init__(self):
         super().__init__()
@@ -319,6 +325,13 @@ class BaseProbaRegressor(BaseEstimator):
 
         # pass to inner _predict_interval
         pred_int = self._predict_interval(X=X_inner, coverage=coverage)
+
+        valid, output_config = check_transform_config(self)
+        if valid:
+            transform_adapter = output_config["dense"]
+            adapter, columns = get_config_adapter(transform_adapter, pred_int)
+            pred_int = adapter.create_container(pred_int, columns)
+
         return pred_int
 
     def _predict_interval(self, X, coverage):
@@ -430,6 +443,13 @@ class BaseProbaRegressor(BaseEstimator):
 
         # pass to inner _predict_quantiles
         quantiles = self._predict_quantiles(X=X_inner, alpha=alpha)
+
+        valid, output_config = check_transform_config(self)
+        if valid:
+            transform_adapter = output_config["dense"]
+            adapter, columns = get_config_adapter(transform_adapter, quantiles)
+            quantiles = adapter.create_container(quantiles, columns)
+
         return quantiles
 
     def _predict_quantiles(self, X, alpha):
@@ -607,6 +627,12 @@ class BaseProbaRegressor(BaseEstimator):
             # put together to pd.DataFrame
             #   the indices and column names are already correct
             pred_var = pd.DataFrame(vars_dict)
+
+        valid, output_config = check_transform_config(self)
+        if valid:
+            transform_adapter = output_config["dense"]
+            adapter, columns = get_config_adapter(transform_adapter, pred_var)
+            pred_var = adapter.create_container(pred_var, columns)
 
         return pred_var
 
@@ -845,3 +871,27 @@ class BaseProbaRegressor(BaseEstimator):
             raise ValueError(f"values in {name} must be unique, but found duplicates")
 
         return alpha
+
+    def set_output(self, transform):
+        """Set output container.
+
+        Parameters
+        ----------
+        transform : {"polars", "pandas", None} default = None
+
+            Configures the out of any _predict_* function in regression estimators
+                - None : assumes no transform has been passed in, will use
+                default settings
+
+                - "pandas" : all outputs will be converted into pandas DataFrames
+                - "polars" : all outputs will be converted into polars DataFrames
+
+        Returns
+        -------
+        self : estimator instance
+        """
+        if transform is None:
+            return self
+
+        self.set_config(**{"transform": transform})
+        return self
