@@ -5,13 +5,12 @@ import pytest
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
-from skpro.utils.create_container import (
-    PandasAdapter,
-    PolarsAdapter,
-    get_config_adapter,
-)
+from skpro.utils.create_container import PandasAdapter, get_config_adapter
 from skpro.utils.set_output import check_transform_config
 from skpro.utils.validation._dependencies import _check_soft_dependencies
+
+if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
+    from skpro.utils.create_container import PolarsAdapter
 
 
 # test following cases, numpy input, polars input, pandas input
