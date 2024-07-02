@@ -53,21 +53,6 @@ class BayesianProportionEstimator(BaseProbaRegressor):
             If neither (prior_alpha and prior_beta) nor prior are provided.
         TypeError
             If the provided prior is not an instance of Beta.
-
-        Examples
-        --------
-        >>> from skpro.regression.bayesian_proportion import BayesianProportionEstimator
-        >>> from skpro.distributions import Beta
-        >>> import pandas as pd
-        >>> import numpy as np
-
-        >>> B = BayesianProportionEstimator(prior=Beta(1, 2))
-        >>> # Create a DataFrame X with all NaN values
-        >>> X = pd.DataFrame(np.nan, index=range(5), columns=['to_be_ignored'])
-        >>> # Create a Series y with random 1s and 0s
-        >>> y = pd.Series(np.random.randint(0, 2, size=5), name='win')
-        >>> B.fit(X, y)
-
         """
         if prior is None:
             if prior_alpha is None or prior_beta is None:
