@@ -1,10 +1,5 @@
 """Bayesian proportion estimator for probabilistic regression."""
 
-# todo: add an appropriate copyright notice for your estimator
-#       estimators contributed to skpro should have the copyright notice at the top
-#       estimators of your own do not need to have permissive or BSD-3 copyright
-
-
 __author__ = ["meraldoantonio"]
 
 from skpro.distributions import Beta
@@ -72,7 +67,7 @@ class BayesianProportionEstimator(BaseProbaRegressor):
         super().__init__()
 
     def _fit(self, X, y):
-        """Fit regressor to training data.
+        """Fit regressor to the observed data.
 
         Writes to self:
             Sets fitted model attributes ending in "_".
@@ -83,7 +78,8 @@ class BayesianProportionEstimator(BaseProbaRegressor):
             feature instances to fit regressor to;
             will be ignored
         y : pandas Series, must be same length as X
-            labels to fit regressor to
+            represents a series of binary experiments
+            whose outcome are either True (1) or False (0)
 
         Returns
         -------
