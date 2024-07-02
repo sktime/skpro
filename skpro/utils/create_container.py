@@ -2,6 +2,8 @@
 # this is a temp file to store potential conversion methods and will be deleted once
 # the data types module in 392 is implemented
 
+from copy import deepcopy
+
 # for now, will call it containerAdapter, but will probably be merged
 # along with 392
 import pandas as pd
@@ -26,6 +28,7 @@ def get_config_adapter(transform_adapter, X):
         levels = check_n_level_of_dataframe(X)
         # if levels > 1, must be Pandas DataFrames
         if levels > 1:
+            # if the set_output transform is pandas, no need to edit the columns
             if transform_adapter == "pandas":
                 columns = X.columns
             else:
@@ -50,9 +53,11 @@ class PandasAdapter:
 
     def create_container(self, X_input, columns):
         """Create output data container in Pandas format."""
-        out = pd.DataFrame(X_input)
-        if columns is not None:
-            rename_columns(out, columns)
+        out = deepcopy(X_input)
+        if not isinstance(out, pd.DataFrame):
+            out = pd.DataFrame(X_input)
+            if columns is not None:
+                rename_columns(out, columns)
 
         return out
 
@@ -67,8 +72,10 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
 
         def create_container(self, X_input, columns):
             """Create output data container in Polars format."""
-            out = pl.DataFrame(X_input)
-            if columns is not None:
-                rename_columns(out, columns)
+            out = deepcopy(X_input)
+            if not isinstance(out, pl.DataFrame):
+                out = pl.DataFrame(X_input)
+                if columns is not None:
+                    rename_columns(out, columns)
 
             return out
