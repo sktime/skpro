@@ -33,11 +33,11 @@ def load_diabetes_pandas():
 def load_pandas_pred_quantile():
     data = np.array(
         [
-            [4, 66.772658, 176.318973],
-            [63, 22.517743, 132.064058],
-            [10, 20.072116, 129.618431],
-            [0, 177.079295, 286.625610],
-            [35, 86.009941, 195.556256],
+            [4, 66.77265782260743, 176.3189727940714],
+            [63, 22.51774261798211, 132.0640575894461],
+            [10, 20.072115541571705, 129.6184305130357],
+            [0, 177.07929524984633, 286.6256102213103],
+            [35, 86.00994115791546, 195.55625612937945],
         ]
     )
 
@@ -51,17 +51,17 @@ def load_pandas_pred_quantile():
 def load_pandas_pred_interval():
     data = np.array(
         [
-            [4, 66.772658, 176.318973],
-            [63, 22.517743, 132.064058],
-            [10, 20.072116, 129.618431],
-            [0, 177.079295, 286.625610],
-            [35, 86.009941, 195.556256],
+            [4, 66.77265782260743, 176.3189727940714],
+            [63, 22.51774261798211, 132.0640575894461],
+            [10, 20.072115541571705, 129.6184305130357],
+            [0, 177.07929524984633, 286.6256102213103],
+            [35, 86.00994115791546, 195.55625612937945],
         ]
     )
 
     pred_int = pd.DataFrame(data[:, 1:], index=data[:, 0].astype(int))
     pred_int.columns = pd.MultiIndex.from_tuples(
-        [("target", 0.9, "upper"), ("target", 0.9, "lower")]
+        [("target", 0.9, "lower"), ("target", 0.9, "upper")]
     )
 
     return pred_int
@@ -69,7 +69,15 @@ def load_pandas_pred_interval():
 
 @pytest.fixture
 def load_pandas_pred_var():
-    data = {"target": [1108.871039, 1108.871039, 1108.871039, 1108.871039, 1108.871039]}
+    data = {
+        "target": [
+            1108.8710389831333,
+            1108.8710389831333,
+            1108.8710389831333,
+            1108.8710389831333,
+            1108.8710389831333,
+        ]
+    }
 
     pred_var = pd.DataFrame(data)
     pred_var.index = [4, 63, 10, 0, 35]
@@ -195,14 +203,14 @@ def test_create_container_to_polars(
     y_pred_i = estimator.predict_interval(X_test)[:5]
     y_pred_v = estimator.predict_var(X_test)[:5]
 
-    assert (expected_y_pred_quantile.to_numpy() == y_pred_q.values).all()
-    assert expected_y_pred_quantile.columns == ["__target__0.05__", "__target__0.95__"]
+    assert (y_pred_q.to_numpy() == expected_y_pred_quantile.values).all()
+    assert y_pred_q.columns == ["__target__0.05__", "__target__0.95__"]
 
-    assert (expected_y_pred_int.to_numpy() == y_pred_i.values).all()
-    assert expected_y_pred_int.columns == [
+    assert (y_pred_i.to_numpy() == expected_y_pred_int.values).all()
+    assert y_pred_i.columns == [
         "__target__0.9__lower__",
         "__target__0.9__upper__",
     ]
 
-    assert (expected_y_pred_var.to_numpy() == y_pred_v.values).all()
-    assert expected_y_pred_var.columns == ["target"]
+    assert (y_pred_v.to_numpy() == expected_y_pred_var.values).all()
+    assert y_pred_v.columns == ["target"]
