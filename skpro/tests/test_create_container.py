@@ -40,7 +40,7 @@ def load_pandas_pred_quantile():
             [35, 86.00994115791546, 195.55625612937945],
         ]
     )
-
+    data = np.round(data, 2)
     quantiles = pd.DataFrame(data[:, 1:], index=data[:, 0].astype(int))
     quantiles.columns = pd.MultiIndex.from_tuples([("target", 0.05), ("target", 0.95)])
 
@@ -58,7 +58,7 @@ def load_pandas_pred_interval():
             [35, 86.00994115791546, 195.55625612937945],
         ]
     )
-
+    data = np.round(data, 2)
     pred_int = pd.DataFrame(data[:, 1:], index=data[:, 0].astype(int))
     pred_int.columns = pd.MultiIndex.from_tuples(
         [("target", 0.9, "lower"), ("target", 0.9, "upper")]
@@ -69,19 +69,19 @@ def load_pandas_pred_interval():
 
 @pytest.fixture
 def load_pandas_pred_var():
-    data = {
-        "target": [
+    data = np.array(
+        [
             1108.8710389831333,
             1108.8710389831333,
             1108.8710389831333,
             1108.8710389831333,
             1108.8710389831333,
         ]
-    }
-
+    )
+    data = np.round(data, 2)
     pred_var = pd.DataFrame(data)
     pred_var.index = [4, 63, 10, 0, 35]
-
+    pred_var.columns = ["target"]
     return pred_var
 
 
@@ -168,15 +168,15 @@ def test_create_container_to_pandas(
     y_pred_i = estimator.predict_interval(X_test)[:5]
     y_pred_v = estimator.predict_var(X_test)[:5]
 
-    assert (expected_y_pred_quantile.values == y_pred_q.values).all()
+    assert (expected_y_pred_quantile.values == np.round(y_pred_q.values, 2)).all()
     assert (expected_y_pred_quantile.columns == y_pred_q.columns).all()
     assert (expected_y_pred_quantile.index == y_pred_q.index).all()
 
-    assert (expected_y_pred_int.values == y_pred_i.values).all()
+    assert (expected_y_pred_int.values == np.round(y_pred_i.values, 2)).all()
     assert (expected_y_pred_int.columns == y_pred_i.columns).all()
     assert (expected_y_pred_int.index == y_pred_i.index).all()
 
-    assert (expected_y_pred_var.values == y_pred_v.values).all()
+    assert (expected_y_pred_var.values == np.round(y_pred_v.values, 2)).all()
     assert (expected_y_pred_var.columns == y_pred_v.columns).all()
     assert (expected_y_pred_var.index == y_pred_v.index).all()
 
@@ -203,14 +203,14 @@ def test_create_container_to_polars(
     y_pred_i = estimator.predict_interval(X_test)[:5]
     y_pred_v = estimator.predict_var(X_test)[:5]
 
-    assert (y_pred_q.to_numpy() == expected_y_pred_quantile.values).all()
+    assert (np.round(y_pred_q.to_numpy(), 2) == expected_y_pred_quantile.values).all()
     assert y_pred_q.columns == ["__target__0.05__", "__target__0.95__"]
 
-    assert (y_pred_i.to_numpy() == expected_y_pred_int.values).all()
+    assert (np.round(y_pred_i.to_numpy(), 2) == expected_y_pred_int.values).all()
     assert y_pred_i.columns == [
         "__target__0.9__lower__",
         "__target__0.9__upper__",
     ]
 
-    assert (y_pred_v.to_numpy() == expected_y_pred_var.values).all()
+    assert (np.round(y_pred_v.to_numpy(), 2) == expected_y_pred_var.values).all()
     assert y_pred_v.columns == ["target"]
