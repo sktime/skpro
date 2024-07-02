@@ -159,16 +159,16 @@ Adapters to other interfaces
 
     SklearnProbaReg
 
-Adapters to other classifiers
+Reduction to probabilistic classification
 ----------------------------
 
-.. currentmodule:: skpro.classification.sklearn_classifiers._sklearn_proba_class
+.. currentmodule:: skpro.regression.binned._sklearn_bin_regressor
 
 .. autosummary::
     :toctree: auto_generated/
     :template: class.rst
 
-    MulticlassSklearnProbaClassifier
+    HistBinnedProbaRegressor
 
 
 Base classes
