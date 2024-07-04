@@ -24,6 +24,10 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
     bins. It then uses these bins as the classes for the classifier and predicts
     the probabilites for each class.
 
+    Note: Ensure the ``y`` values while calling ``fit`` are within the the ``bins``
+    range. If it is not then it will be internally replaced to move to the
+    closest bin.
+
     Parameters
     ----------
     clf : instance of a sklearn classifier
@@ -38,8 +42,9 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
     classes_ : np.array
         Contains the names of the classes that it was fit on.
     class_bin_map_ : dict
-        The key contains the class names. It maps the bin boundaries
-        [bin start,bin end] to the classes.
+        The key contains the class name assigned to the bin.
+        It maps the key (which indicates the ``i``th bin) to the respective
+        bin's boundaries np.array([bins[i],bins[i+1]]).
     classes_proba_ : pd.DataFrame
         Contains the class probabilites.
     """
@@ -63,6 +68,15 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
         stop = max(y) * 1.001
         bins = np.linspace(start=start, stop=stop, num=bins + 1)
         return bins
+
+    def _y_bins_compatiblity(self, y, bins, _y_cols):
+        y = np.array(y).flatten()
+        upper_y = bins[-1] - 1e-9
+        lower_y = bins[0] + 1e-9
+        y = np.where(y <= bins[0], lower_y, y)
+        y = np.where(y >= bins[-1], upper_y, y)
+        y = pd.DataFrame(y, columns=_y_cols)
+        return y
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -93,6 +107,10 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
         # create bins array in case of bins being an `int`
         if isinstance(bins, int) or isinstance(bins, np.integer):
             bins = self._bins_int_arr(bins, y)
+
+        # check if y values are within bins range
+        # if not move it to the closest bin.
+        y = self._y_bins_compatiblity(y, bins, self._y_cols)
 
         # in case of int it will be internally replaced in fit
         self._bins = bins
