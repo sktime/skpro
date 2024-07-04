@@ -262,9 +262,11 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
         from sklearn.naive_bayes import GaussianNB
+        from sklearn.semi_supervised import LabelSpreading
         from sklearn.tree import DecisionTreeClassifier
 
         param1 = {"clf": DecisionTreeClassifier(), "bins": 4}
         param2 = {"clf": GaussianNB()}
+        params3 = {"clf": LabelSpreading(), "bins": [20, 80, 160, 250, 300, 380, 420]}
 
-        return [param1, param2]
+        return [param1, param2, params3]
