@@ -13,6 +13,12 @@ class TruncatedNormal(_ScipyAdapter):
     """A truncated normal probability distribution.
 
     Most methods wrap ``scipy.stats.truncnorm``.
+    It truncates the normal distribution at
+    the abscissa ``l_trunc`` and ``r_trunc``.
+
+    Note: The truncation parameters passed
+    is internally shifted to be centred at
+    mean and scaled by sigma.
 
     Parameters
     ----------

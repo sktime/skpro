@@ -77,6 +77,16 @@ Integer support
     Binomial
     Poisson
 
+Continuous support - truncated distributions
+--------------------------------------------
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    TruncatedNormal
 
 Non-parametric and empirical distributions
 ------------------------------------------
