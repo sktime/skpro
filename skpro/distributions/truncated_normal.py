@@ -37,11 +37,11 @@ class TruncatedNormal(_ScipyAdapter):
     -------
     >>> from skpro.distributions.truncated_normal import TruncatedNormal
 
-    >>> d = TruncatedNormal(
-            mu=[[0, 1], [2, 3], [4, 5]],
-            sigma= 1,
-            l_trunc= [[-0.1,0.5],[1.5,2.4],[4.1,5]],
-            r_trunc= [[0.8,2],[4,5],[5,7]]
+    >>> d = TruncatedNormal(\
+            mu=[[0, 1], [2, 3], [4, 5]],\
+            sigma= 1,\
+            l_trunc= [[-0.1,0.5],[1.5,2.4],[4.1,5]],\
+            r_trunc= [[0.8,2],[4,5],[5,7]]\
         )
     """
 
