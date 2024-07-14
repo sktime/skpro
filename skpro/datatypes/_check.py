@@ -50,13 +50,12 @@ def generate_check_dict():
     """Generate check_dict using lookup."""
     from skbase.utils.dependencies import _check_estimator_deps
 
-    from skpro import datatypes
     from skpro.utils.retrieval import _all_classes
 
-    mod = datatypes
-
-    classes = _all_classes(mod)
-    classes = [x for x in classes if issubclass(x, BaseDatatype) and x != BaseDatatype]
+    classes = _all_classes("skpro.datatypes")
+    classes = [x[1] for x in classes]
+    classes = [x for x in classes if issubclass(x, BaseDatatype)]
+    classes = [x for x in classes if not x.__name__.startswith("Base")]
 
     # subset only to data types with soft dependencies present
     result = [x for x in classes if _check_estimator_deps(x, severity="none")]
