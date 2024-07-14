@@ -1,6 +1,6 @@
 [project]
 name = "skpro"
-version = "2.3.2"
+version = "2.4.1"
 description = "A unified framework for probability distributions and probabilistic supervised regression"
 authors = [
     {name = "skpro developers", email = "sktime.toolbox@gmail.com"},
@@ -52,13 +52,13 @@ all_extras = [
     "attrs",
     "cyclic-boosting>=1.4.0; python_version < '3.12'",
     "distfit",
-    "lifelines<0.29.0",
+    "lifelines<0.30.0",
     "mapie",
     "matplotlib>=3.3.2",
     "ngboost<0.6.0",
-    "polars<0.21.0",
+    "polars<1.2.0",
     "pyarrow<14.0.0; python_version < '3.12'",
-    "scikit-survival<0.23.0",
+    "scikit-survival<0.24.0",
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
