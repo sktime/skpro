@@ -34,7 +34,6 @@ import pandas as pd
 from skpro.datatypes._common import _req, _ret
 from skpro.datatypes._table._base import BaseTable
 
-
 PRIMITIVE_TYPES = (float, int, str)
 
 
@@ -109,10 +108,10 @@ class TablePdDataFrame(BaseTable):
         metadata : dict, only returned if return_metadata is True.
             Metadata dictionary.
         """
-        return check_pddataframe_table(obj, return_metadata, var_name)
+        return _check_pddataframe_table(obj, return_metadata, var_name)
 
 
-def check_pddataframe_table(obj, return_metadata=False, var_name="obj"):
+def _check_pddataframe_table(obj, return_metadata=False, var_name="obj"):
     metadata = dict()
 
     if not isinstance(obj, pd.DataFrame):
@@ -214,10 +213,10 @@ class TablePdSeries(BaseTable):
         metadata : dict, only returned if return_metadata is True.
             Metadata dictionary.
         """
-        return check_pdseries_table(obj, return_metadata, var_name)
+        return _check_pdseries_table(obj, return_metadata, var_name)
 
 
-def check_pdseries_table(obj, return_metadata=False, var_name="obj"):
+def _check_pdseries_table(obj, return_metadata=False, var_name="obj"):
     metadata = dict()
 
     if not isinstance(obj, pd.Series):
@@ -324,10 +323,10 @@ class TableNp1D(BaseTable):
         metadata : dict, only returned if return_metadata is True.
             Metadata dictionary.
         """
-        return check_numpy1d_table(obj, return_metadata, var_name)
+        return _check_numpy1d_table(obj, return_metadata, var_name)
 
 
-def check_numpy1d_table(obj, return_metadata=False, var_name="obj"):
+def _check_numpy1d_table(obj, return_metadata=False, var_name="obj"):
     metadata = dict()
 
     if not isinstance(obj, np.ndarray):
@@ -429,10 +428,10 @@ class TableNp2D(BaseTable):
         metadata : dict, only returned if return_metadata is True.
             Metadata dictionary.
         """
-        return check_numpy2d_table(obj, return_metadata, var_name)
+        return _check_numpy2d_table(obj, return_metadata, var_name)
 
 
-def check_numpy2d_table(obj, return_metadata=False, var_name="obj"):
+def _check_numpy2d_table(obj, return_metadata=False, var_name="obj"):
     metadata = dict()
 
     if not isinstance(obj, np.ndarray):
@@ -533,10 +532,10 @@ class TableListOfDict(BaseTable):
         metadata : dict, only returned if return_metadata is True.
             Metadata dictionary.
         """
-        return check_list_of_dict_table(obj, return_metadata, var_name)
+        return _check_list_of_dict_table(obj, return_metadata, var_name)
 
 
-def check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
+def _check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
     metadata = dict()
 
     if not isinstance(obj, list):

@@ -34,7 +34,6 @@ from skpro.datatypes._common import _metadata_requested, _ret
 from skpro.datatypes._proba import check_dict_Proba
 from skpro.datatypes._registry import AMBIGUOUS_MTYPES, SCITYPE_LIST, mtype_to_scitype
 
-
 check_dict = {}
 
 
