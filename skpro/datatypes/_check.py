@@ -23,10 +23,6 @@ __all__ = [
     "mtype",
 ]
 
-import importlib
-import inspect
-import pkgutil
-
 import numpy as np
 
 from skpro.datatypes._base import BaseDatatype
