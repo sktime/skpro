@@ -14,17 +14,17 @@ class BaseTable(BaseDatatype):
     Parameters
     ----------
     is_univariate: bool
-        True iff series has one variable
+        True iff table has one variable
     is_empty: bool
-        True iff series has no variables or no instances
+        True iff table has no variables or no instances
     has_nans: bool
-        True iff the series contains NaN values
+        True iff the table contains NaN values
     n_instances: int
         number of instances/rows in the table
     n_features: int
-        number of variables in series
+        number of variables in table
     feature_names: list of int or object
-        names of variables in series
+        names of variables in table
     """
 
     _tags = {
