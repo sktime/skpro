@@ -55,27 +55,12 @@ def generate_check_dict():
     from skbase.utils.dependencies import _check_estimator_deps
 
     from skpro import datatypes
+    from skpro.utils.retrieval import _all_classes
 
     mod = datatypes
 
-    classes = []
-    for _, name, _ in pkgutil.walk_packages(mod.__path__, prefix=mod.__name__ + "."):
-        submodule = importlib.import_module(name)
-        for _, obj in inspect.getmembers(submodule):
-            if inspect.isclass(obj):
-                if not obj.__name__.startswith("Base"):
-                    classes.append(obj)
+    classes = _all_classes(mod)
     classes = [x for x in classes if issubclass(x, BaseDatatype) and x != BaseDatatype]
-
-    # this does not work, but should - bug in skbase?
-    # ROOT = str(Path(__file__).parent)  # sktime package root directory
-    #
-    # result = all_objects(
-    #     object_types=BaseDatatype,
-    #     package_name="sktime.datatypes",
-    #     path=ROOT,
-    #     return_names=False,
-    # )
 
     # subset only to data types with soft dependencies present
     result = [x for x in classes if _check_estimator_deps(x, severity="none")]
