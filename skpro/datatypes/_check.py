@@ -23,21 +23,80 @@ __all__ = [
     "mtype",
 ]
 
+import importlib
+import inspect
+import pkgutil
+
 import numpy as np
 
+from skpro.datatypes._base import BaseDatatype
 from skpro.datatypes._common import _metadata_requested, _ret
 from skpro.datatypes._proba import check_dict_Proba
 from skpro.datatypes._registry import AMBIGUOUS_MTYPES, SCITYPE_LIST, mtype_to_scitype
-from skpro.datatypes._table import check_dict_Table
 
-# pool convert_dict-s
-check_dict = dict()
-check_dict.update(check_dict_Table)
-check_dict.update(check_dict_Proba)
+
+check_dict = {}
+
+
+def get_check_dict():
+    """Retrieve check_dict, caches the first time it is requested.
+
+    This is to avoid repeated, time consuming crawling in generate_check_dict,
+    which would otherwise be called every time check_dict is requested.
+
+    Leaving the code on root level will also fail, due to circular imports.
+    """
+    if len(check_dict) == 0:
+        check_dict.update(generate_check_dict())
+    return check_dict
+
+
+def generate_check_dict():
+    """Generate check_dict using lookup."""
+    from skbase.utils.dependencies import _check_estimator_deps
+
+    from skpro import datatypes
+
+    mod = datatypes
+
+    classes = []
+    for _, name, _ in pkgutil.walk_packages(mod.__path__, prefix=mod.__name__ + "."):
+        submodule = importlib.import_module(name)
+        for _, obj in inspect.getmembers(submodule):
+            if inspect.isclass(obj):
+                if not obj.__name__.startswith("Base"):
+                    classes.append(obj)
+    classes = [x for x in classes if issubclass(x, BaseDatatype) and x != BaseDatatype]
+
+    # this does not work, but should - bug in skbase?
+    # ROOT = str(Path(__file__).parent)  # sktime package root directory
+    #
+    # result = all_objects(
+    #     object_types=BaseDatatype,
+    #     package_name="sktime.datatypes",
+    #     path=ROOT,
+    #     return_names=False,
+    # )
+
+    # subset only to data types with soft dependencies present
+    result = [x for x in classes if _check_estimator_deps(x, severity="none")]
+
+    check_dict = dict()
+    for k in result:
+        mtype = k.get_class_tag("name")
+        scitype = k.get_class_tag("scitype")
+
+        check_dict[(mtype, scitype)] = k()._check
+
+    # temporary while refactoring
+    check_dict.update(check_dict_Proba)
+
+    return check_dict
 
 
 def _check_scitype_valid(scitype: str = None):
     """Check validity of scitype."""
+    check_dict = get_check_dict()
     valid_scitypes = list({x[1] for x in check_dict.keys()})
 
     if not isinstance(scitype, str):
