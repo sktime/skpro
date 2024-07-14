@@ -10,7 +10,7 @@ from skpro.utils.validation._dependencies import _check_soft_dependencies
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
-    from skpro.datatypes._table._check import check_polars_table
+    from skpro.datatypes._adapter.polars import check_polars_frame
     from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
 
 TEST_ALPHAS = [0.05, 0.1, 0.25]
@@ -67,9 +67,9 @@ def test_polars_eager_conversion_methods(
     X_train, X_test, y_train = polars_load_diabetes_pandas
     X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
-    assert check_polars_table(X_train_pl)
-    assert check_polars_table(X_test_pl)
-    assert check_polars_table(y_train_pl)
+    assert check_polars_frame(X_train_pl)
+    assert check_polars_frame(X_test_pl)
+    assert check_polars_frame(y_train_pl)
     assert (X_train.values == X_train_pl.to_numpy()).all()
     assert (X_test.values == X_test_pl.to_numpy()).all()
     assert (y_train.values == y_train_pl.to_numpy()).all()
