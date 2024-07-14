@@ -67,6 +67,7 @@ class TablePdDataFrame(BaseTable):
         "python_dependencies": "pandas",
         "capability:multivariate": True,
         "capability:missing_values": True,
+        "capability:index": True,
     }
 
     def __init__(
@@ -169,9 +170,9 @@ class TablePdSeries(BaseTable):
         "name_aliases": [],
         "python_version": None,
         "python_dependencies": "pandas",
-        "capability:multivariate": True,
-        "capability:unequally_spaced": True,
+        "capability:multivariate": False,
         "capability:missing_values": True,
+        "capability:index": True,
     }
 
     def __init__(
@@ -282,6 +283,7 @@ class TableNp1D(BaseTable):
         "python_dependencies": "numpy",
         "capability:multivariate": False,
         "capability:missing_values": True,
+        "capability:index": False,
     }
 
     def __init__(
@@ -387,6 +389,7 @@ class TableNp2D(BaseTable):
         "python_dependencies": "numpy",
         "capability:multivariate": True,
         "capability:missing_values": True,
+        "capability:index": False,
     }
 
     def __init__(
@@ -491,6 +494,7 @@ class TableListOfDict(BaseTable):
         "python_dependencies": "numpy",
         "capability:multivariate": True,
         "capability:missing_values": True,
+        "capability:index": False,
     }
 
     def __init__(
@@ -618,6 +622,7 @@ class TablePolarsEager(BaseTable):
         "python_dependencies": ["polars", "pyarrow"],
         "capability:multivariate": True,
         "capability:missing_values": True,
+        "capability:index": False,
     }
 
     def __init__(
@@ -694,6 +699,7 @@ class TablePolarsLazy(BaseTable):
         "python_dependencies": ["polars", "pyarrow"],
         "capability:multivariate": True,
         "capability:missing_values": True,
+        "capability:index": False,
     }
 
     def __init__(
