@@ -69,15 +69,56 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 
+from skpro.datatypes._base import BaseConverter
 from skpro.datatypes._check import mtype as infer_mtype
 from skpro.datatypes._proba import convert_dict_Proba
 from skpro.datatypes._registry import mtype_to_scitype
 from skpro.datatypes._table import convert_dict_Table
 
 # pool convert_dict-s and infer_mtype_dict-s
-convert_dict = dict()
-convert_dict.update(convert_dict_Table)
-convert_dict.update(convert_dict_Proba)
+convert_dict = {}
+
+
+def get_convert_dict():
+    """Retrieve convert_dict, caches the first time it is requested.
+
+    This is to avoid repeated, time consuming crawling in generate_check_dict,
+    which would otherwise be called every time check_dict is requested.
+
+    Leaving the code on root level will also fail, due to circular imports.
+    """
+    if len(convert_dict) == 0:
+        convert_dict.update(generate_convert_dict())
+    return convert_dict.copy()
+
+
+def generate_convert_dict():
+    """Generate convert_dict using lookup."""
+    from skbase.utils.dependencies import _check_estimator_deps
+
+    from skpro.utils.retrieval import _all_classes
+
+    classes = _all_classes("skpro.datatypes")
+    classes = [x[1] for x in classes]
+    classes = [x for x in classes if issubclass(x, BaseConverter)]
+    classes = [x for x in classes if not x.__name__.startswith("Base")]
+
+    # subset only to data types with soft dependencies present
+    result = [x for x in classes if _check_estimator_deps(x, severity="none")]
+
+    check_dict = dict()
+    for k in result:
+        from_mtype = k.get_class_tag("from_mtype")
+        to_mtype = k.get_class_tag("to_mtype")
+        scitype = k.get_class_tag("scitype")
+
+        convert_dict[(from_mtype, to_mtype, scitype)] = k()._convert
+
+    # temporary while refactoring
+    check_dict.update(convert_dict_Proba)
+    check_dict.update(convert_dict_Table)
+
+    return check_dict
 
 
 def convert(

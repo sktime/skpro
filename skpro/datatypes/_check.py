@@ -43,7 +43,7 @@ def get_check_dict():
     """
     if len(check_dict) == 0:
         check_dict.update(generate_check_dict())
-    return check_dict
+    return check_dict.copy()
 
 
 def generate_check_dict():
