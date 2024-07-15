@@ -39,6 +39,7 @@ Continuous support - full reals
     Logistic
     Normal
     TDistribution
+    TruncatedNormal
 
 
 Continuous support - non-negative reals
@@ -76,17 +77,6 @@ Integer support
 
     Binomial
     Poisson
-
-Continuous support - truncated distributions
---------------------------------------------
-
-.. currentmodule:: skpro.distributions
-
-.. autosummary::
-    :toctree: auto_generated/
-    :template: class.rst
-
-    TruncatedNormal
 
 Non-parametric and empirical distributions
 ------------------------------------------
