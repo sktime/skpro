@@ -14,6 +14,7 @@ Available ``mtypes`` include pandas DataFrames and polars Eager DataFrames
 We first load an sklearn dataset and import an skpro regression estimator.
 
 .. code-block :: python
+
     #import our dataset
     from sklearn.datasets import load_diabetes
     from sklearn.model_selection import train_test_split
@@ -35,12 +36,14 @@ We first load an sklearn dataset and import an skpro regression estimator.
 Next, we will call the ``set_output`` method built into the estimator.
 
 .. code-block :: python
+
     estimator.set_output(transform = "polars")
 
 After we fit the model, we can then call the ``predict`` function and the
 output will automatically be converted into a polars DataFrame
 
 .. code-block :: python
+
     estimator.fit(X_train, y_train)
 
     estimator.predict(X_test)
