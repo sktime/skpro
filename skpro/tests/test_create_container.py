@@ -10,6 +10,8 @@ from skpro.utils.set_output import check_transform_config
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
+    import polars as pl
+
     from skpro.utils.create_container import PolarsAdapter
 
 
@@ -27,6 +29,24 @@ def load_diabetes_pandas():
         X, y, test_size=0.33, random_state=42
     )
     return [X_train, X_test, y_train]
+
+
+@pytest.fixture
+def load_pandas_pred():
+    data = np.array(
+        [
+            [4, 121.545815],
+            [63, 77.290900],
+            [10, 74.845273],
+            [0, 231.852453],
+            [35, 140.783099],
+        ]
+    )
+    data = np.round(data, 2)
+    pred = pd.DataFrame(data[:, 1:], index=data[:, 0].astype(int))
+    pred.columns = ["target"]
+
+    return pred
 
 
 @pytest.fixture
@@ -152,21 +172,37 @@ def test_get_config_adapter_polars(estimator, load_diabetes_pandas):
 
 def test_create_container_to_pandas(
     estimator,
+    load_pandas_pred,
     load_diabetes_pandas,
     load_pandas_pred_quantile,
     load_pandas_pred_interval,
     load_pandas_pred_var,
 ):
     estimator.set_output(transform="pandas")
+    expected_y_pred = load_pandas_pred
     expected_y_pred_int = load_pandas_pred_interval
     expected_y_pred_quantile = load_pandas_pred_quantile
     expected_y_pred_var = load_pandas_pred_var
     X_train, X_test, y_train = load_diabetes_pandas
 
     estimator.fit(X_train, y_train)
+    y_pred = estimator.predict(X_test)[:5]
     y_pred_q = estimator.predict_quantiles(X_test)[:5]
     y_pred_i = estimator.predict_interval(X_test)[:5]
     y_pred_v = estimator.predict_var(X_test)[:5]
+
+    assert isinstance(y_pred, pd.DataFrame)
+    assert isinstance(y_pred_q, pd.DataFrame)
+    assert isinstance(y_pred_i, pd.DataFrame)
+    assert isinstance(y_pred_v, pd.DataFrame)
+
+    assert (expected_y_pred.values == np.round(y_pred.values, 2)).all()
+    assert (expected_y_pred.columns == y_pred.columns).all()
+    assert (expected_y_pred.index == y_pred.index).all()
+
+    assert (expected_y_pred_quantile.values == np.round(y_pred_q.values, 2)).all()
+    assert (expected_y_pred_quantile.columns == y_pred_q.columns).all()
+    assert (expected_y_pred_quantile.index == y_pred_q.index).all()
 
     assert (expected_y_pred_quantile.values == np.round(y_pred_q.values, 2)).all()
     assert (expected_y_pred_quantile.columns == y_pred_q.columns).all()
@@ -187,21 +223,32 @@ def test_create_container_to_pandas(
 )
 def test_create_container_to_polars(
     estimator,
+    load_pandas_pred,
     load_diabetes_pandas,
     load_pandas_pred_quantile,
     load_pandas_pred_interval,
     load_pandas_pred_var,
 ):
     estimator.set_output(transform="polars")
+    expected_y_pred = load_pandas_pred
     expected_y_pred_int = load_pandas_pred_interval
     expected_y_pred_quantile = load_pandas_pred_quantile
     expected_y_pred_var = load_pandas_pred_var
     X_train, X_test, y_train = load_diabetes_pandas
 
     estimator.fit(X_train, y_train)
+    y_pred = estimator.predict(X_test)[:5]
     y_pred_q = estimator.predict_quantiles(X_test)[:5]
     y_pred_i = estimator.predict_interval(X_test)[:5]
     y_pred_v = estimator.predict_var(X_test)[:5]
+
+    assert isinstance(y_pred, pl.DataFrame)
+    assert isinstance(y_pred_q, pl.DataFrame)
+    assert isinstance(y_pred_i, pl.DataFrame)
+    assert isinstance(y_pred_v, pl.DataFrame)
+
+    assert (np.round(y_pred.to_numpy(), 2) == expected_y_pred.values).all()
+    assert y_pred.columns == ["target"]
 
     assert (np.round(y_pred_q.to_numpy(), 2) == expected_y_pred_quantile.values).all()
     assert y_pred_q.columns == ["__target__0.05__", "__target__0.95__"]

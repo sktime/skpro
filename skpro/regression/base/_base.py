@@ -174,6 +174,12 @@ class BaseProbaRegressor(BaseEstimator):
             store=self._X_converter_store,
         )
 
+        valid, output_config = check_transform_config(self)
+        if valid:
+            transform_adapter = output_config["dense"]
+            adapter, columns = get_config_adapter(transform_adapter, y_pred)
+            y_pred = adapter.create_container(y_pred, columns)
+
         return y_pred
 
     def _predict(self, X):
@@ -560,6 +566,13 @@ class BaseProbaRegressor(BaseEstimator):
 
         # pass to inner _predict_interval
         pred_var = self._predict_var(X=X_inner)
+
+        valid, output_config = check_transform_config(self)
+        if valid:
+            transform_adapter = output_config["dense"]
+            adapter, columns = get_config_adapter(transform_adapter, pred_var)
+            pred_var = adapter.create_container(pred_var, columns)
+
         return pred_var
 
     def _predict_var(self, X):
