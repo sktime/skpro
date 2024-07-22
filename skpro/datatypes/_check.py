@@ -22,7 +22,6 @@ __all__ = [
     "check_raise",
     "mtype",
 ]
-from typing import Union
 
 import numpy as np
 
@@ -79,7 +78,7 @@ def _coerce_list_of_str(obj, var_name="obj"):
 
 def check_is_mtype(
     obj,
-    mtype: Union[str, list[str]],
+    mtype,
     scitype: str = None,
     return_metadata=False,
     var_name="obj",
@@ -261,7 +260,7 @@ def check_raise(obj, mtype: str, scitype: str = None, var_name: str = "input"):
 
 def mtype(
     obj,
-    as_scitype: Union[str, list[str]] = None,
+    as_scitype,
     exclude_mtypes=AMBIGUOUS_MTYPES,
 ):
     """Infer the mtype of an object considered as a specific scitype.
@@ -343,7 +342,7 @@ def mtype(
 
 def check_is_scitype(
     obj,
-    scitype: Union[str, list[str]],
+    scitype,
     return_metadata=False,
     var_name="obj",
     exclude_mtypes=AMBIGUOUS_MTYPES,
