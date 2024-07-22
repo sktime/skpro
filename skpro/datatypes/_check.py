@@ -210,7 +210,10 @@ def check_is_mtype(
     # c. no mtype is found - then return False and all error messages if requested
     else:
         if len(msg) == 1:
-            msg = msg[0]
+            if msg_return_dict == "list":
+                msg = msg[0]
+            else:
+                msg = list(msg.values())[0]
 
         return _ret(False, msg, None, return_metadata)
 
