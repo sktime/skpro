@@ -22,6 +22,7 @@ __all__ = [
     "check_raise",
     "mtype",
 ]
+from typing import Union
 
 import numpy as np
 
@@ -78,7 +79,7 @@ def _coerce_list_of_str(obj, var_name="obj"):
 
 def check_is_mtype(
     obj,
-    mtype,
+    mtype: Union[str, list[str]],
     scitype: str = None,
     return_metadata=False,
     var_name="obj",
@@ -104,15 +105,9 @@ def check_is_mtype(
     msg_return_dict: str, one of ``"list"`` or ``"dict"``, optional, default="dict"
         whether returned msg, if returned, is a str, dict or list
 
-        * if ``msg_return_dict="list"``,
-          returned ``msg`` is ``str`` if ``mtype`` is ``str``,
-          returned ``msg`` is ``list`` of ``str`` if ``mtype`` is ``list``
+        *  if "list", msg is str if mtype is str, list of str if mtype is list
 
-        * if ``msg_return_dict="dict"``,
-          returned ``msg`` is ``str`` if ``mtype`` is ``str``,
-          returned ``msg`` is ``dict`` of ``str`` if ``mtype`` is ``list``.
-          If ``dict``, has str in ``mtype`` as key,
-          and error message for mtype as value.
+        *  if "dict", msg is str if mtype is str, dict of str if mtype is list,
 
     Returns
     -------
@@ -158,15 +153,13 @@ def check_is_mtype(
 
     # we loop through individual mtypes in mtype and see whether they pass the check
     #  for each check we remember whether it passed and what it returned
-    if msg_return_dict == "list":
+    if msg_return_dict is None:
+        msg_return_dict = "dict"
+        msg = dict()
+    elif msg_return_dict == "list":
         msg = []
     elif msg_return_dict == "dict":
         msg = dict()
-    else:
-        raise ValueError(
-            f"Error in check_is_mtype, msg_return_dict argument "
-            f"must be 'list' or 'dict', found {msg_return_dict}"
-        )
 
     found_mtype = []
     found_scitype = []
@@ -263,7 +256,11 @@ def check_raise(obj, mtype: str, scitype: str = None, var_name: str = "input"):
         raise TypeError(msg)
 
 
-def mtype(obj, as_scitype=None, exclude_mtypes=AMBIGUOUS_MTYPES):
+def mtype(
+    obj,
+    as_scitype: Union[str, list[str]] = None,
+    exclude_mtypes=AMBIGUOUS_MTYPES,
+):
     """Infer the mtype of an object considered as a specific scitype.
 
     Parameters
@@ -343,7 +340,7 @@ def mtype(obj, as_scitype=None, exclude_mtypes=AMBIGUOUS_MTYPES):
 
 def check_is_scitype(
     obj,
-    scitype,
+    scitype: Union[str, list[str]],
     return_metadata=False,
     var_name="obj",
     exclude_mtypes=AMBIGUOUS_MTYPES,
@@ -533,7 +530,7 @@ def scitype(obj, candidate_scitypes=SCITYPE_LIST, exclude_mtypes=AMBIGUOUS_MTYPE
     if len(valid_scitypes) > 1:
         raise TypeError(
             "Error in function scitype, more than one valid scitype identified:"
-            f"{ valid_scitypes}"
+            f"{valid_scitypes}"
         )
     if len(valid_scitypes) == 0:
         raise TypeError(
