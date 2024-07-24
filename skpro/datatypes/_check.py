@@ -62,10 +62,8 @@ def generate_check_dict():
 
     check_dict = dict()
     for k in result:
-        mtype = k.get_class_tag("name")
-        scitype = k.get_class_tag("scitype")
-
-        check_dict[(mtype, scitype)] = k()._check
+        key = k._get_key()
+        check_dict[key] = k()._check
 
     # temporary while refactoring
     check_dict.update(check_dict_Proba)

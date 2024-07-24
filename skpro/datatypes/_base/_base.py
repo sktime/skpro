@@ -157,6 +157,15 @@ class BaseDatatype(BaseObject):
         """
         return getattr(self, key, default)
 
+    @classmethod
+    def _get_key(cls):
+        """Get unique dictionary key corresponding to self.
+
+        Private function, used in collecting a dictionary of checks.
+        """
+        mtype = cls.get_class_tag("name")
+        scitype = cls.get_class_tag("scitype")
+        return (mtype, scitype)
 
 class BaseConverter(BaseObject):
     """Base class for data type converters.
