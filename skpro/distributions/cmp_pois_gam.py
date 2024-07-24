@@ -1,13 +1,15 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-"""Tweedie probability distribution."""
+"""Compound poisson gamma probability distribution."""
 
 __author__ = ["ShreeshaM07"]
 
+import math
+
 import numpy as np
+from scipy.special import gamma as gam_fun
+from scipy.stats import poisson
 
 from skpro.distributions.base import BaseDistribution
-
-# import pandas as pd
 
 
 class CmpPoissonGamma(BaseDistribution):
@@ -15,12 +17,12 @@ class CmpPoissonGamma(BaseDistribution):
 
     Parameters
     ----------
-    pow : float or array of float (1D or 2D)
-        Power parameter should be in range (1,2)
-    mu : float or array of float (1D or 2D)
-        mean of the normal distribution
-    scale : float or array of float (1D or 2D)
-        scale parameter
+    lambda_ : float or array of float (1D or 2D)
+        The rate parameter of the Poisson distribution.
+    alpha : float or array of float (1D or 2D)
+        The shape parameter of the Gamma distribution.
+    beta : float or array of float (1D or 2D)
+        The rate parameter (inverse scale) of the Gamma distribution.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
     """
@@ -43,11 +45,10 @@ class CmpPoissonGamma(BaseDistribution):
         "broadcast_init": "on",
     }
 
-    def __init__(self, pow, mu, scale, index=None, columns=None):
-        self.pow = pow
-        self.mu = mu
-        self.scale = scale
-
+    def __init__(self, lambda_, alpha, beta, index=None, columns=None):
+        self.lambda_ = lambda_
+        self.alpha = alpha
+        self.beta = beta
         super().__init__(index=index, columns=columns)
 
     def _pdf(self, x):
@@ -63,68 +64,49 @@ class CmpPoissonGamma(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
-        from scipy.special import wright_bessel
+        lam = self.lambda_
+        alpha = self.alpha
+        beta = self.beta
+        pdf_value = np.zeros_like(x)
+        tol = 1e-10
 
-        pow = self.pow
-        mu = self.mu
-        scale = self.scale
+        for idx, val in np.ndenumerate(x):
+            if val <= 0:
+                continue  # PDF is zero for non-positive values
 
-        theta = np.power(mu, 1 - pow) / (1 - pow)
-        kappa = np.power(mu, 2 - pow) / (2 - pow)
-        alpha = (2 - pow) / (1 - pow)
-        t = ((pow - 1) * scale / x) ** alpha
-        t /= (2 - pow) * scale
-        a = 1 / x * wright_bessel(-alpha, 0, t)
-        return a * np.exp((x * theta - kappa) / scale)
+            const_term = np.exp(-beta * val) / ((np.exp(lam) - 1) * val)
+            i = 1
+            while True:
+                t1 = lam * (pow(beta * val, alpha))
+                numer = pow(t1, i)
+                i_fact = math.factorial(i)
+                gamma_fun = gam_fun(i * alpha)
+                denom = i_fact * gamma_fun
 
-    def _pmf(self, x):
+                term = numer / denom
+                pdf_value[idx] += term
+
+                if term < tol:
+                    break
+                i += 1
+                if i > 1000:  # safeguard to prevent infinite loop
+                    break
+            pdf_value[idx] = pdf_value[idx] * const_term
+
+        return pdf_value
+
+    def _pmf(self, k):
         """Probability mass function.
 
-        Private method, to be implemented by subclasses.
-        """
-        pow = self.pow
-        mu = self.mu
-        scale = self.scale
-
-        return np.exp(-np.power(mu, 2 - pow) / (scale * (2 - pow)))
-
-    def _cdf(self, x):
-        """Cumulative distribution function.
-
         Parameters
         ----------
-        x : 2D np.ndarray, same shape as ``self``
-            values to evaluate the cdf at
+        k : 2D np.ndarray, same shape as ``self``
+            values to evaluate the pmf at
 
         Returns
         -------
         2D np.ndarray, same shape as ``self``
-            cdf values at the given points
+            pmf values at the given points
         """
-        from scipy.integrate import quad
-
-        cdf_val = np.array(quad(self._pdf, 0, x)[0])
-        return cdf_val
-
-    def _ppf(self, p):
-        """Quantile function = percent point function = inverse cdf.
-
-        Parameters
-        ----------
-        p : 2D np.ndarray, same shape as ``self``
-            values to evaluate the ppf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            ppf values at the given points
-        """
-        from scipy.optimize import brentq
-
-        def objective(x, p):
-            return self._cdf(x) - p
-
-        ppf_val = np.array(
-            brentq(objective, 0, 1000, args=(p,))
-        )  # Adjust the upper bound as necessary
-        return ppf_val
+        lambda_ = self.lambda_
+        return poisson.pmf(k, lambda_)
