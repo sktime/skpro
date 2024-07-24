@@ -175,15 +175,44 @@ class BaseConverter(BaseObject):
 
     _tags = {
         "object_type": "converter",
-        "scitype": None,
-        "mtype_from": None,  # equal to name field
-        "mtype_to": None,  # equal to name field
+        "mtype_from": None,  # type to convert from - BaseDatatype class
+        "mtype_to": None,  # type to convert to - BaseDatatype class
+        "multiple_conversions": False,  # whether converter encodes multiple conversions
         "python_version": None,
         "python_dependencies": None,
     }
 
-    def __init__(self):
+    def __init__(self, mtype_from=None, mtype_to=None):
+        self.mtype_from = mtype_from
+        self.mtype_to = mtype_to
         super().__init__()
+
+        if mtype_from is not None:
+            self.set_tags(**{"mtype_from": mtype_from})
+        if mtype_to is not None:
+            self.set_tags(**{"mtype_to": mtype_to})
+
+        mtype_from = self.get_class_tag("mtype_from")
+        mtype_to = self.get_class_tag("mtype_to")
+
+        if mtype_from is None:
+            raise ValueError(
+                f"Error in instantiating {self.__class__.__name__}: "
+                "mtype_from and mtype_to must be set if the class has no defaults. "
+                "For valid pairs of defaults, use get_conversions."
+            )
+        if mtype_to is None:
+            raise ValueError(
+                f"Error in instantiating {self.__class__.__name__}: "
+                "mtype_to must be set in constructor, as the class has no defaults. "
+                "For valid pairs of defaults, use get_conversions."
+            )
+        if (mtype_from, mtype_to) not in self.get_conversions():
+            raise ValueError(
+                f"Error in instantiating {self.__class__.__name__}: "
+                "mtype_from and mtype_to must be a valid pair of defaults. "
+                "For valid pairs of defaults, use get_conversions."
+            )
 
     def convert(self, obj, store=None):
         """Convert obj to another machine type.
@@ -208,3 +237,33 @@ class BaseConverter(BaseObject):
             Reference of storage for lossy conversions.
         """
         raise NotImplementedError
+
+    @classmethod
+    def get_conversions(cls):
+        """Get all conversions.
+
+        Returns
+        -------
+        list of tuples (BaseDatatype subclass, BaseDatatype subclass)
+            List of all conversions in this class.
+        """
+        cls_from = cls.get_class_tag("mtype_from")
+        cls_to = cls.get_class_tag("mtype_to")
+
+        if cls_from is not None and cls_to is not None:
+            return [(cls_from, cls_to)]
+        # if multiple conversions are encoded, this should be overridden
+        raise NotImplementedError
+
+    @classmethod
+    def _get_key(cls):
+        """Get unique dictionary key corresponding to self.
+
+        Private function, used in collecting a dictionary of checks.
+        """
+        cls_from = cls.get_class_tag("mtype_from")
+        cls_to = cls.get_class_tag("mtype_to")
+        mtype_from = cls_from.get_class_tag("name")
+        mtype_to = cls_to.get_class_tag("name")
+        scitype = cls_to.get_class_tag("scitype")
+        return (mtype_from, mtype_to, scitype)
