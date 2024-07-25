@@ -2,8 +2,11 @@
 
 __author__ = ["fkiraly"]
 
+import pytest
+
 from skpro.datatypes._convert import convert_to
 from skpro.datatypes._examples import get_examples
+from skpro.tests.test_switch import run_test_module_changed
 from skpro.utils import deep_equals
 
 # hard-coded scitypes/mtypes to use in test_convert_to
@@ -13,6 +16,10 @@ MTYPES_PROBA = ["pred_interval", "pred_quantiles"]
 MTYPES_TABLE = ["list_of_dict", "pd_Series_Table", "numpy2D"]
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed(["skpro.datatypes", "skpro.utils"]),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_convert_to_simple():
     """Testing convert_to basic call works."""
     scitype = SCITYPES[0]
@@ -29,6 +36,10 @@ def test_convert_to_simple():
     assert deep_equals(converted, exp_fixt), msg
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed(["skpro.datatypes", "skpro.utils"]),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_convert_to_without_scitype():
     """Testing convert_to call without scitype specification."""
     scitype = SCITYPES[0]
@@ -45,6 +56,10 @@ def test_convert_to_without_scitype():
     assert deep_equals(converted, exp_fixt), msg
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed(["skpro.datatypes", "skpro.utils"]),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_convert_to_mtype_list():
     """Testing convert_to call to_type being a list, of same scitype."""
     # convert_to list
