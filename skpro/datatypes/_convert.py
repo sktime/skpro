@@ -65,6 +65,7 @@ __all__ = [
 ]
 
 from copy import deepcopy
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
@@ -84,14 +85,12 @@ def get_convert_dict():
 
     This is to avoid repeated, time consuming crawling in generate_check_dict,
     which would otherwise be called every time check_dict is requested.
-
-    Leaving the code on root level will also fail, due to circular imports.
     """
-    if len(convert_dict) == 0:
-        convert_dict.update(generate_convert_dict())
+    convert_dict = generate_convert_dict()
     return convert_dict.copy()
 
 
+@lru_cache(maxsize=1)
 def generate_convert_dict():
     """Generate convert_dict using lookup."""
     from skbase.utils.dependencies import _check_estimator_deps
@@ -107,12 +106,24 @@ def generate_convert_dict():
     result = [x for x in classes if _check_estimator_deps(x, severity="none")]
 
     check_dict = dict()
-    for k in result:
-        from_mtype = k.get_class_tag("from_mtype")
-        to_mtype = k.get_class_tag("to_mtype")
-        scitype = k.get_class_tag("scitype")
+    for cls in result:
+        if not cls.get_class_tag("multiple_conversions", False):
+            k = cls()
+            key = k._get_key()
+            convert_dict[key] = k
+        else:
+            for cls_to_cls in k.get_conversions():
+                k = k(*cls_to_cls)
 
-        convert_dict[(from_mtype, to_mtype, scitype)] = k()._convert
+                # check dependencies for both classes
+                # only add conversions if dependencies are satisfied for to and from
+                cls_from, cls_to = k._get_cls_from_to()
+                from_dep_chk = _check_estimator_deps(cls_from, severity="none")
+                to_dep_chk = _check_estimator_deps(cls_to, severity="none")
+
+                if from_dep_chk and to_dep_chk:
+                    key = k._get_key()
+                    convert_dict[key] = k
 
     # temporary while refactoring
     check_dict.update(convert_dict_Proba)
