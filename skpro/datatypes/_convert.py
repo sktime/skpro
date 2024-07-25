@@ -89,6 +89,11 @@ def get_convert_dict(soft_deps="present"):
         "present" - only conversions with soft dependencies present are included
         "all" - all conversions are included
     """
+    if soft_deps not in ["present", "all"]:
+        raise ValueError(
+            "Error in get_check_dict, soft_deps argument must be 'present' or 'all', "
+            f"found {soft_deps}"
+        )
     convert_dict = generate_convert_dict(soft_deps=soft_deps)
     return convert_dict.copy()
 

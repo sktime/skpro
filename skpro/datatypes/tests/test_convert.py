@@ -24,7 +24,7 @@ def _generate_fixture_tuples():
         if scitype in SCITYPES_NO_CONVERSIONS:
             continue
 
-        conv_mat = _conversions_defined(scitype, soft_deps="present")
+        conv_mat = _conversions_defined(scitype, soft_deps="all")
 
         mtypes = scitype_to_mtype(scitype, softdeps="present")
 

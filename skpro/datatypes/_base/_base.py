@@ -348,7 +348,7 @@ def _coerce_str_to_cls(cls_or_str):
     # perhaps it is nicer to transfer this to a registry later.
     from skpro.datatypes._check import get_check_dict
 
-    cd = get_check_dict()
+    cd = get_check_dict(soft_deps="all")
     cls = [cd[k].__class__ for k in cd if k[0] == cls_or_str]
     if len(cls) > 1:
         raise ValueError(f"Error in converting string to class: {cls_or_str}")

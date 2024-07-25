@@ -33,18 +33,29 @@ from skpro.datatypes._proba import check_dict_Proba
 from skpro.datatypes._registry import AMBIGUOUS_MTYPES, SCITYPE_LIST, mtype_to_scitype
 
 
-def get_check_dict():
+def get_check_dict(soft_deps="present"):
     """Retrieve check_dict, caches the first time it is requested.
 
     This is to avoid repeated, time consuming crawling in generate_check_dict,
     which would otherwise be called every time check_dict is requested.
+
+    Parameters
+    ----------
+    soft_deps : str, optional - one of "present", "all"
+        "present" - only checks with soft dependencies present are included
+        "all" - all checks are included
     """
-    check_dict = generate_check_dict()
+    if soft_deps not in ["present", "all"]:
+        raise ValueError(
+            "Error in get_check_dict, soft_deps argument must be 'present' or 'all', "
+            f"found {soft_deps}"
+        )
+    check_dict = generate_check_dict(soft_deps=soft_deps)
     return check_dict.copy()
 
 
 @lru_cache(maxsize=1)
-def generate_check_dict():
+def generate_check_dict(soft_deps="present"):
     """Generate check_dict using lookup."""
     from skbase.utils.dependencies import _check_estimator_deps
 
@@ -56,7 +67,8 @@ def generate_check_dict():
     classes = [x for x in classes if not x.__name__.startswith("Base")]
 
     # subset only to data types with soft dependencies present
-    result = [x for x in classes if _check_estimator_deps(x, severity="none")]
+    if soft_deps == "present":
+        result = [x for x in classes if _check_estimator_deps(x, severity="none")]
 
     check_dict = dict()
     for cls in result:
