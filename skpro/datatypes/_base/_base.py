@@ -27,6 +27,30 @@ class BaseDatatype(BaseObject):
     def __init__(self):
         super().__init__()
 
+    # call defaults to check
+    def __call__(self, obj, return_metadata=False, var_name="obj"):
+        """Check if obj is of this data type.
+
+        Parameters
+        ----------
+        obj : any
+            Object to check.
+        return_metadata : bool, optional (default=False)
+            Whether to return metadata.
+        var_name : str, optional (default="obj")
+            Name of the variable to check, for use in error messages.
+
+        Returns
+        -------
+        valid : bool
+            Whether obj is of this data type.
+        msg : str, only returned if return_metadata is True.
+            Error message if obj is not of this data type.
+        metadata : instance of self only returned if return_metadata is True.
+            Metadata dictionary.
+        """
+        return self.check(obj=obj, return_metadata=return_metadata, var_name=var_name)
+
     def check(self, obj, return_metadata=False, var_name="obj"):
         """Check if obj is of this data type.
 
@@ -157,14 +181,13 @@ class BaseDatatype(BaseObject):
         """
         return getattr(self, key, default)
 
-    @classmethod
-    def _get_key(cls):
+    def _get_key(self):
         """Get unique dictionary key corresponding to self.
 
         Private function, used in collecting a dictionary of checks.
         """
-        mtype = cls.get_class_tag("name")
-        scitype = cls.get_class_tag("scitype")
+        mtype = self.get_class_tag("name")
+        scitype = self.get_class_tag("scitype")
         return (mtype, scitype)
 
 class BaseConverter(BaseObject):
@@ -175,8 +198,8 @@ class BaseConverter(BaseObject):
 
     _tags = {
         "object_type": "converter",
-        "mtype_from": None,  # type to convert from - BaseDatatype class
-        "mtype_to": None,  # type to convert to - BaseDatatype class
+        "mtype_from": None,  # type to convert from - BaseDatatype class or str
+        "mtype_to": None,  # type to convert to - BaseDatatype class or str
         "multiple_conversions": False,  # whether converter encodes multiple conversions
         "python_version": None,
         "python_dependencies": None,
@@ -213,6 +236,24 @@ class BaseConverter(BaseObject):
                 "mtype_from and mtype_to must be a valid pair of defaults. "
                 "For valid pairs of defaults, use get_conversions."
             )
+
+    # call defaults to convert
+    def __call__(self, obj, store=None):
+        """Convert obj to another machine type.
+
+        Parameters
+        ----------
+        obj : any
+            Object to convert.
+        store : dict, optional (default=None)
+            Reference of storage for lossy conversions.
+
+        Returns
+        -------
+        converted_obj : any
+            Object obj converted to another machine type.
+        """
+        return self.convert(obj=obj, store=store)
 
     def convert(self, obj, store=None):
         """Convert obj to another machine type.
@@ -255,15 +296,59 @@ class BaseConverter(BaseObject):
         # if multiple conversions are encoded, this should be overridden
         raise NotImplementedError
 
-    @classmethod
-    def _get_key(cls):
+    def _get_cls_from_to(self):
+        """Get classes from and to.
+
+        Returns
+        -------
+        cls_from : BaseDatatype subclass
+            Class to convert from.
+        cls_to : BaseDatatype subclass
+            Class to convert to.
+        """
+        cls_from = self.get_class_tag("mtype_from")
+        cls_to = self.get_class_tag("mtype_to")
+
+        cls_from = _coerce_str_to_cls(cls_from)
+        cls_to = _coerce_str_to_cls(cls_to)
+
+        return cls_from, cls_to
+
+    def _get_key(self):
         """Get unique dictionary key corresponding to self.
 
         Private function, used in collecting a dictionary of checks.
         """
-        cls_from = cls.get_class_tag("mtype_from")
-        cls_to = cls.get_class_tag("mtype_to")
+        cls_from, cls_to = self._get_cls_from_to()
+
         mtype_from = cls_from.get_class_tag("name")
         mtype_to = cls_to.get_class_tag("name")
         scitype = cls_to.get_class_tag("scitype")
         return (mtype_from, mtype_to, scitype)
+
+
+def _coerce_str_to_cls(cls_or_str):
+    """Get class from string.
+
+    Parameters
+    ----------
+    cls_or_str : str or class
+        Class or string. If string, assumed to be a unique mtype string from
+        one of the BaseDatatype subclasses.
+
+    Returns
+    -------
+    cls : cls_or_str, if was class; otherwise, class corresponding to string.
+    """
+    if not isinstance(cls_or_str, str):
+        return cls_or_str
+
+    # otherwise, we use the string to get the class from the check dict
+    # perhaps it is nicer to transfer this to a registry later.
+    from skpro.datatypes._check import get_check_dict
+
+    cd = get_check_dict()
+    cls = [cd[k].__class__ for k in cd if k[0] == cls_or_str]
+    if len(cls) != 1:
+        raise ValueError(f"Error in converting string to class: {cls_or_str}")
+    return cls[0]
