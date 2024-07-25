@@ -111,10 +111,11 @@ def generate_convert_dict(soft_deps="present"):
     classes = [x for x in classes if not x.__name__.startswith("Base")]
 
     # subset only to data types with soft dependencies present
-    result = [x for x in classes if _check_estimator_deps(x, severity="none")]
+    if soft_deps == "present":
+        classes = [x for x in classes if _check_estimator_deps(x, severity="none")]
 
     convert_dict = dict()
-    for cls in result:
+    for cls in classes:
         if not cls.get_class_tag("multiple_conversions", False):
             k = cls()
             key = k._get_key()

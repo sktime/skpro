@@ -68,10 +68,10 @@ def generate_check_dict(soft_deps="present"):
 
     # subset only to data types with soft dependencies present
     if soft_deps == "present":
-        result = [x for x in classes if _check_estimator_deps(x, severity="none")]
+        classes = [x for x in classes if _check_estimator_deps(x, severity="none")]
 
     check_dict = dict()
-    for cls in result:
+    for cls in classes:
         k = cls()
         key = k._get_key()
         check_dict[key] = k
