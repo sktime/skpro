@@ -49,7 +49,7 @@ class BaseDatatype(BaseObject):
         metadata : instance of self only returned if return_metadata is True.
             Metadata dictionary.
         """
-        return self.check(obj=obj, return_metadata=return_metadata, var_name=var_name)
+        return self._check(obj=obj, return_metadata=return_metadata, var_name=var_name)
 
     def check(self, obj, return_metadata=False, var_name="obj"):
         """Check if obj is of this data type.
