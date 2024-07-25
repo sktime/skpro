@@ -216,8 +216,8 @@ class BaseConverter(BaseObject):
         if mtype_to is not None:
             self.set_tags(**{"mtype_to": mtype_to})
 
-        mtype_from = self.get_class_tag("mtype_from")
-        mtype_to = self.get_class_tag("mtype_to")
+        mtype_from = self.get_tag("mtype_from")
+        mtype_to = self.get_tag("mtype_to")
 
         if mtype_from is None:
             raise ValueError(
@@ -231,7 +231,7 @@ class BaseConverter(BaseObject):
                 "mtype_to must be set in constructor, as the class has no defaults. "
                 "For valid pairs of defaults, use get_conversions."
             )
-        if (mtype_from, mtype_to) not in self.get_conversions():
+        if (mtype_from, mtype_to) not in self.__class__.get_conversions():
             raise ValueError(
                 f"Error in instantiating {self.__class__.__name__}: "
                 "mtype_from and mtype_to must be a valid pair of defaults. "
@@ -307,8 +307,8 @@ class BaseConverter(BaseObject):
         cls_to : BaseDatatype subclass
             Class to convert to.
         """
-        cls_from = self.get_class_tag("mtype_from")
-        cls_to = self.get_class_tag("mtype_to")
+        cls_from = self.get_tag("mtype_from")
+        cls_to = self.get_tag("mtype_to")
 
         cls_from = _coerce_str_to_cls(cls_from)
         cls_to = _coerce_str_to_cls(cls_to)
@@ -350,6 +350,8 @@ def _coerce_str_to_cls(cls_or_str):
 
     cd = get_check_dict()
     cls = [cd[k].__class__ for k in cd if k[0] == cls_or_str]
-    if len(cls) != 1:
+    if len(cls) > 1:
         raise ValueError(f"Error in converting string to class: {cls_or_str}")
+    elif len(cls) < 1:
+        return None
     return cls[0]

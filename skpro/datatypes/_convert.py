@@ -76,9 +76,6 @@ from skpro.datatypes._proba import convert_dict_Proba
 from skpro.datatypes._registry import mtype_to_scitype
 from skpro.datatypes._table import convert_dict_Table
 
-# pool convert_dict-s and infer_mtype_dict-s
-convert_dict = {}
-
 
 def get_convert_dict():
     """Retrieve convert_dict, caches the first time it is requested.
@@ -105,31 +102,36 @@ def generate_convert_dict():
     # subset only to data types with soft dependencies present
     result = [x for x in classes if _check_estimator_deps(x, severity="none")]
 
-    check_dict = dict()
+    convert_dict = dict()
     for cls in result:
         if not cls.get_class_tag("multiple_conversions", False):
             k = cls()
             key = k._get_key()
             convert_dict[key] = k
         else:
-            for cls_to_cls in k.get_conversions():
-                k = k(*cls_to_cls)
+            for cls_to_cls in cls.get_conversions():
+                k = cls(*cls_to_cls)
 
                 # check dependencies for both classes
                 # only add conversions if dependencies are satisfied for to and from
                 cls_from, cls_to = k._get_cls_from_to()
-                from_dep_chk = _check_estimator_deps(cls_from, severity="none")
-                to_dep_chk = _check_estimator_deps(cls_to, severity="none")
 
-                if from_dep_chk and to_dep_chk:
-                    key = k._get_key()
-                    convert_dict[key] = k
+                # do not add conversion if dependencies are not satisfied
+                if cls_from is None or cls_to is None:
+                    continue
+                if not _check_estimator_deps(cls_from, severity="none"):
+                    continue
+                if not _check_estimator_deps(cls_to, severity="none"):
+                    continue
+
+                key = k._get_key()
+                convert_dict[key] = k
 
     # temporary while refactoring
-    check_dict.update(convert_dict_Proba)
-    check_dict.update(convert_dict_Table)
+    convert_dict.update(convert_dict_Proba)
+    convert_dict.update(convert_dict_Table)
 
-    return check_dict
+    return convert_dict
 
 
 def convert(
@@ -195,6 +197,7 @@ def convert(
 
     key = (from_type, to_type, as_scitype)
 
+    convert_dict = get_convert_dict()
     if key not in convert_dict.keys():
         raise NotImplementedError(
             "no conversion defined from type " + str(from_type) + " to " + str(to_type)
@@ -331,6 +334,7 @@ def _conversions_defined(scitype: str):
             entry of row i, col j is 1 if conversion from i to j is defined,
                                      0 if conversion from i to j is not defined
     """
+    convert_dict = get_convert_dict()
     pairs = [(x[0], x[1]) for x in list(convert_dict.keys()) if x[2] == scitype]
     cols0 = {x[0] for x in list(convert_dict.keys()) if x[2] == scitype}
     cols1 = {x[1] for x in list(convert_dict.keys()) if x[2] == scitype}
