@@ -1,6 +1,6 @@
-"""Machine type checkers for Series scitype.
+"""Machine type checkers for Proba (probabilistic return) scitype.
 
-Exports checkers for Series scitype:
+Exports checkers for Proba scitype:
 
 check_dict: dict indexed by pairs of str
   1st element = mtype - str
