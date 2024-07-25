@@ -25,6 +25,10 @@ def test_qpd_b_simple_use():
     qpd.mean()
 
 
+@pytest.mark.skipif(
+    not run_test_for_class(QPD_B),
+    reason="run test only if softdeps are present and incrementally (if requested)",  #
+)
 def test_qpd_b_pdf():
     """Test pdf of qpd with bounded mode."""
     # these parameters should produce a uniform on -0.5, 0.5
