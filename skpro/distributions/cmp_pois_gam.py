@@ -6,8 +6,6 @@ __author__ = ["ShreeshaM07"]
 import math
 
 import numpy as np
-from scipy.special import gamma as gam_fun
-from scipy.stats import poisson
 
 from skpro.distributions.base import BaseDistribution
 
@@ -64,6 +62,8 @@ class CmpPoissonGamma(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
+        from scipy.special import gamma as gam_fun
+
         lam = self.lambda_
         alpha = self.alpha
         beta = self.beta
@@ -108,5 +108,62 @@ class CmpPoissonGamma(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             pmf values at the given points
         """
+        from scipy.stats import poisson
+
         lambda_ = self.lambda_
         return poisson.pmf(k, lambda_)
+
+    def _compute_crj(self, r, j, rho):
+        from itertools import combinations_with_replacement
+
+        from scipy.special import factorial
+
+        c_rj = 0
+        partitions = [
+            p for p in combinations_with_replacement(range(1, r + 1), j) if sum(p) == r
+        ]
+        for partition in partitions:
+            term = 1
+            for s_i in partition:
+                term *= factorial(rho + 1 + s_i) / (
+                    factorial(rho - 1) * factorial(s_i + 2)
+                )
+            c_rj += term
+        c_rj *= (rho**2 + rho) ** (-r / 2 - j)
+        return c_rj
+
+    def _compute_hr(self, x, r, rho):
+        from scipy.special import eval_hermitenorm, factorial
+
+        hr = np.zeros_like(x, dtype=float)
+        for j in range(1, r + 1):
+            H = eval_hermitenorm(r + 2 * j, x)
+            crj = self._compute_crj(r, j, rho)
+            hr += H * crj / factorial(j)
+        return hr
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        rho = self.alpha
+        max_r = 10  # Adjust as needed
+        phi_x = np.exp(-(x**2) / 2) / np.sqrt(2 * np.pi)
+        series_sum = np.zeros_like(x, dtype=float)
+        for r in range(1, max_r + 1):
+            hr_x = self._compute_hr(x, r, rho)
+            series_sum += hr_x
+            # print(f"r={r}, hr_x={hr_x}, series_sum={series_sum}")
+            # if np.any(np.abs(hr_x) < 1e-6):  # Convergence check
+            #     break
+        cdf = phi_x * (1 + series_sum)
+        return cdf
