@@ -85,6 +85,7 @@ class TableIdentity(BaseConverter):
         """
         return obj
 
+
 class Numpy1dToNumpy2D(BaseConverter):
     """Conversion: numpy1D -> numpy2D, of Table scitype."""
 

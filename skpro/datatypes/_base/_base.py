@@ -190,6 +190,7 @@ class BaseDatatype(BaseObject):
         scitype = self.get_class_tag("scitype")
         return (mtype, scitype)
 
+
 class BaseConverter(BaseObject):
     """Base class for data type converters.
 
