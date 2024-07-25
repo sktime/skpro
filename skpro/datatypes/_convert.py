@@ -136,6 +136,10 @@ def convert(
     )
 
     # input type checks
+    if not (
+        isinstance(to_type, list) and all(isinstance(item, str) for item in to_type)
+    ) and not isinstance(to_type, str):
+        raise TypeError("to_type must be a str or list of str")
     if not isinstance(from_type, str):
         raise TypeError("from_type must be a str")
     if as_scitype is None:
@@ -253,25 +257,6 @@ def convert_to(
     # now further narrow down as_scitype by inference from the obj
     from_type = infer_mtype(obj=obj, as_scitype=as_scitype)
     as_scitype = mtype_to_scitype(from_type)
-
-    # # if to_type is a list, we do the following:
-    # # if on the list, then don't do a conversion (convert to from_type)
-    # # if not on the list, we find and convert to first mtype that has same scitype
-    # if isinstance(to_type, list):
-    #     # no conversion of from_type is in the list
-    #     if from_type in to_type:
-    #         to_type = from_type
-    #     # otherwise convert to first element of same scitype
-    #     else:
-    #         same_scitype_mtypes = [
-    #             mtype for mtype in to_type if mtype_to_scitype(mtype) == as_scitype
-    #         ]
-    #         if len(same_scitype_mtypes) == 0:
-    #             raise TypeError(
-    #                 "to_type contains no mtype compatible with the scitype of obj,"
-    #                 f"which is {as_scitype}"
-    #             )
-    #         to_type = same_scitype_mtypes[0]
 
     converted_obj = convert(
         obj=obj,
