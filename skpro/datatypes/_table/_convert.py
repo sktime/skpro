@@ -33,8 +33,9 @@ __all__ = ["convert_dict"]
 import numpy as np
 import pandas as pd
 
-from skpro.datatypes._table._base import BaseConverter
 from skpro.datatypes._convert_utils._convert import _extend_conversions
+from skpro.datatypes._table._base import BaseConverter
+from skpro.datatypes._table._registry import MTYPE_LIST_TABLE
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 ##############################################################
@@ -69,8 +70,6 @@ class TableIdentity(BaseConverter):
         list of tuples (BaseDatatype subclass, BaseDatatype subclass)
             List of all conversions in this class.
         """
-        from skpro.datatypes._table._registry import MTYPE_LIST_TABLE
-
         return [(tp, tp) for tp in MTYPE_LIST_TABLE]
 
     # identity conversion
