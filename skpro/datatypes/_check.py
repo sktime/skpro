@@ -23,6 +23,8 @@ __all__ = [
     "mtype",
 ]
 
+from functools import lru_cache
+
 import numpy as np
 
 from skpro.datatypes._base import BaseDatatype
@@ -30,22 +32,18 @@ from skpro.datatypes._common import _metadata_requested, _ret
 from skpro.datatypes._proba import check_dict_Proba
 from skpro.datatypes._registry import AMBIGUOUS_MTYPES, SCITYPE_LIST, mtype_to_scitype
 
-check_dict = {}
-
 
 def get_check_dict():
     """Retrieve check_dict, caches the first time it is requested.
 
     This is to avoid repeated, time consuming crawling in generate_check_dict,
     which would otherwise be called every time check_dict is requested.
-
-    Leaving the code on root level will also fail, due to circular imports.
     """
-    if len(check_dict) == 0:
-        check_dict.update(generate_check_dict())
+    check_dict = generate_check_dict()
     return check_dict.copy()
 
 
+@lru_cache(maxsize=1)
 def generate_check_dict():
     """Generate check_dict using lookup."""
     from skbase.utils.dependencies import _check_estimator_deps
@@ -61,9 +59,10 @@ def generate_check_dict():
     result = [x for x in classes if _check_estimator_deps(x, severity="none")]
 
     check_dict = dict()
-    for k in result:
+    for cls in result:
+        k = cls()
         key = k._get_key()
-        check_dict[key] = k()._check
+        check_dict[key] = k
 
     # temporary while refactoring
     check_dict.update(check_dict_Proba)
@@ -190,6 +189,7 @@ def check_is_mtype(
     """
     mtype = _coerce_list_of_str(mtype, var_name="mtype")
 
+    check_dict = get_check_dict()
     valid_keys = check_dict.keys()
 
     # we loop through individual mtypes in mtype and see whether they pass the check
@@ -332,6 +332,7 @@ def mtype(obj, as_scitype=None, exclude_mtypes=AMBIGUOUS_MTYPES):
         for scitype in as_scitype:
             _check_scitype_valid(scitype)
 
+    check_dict = get_check_dict()
     m_plus_scitypes = [
         (x[0], x[1]) for x in check_dict.keys() if x[0] not in exclude_mtypes
     ]
@@ -441,6 +442,7 @@ def check_is_scitype(
     for x in scitype:
         _check_scitype_valid(x)
 
+    check_dict = get_check_dict()
     valid_keys = check_dict.keys()
 
     # find all the mtype keys corresponding to the scitypes
