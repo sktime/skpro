@@ -77,18 +77,24 @@ from skpro.datatypes._registry import mtype_to_scitype
 from skpro.datatypes._table import convert_dict_Table
 
 
-def get_convert_dict():
+def get_convert_dict(soft_deps="present"):
     """Retrieve convert_dict, caches the first time it is requested.
 
     This is to avoid repeated, time consuming crawling in generate_check_dict,
     which would otherwise be called every time check_dict is requested.
+
+    Parameters
+    ----------
+    soft_deps : str, optional - one of "present", "all"
+        "present" - only conversions with soft dependencies present are included
+        "all" - all conversions are included
     """
-    convert_dict = generate_convert_dict()
+    convert_dict = generate_convert_dict(soft_deps=soft_deps)
     return convert_dict.copy()
 
 
 @lru_cache(maxsize=1)
-def generate_convert_dict():
+def generate_convert_dict(soft_deps="present"):
     """Generate convert_dict using lookup."""
     from skbase.utils.dependencies import _check_estimator_deps
 
@@ -119,9 +125,10 @@ def generate_convert_dict():
                 # do not add conversion if dependencies are not satisfied
                 if cls_from is None or cls_to is None:
                     continue
-                if not _check_estimator_deps(cls_from, severity="none"):
+                filter_sd = soft_deps in ["present"]
+                if filter_sd and not _check_estimator_deps(cls_from, severity="none"):
                     continue
-                if not _check_estimator_deps(cls_to, severity="none"):
+                if filter_sd and not _check_estimator_deps(cls_to, severity="none"):
                     continue
 
                 key = k._get_key()
@@ -320,13 +327,16 @@ def convert_to(
     return converted_obj
 
 
-def _conversions_defined(scitype: str):
+def _conversions_defined(scitype: str, soft_deps: str = "present"):
     """Return an indicator matrix which conversions are defined for scitype.
 
     Parameters
     ----------
     scitype: str - name of scitype for which conversions are queried
         valid scitype strings, with explanation, are in datatypes.SCITYPE_REGISTER
+    soft_deps : str, optional - one of "present", "all"
+        "present" - only conversions with soft dependencies present are included
+        "all" - all conversions are included
 
     Returns
     -------
@@ -334,7 +344,7 @@ def _conversions_defined(scitype: str):
             entry of row i, col j is 1 if conversion from i to j is defined,
                                      0 if conversion from i to j is not defined
     """
-    convert_dict = get_convert_dict()
+    convert_dict = get_convert_dict(soft_deps=soft_deps)
     pairs = [(x[0], x[1]) for x in list(convert_dict.keys()) if x[2] == scitype]
     cols0 = {x[0] for x in list(convert_dict.keys()) if x[2] == scitype}
     cols1 = {x[1] for x in list(convert_dict.keys()) if x[2] == scitype}
