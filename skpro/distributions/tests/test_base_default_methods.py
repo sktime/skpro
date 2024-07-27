@@ -14,9 +14,11 @@ __author__ = ["fkiraly"]
 
 import numpy as np
 import pandas as pd
+import pytest
 from scipy.special import erfinv
 
 from skpro.distributions.base import BaseDistribution
+from skpro.tests.test_switch import run_test_module_changed
 from skpro.utils.estimator_checks import check_estimator
 
 
@@ -92,6 +94,10 @@ class _DistrDefaultMethodTester(BaseDistribution):
         return [params1, params2, params3]
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_base_default():
     """Test default methods.
 
