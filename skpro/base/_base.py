@@ -29,10 +29,9 @@ class BaseObject(_CommonTags, _BaseObject):
         super().__init__()
 
         import sys
+        from warnings import warn
 
         from packaging.specifiers import SpecifierSet
-
-        from warnings import warn
 
         py39_or_higher = SpecifierSet(">=3.9")
         sys_version = sys.version.split(" ")[0]
@@ -52,6 +51,7 @@ class BaseObject(_CommonTags, _BaseObject):
                 category=DeprecationWarning,
                 stacklevel=2,
             )
+
 
 class BaseEstimator(_CommonTags, _BaseEstimator):
     """Base class for fittable objects."""
