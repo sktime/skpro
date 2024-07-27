@@ -39,6 +39,7 @@ Continuous support - full reals
     Logistic
     Normal
     TDistribution
+    TruncatedNormal
 
 
 Continuous support - non-negative reals
@@ -76,7 +77,6 @@ Integer support
 
     Binomial
     Poisson
-
 
 Non-parametric and empirical distributions
 ------------------------------------------
