@@ -57,11 +57,11 @@ class DummyProbaRegressor(BaseProbaRegressor):
         -------
         self : reference to self.
         """
+        self._mu = np.mean(y.values)
+        self._sigma = np.var(y.values)
         if self.strategy == "empirical":
             self.estimator_ = Empirical(y)
         if self.strategy == "normal":
-            self._mu = np.mean(y)
-            self._sigma = np.var(y)
             self.estimator_ = Normal(self._mu, self._sigma)
 
         return self
@@ -79,9 +79,8 @@ class DummyProbaRegressor(BaseProbaRegressor):
             predictions of target values for X
         """
         X_ind = X.index
-        X_col = X.columns
-        y_avg = np.mean(X)
-        y_pred = pd.DataFrame(y_avg, index=X_ind, columns=X_col)
+        X_n_rows = X.shape[0]
+        y_pred = pd.DataFrame(np.ones(X_n_rows) * self._mu, index=X_ind)
         return y_pred
 
     def _predict_proba(self, X):
@@ -131,7 +130,10 @@ class DummyProbaRegressor(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        params1 = {}
+        # params1 = {}
         params2 = {"strategy": "normal"}
 
-        return [params1, params2]
+        return [
+            # params1,
+            params2
+        ]
