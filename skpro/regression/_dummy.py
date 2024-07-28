@@ -4,10 +4,11 @@ __author__ = ["julian-fong"]
 __all__ = ["DummyProbaRegressor"]
 
 import numpy as np
+import pandas as pd
 
+from skpro.distributions.empirical import Empirical
+from skpro.distributions.normal import Normal
 from skpro.regression.base import BaseProbaRegressor
-
-# import pandas as pd
 
 
 class DummyProbaRegressor(BaseProbaRegressor):
@@ -31,31 +32,42 @@ class DummyProbaRegressor(BaseProbaRegressor):
             of the training labels
         * "normal": always predicts the mean of the training set labels
 
+    Attributes
+    ----------
+    estimator_ : skpro.distribution
+        One of Normal distribution or Empirical distribution, depending on chosen
+        strategy.
+
     """
 
     def __init__(self, strategy="empirical"):
         self.strategy = strategy
-
         super().__init__()
 
-    def _fit(self, X, y) -> np.ndarray:
+    def _fit(self, y, X=None):
         """Fit the dummy regressor.
 
         Parameters
         ----------
-        X : sktime-format pandas dataframe with shape(n,d),
+        X : skpro-format pandas dataframe with shape(n,d),
         or numpy ndarray with shape(n,d,m)
-        y : array-like, shape = [n_instances] - the target values
+        y : skpro-format array-like
 
         Returns
         -------
         self : reference to self.
         """
-        self.sklearn_dummy_regressor.fit(np.zeros(X.shape), y)
+        if self.strategy == "empirical":
+            self.estimator_ = Empirical(y)
+        if self.strategy == "normal":
+            self._mu = np.mean(y)
+            self._sigma = np.var(y)
+            self.estimator_ = Normal(self._mu, self._sigma)
+
         return self
 
-    def _predict(self, X) -> np.ndarray:
-        """Perform regression on test vectors X.
+    def _predict(self, X):
+        """Predict labels for data from features.
 
         Parameters
         ----------
@@ -63,6 +75,63 @@ class DummyProbaRegressor(BaseProbaRegressor):
 
         Returns
         -------
-        y : predictions of target values for X, np.ndarray
+        y : pandas DataFrame
+            predictions of target values for X
         """
-        return self.sklearn_dummy_regressor.predict(np.zeros(X.shape))
+        X_ind = X.index
+        X_col = X.columns
+        y_avg = np.mean(X)
+        y_pred = pd.DataFrame(y_avg, index=X_ind, columns=X_col)
+        return y_pred
+
+    def _predict_proba(self, X):
+        """Broadcast skpro distribution from fit onto labels from X.
+
+        Parameters
+        ----------
+        X : sktime-format pandas dataframe or array-like, shape (n, d)
+
+        Returns
+        -------
+        y : skpro.distribution, same length as `X`
+            labels predicted for `X`
+        """
+        X_ind = X.index
+        X_col = X.columns
+        X_n_rows = X.shape[0]
+
+        if self.strategy == "normal":
+            # broadcast the mu and sigma from fit to the length of X
+            mu = np.ones(X_n_rows) * self._mu
+            sigma = np.ones(X_n_rows) * self._sigma
+            pred_dist = Normal(mu=mu, sigma=sigma, index=X_ind, columns=X_col)
+
+            return pred_dist
+
+        if self.strategy == "empirical":
+            pred_dist = Empirical(X, index=X_col, columns=X_col)
+
+            return pred_dist
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator.
+
+        Parameters
+        ----------
+        parameter_set : str, default="default"
+            Name of the set of test parameters to return, for use in tests. If no
+            special parameters are defined for a value, will return `"default"` set.
+
+        Returns
+        -------
+        params : dict or list of dict, default = {}
+            Parameters to create testing instances of the class
+            Each dict are parameters to construct an "interesting" test instance, i.e.,
+            `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
+            `create_test_instance` uses the first (or only) dictionary in `params`
+        """
+        params1 = {}
+        params2 = {"strategy": "normal"}
+
+        return [params1, params2]
