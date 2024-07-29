@@ -132,6 +132,7 @@ This section lists simple regressors which can be used as baselines.
     :template: class.rst
 
     DeltaPointRegressor
+    DummyProbaRegressor
 
 
 Linear regression
@@ -147,7 +148,6 @@ Linear regression
     BayesianRidge
     GLMRegressor
     PoissonRegressor
-    DummyProbaRegressor
 
 Gaussian process and kernel regression
 --------------------------------------
