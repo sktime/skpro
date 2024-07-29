@@ -104,20 +104,19 @@ class DummyProbaRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         X_ind = X.index
-        X_col = X.columns
         X_n_rows = X.shape[0]
 
         if self.strategy == "normal":
             # broadcast the mu and sigma from fit to the length of X
             mu = np.ones(X_n_rows) * self._mu
             sigma = np.ones(X_n_rows) * self._sigma
-            pred_dist = Normal(mu=mu, sigma=sigma, index=X_ind, columns=X_col)
+            pred_dist = Normal(mu=mu, sigma=sigma, index=X_ind, columns=self._y_columns)
 
             return pred_dist
 
         if self.strategy == "empirical":
-            empr_df = pd.concat([self._y] * X_n_rows, keys=X_ind).swap.level()
-            pred_dist = Empirical(empr_df, index=X_col, columns=X_col)
+            empr_df = pd.concat([self._y] * X_n_rows, keys=X_ind).swaplevel()
+            pred_dist = Empirical(empr_df, index=X_ind, columns=self._y_columns)
 
             return pred_dist
 
