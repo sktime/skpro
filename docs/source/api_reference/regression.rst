@@ -147,6 +147,7 @@ Linear regression
     BayesianRidge
     GLMRegressor
     PoissonRegressor
+    DummyProbaRegressor
 
 Gaussian process and kernel regression
 --------------------------------------
