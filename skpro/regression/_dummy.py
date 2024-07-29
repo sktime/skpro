@@ -44,19 +44,25 @@ class DummyProbaRegressor(BaseProbaRegressor):
         self.strategy = strategy
         super().__init__()
 
-    def _fit(self, y, X=None):
+    def _fit(self, X, y):
         """Fit the dummy regressor.
+
+        Writes to self:
+            Sets fitted model attributes ending in "_".
 
         Parameters
         ----------
-        X : skpro-format pandas dataframe with shape(n,d),
-        or numpy ndarray with shape(n,d,m)
-        y : skpro-format array-like
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pandas DataFrame, must be same length as X
+            labels to fit regressor to
 
         Returns
         -------
-        self : reference to self.
+        self : reference to self
         """
+        self._y = y
+        self._y_columns = y.columns
         self._mu = np.mean(y.values)
         self._sigma = np.var(y.values)
         if self.strategy == "empirical":
@@ -80,7 +86,9 @@ class DummyProbaRegressor(BaseProbaRegressor):
         """
         X_ind = X.index
         X_n_rows = X.shape[0]
-        y_pred = pd.DataFrame(np.ones(X_n_rows) * self._mu, index=X_ind)
+        y_pred = pd.DataFrame(
+            np.ones(X_n_rows) * self._mu, index=X_ind, columns=self._y_columns
+        )
         return y_pred
 
     def _predict_proba(self, X):
@@ -108,7 +116,8 @@ class DummyProbaRegressor(BaseProbaRegressor):
             return pred_dist
 
         if self.strategy == "empirical":
-            pred_dist = Empirical(X, index=X_col, columns=X_col)
+            empr_df = pd.concat([self._y] * X_n_rows, keys=X_ind).swap.level()
+            pred_dist = Empirical(empr_df, index=X_col, columns=X_col)
 
             return pred_dist
 
@@ -130,10 +139,7 @@ class DummyProbaRegressor(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        # params1 = {}
+        params1 = {}
         params2 = {"strategy": "normal"}
 
-        return [
-            # params1,
-            params2
-        ]
+        return [params1, params2]
