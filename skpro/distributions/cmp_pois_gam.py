@@ -116,20 +116,22 @@ class CmpPoissonGamma(BaseDistribution):
     def _compute_crj(self, r, j, rho):
         from itertools import combinations_with_replacement
 
-        from scipy.special import factorial
+        from scipy.special import comb
 
-        c_rj = 0
-        partitions = [
-            p for p in combinations_with_replacement(range(1, r + 1), j) if sum(p) == r
-        ]
-        for partition in partitions:
-            term = 1
-            for s_i in partition:
-                term *= factorial(rho + 1 + s_i) / (
-                    factorial(rho - 1) * factorial(s_i + 2)
-                )
-            c_rj += term
+        partitions = np.array(
+            [
+                p
+                for p in combinations_with_replacement(range(1, r + 1), j)
+                if sum(p) == r
+            ]
+        )
+        if partitions.size == 0:
+            return 0
+
+        term = np.prod([comb(rho + 1 + s_i, s_i + 2) for s_i in partitions.T], axis=0)
+        c_rj = np.sum(term)
         c_rj *= (rho**2 + rho) ** (-r / 2 - j)
+
         return c_rj
 
     def _compute_hr(self, x, r, rho):
