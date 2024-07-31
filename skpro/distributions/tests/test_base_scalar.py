@@ -12,10 +12,16 @@ __author__ = ["fkiraly"]
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from skpro.distributions.normal import Normal
+from skpro.tests.test_switch import run_test_module_changed
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_scalar_distribution():
     """Test scalar distribution logic."""
     # test params
@@ -47,6 +53,10 @@ def test_scalar_distribution():
     assert spl_mult.index.equals(pd.RangeIndex(5))
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_broadcast_ambiguous():
     """Test broadcasting in cases of ambiguous parameter dimensions."""
     mu = [1]
