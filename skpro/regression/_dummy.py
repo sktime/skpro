@@ -28,16 +28,16 @@ class DummyProbaRegressor(BaseProbaRegressor):
     strategy : one of ["empirical", "normal"] default="empirical"
         Strategy to use to generate predictions.
 
-        * "empirical": simply returns the empirical unweighted distribution
+        * "empirical": always predicts the empirical unweighted distribution
             of the training labels
-        * "normal": always predicts the mean of the training set labels
+        * "normal": always predicts a normal distribution, with mean and variance
+            equal to the mean and variance of the training labels
 
     Attributes
     ----------
-    estimator_ : skpro.distribution
-        One of Normal distribution or Empirical distribution, depending on chosen
-        strategy.
-
+    distribution_ : skpro.distribution
+        Normal distribution or Empirical distribution, depending on chosen strategy.
+        Scalar version of the distribution that is returned by ``predict_proba``.
     """
 
     def __init__(self, strategy="empirical"):
@@ -66,9 +66,9 @@ class DummyProbaRegressor(BaseProbaRegressor):
         self._mu = np.mean(y.values)
         self._sigma = np.var(y.values)
         if self.strategy == "empirical":
-            self.estimator_ = Empirical(y)
+            self.distribution_ = Empirical(y)
         if self.strategy == "normal":
-            self.estimator_ = Normal(self._mu, self._sigma)
+            self.distribution_ = Normal(self._mu, self._sigma)
 
         return self
 
@@ -88,6 +88,32 @@ class DummyProbaRegressor(BaseProbaRegressor):
         X_n_rows = X.shape[0]
         y_pred = pd.DataFrame(
             np.ones(X_n_rows) * self._mu, index=X_ind, columns=self._y_columns
+        )
+        return y_pred
+
+    def _predict_var(self, X):
+        """Compute/return variance predictions.
+
+        private _predict_var containing the core logic, called from predict_var
+
+        Parameters
+        ----------
+        X : pandas DataFrame, must have same columns as X in `fit`
+            data to predict labels for
+
+        Returns
+        -------
+        pred_var : pd.DataFrame
+            Column names are exactly those of ``y`` passed in ``fit``.
+            Row index is equal to row index of ``X``.
+            Entries are variance prediction, for var in col index.
+            A variance prediction for given variable and fh index is a predicted
+            variance for that variable and index, given observed data.
+        """
+        X_ind = X.index
+        X_n_rows = X.shape[0]
+        y_pred = pd.DataFrame(
+            np.ones(X_n_rows) * self._sigma, index=X_ind, columns=self._y_columns
         )
         return y_pred
 
