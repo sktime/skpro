@@ -40,6 +40,19 @@ class DummyProbaRegressor(BaseProbaRegressor):
         Scalar version of the distribution that is returned by ``predict_proba``.
     """
 
+    _tags = {
+        # packaging info
+        # --------------
+        "authors": ["julian-fong"],
+        "maintainers": ["julian-fong"],
+        # estimator tags
+        # --------------
+        "capability:multioutput": False,
+        "capability:missing": True,
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
+    }
+
     def __init__(self, strategy="empirical"):
         self.strategy = strategy
         super().__init__()
