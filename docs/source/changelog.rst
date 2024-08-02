@@ -16,6 +16,44 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.4.2] - 2024-08-02
+====================
+
+Highlights
+----------
+
+Enhancements
+~~~~~~~~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Test framework
+~~~~~~~~~~~~~~
+
+
+Fixes
+~~~~~
+
+Probability distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Probabilistic regression
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Maintenance
+~~~~~~~~~~~
+
+Documentation
+~~~~~~~~~~~~~
+
+Contributors
+~~~~~~~~~~~~
+
 [2.4.1] - 2024-06-26
 ====================
 
