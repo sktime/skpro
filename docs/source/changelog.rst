@@ -58,14 +58,14 @@ Probability distributions
 Maintenance
 ~~~~~~~~~~~
 
-* [MNT] [Dependabot](deps): Update scikit-survival requirement from <0.23.0 to <0.24.0 (:pr:`419`) :user:`dependabot[bot]`
-* [MNT] [Dependabot](deps): Update polars requirement from <0.21.0 to <1.1.0 (:pr:`418`) :user:`dependabot[bot]`
-* [MNT] [Dependabot](deps): Update polars requirement from <1.1.0 to <1.2.0 (:pr:`420`) :user:`dependabot[bot]`
-* [MNT] [Dependabot](deps): Update polars requirement from <1.2.0 to <1.3.0 (:pr:`425`) :user:`dependabot[bot]`
-* [MNT] [Dependabot](deps): Update sphinx-gallery requirement from <0.17.0 to <0.18.0 (:pr:`431`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update scikit-survival requirement from ``<0.23.0`` to ``<0.24.0`` (:pr:`419`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from ``<0.21.0`` to ``<1.1.0`` (:pr:`418`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.1.0`` to ``<1.2.0`` (:pr:`420`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.2.0`` to ``<1.3.0`` (:pr:`425`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update sphinx-gallery requirement from ``<0.17.0`` to ``<0.18.0`` (:pr:`431`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update sphinx requirement from ``!=7.2.0,<8.0.0`` to ``!=7.2.0,<9.0.0`` (:pr:`438`) :user:`dependabot[bot]`
 * [MNT] sync differential testing utilities with ``sktime`` (:pr:`434`) :user:`fkiraly`
 * [MNT] fix ``numpy 2`` incompatibility of ``Pareto`` distribution (:pr:`436`) :user:`fkiraly`
-* [MNT] [Dependabot](deps): Update sphinx requirement from !=7.2.0,<8.0.0 to !=7.2.0,<9.0.0 (:pr:`438`) :user:`dependabot[bot]`
 
 Contributors
 ~~~~~~~~~~~~
@@ -94,7 +94,7 @@ Dependency changes
 * ``numpy`` bounds have been updated to ``>=1.21.0,<2.1.0``.
 
 Contents
-
+~~~~~~~~
 
 * [MNT] increase ``numpy`` bound to ``numpy < 2.1``, ``numpy 2`` compatibility
   (:pr:`393`) :user:`fkiraly`
