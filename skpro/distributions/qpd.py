@@ -89,9 +89,7 @@ class QPD_Johnson(_DelegatedDistribution):
         qv_high: float | Sequence,
         lower: float | None = None,
         upper: float | None = None,
-        version: str = "deprecated",
         base_dist: str | None = "normal",
-        dist_shape: float = 0.0,
         index=None,
         columns=None,
     ):
@@ -101,37 +99,13 @@ class QPD_Johnson(_DelegatedDistribution):
         self.qv_high = qv_high
         self.lower = lower
         self.upper = upper
-        self.version = version
         self.base_dist = base_dist
-        self.dist_shape = dist_shape
         self.index = index
         self.columns = columns
 
-        # TODO <2.5.0>: rename parameter 'version' to 'base_dist
-        # TODO <2.5.0>: remove parameter 'dist_shape'
-        # TODO <2.5.0>: update docstring, and remove warning
-        message = (
-            "In QPD_Johnson, parameter 'dist_shape' will be removed in version 2.5.0."
-            "To retain the current behavior, set parameters in the base_dist "
-            "argument."
-        )
-        if self.dist_shape != 0.0:
-            warnings.warn(message, DeprecationWarning, stacklevel=2)
-
-        message = (
-            "In QPD_Johnson, parameter 'version' will be renamed to 'base_dist' "
-            "in version 2.5.0. To retain the current behavior, pass the base_dist "
-            "argument instead."
-        )
-        if self.version != "deprecated":
-            warnings.warn(message, DeprecationWarning, stacklevel=2)
-            self._base_dist = self.version
-        else:
-            self._base_dist = self.base_dist
-
         if lower is None:
             delegate_cls = QPD_U
-            extra_params = {"dist_shape": dist_shape}
+            extra_params = {}
         elif upper is None:
             delegate_cls = QPD_S
             extra_params = {"lower": lower}
@@ -144,7 +118,7 @@ class QPD_Johnson(_DelegatedDistribution):
             "qv_low": qv_low,
             "qv_median": qv_median,
             "qv_high": qv_high,
-            "version": self._base_dist,
+            "base_dist": base_dist,
             "index": index,
             "columns": columns,
             **extra_params,
@@ -162,14 +136,14 @@ class QPD_Johnson(_DelegatedDistribution):
         """Return testing parameter settings for the estimator."""
         params1 = {
             "alpha": 0.2,
-            "version": "normal",
+            "base_dist": "normal",
             "qv_low": 0.2,
             "qv_median": 0.5,
             "qv_high": 0.8,
         }
         params2 = {
             "alpha": 0.1,
-            "version": "normal",
+            "base_dist": "normal",
             "qv_low": [[-0.3], [-0.2], [-0.1]],
             "qv_median": [[-0.1], [0.0], [0.1]],
             "qv_high": [[0.2], [0.3], [0.4]],
@@ -178,7 +152,7 @@ class QPD_Johnson(_DelegatedDistribution):
         }
         params3 = {
             "alpha": 0.1,
-            "version": "normal",
+            "base_dist": "normal",
             "qv_low": [0.1, 0.2, 0.3],
             "qv_median": [0.4, 0.5, 0.6],
             "qv_high": [0.7, 0.8, 0.9],
@@ -186,7 +160,7 @@ class QPD_Johnson(_DelegatedDistribution):
         }
         params4 = {
             "alpha": 0.12,
-            "version": "logistic",
+            "base_dist": "logistic",
             "qv_low": [0.15, 0.1, 0.15],
             "qv_median": [0.45, 0.51, 0.54],
             "qv_high": [0.85, 0.83, 0.81],
@@ -252,7 +226,6 @@ class QPD_S(BaseDistribution):
             "qv_median",
             "qv_high",
             "lower",
-            "upper",
         ],
     }
 
@@ -263,8 +236,6 @@ class QPD_S(BaseDistribution):
         qv_median: float | Sequence,
         qv_high: float | Sequence,
         lower: float,
-        upper: float = 1e3,
-        version: str = "deprecated",
         base_dist: str | None = "normal",
         index=None,
         columns=None,
@@ -274,38 +245,14 @@ class QPD_S(BaseDistribution):
         self.qv_median = qv_median
         self.qv_high = qv_high
         self.lower = lower
-        self.upper = upper
-        self.version = version
         self.base_dist = base_dist
         self.index = index
         self.columns = columns
 
-        # TODO <2.5.0>: rename parameter 'version' to 'base_dist
-        # TODO <2.5.0>: remove parameter 'upper'
-        # TODO <2.5.0>: update docstring, and remove warning
-        message = (
-            "In QPD_S, parameter 'version' will be renamed to 'base_dist' "
-            "in version 2.5.0. To retain the current behavior, pass the base_dist "
-            "argument instead."
-        )
-        if self.version != "deprecated":
-            warnings.warn(message, DeprecationWarning, stacklevel=2)
-            self._base_dist = self.version
-        else:
-            self._base_dist = self.base_dist
-
-        message = (
-            "In QPD_S, parameter 'upper' will be removed "
-            "in version 2.5.0. The parameter has no effect in the current version, "
-            "and should be removed entirely."
-        )
-        if self.upper != 1e3:
-            warnings.warn(message, DeprecationWarning, stacklevel=2)
-
         super().__init__(index=index, columns=columns)
 
         # precompute parameters for methods
-        phi = _resolve_phi(self._base_dist)
+        phi = _resolve_phi(self.base_dist)
         self.phi = phi
 
         qpd_params = _prep_qpd_vars(phi=phi, mode="S", **self._bc_params)
@@ -380,7 +327,7 @@ class QPD_S(BaseDistribution):
         """Return testing parameter settings for the estimator."""
         params1 = {
             "alpha": 0.2,
-            "version": "normal",
+            "base_dist": "normal",
             "qv_low": -0.3,
             "qv_median": 0.0,
             "qv_high": 0.3,
@@ -390,7 +337,7 @@ class QPD_S(BaseDistribution):
         }
         params2 = {
             "alpha": 0.2,
-            "version": "normal",
+            "base_dist": "normal",
             "qv_low": [[-0.3], [-0.2], [-0.1]],
             "qv_median": [[-0.1], [0.0], [0.1]],
             "qv_high": [[0.2], [0.3], [0.4]],
@@ -470,7 +417,6 @@ class QPD_B(BaseDistribution):
         qv_high: float | Sequence,
         lower: float,
         upper: float,
-        version: str = "deprecated",
         base_dist: str | None = "normal",
         index=None,
         columns=None,
@@ -481,28 +427,14 @@ class QPD_B(BaseDistribution):
         self.qv_high = qv_high
         self.lower = lower
         self.upper = upper
-        self.version = version
         self.base_dist = base_dist
         self.index = index
         self.columns = columns
 
-        # TODO <2.5.0>: rename parameter 'version' to 'base_dist
-        # TODO <2.5.0>: update docstring, and remove warning
-        message = (
-            "In QPD_B, parameter 'version' will be renamed to 'base_dist' "
-            "in version 2.5.0. To retain the current behavior, pass the base_dist "
-            "argument instead."
-        )
-        if self.version != "deprecated":
-            warnings.warn(message, DeprecationWarning, stacklevel=2)
-            self._base_dist = self.version
-        else:
-            self._base_dist = self.base_dist
-
         super().__init__(index=index, columns=columns)
 
         # precompute parameters for methods
-        phi = _resolve_phi(self._base_dist)
+        phi = _resolve_phi(self.base_dist)
         self.phi = phi
 
         qpd_params = _prep_qpd_vars(phi=phi, mode="B", **self._bc_params)
@@ -579,7 +511,7 @@ class QPD_B(BaseDistribution):
         """Return testing parameter settings for the estimator."""
         params1 = {
             "alpha": 0.2,
-            "version": "normal",
+            "base_dist": "normal",
             "qv_low": -0.3,
             "qv_median": 0.0,
             "qv_high": 0.3,
@@ -590,7 +522,7 @@ class QPD_B(BaseDistribution):
         }
         params2 = {
             "alpha": 0.2,
-            "version": "normal",
+            "base_dist": "normal",
             "qv_low": [[-0.3], [-0.2], [-0.1]],
             "qv_median": [[-0.1], [0.0], [0.1]],
             "qv_high": [[0.2], [0.3], [0.4]],
@@ -654,8 +586,6 @@ class QPD_U(BaseDistribution):
             "qv_low",
             "qv_median",
             "qv_high",
-            "lower",
-            "upper",
         ],
     }
 
@@ -665,11 +595,7 @@ class QPD_U(BaseDistribution):
         qv_low: float | Sequence,
         qv_median: float | Sequence,
         qv_high: float | Sequence,
-        lower: float = -1e3,
-        upper: float = 1e3,
-        version: str = "deprecated",
         base_dist: str | None = "normal",
-        dist_shape: float = 0.0,
         index=None,
         columns=None,
     ):
@@ -678,58 +604,14 @@ class QPD_U(BaseDistribution):
         self.qv_low = qv_low
         self.qv_median = qv_median
         self.qv_high = qv_high
-        self.lower = lower
-        self.upper = upper
-        self.version = version
         self.base_dist = base_dist
-        self.dist_shape = dist_shape
         self.index = index
         self.columns = columns
-
-        # TODO <2.5.0>: rename parameter 'version' to 'base_dist
-        # TODO <2.5.0>: remove parameter 'dist_shape'
-        # TODO <2.5.0>: remove parameter 'upper'
-        # TODO <2.5.0>: remove parameter 'lower'
-        # TODO <2.5.0>: update docstring, and remove warning
-        message = (
-            "In QPD_U, parameter 'dist_shape' will be removed in version 2.5.0."
-            "To retain the current behavior, set parameters in the base_dist "
-            "argument."
-        )
-        if self.dist_shape != 0.0:
-            warnings.warn(message, DeprecationWarning, stacklevel=2)
-
-        message = (
-            "In QPD_U, parameter 'version' will be renamed to 'base_dist' "
-            "in version 2.5.0. To retain the current behavior, pass the base_dist "
-            "argument instead."
-        )
-        if self.version != "deprecated":
-            warnings.warn(message, DeprecationWarning, stacklevel=2)
-            self._base_dist = self.version
-        else:
-            self._base_dist = self.base_dist
-
-        message = (
-            "In QPD_U, parameter 'upper' will be removed "
-            "in version 2.5.0. The parameter has no effect in the current version, "
-            "and should be removed entirely."
-        )
-        if self.upper != 1e3:
-            warnings.warn(message, DeprecationWarning, stacklevel=2)
-
-        message = (
-            "In QPD_U, parameter 'lower' will be removed "
-            "in version 2.5.0. The parameter has no effect in the current version, "
-            "and should be removed entirely."
-        )
-        if self.lower != -1e3:
-            warnings.warn(message, DeprecationWarning, stacklevel=2)
 
         super().__init__(index=index, columns=columns)
 
         # precompute parameters for methods
-        phi = _resolve_phi(self._base_dist)
+        phi = _resolve_phi(self.base_dist)
         self.phi = phi
 
         qpd_params = _prep_qpd_vars(phi=phi, mode="U", **self._bc_params)
@@ -791,7 +673,7 @@ class QPD_U(BaseDistribution):
         """Return testing parameter settings for the estimator."""
         params1 = {
             "alpha": 0.2,
-            "version": "normal",
+            "base_dist": "normal",
             "qv_low": -0.3,
             "qv_median": 0.0,
             "qv_high": 0.3,
@@ -800,7 +682,7 @@ class QPD_U(BaseDistribution):
         }
         params2 = {
             "alpha": 0.2,
-            "version": "normal",
+            "base_dist": "normal",
             "qv_low": [[-0.3], [-0.2], [-0.1]],
             "qv_median": [[-0.1], [0.0], [0.1]],
             "qv_high": [[0.2], [0.3], [0.4]],
