@@ -16,6 +16,45 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.5.0] - 2024-08-02
+====================
+
+Maintenance release with scheduled deprecations and updates.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``polars`` (data container soft dependency) bounds have been updated to ``<1.5.0``.
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Probability distributions
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* In QPD distributions, deprecated parameters ``dist_shape``, ``version``
+  have been removed entirely. Instead of ``version``, users should use
+  ``base_dist``. Instead of ``dist_shape``, users should pass an ``skpro``
+  distribution to ``base_dist``, with the desired shape parameters.
+
+Probabilistic regression
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+* in probabilistic regressor tuners ``GridSearchCV``, ``RandomizedSearchCV``,
+  use of ``joblib`` backend specific parameters ``n_jobs``,
+  ``pre_dispatch`` have been removed.
+  Users should pass backend parameters via the ``backend_params`` parameter instead.
+* in ``GLMRegressor``, parameters have been reordered to be consistent with
+  the docstring, after a deprecation period.
+
+Contents
+~~~~~~~~
+
+* [MNT] increase ``numpy`` bound to ``numpy < 2.1``, ``numpy 2`` compatibility
+  (:pr:`393`) :user:`fkiraly`
+* [MNT] 2.4.0 deprecations and change actions (:pr:`404`) :user:`fkiraly`
+
+
 [2.4.2] - 2024-08-02
 ====================
 
