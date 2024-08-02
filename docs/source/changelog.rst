@@ -21,6 +21,8 @@ For planned changes and upcoming releases, see roadmap in the
 
 Maintenance release with scheduled deprecations and updates.
 
+Kindly also note the python 3.8 End-of-life warning below.
+
 Dependency changes
 ~~~~~~~~~~~~~~~~~~
 
@@ -28,6 +30,17 @@ Dependency changes
 
 Deprecations and removals
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Python 3.8 End-of-life
+^^^^^^^^^^^^^^^^^^^^^^
+
+``skpro`` now requires Python version ``>=3.9``.
+No errors will be raised on Python 3.8, but test coverage and support for
+Python 3.8 has been dropped.
+
+Kindly note for context: python 3.8 will reach end of life
+in October 2024, and multiple ``skpro`` core dependencies,
+including ``scikit-learn``, have already dropped support for 3.8.
 
 Probability distributions
 ^^^^^^^^^^^^^^^^^^^^^^^^^
