@@ -706,10 +706,10 @@ def _prep_qpd_vars(
     qv_low,
     qv_median,
     qv_high,
-    lower,
-    upper,
     phi,
     mode="B",
+    lower=None,
+    upper=None,
     **kwargs,
 ):
     """Prepare parameters for Johnson Quantile-Parameterized Distributions.
