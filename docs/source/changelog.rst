@@ -894,7 +894,7 @@ Contributors
 Python 3.12 compatibility release.
 
 Contents
---------
+~~~~~~~~
 
 * [MNT] [Dependabot](deps-dev): Update ``numpy`` requirement from
   ``<1.25,>=1.21.0`` to ``>=1.21.0,<1.27`` (:pr:`118`) :user:`dependabot`
