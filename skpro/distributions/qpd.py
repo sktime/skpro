@@ -9,7 +9,6 @@ __author__ = [
     "setoguchi-naoki",
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
-import warnings
 from typing import Sequence
 
 import numpy as np

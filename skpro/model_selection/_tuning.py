@@ -4,8 +4,6 @@
 __author__ = ["fkiraly"]
 __all__ = ["GridSearchCV", "RandomizedSearchCV"]
 
-from warnings import warn
-
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import ParameterGrid, ParameterSampler, check_cv
