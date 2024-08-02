@@ -22,6 +22,11 @@ For planned changes and upcoming releases, see roadmap in the
 Highlights
 ~~~~~~~~~~
 
+* Multiclass classification reduction using Histograms (:pr:`410`) :user:`ShreeshaM07`
+* ``DummyProbaRegressor`` - probabilistic dummy regressor (:pr:`437`) :user:`julian-fong`
+* new probability distributions interfaced: Inverse Gamma, Truncated Normal (:pr:`415`, :pr:`421`) :user:`meraldoantonio`, :user:`ShreeshaM07`
+* various ``numpy 2`` compatibility fixes (:pr:`414`, :pr:`436`) :user:`ShreeshaM07`, :user:`fkiraly`
+
 Enhancements
 ~~~~~~~~~~~~
 
