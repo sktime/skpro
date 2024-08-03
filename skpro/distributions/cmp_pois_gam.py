@@ -131,7 +131,6 @@ class CmpPoissonGamma(BaseDistribution):
         term = np.prod([comb(rho + 1 + s_i, s_i + 2) for s_i in partitions.T], axis=0)
         c_rj = np.sum(term)
         c_rj *= (rho**2 + rho) ** (-r / 2 - j)
-
         return c_rj
 
     def _compute_hr(self, x, r, rho):
@@ -157,15 +156,14 @@ class CmpPoissonGamma(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             cdf values at the given points
         """
+        from scipy.stats import norm
+
         rho = self.alpha
-        max_r = 10  # Adjust as needed
-        phi_x = np.exp(-(x**2) / 2) / np.sqrt(2 * np.pi)
+        max_r = 10
+        phi_x = norm.pdf(x)
         series_sum = np.zeros_like(x, dtype=float)
         for r in range(1, max_r + 1):
             hr_x = self._compute_hr(x, r, rho)
             series_sum += hr_x
-            # print(f"r={r}, hr_x={hr_x}, series_sum={series_sum}")
-            # if np.any(np.abs(hr_x) < 1e-6):  # Convergence check
-            #     break
         cdf = phi_x * (1 + series_sum)
         return cdf
