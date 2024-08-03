@@ -63,9 +63,11 @@ Probabilistic regression
 Contents
 ~~~~~~~~
 
-* [MNT] increase ``numpy`` bound to ``numpy < 2.1``, ``numpy 2`` compatibility
-  (:pr:`393`) :user:`fkiraly`
-* [MNT] 2.4.0 deprecations and change actions (:pr:`404`) :user:`fkiraly`
+* [MNT] python 3.8 end-of-life - remove 3.8 support and tags (:pr:`443`) :user:`fkiraly`
+* [MNT] 2.5.0 deprecations and change actions (:pr:`443`) :user:`fkiraly`
+* [MNT] ensure ``CyclicBoosting`` is consistent with deprecations in ``QPD_Johnson`` (:pr:`446`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.3.0`` to ``<1.5.0``(:pr:`442`) :user:`dependabot[bot]`
+* [MNT] release workflow: Upgrade deprecated pypa action parameter #6878 (:pr:`445`) :user:`szepeviktor`
 
 
 [2.4.2] - 2024-08-02
