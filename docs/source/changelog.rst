@@ -16,6 +16,66 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.5.0] - 2024-08-02
+====================
+
+Maintenance release with scheduled deprecations and updates.
+
+Kindly also note the python 3.8 End-of-life warning below.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``polars`` (data container soft dependency) bounds have been updated to ``<1.5.0``.
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Python 3.8 End-of-life
+^^^^^^^^^^^^^^^^^^^^^^
+
+``skpro`` now requires Python version ``>=3.9``.
+No errors will be raised on Python 3.8, but test coverage and support for
+Python 3.8 has been dropped.
+
+Kindly note for context: python 3.8 will reach end of life
+in October 2024, and multiple ``skpro`` core dependencies,
+including ``scikit-learn``, have already dropped support for 3.8.
+
+Probability distributions
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* In QPD distributions, deprecated parameters ``dist_shape``, ``version``
+  have been removed entirely. Instead of ``version``, users should use
+  ``base_dist``. Instead of ``dist_shape``, users should pass an ``skpro``
+  distribution to ``base_dist``, with the desired shape parameters.
+
+Probabilistic regression
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+* in probabilistic regressor tuners ``GridSearchCV``, ``RandomizedSearchCV``,
+  use of ``joblib`` backend specific parameters ``n_jobs``,
+  ``pre_dispatch`` have been removed.
+  Users should pass backend parameters via the ``backend_params`` parameter instead.
+* in ``GLMRegressor``, parameters have been reordered to be consistent with
+  the docstring, after a deprecation period.
+
+Contents
+~~~~~~~~
+
+* [MNT] python 3.8 end-of-life - remove 3.8 support and tags (:pr:`443`) :user:`fkiraly`
+* [MNT] 2.5.0 deprecations and change actions (:pr:`443`) :user:`fkiraly`
+* [MNT] ensure ``CyclicBoosting`` is consistent with deprecations in ``QPD_Johnson`` (:pr:`446`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.3.0`` to ``<1.5.0``(:pr:`442`) :user:`dependabot[bot]`
+* [MNT] release workflow: Upgrade deprecated pypa action parameter #6878 (:pr:`445`) :user:`szepeviktor`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`szepviktor`
+
+
 [2.4.2] - 2024-08-02
 ====================
 
