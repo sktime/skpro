@@ -69,6 +69,12 @@ Contents
 * [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.3.0`` to ``<1.5.0``(:pr:`442`) :user:`dependabot[bot]`
 * [MNT] release workflow: Upgrade deprecated pypa action parameter #6878 (:pr:`445`) :user:`szepeviktor`
 
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`szepviktor`
+
 
 [2.4.2] - 2024-08-02
 ====================
