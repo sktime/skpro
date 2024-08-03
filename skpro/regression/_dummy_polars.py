@@ -14,6 +14,8 @@ from skpro.utils.validation._dependencies import _check_soft_dependencies
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
+    from skpro.datatypes._convert import convert
+
 
 class DummyPolarsProbaRegressor(BaseProbaRegressor):
     """DummyProbaRegressor makes predictions that ignore the input features.
@@ -83,9 +85,13 @@ class DummyPolarsProbaRegressor(BaseProbaRegressor):
         self._mu = np.mean(self._y.to_numpy())
         self._sigma = np.var(self._y.to_numpy())
 
+        self._y_index = pd.Index(list(range(len(y))))
+        pd_y_fit = convert(y, "polars_eager_table", "pd_DataFrame_Table")
+        pd_y_fit.index = self._y_index
+        pd_y_fit.columns = self._y_columns
         # distribution objects are written in pandas dataframes
         if self.strategy == "empirical":
-            self.distribution_ = Empirical(y)
+            self.distribution_ = Empirical(pd_y_fit)
         if self.strategy == "normal":
             self.distribution_ = Normal(self._mu, self._sigma)
 
@@ -104,7 +110,8 @@ class DummyPolarsProbaRegressor(BaseProbaRegressor):
             predictions of target values for X
         """
         X_n_rows = X.shape[0]
-        y_pred = pl.DataFrame(np.ones(X_n_rows) * self._mu, columns=self._y_columns)
+        y_pred = pl.DataFrame(np.ones(X_n_rows) * self._mu)
+        y_pred.columns = self._y_columns
         return y_pred
 
     def _predict_var(self, X):
@@ -121,13 +128,13 @@ class DummyPolarsProbaRegressor(BaseProbaRegressor):
         -------
         pred_var : pl.DataFrame
             Column names are exactly those of ``y`` passed in ``fit``.
-            Row index is equal to row index of ``X``.
             Entries are variance prediction, for var in col index.
             A variance prediction for given variable and fh index is a predicted
             variance for that variable and index, given observed data.
         """
         X_n_rows = X.shape[0]
-        y_pred = pl.DataFrame(np.ones(X_n_rows) * self._sigma, columns=self._y_columns)
+        y_pred = pl.DataFrame(np.ones(X_n_rows) * self._sigma)
+        y_pred.columns = self._y_columns
         return y_pred
 
     def _predict_proba(self, X):
