@@ -49,15 +49,13 @@ def fetch_latest_release():  # noqa
         raise ValueError(response.text, response.status_code)
 
 
-def fetch_pull_requests_since_last_release() -> List[Dict]:  # noqa
-    "Fetch pull requests and filter based on merged date"
+def fetch_pull_requests_since_last_release():
+    """Fetch pull requests and filter based on merged date."""
     from dateutil import parser
 
     release = fetch_latest_release()
     published_at = parser.parse(release["published_at"])
-    print(  # noqa
-        f"Latest release {release['tag_name']} was published at {published_at}"
-    )
+    print(f"Latest release {release['tag_name']} was published at {published_at}")
 
     is_exhausted = False
     page = 1
