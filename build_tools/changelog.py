@@ -86,9 +86,9 @@ def fetch_pull_requests_since_last_release():
 
     release = fetch_latest_release()
     published_at = parser.parse(release["published_at"])
-    print(
+    print(  # noqa: T201
         f"Latest release {release['tag_name']} was published at {published_at}"
-    )  # noqa: T201
+    )
 
     is_exhausted = False
     page = 1
