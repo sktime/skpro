@@ -50,14 +50,22 @@ def fetch_latest_release():  # noqa
 
 
 def fetch_pull_requests_since_last_release():
-    """Fetch pull requests and filter based on merged date."""
+    """Fetch all pull requests merged since last release.
+
+    Returns
+    -------
+    list
+        List of pull requests merged since the latest release.
+        Elements of list are dictionaries with PR details, as obtained
+        from the GitHub API via ``httpx.get``, through ``fetch_merged_pull_requests``.
+    """
     from dateutil import parser
 
     release = fetch_latest_release()
     published_at = parser.parse(release["published_at"])
     print(
         f"Latest release {release['tag_name']} was published at {published_at}"
-    )  # noqa: E501, T201
+    )  # noqa: T201
 
     is_exhausted = False
     page = 1
@@ -67,7 +75,7 @@ def fetch_pull_requests_since_last_release():
         all_pulls.extend(
             [p for p in pulls if parser.parse(p["merged_at"]) > published_at]
         )
-        is_exhausted = any(parser.parse(p["merged_at"]) < published_at for p in pulls)
+        is_exhausted = any(parser.parse(p["updated_at"]) < published_at for p in pulls)
         page += 1
     return all_pulls
 
