@@ -2,7 +2,6 @@
 
 import os
 from collections import defaultdict
-from typing import Dict, List
 
 HEADERS = {
     "Accept": "application/vnd.github.v3+json",
@@ -16,8 +15,23 @@ REPO = "skpro"
 GITHUB_REPOS = "https://api.github.com/repos"
 
 
-def fetch_merged_pull_requests(page: int = 1) -> List[Dict]:  # noqa
-    "Fetch a page of pull requests"
+def fetch_merged_pull_requests(page: int = 1) -> list[dict]:
+    """Fetch a page of merged pull requests.
+
+    Parameters
+    ----------
+    page : int, optional
+        Page number to fetch, by default 1.
+        Returns all merged pull request from the ``page``-th page of closed PRs,
+        where pages are in descending order of last update.
+
+    Returns
+    -------
+    list
+        List of merged pull requests from the ``page``-th page of closed PRs.
+        Elements of list are dictionaries with PR details, as obtained
+        from the GitHub API via ``httpx.get``, from the ``pulls`` endpoint.
+    """
     import httpx
 
     params = {
@@ -36,7 +50,16 @@ def fetch_merged_pull_requests(page: int = 1) -> List[Dict]:  # noqa
     return [pr for pr in r.json() if pr["merged_at"]]
 
 
-def fetch_latest_release():  # noqa
+def fetch_latest_release():
+    """Fetch the latest release from the GitHub API.
+
+    Returns
+    -------
+    dict
+        Dictionary with details of the latest release.
+        Dictionary is as obtained from the GitHub API via ``httpx.get``,
+        for ``releases/latest`` endpoint.
+    """
     import httpx
 
     response = httpx.get(
@@ -49,13 +72,21 @@ def fetch_latest_release():  # noqa
         raise ValueError(response.text, response.status_code)
 
 
-def fetch_pull_requests_since_last_release() -> List[Dict]:  # noqa
-    "Fetch pull requests and filter based on merged date"
+def fetch_pull_requests_since_last_release():
+    """Fetch all pull requests merged since last release.
+
+    Returns
+    -------
+    list
+        List of pull requests merged since the latest release.
+        Elements of list are dictionaries with PR details, as obtained
+        from the GitHub API via ``httpx.get``, through ``fetch_merged_pull_requests``.
+    """
     from dateutil import parser
 
     release = fetch_latest_release()
     published_at = parser.parse(release["published_at"])
-    print(  # noqa
+    print(  # noqa: T201
         f"Latest release {release['tag_name']} was published at {published_at}"
     )
 
@@ -67,7 +98,7 @@ def fetch_pull_requests_since_last_release() -> List[Dict]:  # noqa
         all_pulls.extend(
             [p for p in pulls if parser.parse(p["merged_at"]) > published_at]
         )
-        is_exhausted = any(parser.parse(p["merged_at"]) < published_at for p in pulls)
+        is_exhausted = any(parser.parse(p["updated_at"]) < published_at for p in pulls)
         page += 1
     return all_pulls
 
@@ -85,7 +116,7 @@ def github_compare_tags(tag_left: str, tag_right: str = "HEAD"):  # noqa
         raise ValueError(response.text, response.status_code)
 
 
-def render_contributors(prs: List, fmt: str = "rst"):  # noqa
+def render_contributors(prs: list, fmt: str = "rst"):  # noqa
     "Find unique authors and print a list in  given format"
     authors = sorted({pr["user"]["login"] for pr in prs}, key=lambda x: x.lower())
 
@@ -99,7 +130,7 @@ def render_contributors(prs: List, fmt: str = "rst"):  # noqa
         print(",\n".join(f":user:`{user}`" for user in authors))  # noqa
 
 
-def assign_prs(prs, categs: List[Dict[str, List[str]]]):  # noqa
+def assign_prs(prs, categs: list[dict[str, list[str]]]):  # noqa
     "Assign PR to categories based on labels"
     assigned = defaultdict(list)
 
@@ -113,7 +144,7 @@ def assign_prs(prs, categs: List[Dict[str, List[str]]]):  # noqa
     #                 print(i, pr_labels)
 
     assigned["Other"] = list(
-        set(range(len(prs))) - {i for _, l in assigned.items() for i in l}
+        set(range(len(prs))) - {i for _, j in assigned.items() for i in j}
     )
 
     return assigned
