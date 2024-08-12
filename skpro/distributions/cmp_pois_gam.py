@@ -114,7 +114,7 @@ class CmpPoissonGamma(BaseDistribution):
         return poisson.pmf(k, lambda_)
 
     def _compute_crj(self, r, j, rho):
-        from itertools import combinations_with_replacement
+        from itertools import combinations_with_replacement, permutations
 
         from scipy.special import comb
 
@@ -125,6 +125,11 @@ class CmpPoissonGamma(BaseDistribution):
                 if sum(p) == r
             ]
         )
+
+        partitions = np.vstack(
+            [np.array(list(set(permutations(sub_list)))) for sub_list in partitions]
+        )
+
         if partitions.size == 0:
             return 0
 
@@ -140,7 +145,15 @@ class CmpPoissonGamma(BaseDistribution):
         for j in range(1, r + 1):
             H = eval_hermitenorm(r + 2 * j, x)
             crj = self._compute_crj(r, j, rho)
+            # print("1. r = ",r," and j =",j)
             hr += H * crj / factorial(j)
+        #     print("2. He(",r+2*j,",",x,") = \n",H)
+        #     print("3. crj for r=",r,"j=",j," = ",crj)
+        #     print("4. j!",factorial(j))
+        #     print("5. h_",r,"upto from j=1 to j=",j," = ",hr)
+        #     print("-------------------------------")
+        # print("6. h_",r," = ",hr)
+        # print()
         return hr
 
     def _cdf(self, x):
