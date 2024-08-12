@@ -1,4 +1,4 @@
-"""Machine type cclasses for Table scitype.
+"""Machine type classes for Table scitype.
 
 Checks for each class are defined in the "check" method, of signature:
 
