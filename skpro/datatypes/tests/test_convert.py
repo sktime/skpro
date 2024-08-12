@@ -2,9 +2,12 @@
 
 __author__ = ["fkiraly"]
 
+import pytest
+
 from skpro.datatypes import SCITYPE_REGISTER, scitype_to_mtype
 from skpro.datatypes._convert import _conversions_defined, convert
 from skpro.datatypes._examples import get_examples
+from skpro.tests.test_switch import run_test_module_changed
 from skpro.utils import deep_equals
 
 SCITYPES = [sci[0] for sci in SCITYPE_REGISTER]
@@ -71,6 +74,10 @@ def pytest_generate_tests(metafunc):
     metafunc.parametrize("scitype,from_mtype,to_mtype,fixture_index", keys, ids=ids)
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed(["skpro.datatypes", "skpro.utils"]),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_convert(scitype, from_mtype, to_mtype, fixture_index):
     """Tests that conversions for scitype agree with from/to example fixtures.
 

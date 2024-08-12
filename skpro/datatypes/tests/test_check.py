@@ -3,6 +3,7 @@
 __author__ = ["fkiraly"]
 
 import numpy as np
+import pytest
 
 from skpro.datatypes._check import (
     AMBIGUOUS_MTYPES,
@@ -14,6 +15,7 @@ from skpro.datatypes._check import mtype as infer_mtype
 from skpro.datatypes._check import scitype as infer_scitype
 from skpro.datatypes._examples import get_examples
 from skpro.datatypes._registry import SCITYPE_LIST, scitype_to_mtype
+from skpro.tests.test_switch import run_test_module_changed
 
 SCITYPES = SCITYPE_LIST
 
@@ -104,6 +106,10 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("scitype,mtype", keys, ids=ids)
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes"),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_check_positive(scitype, mtype, fixture_index):
     """Tests that check_is_mtype correctly confirms the mtype of examples.
 
@@ -153,6 +159,10 @@ def test_check_positive(scitype, mtype, fixture_index):
         assert check_result[0], msg
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes"),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_check_positive_check_scitype(scitype, mtype, fixture_index):
     """Tests that check_is_scitype correctly confirms the scitype of examples.
 
@@ -203,6 +213,10 @@ def test_check_positive_check_scitype(scitype, mtype, fixture_index):
         assert check_result[2]["mtype"] == mtype
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes"),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_check_metadata_inference(scitype, mtype, fixture_index):
     """Tests that check_is_mtype correctly infers metadata of examples.
 
@@ -307,6 +321,10 @@ def test_check_metadata_inference(scitype, mtype, fixture_index):
                 assert metadata[metadata_key] == expected_metadata[metadata_key], msg
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes"),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_check_negative(scitype, mtype):
     """Tests that check_is_mtype correctly identifies wrong mtypes of examples.
 
@@ -373,6 +391,10 @@ def test_check_negative(scitype, mtype):
                 )
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes"),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_mtype_infer(scitype, mtype, fixture_index):
     """Tests that mtype correctly infers the mtype of examples.
 
@@ -422,6 +444,10 @@ SKIP_SCITYPES = ["Alignment", "Table", "Proba"]
 SCITYPES_FOR_INFER_TEST = list(set(SCITYPE_LIST).difference(SKIP_SCITYPES))
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes"),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_scitype_infer(scitype, mtype, fixture_index):
     """Tests that scitype correctly infers the mtype of examples.
 

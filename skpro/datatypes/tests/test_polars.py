@@ -5,6 +5,7 @@ import pytest
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
+from skpro.tests.test_switch import run_test_module_changed
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
@@ -53,7 +54,8 @@ def polars_load_diabetes_polars(polars_load_diabetes_pandas):
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_conversion_methods(
@@ -76,7 +78,8 @@ def test_polars_eager_conversion_methods(
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_fit_predict(
@@ -112,7 +115,8 @@ def test_polars_eager_regressor_in_fit_predict(
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_predict_interval(
@@ -129,7 +133,8 @@ def test_polars_eager_regressor_in_predict_interval(
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_polars_eager_regressor_in_predict_quantiles(
