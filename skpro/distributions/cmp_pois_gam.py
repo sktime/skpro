@@ -143,7 +143,7 @@ class CmpPoissonGamma(BaseDistribution):
 
         hr = np.zeros_like(x, dtype=float)
         for j in range(1, r + 1):
-            H = eval_hermitenorm(r + 2 * j, x)
+            H = eval_hermitenorm(r + 2 * j - 1, x)
             crj = self._compute_crj(r, j, rho)
             # print("1. r = ",r," and j =",j)
             hr += H * crj / factorial(j)
@@ -171,12 +171,14 @@ class CmpPoissonGamma(BaseDistribution):
         """
         from scipy.stats import norm
 
+        lambda_ = self.lambda_
         rho = self.alpha
         max_r = 10
-        phi_x = norm.pdf(x)
+        phi_x = np.exp(-(x**2) / 2)
+        Phi_x = norm.cdf(x)
         series_sum = np.zeros_like(x, dtype=float)
         for r in range(1, max_r + 1):
             hr_x = self._compute_hr(x, r, rho)
-            series_sum += hr_x
-        cdf = phi_x * (1 + series_sum)
+            series_sum += pow(lambda_, -r / 2) * hr_x
+        cdf = Phi_x - phi_x * series_sum
         return cdf
