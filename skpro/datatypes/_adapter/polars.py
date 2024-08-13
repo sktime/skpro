@@ -46,3 +46,13 @@ def check_polars_frame(obj, return_metadata=False, var_name="obj", lazy=False):
             metadata["has_nans"] = hasnan
 
     return ret(True, None, metadata, return_metadata)
+
+
+def convert_polars_to_pandas():
+    """Convert function from polars to pandas."""
+    pass
+
+
+def convert_pandas_to_polars_eager():
+    """Convert function from pandas to polars eager."""
+    pass
