@@ -249,23 +249,24 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
         if not isinstance(obj, (pl.LazyFrame, pl.DataFrame)):
             raise TypeError("input is not a polars frame")
 
-        if isinstance(obj, pl.LazyFrame):
-            obj = obj.collect().to_pandas()
-        elif isinstance(obj, pl.DataFrame):
-            obj = convert_polars_to_pandas_with_index
+        # if isinstance(obj, pl.LazyFrame):
+        #     obj = obj.collect().to_pandas()
+        # elif isinstance(obj, pl.DataFrame):
+        obj = convert_polars_to_pandas_with_index(obj)
 
         return obj
 
     def convert_pandas_to_polars_eager(obj: pd.DataFrame, store=None):
         if not isinstance(obj, pd.DataFrame):
             raise TypeError("input is not a pd.DataFrame")
-        obj = convert_pandas_to_polars_with_index
+        obj = convert_pandas_to_polars_with_index(obj)
 
         return obj
 
     def convert_pandas_to_polars_lazy(obj: pd.DataFrame, store=None):
         if not isinstance(obj, pd.DataFrame):
             raise TypeError("input is not a pd.DataFrame")
+        obj = convert_pandas_to_polars_with_index(obj, lazy=True)
 
         return pl.LazyFrame(obj)
 
