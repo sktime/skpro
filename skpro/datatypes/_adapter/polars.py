@@ -107,7 +107,12 @@ def convert_pandas_to_polars_with_index(
     obj.reset_index()
     obj.rename(columns={"index": "__index__"})
 
-    pl_df = from_pandas(obj, schema_overrides, rechunk, nan_to_null)
+    pl_df = from_pandas(
+        data=obj,
+        schema_overrides=schema_overrides,
+        rechunk=rechunk,
+        nan_to_null=nan_to_null,
+    )
 
     if lazy:
         pl_df = pl_df.lazy()
