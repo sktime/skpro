@@ -72,6 +72,7 @@ def convert_polars_to_pandas_with_index(obj):
     for col in obj.columns:
         if col.startswith("__index__"):
             pd_df = pd_df.set_index(col, drop=True)
+            pd_df.index.name = col.split("__index__")[1]
 
     return pd_df
 
