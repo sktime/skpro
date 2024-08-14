@@ -69,8 +69,9 @@ def convert_polars_to_pandas_with_index(obj):
         obj = obj.collect()
 
     pd_df = obj.to_pandas()
-    if "__index__" in obj.columns:
-        pd_df = pd_df.set_index("__index__", drop=True)
+    for col in obj.columns:
+        if col.startswith("__index__"):
+            pd_df = pd_df.set_index(col, drop=True)
 
     return pd_df
 
@@ -104,8 +105,9 @@ def convert_pandas_to_polars_with_index(
     """
     from polars import from_pandas
 
+    obj_index_name = obj.index.name
     obj.reset_index()
-    obj.rename(columns={"index": "__index__"})
+    obj.rename(columns={obj_index_name: f"__index__{obj_index_name}"})
 
     pl_df = from_pandas(
         data=obj,
