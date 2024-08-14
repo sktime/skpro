@@ -48,11 +48,68 @@ def check_polars_frame(obj, return_metadata=False, var_name="obj", lazy=False):
     return ret(True, None, metadata, return_metadata)
 
 
-def convert_polars_to_pandas():
-    """Convert function from polars to pandas."""
-    pass
+def convert_polars_to_pandas_with_index(obj):
+    """Convert function from polars to pandas,converts  __index__ to pandas index.
+
+    Parameters
+    ----------
+    obj : polars DataFrame, polars.LazyFrame
+
+    Returns
+    -------
+    pd_df : pandas DataFrame
+        Returned is a pandas DataFrame with index retained if column __index__
+        existed in the polars dataframe previously, if not then index of
+        pd_df will be a RangeIndex from 0 to pd_df.shape[0]-1.
+
+    """
+    from polars.lazyframe.frame import LazyFrame
+
+    if isinstance(obj, LazyFrame):
+        obj = obj.collect()
+
+    pd_df = obj.to_pandas()
+    if "__index__" in obj.columns:
+        pd_df = pd_df.set_index("__index__", drop=True)
+
+    return pd_df
 
 
-def convert_pandas_to_polars_eager():
-    """Convert function from pandas to polars eager."""
-    pass
+def convert_pandas_to_polars_with_index(
+    obj, schema_overrides=None, rechunk=True, nan_to_null=True, lazy=False
+):
+    """Convert function from pandas to polars, and preserves index.
+
+    Parameters
+    ----------
+    obj : pandas DataFrame
+
+    schema_overrides : dict, optional (default=None)
+        Support override of inferred types for one or more columns.
+
+    rechunk : bool, optional (default=True)
+        Make sure that all data is in contiguous memory.
+
+    nan_to_null : bool, optional (default=True)
+        If data contains NaN values PyArrow will convert the NaN to None
+
+    lazy : bool, optional (default=False)
+        If True, return a LazyFrame instead of a DataFrame
+
+    Returns
+    -------
+    pl_df : polars DataFrame or polars LazyFrame
+        index from pandas DataFrame will be returned as a polars column
+        named __index__.
+    """
+    from polars import from_pandas
+
+    obj.reset_index()
+    obj.rename(columns={"index": "__index__"})
+
+    pl_df = from_pandas(obj, schema_overrides, rechunk, nan_to_null)
+
+    if lazy:
+        pl_df = pl_df.lazy()
+
+    return pl_df

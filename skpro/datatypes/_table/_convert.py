@@ -241,9 +241,27 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
     from skpro.datatypes._adapter.polars import (
-        convert_pandas_to_polars_eager,
-        convert_polars_to_pandas,
+        convert_pandas_to_polars_with_index,
+        convert_polars_to_pandas_with_index,
     )
+
+    def convert_polars_to_pandas(obj, store=None):
+        if not isinstance(obj, (pl.LazyFrame, pl.DataFrame)):
+            raise TypeError("input is not a polars frame")
+
+        if isinstance(obj, pl.LazyFrame):
+            obj = obj.collect().to_pandas()
+        elif isinstance(obj, pl.DataFrame):
+            obj = convert_polars_to_pandas_with_index
+
+        return obj
+
+    def convert_pandas_to_polars_eager(obj: pd.DataFrame, store=None):
+        if not isinstance(obj, pd.DataFrame):
+            raise TypeError("input is not a pd.DataFrame")
+        obj = convert_pandas_to_polars_with_index
+
+        return obj
 
     def convert_pandas_to_polars_lazy(obj: pd.DataFrame, store=None):
         if not isinstance(obj, pd.DataFrame):
