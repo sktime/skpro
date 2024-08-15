@@ -249,9 +249,6 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
         if not isinstance(obj, (pl.LazyFrame, pl.DataFrame)):
             raise TypeError("input is not a polars frame")
 
-        # if isinstance(obj, pl.LazyFrame):
-        #     obj = obj.collect().to_pandas()
-        # elif isinstance(obj, pl.DataFrame):
         obj = convert_polars_to_pandas_with_index(obj)
 
         return obj
