@@ -107,8 +107,11 @@ def convert_pandas_to_polars_with_index(
     from polars import from_pandas
 
     obj_index_name = obj.index.name
-    obj.reset_index()
-    obj.rename(columns={obj_index_name: f"__index__{obj_index_name}"})
+    obj = obj.reset_index()
+    if obj_index_name is not None:
+        obj = obj.rename(columns={obj_index_name: f"__index__{obj_index_name}"})
+    else:
+        obj = obj.rename(columns={"index": "__index__"})
 
     pl_df = from_pandas(
         data=obj,

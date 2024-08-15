@@ -50,6 +50,20 @@ def polars_load_diabetes_polars(polars_load_diabetes_pandas):
     X_test_pl = convert_pandas_to_polars_eager(X_test)
     y_train_pl = convert_pandas_to_polars_eager(y_train)
 
+    # drop the index in the polars frame
+    X_train_pl = X_train_pl.drop(["__index__"])
+    X_test_pl = X_test_pl.drop(["__index__"])
+    y_train_pl = y_train_pl.drop(["__index__"])
+
+    return [X_train_pl, X_test_pl, y_train_pl]
+
+
+def polars_load_diabetes_polars_with_index(polars_load_diabetes_pandas):
+    X_train, X_test, y_train = polars_load_diabetes_pandas
+    X_train_pl = convert_pandas_to_polars_eager(X_train)
+    X_test_pl = convert_pandas_to_polars_eager(X_test)
+    y_train_pl = convert_pandas_to_polars_eager(y_train)
+
     return [X_train_pl, X_test_pl, y_train_pl]
 
 
@@ -72,6 +86,7 @@ def test_polars_eager_conversion_methods(
     assert check_polars_table(X_train_pl)
     assert check_polars_table(X_test_pl)
     assert check_polars_table(y_train_pl)
+
     assert (X_train.values == X_train_pl.to_numpy()).all()
     assert (X_test.values == X_test_pl.to_numpy()).all()
     assert (y_train.values == y_train_pl.to_numpy()).all()
@@ -103,6 +118,7 @@ def test_polars_eager_regressor_in_fit_predict(
 
     estimator.fit(X_train_pl, y_train_pl)
     y_pred = estimator.predict(X_test_pl)
+    y_pred = y_pred.drop(["__index__"])
 
     assert isinstance(y_pred, pl.DataFrame)
     assert y_pred.columns == y_train_pl.columns
