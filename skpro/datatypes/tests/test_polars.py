@@ -118,7 +118,6 @@ def test_polars_eager_regressor_in_fit_predict(
 
     estimator.fit(X_train_pl, y_train_pl)
     y_pred = estimator.predict(X_test_pl)
-    y_pred = y_pred.drop(["__index__"])
 
     assert isinstance(y_pred, pl.DataFrame)
     assert y_pred.columns == y_train_pl.columns
