@@ -27,7 +27,7 @@ def check_polars_frame(obj, return_metadata=False, var_name="obj", lazy=False):
     if _req("is_univariate", return_metadata):
         obj_width = obj.width
         for col in obj.columns:
-            if col.startswith("__index__"):
+            if "__index__" in col:
                 obj_width -= 1
         metadata["is_univariate"] = obj_width == 1
     if _req("n_instances", return_metadata):
