@@ -25,7 +25,11 @@ def check_polars_frame(obj, return_metadata=False, var_name="obj", lazy=False):
     if _req("is_empty", return_metadata):
         metadata["is_empty"] = obj.width < 1
     if _req("is_univariate", return_metadata):
-        metadata["is_univariate"] = obj.width == 1
+        obj_width = obj.width
+        for col in obj.columns:
+            if col.startswith("__index__"):
+                obj_width -= 1
+        metadata["is_univariate"] = obj_width == 1
     if _req("n_instances", return_metadata):
         if hasattr(obj, "height"):
             metadata["n_instances"] = obj.height
@@ -35,9 +39,17 @@ def check_polars_frame(obj, return_metadata=False, var_name="obj", lazy=False):
         metadata["n_features"] = obj.width
     if _req("feature_names", return_metadata):
         if lazy:
-            metadata["feature_names"] = obj.collect_schema().names()
+            obj_columns = obj.collect_schema().names()
+            feature_names = [
+                col for col in obj_columns if not col.startswith("__index__")
+            ]
+            metadata["feature_names"] = feature_names
         else:
-            metadata["feature_names"] = obj.columns
+            obj_columns = obj.columns
+            feature_names = [
+                col for col in obj_columns if not col.startswith("__index__")
+            ]
+            metadata["feature_names"] = feature_names
 
     # check if there are any nans
     #   compute only if needed

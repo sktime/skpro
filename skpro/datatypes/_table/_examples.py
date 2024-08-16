@@ -110,12 +110,16 @@ example_dict[("list_of_dict", "Table", 1)] = list_of_dict
 example_dict_lossy[("list_of_dict", "Table", 1)] = False
 
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
-    import polars as pl
+    from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
 
-    example_dict[("polars_eager_table", "Table", 1)] = pl.DataFrame(df)
+    example_dict[
+        ("polars_eager_table", "Table", 1)
+    ] = convert_pandas_to_polars_with_index(df)
     example_dict_lossy[("polars_eager_table", "Table", 1)] = False
 
-    example_dict[("polars_lazy_table", "Table", 1)] = pl.LazyFrame(df)
+    example_dict[
+        ("polars_lazy_table", "Table", 1)
+    ] = convert_pandas_to_polars_with_index(df, lazy=True)
     example_dict_lossy[("polars_lazy_table", "Table", 1)] = False
 
 example_dict_metadata[("Table", 1)] = {
