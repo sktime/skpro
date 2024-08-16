@@ -123,14 +123,22 @@ def convert_pandas_to_polars_with_index(
         index from pandas DataFrame will be returned as a polars column
         named __index__.
     """
+    import pandas as pd
     from polars import from_pandas
 
-    obj_index_name = obj.index.name
-    obj = obj.reset_index()
-    if obj_index_name is not None:
-        obj = obj.rename(columns={obj_index_name: f"__index__{obj_index_name}"})
-    else:
-        obj = obj.rename(columns={"index": "__index__"})
+    # if the index of the dataframe is the trivial index (i.e RangeIndex(0,numrows))
+    # we do not return an __index__ column
+    if not (
+        isinstance(obj.index, pd.RangeIndex)
+        and obj.index.start == 0
+        and obj.index.stop == len(obj)
+    ):
+        obj_index_name = obj.index.name
+        obj = obj.reset_index()
+        if obj_index_name is not None:
+            obj = obj.rename(columns={obj_index_name: f"__index__{obj_index_name}"})
+        else:
+            obj = obj.rename(columns={"index": "__index__"})
 
     pl_df = from_pandas(
         data=obj,
