@@ -36,7 +36,11 @@ def check_polars_frame(obj, return_metadata=False, var_name="obj", lazy=False):
         else:
             metadata["n_instances"] = "NA"
     if _req("n_features", return_metadata):
-        metadata["n_features"] = obj.width
+        obj_width = obj.width
+        for col in obj.columns:
+            if "__index__" in col:
+                obj_width -= 1
+        metadata["n_features"] = obj_width
     if _req("feature_names", return_metadata):
         if lazy:
             obj_columns = obj.collect_schema().names()
