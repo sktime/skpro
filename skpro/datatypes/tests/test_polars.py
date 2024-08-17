@@ -44,6 +44,14 @@ def estimator():
 
 
 @pytest.fixture
+def polars_estimator():
+    from skpro.regression.dummy_polars import DummyPolarsProbaRegressor
+
+    _estimator = DummyPolarsProbaRegressor(strategy="normal")
+    return _estimator
+
+
+@pytest.fixture
 def polars_load_diabetes_polars(polars_load_diabetes_pandas):
     X_train, X_test, y_train = polars_load_diabetes_pandas
     X_train_pl = convert_pandas_to_polars_eager(X_train)
@@ -164,3 +172,18 @@ def test_polars_eager_regressor_in_predict_quantiles(
     assert y_pred_quantile.columns[0] == ("target", 0.05)
     assert y_pred_quantile.columns[1] == ("target", 0.1)
     assert y_pred_quantile.columns[2] == ("target", 0.25)
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_polars_estimator_e2e(polars_estimator, polars_load_diabetes_polars_with_index):
+    X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
+
+    polars_estimator.fit(X_train_pl, y_train_pl)
+    y_pred = estimator.predict(X_test_pl)
+
+    assert isinstance(y_pred, pl.DataFrame)
+    assert y_pred.columns == ["target"]
