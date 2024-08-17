@@ -174,7 +174,7 @@ def test_polars_estimator_e2e(polars_estimator, polars_load_diabetes_polars):
     X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
     polars_estimator.fit(X_train_pl, y_train_pl)
-    y_pred = estimator.predict(X_test_pl)
+    y_pred = polars_estimator.predict(X_test_pl)
 
     assert isinstance(y_pred, pl.DataFrame)
     assert y_pred.columns == ["target"]
