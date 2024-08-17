@@ -66,15 +66,6 @@ def polars_load_diabetes_polars(polars_load_diabetes_pandas):
     return [X_train_pl, X_test_pl, y_train_pl]
 
 
-def polars_load_diabetes_polars_with_index(polars_load_diabetes_pandas):
-    X_train, X_test, y_train = polars_load_diabetes_pandas
-    X_train_pl = convert_pandas_to_polars_eager(X_train)
-    X_test_pl = convert_pandas_to_polars_eager(X_test)
-    y_train_pl = convert_pandas_to_polars_eager(y_train)
-
-    return [X_train_pl, X_test_pl, y_train_pl]
-
-
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.datatypes")
     or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
@@ -179,7 +170,7 @@ def test_polars_eager_regressor_in_predict_quantiles(
     or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
     reason="skip test if polars/pyarrow is not installed in environment",
 )
-def test_polars_estimator_e2e(polars_estimator, polars_load_diabetes_polars_with_index):
+def test_polars_estimator_e2e(polars_estimator, polars_load_diabetes_polars):
     X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
     polars_estimator.fit(X_train_pl, y_train_pl)
