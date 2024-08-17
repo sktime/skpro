@@ -9,14 +9,15 @@ import pandas as pd
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.normal import Normal
 from skpro.regression.base import BaseProbaRegressor
-from skpro.utils.polars import (
-    polars_combine_index_value_frame,
-    polars_split_index_values_frame,
-)
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
+
+    from skpro.utils.polars import (
+        polars_combine_index_value_frame,
+        polars_split_index_values_frame,
+    )
 
 
 class DummyPolarsProbaRegressor(BaseProbaRegressor):
