@@ -9,12 +9,14 @@ import pandas as pd
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.normal import Normal
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.polars import (
+    polars_combine_index_value_frame,
+    polars_split_index_values_frame,
+)
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
-
-    from skpro.datatypes._convert import convert
 
 
 class DummyPolarsProbaRegressor(BaseProbaRegressor):
@@ -84,14 +86,11 @@ class DummyPolarsProbaRegressor(BaseProbaRegressor):
         self._y_columns = y.columns
         self._mu = np.mean(self._y.to_numpy())
         self._sigma = np.var(self._y.to_numpy())
-
-        self._y_index = pd.Index(list(range(len(y))))
-        pd_y_fit = convert(y, "polars_eager_table", "pd_DataFrame_Table")
-        pd_y_fit.index = self._y_index
-        pd_y_fit.columns = self._y_columns
+        _, pl_values = polars_split_index_values_frame(self._y)
+        pd_values = pl_values.to_pandas()
         # distribution objects are written in pandas dataframes
         if self.strategy == "empirical":
-            self.distribution_ = Empirical(pd_y_fit)
+            self.distribution_ = Empirical(pd_values)
         if self.strategy == "normal":
             self.distribution_ = Normal(self._mu, self._sigma)
 
@@ -110,8 +109,10 @@ class DummyPolarsProbaRegressor(BaseProbaRegressor):
             predictions of target values for X
         """
         X_n_rows = X.shape[0]
+        pl_index, pl_values = polars_split_index_values_frame(X)
         y_pred = pl.DataFrame(np.ones(X_n_rows) * self._mu)
-        y_pred.columns = self._y_columns
+        y_pred.columns = [col for col in self._y_columns if "__index__" not in col]
+        y_pred = polars_combine_index_value_frame(pl_index, y_pred)
         return y_pred
 
     def _predict_var(self, X):
@@ -133,8 +134,15 @@ class DummyPolarsProbaRegressor(BaseProbaRegressor):
             variance for that variable and index, given observed data.
         """
         X_n_rows = X.shape[0]
+        pl_index, pl_values = polars_split_index_values_frame(X)
         y_pred = pl.DataFrame(np.ones(X_n_rows) * self._sigma)
-        y_pred.columns = self._y_columns
+        y_pred.columns = [col for col in self._y_columns if "__index__" not in col]
+        y_pred = polars_combine_index_value_frame(pl_index, y_pred)
+
+        # TODO - remove after boilerplate is fixed
+        from skpro.datatypes._adapter.polars import convert_polars_to_pandas_with_index
+
+        y_pred = convert_polars_to_pandas_with_index(y_pred)
         return y_pred
 
     def _predict_proba(self, X):
@@ -149,18 +157,21 @@ class DummyPolarsProbaRegressor(BaseProbaRegressor):
         y : skpro.distribution, same length as `X`
             labels predicted for `X`
         """
-        X_ind = X.index
+        X_ind = list(X["__index__"].to_numpy())
         X_n_rows = X.shape[0]
         if self.strategy == "normal":
+            y_cols = [col for col in self._y_columns if "__index__" not in col]
             # broadcast the mu and sigma from fit to the length of X
             mu = np.reshape((np.ones(X_n_rows) * self._mu), (-1, 1))
             sigma = np.reshape((np.ones(X_n_rows) * self._sigma), (-1, 1))
-            pred_dist = Normal(mu=mu, sigma=sigma, index=X_ind, columns=self._y_columns)
+            pred_dist = Normal(mu=mu, sigma=sigma, index=X_ind, columns=y_cols)
             return pred_dist
 
         if self.strategy == "empirical":
-            empr_df = pd.concat([self._y] * X_n_rows, keys=X_ind).swaplevel()
-            pred_dist = Empirical(empr_df, index=X_ind, columns=self._y_columns)
+            pl_index, pl_values = polars_split_index_values_frame(self._y)
+            pd_values = pl_values.to_pandas()
+            empr_df = pd.concat([pd_values] * X_n_rows, keys=X_ind).swaplevel()
+            pred_dist = Empirical(empr_df, index=X_ind, columns=pd_values.columns)
 
             return pred_dist
 
