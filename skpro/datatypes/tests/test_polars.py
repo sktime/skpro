@@ -296,9 +296,9 @@ def test_convert_single_column_to_multiindex_column(
 
     y_pred_pl = convert_pandas_to_polars_eager(y_pred)
     y_pred_pd = convert_polars_to_pandas(y_pred_pl)
-    assert y_pred_pd.columns == y_pred.columns
-    assert y_pred_pd.index == y_pred.index
-    assert y_pred_pd.values == y_pred.values
+    assert all(y_pred_pd.columns == y_pred.columns)
+    assert all(y_pred_pd.index == y_pred.index)
+    assert all(y_pred_pd.values == y_pred.values)
 
     # test for interval
     y_pred_interval = estimator.predict_interval(X_test)
@@ -306,16 +306,16 @@ def test_convert_single_column_to_multiindex_column(
 
     y_pred_interval_pl = convert_pandas_to_polars_eager(y_pred_interval)
     y_pred_interval_pd = convert_polars_to_pandas(y_pred_interval_pl)
-    assert y_pred_interval_pd.columns == y_pred_interval.columns
-    assert y_pred_interval_pd.index == y_pred_interval.index
-    assert y_pred_interval_pd.values == y_pred_interval.values
+    assert all(y_pred_interval_pd.columns == y_pred_interval.columns)
+    assert all(y_pred_interval_pd.index == y_pred_interval.index)
+    assert y_pred_interval_pd.equals(y_pred_interval)
 
     # test for quantile
-    y_pred_quantile = estimator.predict_interval(X_test)
+    y_pred_quantile = estimator.predict_quantiles(X_test, alpha=TEST_ALPHAS)
     assert isinstance(y_pred_quantile, pd.DataFrame)
 
     y_pred_quantile_pl = convert_pandas_to_polars_eager(y_pred_quantile)
     y_pred_quantile_pd = convert_polars_to_pandas(y_pred_quantile_pl)
-    assert y_pred_quantile_pd.columns == y_pred_quantile.columns
-    assert y_pred_quantile_pd.index == y_pred_quantile.index
-    assert y_pred_quantile_pd.values == y_pred_quantile.values
+    assert all(y_pred_quantile_pd.columns == y_pred_quantile.columns)
+    assert all(y_pred_quantile_pd.index == y_pred_quantile.index)
+    assert y_pred_quantile_pd.equals(y_pred_quantile)

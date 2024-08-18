@@ -202,6 +202,13 @@ def transform_single_column_to_multiindex_columns(obj):
     # take the transpose of the list of lists
     df_cols = np.array(df_cols).T.tolist()
 
+    for multi_index_array in df_cols:
+        # try to convert item to float if the string is a supposed float value
+        for i in range(len(multi_index_array)):
+            try:
+                multi_index_array[i] = float(multi_index_array[i])
+            except ValueError:
+                pass
     return df_cols
 
 
