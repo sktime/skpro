@@ -6,8 +6,7 @@ import pandas as pd
 
 from skpro.base import BaseEstimator
 from skpro.datatypes import check_is_error_msg, check_is_mtype, convert
-from skpro.utils.create_container import get_config_adapter
-from skpro.utils.set_output import check_transform_config
+from skpro.utils.set_output import check_output_config, transform_output
 from skpro.utils.validation._dependencies import (
     _check_estimator_deps,
     _check_soft_dependencies,
@@ -165,20 +164,18 @@ class BaseProbaRegressor(BaseEstimator):
 
         y_pred = self._predict(X)
 
-        # output conversion - back to mtype seen in fit
-        y_pred = convert(
+        valid, output_config = check_output_config(self)
+        # output conversion - converts to user specified set_output
+        # else: back to mtype seen in fit
+        y_pred = transform_output(
             y_pred,
+            valid=valid,
             from_type=self.get_tag("y_inner_mtype"),
-            to_type=self._y_metadata["mtype"],
-            as_scitype="Table",
+            default_to_type=self._y_metadata["mtype"],
+            default_scitype="Table",
+            output_config=output_config,
             store=self._X_converter_store,
         )
-
-        valid, output_config = check_transform_config(self)
-        if valid:
-            transform_adapter = output_config["dense"]
-            adapter, columns = get_config_adapter(transform_adapter, y_pred)
-            y_pred = adapter.create_container(y_pred, columns)
 
         return y_pred
 
@@ -332,11 +329,9 @@ class BaseProbaRegressor(BaseEstimator):
         # pass to inner _predict_interval
         pred_int = self._predict_interval(X=X_inner, coverage=coverage)
 
-        valid, output_config = check_transform_config(self)
-        if valid:
-            transform_adapter = output_config["dense"]
-            adapter, columns = get_config_adapter(transform_adapter, pred_int)
-            pred_int = adapter.create_container(pred_int, columns)
+        # valid, output_config = check_output_config(self)
+        # if valid:
+        #     transform_adapter = output_config["dense"]
 
         return pred_int
 
@@ -450,11 +445,9 @@ class BaseProbaRegressor(BaseEstimator):
         # pass to inner _predict_quantiles
         quantiles = self._predict_quantiles(X=X_inner, alpha=alpha)
 
-        valid, output_config = check_transform_config(self)
-        if valid:
-            transform_adapter = output_config["dense"]
-            adapter, columns = get_config_adapter(transform_adapter, quantiles)
-            quantiles = adapter.create_container(quantiles, columns)
+        # valid, output_config = check_output_config(self)
+        # if valid:
+        #     transform_adapter = output_config["dense"]
 
         return quantiles
 
@@ -567,11 +560,9 @@ class BaseProbaRegressor(BaseEstimator):
         # pass to inner _predict_interval
         pred_var = self._predict_var(X=X_inner)
 
-        valid, output_config = check_transform_config(self)
-        if valid:
-            transform_adapter = output_config["dense"]
-            adapter, columns = get_config_adapter(transform_adapter, pred_var)
-            pred_var = adapter.create_container(pred_var, columns)
+        # valid, output_config = check_output_config(self)
+        # if valid:
+        #     transform_adapter = output_config["dense"]
 
         return pred_var
 
@@ -640,12 +631,6 @@ class BaseProbaRegressor(BaseEstimator):
             # put together to pd.DataFrame
             #   the indices and column names are already correct
             pred_var = pd.DataFrame(vars_dict)
-
-        valid, output_config = check_transform_config(self)
-        if valid:
-            transform_adapter = output_config["dense"]
-            adapter, columns = get_config_adapter(transform_adapter, pred_var)
-            pred_var = adapter.create_container(pred_var, columns)
 
         return pred_var
 
