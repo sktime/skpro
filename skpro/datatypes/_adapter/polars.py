@@ -1,5 +1,6 @@
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Common utilities for polars based data containers."""
+import numpy as np
 import pandas as pd
 
 from skpro.datatypes._common import _req
@@ -95,6 +96,11 @@ def convert_polars_to_pandas_with_index(obj):
             pd_df = pd_df.set_index(col, drop=True)
             pd_df.index.name = col.split("__index__")[1]
 
+    # check to see if we need to convert single melted polars columns
+    # back to multi_index
+    if all([True for col in obj.columns if col.startswith("__")]):
+        multi_index_columns = transform_pandas_multiindex_columns_to_single_column(obj)
+        pd_df.columns = multi_index_columns
     return pd_df
 
 
@@ -190,6 +196,11 @@ def transform_single_column_to_muldiindex_columns(obj):
         items = col.split("__")
         items = [item for item in items if item]
         col_array.append(items)
+
+    # take the transpose of the list of lists
+    col_array = np.array(col_array).T.tolist()
+
+    return col_array
 
 
 def check_n_level_of_dataframe(X_input, axis=1):
