@@ -1,5 +1,7 @@
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Common utilities for polars based data containers."""
+import pandas as pd
+
 from skpro.datatypes._common import _req
 from skpro.datatypes._common import _ret as ret
 
@@ -140,6 +142,10 @@ def convert_pandas_to_polars_with_index(
         else:
             obj = obj.rename(columns={"index": "__index__"})
 
+    n_column_levels = check_n_level_of_dataframe(obj)
+    if n_column_levels > 1:
+        obj.columns = transform_pandas_multiindex_columns_to_single_column(obj)
+
     pl_df = from_pandas(
         data=obj,
         schema_overrides=schema_overrides,
@@ -151,3 +157,71 @@ def convert_pandas_to_polars_with_index(
         pl_df = pl_df.lazy()
 
     return pl_df
+
+
+def transform_pandas_multiindex_columns_to_single_column(X_input: pd.DataFrame):
+    """Convert function to return a list containing melted columns.
+
+    Assumes a multi-index column pandas DataFrame
+    Parameters
+    ----------
+    X : pandas DataFrame
+        pandas DataFrame containing a multi-index column (nlevels > 1)
+
+    Returns
+    -------
+    df_cols : a list object containing strings of all of the melted columns
+    """
+    df_cols = []
+    for col in X_input.columns:
+        df_cols.append("__" + "__".join(str(x) for x in col if x != "") + "__")
+    # in case "__index__" is in one of the tuples inside X_input
+    df_cols = [col.replace("____", "__") for col in df_cols]
+
+    return df_cols
+
+
+def transform_single_column_to_muldiindex_columns(obj):
+    """Convert function to return a list containing un-melted columns."""
+    obj_columns = obj.columns
+
+    col_array = []
+    for col in obj_columns:
+        items = col.split("__")
+        items = [item for item in items if item]
+        col_array.append(items)
+
+
+def check_n_level_of_dataframe(X_input, axis=1):
+    """Convert function to check the number of levels inside a pd/pl frame.
+
+    Parameters
+    ----------
+    X_input : polars or pandas DataFrame
+        A given polars or pandas DataFrame. Note that the polars portion of this
+        code requires the soft dependencies polars and pyarrow to be installed
+    axis : [0,1]
+        Specify the index or columns of a pandas DataFrame. If 0, uses the index
+        If 1, uses the columns. This parameter is ignored if X_input is not
+        a pandas DataFrame.
+
+    Returns
+    -------
+    levels : int
+        An integer specifying the number of levels given a DataFrame
+    """
+    import polars as pl
+
+    if axis not in [0, 1]:
+        raise ValueError(f"axis must be in [0,1] " f"found {axis}.")
+    levels = None
+    if isinstance(X_input, pd.DataFrame):
+        if axis == 0:
+            levels = X_input.index.nlevels
+        elif axis == 1:
+            levels = X_input.columns.nlevels
+
+    if isinstance(X_input, pl.DataFrame) or isinstance(X_input, pl.LazyFrame):
+        levels = 1
+
+    return levels

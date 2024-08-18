@@ -111,7 +111,7 @@ def check_n_level_of_dataframe(X_input, axis=1):
     return levels
 
 
-def convert_pandas_multiindex_columns_to_single_column(X_input: pd.DataFrame):
+def transform_pandas_multiindex_columns_to_single_column(X_input: pd.DataFrame):
     """Convert function to return a list containing melted columns.
 
     Assumes a multi-index column pandas DataFrame
@@ -131,27 +131,6 @@ def convert_pandas_multiindex_columns_to_single_column(X_input: pd.DataFrame):
     df_cols = [col.replace("____", "__") for col in df_cols]
 
     return df_cols
-
-
-def convert_pandas_index_to_column(X_input):
-    """Given a pandas DataFrame, convert the index into a single column.
-
-    Assumes the DataFrame has a one-level index.
-
-    Parameters
-    ----------
-    X_input : pandas DataFrame
-        pandas DataFrame containing a single-level index
-
-    Returns
-    -------
-    X_out : A copy of X with a new column containing the indices called
-    "__index__"
-    """
-    X_input_ = deepcopy(X_input)
-    X_out = X_input_.reset_index(names="__index__")
-
-    return X_out
 
 
 def convert_pandas_dataframe_to_polars_eager_with_index(X_input, include_index=False):
