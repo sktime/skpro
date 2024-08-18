@@ -74,20 +74,22 @@ Our objective is to enhance the interoperability and usability of the AI model e
 * ``skpro`` is compatible with [scikit-learn] and [sktime], e.g., an ``sktime`` proba forecaster can
 be built with an ``skpro`` proba regressor which in an ``sklearn`` regressor with proba mode added by ``skpro``
 
-* ``skpro`` provides a mini-package management framework for first-party implemenentations,
-and for interfacing popular second- and third-party components, such as [cyclic-boosting] or [MAPIE] packages.
+* ``skpro`` provides a mini-package management framework for first-party implementations,
+and for interfacing popular second- and third-party components,
+such as [cyclic-boosting], [MAPIE], or [ngboost] packages.
 
 [scikit-learn]: https://scikit-learn.org/stable/
 [sktime]: https://www.sktime.net
 [MAPIE]: https://mapie.readthedocs.io/en/latest/
 [cyclic-boosting]:  https://cyclic-boosting.readthedocs.io/en/latest/
+[ngboost]: https://stanfordmlgroup.github.io/projects/ngboost/
 
 ``skpro`` curates libraries of components of the following types:
 
 | Module | Status | Links |
 |---|---|---|
 | **[Probabilistic tabular regression]** | maturing | [Tutorial](https://github.com/sktime/skpro/blob/main/examples/01_skpro_intro.ipynb) · [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/regression.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/regression.py) |
-| **[Time-to-event (survival) prediction]** | maturing | [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/survival.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/survival.py) |
+| **[Time-to-event (survival) prediction]** | maturing |  [Tutorial](https://github.com/sktime/skpro/blob/main/examples/02_skpro_survival.ipynb) · [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/survival.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/survival.py) |
 | **[Performance metrics]** | maturing | [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/metrics.html) |
 | **[Probability distributions]** | maturing | [Tutorial](https://github.com/sktime/skpro/blob/main/examples/03_skpro_distributions.ipynb) · [API Reference](https://skpro.readthedocs.io/en/latest/api_reference/distributions.html) · [Extension Template](https://github.com/sktime/skpro/blob/main/extension_templates/distributions.py) |
 
@@ -189,7 +191,7 @@ specification: all kinds of contributions are welcome - not just code.
 | :medal_sports: **[Contributors]** | A list of all contributors. |
 | :raising_hand: **[Roles]** | An overview of our core community roles. |
 | :money_with_wings: **[Donate]** | Fund sktime and skpro maintenance and development. |
-| :classical_building: **[Governance]** | How and by whom decisions are made in sktime's community.   |
+| :classical_building: **[Governance]** | How and by whom decisions are made in the sktime community.   |
 
 [contribute]: https://skpro.readthedocs.io/en/latest/get_involved/contributing.html
 [donate]: https://opencollective.com/sktime
