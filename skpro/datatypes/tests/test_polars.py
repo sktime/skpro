@@ -208,7 +208,9 @@ def test_polars_to_pandas_with_index_conversion(polars_load_diabetes_pandas):
 
     X_test_pl = convert_pandas_to_polars_lazy(X_test)
     X_test_ = convert_polars_to_pandas(X_test_pl)
-    assert list(X_test_.index) == list(X_test_pl["__index__"].to_numpy())
+    assert list(X_test_.index) == list(
+        X_test_pl.select(["__index__"]).collect().to_numpy()
+    )
     assert not X_test_.index.name
 
     y_train.index.name = "foo"
