@@ -211,6 +211,11 @@ def test_polars_eager_regressor_in_predict_quantiles(
     assert y_pred_quantile.columns[2] == ("target", 0.25)
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
 def test_check_column_level_of_dataframe_pandas(
     load_pandas_multi_index_column_fixture,
     load_pandas_simple_column_fixture,
@@ -241,6 +246,11 @@ def test_check_column_level_of_dataframe_polars(
     assert n_levels_simple_pl == 1
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
 def test_convert_multiindex_columns_to_single_column(
     load_pandas_multi_index_column_fixture,
 ):
@@ -279,10 +289,33 @@ def test_convert_single_column_to_multiindex_column(
 ):
     X_train, X_test, y_train = polars_load_diabetes_pandas
     estimator.fit(X_train, y_train)
-    y_pred = estimator.predict_interval(X_test)
 
+    # test for predict
+    y_pred = estimator.predict(X_test)
     assert isinstance(y_pred, pd.DataFrame)
 
     y_pred_pl = convert_pandas_to_polars_eager(y_pred)
-    y_pred_ = convert_polars_to_pandas(y_pred_pl)
-    y_pred_
+    y_pred_pd = convert_polars_to_pandas(y_pred_pl)
+    assert y_pred_pd.columns == y_pred.columns
+    assert y_pred_pd.index == y_pred.index
+    assert y_pred_pd.values == y_pred.values
+
+    # test for interval
+    y_pred_interval = estimator.predict_interval(X_test)
+    assert isinstance(y_pred_interval, pd.DataFrame)
+
+    y_pred_interval_pl = convert_pandas_to_polars_eager(y_pred_interval)
+    y_pred_interval_pd = convert_polars_to_pandas(y_pred_interval_pl)
+    assert y_pred_interval_pd.columns == y_pred_interval.columns
+    assert y_pred_interval_pd.index == y_pred_interval.index
+    assert y_pred_interval_pd.values == y_pred_interval.values
+
+    # test for quantile
+    y_pred_quantile = estimator.predict_interval(X_test)
+    assert isinstance(y_pred_quantile, pd.DataFrame)
+
+    y_pred_quantile_pl = convert_pandas_to_polars_eager(y_pred_quantile)
+    y_pred_quantile_pd = convert_polars_to_pandas(y_pred_quantile_pl)
+    assert y_pred_quantile_pd.columns == y_pred_quantile.columns
+    assert y_pred_quantile_pd.index == y_pred_quantile.index
+    assert y_pred_quantile_pd.values == y_pred_quantile.values
