@@ -98,9 +98,12 @@ def convert_polars_to_pandas_with_index(obj):
 
     # check to see if we need to convert single melted polars columns
     # back to multi_index
-    if all([True for col in obj.columns if col.startswith("__")]):
-        multi_index_columns = transform_pandas_multiindex_columns_to_single_column(obj)
+    if all([True if col.startswith("__") else False for col in pd_df.columns]):
+        multi_index_columns = transform_pandas_multiindex_columns_to_single_column(
+            pd_df
+        )
         pd_df.columns = multi_index_columns
+
     return pd_df
 
 
@@ -149,6 +152,7 @@ def convert_pandas_to_polars_with_index(
             obj = obj.rename(columns={"index": "__index__"})
 
     n_column_levels = check_n_level_of_dataframe(obj)
+
     if n_column_levels > 1:
         obj.columns = transform_pandas_multiindex_columns_to_single_column(obj)
 
