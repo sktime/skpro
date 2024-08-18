@@ -12,7 +12,7 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
 
 from skpro.utils.set_output import (  # SUPPORTED_OUTPUTS,
     check_n_level_of_dataframe,
-    check_transform_config,
+    check_output_config,
     convert_pandas_dataframe_to_polars_eager_with_index,
     convert_pandas_index_to_column,
     convert_pandas_multiindex_columns_to_single_column,
@@ -133,16 +133,16 @@ def test_check_transform_config_happy(estimator):
 
     estimator.set_output(transform="pandas")
     assert estimator.get_config()["transform"] == "pandas"
-    valid, dense_config = check_transform_config(estimator)
+    valid, dense_config = check_output_config(estimator)
     assert valid
-    assert dense_config["dense"] == "pandas"
+    assert dense_config["dense"] == ("pd_DataFrame_Table", "Table")
 
     if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
         estimator.set_output(transform="polars")
         assert estimator.get_config()["transform"] == "polars"
-        valid, dense_config = check_transform_config(estimator)
+        valid, dense_config = check_output_config(estimator)
         assert valid
-        assert dense_config["dense"] == "polars"
+        assert dense_config["dense"] == ("polars_eager_table", "Table")
 
 
 def test_check_transform_config_negative(estimator):
@@ -151,14 +151,13 @@ def test_check_transform_config_negative(estimator):
         ValueError,
         # match=f"set_output container must be in {SUPPORTED_OUTPUTS}, found foo.",
     ):
-        check_transform_config(estimator)
+        check_output_config(estimator)
 
 
 def test_check_transform_config_none(estimator):
-    valid, dense = check_transform_config(estimator)
-    dense
+    valid, dense = check_output_config(estimator)
     assert not valid
-    assert dense["dense"] == "default"
+    assert dense == {}
 
 
 @pytest.mark.skipif(
