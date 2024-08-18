@@ -283,7 +283,6 @@ def test_convert_multiindex_columns_to_single_column(
     reason="skip test if polars/pyarrow is not installed in environment",
 )
 def test_convert_single_column_to_multiindex_column(
-    load_pandas_multi_index_column_fixture,
     estimator,
     polars_load_diabetes_pandas,
 ):
