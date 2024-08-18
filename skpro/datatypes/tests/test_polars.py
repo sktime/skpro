@@ -12,7 +12,11 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
     from skpro.datatypes._table._check import check_polars_table
-    from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
+    from skpro.datatypes._table._convert import (
+        convert_pandas_to_polars_eager,
+        convert_pandas_to_polars_lazy,
+        convert_polars_to_pandas,
+    )
 
 TEST_ALPHAS = [0.05, 0.1, 0.25]
 
@@ -163,6 +167,55 @@ def test_polars_eager_regressor_in_predict_quantiles(
     assert y_pred_quantile.columns[0] == ("target", 0.05)
     assert y_pred_quantile.columns[1] == ("target", 0.1)
     assert y_pred_quantile.columns[2] == ("target", 0.25)
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_pandas_to_polars_with_index_conversion(polars_load_diabetes_pandas):
+    X_train, X_test, y_train = polars_load_diabetes_pandas
+
+    X_train_pl = convert_pandas_to_polars_eager(X_train)
+    assert "__index__" in X_train_pl.columns
+
+    X_test_pl = convert_pandas_to_polars_lazy(X_test)
+    assert "__index__" in X_test_pl.columns
+
+    y_train.index.name = "foo"
+    y_train_pl = convert_pandas_to_polars_eager(y_train)
+    assert "__index__foo" in y_train_pl.columns
+
+    X_train_no_index = X_train.reset_index()
+    X_train_no_index_pl = convert_pandas_to_polars_eager(X_train_no_index)
+
+    assert "__index__" not in X_train_no_index_pl.columns
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_polars_to_pandas_with_index_conversion(polars_load_diabetes_pandas):
+    X_train, X_test, y_train = polars_load_diabetes_pandas
+
+    X_train_pl = convert_pandas_to_polars_eager(X_train)
+    X_train_ = convert_polars_to_pandas(X_train_pl)
+    assert list(X_train_.index) == list(X_train_pl["__index__"].to_numpy())
+    assert not X_train_.index.name
+
+    X_test_pl = convert_pandas_to_polars_lazy(X_test)
+    X_test_ = convert_polars_to_pandas(X_test_pl)
+    assert list(X_test_.index) == list(X_test_pl["__index__"].to_numpy())
+    assert not X_test_.index.name
+
+    y_train.index.name = "foo"
+    y_train_pl = convert_pandas_to_polars_eager(y_train)
+    y_train_ = convert_polars_to_pandas(y_train_pl)
+    assert list(y_train_.index) == list(y_train_pl["__index__foo"].to_numpy())
+    assert y_train_.index.name == "foo"
 
 
 @pytest.mark.skipif(
