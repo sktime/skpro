@@ -195,16 +195,16 @@ def transform_single_column_to_multiindex_columns(obj):
     """Convert function to return a list containing un-melted columns."""
     obj_columns = obj.columns
 
-    col_array = []
+    df_cols = []
     for col in obj_columns:
         items = col.split("__")
         items = [item for item in items if item]
-        col_array.append(items)
+        df_cols.append(items)
 
     # take the transpose of the list of lists
-    col_array = np.array(col_array).T.tolist()
+    df_cols = np.array(df_cols).T.tolist()
 
-    return col_array
+    return df_cols
 
 
 def check_n_level_of_dataframe(X_input, axis=1):

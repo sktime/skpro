@@ -243,7 +243,9 @@ def test_convert_multiindex_columns_to_single_column(
     load_pandas_multi_index_column_fixture,
 ):
     pd_multi_column_fixture1 = load_pandas_multi_index_column_fixture
-    df_list1 = transform_single_column_to_multiindex_columns(pd_multi_column_fixture1)
+    df_list1 = transform_pandas_multiindex_columns_to_single_column(
+        pd_multi_column_fixture1
+    )
     assert df_list1 == [
         "__A__Foo__One__",
         "__A__Foo__Two__",
@@ -252,7 +254,9 @@ def test_convert_multiindex_columns_to_single_column(
     ]
 
     pd_multi_column_fixture2 = load_pandas_multi_index_column_fixture
-    df_list2 = transform_single_column_to_multiindex_columns(pd_multi_column_fixture2)
+    df_list2 = transform_pandas_multiindex_columns_to_single_column(
+        pd_multi_column_fixture2
+    )
     assert df_list2 == [
         "__A__Foo__One__",
         "__A__Foo__Two__",
@@ -264,4 +268,4 @@ def test_convert_multiindex_columns_to_single_column(
 def test_convert_single_column_to_multiindex_column(
     load_pandas_multi_index_column_fixture,
 ):
-    transform_pandas_multiindex_columns_to_single_column
+    transform_single_column_to_multiindex_columns
