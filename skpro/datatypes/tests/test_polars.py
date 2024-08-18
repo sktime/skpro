@@ -14,10 +14,12 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     from skpro.datatypes._adapter.polars import (
         check_n_level_of_dataframe,
         transform_pandas_multiindex_columns_to_single_column,
-        transform_single_column_to_multiindex_columns,
     )
     from skpro.datatypes._table._check import check_polars_table
-    from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
+    from skpro.datatypes._table._convert import (
+        convert_pandas_to_polars_eager,
+        convert_polars_to_pandas,
+    )
 
 TEST_ALPHAS = [0.05, 0.1, 0.25]
 
@@ -265,7 +267,22 @@ def test_convert_multiindex_columns_to_single_column(
     ]
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
 def test_convert_single_column_to_multiindex_column(
     load_pandas_multi_index_column_fixture,
+    estimator,
+    polars_load_diabetes_pandas,
 ):
-    transform_single_column_to_multiindex_columns
+    X_train, X_test, y_train = polars_load_diabetes_pandas
+    estimator.fit(X_train, y_train)
+    y_pred = estimator.predict_interval(X_test)
+
+    assert isinstance(y_pred, pd.DataFrame)
+
+    y_pred_pl = convert_pandas_to_polars_eager(y_pred)
+    y_pred_ = convert_polars_to_pandas(y_pred_pl)
+    y_pred_

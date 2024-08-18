@@ -99,10 +99,8 @@ def convert_polars_to_pandas_with_index(obj):
     # check to see if we need to convert single melted polars columns
     # back to multi_index
     if all([True if col.startswith("__") else False for col in pd_df.columns]):
-        multi_index_columns = transform_pandas_multiindex_columns_to_single_column(
-            pd_df
-        )
-        pd_df.columns = multi_index_columns
+        multi_index_columns = transform_single_column_to_multiindex_columns(pd_df)
+        pd_df.columns = pd.MultiIndex.from_arrays(multi_index_columns)
 
     return pd_df
 
