@@ -238,69 +238,12 @@ class GLMRegressor(BaseProbaRegressor):
 
         return sm_fmly[family]()
 
-    # TODO (release 2.5.0)
-    # replace the existing definition of `__init__` with
-    # the below definition for `__init__`.
-    # def __init__(
-    #     self,
-    #     family="Normal",
-    #     link=None,
-    #     offset_var=None,
-    #     exposure_var=None,
-    #     missing="none",
-    #     start_params=None,
-    #     maxiter=100,
-    #     method="IRLS",
-    #     tol=1e-8,
-    #     scale=None,
-    #     cov_type="nonrobust",
-    #     cov_kwds=None,
-    #     use_t=None,
-    #     full_output=True,
-    #     disp=False,
-    #     max_start_irls=3,
-    #     add_constant=False,
-    # ):
-    #     super().__init__()
-
-    #     self.family = family
-    #     self.link = link
-    #     self.offset_var = offset_var
-    #     self.exposure_var = exposure_var
-    #     self.missing = missing
-    #     self.start_params = start_params
-    #     self.maxiter = maxiter
-    #     self.method = method
-    #     self.tol = tol
-    #     self.scale = scale
-    #     self.cov_type = cov_type
-    #     self.cov_kwds = cov_kwds
-    #     self.use_t = use_t
-    #     self.full_output = full_output
-    #     self.disp = disp
-    #     self.max_start_irls = max_start_irls
-    #     self.add_constant = add_constant
-
-    #     self._family = self.family
-    #     self._link = self.link
-    #     self._offset_var = self.offset_var
-    #     self._exposure_var = self.exposure_var
-    #     self._missing = self.missing
-    #     self._start_params = self.start_params
-    #     self._maxiter = self.maxiter
-    #     self._method = self.method
-    #     self._tol = self.tol
-    #     self._scale = self.scale
-    #     self._cov_type = self.cov_type
-    #     self._cov_kwds = self.cov_kwds
-    #     self._use_t = self.use_t
-    #     self._full_output = self.full_output
-    #     self._disp = self.disp
-    #     self._max_start_irls = self.max_start_irls
-    #     self._add_constant = self.add_constant
-
     def __init__(
         self,
+        family="Normal",
+        link=None,
+        offset_var=None,
+        exposure_var=None,
         missing="none",
         start_params=None,
         maxiter=100,
@@ -314,15 +257,7 @@ class GLMRegressor(BaseProbaRegressor):
         disp=False,
         max_start_irls=3,
         add_constant=False,
-        family="Normal",
-        link=None,
-        offset_var=None,
-        exposure_var=None,
     ):
-        # The default values of the parameters
-        # are replaced with the changed sequence
-        # of parameters ranking for each of them
-        # from 0 to 16(total 17 parameters).
         super().__init__()
 
         self.family = family
@@ -360,19 +295,6 @@ class GLMRegressor(BaseProbaRegressor):
         self._disp = self.disp
         self._max_start_irls = self.max_start_irls
         self._add_constant = self.add_constant
-
-        from warnings import warn
-
-        warn(
-            "Note: in `GLMRegressor`, the sequence of the parameters will change "
-            "in skpro version 2.5.0. It will be as per the order present in the"
-            "current docstring with the top one being the first parameter.\n"
-            "The defaults for the parameters will remain same and "
-            "there will be no changes.\n"
-            "Please use the `kwargs` calls instead of positional calls for the"
-            "parameters until the release of skpro 2.5.0 "
-            "as this will avoid any discrepancies."
-        )
 
     def _fit(self, X, y):
         """Fit regressor to training data.
