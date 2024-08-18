@@ -191,7 +191,7 @@ def transform_pandas_multiindex_columns_to_single_column(X_input: pd.DataFrame):
     return df_cols
 
 
-def transform_single_column_to_muldiindex_columns(obj):
+def transform_single_column_to_multiindex_columns(obj):
     """Convert function to return a list containing un-melted columns."""
     obj_columns = obj.columns
 
