@@ -581,17 +581,18 @@ class BaseProbaRegressor(BaseEstimator):
         pred_var = self._predict_var(X=X_inner)
 
         valid, output_config = check_output_config(self)
-        # output conversion - converts to user specified set_output
-        # else: back to mtype seen in fit
-        pred_var = transform_output(
-            pred_var,
-            valid=valid,
-            from_type=self.get_tag("y_inner_mtype"),
-            default_to_type=self._y_metadata["mtype"],
-            default_scitype="Table",
-            output_config=output_config,
-            store=self._X_converter_store,
-        )
+        if valid:
+            # output conversion - converts to user specified set_output
+            # else: back to mtype seen in fit
+            pred_var = transform_output(
+                pred_var,
+                valid=valid,
+                from_type=self.get_tag("y_inner_mtype"),
+                default_to_type=self._y_metadata["mtype"],
+                default_scitype="Table",
+                output_config=output_config,
+                store=self._X_converter_store,
+            )
 
         return pred_var
 
