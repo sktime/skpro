@@ -330,17 +330,18 @@ class BaseProbaRegressor(BaseEstimator):
         pred_int = self._predict_interval(X=X_inner, coverage=coverage)
 
         valid, output_config = check_output_config(self)
-        # output conversion - converts to user specified set_output
-        # else: back to mtype seen in fit
-        pred_int = transform_output(
-            pred_int,
-            valid=valid,
-            from_type=self.get_tag("y_inner_mtype"),
-            default_to_type=self._y_metadata["mtype"],
-            default_scitype="Table",
-            output_config=output_config,
-            store=self._X_converter_store,
-        )
+        if valid:
+            # output conversion - converts to user specified set_output
+            # else: back to mtype seen in fit
+            pred_int = transform_output(
+                pred_int,
+                valid=valid,
+                from_type=self.get_tag("y_inner_mtype"),
+                default_to_type=self._y_metadata["mtype"],
+                default_scitype="Table",
+                output_config=output_config,
+                store=self._X_converter_store,
+            )
 
         return pred_int
 
@@ -455,17 +456,18 @@ class BaseProbaRegressor(BaseEstimator):
         quantiles = self._predict_quantiles(X=X_inner, alpha=alpha)
 
         valid, output_config = check_output_config(self)
-        # output conversion - converts to user specified set_output
-        # else: back to mtype seen in fit
-        quantiles = transform_output(
-            quantiles,
-            valid=valid,
-            from_type=self.get_tag("y_inner_mtype"),
-            default_to_type=self._y_metadata["mtype"],
-            default_scitype="Table",
-            output_config=output_config,
-            store=self._X_converter_store,
-        )
+        if valid:
+            # output conversion - converts to user specified set_output
+            # else: back to mtype seen in fit
+            quantiles = transform_output(
+                quantiles,
+                valid=valid,
+                from_type=self.get_tag("y_inner_mtype"),
+                default_to_type=self._y_metadata["mtype"],
+                default_scitype="Table",
+                output_config=output_config,
+                store=self._X_converter_store,
+            )
 
         return quantiles
 
