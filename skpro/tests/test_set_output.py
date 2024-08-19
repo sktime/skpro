@@ -1,6 +1,6 @@
-import pytest
+# import pytest
 
-from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
+# from skpro.datatypes._table._convert import convert_pandas_to_polars_eager
 
 # from skpro.tests.test_switch import run_test_module_changed
 # from skpro.utils.set_output import check_output_config  # SUPPORTED_OUTPUTS,
@@ -10,39 +10,39 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     # import polars as pl
     pass
 
-import pandas as pd
-from sklearn.datasets import load_diabetes
-from sklearn.model_selection import train_test_split
+# import pandas as pd
+# from sklearn.datasets import load_diabetes
+# from sklearn.model_selection import train_test_split
 
 
-@pytest.fixture
-def polars_load_diabetes_pandas():
-    X, y = load_diabetes(return_X_y=True, as_frame=True)
-    X = X.iloc[:75]
-    y = y.iloc[:75]
+# @pytest.fixture
+# def polars_load_diabetes_pandas():
+#     X, y = load_diabetes(return_X_y=True, as_frame=True)
+#     X = X.iloc[:75]
+#     y = y.iloc[:75]
 
-    # typically y is returned as a pd.Series to we call y as a Dataframe here
-    y = pd.DataFrame(y)
+#     # typically y is returned as a pd.Series to we call y as a Dataframe here
+#     y = pd.DataFrame(y)
 
-    X_train, X_test, y_train, _ = train_test_split(
-        X, y, test_size=0.33, random_state=42
-    )
-    return [X_train, X_test, y_train]
+#     X_train, X_test, y_train, _ = train_test_split(
+#         X, y, test_size=0.33, random_state=42
+#     )
+#     return [X_train, X_test, y_train]
 
 
-@pytest.fixture
-def polars_load_diabetes_polars(polars_load_diabetes_pandas):
-    X_train, X_test, y_train = polars_load_diabetes_pandas
-    X_train_pl = convert_pandas_to_polars_eager(X_train)
-    X_test_pl = convert_pandas_to_polars_eager(X_test)
-    y_train_pl = convert_pandas_to_polars_eager(y_train)
+# @pytest.fixture
+# def polars_load_diabetes_polars(polars_load_diabetes_pandas):
+#     X_train, X_test, y_train = polars_load_diabetes_pandas
+#     X_train_pl = convert_pandas_to_polars_eager(X_train)
+#     X_test_pl = convert_pandas_to_polars_eager(X_test)
+#     y_train_pl = convert_pandas_to_polars_eager(y_train)
 
-    # drop the index in the polars frame
-    X_train_pl = X_train_pl.drop(["__index__"])
-    X_test_pl = X_test_pl.drop(["__index__"])
-    y_train_pl = y_train_pl.drop(["__index__"])
+#     # drop the index in the polars frame
+#     X_train_pl = X_train_pl.drop(["__index__"])
+#     X_test_pl = X_test_pl.drop(["__index__"])
+#     y_train_pl = y_train_pl.drop(["__index__"])
 
-    return [X_train_pl, X_test_pl, y_train_pl]
+#     return [X_train_pl, X_test_pl, y_train_pl]
 
 
 # @pytest.fixture
