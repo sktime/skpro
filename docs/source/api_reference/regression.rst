@@ -48,7 +48,9 @@ Reduction - adding ``predict_proba``
 ------------------------------------
 
 This section lists reduction algorithms that
-take one or multiple ``sklearn`` estimators and adda probabilistic prediction mode.
+take one or multiple ``sklearn`` regressors and add a probabilistic prediction mode.
+
+Formally, these algorithms are reduction algorithms, to tabular regression.
 
 .. currentmodule:: skpro.regression.bootstrap
 
@@ -107,6 +109,16 @@ take one or multiple ``sklearn`` estimators and adda probabilistic prediction mo
 
     CyclicBoosting
 
+Reduction to probabilistic classification
+-----------------------------------------
+
+.. currentmodule:: skpro.regression.binned._sklearn_bin_regressor
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    HistBinnedProbaRegressor
 
 Naive regressors and baselines
 ------------------------------
@@ -120,6 +132,7 @@ This section lists simple regressors which can be used as baselines.
     :template: class.rst
 
     DeltaPointRegressor
+    DummyProbaRegressor
 
 
 Linear regression
@@ -158,7 +171,6 @@ Adapters to other interfaces
     :template: class.rst
 
     SklearnProbaReg
-
 
 Base classes
 ------------

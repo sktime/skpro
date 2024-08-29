@@ -39,6 +39,7 @@ Continuous support - full reals
     Logistic
     Normal
     TDistribution
+    TruncatedNormal
 
 
 Continuous support - non-negative reals
@@ -59,6 +60,7 @@ Continuous support - non-negative reals
     HalfCauchy
     HalfLogistic
     HalfNormal
+    InverseGamma
     LogLaplace
     Pareto
     Weibull
@@ -73,8 +75,8 @@ Integer support
     :toctree: auto_generated/
     :template: class.rst
 
+    Binomial
     Poisson
-
 
 Non-parametric and empirical distributions
 ------------------------------------------

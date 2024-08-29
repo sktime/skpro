@@ -88,9 +88,6 @@ class CyclicBoosting(BaseProbaRegressor):
         arcosh and similar transformations.
         Available options are ``'normal'`` (default), ``'logistic'``,
         or ``'sinhlogistic'``.
-    dist_shape: float, optional, default=0.0
-        parameter modifying the logistic base distribution via
-        sinh/arcsinh-scaling - only relevant for ``dist_type='sinhlogistic'``
 
     Attributes
     ----------
@@ -318,8 +315,7 @@ class CyclicBoosting(BaseProbaRegressor):
             "qv_high": self.quantile_values[2].reshape(-1, 1),
             "lower": self.lower,
             "upper": self.upper,
-            "version": self.dist_type,
-            "dist_shape": self.dist_shape,
+            "base_dist": self.dist_type,
             "index": index,
             "columns": y_cols,
         }

@@ -15,6 +15,7 @@ from sklearn.model_selection import KFold, ShuffleSplit
 from skpro.benchmarking.evaluate import evaluate
 from skpro.metrics import CRPS, EmpiricalCoverage, LogLoss, PinballLoss
 from skpro.regression.residual import ResidualDouble
+from skpro.tests.test_switch import run_test_module_changed
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
@@ -70,6 +71,10 @@ CVs = [
 METRICS = [CRPS, EmpiricalCoverage, LogLoss, PinballLoss]
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed(["skpro.benchmarking", "skpro.metrics"]),
+    reason="Test only if skpro.benchmarking or skpro.metrics has been changed",
+)
 @pytest.mark.parametrize("cv", CVs)
 @pytest.mark.parametrize("scoring", METRICS)
 @pytest.mark.parametrize("backend", [None, "dask", "loky", "threading"])
