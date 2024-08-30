@@ -68,8 +68,8 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             self.default_sampler_config | sampler_config
         )  # parameters for posterior sampling
         self.prior_config = self.default_prior_config | prior_config  # list of priors
-        self.model = None
-        self.idata = None  # idata and model are generated during fitting
+        self.model = None  # generated during fitting
+        self.idata = None  # generated during fitting
         self._predict_done = False  # a flag indicating if a prediction has been done
 
         super().__init__()
@@ -82,7 +82,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         default_prior_config = {
             "intercept": Prior("Normal", mu=0, sigma=10),
             "slopes": Prior("Normal", mu=0, sigma=10, dims=("pred_id",)),
-            "noise_var": Prior("InverseGamma", alpha=1, beta=1),
+            "noise_var": Prior("InverseGamma", alpha=3, beta=1),
         }
         return default_prior_config
 
@@ -92,7 +92,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         default_sampler_config = {
             "draws": 1000,
             "tune": 1000,
-            "chains": 1,
+            "chains": 2,
             "target_accept": 0.95,
             "random_seed": 123,
             "progressbar": True,
@@ -169,13 +169,11 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         """Use graphviz to visualize the model."""
         import pymc as pm
 
-        assert (
-            self._is_fitted
-        ), "The model must be fitted before visualization can be done."
+        assert self._is_fitted, "Model must be fitted before visualization can be done!"
 
         return pm.model_to_graphviz(self.model, **kwargs)
 
-    def _sample_dataset(self, group_name, variables=None, return_type="xarray"):
+    def _sample_dataset(self, group_name, return_type=None):
         """
         General method to sample from a specified group in the idata object.
 
@@ -187,10 +185,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         group_name : str
             The name of the group in the idata object to sample from (e.g., 'prior').
 
-        variables : list
-            A list of variable names to extract from the specified group.
-
-        return_type : str or None, optional (default="xarray")
+        return_type : str or None, optional (default=None)
             The format in which to return the sampled distributions.
             Accepted values are:
             - "xarray": Returns an xarray.Dataset
@@ -225,14 +220,14 @@ class BayesianLinearRegressor(BaseProbaRegressor):
 
         # Get the specified group from idata
         group = getattr(self.idata, group_name)
-
+        # prediction-specific groups which focus on posterior predictive
         is_predictive = group_name in ["predictions", "posterior_predictive"]
+        # as opposed to ["prior", "posterior"] which focus on prior/posterior
 
-        if variables is None:
-            if is_predictive:
-                variables = ["y_obs"]
-            else:
-                variables = list(self.default_prior_config.keys())
+        if is_predictive:
+            variables = ["y_obs"]
+        else:
+            variables = ["intercept", "slopes", "noise_var", "noise"]
 
         if return_type is None:
             return None
@@ -249,6 +244,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                 return data_dict
 
             elif return_type == "dataframe":
+                # todo: assert 1-dimensionality of each array
                 if is_predictive:
                     return pd.DataFrame(data_dict["y_obs"]).T
                 else:
@@ -340,7 +336,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         If return_type is None, the method updates the 'idata' attribute
         by adding the 'prior' group but does not return any samples.
 
-        return_type : str or None, optional (default="xarray")
+        return_type : str or None, optional (default=None)
             The format in which to return the sampled distributions.
             Accepted values are:
             - "xarray": Returns an xarray.Dataset
@@ -371,12 +367,15 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                     coords={"obs_id": self._X.index, "pred_id": self._X.columns},
                 )
             self.idata.extend(
-                pm.sample_prior_predictive(samples=self.sampler_config["draws"])
-            )  # hacky, due to inconsistency in pymc 5.15.1, to be resolved in pymc 5.16
+                pm.sample_prior_predictive(
+                    samples=self.sampler_config["draws"],
+                    random_seed=self.sampler_config["random_seed"],
+                )
+            )  # todo: the keyword 'samples' will be changed to 'draws'
+            # in pymc 5.16
 
         return self._sample_dataset(
             group_name="prior",
-            variables=["intercept", "slopes", "noise_var", "noise"],
             return_type=return_type,
         )
 
@@ -400,7 +399,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             **kwargs,
         )
 
-    def sample_posterior(self, return_type="xarray"):
+    def sample_posterior(self, return_type=None):
         """
         Sample from the posterior distributions.
 
@@ -431,7 +430,6 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         ), "The model must be fitted before posterior can be returned."
         return self._sample_dataset(
             group_name="posterior",
-            variables=["intercept", "slopes", "noise_var", "noise"],
             return_type=return_type,
         )
 
