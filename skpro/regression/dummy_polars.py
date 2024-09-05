@@ -85,7 +85,7 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
             self._y = y
             self._y_columns = y.columns
             self._mu = np.mean(self._y.to_numpy())
-            self._sigma = np.var(self._y.to_numpy())
+            self._sigma = np.std(self._y.to_numpy())
             _, pl_values = polars_split_index_values_frame(self._y)
             pd_values = pl_values.to_pandas()
             # distribution objects are written in pandas dataframes
