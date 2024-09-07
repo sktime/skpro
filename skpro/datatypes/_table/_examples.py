@@ -24,6 +24,7 @@ overall, conversions from non-lossy representations to any other ones
 import numpy as np
 import pandas as pd
 
+from skpro.datatypes._base import BaseExample
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 example_dict = dict()
@@ -33,100 +34,222 @@ example_dict_metadata = dict()
 ###
 # example 0: univariate
 
-df = pd.DataFrame({"a": [1, 4, 0.5, -3]})
 
-example_dict[("pd_DataFrame_Table", "Table", 0)] = df
-example_dict_lossy[("pd_DataFrame_Table", "Table", 0)] = False
+class UnivTable(BaseExample):
 
-arr = np.array([[1], [4], [0.5], [-3]])
+    _tags = {
+        "scitype": "Table",
+        "index": 0,
+        "metadata": {
+            "is_univariate": True,
+            "is_empty": False,
+            "has_nans": False,
+            "n_instances": 4,
+            "n_features": 1,
+            "feature_names": ["a"],
+        },
+    }
 
-example_dict[("numpy2D", "Table", 0)] = arr
-example_dict_lossy[("numpy2D", "Table", 0)] = True
 
-arr = np.array([1, 4, 0.5, -3])
+class UnivTableDf(UnivTable):
 
-example_dict[("numpy1D", "Table", 0)] = arr
-example_dict_lossy[("numpy1D", "Table", 0)] = True
+    _tags = {
+        "mtype": "pd_DataFrame_Table",
+        "python_dependencies": None,
+        "lossy": False,
+    }
 
-series = pd.Series([1, 4, 0.5, -3])
+    def build(self):
+        return pd.DataFrame({"a": [1, 4, 0.5, -3]})
 
-example_dict[("pd_Series_Table", "Table", 0)] = series
-example_dict_lossy[("pd_Series_Table", "Table", 0)] = True
 
-list_of_dict = [{"a": 1.0}, {"a": 4.0}, {"a": 0.5}, {"a": -3.0}]
+class UnivTableNumpy2D(UnivTable):
 
-example_dict[("list_of_dict", "Table", 0)] = list_of_dict
-example_dict_lossy[("list_of_dict", "Table", 0)] = False
+    _tags = {
+        "mtype": "numpy2D",
+        "python_dependencies": None,
+        "lossy": True,
+    }
 
-if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
-    from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+    def build(self):
+        return np.array([[1], [4], [0.5], [-3]])
 
-    example_dict[
-        ("polars_eager_table", "Table", 0)
-    ] = convert_pandas_to_polars_with_index(df)
-    example_dict_lossy[("polars_eager_table", "Table", 0)] = False
 
-    example_dict[
-        ("polars_lazy_table", "Table", 0)
-    ] = convert_pandas_to_polars_with_index(df, lazy=True)
-    example_dict_lossy[("polars_lazy_table", "Table", 0)] = False
+class UnivTableNumpy1D(UnivTable):
 
-example_dict_metadata[("Table", 0)] = {
-    "is_univariate": True,
-    "is_empty": False,
-    "has_nans": False,
-    "n_instances": 4,
-    "n_features": 1,
-    "feature_names": ["a"],
-}
+    _tags = {
+        "mtype": "numpy1D",
+        "python_dependencies": None,
+        "lossy": True,
+    }
+
+    def build(self):
+        return np.array([1, 4, 0.5, -3])
+
+
+class UnivTableSeries(UnivTable):
+
+    _tags = {
+        "mtype": "pd_Series_Table",
+        "python_dependencies": None,
+        "lossy": True,
+    }
+
+    def build(self):
+        return pd.Series([1, 4, 0.5, -3])
+
+
+class UnivTableListOfDict(UnivTable):
+
+    _tags = {
+        "mtype": "list_of_dict",
+        "python_dependencies": None,
+        "lossy": False,
+    }
+
+    def build(self):
+        return [{"a": 1.0}, {"a": 4.0}, {"a": 0.5}, {"a": -3.0}]
+
+
+class UnivTablePolarsEager(UnivTable):
+
+    _tags = {
+        "mtype": "polars_eager_table",
+        "python_dependencies": ["polars", "pyarrow"],
+        "lossy": False,
+    }
+
+    def build(self):
+        from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+
+        df = pd.DataFrame({"a": [1, 4, 0.5, -3]})
+        return convert_pandas_to_polars_with_index(df)
+
+
+class UnivTablePolarsLazy(UnivTable):
+
+    _tags = {
+        "mtype": "polars_lazy_table",
+        "python_dependencies": ["polars", "pyarrow"],
+        "lossy": False,
+    }
+
+    def build(self):
+        from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+
+        df = pd.DataFrame({"a": [1, 4, 0.5, -3]})
+        return convert_pandas_to_polars_with_index(df, lazy=True)
+
 
 ###
 # example 1: multivariate
 
-example_dict[("numpy1D", "Table", 1)] = None
-example_dict_lossy[("numpy1D", "Table", 1)] = None
+class MultivTable(BaseExample):
 
-df = pd.DataFrame({"a": [1, 4, 0.5, -3], "b": [3, 7, 2, -3 / 7]})
+    _tags = {
+        "scitype": "Table",
+        "index": 1,
+        "metadata": {
+            "is_univariate": False,
+            "is_empty": False,
+            "has_nans": False,
+            "n_instances": 4,
+            "n_features": 2,
+            "feature_names": ["a", "b"],
+        },
+    }
 
-example_dict[("d_DataFrame_Table", "Table", 1)] = df
-example_dict_lossy[("pd_DataFrame_Table", "Table", 1)] = False
 
-arr = np.array([[1, 3], [4, 7], [0.5, 2], [-3, -3 / 7]])
+class MultivTableDf(MultivTable):
 
-example_dict[("numpy2D", "Table", 1)] = arr
-example_dict_lossy[("numpy2D", "Table", 1)] = True
+    _tags = {
+        "mtype": "pd_DataFrame_Table",
+        "python_dependencies": None,
+        "lossy": False,
+    }
 
-example_dict[("pd_Series_Table", "Table", 1)] = None
-example_dict_lossy[("pd_Series_Table", "Table", 1)] = None
+    def build(self):
+        return pd.DataFrame({"a": [1, 4, 0.5, -3], "b": [3, 7, 2, -3 / 7]})
 
-list_of_dict = [
-    {"a": 1.0, "b": 3.0},
-    {"a": 4.0, "b": 7.0},
-    {"a": 0.5, "b": 2.0},
-    {"a": -3.0, "b": -3 / 7},
-]
 
-example_dict[("list_of_dict", "Table", 1)] = list_of_dict
-example_dict_lossy[("list_of_dict", "Table", 1)] = False
+class MultivTableNumpy2D(MultivTable):
 
-if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
-    from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+    _tags = {
+        "mtype": "numpy2D",
+        "python_dependencies": None,
+        "lossy": True,
+    }
 
-    example_dict[
-        ("polars_eager_table", "Table", 1)
-    ] = convert_pandas_to_polars_with_index(df)
-    example_dict_lossy[("polars_eager_table", "Table", 1)] = False
+    def build(self):
+        return np.array([[1, 3], [4, 7], [0.5, 2], [-3, -3 / 7]])
 
-    example_dict[
-        ("polars_lazy_table", "Table", 1)
-    ] = convert_pandas_to_polars_with_index(df, lazy=True)
-    example_dict_lossy[("polars_lazy_table", "Table", 1)] = False
 
-example_dict_metadata[("Table", 1)] = {
-    "is_univariate": False,
-    "is_empty": False,
-    "has_nans": False,
-    "n_instances": 4,
-    "n_features": 2,
-    "feature_names": ["a", "b"],
-}
+class MultivTableNumpy1D(MultivTable):
+    
+        _tags = {
+            "mtype": "numpy1D",
+            "python_dependencies": None,
+            "lossy": None,
+        }
+    
+        def build(self):
+            return None
+
+
+class MultivTableSeries(MultivTable):
+
+    _tags = {
+        "mtype": "pd_Series_Table",
+        "python_dependencies": None,
+        "lossy": None,
+    }
+
+    def build(self):
+        return None
+
+
+class MultivTableListOfDict(MultivTable):
+
+    _tags = {
+        "mtype": "list_of_dict",
+        "python_dependencies": None,
+        "lossy": False,
+    }
+
+    def build(self):
+        return [
+            {"a": 1.0, "b": 3.0},
+            {"a": 4.0, "b": 7.0},
+            {"a": 0.5, "b": 2.0},
+            {"a": -3.0, "b": -3 / 7},
+        ]
+
+
+class MultivTablePolarsEager(MultivTable):
+
+    _tags = {
+        "mtype": "polars_eager_table",
+        "python_dependencies": ["polars", "pyarrow"],
+        "lossy": False,
+    }
+
+    def build(self):
+        from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+
+        df = pd.DataFrame({"a": [1, 4, 0.5, -3], "b": [3, 7, 2, -3 / 7]})
+        return convert_pandas_to_polars_with_index(df)
+
+
+class MultivTablePolarsLazy(MultivTable):
+
+    _tags = {
+        "mtype": "polars_lazy_table",
+        "python_dependencies": ["polars", "pyarrow"],
+        "lossy": False,
+    }
+
+    def build(self):
+        from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+
+        df = pd.DataFrame({"a": [1, 4, 0.5, -3], "b": [3, 7, 2, -3 / 7]})
+        return convert_pandas_to_polars_with_index(df, lazy=True)
