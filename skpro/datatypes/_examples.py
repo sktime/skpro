@@ -23,12 +23,6 @@ __all__ = [
     "get_examples",
 ]
 
-from skpro.datatypes._proba import (
-    example_dict_lossy_Proba,
-    example_dict_metadata_Proba,
-    example_dict_Proba,
-)
-
 
 @lru_cache(maxsize=1)
 def generate_example_dicts(soft_deps="present"):
