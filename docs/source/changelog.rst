@@ -16,6 +16,11 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.5.1] - 2024-09-07
+====================
+
+
+
 [2.5.0] - 2024-08-02
 ====================
 
