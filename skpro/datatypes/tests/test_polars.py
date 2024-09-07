@@ -43,7 +43,7 @@ def estimator():
 
 
 def _pd_to_pl(df):
-    return convert(df, from_type="pd_Series_Table", to_type="polars_eager_table")
+    return convert(df, from_type="pd_DataFrame_Table", to_type="polars_eager_table")
 
 
 @pytest.fixture
