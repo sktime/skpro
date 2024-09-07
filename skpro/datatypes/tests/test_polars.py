@@ -45,6 +45,7 @@ def estimator():
 def _pd_to_pl(df):
     return convert(df, from_type="pd_Series_Table", to_type="polars_eager_table")
 
+
 @pytest.fixture
 def polars_load_diabetes_polars(polars_load_diabetes_pandas):
     X_train, X_test, y_train = polars_load_diabetes_pandas
