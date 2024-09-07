@@ -25,7 +25,6 @@ import numpy as np
 import pandas as pd
 
 from skpro.datatypes._base import BaseExample
-from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 example_dict = dict()
 example_dict_lossy = dict()
@@ -33,7 +32,6 @@ example_dict_metadata = dict()
 
 ###
 # example 0: univariate
-
 
 class UnivTable(BaseExample):
 

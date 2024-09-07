@@ -58,11 +58,6 @@ def generate_example_dicts(soft_deps="present"):
         example_dict_lossy[key] = k.get_class_tags().get("lossy", False)
         example_dict_metadata[key_meta] = k.get_class_tags().get("metadata", {})
 
-    # temporary while refactoring
-    example_dict.update(example_dict_Proba)
-    example_dict_lossy.update(example_dict_lossy_Proba)
-    example_dict_metadata.update(example_dict_metadata_Proba)
-
     return example_dict, example_dict_lossy, example_dict_metadata
 
 
