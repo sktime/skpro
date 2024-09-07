@@ -13,6 +13,8 @@ the representation is considered "lossy" if the representation is incomplete
     e.g., metadata such as column names are missing
 """
 
+from functools import lru_cache
+
 from skpro.datatypes._registry import mtype_to_scitype
 
 __author__ = ["fkiraly"]
@@ -26,24 +28,42 @@ from skpro.datatypes._proba import (
     example_dict_metadata_Proba,
     example_dict_Proba,
 )
-from skpro.datatypes._table import (
-    example_dict_lossy_Table,
-    example_dict_metadata_Table,
-    example_dict_Table,
-)
 
-# pool example_dict-s
-example_dict = dict()
-example_dict.update(example_dict_Proba)
-example_dict.update(example_dict_Table)
 
-example_dict_lossy = dict()
-example_dict_lossy.update(example_dict_lossy_Proba)
-example_dict_lossy.update(example_dict_lossy_Table)
+@lru_cache(maxsize=1)
+def generate_example_dicts(soft_deps="present"):
+    """Generate example dicts using lookup."""
+    from skbase.utils.dependencies import _check_estimator_deps
 
-example_dict_metadata = dict()
-example_dict_metadata.update(example_dict_metadata_Proba)
-example_dict_metadata.update(example_dict_metadata_Table)
+    from skpro.datatypes._base import BaseExample
+    from skpro.utils.retrieval import _all_classes
+
+    classes = _all_classes("skpro.datatypes")
+    classes = [x[1] for x in classes]
+    classes = [x for x in classes if issubclass(x, BaseExample)]
+    classes = [x for x in classes if not x.__name__.startswith("Base")]
+
+    # subset only to data types with soft dependencies present
+    if soft_deps == "present":
+        classes = [x for x in classes if _check_estimator_deps(x, severity="none")]
+
+    example_dict = dict()
+    example_dict_lossy = dict()
+    example_dict_metadata = dict()
+    for cls in classes:
+        k = cls()
+        key = k._get_key()
+        key_meta = (key[1], key[2])
+        example_dict[key] = k
+        example_dict_lossy[key] = k.get_class_tags().get("lossy", False)
+        example_dict_metadata[key_meta] = k.get_class_tags().get("metadata", {})
+
+    # temporary while refactoring
+    example_dict.update(example_dict_Proba)
+    example_dict_lossy.update(example_dict_lossy_Proba)
+    example_dict_metadata.update(example_dict_metadata_Proba)
+
+    return example_dict, example_dict_lossy, example_dict_metadata
 
 
 def get_examples(
@@ -78,6 +98,8 @@ def get_examples(
     # if as_scitype is None, infer from mtype
     if as_scitype is None:
         as_scitype = mtype_to_scitype(mtype)
+
+    example_dict, example_dict_lossy, example_dict_metadata = generate_example_dicts()
 
     # retrieve all keys that match the query
     exkeys = example_dict.keys()
