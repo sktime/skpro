@@ -33,6 +33,7 @@ __all__ = ["convert_dict"]
 import numpy as np
 import pandas as pd
 
+from skpro.datatypes._base import BaseConverter
 from skpro.datatypes._convert_utils._convert import _extend_conversions
 from skpro.datatypes._table._registry import MTYPE_LIST_TABLE
 from skpro.utils.validation._dependencies import _check_soft_dependencies
@@ -44,13 +45,70 @@ from skpro.utils.validation._dependencies import _check_soft_dependencies
 convert_dict = dict()
 
 
-def convert_identity(obj, store=None):
-    return obj
+class TableIdentity(BaseConverter):
+    """All Table scitype conversions of any mtype to itself.
+
+    This is the identity conversion for Table scitype,
+    no coercion is done, the object is returned as is.
+    """
+
+    _tags = {
+        "object_type": "converter",
+        "mtype_from": None,
+        "mtype_to": None,
+        "multiple_conversions": True,
+        "python_version": None,
+        "python_dependencies": None,
+    }
+
+    @classmethod
+    def get_conversions(cls):
+        """Get all conversions.
+
+        Returns
+        -------
+        list of tuples (BaseDatatype subclass, BaseDatatype subclass)
+            List of all conversions in this class.
+        """
+        return [(tp, tp) for tp in MTYPE_LIST_TABLE]
+
+    # identity conversion
+    def _convert(self, obj, store=None):
+        """Convert obj to another machine type.
+
+        Parameters
+        ----------
+        obj : any
+            Object to convert.
+        store : dict, optional (default=None)
+            Reference of storage for lossy conversions.
+        """
+        return obj
 
 
-# assign identity function to type conversion to self
-for tp in MTYPE_LIST_TABLE:
-    convert_dict[(tp, tp, "Table")] = convert_identity
+class Numpy1dToNumpy2D(BaseConverter):
+    """Conversion: numpy1D -> numpy2D, of Table scitype."""
+
+    _tags = {
+        "object_type": "converter",
+        "mtype_from": "numpy1D",  # type to convert from - BaseDatatype class or str
+        "mtype_to": "numpy2D",  # type to convert to - BaseDatatype class or str
+        "multiple_conversions": False,  # whether converter encodes multiple conversions
+        "python_version": None,
+        "python_dependencies": None,
+    }
+
+    def _convert(self, obj, store=None):
+        """Convert obj to another machine type.
+
+        Parameters
+        ----------
+        obj : any
+            Object to convert.
+        store : dict, optional (default=None)
+            Reference of storage for lossy conversions.
+        """
+        return convert_1D_to_2D_numpy_as_Table(obj=obj, store=store)
 
 
 def convert_1D_to_2D_numpy_as_Table(obj: np.ndarray, store=None) -> np.ndarray:
@@ -63,9 +121,6 @@ def convert_1D_to_2D_numpy_as_Table(obj: np.ndarray, store=None) -> np.ndarray:
         raise TypeError("input must be 1D np.ndarray")
 
     return res
-
-
-convert_dict[("numpy1D", "numpy2D", "Table")] = convert_1D_to_2D_numpy_as_Table
 
 
 def convert_2D_to_1D_numpy_as_Table(obj: np.ndarray, store=None) -> np.ndarray:

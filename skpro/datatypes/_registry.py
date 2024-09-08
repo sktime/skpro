@@ -46,7 +46,10 @@ MTYPE_REGISTER = []
 MTYPE_REGISTER += MTYPE_REGISTER_TABLE
 MTYPE_REGISTER += MTYPE_REGISTER_PROBA
 
-MTYPE_SOFT_DEPS = {}
+MTYPE_SOFT_DEPS = {
+    "polars_eager_table": "polars",
+    "polars_lazy_table": "polars",
+}
 
 
 # mtypes to exclude in checking since they are ambiguous and rare

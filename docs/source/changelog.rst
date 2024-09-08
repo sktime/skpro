@@ -16,6 +16,44 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.5.1] - 2024-09-07
+====================
+
+Minor feature and bugfix release.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``polars`` (data container and parallelization back-end) bounds have been updated to ``<1.7.0``
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] Polars adapter enhancements (:pr:`449`) :user:`julian-fong`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.5.0`` to ``<1.7.0`` (:pr:`456`) :user:`dependabot[bot]`
+
+Fixes
+~~~~~
+
+* [BUG] changelog utility: fix termination condition to retrieve merged PR (:pr:`448`) :user:`fkiraly`
+* [BUG] Update ``skpro.utils.git_diff`` to fix issue with encoding  (:pr:`452`) :user:`julian-fong`
+* [BUG] fix variance bug in ``DummyProbaRegressor`` (:pr:`455`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] minor updates to ``README.md`` (:pr:`451`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`julian-fong`
+
 [2.5.0] - 2024-08-02
 ====================
 

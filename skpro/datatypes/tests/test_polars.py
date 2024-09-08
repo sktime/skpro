@@ -17,6 +17,8 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
         convert_pandas_to_polars_lazy,
         convert_polars_to_pandas,
     )
+    from skpro.datatypes import check_is_mtype, convert
+
 
 TEST_ALPHAS = [0.05, 0.1, 0.25]
 
@@ -47,6 +49,10 @@ def estimator():
     return _estimator
 
 
+def _pd_to_pl(df):
+    return convert(df, from_type="pd_DataFrame_Table", to_type="polars_eager_table")
+
+
 @pytest.fixture
 def polars_estimator():
     from skpro.regression.dummy_polars import DummyPolarsProbaRegressor
@@ -58,9 +64,9 @@ def polars_estimator():
 @pytest.fixture
 def polars_load_diabetes_polars(polars_load_diabetes_pandas):
     X_train, X_test, y_train = polars_load_diabetes_pandas
-    X_train_pl = convert_pandas_to_polars_eager(X_train)
-    X_test_pl = convert_pandas_to_polars_eager(X_test)
-    y_train_pl = convert_pandas_to_polars_eager(y_train)
+    X_train_pl = _pd_to_pl(X_train)
+    X_test_pl = _pd_to_pl(X_test)
+    y_train_pl = _pd_to_pl(y_train)
 
     # drop the index in the polars frame
     X_train_pl = X_train_pl.drop(["__index__"])
@@ -72,9 +78,9 @@ def polars_load_diabetes_polars(polars_load_diabetes_pandas):
 
 def polars_load_diabetes_polars_with_index(polars_load_diabetes_pandas):
     X_train, X_test, y_train = polars_load_diabetes_pandas
-    X_train_pl = convert_pandas_to_polars_eager(X_train)
-    X_test_pl = convert_pandas_to_polars_eager(X_test)
-    y_train_pl = convert_pandas_to_polars_eager(y_train)
+    X_train_pl = _pd_to_pl(X_train)
+    X_test_pl = _pd_to_pl(X_test)
+    y_train_pl = _pd_to_pl(y_train)
 
     return [X_train_pl, X_test_pl, y_train_pl]
 
@@ -95,9 +101,9 @@ def test_polars_eager_conversion_methods(
     X_train, X_test, y_train = polars_load_diabetes_pandas
     X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
 
-    assert check_polars_table(X_train_pl)
-    assert check_polars_table(X_test_pl)
-    assert check_polars_table(y_train_pl)
+    assert check_is_mtype(X_train_pl, "polars_eager_table")
+    assert check_is_mtype(X_test_pl, "polars_eager_table")
+    assert check_is_mtype(y_train_pl, "polars_eager_table")
 
     assert (X_train.values == X_train_pl.to_numpy()).all()
     assert (X_test.values == X_test_pl.to_numpy()).all()
