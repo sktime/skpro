@@ -36,7 +36,8 @@ from skpro.datatypes._base import BaseExample
 ###
 # example 0: univariate
 
-class ProbaUniv(BaseExample):
+
+class _ProbaUniv(BaseExample):
     _tags = {
         "scitype": "Proba",
         "index": 0,
@@ -48,7 +49,7 @@ class ProbaUniv(BaseExample):
     }
 
 
-class ProbaUnivPredQ(ProbaUniv):
+class _ProbaUnivPredQ(_ProbaUniv):
     _tags = {
         "mtype": "pred_quantiles",
         "python_dependencies": None,
@@ -62,7 +63,7 @@ class ProbaUnivPredQ(ProbaUniv):
         return pred_q
 
 
-class ProbaUnivPredInt(ProbaUniv):
+class _ProbaUnivPredInt(_ProbaUniv):
     _tags = {
         "mtype": "pred_interval",
         "python_dependencies": None,
@@ -85,7 +86,8 @@ class ProbaUnivPredInt(ProbaUniv):
 ###
 # example 1: multi
 
-class ProbaMulti(BaseExample):
+
+class _ProbaMulti(BaseExample):
     _tags = {
         "scitype": "Proba",
         "index": 1,
@@ -97,7 +99,7 @@ class ProbaMulti(BaseExample):
     }
 
 
-class ProbaMultiPredQ(ProbaMulti):
+class _ProbaMultiPredQ(_ProbaMulti):
     _tags = {
         "mtype": "pred_quantiles",
         "python_dependencies": None,
@@ -113,7 +115,7 @@ class ProbaMultiPredQ(ProbaMulti):
         return pred_q
 
 
-class ProbaMultiPredInt(ProbaMulti):
+class _ProbaMultiPredInt(_ProbaMulti):
     _tags = {
         "mtype": "pred_interval",
         "python_dependencies": None,

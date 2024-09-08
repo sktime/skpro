@@ -33,7 +33,8 @@ example_dict_metadata = dict()
 ###
 # example 0: univariate
 
-class UnivTable(BaseExample):
+
+class _UnivTable(BaseExample):
     _tags = {
         "scitype": "Table",
         "index": 0,
@@ -48,7 +49,7 @@ class UnivTable(BaseExample):
     }
 
 
-class UnivTableDf(UnivTable):
+class _UnivTableDf(_UnivTable):
     _tags = {
         "mtype": "pd_DataFrame_Table",
         "python_dependencies": None,
@@ -59,7 +60,7 @@ class UnivTableDf(UnivTable):
         return pd.DataFrame({"a": [1, 4, 0.5, -3]})
 
 
-class UnivTableNumpy2D(UnivTable):
+class _UnivTableNumpy2D(_UnivTable):
     _tags = {
         "mtype": "numpy2D",
         "python_dependencies": None,
@@ -70,7 +71,7 @@ class UnivTableNumpy2D(UnivTable):
         return np.array([[1], [4], [0.5], [-3]])
 
 
-class UnivTableNumpy1D(UnivTable):
+class _UnivTableNumpy1D(_UnivTable):
     _tags = {
         "mtype": "numpy1D",
         "python_dependencies": None,
@@ -81,7 +82,7 @@ class UnivTableNumpy1D(UnivTable):
         return np.array([1, 4, 0.5, -3])
 
 
-class UnivTableSeries(UnivTable):
+class _UnivTableSeries(_UnivTable):
     _tags = {
         "mtype": "pd_Series_Table",
         "python_dependencies": None,
@@ -92,7 +93,7 @@ class UnivTableSeries(UnivTable):
         return pd.Series([1, 4, 0.5, -3])
 
 
-class UnivTableListOfDict(UnivTable):
+class _UnivTableListOfDict(_UnivTable):
     _tags = {
         "mtype": "list_of_dict",
         "python_dependencies": None,
@@ -103,7 +104,7 @@ class UnivTableListOfDict(UnivTable):
         return [{"a": 1.0}, {"a": 4.0}, {"a": 0.5}, {"a": -3.0}]
 
 
-class UnivTablePolarsEager(UnivTable):
+class _UnivTablePolarsEager(_UnivTable):
     _tags = {
         "mtype": "polars_eager_table",
         "python_dependencies": ["polars", "pyarrow"],
@@ -117,7 +118,7 @@ class UnivTablePolarsEager(UnivTable):
         return convert_pandas_to_polars_with_index(df)
 
 
-class UnivTablePolarsLazy(UnivTable):
+class _UnivTablePolarsLazy(_UnivTable):
     _tags = {
         "mtype": "polars_lazy_table",
         "python_dependencies": ["polars", "pyarrow"],
@@ -134,7 +135,8 @@ class UnivTablePolarsLazy(UnivTable):
 ###
 # example 1: multivariate
 
-class MultivTable(BaseExample):
+
+class _MultivTable(BaseExample):
     _tags = {
         "scitype": "Table",
         "index": 1,
@@ -149,7 +151,7 @@ class MultivTable(BaseExample):
     }
 
 
-class MultivTableDf(MultivTable):
+class _MultivTableDf(_MultivTable):
     _tags = {
         "mtype": "pd_DataFrame_Table",
         "python_dependencies": None,
@@ -160,7 +162,7 @@ class MultivTableDf(MultivTable):
         return pd.DataFrame({"a": [1, 4, 0.5, -3], "b": [3, 7, 2, -3 / 7]})
 
 
-class MultivTableNumpy2D(MultivTable):
+class _MultivTableNumpy2D(_MultivTable):
     _tags = {
         "mtype": "numpy2D",
         "python_dependencies": None,
@@ -171,7 +173,7 @@ class MultivTableNumpy2D(MultivTable):
         return np.array([[1, 3], [4, 7], [0.5, 2], [-3, -3 / 7]])
 
 
-class MultivTableNumpy1D(MultivTable):
+class _MultivTableNumpy1D(_MultivTable):
     _tags = {
         "mtype": "numpy1D",
         "python_dependencies": None,
@@ -182,7 +184,7 @@ class MultivTableNumpy1D(MultivTable):
         return None
 
 
-class MultivTableSeries(MultivTable):
+class _MultivTableSeries(_MultivTable):
     _tags = {
         "mtype": "pd_Series_Table",
         "python_dependencies": None,
@@ -193,7 +195,7 @@ class MultivTableSeries(MultivTable):
         return None
 
 
-class MultivTableListOfDict(MultivTable):
+class _MultivTableListOfDict(_MultivTable):
     _tags = {
         "mtype": "list_of_dict",
         "python_dependencies": None,
@@ -209,7 +211,7 @@ class MultivTableListOfDict(MultivTable):
         ]
 
 
-class MultivTablePolarsEager(MultivTable):
+class _MultivTablePolarsEager(_MultivTable):
     _tags = {
         "mtype": "polars_eager_table",
         "python_dependencies": ["polars", "pyarrow"],
@@ -223,7 +225,7 @@ class MultivTablePolarsEager(MultivTable):
         return convert_pandas_to_polars_with_index(df)
 
 
-class MultivTablePolarsLazy(MultivTable):
+class _MultivTablePolarsLazy(_MultivTable):
     _tags = {
         "mtype": "polars_lazy_table",
         "python_dependencies": ["polars", "pyarrow"],
