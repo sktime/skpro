@@ -98,19 +98,19 @@ class ProbaMulti(BaseExample):
 
 
 class ProbaMultiPredQ(ProbaMulti):
-        _tags = {
-            "mtype": "pred_quantiles",
-            "python_dependencies": None,
-            "lossy": False,
-        }
-    
-        def build(self):
-            pred_q = pd.DataFrame(
-                {0.2: [1, 2, 3], 0.6: [2, 3, 4], 42: [5, 3, -1], 46: [5, 3, -1]}
-            )
-            pred_q.columns = pd.MultiIndex.from_product([["foo", "bar"], [0.2, 0.6]])
-    
-            return pred_q
+    _tags = {
+        "mtype": "pred_quantiles",
+        "python_dependencies": None,
+        "lossy": False,
+    }
+
+    def build(self):
+        pred_q = pd.DataFrame(
+            {0.2: [1, 2, 3], 0.6: [2, 3, 4], 42: [5, 3, -1], 46: [5, 3, -1]}
+        )
+        pred_q.columns = pd.MultiIndex.from_product([["foo", "bar"], [0.2, 0.6]])
+
+        return pred_q
 
 
 class ProbaMultiPredInt(ProbaMulti):
