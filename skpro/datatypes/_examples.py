@@ -48,7 +48,7 @@ def generate_example_dicts(soft_deps="present"):
         k = cls()
         key = k._get_key()
         key_meta = (key[1], key[2])
-        example_dict[key] = k
+        example_dict[key] = k.build()
         example_dict_lossy[key] = k.get_class_tags().get("lossy", False)
         example_dict_metadata[key_meta] = k.get_class_tags().get("metadata", {})
 
