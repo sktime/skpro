@@ -16,6 +16,30 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.6.0] - 2024-09-08
+====================
+
+Maintenance release with scheduled deprecations and updates.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``numpy`` bounds have been updated to ``>=1.21.0,<2.2``.
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.10.0``.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] refactor ``datatypes`` mtypes - checkers, converters (:pr:`392`) :user:`fkiraly`
+* [ENH] refactor ``datatypes`` mtypes - example fixtures (:pr:`458`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update ``scikit-base`` requirement from ``<0.9.0,>=0.6.1`` to ``>=0.6.1,<0.10.0`` (:pr:`454`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``numpy`` requirement from ``<2.1,>=1.21.0`` to ``>=1.21.0,<2.2`` (:pr:`453`) :user:`dependabot[bot]`
+
+
 [2.5.1] - 2024-09-07
 ====================
 
