@@ -13,8 +13,6 @@ the representation is considered "lossy" if the representation is incomplete
     e.g., metadata such as column names are missing
 """
 
-from functools import lru_cache
-
 from skpro.datatypes._registry import mtype_to_scitype
 
 __author__ = ["fkiraly"]
@@ -24,7 +22,6 @@ __all__ = [
 ]
 
 
-@lru_cache(maxsize=1)
 def generate_example_dicts(soft_deps="present"):
     """Generate example dicts using lookup."""
     from skbase.utils.dependencies import _check_estimator_deps
