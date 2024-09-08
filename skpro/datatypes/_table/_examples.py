@@ -34,7 +34,6 @@ example_dict_metadata = dict()
 # example 0: univariate
 
 class UnivTable(BaseExample):
-
     _tags = {
         "scitype": "Table",
         "index": 0,
@@ -50,7 +49,6 @@ class UnivTable(BaseExample):
 
 
 class UnivTableDf(UnivTable):
-
     _tags = {
         "mtype": "pd_DataFrame_Table",
         "python_dependencies": None,
@@ -62,7 +60,6 @@ class UnivTableDf(UnivTable):
 
 
 class UnivTableNumpy2D(UnivTable):
-
     _tags = {
         "mtype": "numpy2D",
         "python_dependencies": None,
@@ -74,7 +71,6 @@ class UnivTableNumpy2D(UnivTable):
 
 
 class UnivTableNumpy1D(UnivTable):
-
     _tags = {
         "mtype": "numpy1D",
         "python_dependencies": None,
@@ -86,7 +82,6 @@ class UnivTableNumpy1D(UnivTable):
 
 
 class UnivTableSeries(UnivTable):
-
     _tags = {
         "mtype": "pd_Series_Table",
         "python_dependencies": None,
@@ -98,7 +93,6 @@ class UnivTableSeries(UnivTable):
 
 
 class UnivTableListOfDict(UnivTable):
-
     _tags = {
         "mtype": "list_of_dict",
         "python_dependencies": None,
@@ -110,7 +104,6 @@ class UnivTableListOfDict(UnivTable):
 
 
 class UnivTablePolarsEager(UnivTable):
-
     _tags = {
         "mtype": "polars_eager_table",
         "python_dependencies": ["polars", "pyarrow"],
@@ -125,7 +118,6 @@ class UnivTablePolarsEager(UnivTable):
 
 
 class UnivTablePolarsLazy(UnivTable):
-
     _tags = {
         "mtype": "polars_lazy_table",
         "python_dependencies": ["polars", "pyarrow"],
@@ -143,7 +135,6 @@ class UnivTablePolarsLazy(UnivTable):
 # example 1: multivariate
 
 class MultivTable(BaseExample):
-
     _tags = {
         "scitype": "Table",
         "index": 1,
@@ -159,7 +150,6 @@ class MultivTable(BaseExample):
 
 
 class MultivTableDf(MultivTable):
-
     _tags = {
         "mtype": "pd_DataFrame_Table",
         "python_dependencies": None,
@@ -171,7 +161,6 @@ class MultivTableDf(MultivTable):
 
 
 class MultivTableNumpy2D(MultivTable):
-
     _tags = {
         "mtype": "numpy2D",
         "python_dependencies": None,
@@ -183,19 +172,17 @@ class MultivTableNumpy2D(MultivTable):
 
 
 class MultivTableNumpy1D(MultivTable):
-    
-        _tags = {
-            "mtype": "numpy1D",
-            "python_dependencies": None,
-            "lossy": None,
-        }
-    
-        def build(self):
-            return None
+    _tags = {
+        "mtype": "numpy1D",
+        "python_dependencies": None,
+        "lossy": None,
+    }
+
+    def build(self):
+        return None
 
 
 class MultivTableSeries(MultivTable):
-
     _tags = {
         "mtype": "pd_Series_Table",
         "python_dependencies": None,
@@ -207,7 +194,6 @@ class MultivTableSeries(MultivTable):
 
 
 class MultivTableListOfDict(MultivTable):
-
     _tags = {
         "mtype": "list_of_dict",
         "python_dependencies": None,
@@ -224,7 +210,6 @@ class MultivTableListOfDict(MultivTable):
 
 
 class MultivTablePolarsEager(MultivTable):
-
     _tags = {
         "mtype": "polars_eager_table",
         "python_dependencies": ["polars", "pyarrow"],
@@ -239,7 +224,6 @@ class MultivTablePolarsEager(MultivTable):
 
 
 class MultivTablePolarsLazy(MultivTable):
-
     _tags = {
         "mtype": "polars_lazy_table",
         "python_dependencies": ["polars", "pyarrow"],
