@@ -13,6 +13,8 @@ the representation is considered "lossy" if the representation is incomplete
     e.g., metadata such as column names are missing
 """
 
+from functools import lru_cache
+
 from skpro.datatypes._registry import mtype_to_scitype
 
 __author__ = ["fkiraly"]
@@ -22,6 +24,7 @@ __all__ = [
 ]
 
 
+@lru_cache(maxsize=1)
 def generate_example_dicts(soft_deps="present"):
     """Generate example dicts using lookup."""
     from skbase.utils.dependencies import _check_estimator_deps
@@ -45,7 +48,7 @@ def generate_example_dicts(soft_deps="present"):
         k = cls()
         key = k._get_key()
         key_meta = (key[1], key[2])
-        example_dict[key] = k.build()
+        example_dict[key] = k
         example_dict_lossy[key] = k.get_class_tags().get("lossy", False)
         example_dict_metadata[key_meta] = k.get_class_tags().get("metadata", {})
 
@@ -96,14 +99,14 @@ def get_examples(
 
     for k in keys:
         if return_lossy:
-            fixtures[k[2]] = (example_dict.get(k), example_dict_lossy.get(k))
+            fixtures[k[2]] = (example_dict.get(k).build(), example_dict_lossy.get(k))
         elif return_metadata:
             fixtures[k[2]] = (
-                example_dict.get(k),
+                example_dict.get(k).build(),
                 example_dict_lossy.get(k),
                 example_dict_metadata.get((k[1], k[2])),
             )
         else:
-            fixtures[k[2]] = example_dict.get(k)
+            fixtures[k[2]] = example_dict.get(k).build()
 
     return fixtures
