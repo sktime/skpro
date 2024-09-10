@@ -40,7 +40,7 @@ class BaseProbaRegressor(BaseEstimator):
     }
 
     _config = {
-        "transform": "default"
+        "transform_output": "default"
     }  # accepted values : ["pandas", "polars", "default"]
 
     def __init__(self):
