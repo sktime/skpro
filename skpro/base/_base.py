@@ -36,7 +36,7 @@ class BaseObject(_CommonTags, _BaseObject):
         py39_or_higher = SpecifierSet(">=3.9")
         sys_version = sys.version.split(" ")[0]
 
-        # todo 2.6.0 - check whether python 3.8 eol is reached.
+        # todo 2.7.0 - check whether python 3.8 eol is reached.
         # If yes, remove this msg.
         if sys_version not in py39_or_higher:
             warn(

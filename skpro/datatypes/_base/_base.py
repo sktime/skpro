@@ -328,6 +328,43 @@ class BaseConverter(BaseObject):
         return (mtype_from, mtype_to, scitype)
 
 
+class BaseExample(BaseObject):
+    """Base class for Example fixtures used in tests and get_examples."""
+
+    _tags = {
+        "object_type": "datatype_example",
+        "scitype": None,
+        "mtype": None,
+        "python_version": None,
+        "python_dependencies": None,
+        "index": None,  # integer index of the example to match with other mtypes
+        "lossy": False,  # whether the example is lossy
+    }
+
+    def __init__(self):
+        super().__init__()
+
+    def _get_key(self):
+        """Get unique dictionary key corresponding to self.
+
+        Private function, used in collecting a dictionary of examples.
+        """
+        mtype = self.get_class_tag("mtype")
+        scitype = self.get_class_tag("scitype")
+        index = self.get_class_tag("index")
+        return (mtype, scitype, index)
+
+    def build(self):
+        """Build example.
+
+        Returns
+        -------
+        obj : any
+            Example object.
+        """
+        raise NotImplementedError
+
+
 def _coerce_str_to_cls(cls_or_str):
     """Get class from string.
 

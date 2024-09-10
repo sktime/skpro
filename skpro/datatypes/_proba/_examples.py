@@ -31,64 +31,112 @@ overall, conversions from non-lossy representations to any other ones
 import numpy as np
 import pandas as pd
 
-example_dict = dict()
-example_dict_lossy = dict()
-example_dict_metadata = dict()
+from skpro.datatypes._base import BaseExample
 
 ###
 # example 0: univariate
 
-pred_q = pd.DataFrame({0.2: [1, 2, 3], 0.6: [2, 3, 4]})
-pred_q.columns = pd.MultiIndex.from_product([["foo"], [0.2, 0.6]])
 
-# we need to use this due to numerical inaccuracies from the binary based representation
-pseudo_0_2 = 2 * np.abs(0.6 - 0.5)
-
-example_dict[("pred_quantiles", "Proba", 0)] = pred_q
-example_dict_lossy[("pred_quantiles", "Proba", 0)] = False
-
-pred_int = pd.DataFrame({0.2: [1, 2, 3], 0.6: [2, 3, 4]})
-pred_int.columns = pd.MultiIndex.from_tuples(
-    [("foo", 0.6, "lower"), ("foo", pseudo_0_2, "upper")]
-)
-
-example_dict[("pred_interval", "Proba", 0)] = pred_int
-example_dict_lossy[("pred_interval", "Proba", 0)] = False
+class _ProbaUniv(BaseExample):
+    _tags = {
+        "scitype": "Proba",
+        "index": 0,
+        "metadata": {
+            "is_univariate": True,
+            "is_empty": False,
+            "has_nans": False,
+        },
+    }
 
 
-example_dict_metadata[("Proba", 0)] = {
-    "is_univariate": True,
-    "is_empty": False,
-    "has_nans": False,
-}
+class _ProbaUnivPredQ(_ProbaUniv):
+    _tags = {
+        "mtype": "pred_quantiles",
+        "python_dependencies": None,
+        "lossy": False,
+    }
+
+    def build(self):
+        pred_q = pd.DataFrame({0.2: [1, 2, 3], 0.6: [2, 3, 4]})
+        pred_q.columns = pd.MultiIndex.from_product([["foo"], [0.2, 0.6]])
+
+        return pred_q
+
+
+class _ProbaUnivPredInt(_ProbaUniv):
+    _tags = {
+        "mtype": "pred_interval",
+        "python_dependencies": None,
+        "lossy": False,
+    }
+
+    def build(self):
+        # we need to use this due to numerical inaccuracies
+        # from the binary based representation
+        pseudo_0_2 = 2 * np.abs(0.6 - 0.5)
+
+        pred_int = pd.DataFrame({0.2: [1, 2, 3], 0.6: [2, 3, 4]})
+        pred_int.columns = pd.MultiIndex.from_tuples(
+            [("foo", 0.6, "lower"), ("foo", pseudo_0_2, "upper")]
+        )
+
+        return pred_int
+
 
 ###
 # example 1: multi
 
-pred_q = pd.DataFrame({0.2: [1, 2, 3], 0.6: [2, 3, 4], 42: [5, 3, -1], 46: [5, 3, -1]})
-pred_q.columns = pd.MultiIndex.from_product([["foo", "bar"], [0.2, 0.6]])
 
-example_dict[("pred_quantiles", "Proba", 1)] = pred_q
-example_dict_lossy[("pred_quantiles", "Proba", 1)] = False
-
-pred_int = pd.DataFrame(
-    {0.2: [1, 2, 3], 0.6: [2, 3, 4], 42: [5, 3, -1], 46: [5, 3, -1]}
-)
-pred_int.columns = pd.MultiIndex.from_tuples(
-    [
-        ("foo", 0.6, "lower"),
-        ("foo", pseudo_0_2, "upper"),
-        ("bar", 0.6, "lower"),
-        ("bar", pseudo_0_2, "upper"),
-    ]
-)
-
-example_dict[("pred_interval", "Proba", 1)] = pred_int
-example_dict_lossy[("pred_interval", "Proba", 1)] = False
+class _ProbaMulti(BaseExample):
+    _tags = {
+        "scitype": "Proba",
+        "index": 1,
+        "metadata": {
+            "is_univariate": False,
+            "is_empty": False,
+            "has_nans": False,
+        },
+    }
 
 
-example_dict_metadata[("Proba", 1)] = {
-    "is_univariate": False,
-    "is_empty": False,
-    "has_nans": False,
-}
+class _ProbaMultiPredQ(_ProbaMulti):
+    _tags = {
+        "mtype": "pred_quantiles",
+        "python_dependencies": None,
+        "lossy": False,
+    }
+
+    def build(self):
+        pred_q = pd.DataFrame(
+            {0.2: [1, 2, 3], 0.6: [2, 3, 4], 42: [5, 3, -1], 46: [5, 3, -1]}
+        )
+        pred_q.columns = pd.MultiIndex.from_product([["foo", "bar"], [0.2, 0.6]])
+
+        return pred_q
+
+
+class _ProbaMultiPredInt(_ProbaMulti):
+    _tags = {
+        "mtype": "pred_interval",
+        "python_dependencies": None,
+        "lossy": False,
+    }
+
+    def build(self):
+        # we need to use this due to numerical inaccuracies
+        # from the binary based representation
+        pseudo_0_2 = 2 * np.abs(0.6 - 0.5)
+
+        pred_int = pd.DataFrame(
+            {0.2: [1, 2, 3], 0.6: [2, 3, 4], 42: [5, 3, -1], 46: [5, 3, -1]}
+        )
+        pred_int.columns = pd.MultiIndex.from_tuples(
+            [
+                ("foo", 0.6, "lower"),
+                ("foo", pseudo_0_2, "upper"),
+                ("bar", 0.6, "lower"),
+                ("bar", pseudo_0_2, "upper"),
+            ]
+        )
+
+        return pred_int
