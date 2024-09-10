@@ -107,6 +107,9 @@ def test_set_output_pandas_polars(polars_load_diabetes_pandas, estimator):
     y_pred_quantiles = estimator.predict_quantiles(X_test)
     assert isinstance(y_pred_quantiles, pl.DataFrame)
 
+    y_pred_var = estimator.predict_var(X_test)
+    assert isinstance(y_pred_var, pl.DataFrame)
+
 
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.datatypes")
@@ -126,3 +129,6 @@ def test_set_output_polars_pandas(polars_load_diabetes_polars, estimator):
 
     y_pred_quantiles = estimator.predict_quantiles(X_test_pl)
     assert isinstance(y_pred_quantiles, pd.DataFrame)
+
+    y_pred_var = estimator.predict_quantiles(X_test_pl)
+    assert isinstance(y_pred_var, pd.DataFrame)

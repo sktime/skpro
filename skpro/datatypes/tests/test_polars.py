@@ -322,3 +322,13 @@ def test_convert_single_column_to_multiindex_column(
     assert all(y_pred_quantile_pd.columns == y_pred_quantile.columns)
     assert all(y_pred_quantile_pd.index == y_pred_quantile.index)
     assert y_pred_quantile_pd.equals(y_pred_quantile)
+
+    # test for var
+    y_pred_var = estimator.predict_interval(X_test)
+    assert isinstance(y_pred_var, pd.DataFrame)
+
+    y_pred_var_pl = convert_pandas_to_polars_eager(y_pred_var)
+    y_pred_var_pd = convert_polars_to_pandas(y_pred_var_pl)
+    assert all(y_pred_var_pd.columns == y_pred_var.columns)
+    assert all(y_pred_var_pd.index == y_pred_var.index)
+    assert y_pred_var_pd.equals(y_pred_var)
