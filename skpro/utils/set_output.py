@@ -34,12 +34,12 @@ def check_output_config(estimator):
     """
     output_config = {}
     transform_output = estimator.get_config()["transform_output"]
+    # check if user specified transform_output is in scope
     if transform_output not in SUPPORTED_OUTPUTS:
         raise ValueError(
             f"set_output container must be in {SUPPORTED_OUTPUTS}, "
             f"found {transform_output}."
         )
-        valid = False
     elif transform_output != "default":
         valid = True
         output_config["dense"] = SUPPORTED_OUTPUT_MAPPINGS[transform_output]

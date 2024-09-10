@@ -905,15 +905,15 @@ class BaseProbaRegressor(BaseEstimator):
 
         Parameters
         ----------
-        transform_output : {"polars", "pandas", None} default = None
+        transform_output : {"polars", "pandas", "default"}
 
             Configures the out of any _predict_* function in regression estimators
-                - None : assumes no transform has been passed in, will use
+                - "default" : assumes no transform has been passed in, will use
                 default settings
 
                 - "pandas" : all outputs will be converted into pandas DataFrames
                 - "polars" : all outputs will be converted into polars DataFrames
-
+            default = "default"
         Returns
         -------
         self : estimator instance
