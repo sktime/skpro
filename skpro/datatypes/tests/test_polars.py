@@ -11,13 +11,12 @@ from skpro.utils.validation._dependencies import _check_soft_dependencies
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
-    from skpro.datatypes._table._check import check_polars_table
+    from skpro.datatypes import check_is_mtype, convert
     from skpro.datatypes._table._convert import (
         convert_pandas_to_polars_eager,
         convert_pandas_to_polars_lazy,
         convert_polars_to_pandas,
     )
-    from skpro.datatypes import check_is_mtype, convert
 
 
 TEST_ALPHAS = [0.05, 0.1, 0.25]
