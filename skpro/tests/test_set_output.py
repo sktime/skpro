@@ -57,24 +57,24 @@ def estimator():
 def test_check_transform_config_happy(estimator):
     # check to make sure that regression estimators have the transform config
     # with default value "default"
-    assert estimator.get_config()["transform"] == "default"
+    assert estimator.get_config()["transform_output"] == "default"
 
-    estimator.set_output(transform="pandas")
-    assert estimator.get_config()["transform"] == "pandas"
+    estimator.set_output(transform_output="pandas")
+    assert estimator.get_config()["transform_output"] == "pandas"
     valid, dense_config = check_output_config(estimator)
     assert valid
     assert dense_config["dense"] == ("pd_DataFrame_Table", "Table")
 
     if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
-        estimator.set_output(transform="polars")
-        assert estimator.get_config()["transform"] == "polars"
+        estimator.set_output(transform_output="polars")
+        assert estimator.get_config()["transform_output"] == "polars"
         valid, dense_config = check_output_config(estimator)
         assert valid
         assert dense_config["dense"] == ("polars_eager_table", "Table")
 
 
 def test_check_transform_config_negative(estimator):
-    estimator.set_output(transform="foo")
+    estimator.set_output(transform_output="foo")
     with pytest.raises(
         ValueError,
         # match=f"set_output container must be in {SUPPORTED_OUTPUTS}, found foo.",
@@ -96,7 +96,7 @@ def test_check_transform_config_none(estimator):
 def test_set_output_pandas_polars(polars_load_diabetes_pandas, estimator):
     X_train, X_test, y_train = polars_load_diabetes_pandas
     estimator.fit(X_train, y_train)
-    estimator.set_output(transform="polars")
+    estimator.set_output(transform_output="polars")
 
     y_pred = estimator.predict(X_test)
     assert isinstance(y_pred, pl.DataFrame)
@@ -116,7 +116,7 @@ def test_set_output_pandas_polars(polars_load_diabetes_pandas, estimator):
 def test_set_output_polars_pandas(polars_load_diabetes_polars, estimator):
     X_train_pl, X_test_pl, y_train_pl = polars_load_diabetes_polars
     estimator.fit(X_train_pl, y_train_pl)
-    estimator.set_output(transform="pandas")
+    estimator.set_output(transform_output="pandas")
 
     y_pred = estimator.predict(X_test_pl)
     assert isinstance(y_pred, pd.DataFrame)

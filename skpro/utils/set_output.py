@@ -33,7 +33,7 @@ def check_output_config(estimator):
             `skpro.utils.set_output`
     """
     output_config = {}
-    transform_output = estimator.get_config()["transform"]
+    transform_output = estimator.get_config()["transform_output"]
     if transform_output not in SUPPORTED_OUTPUTS:
         raise ValueError(
             f"set_output container must be in {SUPPORTED_OUTPUTS}, "

@@ -900,12 +900,12 @@ class BaseProbaRegressor(BaseEstimator):
 
         return alpha
 
-    def set_output(self, transform):
+    def set_output(self, transform_output):
         """Set output container.
 
         Parameters
         ----------
-        transform : {"polars", "pandas", None} default = None
+        transform_output : {"polars", "pandas", None} default = None
 
             Configures the out of any _predict_* function in regression estimators
                 - None : assumes no transform has been passed in, will use
@@ -918,8 +918,8 @@ class BaseProbaRegressor(BaseEstimator):
         -------
         self : estimator instance
         """
-        if transform is None:
+        if transform_output is None:
             return self
 
-        self.set_config(**{"transform": transform})
+        self.set_config(**{"transform_output": transform_output})
         return self
