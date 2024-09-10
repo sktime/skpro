@@ -2,7 +2,6 @@
 
 __author__ = ["julian-fong"]
 
-from skpro.datatypes import convert
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 SUPPORTED_OUTPUTS = ["pandas", "default"]
@@ -17,7 +16,7 @@ SUPPORTED_OUTPUT_MAPPINGS = {
 }
 
 
-def check_output_config(estimator):
+def _check_output_config(estimator):
     """Given an estimator, verify the transform key in _config is available.
 
     Parameters
@@ -28,7 +27,8 @@ def check_output_config(estimator):
     -------
     dense_config : a dict containing the specified mtype user wishes to convert
         corresponding dataframes to.
-        - "dense": specifies the mtype data container in the transform config
+        - "dense": specifies the mtype data container tuple (mtype, scitype)
+                   in the transform config
             Possible values are located in SUPPORTED_OUTPUTS in
             `skpro.utils.set_output`
     """
@@ -49,23 +49,9 @@ def check_output_config(estimator):
     return valid, output_config
 
 
-def transform_output(
-    obj, valid, from_type, default_to_type, default_scitype, output_config, store
-):
+def _transform_output(output_config):
     """Return the correct specified output container."""
-    if valid:
-        convert_to_type = output_config["dense"][0]
-        convert_to_scitype = output_config["dense"][1]
-    else:
-        convert_to_type = default_to_type
-        convert_to_scitype = default_scitype
+    convert_to_mtype = output_config["dense"][0]
+    convert_to_scitype = output_config["dense"][1]
 
-    obj = convert(
-        obj,
-        from_type=from_type,
-        to_type=convert_to_type,
-        as_scitype=convert_to_scitype,
-        store=store,
-    )
-
-    return obj
+    return [convert_to_mtype, convert_to_scitype]
