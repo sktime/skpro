@@ -595,19 +595,20 @@ class BaseProbaRegressor(BaseEstimator):
         valid, output_config = _check_output_config(self)
         # output conversion - converts to user specified set_output
         # else: back to mtype seen in fit
-        if valid:
-            convert_to_mtype, convert_to_scitype = _transform_output(output_config)
-        else:
-            convert_to_mtype = self._y_metadata["mtype"]
-            convert_to_scitype = "Table"
+        # if valid:
+        #     convert_to_mtype, convert_to_scitype = _transform_output(output_config)
+        # else:
+        #     convert_to_mtype = self._y_metadata["mtype"]
+        #     convert_to_scitype = "Table"
 
-        pred_var = convert(
-            pred_var,
-            from_type=self.get_tag("y_inner_mtype"),
-            to_type=convert_to_mtype,
-            as_scitype=convert_to_scitype,
-            store=self._X_converter_store,
-        )
+        # pred_var = convert(
+        #     pred_var,
+        #     from_type=self.get_tag("y_inner_mtype"),
+        #     to_type=convert_to_mtype,
+        #     as_scitype=convert_to_scitype,
+        #     store=self._X_converter_store,
+        # )
+        # print(type(pred_var))
 
         return pred_var
 
