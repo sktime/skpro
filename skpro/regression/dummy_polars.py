@@ -49,12 +49,8 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
         """
 
         _tags = {
-            # packaging info
-            # --------------
             "authors": ["julian-fong"],
             "maintainers": ["julian-fong"],
-            # estimator tags
-            # --------------
             "capability:multioutput": False,
             "capability:missing": True,
             "X_inner_mtype": "polars_eager_table",
