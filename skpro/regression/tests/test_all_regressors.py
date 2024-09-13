@@ -192,6 +192,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
                 NotImplementedError, match="does not support the update method"
             ):
                 regressor.update(X_upd1, y_upd1)
+            return None
 
         regressor.update(X_upd1, y_upd1)
         y_pred1 = regressor.predict(X_upd2)
