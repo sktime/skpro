@@ -174,7 +174,7 @@ class OnlineRefit(_DelegatedProbaRegressor):
 
         params = [{"estimator": regressor}]
 
-        if _check_estimator_deps(CoxPH):
+        if _check_estimator_deps(CoxPH, severity="none"):
             coxph = CoxPH()
             params.append({"estimator": coxph})
 
