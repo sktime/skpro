@@ -140,7 +140,8 @@ class BaseProbaRegressor(BaseEstimator):
     def update(self, X, y, C=None):
         """Update regressor with a new batch of training data.
 
-        Only estimators with the capability:online tag provide this method.
+        Only estimators with the ``capability:online`` tag (value ``True``)
+        provide this method, otherwise a ``NotImplementedError`` is raised.
 
         State required:
             Requires state to be "fitted".
