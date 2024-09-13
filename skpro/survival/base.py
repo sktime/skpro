@@ -52,7 +52,8 @@ class BaseSurvReg(BaseProbaRegressor):
         """Update regressor with a new batch of training data.
 
         Only estimators with the ``capability:online`` tag (value ``True``)
-        provide this method, otherwise a ``NotImplementedError`` is raised.
+        provide this method, otherwise the method ignores the call and the
+        discards the data passed.
 
         State required:
             Requires state to be "fitted".
