@@ -24,6 +24,14 @@ Composition
 
     Pipeline
 
+.. currentmodule:: skpro.regression.online
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    OnlineRefit
+
 Model selection and tuning
 --------------------------
 
