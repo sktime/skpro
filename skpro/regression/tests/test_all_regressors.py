@@ -189,7 +189,7 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
 
         if not capa_online:
             with pytest.raises(
-                NotImplementedError, match="online update not supported"
+                NotImplementedError, match="does not support the update method"
             ):
                 regressor.update(X_upd1, y_upd1)
 
