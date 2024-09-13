@@ -68,7 +68,7 @@ class _DelegatedProbaRegressor(BaseProbaRegressor):
         return self
 
     def _update(self, X, y, C=None):
-        """Updates regressor with a new batch of training data.
+        """Update regressor with a new batch of training data.
 
         State required:
             Requires state to be "fitted" = self.is_fitted=True
