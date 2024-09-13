@@ -121,7 +121,7 @@ class OnlineRefit(_DelegatedProbaRegressor):
 
         return self
 
-    def _update_data(X, X_new):
+    def _update_data(self, X, X_new):
         """Update data with new batch of training data.
 
         Treats X_new as data with new indices, even if some indices overlap with X.
