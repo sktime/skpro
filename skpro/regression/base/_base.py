@@ -141,7 +141,8 @@ class BaseProbaRegressor(BaseEstimator):
         """Update regressor with a new batch of training data.
 
         Only estimators with the ``capability:online`` tag (value ``True``)
-        provide this method, otherwise a ``NotImplementedError`` is raised.
+        provide this method, otherwise the method ignores the call and the
+        discards the data passed.
 
         State required:
             Requires state to be "fitted".
@@ -167,13 +168,7 @@ class BaseProbaRegressor(BaseEstimator):
         capa_surv = self.get_tag("capability:survival")
 
         if not capa_online:
-            msg = (
-                f"{self} does not have the capability:online tag, "
-                "and thus does not support the update method. "
-                "To add online capability, one of the capability extending "
-                "wrappers in the regression.online module can be used."
-            )
-            raise NotImplementedError(msg)
+            return self
 
         check_ret = self._check_X_y(X, y, C, return_metadata=True)
 

@@ -185,15 +185,6 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         regressor = object_instance
         regressor.fit(X_fit, y_fit)
 
-        capa_online = object_instance.get_tag("capability:online")
-
-        if not capa_online:
-            with pytest.raises(
-                NotImplementedError, match="does not support the update method"
-            ):
-                regressor.update(X_upd1, y_upd1)
-            return None
-
         regressor.update(X_upd1, y_upd1)
         y_pred1 = regressor.predict(X_upd2)
 
