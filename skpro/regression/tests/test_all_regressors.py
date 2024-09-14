@@ -186,17 +186,20 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         regressor.fit(X_fit, y_fit)
 
         regressor.update(X_upd1, y_upd1)
-        y_pred1 = regressor.predict(X_upd2)
-
-        # check predict output contract
-        assert isinstance(y_pred1, pd.DataFrame)
-        assert (y_pred1.index == X_upd1.index).all()
-        assert (y_pred1.columns == y_fit.columns).all()
-
-        regressor.update(X_upd2, y_upd2)
-        y_pred2 = regressor.predict(X_test)
+        y_pred1 = regressor.predict(X_upd1)
+        y_pred2 = regressor.predict(X_upd2)
 
         # check predict output contract
         assert isinstance(y_pred2, pd.DataFrame)
-        assert (y_pred2.index == X_test.index).all()
+        assert (y_pred1.index == X_upd1.index).all()
+        assert (y_pred1.columns == y_fit.columns).all()
+        assert (y_pred2.index == X_upd2.index).all()
         assert (y_pred2.columns == y_fit.columns).all()
+
+        regressor.update(X_upd2, y_upd2)
+        y_pred_test = regressor.predict(X_test)
+
+        # check predict output contract
+        assert isinstance(y_pred_test, pd.DataFrame)
+        assert (y_pred_test.index == X_test.index).all()
+        assert (y_pred_test.columns == y_fit.columns).all()
