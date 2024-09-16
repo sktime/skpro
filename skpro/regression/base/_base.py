@@ -6,6 +6,7 @@ import pandas as pd
 
 from skpro.base import BaseEstimator
 from skpro.datatypes import check_is_error_msg, check_is_mtype, convert
+from skpro.utils.set_output import _check_output_config, _transform_output
 from skpro.utils.validation._dependencies import (
     _check_estimator_deps,
     _check_soft_dependencies,
@@ -37,6 +38,10 @@ class BaseProbaRegressor(BaseEstimator):
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
     }
+
+    _config = {
+        "transform_output": "default"
+    }  # accepted values : ["pandas", "polars", "default"]
 
     def __init__(self):
         super().__init__()
@@ -159,12 +164,20 @@ class BaseProbaRegressor(BaseEstimator):
 
         y_pred = self._predict(X)
 
-        # output conversion - back to mtype seen in fit
+        valid, output_config = _check_output_config(self)
+        # output conversion - converts to user specified set_output
+        # else: back to mtype seen in fit
+        if valid:
+            convert_to_mtype, convert_to_scitype = _transform_output(output_config)
+        else:
+            convert_to_mtype = self._y_metadata["mtype"]
+            convert_to_scitype = "Table"
+
         y_pred = convert(
             y_pred,
             from_type=self.get_tag("y_inner_mtype"),
-            to_type=self._y_metadata["mtype"],
-            as_scitype="Table",
+            to_type=convert_to_mtype,
+            as_scitype=convert_to_scitype,
             store=self._X_converter_store,
         )
 
@@ -319,6 +332,25 @@ class BaseProbaRegressor(BaseEstimator):
 
         # pass to inner _predict_interval
         pred_int = self._predict_interval(X=X_inner, coverage=coverage)
+
+        valid, output_config = _check_output_config(self)
+        # output conversion - converts to user specified set_output
+        # else: back to mtype seen in fit
+
+        # if valid:
+        #     convert_to_mtype, convert_to_scitype = _transform_output(output_config)
+        # else:
+        #     convert_to_mtype = self._y_metadata["mtype"]
+        #     convert_to_scitype = "Table"
+
+        # pred_int = convert(
+        #     pred_int,
+        #     from_type=self.get_tag("y_inner_mtype"),
+        #     to_type=convert_to_mtype,
+        #     as_scitype=convert_to_scitype,
+        #     store=self._X_converter_store,
+        # )
+
         return pred_int
 
     def _predict_interval(self, X, coverage):
@@ -430,6 +462,25 @@ class BaseProbaRegressor(BaseEstimator):
 
         # pass to inner _predict_quantiles
         quantiles = self._predict_quantiles(X=X_inner, alpha=alpha)
+
+        valid, output_config = _check_output_config(self)
+        # output conversion - converts to user specified set_output
+        # else: back to mtype seen in fit
+
+        # if valid:
+        #     convert_to_mtype, convert_to_scitype = _transform_output(output_config)
+        # else:
+        #     convert_to_mtype = self._y_metadata["mtype"]
+        #     convert_to_scitype = "Table"
+
+        # quantiles = convert(
+        #     quantiles,
+        #     from_type=self.get_tag("y_inner_mtype"),
+        #     to_type=convert_to_mtype,
+        #     as_scitype=convert_to_scitype,
+        #     store=self._X_converter_store,
+        # )
+
         return quantiles
 
     def _predict_quantiles(self, X, alpha):
@@ -540,6 +591,24 @@ class BaseProbaRegressor(BaseEstimator):
 
         # pass to inner _predict_interval
         pred_var = self._predict_var(X=X_inner)
+
+        valid, output_config = _check_output_config(self)
+        # output conversion - converts to user specified set_output
+        # else: back to mtype seen in fit
+        if valid:
+            convert_to_mtype, convert_to_scitype = _transform_output(output_config)
+        else:
+            convert_to_mtype = self._y_metadata["mtype"]
+            convert_to_scitype = "Table"
+
+        pred_var = convert(
+            pred_var,
+            from_type=self.get_tag("y_inner_mtype"),
+            to_type=convert_to_mtype,
+            as_scitype=convert_to_scitype,
+            store=self._X_converter_store,
+        )
+
         return pred_var
 
     def _predict_var(self, X):
@@ -845,3 +914,27 @@ class BaseProbaRegressor(BaseEstimator):
             raise ValueError(f"values in {name} must be unique, but found duplicates")
 
         return alpha
+
+    def set_output(self, transform_output):
+        """Set output container.
+
+        Parameters
+        ----------
+        transform_output : {"polars", "pandas", "default"}
+
+            Configures the out of any _predict_* function in regression estimators
+                - "default" : assumes no transform has been passed in, will use
+                default settings
+
+                - "pandas" : all outputs will be converted into pandas DataFrames
+                - "polars" : all outputs will be converted into polars DataFrames
+            default = "default"
+        Returns
+        -------
+        self : estimator instance
+        """
+        if transform_output is None:
+            return self
+
+        self.set_config(**{"transform_output": transform_output})
+        return self

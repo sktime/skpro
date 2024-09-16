@@ -12,6 +12,14 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
 
     from skpro.datatypes import check_is_mtype, convert
+    from skpro.datatypes._adapter.polars import (
+        check_n_level_of_dataframe,
+        transform_pandas_multiindex_columns_to_single_column,
+    )
+    from skpro.datatypes._table._convert import (
+        convert_pandas_to_polars_eager,
+        convert_polars_to_pandas,
+    )
 
 TEST_ALPHAS = [0.05, 0.1, 0.25]
 
@@ -44,6 +52,44 @@ def estimator():
 
 def _pd_to_pl(df):
     return convert(df, from_type="pd_DataFrame_Table", to_type="polars_eager_table")
+
+
+@pytest.fixture
+def load_pandas_multi_index_column_fixture():
+    arrays = [
+        ["A", "A", "A", "A"],
+        ["Foo", "Foo", "Bar", "Bar"],
+        ["One", "Two", "One", "Two"],
+    ]
+    columns = pd.MultiIndex.from_arrays(arrays)
+
+    # Create the DataFrame
+    data = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
+    pd_multi_column_fixture = pd.DataFrame(data, columns=columns)
+
+    return pd_multi_column_fixture
+
+
+@pytest.fixture
+def load_pandas_simple_column_fixture():
+    data = {"test_target": [10, 20, 30]}
+
+    # Create the DataFrame with a custom index
+    pd_simple_column_fixture = pd.DataFrame(
+        data, index=pd.Index(["row1", "row2", "row3"])
+    )
+
+    return pd_simple_column_fixture
+
+
+@pytest.fixture
+def load_polars_simple_fixture():
+    data = {"column1": [1, 2, 3], "column2": [4, 5, 6], "column3": [7, 8, 9]}
+
+    # Create the DataFrame
+    pl_simple_fixture = pl.DataFrame(data)
+
+    return pl_simple_fixture
 
 
 @pytest.fixture
@@ -167,3 +213,122 @@ def test_polars_eager_regressor_in_predict_quantiles(
     assert y_pred_quantile.columns[0] == ("target", 0.05)
     assert y_pred_quantile.columns[1] == ("target", 0.1)
     assert y_pred_quantile.columns[2] == ("target", 0.25)
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_check_column_level_of_dataframe_pandas(
+    load_pandas_multi_index_column_fixture,
+    load_pandas_simple_column_fixture,
+):
+    pd_multi_column_fixture = load_pandas_multi_index_column_fixture
+    pd_simple_column_fixture = load_pandas_simple_column_fixture
+
+    n_levels_multi_pd = check_n_level_of_dataframe(pd_multi_column_fixture)
+    n_levels_simple_pd = check_n_level_of_dataframe(pd_simple_column_fixture)
+    n_levels_simple_pd_index = check_n_level_of_dataframe(
+        pd_simple_column_fixture, axis=0
+    )
+
+    assert n_levels_multi_pd == 3
+    assert n_levels_simple_pd == 1
+    assert n_levels_simple_pd_index == 1
+
+
+@pytest.mark.skipif(
+    not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_check_column_level_of_dataframe_polars(
+    load_polars_simple_fixture,
+):
+    pl_simple_column_fixture = load_polars_simple_fixture
+    n_levels_simple_pl = check_n_level_of_dataframe(pl_simple_column_fixture)
+    assert n_levels_simple_pl == 1
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_convert_multiindex_columns_to_single_column(
+    load_pandas_multi_index_column_fixture,
+):
+    pd_multi_column_fixture1 = load_pandas_multi_index_column_fixture
+    df_list1 = transform_pandas_multiindex_columns_to_single_column(
+        pd_multi_column_fixture1
+    )
+    assert df_list1 == [
+        "__A__Foo__One__",
+        "__A__Foo__Two__",
+        "__A__Bar__One__",
+        "__A__Bar__Two__",
+    ]
+
+    pd_multi_column_fixture2 = load_pandas_multi_index_column_fixture
+    df_list2 = transform_pandas_multiindex_columns_to_single_column(
+        pd_multi_column_fixture2
+    )
+    assert df_list2 == [
+        "__A__Foo__One__",
+        "__A__Foo__Two__",
+        "__A__Bar__One__",
+        "__A__Bar__Two__",
+    ]
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes")
+    or not _check_soft_dependencies(["polars", "pyarrow"], severity="none"),
+    reason="skip test if polars/pyarrow is not installed in environment",
+)
+def test_convert_single_column_to_multiindex_column(
+    estimator,
+    polars_load_diabetes_pandas,
+):
+    X_train, X_test, y_train = polars_load_diabetes_pandas
+    estimator.fit(X_train, y_train)
+
+    # test for predict
+    y_pred = estimator.predict(X_test)
+    assert isinstance(y_pred, pd.DataFrame)
+
+    y_pred_pl = convert_pandas_to_polars_eager(y_pred)
+    y_pred_pd = convert_polars_to_pandas(y_pred_pl)
+    assert all(y_pred_pd.columns == y_pred.columns)
+    assert all(y_pred_pd.index == y_pred.index)
+    assert all(y_pred_pd.values == y_pred.values)
+
+    # test for interval
+    y_pred_interval = estimator.predict_interval(X_test)
+    assert isinstance(y_pred_interval, pd.DataFrame)
+
+    y_pred_interval_pl = convert_pandas_to_polars_eager(y_pred_interval)
+    y_pred_interval_pd = convert_polars_to_pandas(y_pred_interval_pl)
+    assert all(y_pred_interval_pd.columns == y_pred_interval.columns)
+    assert all(y_pred_interval_pd.index == y_pred_interval.index)
+    assert y_pred_interval_pd.equals(y_pred_interval)
+
+    # test for quantile
+    y_pred_quantile = estimator.predict_quantiles(X_test, alpha=TEST_ALPHAS)
+    assert isinstance(y_pred_quantile, pd.DataFrame)
+
+    y_pred_quantile_pl = convert_pandas_to_polars_eager(y_pred_quantile)
+    y_pred_quantile_pd = convert_polars_to_pandas(y_pred_quantile_pl)
+    assert all(y_pred_quantile_pd.columns == y_pred_quantile.columns)
+    assert all(y_pred_quantile_pd.index == y_pred_quantile.index)
+    assert y_pred_quantile_pd.equals(y_pred_quantile)
+
+    # test for var
+    y_pred_var = estimator.predict_interval(X_test)
+    assert isinstance(y_pred_var, pd.DataFrame)
+
+    y_pred_var_pl = convert_pandas_to_polars_eager(y_pred_var)
+    y_pred_var_pd = convert_polars_to_pandas(y_pred_var_pl)
+    assert all(y_pred_var_pd.columns == y_pred_var.columns)
+    assert all(y_pred_var_pd.index == y_pred_var.index)
+    assert y_pred_var_pd.equals(y_pred_var)
