@@ -840,6 +840,22 @@ class BaseProbaRegressor(BaseEstimator):
 
         return alpha
 
+    def _get_varnames(self):
+        """Return variable column for DataFrame-like returns.
+
+        Primarily used as helper for probabilistic predict-like methods.
+        Assumes that _check_X_y has been called, and self._y_metadata set.
+
+        Returns
+        -------
+        varnames : iterable of integer or str variable names
+            can be list or pd.Index
+            variable names for DataFrame-like returns
+            identical to self._y_varnames if this attribute exists
+        """
+        featnames = self._y_metadata["feature_names"]
+        return featnames
+
     def _get_columns(self, method="predict", **kwargs):
         """Return column names for DataFrame-like returns.
 
