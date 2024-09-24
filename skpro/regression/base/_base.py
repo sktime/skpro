@@ -745,7 +745,7 @@ class BaseProbaRegressor(BaseEstimator):
             y,
             ALLOWED_MTYPES,
             "Table",
-            return_metadata=["n_instances"],
+            return_metadata=["n_instances", "feature_names"],
             var_name="y",
             msg_return_dict="list",
         )
