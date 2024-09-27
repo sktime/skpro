@@ -13,7 +13,7 @@ from skpro.regression.base import BaseProbaRegressor
 
 class BayesianLinearRegressor(BaseProbaRegressor):
     """
-    Bayesian Linear Regression class.
+    Bayesian Linear Regression class with MCMC sampling.
 
     Defined with user-specified priors or defaults for slopes, intercept,
     and noise; implemented using the pymc backend.
@@ -44,8 +44,8 @@ class BayesianLinearRegressor(BaseProbaRegressor):
     _tags = {
         # packaging info
         # --------------
-        "authors": ["meraldoantonio"],  # authors, GitHub handles
-        "python_version": None,
+        "authors": ["meraldoantonio"],
+        "python_version": ">=3.10",  # supports dictionary merging with |
         "python_dependencies": ["pymc", "pymc_marketing", "arviz", "graphviz"],
         # estimator tags
         # --------------
@@ -63,14 +63,21 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         if sampler_config is None:
             sampler_config = {}
         if prior_config is None:
-            prior_config = {}
+            prior_config = {}  # configuration for priors
         self.sampler_config = (
             self.default_sampler_config | sampler_config
-        )  # parameters for posterior sampling
+        )  # parameters for sampling
         self.prior_config = self.default_prior_config | prior_config  # list of priors
         self.model = None  # generated during fitting
         self.idata = None  # generated during fitting
         self._predict_done = False  # a flag indicating if a prediction has been done
+
+        print(  # noqa: T201
+            f"instantiated {self.__class__.__name__} with the following priors:"
+        )
+
+        for key, value in self.prior_config.items():
+            print(f"  - {key}: {value}")  # noqa: T201
 
         super().__init__()
 
@@ -79,10 +86,20 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         """Return a dictionary of prior defaults."""
         from pymc_marketing.prior import Prior
 
+        print(  # noqa: T201
+            "The model assumes that the intercept and slopes are independent. \n\
+            Modify the model if this assumption doesn't apply!"
+        )
         default_prior_config = {
-            "intercept": Prior("Normal", mu=0, sigma=10),
-            "slopes": Prior("Normal", mu=0, sigma=10, dims=("pred_id",)),
-            "noise_var": Prior("InverseGamma", alpha=3, beta=1),
+            "intercept": Prior(
+                "Normal", mu=0, sigma=100
+            ),  # Weakly informative normal prior with large sigma
+            "slopes": Prior(
+                "Normal", mu=0, sigma=100, dims=("pred_id",)
+            ),  # Same for slopes
+            "noise_var": Prior(
+                "HalfCauchy", beta=5
+            ),  # Weakly informative Half-Cauchy prior for noise variance
         }
         return default_prior_config
 
@@ -130,22 +147,22 @@ class BayesianLinearRegressor(BaseProbaRegressor):
 
         # Model construction and posterior sampling
         with pm.Model(coords={"obs_id": X.index, "pred_id": X.columns}) as self.model:
-            # Mutable data containers
+            # Mutable data containers for X and y
             X_data = pm.Data("X", X, dims=("obs_id", "pred_id"))
             y_data = pm.Data("y", self._y_vals, dims=("obs_id"))
 
-            # Priors for unknown model parameters
+            # Priors for model parameters, taken from self.prior_config
             self.intercept = self.prior_config["intercept"].create_variable("intercept")
             self.slopes = self.prior_config["slopes"].create_variable("slopes")
             self.noise_var = self.prior_config["noise_var"].create_variable("noise_var")
             self.noise = pm.Deterministic("noise", self.noise_var**0.5)
 
-            # Expected value of outcome
+            # Expected value of the target variable
             self.mu = pm.Deterministic(
                 "mu", self.intercept + pm.math.dot(X_data, self.slopes)
             )
 
-            # Likelihood (sampling distribution) of observations
+            # Likelihood of observations
             y_obs = pm.Normal(  # noqa: F841
                 "y_obs", mu=self.mu, sigma=self.noise, observed=y_data, dims=("obs_id")
             )
@@ -153,14 +170,12 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             # Constructing the posterior
             self.idata = pm.sample(**self.sampler_config)
 
-        # Insertion of training data into self.idata for ease of future reference
+        # Incorporation of training_data as a new group in self.idata
         training_data = pd.concat([X, y], axis=1)
         with warnings.catch_warnings():
             warnings.filterwarnings(
                 "ignore",
                 category=UserWarning,
-                message="The group training_data is \
-                    not defined in the InferenceData scheme",
             )
             self.idata.add_groups(training_data=training_data.to_xarray())
         return self
@@ -234,17 +249,33 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         elif return_type == "xarray":
             return group
         else:
-            # a dictionary of NumPy arrays of samples
-            data_dict = {
-                var: group[var].stack({"sample": ("chain", "draw")}).values.squeeze()
-                for var in variables
-            }
+            data_dict = {}
+
+            for var in variables:
+                # Check if the variable has a `pred_id` dimension
+                if var in group and "pred_id" in group[var].dims:
+                    # Iterate through each feature (e.g., 'feature1', 'feature2')
+                    for feature in group[var].pred_id.values:
+                        # Select the slope for the current feature and flatten it
+                        feature_key = f"{var}_{feature}"
+                        data_dict[feature_key] = (
+                            group[var]
+                            .sel(pred_id=feature)
+                            .stack({"sample": ("chain", "draw")})
+                            .values.squeeze()
+                        )
+                else:
+                    if var in group:
+                        data_dict[var] = (
+                            group[var]
+                            .stack({"sample": ("chain", "draw")})
+                            .values.squeeze()
+                        )
 
             if return_type == "numpy":
                 return data_dict
 
             elif return_type == "dataframe":
-                # todo: assert 1-dimensionality of each array
                 if is_predictive:
                     return pd.DataFrame(data_dict["y_obs"]).T
                 else:
@@ -505,6 +536,9 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         import pymc as pm
 
         with self.model:
+            if "predictions" in self.idata.groups():
+                del self.idata.predictions
+
             # Set the X to be the new 'X' variable and then sample posterior predictive
             pm.set_data({"X": X}, coords={"obs_id": X.index, "pred_id": X.columns})
             self.idata.extend(
@@ -518,7 +552,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         return self._sample_dataset(group_name="predictions", return_type="skpro")
 
     # todo: return default parameters, so that a test instance can be created
-    #   required for automated unit and integration testing of estimator
+    #  required for automated unit and integration testing of estimator
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator.
