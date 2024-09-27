@@ -39,6 +39,8 @@ class OnlineDontRefit(_DelegatedProbaRegressor):
         ]
         self.clone_tags(estimator, tags_to_clone)
 
+        self.estimator_ = self.estimator.clone()
+
     def _update(self, X, y, C=None):
         """Update regressor with new batch of training data.
 
