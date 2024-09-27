@@ -379,12 +379,9 @@ class BaseProbaRegressor(BaseEstimator):
         # change the column labels (multiindex) to the format for intervals
         # idx returned by _predict_quantiles is
         #   2-level MultiIndex with variable names, alpha
-        idx = pred_int.columns
-        # variable names (unique, in same order)
-        var_names = idx.get_level_values(0).unique()
         # idx returned by _predict_interval should be
         #   3-level MultiIndex with variable names, coverage, lower/upper
-        int_idx = pd.MultiIndex.from_product([var_names, coverage, ["lower", "upper"]])
+        int_idx = self._get_columns(method="predict_interval", coverage=coverage)
         pred_int.columns = int_idx
 
         return pred_int
@@ -495,12 +492,9 @@ class BaseProbaRegressor(BaseEstimator):
             # change the column labels (multiindex) to the format for intervals
             # idx returned by _predict_interval is
             #   3-level MultiIndex with variable names, coverage, lower/upper
-            idx = pred_int.columns
-            # variable names (unique, in same order)
-            var_names = idx.get_level_values(0).unique()
             # idx returned by _predict_quantiles should be
             #   is 2-level MultiIndex with variable names, alpha
-            int_idx = pd.MultiIndex.from_product([var_names, alpha])
+            int_idx = self._get_columns(method="predict_quantiles", alpha=alpha)
             pred_int.columns = int_idx
 
         elif implements_proba or implements_var:
@@ -751,7 +745,7 @@ class BaseProbaRegressor(BaseEstimator):
             y,
             ALLOWED_MTYPES,
             "Table",
-            return_metadata=["n_instances"],
+            return_metadata=["n_instances", "feature_names"],
             var_name="y",
             msg_return_dict="list",
         )
@@ -845,3 +839,62 @@ class BaseProbaRegressor(BaseEstimator):
             raise ValueError(f"values in {name} must be unique, but found duplicates")
 
         return alpha
+
+    def _get_varnames(self):
+        """Return variable column for DataFrame-like returns.
+
+        Primarily used as helper for probabilistic predict-like methods.
+        Assumes that _check_X_y has been called, and self._y_metadata set.
+
+        Returns
+        -------
+        varnames : iterable of integer or str variable names
+            can be list or pd.Index
+            variable names for DataFrame-like returns
+            identical to self._y_varnames if this attribute exists
+        """
+        featnames = self._y_metadata["feature_names"]
+        return featnames
+
+    def _get_columns(self, method="predict", **kwargs):
+        """Return column names for DataFrame-like returns.
+
+        Primarily used as helper for probabilistic predict-like methods.
+        Assumes that _check_X_y has been called, and self._y_metadata set.
+
+        Parameter
+        ---------
+        method : str, optional (default="predict")
+            method for which to return column names
+            one of "predict", "predict_interval", "predict_quantiles", "predict_var"
+        kwargs : dict
+            additional keyword arguments passed to private method
+            important: args to private method, e.g., _predict, _predict_interval
+
+        Returns
+        -------
+        columns : pd.Index
+            column names
+        """
+        featnames = self._get_varnames()
+
+        if method in ["predict", "predict_var"]:
+            return featnames
+        else:
+            assert method in ["predict_interval", "predict_quantiles"]
+
+        if method == "predict_interval":
+            coverage = kwargs.get("coverage", None)
+            if coverage is None:
+                raise ValueError(
+                    "coverage must be passed to _get_columns for predict_interval"
+                )
+            return pd.MultiIndex.from_product([featnames, coverage, ["lower", "upper"]])
+
+        if method == "predict_quantiles":
+            alpha = kwargs.get("alpha", None)
+            if alpha is None:
+                raise ValueError(
+                    "alpha must be passed to _get_columns for predict_quantiles"
+                )
+            return pd.MultiIndex.from_product([featnames, alpha])
