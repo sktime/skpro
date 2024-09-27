@@ -24,6 +24,8 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
     ----------
     estimator : skpro regressor, descendant of BaseProbaRegressor
         regressor to be update-refitted on all data, blueprint
+    N : int, default=1
+        number of new data points to see before updating the regressor
 
     Attributes
     ----------
@@ -33,8 +35,9 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
 
     _tags = {"capability:online": True}
 
-    def __init__(self, estimator):
+    def __init__(self, estimator, N=1):
         self.estimator = estimator
+        self.N = N
 
         super().__init__()
 
@@ -86,7 +89,7 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
         n_seen_now = len(X)
         n_seen_since_last_update = self.n_seen_since_last_update_ + n_seen_now
 
-        if n_seen_since_last_update < self.n_seen_since_last_update_:
+        if n_seen_since_last_update >= self.N:
             self.estimator_.update(X=X_pool, y=y_pool, C=C_pool)
             self._X = None
             self._y = None
