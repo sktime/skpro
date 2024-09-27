@@ -24,14 +24,6 @@ Composition
 
     Pipeline
 
-.. currentmodule:: skpro.regression.online
-
-.. autosummary::
-    :toctree: auto_generated/
-    :template: class.rst
-
-    OnlineRefit
-
 Model selection and tuning
 --------------------------
 
@@ -51,6 +43,18 @@ Model selection and tuning
     :template: class.rst
 
     evaluate
+
+Online learning
+---------------
+
+.. currentmodule:: skpro.regression.online
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    OnlineRefit
+    OnlineDontRefit
 
 Reduction - adding ``predict_proba``
 ------------------------------------

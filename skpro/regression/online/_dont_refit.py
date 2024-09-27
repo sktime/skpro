@@ -1,21 +1,19 @@
-"""Meta-strategy for online learning: refit on full data."""
+"""Meta-strategy for online learning: turn off online update."""
 
 __author__ = ["fkiraly"]
-__all__ = ["OnlineRefit"]
-
-import pandas as pd
+__all__ = ["OnlineDontRefit"]
 
 from skpro.regression.base import _DelegatedProbaRegressor
 
 
-class OnlineRefit(_DelegatedProbaRegressor):
-    """Simple online regression strategy, by refitting the regressor on all data.
+class OnlineDontRefit(_DelegatedProbaRegressor):
+    """Simple online regression strategy, turns off any refitting.
 
-    In ``fit`` and ``update``, remembers all data.
-    In ``update``, refits the regressor on all data seen so far.
+    In ``fit``, behaves like the wrapped regressor.
+    In ``update``, does nothing, overriding any other logic.
 
-    Caveat: data indices are reset to RangeIndex internally, even if some indices
-    passed in ``fit`` and ``update`` overlap.
+    This strategy is useful when the wrapped regressor is already an online regressor,
+    to create a "no-op" online regressor for comparison.
 
     Parameters
     ----------
@@ -28,7 +26,7 @@ class OnlineRefit(_DelegatedProbaRegressor):
         clone of the regressor passed in the constructor, fitted on all data
     """
 
-    _tags = {"capability:online": True}
+    _tags = {"capability:online": False}
 
     def __init__(self, estimator):
         self.estimator = estimator
@@ -40,43 +38,6 @@ class OnlineRefit(_DelegatedProbaRegressor):
             "capability:survival",
         ]
         self.clone_tags(estimator, tags_to_clone)
-
-    def _fit(self, X, y, C=None):
-        """Fit regressor to training data.
-
-        Writes to self:
-            Sets fitted model attributes ending in "_".
-
-        Parameters
-        ----------
-        X : pandas DataFrame
-            feature instances to fit regressor to
-        y : pandas DataFrame, must be same length as X
-            labels to fit regressor to
-        C : pd.DataFrame, optional (default=None)
-            censoring information for survival analysis,
-            should have same column name as y, same length as X and y
-            should have entries 0 and 1 (float or int)
-            0 = uncensored, 1 = (right) censored
-            if None, all observations are assumed to be uncensored
-            Can be passed to any probabilistic regressor,
-            but is ignored if capability:survival tag is False.
-
-        Returns
-        -------
-        self : reference to self
-        """
-        estimator = self.estimator.clone()
-
-        estimator.fit(X=X, y=y, C=C)
-        self.estimator_ = estimator
-
-        # remember data
-        self._X = X
-        self._y = y
-        self._C = C
-
-        return self
 
     def _update(self, X, y, C=None):
         """Update regressor with new batch of training data.
@@ -106,45 +67,7 @@ class OnlineRefit(_DelegatedProbaRegressor):
         -------
         self : reference to self
         """
-        X_pool = self._update_data(self._X, X)
-        y_pool = self._update_data(self._y, y)
-        C_pool = self._update_data(self._C, C)
-
-        estimator = self.estimator.clone()
-        estimator.fit(X=X_pool, y=y_pool, C=C_pool)
-        self.estimator_ = estimator
-
-        # remember data
-        self._X = X_pool
-        self._y = y_pool
-        self._C = C_pool
-
         return self
-
-    def _update_data(self, X, X_new):
-        """Update data with new batch of training data.
-
-        Treats X_new as data with new indices, even if some indices overlap with X.
-
-        Parameters
-        ----------
-        X : pandas DataFrame
-        X_new : pandas DataFrame
-
-        Returns
-        -------
-        X_updated : pandas DataFrame
-            concatenated data, with reset index
-        """
-        if X is None and X_new is None:
-            return None
-        if X is None and X_new is not None:
-            return X_new.reset_index(drop=True)
-        if X is not None and X_new is None:
-            return X.reset_index(drop=True)
-        # else, both X and X_new are not None
-        X_updated = pd.concat([X, X_new], ignore_index=True)
-        return X_updated
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
