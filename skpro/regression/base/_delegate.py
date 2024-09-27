@@ -67,6 +67,38 @@ class _DelegatedProbaRegressor(BaseProbaRegressor):
         estimator.fit(X=X, y=y, C=C)
         return self
 
+    def _update(self, X, y, C=None):
+        """Update regressor with a new batch of training data.
+
+        State required:
+            Requires state to be "fitted" = self.is_fitted=True
+
+        Writes to self:
+            Updates fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pd.DataFrame, must be same length as X
+            labels to fit regressor to
+        C : pd.DataFrame, optional (default=None)
+            censoring information for survival analysis,
+            should have same column name as y, same length as X and y
+            should have entries 0 and 1 (float or int)
+            0 = uncensored, 1 = (right) censored
+            if None, all observations are assumed to be uncensored
+            Can be passed to any probabilistic regressor,
+            but is ignored if capability:survival tag is False.
+
+        Returns
+        -------
+        self : reference to self
+        """
+        estimator = self._get_delegate()
+        estimator.update(X=X, y=y, C=C)
+        return self
+
     def _predict(self, X):
         """Predict labels for data from features.
 

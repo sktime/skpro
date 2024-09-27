@@ -33,6 +33,7 @@ class BaseProbaRegressor(BaseEstimator):
         "capability:survival": False,
         "capability:multioutput": False,
         "capability:missing": True,
+        "capability:online": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
@@ -122,6 +123,74 @@ class BaseProbaRegressor(BaseEstimator):
 
         Writes to self:
             Sets fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pandas DataFrame, must be same length as X
+            labels to fit regressor to
+
+        Returns
+        -------
+        self : reference to self
+        """
+        raise NotImplementedError
+
+    def update(self, X, y, C=None):
+        """Update regressor with a new batch of training data.
+
+        Only estimators with the ``capability:online`` tag (value ``True``)
+        provide this method, otherwise the method ignores the call and
+        discards the data passed.
+
+        State required:
+            Requires state to be "fitted".
+
+        Writes to self:
+            Updates fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pd.DataFrame, must be same length as X
+            labels to fit regressor to
+        C : ignored, optional (default=None)
+            censoring information for survival analysis
+            All probabilistic regressors assume data to be uncensored
+
+        Returns
+        -------
+        self : reference to self
+        """
+        capa_online = self.get_tag("capability:online")
+        capa_surv = self.get_tag("capability:survival")
+
+        if not capa_online:
+            return self
+
+        check_ret = self._check_X_y(X, y, C, return_metadata=True)
+
+        # get inner X, y, C
+        X_inner = check_ret["X_inner"]
+        y_inner = check_ret["y_inner"]
+        if capa_surv:
+            C_inner = check_ret["C_inner"]
+
+        if not capa_surv:
+            return self._update(X_inner, y_inner)
+        else:
+            return self._update(X_inner, y_inner, C=C_inner)
+
+    def _update(self, X, y, C=None):
+        """Update regressor with a new batch of training data.
+
+        State required:
+            Requires state to be "fitted".
+
+        Writes to self:
+            Updates fitted model attributes ending in "_".
 
         Parameters
         ----------
