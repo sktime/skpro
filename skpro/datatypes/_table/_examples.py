@@ -1,34 +1,31 @@
 """Example generation for testing.
 
-Exports dict of examples, useful for testing as fixtures.
+Exports examples of in-memory data containers, useful for testing as fixtures.
 
-example_dict: dict indexed by triple
-  1st element = mtype - str
-  2nd element = considered as this scitype - str
-  3rd element = int - index of example
-elements are data objects, considered examples for the mtype
-    all examples with same index are considered "same" on scitype content
-    if None, indicates that representation is not possible
+Examples come in clusters, tagged by scitype: str, index: int, and metadata: dict.
 
-example_lossy: dict of bool indexed by pairs of str
-  1st element = mtype - str
-  2nd element = considered as this scitype - str
-  3rd element = int - index of example
-elements are bool, indicate whether representation has information removed
-    all examples with same index are considered "same" on scitype content
+All examples with the same index are considered "content-wise the same", i.e.,
+representing the same abstract data object. They differ by mtype, i.e.,
+machine type, which is the specific in-memory representation.
 
-overall, conversions from non-lossy representations to any other ones
-    should yield the element exactly, identidally (given same index)
+If an example returns None, it indicates that representation
+with that specific mtype is not possible.
+
+If the tag "lossy" is True, the representation is considered incomplete,
+e.g., metadata such as column names are missing.
+
+Types of tests that can be performed with these examples:
+
+* the mtype and scitype of the example should be correctly inferred by checkers.
+* the metadata of hte example should be correctly inferred by checkers.
+* conversions from non-lossy representations to any other ones
+  should yield the element exactly, identically, for examples of the same index.
 """
 
 import numpy as np
 import pandas as pd
 
 from skpro.datatypes._base import BaseExample
-
-example_dict = dict()
-example_dict_lossy = dict()
-example_dict_metadata = dict()
 
 ###
 # example 0: univariate
@@ -112,10 +109,10 @@ class _UnivTablePolarsEager(_UnivTable):
     }
 
     def build(self):
-        from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+        import polars as pl
 
         df = pd.DataFrame({"a": [1, 4, 0.5, -3]})
-        return convert_pandas_to_polars_with_index(df)
+        return pl.DataFrame(df)
 
 
 class _UnivTablePolarsLazy(_UnivTable):
@@ -126,10 +123,10 @@ class _UnivTablePolarsLazy(_UnivTable):
     }
 
     def build(self):
-        from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+        import polars as pl
 
         df = pd.DataFrame({"a": [1, 4, 0.5, -3]})
-        return convert_pandas_to_polars_with_index(df, lazy=True)
+        return pl.LazyFrame(df)
 
 
 ###
@@ -219,10 +216,10 @@ class _MultivTablePolarsEager(_MultivTable):
     }
 
     def build(self):
-        from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+        import polars as pl
 
         df = pd.DataFrame({"a": [1, 4, 0.5, -3], "b": [3, 7, 2, -3 / 7]})
-        return convert_pandas_to_polars_with_index(df)
+        return pl.DataFrame(df)
 
 
 class _MultivTablePolarsLazy(_MultivTable):
@@ -233,7 +230,7 @@ class _MultivTablePolarsLazy(_MultivTable):
     }
 
     def build(self):
-        from skpro.datatypes._adapter.polars import convert_pandas_to_polars_with_index
+        import polars as pl
 
         df = pd.DataFrame({"a": [1, 4, 0.5, -3], "b": [3, 7, 2, -3 / 7]})
-        return convert_pandas_to_polars_with_index(df, lazy=True)
+        return pl.LazyFrame(df)
