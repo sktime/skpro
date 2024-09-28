@@ -1,7 +1,7 @@
 """Meta-strategy for online learning: refit on full data."""
 
 __author__ = ["fkiraly"]
-__all__ = ["OnlineRefit"]
+__all__ = ["OnlineRefitEveryN"]
 
 import pandas as pd
 
