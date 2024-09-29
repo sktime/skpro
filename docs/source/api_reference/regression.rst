@@ -54,6 +54,7 @@ Online learning
     :template: class.rst
 
     OnlineRefit
+    OnlineRefitEveryN
     OnlineDontRefit
 
 Reduction - adding ``predict_proba``
