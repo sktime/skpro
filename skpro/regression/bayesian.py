@@ -45,8 +45,11 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["meraldoantonio"],
-        "python_version": ">=3.10",  # supports dictionary merging with |
-        "python_dependencies": ["pymc", "pymc_marketing", "arviz", "graphviz"],
+        "python_dependencies": [
+            "pymc",
+            "pymc_marketing",
+            "arviz",
+        ],  # use check dependency function
         # estimator tags
         # --------------
         "capability:multioutput": False,  # can the estimator handle multi-output data?
@@ -55,19 +58,13 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
     }
 
-    def __init__(
-        self,
-        prior_config: dict | None = None,
-        sampler_config: dict | None = None,
-    ):
+    def __init__(self, prior_config, sampler_config):
         if sampler_config is None:
             sampler_config = {}
         if prior_config is None:
             prior_config = {}  # configuration for priors
-        self.sampler_config = (
-            self.default_sampler_config | sampler_config
-        )  # parameters for sampling
-        self.prior_config = self.default_prior_config | prior_config  # list of priors
+        self.sampler_config = {**self.default_sampler_config, **sampler_config}
+        self.prior_config = {**self.default_prior_config, **prior_config}
         self.model = None  # generated during fitting
         self.idata = None  # generated during fitting
         self._predict_done = False  # a flag indicating if a prediction has been done
@@ -552,7 +549,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         return self._sample_dataset(group_name="predictions", return_type="skpro")
 
     # todo: return default parameters, so that a test instance can be created
-    #  required for automated unit and integration testing of estimator
+    # required for automated unit and integration testing of estimator
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator.
