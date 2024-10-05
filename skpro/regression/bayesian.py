@@ -51,8 +51,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             "pymc",
             "pymc_marketing",
             "arviz",
-            "scipy<=1.12.0",
-        ],  # use check dependency function
+        ],
         # estimator tags
         # --------------
         "capability:multioutput": False,  # can the estimator handle multi-output data?
