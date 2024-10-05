@@ -9,8 +9,7 @@ intercept, and noise; implemented using the pymc backend.
 __author__ = ["meraldoantonio"]
 
 from skpro.regression.base import BaseProbaRegressor
-
-# from skpro.utils.validation._dependencies import _check_soft_dependencies
+from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
 class BayesianLinearRegressor(BaseProbaRegressor):
@@ -179,16 +178,16 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             self.idata.add_groups(training_data=training_data.to_xarray())
         return self
 
-    # def visualize_model(self, **kwargs):
-    #     """Use Graphviz to visualize the model flow."""
-    #     _check_soft_dependencies(
-    #         "graphviz", msg="You need to install Graphviz to use this method!"
-    #     )
-    #     import pymc as pm
+    def visualize_model(self, **kwargs):
+        """Use Graphviz to visualize the model flow."""
+        _check_soft_dependencies(
+            "graphviz", msg="You need to install Graphviz to use this method!"
+        )
+        import pymc as pm
 
-    #     assert self._is_fitted, "You need to fit the model before visualizing it!"
+        assert self._is_fitted, "You need to fit the model before visualizing it!"
 
-    #     return pm.model_to_graphviz(self.model, **kwargs)
+        return pm.model_to_graphviz(self.model, **kwargs)
 
     def _sample_dataset(self, group_name, return_type=None):
         """
