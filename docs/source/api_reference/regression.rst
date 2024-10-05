@@ -44,6 +44,19 @@ Model selection and tuning
 
     evaluate
 
+Online learning
+---------------
+
+.. currentmodule:: skpro.regression.online
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    OnlineRefit
+    OnlineRefitEveryN
+    OnlineDontRefit
+
 Reduction - adding ``predict_proba``
 ------------------------------------
 
