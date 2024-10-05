@@ -50,7 +50,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         "python_dependencies": [
             "pymc",
             "pymc_marketing",
-            "arviz",
+            "arviz>=0.18.0",
         ],  # use check dependency function
         # estimator tags
         # --------------
