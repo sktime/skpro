@@ -62,7 +62,6 @@ all_extras = [
     "tabulate",
     "uncertainties",
     "pymc",
-    "scipy<=1.12.0",
 ]
 
 dev = [
