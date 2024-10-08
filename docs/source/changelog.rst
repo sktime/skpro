@@ -34,6 +34,20 @@ Dependency changes
 * ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.12.0``.
 * ``polars`` (data container soft dependency) bounds have been updated to ``<1.10.0``.
 
+Core interface changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+Probabilistic regressors and time-to-event predictors now have an ``update`` method.
+The ``update`` method is the unified interface point for incremental fitting strategies,
+such as online learning, efficient re-fit strategies, or Bayesian updates.
+
+Whether a non-trivial ``update`` method is implemented depends on the specific estimator,
+this can be inspected via the ``capability:update`` tag of the estimator.
+
+Estimators without a dedicated ``update`` method, that is, those with
+``capability:update=False``, implement the trivial ``update`` where no update
+is performed, with the internal estimator state remaining unchanged.
+
 Enhancements
 ~~~~~~~~~~~~
 
