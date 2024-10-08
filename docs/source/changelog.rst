@@ -16,6 +16,33 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.7.0] - 2024-10-08
+====================
+
+Maintenance release with ``python 3.13 support``.
+
+Also contains:
+
+* ``update`` interface point for probabilistic regressors,
+  to enable online learning and Bayesian updates in models
+* dependency updates
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] online update capability for probabilistic regressors (:pr:`462`) :user:`fkiraly`
+* [ENH] online refitting strategy after N data points (:pr:`469`) :user:`fkiraly`
+* [ENH] ``datatypes`` examples - docstrings, deepcopy (:pr:`466`) :user:`fkiraly`
+* [ENH] sync proba predict utils with ``sktime`` (:pr:`465`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+* [MNT] differential testing - handle non-package changes in `pyproject.toml` by @fkiraly in https://github.com/sktime/skpro/pull/472
+
+
 [2.6.0] - 2024-09-08
 ====================
 

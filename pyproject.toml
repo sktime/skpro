@@ -1,15 +1,15 @@
 [project]
 name = "skpro"
-version = "2.6.0"
-description = "A unified framework for probability distributions and probabilistic supervised regression"
+version = "2.7.0"
+description = "A unified framework for tabular probabilistic regression, time-to-event prediction, and probability distributions in python"
 authors = [
-    {name = "skpro developers", email = "sktime.toolbox@gmail.com"},
+    {name = "skpro developers", email = "info@sktime.net"},
     {name = "Franz Király"},
     {name = "Frithjof Gressmann"},
     {name = "Vitaly Davydov"},
 ]
 maintainers = [
-    {name = "skpro developers", email = "sktime.toolbox@gmail.com"},
+    {name = "skpro developers", email = "info@sktime.net"},
 ]
 readme = "README.md"
 keywords = [
