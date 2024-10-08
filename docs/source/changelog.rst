@@ -30,6 +30,10 @@ Also contains:
 Dependency changes
 ~~~~~~~~~~~~~~~~~~
 
+* ``skpro`` is now compatible with ``python 3.13``.
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.12.0``.
+* ``polars`` (data container soft dependency) bounds have been updated to ``<1.10.0``.
+
 Enhancements
 ~~~~~~~~~~~~
 
@@ -37,10 +41,15 @@ Enhancements
 * [ENH] online refitting strategy after N data points (:pr:`469`) :user:`fkiraly`
 * [ENH] ``datatypes`` examples - docstrings, deepcopy (:pr:`466`) :user:`fkiraly`
 * [ENH] sync proba predict utils with ``sktime`` (:pr:`465`) :user:`fkiraly`
+* [ENH] minor refactor - remove unnecessary `__init__` methods in `datatypes` module (:pr:`475`) :user:`fkiraly`
 
 Maintenance
 ~~~~~~~~~~~
-* [MNT] differential testing - handle non-package changes in `pyproject.toml` by @fkiraly in https://github.com/sktime/skpro/pull/472
+
+* [MNT] ``python 3.13`` support, add ``3.13`` to CI test matrix (:pr:`471`) :user:`fkiraly`
+* [MNT] differential testing - handle non-package changes in ``pyproject.toml`` (:pr:`472`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update ``scikit-base`` requirement from ``<0.10.0,>=0.6.1`` to ``>=0.6.1,<0.12.0`` (:pr:`468`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.7.0`` to ``<1.10.0`` (:pr:`473`) :user:`dependabot[bot]`
 
 
 [2.6.0] - 2024-09-08
