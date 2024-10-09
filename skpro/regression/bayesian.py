@@ -56,7 +56,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
     }
 
-    def __init__(self, prior_config, sampler_config):
+    def __init__(self, prior_config=None, sampler_config=None):
         if sampler_config is None:
             sampler_config = {}
         if prior_config is None:
