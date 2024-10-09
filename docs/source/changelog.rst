@@ -33,6 +33,7 @@ Dependency changes
 * ``skpro`` is now compatible with ``python 3.13``.
 * ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.12.0``.
 * ``polars`` (data container soft dependency) bounds have been updated to ``<1.10.0``.
+* dead (unimported) soft dependencies have been removed: ``attrs``, ``tabulate``, ``uncertainties``.
 
 Core interface changes
 ~~~~~~~~~~~~~~~~~~~~~~
