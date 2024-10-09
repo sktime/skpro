@@ -70,24 +70,6 @@ class TablePdDataFrame(BaseTable):
         "capability:index": True,
     }
 
-    def __init__(
-        self,
-        is_univariate=None,
-        is_empty=None,
-        has_nans=None,
-        n_instances=None,
-        n_features=None,
-        feature_names=None,
-    ):
-        super().__init__(
-            is_univariate=is_univariate,
-            n_instances=n_instances,
-            is_empty=is_empty,
-            has_nans=has_nans,
-            n_features=n_features,
-            feature_names=feature_names,
-        )
-
     def _check(self, obj, return_metadata=False, var_name="obj"):
         """Check if obj is of this data type.
 
@@ -174,24 +156,6 @@ class TablePdSeries(BaseTable):
         "capability:missing_values": True,
         "capability:index": True,
     }
-
-    def __init__(
-        self,
-        is_univariate=None,
-        is_empty=None,
-        has_nans=None,
-        n_instances=None,
-        n_features=None,
-        feature_names=None,
-    ):
-        super().__init__(
-            is_univariate=is_univariate,
-            n_instances=n_instances,
-            is_empty=is_empty,
-            has_nans=has_nans,
-            n_features=n_features,
-            feature_names=feature_names,
-        )
 
     def _check(self, obj, return_metadata=False, var_name="obj"):
         """Check if obj is of this data type.
@@ -286,24 +250,6 @@ class TableNp1D(BaseTable):
         "capability:index": False,
     }
 
-    def __init__(
-        self,
-        is_univariate=None,
-        is_empty=None,
-        has_nans=None,
-        n_instances=None,
-        n_features=None,
-        feature_names=None,
-    ):
-        super().__init__(
-            is_univariate=is_univariate,
-            n_instances=n_instances,
-            is_empty=is_empty,
-            has_nans=has_nans,
-            n_features=n_features,
-            feature_names=feature_names,
-        )
-
     def _check(self, obj, return_metadata=False, var_name="obj"):
         """Check if obj is of this data type.
 
@@ -392,24 +338,6 @@ class TableNp2D(BaseTable):
         "capability:index": False,
     }
 
-    def __init__(
-        self,
-        is_univariate=None,
-        is_empty=None,
-        has_nans=None,
-        n_instances=None,
-        n_features=None,
-        feature_names=None,
-    ):
-        super().__init__(
-            is_univariate=is_univariate,
-            n_instances=n_instances,
-            is_empty=is_empty,
-            has_nans=has_nans,
-            n_features=n_features,
-            feature_names=feature_names,
-        )
-
     def _check(self, obj, return_metadata=False, var_name="obj"):
         """Check if obj is of this data type.
 
@@ -496,24 +424,6 @@ class TableListOfDict(BaseTable):
         "capability:missing_values": True,
         "capability:index": False,
     }
-
-    def __init__(
-        self,
-        is_univariate=None,
-        is_empty=None,
-        has_nans=None,
-        n_instances=None,
-        n_features=None,
-        feature_names=None,
-    ):
-        super().__init__(
-            is_univariate=is_univariate,
-            n_instances=n_instances,
-            is_empty=is_empty,
-            has_nans=has_nans,
-            n_features=n_features,
-            feature_names=feature_names,
-        )
 
     def _check(self, obj, return_metadata=False, var_name="obj"):
         """Check if obj is of this data type.
@@ -625,24 +535,6 @@ class TablePolarsEager(BaseTable):
         "capability:index": False,
     }
 
-    def __init__(
-        self,
-        is_univariate=None,
-        is_empty=None,
-        has_nans=None,
-        n_instances=None,
-        n_features=None,
-        feature_names=None,
-    ):
-        super().__init__(
-            is_univariate=is_univariate,
-            n_instances=n_instances,
-            is_empty=is_empty,
-            has_nans=has_nans,
-            n_features=n_features,
-            feature_names=feature_names,
-        )
-
     def _check(self, obj, return_metadata=False, var_name="obj"):
         """Check if obj is of this data type.
 
@@ -701,24 +593,6 @@ class TablePolarsLazy(BaseTable):
         "capability:missing_values": True,
         "capability:index": False,
     }
-
-    def __init__(
-        self,
-        is_univariate=None,
-        is_empty=None,
-        has_nans=None,
-        n_instances=None,
-        n_features=None,
-        feature_names=None,
-    ):
-        super().__init__(
-            is_univariate=is_univariate,
-            n_instances=n_instances,
-            is_empty=is_empty,
-            has_nans=has_nans,
-            n_features=n_features,
-            feature_names=feature_names,
-        )
 
     def _check(self, obj, return_metadata=False, var_name="obj"):
         """Check if obj is of this data type.
