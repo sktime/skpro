@@ -63,6 +63,7 @@ Maintenance
 
 * [MNT] ``python 3.13`` support, add ``3.13`` to CI test matrix (:pr:`471`) :user:`fkiraly`
 * [MNT] differential testing - handle non-package changes in ``pyproject.toml`` (:pr:`472`) :user:`fkiraly`
+* [MNT] change macos runners to ``macos-latest`` version (:pr:`477`) :user:`fkiraly`
 * [MNT] [Dependabot](deps): Update ``scikit-base`` requirement from ``<0.10.0,>=0.6.1`` to ``>=0.6.1,<0.12.0`` (:pr:`468`) :user:`dependabot[bot]`
 * [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.7.0`` to ``<1.10.0`` (:pr:`473`) :user:`dependabot[bot]`
 
