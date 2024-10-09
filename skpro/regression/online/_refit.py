@@ -28,7 +28,7 @@ class OnlineRefit(_DelegatedProbaRegressor):
         clone of the regressor passed in the constructor, fitted on all data
     """
 
-    _tags = {"capability:online": True}
+    _tags = {"capability:update": True}
 
     def __init__(self, estimator):
         self.estimator = estimator
