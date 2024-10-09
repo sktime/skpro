@@ -19,11 +19,11 @@ For planned changes and upcoming releases, see roadmap in the
 [2.7.0] - 2024-10-08
 ====================
 
-Maintenance release with ``python 3.13 support``.
+Maintenance release with ``python 3.13`` support.
 
 Also contains:
 
-* ``update`` interface point for probabilistic regressors,
+* new ``update`` unified interface point for probabilistic regressors,
   to enable online learning and Bayesian updates in models
 * dependency updates
 
