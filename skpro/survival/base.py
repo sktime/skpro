@@ -51,7 +51,7 @@ class BaseSurvReg(BaseProbaRegressor):
     def update(self, X, y, C=None):
         """Update regressor with a new batch of training data.
 
-        Only estimators with the ``capability:online`` tag (value ``True``)
+        Only estimators with the ``capability:update`` tag (value ``True``)
         provide this method, otherwise the method ignores the call and
         discards the data passed.
 

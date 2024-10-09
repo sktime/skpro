@@ -33,7 +33,7 @@ class BaseProbaRegressor(BaseEstimator):
         "capability:survival": False,
         "capability:multioutput": False,
         "capability:missing": True,
-        "capability:online": False,
+        "capability:update": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
@@ -140,7 +140,7 @@ class BaseProbaRegressor(BaseEstimator):
     def update(self, X, y, C=None):
         """Update regressor with a new batch of training data.
 
-        Only estimators with the ``capability:online`` tag (value ``True``)
+        Only estimators with the ``capability:update`` tag (value ``True``)
         provide this method, otherwise the method ignores the call and
         discards the data passed.
 
@@ -164,7 +164,7 @@ class BaseProbaRegressor(BaseEstimator):
         -------
         self : reference to self
         """
-        capa_online = self.get_tag("capability:online")
+        capa_online = self.get_tag("capability:update")
         capa_surv = self.get_tag("capability:survival")
 
         if not capa_online:
