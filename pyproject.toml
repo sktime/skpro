@@ -35,8 +35,9 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.9,<3.14"
 dependencies = [
     "numpy>=1.21.0,<2.2",
     "pandas>=1.1.0,<2.3.0",
@@ -48,19 +49,16 @@ dependencies = [
 
 [project.optional-dependencies]
 all_extras = [
-    "attrs",
     "cyclic-boosting>=1.4.0; python_version < '3.12'",
-    "distfit",
-    "lifelines<0.30.0",
-    "mapie",
+    "distfit; python_version < '3.13'",
+    "lifelines<0.30.0; python_version < '3.13'",
+    "mapie; python_version < '3.13'",
     "matplotlib>=3.3.2",
-    "ngboost<0.6.0",
+    "ngboost<0.6.0; python_version < '3.13'",
     "polars<1.10.0",
     "pyarrow<14.0.0; python_version < '3.12'",
-    "scikit-survival<0.24.0",
+    "scikit-survival<0.24.0; python_version < '3.13'",
     "statsmodels>=0.12.1",
-    "tabulate",
-    "uncertainties",
 ]
 
 dev = [
