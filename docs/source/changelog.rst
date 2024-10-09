@@ -16,6 +16,58 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.7.0] - 2024-10-08
+====================
+
+Maintenance release with ``python 3.13`` support.
+
+Also contains:
+
+* new ``update`` unified interface point for probabilistic regressors,
+  to enable online learning and Bayesian updates in models
+* dependency updates
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``skpro`` is now compatible with ``python 3.13``.
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.12.0``.
+* ``polars`` (data container soft dependency) bounds have been updated to ``<1.10.0``.
+* dead (unimported) soft dependencies have been removed: ``attrs``, ``tabulate``, ``uncertainties``.
+
+Core interface changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+Probabilistic regressors and time-to-event predictors now have an ``update`` method.
+The ``update`` method is the unified interface point for incremental fitting strategies,
+such as online learning, efficient re-fit strategies, or Bayesian updates.
+
+Whether a non-trivial ``update`` method is implemented depends on the specific estimator,
+this can be inspected via the ``capability:update`` tag of the estimator.
+
+Estimators without a dedicated ``update`` method, that is, those with
+``capability:update=False``, implement the trivial ``update`` where no update
+is performed, with the internal estimator state remaining unchanged.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] online update capability for probabilistic regressors (:pr:`462`) :user:`fkiraly`
+* [ENH] online refitting strategy after N data points (:pr:`469`) :user:`fkiraly`
+* [ENH] ``datatypes`` examples - docstrings, deepcopy (:pr:`466`) :user:`fkiraly`
+* [ENH] sync proba predict utils with ``sktime`` (:pr:`465`) :user:`fkiraly`
+* [ENH] minor refactor - remove unnecessary `__init__` methods in `datatypes` module (:pr:`475`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] ``python 3.13`` support, add ``3.13`` to CI test matrix (:pr:`471`) :user:`fkiraly`
+* [MNT] differential testing - handle non-package changes in ``pyproject.toml`` (:pr:`472`) :user:`fkiraly`
+* [MNT] change macos runners to ``macos-latest`` version (:pr:`477`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update ``scikit-base`` requirement from ``<0.10.0,>=0.6.1`` to ``>=0.6.1,<0.12.0`` (:pr:`468`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.7.0`` to ``<1.10.0`` (:pr:`473`) :user:`dependabot[bot]`
+
+
 [2.6.0] - 2024-09-08
 ====================
 
