@@ -2,7 +2,7 @@
 Changelog
 =========
 
-All notable changes to this project beginning with version 0.1.0 will be
+All notable changes to this project beginning with version 1.0.0 are
 documented in this file. The format is based on
 `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_ and we adhere
 to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_. The source
@@ -14,6 +14,193 @@ You can also subscribe to ``skpro``'s
 
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
+
+
+[2.6.0] - 2024-09-08
+====================
+
+Maintenance release with scheduled deprecations and updates.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``numpy`` bounds have been updated to ``>=1.21.0,<2.2``.
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.10.0``.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] refactor ``datatypes`` mtypes - checkers, converters (:pr:`392`) :user:`fkiraly`
+* [ENH] refactor ``datatypes`` mtypes - example fixtures (:pr:`458`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update ``scikit-base`` requirement from ``<0.9.0,>=0.6.1`` to ``>=0.6.1,<0.10.0`` (:pr:`454`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``numpy`` requirement from ``<2.1,>=1.21.0`` to ``>=1.21.0,<2.2`` (:pr:`453`) :user:`dependabot[bot]`
+
+
+[2.5.1] - 2024-09-07
+====================
+
+Minor feature and bugfix release.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``polars`` (data container and parallelization back-end) bounds have been updated to ``<1.7.0``
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] Polars adapter enhancements (:pr:`449`) :user:`julian-fong`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.5.0`` to ``<1.7.0`` (:pr:`456`) :user:`dependabot[bot]`
+
+Fixes
+~~~~~
+
+* [BUG] changelog utility: fix termination condition to retrieve merged PR (:pr:`448`) :user:`fkiraly`
+* [BUG] Update ``skpro.utils.git_diff`` to fix issue with encoding  (:pr:`452`) :user:`julian-fong`
+* [BUG] fix variance bug in ``DummyProbaRegressor`` (:pr:`455`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] minor updates to ``README.md`` (:pr:`451`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`julian-fong`
+
+[2.5.0] - 2024-08-02
+====================
+
+Maintenance release with scheduled deprecations and updates.
+
+Kindly also note the python 3.8 End-of-life warning below.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``polars`` (data container soft dependency) bounds have been updated to ``<1.5.0``.
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Python 3.8 End-of-life
+^^^^^^^^^^^^^^^^^^^^^^
+
+``skpro`` now requires Python version ``>=3.9``.
+No errors will be raised on Python 3.8, but test coverage and support for
+Python 3.8 has been dropped.
+
+Kindly note for context: python 3.8 will reach end of life
+in October 2024, and multiple ``skpro`` core dependencies,
+including ``scikit-learn``, have already dropped support for 3.8.
+
+Probability distributions
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* In QPD distributions, deprecated parameters ``dist_shape``, ``version``
+  have been removed entirely. Instead of ``version``, users should use
+  ``base_dist``. Instead of ``dist_shape``, users should pass an ``skpro``
+  distribution to ``base_dist``, with the desired shape parameters.
+
+Probabilistic regression
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+* in probabilistic regressor tuners ``GridSearchCV``, ``RandomizedSearchCV``,
+  use of ``joblib`` backend specific parameters ``n_jobs``,
+  ``pre_dispatch`` have been removed.
+  Users should pass backend parameters via the ``backend_params`` parameter instead.
+* in ``GLMRegressor``, parameters have been reordered to be consistent with
+  the docstring, after a deprecation period.
+
+Contents
+~~~~~~~~
+
+* [MNT] python 3.8 end-of-life - remove 3.8 support and tags (:pr:`443`) :user:`fkiraly`
+* [MNT] 2.5.0 deprecations and change actions (:pr:`443`) :user:`fkiraly`
+* [MNT] ensure ``CyclicBoosting`` is consistent with deprecations in ``QPD_Johnson`` (:pr:`446`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.3.0`` to ``<1.5.0``(:pr:`442`) :user:`dependabot[bot]`
+* [MNT] release workflow: Upgrade deprecated pypa action parameter #6878 (:pr:`445`) :user:`szepeviktor`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`szepviktor`
+
+
+[2.4.2] - 2024-08-02
+====================
+
+Highlights
+~~~~~~~~~~
+
+* Multiclass classification reduction using Histograms (:pr:`410`) :user:`ShreeshaM07`
+* ``DummyProbaRegressor`` - probabilistic dummy regressor (:pr:`437`) :user:`julian-fong`
+* new probability distributions interfaced: Inverse Gamma, Truncated Normal (:pr:`415`, :pr:`421`) :user:`meraldoantonio`, :user:`ShreeshaM07`
+* various ``numpy 2`` compatibility fixes (:pr:`414`, :pr:`436`) :user:`ShreeshaM07`, :user:`fkiraly`
+
+Enhancements
+~~~~~~~~~~~~
+
+Data types, checks, conversions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* [ENH] Syncing datatypes module ``_check.py`` and ``_convert.py`` with ``sktime`` (:pr:`432`) :user:`julian-fong`
+
+Probability distributions
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* [ENH] Inverse Gamma distribution (:pr:`415`) :user:`meraldoantonio`
+* [ENH] Truncated Normal distribution (:pr:`421`) :user:`ShreeshaM07`
+
+Probabilistic regression
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+* [ENH] Multiclass classification reduction using Histograms (:pr:`410`) :user:`ShreeshaM07`
+* [ENH] ``DummyProbaRegressor`` - probabilistic dummy regressor (:pr:`437`) :user:`julian-fong`
+
+Test framework
+^^^^^^^^^^^^^^
+
+* [ENH] differential testing for CI tests (:pr:`435`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+Probability distributions
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* [BUG] Histogram Distribution: address ``np.broadcast_arrays`` deprecation of writable return in ``numpy 2.0.0`` (:pr:`414`) :user:`ShreeshaM07`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update scikit-survival requirement from ``<0.23.0`` to ``<0.24.0`` (:pr:`419`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from ``<0.21.0`` to ``<1.1.0`` (:pr:`418`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.1.0`` to ``<1.2.0`` (:pr:`420`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.2.0`` to ``<1.3.0`` (:pr:`425`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update sphinx-gallery requirement from ``<0.17.0`` to ``<0.18.0`` (:pr:`431`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update sphinx requirement from ``!=7.2.0,<8.0.0`` to ``!=7.2.0,<9.0.0`` (:pr:`438`) :user:`dependabot[bot]`
+* [MNT] sync differential testing utilities with ``sktime`` (:pr:`434`) :user:`fkiraly`
+* [MNT] fix ``numpy 2`` incompatibility of ``Pareto`` distribution (:pr:`436`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`julian-fong`,
+:user:`meraldoantonio`,
+:user:`ShreeshaM07`
 
 
 [2.4.1] - 2024-06-26
@@ -34,7 +221,7 @@ Dependency changes
 * ``numpy`` bounds have been updated to ``>=1.21.0,<2.1.0``.
 
 Contents
---------
+~~~~~~~~
 
 * [MNT] increase ``numpy`` bound to ``numpy < 2.1``, ``numpy 2`` compatibility
   (:pr:`393`) :user:`fkiraly`
@@ -45,7 +232,7 @@ Contents
 ====================
 
 Highlights
-----------
+~~~~~~~~~~
 
 * ``GLM`` now supports multiple ``distributions`` and ``link`` function
   (:pr:`384`) :user:`ShreeshaM07`
@@ -62,7 +249,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 Probability distributions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] mean-scale family of distributions, composite (:pr:`282`) :user:`fkiraly`
 * [ENH] Half Normal Distribution (:pr:`363`) :user:`SaiRevanth25`
@@ -73,13 +260,13 @@ Probability distributions
 * [ENH] Pareto distribution (:pr:`396`) :user:`sukjingitsit`
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] ``GLM`` with multiple ``distributions`` and ``link`` function support (:pr:`384`) :user:`ShreeshaM07`
 * [ENH] interval width and area under calibration curve metrics (:pr:`391`) :user:`fkiraly`
 
 Test framework
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 * [ENH] Tests for polars support for estimators (:pr:`370`) :user:`julian-fong`
 
@@ -87,13 +274,13 @@ Fixes
 ~~~~~
 
 Probability distributions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [BUG] fix ``test_methods_p`` logic when ``shuffle`` is ``True`` (:pr:`381`) :user:`ShreeshaM07`
 * [BUG] ensure ``index`` and ``columns`` are taken into account in broadcasting if ``bc_params`` are set (:pr:`403`) :user:`fkiraly`
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [BUG] bugfix when ``None`` was specified for ``max_iter`` parameter in sklearn regressors (:pr:`386`) :user:`julian-fong`
 
@@ -201,7 +388,7 @@ Contributors
 ====================
 
 Highlights
-----------
+~~~~~~~~~~
 
 * new tutorial notebooks for survival prediction and probability distributions (:pr:`303`, :pr:`305`) :user:`fkiraly`
 * interface to ``ngboost`` probabilistic regressor and survival predictor (:pr:`215`, :pr:`301`, :pr:`309`, :pr:`332`) :user:`ShreeshaM07`
@@ -290,7 +477,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 Probability distributions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] probability distributions - boilerplate refactor (:pr:`265`) :user:`fkiraly`
 * [ENH] probability distributions: convenience feature to coerce ``index`` and ``columns`` to ``pd.Index`` (:pr:`276`) :user:`fkiraly`
@@ -319,7 +506,7 @@ Probability distributions
 * [ENH] improved defaults for ``BaseDistribution`` ``_mean``, ``_var``, and ``_energy_x`` (:pr:`330`) :user:`fkiraly`
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] interface to ``ngboost`` (:pr:`215`) :user:`ShreeshaM07`
 * [ENH] interfacing Poisson regressor from sklearn (:pr:`213`) :user:`nilesh05apr`
@@ -334,7 +521,7 @@ Survival and time-to-event prediction
 * [ENH] in ``ConditionUncensored`` reducer, ensure coercion to float of ``C`` (:pr:`318`) :user:`fkiraly`
 
 Test framework
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 * [MNT] faster collection of differential tests through caching, test if pyproject change (:pr:`296`) :user:`fkiraly`
 
@@ -342,7 +529,7 @@ Fixes
 ~~~~~
 
 Probability distributions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [BUG] bugfixes for distribution base class default methods (:pr:`281`) :user:`fkiraly`
 * [BUG] fix ``Empirical`` index to be ``pd.MultiIndex`` for hierarchical data index (:pr:`286`) :user:`fkiraly`
@@ -401,7 +588,7 @@ Contributors
 ====================
 
 Highlights
-----------
+~~~~~~~~~~
 
 * ``lifelines`` predictive survival regressors are available as ``skpro`` estimators:
   accelerated failure time (Fisk, Log-normal, Weibull), CoxPH variants,
@@ -418,7 +605,7 @@ Core interface changes
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Probability distributions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Probability distributions (``BaseDistribution``) now have a ``len`` method,
   which returns the number of number of rows of the distribution, this is the same
@@ -427,10 +614,10 @@ Probability distributions
   Such distributions implement ``pmf`` and ``log_pmf`` methods.
 
 Enhancements
-------------
+~~~~~~~~~~~~
 
 Probability distributions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] Log-normal probability distribution (:pr:`218`) :user:`bhavikar`
 * [ENH] Poisson distribution (:pr:`226`) :user:`fkiraly`
@@ -445,7 +632,7 @@ Probability distributions
 * [ENH] Fisk distribution aka log-logistic distribution (:pr:`259`) :user:`fkiraly`
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] ``GLMRegressor`` using statsmodels ``GLM`` with Gaussian link (:pr:`222`) :user:`julian-fong`
 * [ENH] added test parameters for probabilistic metrics (:pr:`234`) :user:`fkiraly`
@@ -459,34 +646,34 @@ Survival and time-to-event prediction
 * [ENH] log-logistic/Fisk AFT model from ``lifelines`` (:pr:`260`) :user:`fkiraly`
 
 Test framework
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 * [ENH] refactor test scenario creation to be lazy rather than on module load (:pr:`245`) :user:`fkiraly`
 
 Fixes
------
+~~~~~
 
 Probability distributions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [BUG] bugfixes to QPD distributions - ``QPD_U``, ``QPD_S`` (:pr:`194`) :user:`fkiraly`
 * [BUG] fixes to lognormal distribution  (:pr:`261`) :user:`fkiraly`
 
 Documentation
--------------
+~~~~~~~~~~~~~
 
 * [DOC] documentation improvement for probabilistic metrics (:pr:`234`) :user:`fkiraly`
 * [DOC] add :user:`julian-fong` to ``all-contributorsrc`` (:pr:`238`) :user:`fkiraly`
 * [DOC] docstring with mathematical description for ``QPD_Empirical`` (:pr:`253`) :user:`fkiraly`
 
 Maintenance
------------
+~~~~~~~~~~~
 
 * [MNT] fix version pointer in readthedocs ``json`` (:pr:`225`) :user:`fkiraly`
 * [MNT] fix broken api source links in latest docs version (:pr:`243`) :user:`duydl`
 
 Contributors
-------------
+~~~~~~~~~~~~
 
 :user:`bhavikar`,
 :user:`duydl`,
@@ -501,7 +688,7 @@ Contributors
 Minor bugfix and maintenance release.
 
 Contents
---------
+~~~~~~~~
 
 * [ENH] migrate tests of distribution prediction metrics to ``skbase`` class
   (:pr:`208`) :user:`fkiraly`
@@ -514,7 +701,7 @@ Contents
 ====================
 
 Highlights
-----------
+~~~~~~~~~~
 
 * interface to ``cyclic_boosting`` package (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
 * framework support for probabilistic survival/time-to-event prediction with right censored data (:pr:`157`) :user:`fkiraly`
@@ -543,7 +730,7 @@ BaseObject and base framework
   abstract parallelization backend in ``sktime``.
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * all probabilistic regressors now accept an argument ``C`` in ``fit``,
   to pass censoring information. This is for API compatibility with survival
@@ -577,7 +764,7 @@ Survival and time-to-event prediction
   information.
 
 Enhancements
-------------
+~~~~~~~~~~~~
 
 BaseObject and base framework
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -586,13 +773,13 @@ BaseObject and base framework
   (:pr:`187`) :user:`fkiraly`
 
 Probability distributions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] Johnson Quantile-Parameterized Distributions (QPD) with bounded and
   unbounded mode (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] Cyclic boosting interface (:pr:`144`) :user:`setoguchi-naoki`, :user:`FelixWick`
 * [ENH] abstract parallelization backend, refactor of ``evaluate`` and tuners,
@@ -609,10 +796,10 @@ Survival and time-to-event prediction
   (:pr:`198`) :user:`fkiraly`
 
 Fixes
------
+~~~~~
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [BUG] fix API non-compliance in ``sklearn`` variance prediction adapter (:pr:`192`) :user:`fkiraly`
 * [BUG] fix defaulting logic for ``_predict_interval`` and ``_predict_quantiles`` when only ``_predict_var`` is implemented (:pr:`191`) :user:`fkiraly`
@@ -620,18 +807,18 @@ Probabilistic regression
 * [BUG] fix fallback for ``pdfnorm`` method, add metrics to tests (:pr:`204`) :user:`fkiraly`
 
 Test framework
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 * [BUG] fix lookup for specialized test classes (:pr:`189`) :user:`fkiraly`
 
 Documentation
--------------
+~~~~~~~~~~~~~
 
 * [DOC] API reference for performance metrics (:pr:`206`) :user:`fkiraly`
 * [DOC] README update for 2.2.0 (:pr:`207`) :user:`fkiraly`
 
 Maintenance
------------
+~~~~~~~~~~~
 
 * [MNT] [Dependabot](deps): Bump styfle/cancel-workflow-action from ``0.12.0`` to ``0.12.1`` (:pr:`183`) :user:`dependabot`
 * [MNT] skip ``CyclicBoosting`` and QPD tests until #189 failures are resolved (:pr:`193`) :user:`fkiraly`
@@ -640,7 +827,7 @@ Maintenance
 * [MNT] [Dependabot](deps): Bump pre-commit/action from ``3.0.0`` to ``3.0.1`` (:pr:`202`) :user:`dependabot`
 
 Contributors
-------------
+~~~~~~~~~~~~
 
 :user:`FelixWick`,
 :user:`fkiraly`,
@@ -677,13 +864,13 @@ Probabilistic regression
   interface.
 
 Enhancements
-------------
+~~~~~~~~~~~~
 
 * [ENH] in ``BaseRegressorProba.fit``, use ``"feature_names"`` metadata field
   to store feature names and write to ``self`` in ``fit`` (:pr:`180`) :user:`dependabot`
 
 Maintenance
------------
+~~~~~~~~~~~
 
 * [MNT] [Dependabot](deps): Bump ``actions/dependency-review-action``
   from 3 to 4 (:pr:`178`) :user:`dependabot`
@@ -699,7 +886,7 @@ Maintenance
 ====================
 
 Highlights
-----------
+~~~~~~~~~~
 
 * ``sklearn`` based probabilistic regressors - Gaussian processes, Bayesian linear regression (:pr:`166`) :user:`fkiraly`
 * ``SklearnProbaReg`` - general interface adapter to ``sklearn`` regressors with variance prediction model (:pr:`163`) :user:`fkiraly`
@@ -711,21 +898,21 @@ Dependency changes
 * ``polars`` (data container soft dependency) bounds have been updated to allow python 3.12.
 
 Enhancements
-------------
+~~~~~~~~~~~~
 
 Data types, checks, conversions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] ``n_features`` and ``feature_names`` metadata field for table mtypes (:pr:`150`) :user:`fkiraly`
 * [ENH] ``check_is_mtype`` dict type return, improved input check error messages in ``BaseRegressorProba`` (:pr:`151`) :user:`fkiraly`
 
 Probability distributions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] adapter from ``scipy`` ``rv_discrete`` to ``skpro`` ``Empirical`` (:pr:`155`) :user:`fkiraly`
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] ``sklearn`` wrappers to str-coerce columns of ``pd.DataFrame`` before passing (:pr:`148`) :user:`fkiraly`
 * [ENH] clean up copy-paste leftovers in ``BaseProbaRegressor`` (:pr:`156`) :user:`fkiraly`
@@ -734,26 +921,26 @@ Probabilistic regression
 * [ENH] interfacing all concrete ``sklearn`` probabilistic regressors (:pr:`166`) :user:`fkiraly`
 
 Test framework
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 * [ENH] scenario tests for mixed ``pandas`` column index types (:pr:`145`) :user:`fkiraly`
 * [ENH] scitype inference utility, test class register, test class test condition (:pr:`159`) :user:`fkiraly`
 
 Fixes
------
+~~~~~
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [BUG] in probabilistic regressors, ensure correct index treatment if ``X: pd.DataFrame`` and ``y: np.ndarray`` are passed (:pr:`146`) :user:`fkiraly`
 
 Documentation
--------------
+~~~~~~~~~~~~~
 
 * [DOC] update ``AUTHORS.rst`` file (:pr:`147`) :user:`fkiraly`
 
 Maintenance
------------
+~~~~~~~~~~~
 
 * [MNT] [Dependabot](deps): Bump ``actions/upload-artifact`` from 3 to 4 (:pr:`154`) :user:`dependabot`
 * [MNT] [Dependabot](deps): Bump ``actions/download-artifact`` from 3 to 4 (:pr:`153`) :user:`dependabot`
@@ -769,7 +956,7 @@ Maintenance
 ====================
 
 Highlights
-----------
+~~~~~~~~~~
 
 * probabilistic regressor: multiple quantile regression (:pr:`108`) :user:`Ram0nB`
 * probabilistic regressor: interface to ``MapieRegressor`` from ``mapie`` package
@@ -777,15 +964,15 @@ Highlights
 * framework support for ``polars`` via mtypes (:pr:`130`) :user:`fkiraly`
 
 Enhancements
-------------
+~~~~~~~~~~~~
 
 Data types, checks, conversions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] ``polars`` mtypes for data tables (:pr:`130`) :user:`fkiraly`
 
 Probabilistic regression
-~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 * [ENH] probabilistic regressors - input checks and support for more input types
   (:pr:`129`) :user:`fkiraly`
@@ -793,7 +980,7 @@ Probabilistic regression
 * [ENH] interface ``MapieRegressor`` from ``mapie`` (:pr:`136`) :user:`fkiraly`
 
 Test framework
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 * [ENH] integrate ``check_estimator`` with ``TestAllEstimators`` and
   ``TestAllRegressors`` for python command line estimator testing
@@ -801,7 +988,7 @@ Test framework
 * [ENH] improved conditional testing (:pr:`140`) :user:`fkiraly`
 
 Documentation
--------------
+~~~~~~~~~~~~~
 
 * [DOC] fix math in ``plotting`` docstrings (:pr:`121`) :user:`fkiraly`
 * [DOC] improved probabilistic tabular regressor extension template
@@ -809,21 +996,21 @@ Documentation
 * [DOC] typo fixes in regression extension template (:pr:`139`) :user:`fkiraly`
 
 Maintenance
------------
+~~~~~~~~~~~
 
 * [MNT] point readthedocs ``json`` switcher variable to GitHub
   (:pr:`125`) :user:`fkiraly`
 * [MNT] change test OS versions to latest (:pr:`126`) :user:`fkiraly`
 
 Fixes
------
+~~~~~
 
 * [BUG] fix test fixture generation logic (:pr:`142`) :user:`fkiraly`
 * [BUG] fix retrieval in ``all_objects`` if ``filter_tags`` is provided
   (:pr:`141`) :user:`fkiraly`
 
 Contributors
-------------
+~~~~~~~~~~~~
 :user:`fkiraly`,
 :user:`Ram0nB`
 
@@ -834,7 +1021,7 @@ Contributors
 Python 3.12 compatibility release.
 
 Contents
---------
+~~~~~~~~
 
 * [MNT] [Dependabot](deps-dev): Update ``numpy`` requirement from
   ``<1.25,>=1.21.0`` to ``>=1.21.0,<1.27`` (:pr:`118`) :user:`dependabot`
@@ -847,17 +1034,17 @@ Contents
 Release with minor maintenance actions and enhancements.
 
 Enhancements
-------------
+~~~~~~~~~~~~
 
 * [ENH] basic "test all estimators" suite (:pr:`89`) :user:`fkiraly`
 
 Documentation
--------------
+~~~~~~~~~~~~~
 
 * [DOC] improvements to notebook 1 (:pr:`106`) :user:`fkiraly`
 
 Maintenance
------------
+~~~~~~~~~~~
 
 * [MNT] address deprecation of ``skbase.testing.utils.deep_equals``
   (:pr:`111`) :user:`fkiraly`
@@ -887,7 +1074,7 @@ Contributions, bug reports, and feature requests are welcome on the `issue track
 or on the `community Discord <https://discord.com/invite/54ACzaFsn7>`_.
 
 Contributors
-------------
+~~~~~~~~~~~~
 :user:`Alex-JG3`,
 :user:`fkiraly`,
 :user:`frthjf`

@@ -123,6 +123,12 @@ OBJECT_TAG_REGISTER = [
         "whether estimator supports missing values",
     ),
     (
+        "capability:online",
+        "regressor_proba",
+        "bool",
+        "whether estimator supports online updates via update",
+    ),
+    (
         "X_inner_mtype",
         "regressor_proba",
         ("list", "str"),
