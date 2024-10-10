@@ -7,9 +7,9 @@ import pytest
 
 from skpro.datatypes._check import (
     AMBIGUOUS_MTYPES,
-    check_dict,
     check_is_mtype,
     check_is_scitype,
+    get_check_dict,
 )
 from skpro.datatypes._check import mtype as infer_mtype
 from skpro.datatypes._check import scitype as infer_scitype
@@ -129,6 +129,7 @@ def test_check_positive(scitype, mtype, fixture_index):
     fixture = get_examples(mtype=mtype, as_scitype=scitype).get(fixture_index)
 
     # todo: possibly remove this once all checks are defined
+    check_dict = get_check_dict()
     check_is_defined = (mtype, scitype) in check_dict.keys()
 
     # check fixtures that exist against checks that exist, when full metadata is queried
@@ -184,6 +185,7 @@ def test_check_positive_check_scitype(scitype, mtype, fixture_index):
     fixture = get_examples(mtype=mtype, as_scitype=scitype).get(fixture_index)
 
     # todo: possibly remove this once all checks are defined
+    check_dict = get_check_dict()
     check_is_defined = (mtype, scitype) in check_dict.keys()
 
     # check fixtures that exist against checks that exist, when full metadata is queried
@@ -236,6 +238,7 @@ def test_check_metadata_inference(scitype, mtype, fixture_index):
     ).get(fixture_index)
 
     # todo: possibly remove this once all checks are defined
+    check_dict = get_check_dict()
     check_is_defined = (mtype, scitype) in check_dict.keys()
     # if the examples have no metadata to them, don't test
     metadata_provided = expected_metadata is not None
@@ -358,6 +361,7 @@ def test_check_negative(scitype, mtype):
             fixture_wrong_type = fixtures[wrong_mtype].get(i)
 
             # todo: possibly remove this once all checks are defined
+            check_dict = get_check_dict()
             check_is_defined = (mtype, scitype) in check_dict.keys()
 
             # check fixtures that exist against checks that exist
@@ -414,6 +418,7 @@ def test_mtype_infer(scitype, mtype, fixture_index):
     fixture = get_examples(mtype=mtype, as_scitype=scitype).get(fixture_index)
 
     # todo: possibly remove this once all checks are defined
+    check_dict = get_check_dict()
     check_is_defined = (mtype, scitype) in check_dict.keys()
 
     # check fixtures that exist against checks that exist
@@ -466,6 +471,7 @@ def test_scitype_infer(scitype, mtype, fixture_index):
     fixture = get_examples(mtype=mtype, as_scitype=scitype).get(fixture_index)
 
     # todo: possibly remove this once all checks are defined
+    check_dict = get_check_dict()
     check_is_defined = (mtype, scitype) in check_dict.keys()
 
     # check fixtures that exist against checks that exist
