@@ -59,6 +59,9 @@ all_extras = [
     "pyarrow<14.0.0; python_version < '3.12'",
     "scikit-survival<0.24.0; python_version < '3.13'",
     "statsmodels>=0.12.1",
+    "tabulate",
+    "uncertainties",
+    "pymc",
 ]
 
 dev = [
