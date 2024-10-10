@@ -61,7 +61,7 @@ all_extras = [
     "statsmodels>=0.12.1",
     "tabulate",
     "uncertainties",
-    "pymc",
+    "pymc; python_version < '3.13'",
 ]
 
 dev = [
