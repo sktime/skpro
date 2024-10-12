@@ -166,6 +166,12 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
 class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
     """Generic tests for all objects in the mini package."""
 
+    def test_doctest_examples(self, estimator_class):
+        """Runs doctests for estimator class."""
+        import doctest
+
+        doctest.run_docstring_examples(estimator_class, globals())
+
     # override this due to reserved_params index, columns, in the BaseDistribution class
     # index and columns params behave like pandas, i.e., are changed after __init__
     def test_constructor(self, object_class):
@@ -296,6 +302,42 @@ class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
                 f"Reason for discrepancy: {equals_msg}"
             )
             assert is_equal, msg
+
+    def test_get_test_params_coverage(self, estimator_class):
+        """Check that get_test_params has good test coverage.
+
+        Checks that:
+
+        * get_test_params returns at least two test parameter sets
+        """
+        param_list = estimator_class.get_test_params()
+
+        if isinstance(param_list, dict):
+            param_list = [param_list]
+
+        def _coerce_to_list_of_str(obj):
+            if isinstance(obj, str):
+                return obj
+            elif isinstance(obj, list):
+                return obj
+            else:
+                return []
+
+        reserved_param_names = estimator_class.get_class_tag(
+            "reserved_params", tag_value_default=None
+        )
+        reserved_param_names = _coerce_to_list_of_str(reserved_param_names)
+        reserved_set = set(reserved_param_names)
+
+        param_names = estimator_class.get_param_names()
+        unreserved_param_names = set(param_names).difference(reserved_set)
+
+        if len(unreserved_param_names) > 0:
+            msg = (
+                f"{estimator_class.__name__}.get_test_params should return "
+                f"at least two test parameter sets, but only {len(param_list)} found."
+            )
+            assert len(param_list) > 1, msg
 
 
 class TestAllEstimators(PackageConfig, BaseFixtureGenerator, _QuickTester):
