@@ -219,3 +219,13 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
             return pd.DataFrame(res_df.mean(axis=1), columns=["C_Harrell"])
         else:
             return res_df
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        # array case examples
+        params1 = {}
+        params2 = {"score": "median"}
+        params3 = {"normalization": "index"}
+
+        return [params1, params2, params3]

@@ -622,5 +622,19 @@ class Histogram(_BaseArrayDistribution):
             "index": pd.Index(np.arange(3)),
             "columns": pd.Index(np.arange(2)),
         }
+        params2 = {
+            "bins": [
+                [[0, 1.5, 2, 3, 4], [5, 5.5, 5.8, 6.5, 7, 7.5]],
+                [(2, 12, 5), [0, 1, 2, 3, 4]],
+                [[1.5, 2.5, 3.1, 4, 5.4], [-4, -2, -1.5, 5, 10]],
+            ],
+            "bin_mass": [
+                [[0.1, 0.2, 0.3, 0.4], [0.25, 0.1, 0, 0.4, 0.25]],
+                [[0.1, 0.2, 0.4, 0.2, 0.1], [0.4, 0.3, 0.2, 0.1]],
+                [[0.06, 0.15, 0.09, 0.7], [0.4, 0.15, 0.325, 0.125]],
+            ],
+            "index": pd.Index(np.arange(3)),
+            "columns": pd.Index(np.arange(2)),
+        }
 
-        return [params1]
+        return [params1, params 2]
