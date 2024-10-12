@@ -637,4 +637,4 @@ class Histogram(_BaseArrayDistribution):
             "columns": pd.Index(np.arange(2)),
         }
 
-        return [params1, params 2]
+        return [params1, params2]
