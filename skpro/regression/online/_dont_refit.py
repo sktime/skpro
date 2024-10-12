@@ -104,6 +104,6 @@ class OnlineDontRefit(_DelegatedProbaRegressor):
             params.append({"estimator": coxph})
         else:
             ridge = Ridge()
-            params.append({"estimator": ridge})
+            params.append({"estimator": ResidualDouble(ridge)})
 
         return params

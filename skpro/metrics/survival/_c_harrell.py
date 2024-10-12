@@ -225,7 +225,7 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
         """Return testing parameter settings for the estimator."""
         # array case examples
         params1 = {}
-        params2 = {"score": "median"}
+        params2 = {"score": "quantile", "score_args": {"q": 0.5}}
         params3 = {"normalization": "index"}
 
         return [params1, params2, params3]
