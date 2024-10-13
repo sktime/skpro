@@ -89,7 +89,7 @@ class OnlineDontRefit(_DelegatedProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from sklearn.linear_model import LinearRegression
+        from sklearn.linear_model import LinearRegression, Ridge
 
         from skpro.regression.residual import ResidualDouble
         from skpro.survival.coxph import CoxPH
@@ -102,5 +102,8 @@ class OnlineDontRefit(_DelegatedProbaRegressor):
         if _check_estimator_deps(CoxPH, severity="none"):
             coxph = CoxPH()
             params.append({"estimator": coxph})
+        else:
+            ridge = Ridge()
+            params.append({"estimator": ResidualDouble(ridge)})
 
         return params
