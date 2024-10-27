@@ -53,8 +53,8 @@ class QPD_Johnson(_DelegatedDistribution):
     base_dist: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.qpd import QPD_Johnson  # doctest: +SKIP
 
     >>> qpd = QPD_Johnson(
@@ -193,8 +193,8 @@ class QPD_S(BaseDistribution):
     base_dist: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.qpd import QPD_S  # doctest: +SKIP
 
     >>> qpd = QPD_S(
@@ -371,8 +371,8 @@ class QPD_B(BaseDistribution):
     base_dist: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.qpd import QPD_B  # doctest: +SKIP
 
     >>> qpd = QPD_B(
@@ -555,8 +555,8 @@ class QPD_U(BaseDistribution):
     base_dist: str, one of ``'normal'`` (default), ``'logistic'``
         options are ``'normal'`` (default) or ``'logistic'``
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.qpd import QPD_U  # doctest: +SKIP
 
     >>> qpd = QPD_U(

@@ -29,8 +29,8 @@ class Uniform(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions import Uniform
 
     >>> u = Uniform(lower=0, upper=5)

@@ -42,8 +42,8 @@ class Empirical(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> import pandas as pd
     >>> from skpro.distributions.empirical import Empirical
 

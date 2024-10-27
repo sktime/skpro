@@ -30,8 +30,8 @@ class Weibull(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.weibull import Weibull
 
     >>> w = Weibull(scale=[[1, 1], [2, 3], [4, 5]], k=1)

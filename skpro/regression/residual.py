@@ -101,8 +101,8 @@ class ResidualDouble(BaseProbaRegressor):
     estimator_resid_ : sklearn regressor, clone of ``estimator_resid``
         fitted estimator predicting the scale of the residual
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.regression.residual import ResidualDouble
     >>> from sklearn.ensemble import RandomForestRegressor
     >>> from sklearn.linear_model import LinearRegression

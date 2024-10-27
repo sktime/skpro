@@ -29,8 +29,8 @@ class Pareto(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.pareto import Pareto
 
     >>> n = Pareto(scale=[[1, 1.5], [2, 2.5], [3, 4]], alpha=3)

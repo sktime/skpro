@@ -144,8 +144,8 @@ class MapieRegressor(BaseProbaRegressor):
     conformity_scores_: ArrayLike of shape (n_samples_train,)
         Conformity scores between ``y_train`` and ``y_pred``.
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.regression.mapie import MapieRegressor  # doctest: +SKIP
     >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
     >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
