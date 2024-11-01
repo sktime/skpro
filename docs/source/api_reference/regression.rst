@@ -146,6 +146,7 @@ This section lists simple regressors which can be used as baselines.
 
     DeltaPointRegressor
     DummyProbaRegressor
+    DummyPolarsProbaRegressor
 
 
 Linear regression
