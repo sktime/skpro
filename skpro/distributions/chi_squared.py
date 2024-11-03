@@ -19,8 +19,8 @@ class ChiSquared(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.chi_squared import ChiSquared
     >>> chi = ChiSquared(dof=[[1, 2], [3, 4], [5, 6]])
     """

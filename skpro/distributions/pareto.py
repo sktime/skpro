@@ -16,7 +16,8 @@ class Pareto(BaseDistribution):
     and the Pareto index (or shape parameter) :math:`\alpha`
     by the parameter ``alpha``.
 
-    The CDF can be represented as,
+    The CDF can be represented as
+
     :math:`F(x) = 1-\left(\frac{\text{scale}}{x}\right)^\alpha
     \text{ if } x>0, 0 \text{ if } x<0`
 
@@ -29,8 +30,8 @@ class Pareto(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.pareto import Pareto
 
     >>> n = Pareto(scale=[[1, 1.5], [2, 2.5], [3, 4]], alpha=3)

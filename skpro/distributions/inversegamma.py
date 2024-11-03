@@ -31,8 +31,8 @@ class InverseGamma(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.inversegamma import InverseGamma
 
     >>> d = InverseGamma(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)

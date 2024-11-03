@@ -33,8 +33,8 @@ class TruncatedNormal(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.truncated_normal import TruncatedNormal
 
     >>> d = TruncatedNormal(\
