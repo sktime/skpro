@@ -46,12 +46,11 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["meraldoantonio"],
-        "python_version": ">=3.10",
+        "python_version": ">3.9",
         "python_dependencies": [
             "pymc",
             "pymc_marketing",
             "arviz>=0.18.0",
-            "scipy<=1.12.0",
         ],
         # estimator tags
         # --------------
