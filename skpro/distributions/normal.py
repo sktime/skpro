@@ -19,7 +19,7 @@ class Normal(BaseDistribution):
     The normal distribution is parametrized by mean :math:`\mu` and
     standard deviation :math:`\sigma`, such that the pdf is
 
-    .. math:: f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)  # noqa E501
+    .. math:: f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)
 
     The mean :math:`\mu` is represented by the parameter ``mu``,
     and the standard deviation :math:`\sigma` by the parameter ``sigma``.
@@ -33,12 +33,12 @@ class Normal(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.normal import Normal
 
     >>> n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1)
-    """
+    """  # noqa E501
 
     _tags = {
         "capabilities:approx": ["pdfnorm"],

@@ -35,8 +35,8 @@ class HalfNormal(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.halfnormal import HalfNormal
 
     >>> hn = HalfNormal(sigma=1)
