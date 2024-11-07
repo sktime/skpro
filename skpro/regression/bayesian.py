@@ -47,7 +47,12 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         # --------------
         "authors": ["meraldoantonio"],
         "python_version": ">=3.10",
-        "python_dependencies": ["pymc", "pymc_marketing", "arviz>=0.18.0"],
+        "python_dependencies": [
+            "pymc",
+            "pymc_marketing",
+            "arviz>=0.18.0",
+            "scipy<=1.12.0",
+        ],
         # estimator tags
         # --------------
         "capability:multioutput": False,  # can the estimator handle multi-output data?
