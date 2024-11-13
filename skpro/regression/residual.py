@@ -5,6 +5,7 @@ __author__ = ["fkiraly"]
 
 import numpy as np
 import pandas as pd
+import warnings
 from sklearn import clone
 
 from skpro.regression.base import BaseProbaRegressor
@@ -229,6 +230,9 @@ class ResidualDouble(BaseProbaRegressor):
             resids = (y - y_pred) ** 2
         else:
             resids = residual_trafo.fit_transform(y - y_pred)
+            warnings.warn(
+                "Arbitrary transforms are not compatible with the predict_proba method."
+            )
 
         resids = flatten_to_1D_if_colvector(resids)
 
@@ -295,6 +299,7 @@ class ResidualDouble(BaseProbaRegressor):
         est = self.estimator_
         est_r = self.estimator_resid_
         use_y_pred = self.use_y_pred
+        residual_trafo = self.residual_trafo
         distr_type = self.distr_type
         distr_loc_scale_name = self.distr_loc_scale_name
         distr_params = self.distr_params
@@ -325,6 +330,14 @@ class ResidualDouble(BaseProbaRegressor):
         X_r = prep_skl_df(X_r, copy_df=True)
 
         y_pred_scale = est_r.predict(X_r)
+        if residual_trafo == "absolute":
+            pass
+        elif residual_trafo == "squared":
+            y_pred_scale = np.sqrt(y_pred_scale)
+        else:
+            raise NotImplementedError(
+                f"residual_trafo {residual_trafo} not implemented"
+            )
         y_pred_scale = y_pred_scale.clip(min=min_scale)
         y_pred_scale = y_pred_scale.reshape(-1, n_cols)
 
