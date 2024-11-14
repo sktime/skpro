@@ -371,7 +371,7 @@ class ResidualDouble(BaseProbaRegressor):
 
             distr_type = Laplace
             distr_loc_scale_name = ("mu", "scale")
-            if residual_trafo == "absolute":
+            if residual_trafo == "squared":
                 y_pred_scale = y_pred_scale / np.sqrt(2.0)
         elif distr_type in ["Cauchy", "t"]:
             from skpro.distributions.t import TDistribution
