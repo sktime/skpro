@@ -7,10 +7,26 @@ import numpy as np
 import pandas as pd
 import warnings
 from sklearn import clone
+from scipy.special import gamma
 
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.numpy import flatten_to_1D_if_colvector
 from skpro.utils.sklearn import prep_skl_df
+
+
+def half_t_correction(dof: float) -> float:
+    """Expected value of absolute value of t-distributed variable with mu=0 sigma=1.
+
+    For X ~ t(dof, 0, sigma), the expected value of the absolute value is
+    ``2 * sigma * sqrt(dof) * gamma((dof + 1) / 2) / (sqrt(pi) * (dof - 1) * gamma(dof / 2))``.
+    So E[|X|] / half_t_correction(dof) is an estimate of sigma.
+    """
+    return (
+        2
+        * np.sqrt(dof)
+        * gamma((dof + 1) / 2)
+        / (np.sqrt(np.pi) * (dof - 1) * gamma(dof / 2))
+    )
 
 
 class ResidualDouble(BaseProbaRegressor):
@@ -348,17 +364,32 @@ class ResidualDouble(BaseProbaRegressor):
 
             distr_type = Normal
             distr_loc_scale_name = ("mu", "sigma")
+            if residual_trafo == "absolute":
+                y_pred_scale = y_pred_scale / np.sqrt(2 / np.pi)
         elif distr_type == "Laplace":
             from skpro.distributions.laplace import Laplace
 
             distr_type = Laplace
             distr_loc_scale_name = ("mu", "scale")
+            if residual_trafo == "absolute":
+                y_pred_scale = y_pred_scale / np.sqrt(2.0)
         elif distr_type in ["Cauchy", "t"]:
             from skpro.distributions.t import TDistribution
 
             distr_type = TDistribution
             distr_loc_scale_name = ("mu", "sigma")
-
+            if "df" not in distr_params or distr_params["df"] <= 2:
+                raise ValueError("Degrees of freedom must be greater than 2 for t-distribution.")
+            # Extract degrees of freedom
+            df = distr_params["df"]
+            if residual_trafo == "absolute":
+                y_pred_scale = y_pred_scale / half_t_correction(df)
+            elif residual_trafo == "squared":
+                y_pred_scale = y_pred_scale / np.sqrt(df / (df - 2))
+        else:
+            raise NotImplementedError(
+                f"distr_type {distr_type} not implemented"
+            )
         # collate all parameters for the distribution constructor
         # distribution params, if passed
         params = distr_params
