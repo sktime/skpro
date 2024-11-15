@@ -201,7 +201,7 @@ class ResidualDouble(BaseProbaRegressor):
 
         return y_pred
 
-    def _fit(self, X, y):
+    def _fit(self, X, y, sample_weight=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -213,6 +213,8 @@ class ResidualDouble(BaseProbaRegressor):
             feature instances to fit regressor to
         y : pandas DataFrame, must be same length as X
             labels to fit regressor to
+        sample_weight : pandas DataFrame, same length as X, default=None
+            sample weights to fit regressor to
 
         Returns
         -------
@@ -232,8 +234,10 @@ class ResidualDouble(BaseProbaRegressor):
         # flatten column vector to 1D array to avoid sklearn complaints
         y = y.values
         y = flatten_to_1D_if_colvector(y)
-
-        est.fit(X, y)
+        if sample_weight is None:
+            est.fit(X, y)
+        else:
+            est.fit(X, y, sample_weight=sample_weight)
 
         if cv is None:
             y_pred = est.predict(X)
@@ -261,7 +265,10 @@ class ResidualDouble(BaseProbaRegressor):
         # coerce X to pandas DataFrame with string column names
         X_r = prep_skl_df(X_r, copy_df=True)
 
-        est_r.fit(X_r, resids)
+        if sample_weight is None:
+            est_r.fit(X_r, resids)
+        else:
+            est_r.fit(X_r, resids, sample_weight=sample_weight)
 
         return self
 
@@ -373,7 +380,7 @@ class ResidualDouble(BaseProbaRegressor):
             distr_loc_scale_name = ("mu", "scale")
             if residual_trafo == "squared":
                 y_pred_scale = y_pred_scale / np.sqrt(2.0)
-        elif distr_type in ["Cauchy", "t"]:
+        elif distr_type == "t":
             from skpro.distributions.t import TDistribution
 
             distr_type = TDistribution
