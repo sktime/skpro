@@ -123,7 +123,9 @@ class BaseProbaRegressor(BaseEstimator):
             if not capa_surv:
                 return self._fit(X_inner, y_inner, sample_weight=sample_weight)
             else:
-                return self._fit(X_inner, y_inner, C=C_inner, sample_weight=sample_weight)
+                return self._fit(
+                    X_inner, y_inner, C=C_inner, sample_weight=sample_weight
+                )
 
     def _fit(self, X, y, C=None, sample_weight=None):
         """Fit regressor to training data.
@@ -201,7 +203,9 @@ class BaseProbaRegressor(BaseEstimator):
             if not capa_surv:
                 return self._update(X_inner, y_inner, sample_weight=sample_weight)
             else:
-                return self._update(X_inner, y_inner, C=C_inner, sample_weight=sample_weight)
+                return self._update(
+                    X_inner, y_inner, C=C_inner, sample_weight=sample_weight
+                )
 
     def _update(self, X, y, C=None, sample_weight=None):
         """Update regressor with a new batch of training data.

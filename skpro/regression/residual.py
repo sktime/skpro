@@ -3,11 +3,12 @@
 
 __author__ = ["fkiraly"]
 
+import warnings
+
 import numpy as np
 import pandas as pd
-import warnings
-from sklearn import clone
 from scipy.special import gamma
+from sklearn import clone
 
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.numpy import flatten_to_1D_if_colvector
@@ -15,10 +16,11 @@ from skpro.utils.sklearn import prep_skl_df
 
 
 def half_t_correction(dof: float) -> float:
-    """Expected value of absolute value of t-distributed variable with mu=0 sigma=1.
+    """Get expected value of absolute value of t-distributed variable with mu=0 sigma=1.
 
     For X ~ t(dof, 0, sigma), the expected value of the absolute value is
-    ``2 * sigma * sqrt(dof) * gamma((dof + 1) / 2) / (sqrt(pi) * (dof - 1) * gamma(dof / 2))``.
+    ``2 * sigma * sqrt(dof) * gamma((dof + 1) / 2) /
+    (sqrt(pi) * (dof - 1) * gamma(dof / 2))``.
     So E[|X|] / half_t_correction(dof) is an estimate of sigma.
     """
     return (
@@ -254,7 +256,11 @@ class ResidualDouble(BaseProbaRegressor):
         else:
             resids = residual_trafo.fit_transform(y - y_pred)
             warnings.warn(
-                "Arbitrary transforms are not compatible with the predict_proba method."
+                (
+                    "Arbitrary transforms are not compatible with the "
+                    "predict_proba method."
+                ),
+                stacklevel=2,
             )
 
         resids = flatten_to_1D_if_colvector(resids)
@@ -389,7 +395,9 @@ class ResidualDouble(BaseProbaRegressor):
             distr_type = TDistribution
             distr_loc_scale_name = ("mu", "sigma")
             if "df" not in distr_params or distr_params["df"] <= 2:
-                raise ValueError("Degrees of freedom must be greater than 2 for t-distribution.")
+                raise ValueError(
+                    "Degrees of freedom must be greater than 2 for t-distribution."
+                )
             # Extract degrees of freedom
             df = distr_params["df"]
             if residual_trafo == "absolute":
@@ -397,13 +405,15 @@ class ResidualDouble(BaseProbaRegressor):
             elif residual_trafo == "squared":
                 if df <= 3:
                     warnings.warn(
-                        "Degrees of freedom less than 3 tends to yield poor results for squared residuals."
+                        (
+                            "Degrees of freedom less than 3 tends to yield poor"
+                            " results for squared residuals."
+                        ),
+                        stacklevel=2,
                     )
                 y_pred_scale = y_pred_scale / np.sqrt(df / (df - 2))
         else:
-            raise NotImplementedError(
-                f"distr_type {distr_type} not implemented"
-            )
+            raise NotImplementedError(f"distr_type {distr_type} not implemented")
         # collate all parameters for the distribution constructor
         # distribution params, if passed
         params = distr_params
