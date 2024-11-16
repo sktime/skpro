@@ -155,7 +155,10 @@ class ResidualDouble(BaseProbaRegressor):
         self.residual_trafo = residual_trafo
         self.distr_type = distr_type
         self.distr_loc_scale_name = distr_loc_scale_name
-        self.distr_params = distr_params
+        if distr_params is not None:
+            self.distr_params = distr_params.copy()
+        else:
+            self.distr_params = None
         self.use_y_pred = use_y_pred
         self.cv = cv
         self.min_scale = min_scale
@@ -392,6 +395,10 @@ class ResidualDouble(BaseProbaRegressor):
             if residual_trafo == "absolute":
                 y_pred_scale = y_pred_scale / half_t_correction(df)
             elif residual_trafo == "squared":
+                if df <= 3:
+                    warnings.warn(
+                        "Degrees of freedom less than 3 tends to yield poor results for squared residuals."
+                    )
                 y_pred_scale = y_pred_scale / np.sqrt(df / (df - 2))
         else:
             raise NotImplementedError(
