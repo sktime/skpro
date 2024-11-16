@@ -103,7 +103,7 @@ jobs:
         run: make test
 
       - name: Publish code coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
 
   run-tests-all-extras:
     needs: code-quality
@@ -142,4 +142,4 @@ jobs:
         run: make test
 
       - name: Publish code coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
