@@ -1,9 +1,9 @@
 #!/usr/bin/env python3 -u
 # License: BSD 3 clause
-
 """Utility methods to print system info for debugging.
 
-adapted from :func:`sklearn.show_versions`
+adapted from
+:func: `sklearn.show_versions`
 """
 
 __author__ = ["mloning", "fkiraly"]
@@ -15,8 +15,7 @@ import sys
 
 
 def _get_sys_info():
-    """
-    System information.
+    """System information.
 
     Return
     ------
@@ -37,28 +36,33 @@ def _get_sys_info():
 # dependencies to print versions of, by default
 DEFAULT_DEPS_TO_SHOW = [
     "pip",
-    "skpro",
-    "skbase",
+    "sktime",
     "sklearn",
+    "skbase",
     "numpy",
     "scipy",
     "pandas",
     "matplotlib",
     "joblib",
     "numba",
-    "tabulate",
-    "uncertainties",
+    "statsmodels",
+    "pmdarima",
+    "statsforecast",
+    "tsfresh",
+    "tslearn",
+    "torch",
+    "tensorflow",
+    "tensorflow_probability",
 ]
 
 
 def _get_deps_info(deps=None):
-    """
-    Overview of the installed version of main dependencies.
+    """Overview of the installed version of main dependencies.
 
     Parameters
     ----------
     deps : optional, list of strings with import names
-        if None, behaves as deps = ["skpro"]
+        if None, behaves as deps = ["sktime"]
 
     Returns
     -------
@@ -68,10 +72,10 @@ def _get_deps_info(deps=None):
         of the import as present in the current python environment
     """
     if deps is None:
-        deps = ["skpro"]
+        deps = ["sktime"]
 
     def get_version(module):
-        return module.__version__
+        return getattr(module, "__version__", None)
 
     deps_info = {}
 
@@ -81,16 +85,17 @@ def _get_deps_info(deps=None):
                 mod = sys.modules[modname]
             else:
                 mod = importlib.import_module(modname)
-            ver = get_version(mod)
-            deps_info[modname] = ver
         except ImportError:
             deps_info[modname] = None
+        else:
+            ver = get_version(mod)
+            deps_info[modname] = ver
 
     return deps_info
 
 
 def show_versions():
-    """Print python version, OS version, skpro version, selected dependency versions.
+    """Print python version, OS version, sktime version, selected dependency versions.
 
     Pretty prints:
 
