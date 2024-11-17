@@ -1,6 +1,6 @@
 [project]
 name = "skpro"
-version = "2.7.0"
+version = "2.8.0"
 description = "A unified framework for tabular probabilistic regression, time-to-event prediction, and probability distributions in python"
 authors = [
     {name = "skpro developers", email = "info@sktime.net"},

@@ -15,6 +15,46 @@ You can also subscribe to ``skpro``'s
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
+[2.8.0] - 2024-11-17
+====================
+
+Feature and maintenance release.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.13.0``.
+* ``pymc`` is now a soft dependency, for probabilistic regressors.
+* ``polars`` (data container soft dependency) bounds have been updated to ``<1.14.0``.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] Creating a new Bayesian Regressor with ``pymc`` as a backend (:pr:`358`) :user:`meraldoantonio`
+* [ENH] add suite test for docstring and ``get_test_params`` coverage (:pr:`482`) :user:`fkiraly`
+* [ENH] Synchronize dependency checker with ``sktime`` counterpart (:pr:`490`) :user:`meraldoantonio`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] fix failing ``code-quality`` CI step (:pr:`483`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update ``scikit-base`` requirement from ``<0.12.0,>=0.6.1`` to ``>=0.6.1,<0.13.0`` (:pr:`483`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``sphinx-gallery`` requirement from ``<0.18.0`` to ``<0.19.0`` (:pr:`481`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``sphinx-issues`` requirement from ``<5.0.0`` to ``<6.0.0`` (:pr:`484`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.10.0`` to ``<1.14.0`` (:pr:`491`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump codecov/codecov-action from ``4`` to ``5`` (:pr:`494`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] in docstring, rename ``Example``  to ``Examples`` sections (:pr:`487`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`meraldoantonio`
+
 
 [2.7.0] - 2024-10-08
 ====================
