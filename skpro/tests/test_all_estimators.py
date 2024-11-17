@@ -13,6 +13,7 @@ from skbase.testing import TestAllObjects as _TestAllObjects
 from skbase.testing.utils.inspect import _get_args
 
 from skpro.registry import OBJECT_TAG_LIST, all_objects
+from skpro.tests._config import EXCLUDE_ESTIMATORS, EXCLUDED_TESTS
 from skpro.tests.scenarios.scenarios_getter import retrieve_scenarios
 from skpro.tests.test_switch import run_test_for_class
 from skpro.utils.deep_equals import deep_equals
@@ -35,7 +36,12 @@ class PackageConfig:
 
     # list of object types (class names) to exclude
     # expected type: list of str, str are class names
-    exclude_objects = ["ClassName"]  # exclude classes from extension templates
+    exclude_objects = EXCLUDE_ESTIMATORS
+
+    # list of tests to exclude
+    # expected type: dict of lists, key:str, value: List[str]
+    # keys are class names of estimators, values are lists of test names to exclude
+    excluded_tests = EXCLUDED_TESTS
 
     # list of valid tags
     # expected type: list of str, str are tag names
