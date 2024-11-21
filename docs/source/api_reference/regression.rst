@@ -195,3 +195,14 @@ Base classes
     :template: class.rst
 
     BaseProbaRegressor
+
+Bayesian
+------------
+
+.. currentmodule:: skpro.regression.bayesian.bayesian_conjugate
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    BayesianConjugateLinearRegressor
