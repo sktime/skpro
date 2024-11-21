@@ -1,4 +1,4 @@
-"""Bayesian Linear Regression Estimator for Probabilistic Regression."""
+"""Bayesian Conjugate Linear Regression Estimator."""
 
 __author__ = ["meraldoantonio"]
 
@@ -40,12 +40,39 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         prior : Normal, optional
             An existing Normal distribution prior. Default is None.
 
-        Raises
-        ------
-        ValueError
-            If neither (prior_mean and prior_cov) nor prior are provided.
-        TypeError
-            If the provided prior is not an instance of Normal.
+        Example
+        -------
+        >>> from skpro.regression.bayesian.bayesian_conjugate import (
+        ...     BayesianConjugateLinearRegressor,
+        ... )  # doctest: +SKIP
+        >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+        >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
+        >>> import numpy as np  # doctest: +SKIP
+
+        >>> # Load dataset
+        >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+        >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
+
+        >>> # Calculate prior mean and covariance
+        >>> n_features = X_train.shape[1]  # Number of features  # doctest: +SKIP
+        >>> prior_mean = np.zeros(n_features)  # Initialize prior mean as zeros
+        ... # doctest: +SKIP
+        >>> prior_cov = np.eye(n_features) * 10  # Diagonal covariance
+        ... # doctest: +SKIP
+
+        >>> # Initialize Bayesian Linear Regressor with prior
+        >>> bayes_model = BayesianConjugateLinearRegressor(
+        ...     prior_mean=prior_mean, prior_cov=prior_cov, noise_variance=1.0
+        ... )  # doctest: +SKIP
+
+        >>> # Fit the model
+        >>> bayes_model.fit(X_train, y_train)  # doctest: +SKIP
+
+        >>> # Predict probabilities (returns a distribution)
+        >>> y_test_pred_proba = bayes_model.predict_proba(X_test)  # doctest: +SKIP
+
+        >>> # Predict point estimates (mean of the predicted distribution)
+        >>> y_test_pred = bayes_model.predict(X_test)  # doctest: +SKIP
         """
         if prior is None:
             if prior_mean is None or prior_cov is None:
