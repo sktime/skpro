@@ -20,7 +20,6 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
 
     _tags = {
         "authors": ["meraldoantonio"],
-        "python_dependencies": ["scipy", "matplotlib"],
         "capability:multioutput": False,
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
