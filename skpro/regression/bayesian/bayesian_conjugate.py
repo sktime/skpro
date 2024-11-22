@@ -94,7 +94,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         if not is_centered:
             X -= X.mean(axis=0)
 
-        self._y_cols = y.columns
+        self._y_cols = [y.name]
 
         # Construct the prior mean, covariance, and precision
         self._prior_mu = np.zeros(n_features)
