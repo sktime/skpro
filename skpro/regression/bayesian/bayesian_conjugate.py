@@ -212,12 +212,12 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         """
         params1 = {
             "prior_mean": [0, 0],
-            "prior_sigma": [[1, 0], [0, 1]],
+            "prior_cov": [[1, 0], [0, 1]],
             "noise_variance": 1.0,
         }
         params2 = {
             "prior_mean": [0.5, 0.5],
-            "prior_sigma": [[2, 0.5], [0.5, 2]],
+            "prior_cov": [[2, 0.5], [0.5, 2]],
             "noise_variance": 0.5,
         }
 
