@@ -52,7 +52,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         "capability:multioutput": False,
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
-        "y_inner_mtype": "pd_Series_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
     }
 
     def __init__(self, alpha=1, beta=1):
@@ -94,7 +94,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         if not is_centered:
             X -= X.mean(axis=0)
 
-        self._y_cols = [y.name]
+        self._y_cols = y.columns
 
         # Construct the prior mean, covariance, and precision
         self._prior_mu = np.zeros(n_features)
@@ -150,7 +150,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             sigma=sigmas,
             columns=self._y_cols,
             index=idx,
-        ).iloc[:, 0]
+        )
         return self._y_pred
 
     def _perform_bayesian_inference(self, X, y, prior_mu, prior_cov):
@@ -185,11 +185,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         # Compute posterior precision and covariance
         posterior_precision = prior_precision + self.beta * (X.T @ X)
         posterior_cov = np.linalg.inv(posterior_precision)
-
-        # Compute posterior mean
-        posterior_mu = posterior_cov @ (
-            prior_precision @ prior_mu + self.beta * X.T @ y
-        )
+        posterior_mu = self.beta * (posterior_cov @ X.T @ y)
 
         return posterior_mu, posterior_cov
 
