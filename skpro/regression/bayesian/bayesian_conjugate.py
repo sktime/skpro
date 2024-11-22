@@ -153,7 +153,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             sigma=sigmas,
             columns=["y_pred"],
             index=idx,
-        )
+        ).iloc[:, 0]
         return self._y_pred
 
     def _perform_bayesian_inference(self, X, y):
