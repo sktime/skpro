@@ -74,10 +74,10 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             raise TypeError(
                 "prior_coefficients must be an instance of skpro Normal distribution"
             )
-        self.prior = prior_coefficients
-        self._prior_mu = self.prior.mu
-        self._prior_sigma = self.prior.sigma
-        self._prior_cov = np.diag(self._prior_sigma**2)
+        self.prior_coefficients = prior_coefficients
+        self._prior_coefficients_mu = self.prior_coefficients.mu
+        self._prior_coefficients_sigma = self.prior_coefficients.sigma
+        self._prior_coefficients_cov = np.diag(self._prior_coefficients_sigma**2)
 
         self.noise_variance = noise_variance
         super().__init__()
@@ -99,7 +99,9 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        self._posterior = self._perform_bayesian_inference(self.prior, X, y)
+        self._posterior_coefficients = self._perform_bayesian_inference(
+            self.prior_coefficients, X, y
+        )
         return self
 
     def _predict_proba(self, X):
@@ -117,21 +119,25 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         """
         if isinstance(X, pd.DataFrame):
             X = X.values
-        posterior_mu = X @ self._posterior.mu
-        posterior_cov = X @ np.diag(self._posterior.sigma**2) @ X.T
-        posterior_sigma = np.sqrt(np.diag(posterior_cov) + self.noise_variance)
+        posterior_coefficients_mu = X @ self._posterior_coefficients.mu
+        posterior_coefficients_cov = (
+            X @ np.diag(self._posterior_coefficients.sigma**2) @ X.T
+        )
+        posterior_coefficients_sigma = np.sqrt(
+            np.diag(posterior_coefficients_cov) + self.noise_variance
+        )
 
-        return Normal(mu=posterior_mu, sigma=posterior_sigma)
+        return Normal(mu=posterior_coefficients_mu, sigma=posterior_coefficients_sigma)
 
-    def _perform_bayesian_inference(self, prior, X, y):
+    def _perform_bayesian_inference(self, prior_coefficients, X, y):
         """Perform Bayesian inference for linear regression.
 
         Obtains the posterior distribution using normal conjugacy formula.
 
         Parameters
         ----------
-        prior : Normal
-            The prior Normal distribution.
+        prior_coefficients : Normal
+            The prior Normal distribution for coefficients.
         X : pandas DataFrame
             Feature matrix (n_samples, n_features).
         y : pandas Series
@@ -139,31 +145,32 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
 
         Returns
         -------
-        posterior : Normal
+        posterior_coefficients : Normal
             Posterior Normal distribution with updated parameters.
         """
         X = np.array(X)
         y = np.array(y)
 
         # Prior parameters
-        prior_mu = prior.mu
-        prior_cov = np.diag(prior.sigma**2)
+        prior_coefficients_mu = prior_coefficients.mu
+        prior_coefficients_cov = np.diag(prior_coefficients.sigma**2)
 
         # Compute posterior parameters
-        posterior_cov = np.linalg.inv(
-            np.linalg.inv(prior_cov) + (X.T @ X) / self.noise_variance
+        posterior_coefficients_cov = np.linalg.inv(
+            np.linalg.inv(prior_coefficients_cov) + (X.T @ X) / self.noise_variance
         )
-        posterior_mu = posterior_cov @ (
-            np.linalg.inv(prior_cov) @ prior_mu + (X.T @ y) / self.noise_variance
+        posterior_coefficients_mu = posterior_coefficients_cov @ (
+            np.linalg.inv(prior_coefficients_cov) @ prior_coefficients_mu
+            + (X.T @ y) / self.noise_variance
         )
-        posterior_sigma = np.sqrt(np.diag(posterior_cov))
+        posterior_coefficients_sigma = np.sqrt(np.diag(posterior_coefficients_cov))
 
         # Save posterior attributes
-        self._posterior_mu = posterior_mu
-        self._posterior_sigma = posterior_sigma
-        self._posterior_cov = posterior_cov
+        self._posterior_coefficients_mu = posterior_coefficients_mu
+        self._posterior_coefficients_sigma = posterior_coefficients_sigma
+        self._posterior_coefficients_cov = posterior_coefficients_cov
 
-        return Normal(mu=posterior_mu, sigma=posterior_sigma)
+        return Normal(mu=posterior_coefficients_mu, sigma=posterior_coefficients_sigma)
 
     def update(self, X, y):
         """Update the posterior with new data.
@@ -180,10 +187,14 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         self : reference to self
         """
         # Update posterior by treating the current posterior as the new prior
-        self._posterior = self._perform_bayesian_inference(self._posterior, X, y)
-        self._posterior_mu = self._posterior.mu
-        self._posterior_sigma = self._posterior.sigma
-        self._posterior_cov = np.diag(self._posterior_sigma**2)
+        self._posterior_coefficients = self._perform_bayesian_inference(
+            self._posterior_coefficients, X, y
+        )
+        self._posterior_coefficients_mu = self._posterior_coefficients.mu
+        self._posterior_coefficients_sigma = self._posterior_coefficients.sigma
+        self._posterior_coefficients_cov = np.diag(
+            self._posterior_coefficients_sigma**2
+        )
 
         return self
 
