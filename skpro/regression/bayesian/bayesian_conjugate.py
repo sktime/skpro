@@ -34,9 +34,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
     >>> X_train -= X_train.mean(axis=0)  # doctest: +SKIP
 
     >>> # Initialize model
-    >>> bayes_model = BayesianConjugateLinearRegressor(
-    ...     alpha=10.0, beta=1.0, n_features=X_train.shape[1]
-    ... )  # doctest: +SKIP
+    >>> bayes_model = BayesianConjugateLinearRegressor(alpha=10.0,
+    ... beta=1.0)  # doctest: +SKIP
 
     >>> # Fit the model
     >>> bayes_model.fit(X_train, y_train)  # doctest: +SKIP
@@ -56,7 +55,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_Series_Table",
     }
 
-    def __init__(self, alpha, beta, n_features):
+    def __init__(self, alpha, beta):
         """Initialize the Bayesian Linear Regressor.
 
         Parameters
@@ -65,18 +64,9 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Scalar precision parameter of the coefficients normal prior.
         beta : float
             Known precision of the Gaussian likelihood.
-        n_features : int
-            Number of features (coefficients) in the linear model.
         """
         self.alpha = alpha
         self.beta = beta
-        self.n_features = n_features
-
-        # Construct the prior mean, covariance and precision
-        self._prior_mu = np.zeros(self.n_features)
-        self._prior_cov = np.eye(self.n_features) / self.alpha
-        self._prior_precision = np.linalg.inv(self._prior_cov)
-
         super().__init__()
 
     def _fit(self, X, y):
@@ -96,15 +86,18 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        # Ensure dimensions match the number of features
-        assert X.shape[1] == self.n_features, (
-            f"Expected {self.n_features} features, " f"but got {X.shape[1]} features."
-        )
+        # Infer the number of features
+        n_features = X.shape[1]
 
         # Ensure the data is centered
         is_centered = np.allclose(X.mean(axis=0), 0)
         if not is_centered:
             X -= X.mean(axis=0)
+
+        # Construct the prior mean, covariance, and precision
+        self._prior_mu = np.zeros(n_features)
+        self._prior_cov = np.eye(n_features) / self.alpha
+        self._prior_precision = np.linalg.inv(self._prior_cov)
 
         # Perform Bayesian inference
         self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(X, y)
@@ -203,9 +196,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(
-            X, y, self._posterior_mu, self._posterior_cov
-        )
+        self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(X, y)
         return self
 
     @classmethod
@@ -226,7 +217,6 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         params1 = {
             "alpha": 10.0,
             "beta": 1.0,
-            "n_features": 10,
         }
 
         return [params1]
