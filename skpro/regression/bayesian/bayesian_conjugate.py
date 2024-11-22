@@ -146,7 +146,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         self._y_pred = Normal(
             mu=mus,
             sigma=sigmas,
-            columns=self.y_cols,
+            columns=self._y_cols,
             index=idx,
         ).iloc[:, 0]
         return self._y_pred
