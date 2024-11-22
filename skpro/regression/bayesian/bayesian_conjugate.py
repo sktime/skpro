@@ -102,10 +102,9 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         )
 
         # Ensure the data is centered
-        assert np.allclose(X.mean(axis=0), 0), (
-            "Data is not centered. Ensure that the features have been mean-centered "
-            "before fitting the model."
-        )
+        is_centered = np.allclose(X.mean(axis=0), 0)
+        if not is_centered:
+            X -= X.mean(axis=0)
 
         # Perform Bayesian inference
         self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(X, y)
