@@ -213,18 +213,19 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         params : dict or list of dict, default = {}
             Parameters to create testing instances of the class
         """
-        n_features = 2
+        n_features = 10
         params1 = {
             "prior_coefficients": Normal(
-                mu=np.zeros(n_features), sigma=np.ones(n_features)
+                mu=np.zeros(n_features), sigma=np.ones(n_features) * 5
             ),
             "noise_variance": 1.0,
         }
         params2 = {
             "prior_coefficients": Normal(
-                mu=np.array([0.5, 0.5]), sigma=np.array([2.0, 2.0])
+                mu=np.random.uniform(0, 1, n_features),
+                sigma=np.random.uniform(1, 3, n_features),
             ),
-            "noise_variance": 0.5,
+            "noise_variance": 2.0,
         }
 
         return [params1, params2]
