@@ -81,13 +81,17 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
                 )
             self.prior_mean = np.array(prior_mean)
             self.prior_sigma = np.sqrt(np.array(prior_cov).diagonal())  # Convert to std
+            self.prior_cov = np.array(prior_cov)
             self.prior = Normal(mu=self.prior_mean, sigma=self.prior_sigma)
         else:
             if not isinstance(prior, Normal):
-                raise TypeError("Prior must be an instance of Normal.")
+                raise TypeError(
+                    "Prior must be an instance of skpro Normal distribution"
+                )
             self.prior = prior
             self.prior_mean = prior.mu
             self.prior_sigma = prior.sigma
+            self.prior_cov = np.diag(self.prior_sigma**2)
 
         self.noise_variance = noise_variance
         super().__init__()
