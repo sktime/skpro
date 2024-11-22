@@ -16,6 +16,40 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
     It assumes a known noise variance for the Gaussian likelihood.
     Upon inference, it returns a Normal distribution for the posterior
     as well as for predictions.
+
+    Example
+    -------
+    >>> from skpro.regression.bayesian.bayesian_conjugate import (
+    ...     BayesianConjugateLinearRegressor,
+    ... )  # doctest: +SKIP
+    >>> from skpro.distributions import Normal  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
+    >>> import numpy as np  # doctest: +SKIP
+
+    >>> # Load dataset
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
+
+    >>> # Define prior coefficients as a Normal distribution
+    >>> n_features = X_train.shape[1]  # doctest: +SKIP
+    >>> prior_coefficients = Normal(
+    ...     mu=np.zeros(n_features), sigma=np.ones(n_features) * 10
+    ... )  # doctest: +SKIP
+
+    >>> # Initialize model
+    >>> bayes_model = BayesianConjugateLinearRegressor(
+    ...     prior_coefficients=prior_coefficients, noise_variance=1.0
+    ... )  # doctest: +SKIP
+
+    >>> # Fit the model
+    >>> bayes_model.fit(X_train, y_train)  # doctest: +SKIP
+
+    >>> # Predict probabilities (returns an skpro Normal distribution)
+    >>> y_test_pred_proba = bayes_model.predict_proba(X_test)  # doctest: +SKIP
+
+    >>> # Predict point estimates (mean of the predicted distribution)
+    >>> y_test_pred = bayes_model.predict(X_test)  # doctest: +SKIP
     """
 
     _tags = {
@@ -26,72 +60,24 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_Series_Table",
     }
 
-    def __init__(self, prior_mean=None, prior_cov=None, noise_variance=1.0, prior=None):
-        """Initialize the Bayesian Linear Regressor with priors.
+    def __init__(self, prior_coefficients, noise_variance=1.0):
+        """Initialize the Bayesian Linear Regressor with prior coefficients.
 
         Parameters
         ----------
-        prior_mean : ndarray, optional
-            Mean vector for the Normal prior for coefficients. Default is None.
-        prior_cov : ndarray, optional
-            Covariance matrix for the Normal prior for coefficients. Default is None.
+        prior_coefficients : Normal
+            A Normal distribution instance representing the prior coefficients.
         noise_variance : float, optional
             Known variance of the Gaussian likelihood. Default is 1.0.
-        prior : Normal, optional
-            An existing Normal distribution prior. Default is None.
-            Example
-
-        Example
-        -------
-        >>> from skpro.regression.bayesian.bayesian_conjugate import (
-        ...     BayesianConjugateLinearRegressor,
-        ... )  # doctest: +SKIP
-        >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
-        >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
-        >>> import numpy as np  # doctest: +SKIP
-
-        >>> # Load dataset
-        >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
-        >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
-
-        >>> # Calculate prior mean and covariance
-        >>> n_features = X_train.shape[1]  # doctest: +SKIP
-        >>> prior_mean = np.zeros(n_features)  # Init. prior mu as 0's # doctest: +SKIP
-        >>> prior_cov = np.eye(n_features) * 10  # Diagonal covariance # doctest: +SKIP
-
-        >>> # Initialize Bayesian Linear Regressor with prior
-        >>> bayes_model = BayesianConjugateLinearRegressor(
-        ...     prior_mean=prior_mean, prior_cov=prior_cov, noise_variance=1.0
-        ... )  # doctest: +SKIP
-
-        >>> # Fit the model
-        >>> bayes_model.fit(X_train, y_train)  # doctest: +SKIP
-
-        >>> # Predict probabilities (returns a distribution)
-        >>> y_test_pred_proba = bayes_model.predict_proba(X_test)  # doctest: +SKIP
-
-        >>> # Predict point estimates (mean of the predicted distribution)
-        >>> y_test_pred = bayes_model.predict(X_test)  # doctest: +SKIP
-
         """
-        if prior is None:
-            if prior_mean is None or prior_cov is None:
-                raise ValueError(
-                    "Must provide either (prior_mean and prior_cov) or prior."
-                )
-            self.prior_mean = prior_mean
-            self.prior_sigma = np.sqrt(prior_cov.diagonal())  # Convert to std_dev
-            self.prior_cov = prior_cov
-            self.prior = Normal(mu=self.prior_mean, sigma=self.prior_sigma)
-        else:
-            if not isinstance(prior, Normal):
-                raise TypeError(
-                    "Prior must be an instance of skpro Normal distribution"
-                )
-            self.prior = prior
-            self.prior_mean = prior.mu
-            self.prior_sigma = prior.sigma
-            self.prior_cov = np.diag(self.prior_sigma**2)
+        if not isinstance(prior_coefficients, Normal):
+            raise TypeError(
+                "prior_coefficients must be an instance of skpro Normal distribution"
+            )
+        self.prior = prior_coefficients
+        self._prior_mu = self.prior.mu
+        self._prior_sigma = self.prior.sigma
+        self._prior_cov = np.diag(self._prior_sigma**2)
 
         self.noise_variance = noise_variance
         super().__init__()
@@ -131,11 +117,11 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         """
         if isinstance(X, pd.DataFrame):
             X = X.values
-        mean_pred = X @ self._posterior.mu
-        cov_pred = X @ np.diag(self._posterior.sigma**2) @ X.T
-        sigma_pred = np.sqrt(np.diag(cov_pred) + self.noise_variance)
+        posterior_mu = X @ self._posterior.mu
+        posterior_cov = X @ np.diag(self._posterior.sigma**2) @ X.T
+        posterior_sigma = np.sqrt(np.diag(posterior_cov) + self.noise_variance)
 
-        return Normal(mu=mean_pred, sigma=sigma_pred)
+        return Normal(mu=posterior_mu, sigma=posterior_sigma)
 
     def _perform_bayesian_inference(self, prior, X, y):
         """Perform Bayesian inference for linear regression.
@@ -159,23 +145,25 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         X = np.array(X)
         y = np.array(y)
 
-        # Prior mean and covariance
-        prior_mean = prior.mu
-        prior_cov = np.diag(prior.sigma**2)  # Convert std to covariance
+        # Prior parameters
+        prior_mu = prior.mu
+        prior_cov = np.diag(prior.sigma**2)
 
         # Compute posterior parameters
         posterior_cov = np.linalg.inv(
             np.linalg.inv(prior_cov) + (X.T @ X) / self.noise_variance
         )
-        posterior_mean = posterior_cov @ (
-            np.linalg.inv(prior_cov) @ prior_mean + (X.T @ y) / self.noise_variance
+        posterior_mu = posterior_cov @ (
+            np.linalg.inv(prior_cov) @ prior_mu + (X.T @ y) / self.noise_variance
         )
         posterior_sigma = np.sqrt(np.diag(posterior_cov))
-        self._posterior_mean = posterior_mean
+
+        # Save posterior attributes
+        self._posterior_mu = posterior_mu
         self._posterior_sigma = posterior_sigma
         self._posterior_cov = posterior_cov
 
-        return Normal(mu=posterior_mean, sigma=posterior_sigma)
+        return Normal(mu=posterior_mu, sigma=posterior_sigma)
 
     def update(self, X, y):
         """Update the posterior with new data.
@@ -191,9 +179,9 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        # in the update, the existing posterior serves as prior
+        # Update posterior by treating the current posterior as the new prior
         self._posterior = self._perform_bayesian_inference(self._posterior, X, y)
-        self._posterior_mean = self._posterior.mean
+        self._posterior_mu = self._posterior.mu
         self._posterior_sigma = self._posterior.sigma
         self._posterior_cov = np.diag(self._posterior_sigma**2)
 
@@ -214,14 +202,17 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         params : dict or list of dict, default = {}
             Parameters to create testing instances of the class
         """
+        n_features = 2
         params1 = {
-            "prior_mean": np.array([0, 0]),
-            "prior_cov": np.array([[1, 0], [0, 1]]),
+            "prior_coefficients": Normal(
+                mu=np.zeros(n_features), sigma=np.ones(n_features)
+            ),
             "noise_variance": 1.0,
         }
         params2 = {
-            "prior_mean": np.array([0.5, 0.5]),
-            "prior_cov": np.array([[2, 0.5], [0.5, 2]]),
+            "prior_coefficients": Normal(
+                mu=np.array([0.5, 0.5]), sigma=np.array([2.0, 2.0])
+            ),
             "noise_variance": 0.5,
         }
 
