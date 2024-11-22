@@ -221,4 +221,9 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             "beta": 1.0,
         }
 
-        return [params1]
+        params2 = {
+            "alpha": 5.0,
+            "beta": 0.5,
+        }
+
+        return [params1, params2]
