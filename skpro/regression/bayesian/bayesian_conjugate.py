@@ -89,11 +89,6 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         # Infer the number of features
         n_features = X.shape[1]
 
-        # Ensure the data is centered
-        is_centered = np.allclose(X.mean(axis=0), 0)
-        if not is_centered:
-            X -= X.mean(axis=0)
-
         self._y_cols = y.columns
 
         # Construct the prior mean, covariance, and precision
