@@ -116,6 +116,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         y_pred : Normal
             Predicted Normal distribution for outputs.
         """
+        y_cols = self._y_cols
         idx = X.index
         if isinstance(X, pd.DataFrame):
             X = X.values
@@ -144,7 +145,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         self._y_pred = Normal(
             mu=mus,
             sigma=sigmas,
-            columns=["y_pred"],
+            columns=y_cols,
             index=idx,
         ).iloc[:, 0]
         return self._y_pred
