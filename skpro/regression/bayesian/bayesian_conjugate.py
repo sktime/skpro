@@ -79,9 +79,9 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
                 raise ValueError(
                     "Must provide either (prior_mean and prior_cov) or prior."
                 )
-            self.prior_mean = np.array(prior_mean)
-            self.prior_sigma = np.sqrt(np.array(prior_cov).diagonal())  # Convert to std
-            self.prior_cov = np.array(prior_cov)
+            self.prior_mean = prior_mean
+            self.prior_sigma = np.sqrt(prior_cov.diagonal())  # Convert to std_dev
+            self.prior_cov = prior_cov
             self.prior = Normal(mu=self.prior_mean, sigma=self.prior_sigma)
         else:
             if not isinstance(prior, Normal):
@@ -215,13 +215,13 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Parameters to create testing instances of the class
         """
         params1 = {
-            "prior_mean": [0, 0],
-            "prior_cov": [[1, 0], [0, 1]],
+            "prior_mean": np.array([0, 0]),
+            "prior_cov": np.array([[1, 0], [0, 1]]),
             "noise_variance": 1.0,
         }
         params2 = {
-            "prior_mean": [0.5, 0.5],
-            "prior_cov": [[2, 0.5], [0.5, 2]],
+            "prior_mean": np.array([0.5, 0.5]),
+            "prior_cov": np.array([[2, 0.5], [0.5, 2]]),
             "noise_variance": 0.5,
         }
 
