@@ -94,6 +94,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         if not is_centered:
             X -= X.mean(axis=0)
 
+        self._y_cols = y.columns
+
         # Construct the prior mean, covariance, and precision
         self._prior_mu = np.zeros(n_features)
         self._prior_cov = np.eye(n_features) / self.alpha
@@ -116,7 +118,6 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         y_pred : Normal
             Predicted Normal distribution for outputs.
         """
-        y_cols = self._y_cols
         idx = X.index
         if isinstance(X, pd.DataFrame):
             X = X.values
@@ -145,7 +146,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         self._y_pred = Normal(
             mu=mus,
             sigma=sigmas,
-            columns=y_cols,
+            columns=self.y_cols,
             index=idx,
         ).iloc[:, 0]
         return self._y_pred
