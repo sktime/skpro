@@ -22,7 +22,6 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
     >>> from skpro.regression.bayesian.bayesian_conjugate import (
     ...     BayesianConjugateLinearRegressor,
     ... )  # doctest: +SKIP
-    >>> from skpro.distributions import Normal  # doctest: +SKIP
     >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
     >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
     >>> import numpy as np  # doctest: +SKIP
@@ -31,15 +30,14 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
 
-    >>> # Define prior coefficients as a Normal distribution
+    >>> # Define prior coefficients
     >>> n_features = X_train.shape[1]  # doctest: +SKIP
-    >>> prior_coefficients = Normal(
-    ...     mu=np.zeros(n_features), sigma=np.ones(n_features) * 10
-    ... )  # doctest: +SKIP
+    >>> prior_mu = np.zeros(n_features)  # doctest: +SKIP
+    >>> prior_cov = np.eye(n_features) * 10  # doctest: +SKIP
 
     >>> # Initialize model
     >>> bayes_model = BayesianConjugateLinearRegressor(
-    ...     prior_coefficients=prior_coefficients, noise_variance=1.0
+    ...     prior_mu=prior_mu, prior_cov=prior_cov, noise_variance=1.0
     ... )  # doctest: +SKIP
 
     >>> # Fit the model
@@ -60,25 +58,20 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_Series_Table",
     }
 
-    def __init__(self, prior_coefficients, noise_variance=1.0):
+    def __init__(self, prior_mu, prior_cov, noise_variance=1.0):
         """Initialize the Bayesian Linear Regressor with prior coefficients.
 
         Parameters
         ----------
-        prior_coefficients : Normal
-            A Normal distribution instance representing the prior coefficients.
+        prior_mu : np.ndarray
+            Mean vector of the prior Normal distribution for coefficients.
+        prior_cov : np.ndarray
+            Covariance matrix of the prior Normal distribution for coefficients.
         noise_variance : float, optional
             Known variance of the Gaussian likelihood. Default is 1.0.
         """
-        if not isinstance(prior_coefficients, Normal):
-            raise TypeError(
-                "prior_coefficients must be an instance of skpro Normal distribution"
-            )
-        self.prior_coefficients = prior_coefficients
-        self._prior_coefficients_mu = self.prior_coefficients.mu
-        self._prior_coefficients_sigma = self.prior_coefficients.sigma
-        self._prior_coefficients_cov = np.diag(self._prior_coefficients_sigma**2)
-
+        self.prior_mu = prior_mu
+        self.prior_cov = prior_cov
         self.noise_variance = noise_variance
         super().__init__()
 
@@ -99,8 +92,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        self._posterior_coefficients = self._perform_bayesian_inference(
-            self.prior_coefficients, X, y
+        self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(
+            self.prior_mu, self.prior_cov, X, y
         )
         return self
 
@@ -119,25 +112,29 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         """
         if isinstance(X, pd.DataFrame):
             X = X.values
-        posterior_coefficients_mu = X @ self._posterior_coefficients.mu
-        posterior_coefficients_cov = (
-            X @ np.diag(self._posterior_coefficients.sigma**2) @ X.T
-        )
-        posterior_coefficients_sigma = np.sqrt(
-            np.diag(posterior_coefficients_cov) + self.noise_variance
+
+        mean_pred = X @ self._posterior_mu
+        cov_pred = X @ self._posterior_cov @ X.T
+        sigma_pred = np.sqrt(np.diag(cov_pred) + self.noise_variance)
+
+        return Normal(
+            mu=mean_pred,
+            sigma=sigma_pred,
+            columns=["y_pred"],
+            index=pd.RangeIndex(len(X)),
         )
 
-        return Normal(mu=posterior_coefficients_mu, sigma=posterior_coefficients_sigma)
-
-    def _perform_bayesian_inference(self, prior_coefficients, X, y):
+    def _perform_bayesian_inference(self, prior_mu, prior_cov, X, y):
         """Perform Bayesian inference for linear regression.
 
         Obtains the posterior distribution using normal conjugacy formula.
 
         Parameters
         ----------
-        prior_coefficients : Normal
-            The prior Normal distribution for coefficients.
+        prior_mu : np.ndarray
+            Mean vector of the prior Normal distribution for coefficients.
+        prior_cov : np.ndarray
+            Covariance matrix of the prior Normal distribution for coefficients.
         X : pandas DataFrame
             Feature matrix (n_samples, n_features).
         y : pandas Series
@@ -145,32 +142,22 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
 
         Returns
         -------
-        posterior_coefficients : Normal
-            Posterior Normal distribution with updated parameters.
+        posterior_mu : np.ndarray
+            Mean vector of the posterior Normal distribution for coefficients.
+        posterior_cov : np.ndarray
+            Covariance matrix of the posterior Normal distribution for coefficients.
         """
         X = np.array(X)
         y = np.array(y)
 
-        # Prior parameters
-        prior_coefficients_mu = prior_coefficients.mu
-        prior_coefficients_cov = np.diag(prior_coefficients.sigma**2)
-
-        # Compute posterior parameters
-        posterior_coefficients_cov = np.linalg.inv(
-            np.linalg.inv(prior_coefficients_cov) + (X.T @ X) / self.noise_variance
+        posterior_cov = np.linalg.inv(
+            np.linalg.inv(prior_cov) + (X.T @ X) / self.noise_variance
         )
-        posterior_coefficients_mu = posterior_coefficients_cov @ (
-            np.linalg.inv(prior_coefficients_cov) @ prior_coefficients_mu
-            + (X.T @ y) / self.noise_variance
+        posterior_mu = posterior_cov @ (
+            np.linalg.inv(prior_cov) @ prior_mu + (X.T @ y) / self.noise_variance
         )
-        posterior_coefficients_sigma = np.sqrt(np.diag(posterior_coefficients_cov))
 
-        # Save posterior attributes
-        self._posterior_coefficients_mu = posterior_coefficients_mu
-        self._posterior_coefficients_sigma = posterior_coefficients_sigma
-        self._posterior_coefficients_cov = posterior_coefficients_cov
-
-        return Normal(mu=posterior_coefficients_mu, sigma=posterior_coefficients_sigma)
+        return posterior_mu, posterior_cov
 
     def update(self, X, y):
         """Update the posterior with new data.
@@ -186,16 +173,9 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        # Update posterior by treating the current posterior as the new prior
-        self._posterior_coefficients = self._perform_bayesian_inference(
-            self._posterior_coefficients, X, y
+        self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(
+            self._posterior_mu, self._posterior_cov, X, y
         )
-        self._posterior_coefficients_mu = self._posterior_coefficients.mu
-        self._posterior_coefficients_sigma = self._posterior_coefficients.sigma
-        self._posterior_coefficients_cov = np.diag(
-            self._posterior_coefficients_sigma**2
-        )
-
         return self
 
     @classmethod
@@ -215,16 +195,13 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         """
         n_features = 10
         params1 = {
-            "prior_coefficients": Normal(
-                mu=np.zeros(n_features), sigma=np.ones(n_features) * 5
-            ),
+            "prior_mu": np.zeros(n_features),
+            "prior_cov": np.eye(n_features) * 10,
             "noise_variance": 1.0,
         }
         params2 = {
-            "prior_coefficients": Normal(
-                mu=np.random.uniform(0, 1, n_features),
-                sigma=np.random.uniform(1, 3, n_features),
-            ),
+            "prior_mu": np.random.uniform(0, 1, n_features),
+            "prior_cov": np.eye(n_features) * 5,
             "noise_variance": 2.0,
         }
 
