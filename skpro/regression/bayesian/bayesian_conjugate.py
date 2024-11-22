@@ -55,7 +55,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_Series_Table",
     }
 
-    def __init__(self, alpha, beta):
+    def __init__(self, alpha=1, beta=1):
         """Initialize the Bayesian Linear Regressor.
 
         Parameters
@@ -102,7 +102,9 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         self._prior_precision = np.linalg.inv(self._prior_cov)
 
         # Perform Bayesian inference
-        self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(X, y)
+        self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(
+            X, y, self._prior_mu, self._prior_cov
+        )
         return self
 
     def _predict_proba(self, X):
@@ -151,7 +153,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         ).iloc[:, 0]
         return self._y_pred
 
-    def _perform_bayesian_inference(self, X, y):
+    def _perform_bayesian_inference(self, X, y, prior_mu, prior_cov):
         """Perform Bayesian inference for linear regression.
 
         Obtains the posterior distribution using normal conjugacy formula.
@@ -162,6 +164,10 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Feature matrix (n_samples, n_features).
         y : pandas Series
             Observed target vector (n_samples,).
+        prior_mu : np.ndarray
+            Mean vector of the prior Normal distribution for coefficients.
+        prior_cov : np.ndarray
+            Covariance matrix of the prior Normal distribution for coefficients.
 
         Returns
         -------
@@ -173,13 +179,16 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         X = np.array(X)
         y = np.array(y)
 
+        # Compute prior precision from prior covariance
+        prior_precision = np.linalg.inv(prior_cov)
+
         # Compute posterior precision and covariance
-        posterior_precision = self._prior_precision + self.beta * (X.T @ X)
+        posterior_precision = prior_precision + self.beta * (X.T @ X)
         posterior_cov = np.linalg.inv(posterior_precision)
 
         # Compute posterior mean
         posterior_mu = posterior_cov @ (
-            self._prior_precision @ self._prior_mu + self.beta * X.T @ y
+            prior_precision @ prior_mu + self.beta * X.T @ y
         )
 
         return posterior_mu, posterior_cov
@@ -198,7 +207,9 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(X, y)
+        self._posterior_mu, self._posterior_cov = self._perform_bayesian_inference(
+            X, y, self._posterior_mu, self._posterior_cov
+        )
         return self
 
     @classmethod
