@@ -3,7 +3,7 @@
 
 __author__ = ["SaiRevanth25"]
 
-from _concat import ConcatDistr
+from skpro.distributions._concat import ConcatDistr
 
 
 def concat(objs, axis=0):
