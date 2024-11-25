@@ -9,6 +9,7 @@ __all__ = [
     "Binomial",
     "ChiSquared",
     "concat",
+    "ConcatDistr",
     "Delta",
     "Empirical",
     "Exponential",
@@ -40,6 +41,7 @@ __all__ = [
     "Weibull",
 ]
 
+from skpro.distributions._concat import ConcatDistr
 from skpro.distributions.alpha import Alpha
 from skpro.distributions.beta import Beta
 from skpro.distributions.binomial import Binomial
