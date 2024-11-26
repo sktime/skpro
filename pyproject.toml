@@ -55,7 +55,7 @@ all_extras = [
     "mapie; python_version < '3.13'",
     "matplotlib>=3.3.2",
     "ngboost<0.6.0; python_version < '3.13'",
-    "polars<1.14.0",
+    "polars<1.16.0",
     "pyarrow<14.0.0; python_version < '3.12'",
     "pymc; python_version < '3.13'",
     "scikit-survival<0.24.0; python_version < '3.13'",
