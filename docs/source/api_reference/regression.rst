@@ -206,3 +206,4 @@ Bayesian
     :template: class.rst
 
     BayesianConjugateLinearRegressor
+    BayesianMCMCLinearRegressor
