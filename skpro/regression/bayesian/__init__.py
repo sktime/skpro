@@ -3,6 +3,4 @@
 
 __all__ = ["BayesianMCMCLinearRegressor"]
 
-from skpro.regression.bayesian.bayesian_mcmc import (
-    BayesianMCMCLinearRegressor,
-)
+from skpro.regression.bayesian.bayesian_mcmc import BayesianMCMCLinearRegressor
