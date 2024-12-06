@@ -21,8 +21,8 @@ class Poisson(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions import Poisson
 
     >>> distr = Poisson(mu=[[1, 1], [2, 3], [4, 5]])

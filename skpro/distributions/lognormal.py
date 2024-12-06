@@ -27,8 +27,8 @@ class LogNormal(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.lognormal import LogNormal
 
     >>> n = LogNormal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1)

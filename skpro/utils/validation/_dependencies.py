@@ -2,23 +2,26 @@
 
 __author__ = ["fkiraly", "mloning"]
 
-import io
 import sys
 import warnings
-from importlib import import_module
+from importlib.metadata import PackageNotFoundError, version
+from importlib.util import find_spec
 from inspect import isclass
 
+from packaging.markers import InvalidMarker, Marker
 from packaging.requirements import InvalidRequirement, Requirement
-from packaging.specifiers import InvalidSpecifier, SpecifierSet
+from packaging.specifiers import InvalidSpecifier, Specifier, SpecifierSet
+from packaging.version import InvalidVersion, Version
 
 
+# todo 0.32.0: remove suppress_import_stdout argument
 def _check_soft_dependencies(
     *packages,
     package_import_alias=None,
     severity="error",
     obj=None,
     msg=None,
-    suppress_import_stdout=False,
+    suppress_import_stdout="deprecated",
 ):
     """Check if required soft dependencies are installed and raise error or warning.
 
@@ -40,7 +43,7 @@ def _check_soft_dependencies(
         should be provided if import name differs from package name
     severity : str, "error" (default), "warning", "none"
         behaviour for raising errors or warnings
-        "error" - raises a `ModuleNotFoundException` if one of packages is not installed
+        "error" - raises a `ModuleNotFoundError` if one of packages is not installed
         "warning" - raises a warning if one of packages is not installed
             function returns False if one of packages is not installed, otherwise True
         "none" - does not raise exception or warning
@@ -52,8 +55,6 @@ def _check_soft_dependencies(
         if str is passed, will be used as name of the class/object or module
     msg : str, or None, default=None
         if str, will override the error message or warning shown with msg
-    suppress_import_stdout : bool, optional. Default=False
-        whether to suppress stdout printout upon import.
 
     Raises
     ------
@@ -64,6 +65,22 @@ def _check_soft_dependencies(
     -------
     boolean - whether all packages are installed, only if no exception is raised
     """
+    # todo 0.32.0: remove this warning
+    if suppress_import_stdout != "deprecated":
+        warnings.warn(
+            "In sktime _check_soft_dependencies, the suppress_import_stdout argument "
+            "is deprecated and no longer has any effect. "
+            "The argument will be removed in version 0.32.0, so users of the "
+            "_check_soft_dependencies utility should not pass this argument anymore. "
+            "The _check_soft_dependencies utility also no longer causes imports, "
+            "hence no stdout "
+            "output is created from imports, for any setting of the "
+            "suppress_import_stdout argument. If you wish to import packages "
+            "and make use of stdout prints, import the package directly instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
     if len(packages) == 1 and isinstance(packages[0], (tuple, list)):
         packages = packages[0]
     if not all(isinstance(x, str) for x in packages):
@@ -110,6 +127,7 @@ def _check_soft_dependencies(
     for package in packages:
         try:
             req = Requirement(package)
+            req = _normalize_requirement(req)
         except InvalidRequirement:
             msg_version = (
                 f"wrong format for package requirement string "
@@ -127,40 +145,44 @@ def _check_soft_dependencies(
             package_import_name = package_import_alias[package_name]
         else:
             package_import_name = package_name
-        # attempt import - if not possible, we know we need to raise warning/exception
-        try:
-            if suppress_import_stdout:
-                # setup text trap, import, then restore
-                sys.stdout = io.StringIO()
-                pkg_ref = import_module(package_import_name)
-                sys.stdout = sys.__stdout__
-            else:
-                pkg_ref = import_module(package_import_name)
-        # if package cannot be imported, make the user aware of installation requirement
-        except ModuleNotFoundError as e:
+
+        # optimized branching to check presence of import
+        # and presence of package distribution
+        # first we check import, then we check distribution
+        # because try/except consumes more runtime
+        pkg_spec = find_spec(package_import_name)
+        if pkg_spec is not None:
+            try:
+                pkg_env_version = Version(version(package_name))
+            except (InvalidVersion, PackageNotFoundError):
+                pkg_spec = None
+
+        # if package not present, make the user aware of installation reqs
+        if pkg_spec is None:
             if obj is None and msg is None:
                 msg = (
-                    f"{e}. '{package}' is a soft dependency and not included in the "
-                    f"base skpro installation. Please run: `pip install {package}` to "
+                    f"'{package}' not found. "
+                    f"'{package}' is a soft dependency and not included in the "
+                    f"base sktime installation. Please run: `pip install {package}` to "
                     f"install the {package} package. "
                     f"To install all soft dependencies, run: `pip install "
-                    f"skpro[all_extras]`"
+                    f"sktime[all_extras]`"
                 )
             elif msg is None:  # obj is not None, msg is None
                 msg = (
                     f"{class_name} requires package '{package}' to be present "
                     f"in the python environment, but '{package}' was not found. "
                     f"'{package}' is a soft dependency and not included in the base "
-                    f"skpro installation. Please run: `pip install {package}` to "
+                    f"sktime installation. Please run: `pip install {package}` to "
                     f"install the {package} package. "
                     f"To install all soft dependencies, run: `pip install "
-                    f"skpro[all_extras]`"
+                    f"sktime[all_extras]`"
                 )
             # if msg is not None, none of the above is executed,
             # so if msg is passed it overrides the default messages
 
             if severity == "error":
-                raise ModuleNotFoundError(msg) from e
+                raise ModuleNotFoundError(msg)
             elif severity == "warning":
                 warnings.warn(msg, stacklevel=2)
                 return False
@@ -175,8 +197,6 @@ def _check_soft_dependencies(
 
         # now we check compatibility with the version specifier if non-empty
         if package_version_req != SpecifierSet(""):
-            pkg_env_version = pkg_ref.__version__
-
             msg = (
                 f"{class_name} requires package '{package}' to be present "
                 f"in the python environment, with version {package_version_req}, "
@@ -184,7 +204,7 @@ def _check_soft_dependencies(
             )
             if obj is not None:
                 msg = msg + (
-                    f"This version requirement is not one by skpro, but specific "
+                    f"This version requirement is not one by sktime, but specific "
                     f"to the module, class or object with name {obj}."
                 )
 
@@ -207,12 +227,94 @@ def _check_soft_dependencies(
     return True
 
 
+def _check_dl_dependencies(msg=None, severity="error"):
+    """Check if deep learning dependencies are installed.
+
+    Parameters
+    ----------
+    msg : str, optional, default= default message (msg below)
+        error message to be returned in the `ModuleNotFoundError`, overrides default
+    severity : str, "error" (default), "warning", "none"
+        behaviour for raising errors or warnings
+        "error" - raises a ModuleNotFoundError if one of packages is not installed
+        "warning" - raises a warning if one of packages is not installed
+            function returns False if one of packages is not installed, otherwise True
+        "none" - does not raise exception or warning
+            function returns False if one of packages is not installed, otherwise True
+
+    Raises
+    ------
+    ModuleNotFoundError
+        User friendly error with suggested action to install deep learning dependencies
+
+    Returns
+    -------
+    boolean - whether all packages are installed, only if no exception is raised
+    """
+    if not isinstance(msg, str):
+        msg = (
+            "tensorflow is required for deep learning functionality in `sktime`. "
+            "To install these dependencies, run: `pip install sktime[dl]`"
+        )
+    if find_spec("tensorflow") is not None:
+        return True
+    else:
+        if severity == "error":
+            raise ModuleNotFoundError(msg)
+        elif severity == "warning":
+            warnings.warn(msg, stacklevel=2)
+            return False
+        elif severity == "none":
+            return False
+        else:
+            raise RuntimeError(
+                "Error in calling _check_dl_dependencies, severity "
+                f'argument must be "error", "warning", or "none", found "{severity}".'
+            )
+
+
+def _check_mlflow_dependencies(msg=None, severity="error"):
+    """Check if `mlflow` and its dependencies are installed.
+
+    Parameters
+    ----------
+    msg: str, optional, default= default message (msg below)
+        error message to be returned when `ModuleNotFoundError` is raised.
+    severity: str, either of "error", "warning" or "none"
+        behaviour for raising errors or warnings
+        "error" - raises a `ModuleNotFound` if mlflow-related packages are not found.
+        "warning" - raises a warning message if any mlflow-related package is not
+            installed also returns False. In case all packages are present,
+            returns True.
+        "none" - does not raise any exception or warning and simply returns True
+            if all packages are installed otherwise return False.
+
+    Raise
+    -----
+    ModuleNotFoundError
+        User Friendly error with a suggested action to install mlflow dependencies
+
+    Returns
+    -------
+    boolean - whether all mlflow-related packages are installed.
+    """
+    if not isinstance(msg, str):
+        msg = (
+            "`mlflow` is an extra dependency and is not included "
+            "in the base sktime installation. "
+            "Please run `pip install mlflow` "
+            "or `pip install sktime[mlflow]` to install the package."
+        )
+
+    return _check_soft_dependencies("mlflow", msg=msg, severity=severity)
+
+
 def _check_python_version(obj, package=None, msg=None, severity="error"):
     """Check if system python version is compatible with requirements of obj.
 
     Parameters
     ----------
-    obj : skpro estimator, BaseObject descendant
+    obj : sktime estimator, BaseObject descendant
         used to check python version
     package : str, default = None
         if given, will be used in error message as package name
@@ -253,6 +355,7 @@ def _check_python_version(obj, package=None, msg=None, severity="error"):
     if sys_version in est_specifier:
         return True
     # now we know that est_version is not compatible with sys_version
+
     if isclass(obj):
         class_name = obj.__name__
     else:
@@ -260,7 +363,6 @@ def _check_python_version(obj, package=None, msg=None, severity="error"):
 
     if not isinstance(msg, str):
         msg = (
-            f"{type(obj).__name__} requires python version to be {est_specifier},"
             f"{class_name} requires python version to be {est_specifier},"
             f" but system python version is {sys.version}."
         )
@@ -284,6 +386,81 @@ def _check_python_version(obj, package=None, msg=None, severity="error"):
     return True
 
 
+def _check_env_marker(obj, package=None, msg=None, severity="error"):
+    """Check if packaging marker tag is with requirements of obj.
+
+    Parameters
+    ----------
+    obj : sktime estimator, BaseObject descendant
+        used to check python version
+    package : str, default = None
+        if given, will be used in error message as package name
+    msg : str, optional, default = default message (msg below)
+        error message to be returned in the `ModuleNotFoundError`, overrides default
+    severity : str, "error" (default), "warning", or "none"
+        whether the check should raise an error, a warning, or nothing
+
+    Returns
+    -------
+    compatible : bool, whether obj is compatible with system python version
+        check is using the python_version tag of obj
+
+    Raises
+    ------
+    InvalidMarker
+        User friendly error if obj has env_marker tag that is not a
+        packaging compatible marker string
+    ModuleNotFoundError
+        User friendly error if obj has an env_marker tag that is
+        incompatible with the python environment. If package is given,
+        error message gives package as the reason for incompatibility.
+    """
+    est_marker_tag = obj.get_class_tag("env_marker", tag_value_default="None")
+    if est_marker_tag in ["None", None]:
+        return True
+
+    try:
+        est_marker = Marker(est_marker_tag)
+    except InvalidMarker:
+        msg_version = (
+            f"wrong format for env_marker tag, "
+            f"must be PEP 508 compatible specifier string, e.g., "
+            f'platform_system!="windows", but found "{est_marker_tag}"'
+        )
+        raise InvalidMarker(msg_version)
+
+    if est_marker.evaluate():
+        return True
+    # now we know that est_marker is not compatible with the environment
+
+    if isclass(obj):
+        class_name = obj.__name__
+    else:
+        class_name = type(obj).__name__
+
+    if not isinstance(msg, str):
+        msg = (
+            f"{class_name} requires an environment to satisfy "
+            f"packaging marker spec {est_marker}, but enviroment does not satisfy it."
+        )
+
+        if package is not None:
+            msg += f" This is due to requirements of the {package} package."
+
+    if severity == "error":
+        raise ModuleNotFoundError(msg)
+    elif severity == "warning":
+        warnings.warn(msg, stacklevel=2)
+    elif severity == "none":
+        return False
+    else:
+        raise RuntimeError(
+            "Error in calling _check_env_marker, severity "
+            f'argument must be "error", "warning", or "none", found "{severity}".'
+        )
+    return True
+
+
 def _check_estimator_deps(obj, msg=None, severity="error"):
     """Check if object/estimator's package & python requirements are met by python env.
 
@@ -295,13 +472,13 @@ def _check_estimator_deps(obj, msg=None, severity="error"):
 
     Parameters
     ----------
-    obj : `skpro` object, `BaseObject` descendant, or list/tuple thereof
+    obj : `sktime` object, `BaseObject` descendant, or list/tuple thereof
         object(s) that this function checks compatibility of, with the python env
     msg : str, optional, default = default message (msg below)
         error message to be returned in the `ModuleNotFoundError`, overrides default
     severity : str, "error" (default), "warning", or "none"
         behaviour for raising errors or warnings
-        "error" - raises a ModuleNotFoundException if environment is incompatible
+        "error" - raises a `ModuleNotFoundError` if environment is incompatible
         "warning" - raises a warning if environment is incompatible
             function returns False if environment is incompatible, otherwise True
         "none" - does not raise exception or warning
@@ -334,6 +511,7 @@ def _check_estimator_deps(obj, msg=None, severity="error"):
         return compatible
 
     compatible = compatible and _check_python_version(obj, severity=severity)
+    compatible = compatible and _check_env_marker(obj, severity=severity)
 
     pkg_deps = obj.get_class_tag("python_dependencies", None)
     pck_alias = obj.get_class_tag("python_dependencies_alias", None)
@@ -346,3 +524,37 @@ def _check_estimator_deps(obj, msg=None, severity="error"):
         compatible = compatible and pkg_deps_ok
 
     return compatible
+
+
+def _normalize_requirement(req):
+    """Normalize packaging Requirement by removing build metadata from versions.
+
+    Parameters
+    ----------
+    req : packaging.requirements.Requirement
+        requirement string to normalize, e.g., Requirement("pandas>1.2.3+foobar")
+
+    Returns
+    -------
+    normalized_req : packaging.requirements.Requirement
+        normalized requirement object with build metadata removed from versions,
+        e.g., Requirement("pandas>1.2.3")
+    """
+    # Process each specifier in the requirement
+    normalized_specs = []
+    for spec in req.specifier:
+        # Parse the version and remove the build metadata
+        spec_v = Version(spec.version)
+        version_wo_build_metadata = f"{spec_v.major}.{spec_v.minor}.{spec_v.micro}"
+
+        # Create a new specifier without the build metadata
+        normalized_spec = Specifier(f"{spec.operator}{version_wo_build_metadata}")
+        normalized_specs.append(normalized_spec)
+
+    # Reconstruct the specifier set
+    normalized_specifier_set = SpecifierSet(",".join(str(s) for s in normalized_specs))
+
+    # Create a new Requirement object with the normalized specifiers
+    normalized_req = Requirement(f"{req.name}{normalized_specifier_set}")
+
+    return normalized_req
