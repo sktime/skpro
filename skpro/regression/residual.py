@@ -406,21 +406,30 @@ class ResidualDouble(BaseProbaRegressor):
 
             distr_type = TDistribution
             distr_loc_scale_name = ("mu", "sigma")
-            if "df" not in distr_params or distr_params["df"] <= 2:
-                warnings.warn(
-                    (
-                        "t-distribution has no second moment for df <= 2, "
-                        "and no first moment for df <= 1, so predict_proba will "
-                        "result in erratic behavior."
-                    ),
-                    stacklevel=2,
-                )
             # Extract degrees of freedom
             df = distr_params["df"]
             if residual_trafo == "absolute":
+                if df <= 1:
+                    warnings.warn(
+                        (
+                            "Both the t-distribution and the half t-distribution have "
+                            "no first moment for df<=1, so predict_proba will result "
+                            "in erratic behavior."
+                        ),
+                        stacklevel=2,
+                    )
                 y_pred_scale = y_pred_scale / half_t_correction(df)
             elif residual_trafo == "squared":
-                if df <= 3:
+                if df <= 2:
+                    warnings.warn(
+                        (
+                            "t-distribution has no second moment for df <= 2, and no "
+                            "first moment for df <= 1, so predict_proba will result "
+                            "in erratic behavior."
+                        ),
+                        stacklevel=2,
+                    )
+                elif df <= 3:
                     warnings.warn(
                         (
                             "Degrees of freedom less than 3 tends to yield poor"
