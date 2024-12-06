@@ -1,4 +1,4 @@
-"""Tests Generalized Linear Model regressor."""
+"""Tests ResidualDouble regressor for uniform quantiles when model is correct."""
 
 from typing import Dict, Literal, Optional
 
@@ -79,6 +79,34 @@ def held_out_cdf(
 @pytest.mark.parametrize("trafo", ["absolute", "squared"])
 def test_residual_double_constant(distr_type, distr_params, trafo):
     """Test validity of ResidualDouble regressor on a constant model."""
+    Q_BINS = 4
+    TOL_ALPHA = 0.001
+    np.random.seed(42)
+    # Should be uniform(0,1)
+    held_out_quantiles = held_out_cdf(
+        model="constant", distr_type=distr_type, distr_params=distr_params, trafo=trafo
+    )
+    # Counts of quantiles in bins
+    vc = pd.cut(held_out_quantiles, bins=np.linspace(0, 1, Q_BINS + 1)).value_counts()
+    # Expected counts under uniformity
+    e_vec = vc * vc.sum() / (Q_BINS * vc)
+    # Observed counts
+    o_vec = vc
+    # Chi-squared test
+    chsq = stats.chisquare(o_vec, e_vec, ddof=2)
+    # dist=1, ddf<3, trafo="squared" does very badly, hence the high tolerance
+    assert chsq.pvalue > TOL_ALPHA
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(ResidualDouble),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
+def test_residual_double_sample_weight():
+    """Test validity of ResidualDouble regressor on a constant model."""
+    trafo = "absolute"
+    distr_type = "Laplace"
+    distr_params = None
     Q_BINS = 4
     TOL_ALPHA = 0.001
     np.random.seed(42)

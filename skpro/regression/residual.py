@@ -176,7 +176,7 @@ class ResidualDouble(BaseProbaRegressor):
         else:
             self.estimator_resid_ = clone(estimator_resid)
 
-    def _predict_residuals_cv(self, X, y, cv, est):
+    def _predict_residuals_cv(self, X, y, cv, est=None, sample_weight=None):
         """Predict out-of-sample residuals for y from X using cv.
 
         Parameters
@@ -193,7 +193,8 @@ class ResidualDouble(BaseProbaRegressor):
         y_pred : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        est = self.estimator_resid_
+        if est is None:
+            est = self.estimator_resid_
         method = "predict"
         y_pred = y.copy()
 
@@ -201,7 +202,13 @@ class ResidualDouble(BaseProbaRegressor):
             X_train = X.iloc[tr_idx]
             X_test = X.iloc[tt_idx]
             y_train = y[tr_idx]
-            fitted_est = clone(est).fit(X_train, y_train)
+            if sample_weight is None:
+                fitted_est = clone(est).fit(X_train, y_train)
+            else:
+                sample_weight_train = sample_weight[tr_idx]
+                fitted_est = clone(est).fit(
+                    X_train, y_train, sample_weight=sample_weight_train
+                )
             y_pred[tt_idx] = getattr(fitted_est, method)(X_test)
 
         return y_pred
