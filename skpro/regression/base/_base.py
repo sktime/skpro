@@ -89,7 +89,7 @@ class BaseProbaRegressor(BaseEstimator):
         C : ignored, optional (default=None)
             censoring information for survival analysis
             All probabilistic regressors assume data to be uncensored
-        sample_weight : pandas DataFrame, same length as X, default=None
+        sample_weight : pandas DataFrame, same shape as y, default=None
             sample weights to fit regressor to
 
         Returns
@@ -142,7 +142,7 @@ class BaseProbaRegressor(BaseEstimator):
         C : ignored, optional (default=None)
             censoring information for survival analysis
             All probabilistic regressors assume data to be uncensored
-        sample_weight : pandas DataFrame, same length as X, default=None
+        sample_weight : pandas DataFrame, same shape as y, default=None
             sample weights to fit regressor to
 
         Returns
@@ -173,7 +173,7 @@ class BaseProbaRegressor(BaseEstimator):
         C : ignored, optional (default=None)
             censoring information for survival analysis
             All probabilistic regressors assume data to be uncensored
-        sample_weight : pandas DataFrame, same length as X, default=None
+        sample_weight : pandas DataFrame, same shape as y, default=None
             sample weights to fit regressor to
 
         Returns
@@ -225,7 +225,7 @@ class BaseProbaRegressor(BaseEstimator):
         C : ignored, optional (default=None)
             censoring information for survival analysis
             All probabilistic regressors assume data to be uncensored
-        sample_weight : pandas DataFrame, same length as X, default=None
+        sample_weight : pandas DataFrame, same shape as y, default=None
             sample weights to fit regressor to
 
         Returns
