@@ -12,7 +12,7 @@ from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
-class BayesianLinearRegressor(BaseProbaRegressor):
+class BayesianMCMCLinearRegressor(BaseProbaRegressor):
     """
     Bayesian Linear Regression class with MCMC sampling.
 
