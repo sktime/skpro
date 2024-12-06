@@ -264,8 +264,8 @@ class ResidualDouble(BaseProbaRegressor):
             resids = residual_trafo.fit_transform(y - y_pred)
             warnings.warn(
                 (
-                    "Arbitrary transforms are not compatible with the "
-                    "predict_proba method."
+                    "Arbitrary transforms will result in abberrant behavior in "
+                    "the predict_proba method."
                 ),
                 stacklevel=2,
             )
@@ -374,8 +374,13 @@ class ResidualDouble(BaseProbaRegressor):
         elif residual_trafo == "squared":
             y_pred_scale = np.sqrt(y_pred_scale)
         else:
-            raise NotImplementedError(
-                f"residual_trafo {residual_trafo} not implemented"
+            y_pred_scale = residual_trafo.inverse_transform(y_pred_scale)
+            warnings.warn(
+                (
+                    "Arbitrary residual transforms will result in unpredictable"
+                    " behavior."
+                ),
+                stacklevel=2,
             )
         y_pred_scale = y_pred_scale.clip(min=min_scale)
         y_pred_scale = y_pred_scale.reshape(-1, n_cols)
@@ -402,8 +407,13 @@ class ResidualDouble(BaseProbaRegressor):
             distr_type = TDistribution
             distr_loc_scale_name = ("mu", "sigma")
             if "df" not in distr_params or distr_params["df"] <= 2:
-                raise ValueError(
-                    "Degrees of freedom must be greater than 2 for t-distribution."
+                warnings.warn(
+                    (
+                        "t-distribution has no second moment for df <= 2, "
+                        "and no first moment for df <= 1, so predict_proba will "
+                        "result in erratic behavior."
+                    ),
+                    stacklevel=2,
                 )
             # Extract degrees of freedom
             df = distr_params["df"]
@@ -419,6 +429,21 @@ class ResidualDouble(BaseProbaRegressor):
                         stacklevel=2,
                     )
                 y_pred_scale = y_pred_scale / np.sqrt(df / (df - 2))
+        elif distr_type == "Cauchy":
+            from skpro.distributions.t import TDistribution as CauchyDistribution
+
+            warnings.warn(
+                (
+                    "Cauchy distribution has no first or second moments, so "
+                    "predict_proba will result in erratic behavior."
+                ),
+                stacklevel=2,
+            )
+
+            distr_type = CauchyDistribution
+            distr_loc_scale_name = ("mu", "sigma")
+            distr_params = {"df": 1}
+
         else:
             raise NotImplementedError(f"distr_type {distr_type} not implemented")
         # collate all parameters for the distribution constructor
