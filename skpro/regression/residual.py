@@ -157,10 +157,7 @@ class ResidualDouble(BaseProbaRegressor):
         self.residual_trafo = residual_trafo
         self.distr_type = distr_type
         self.distr_loc_scale_name = distr_loc_scale_name
-        if distr_params is not None:
-            self.distr_params = distr_params.copy()
-        else:
-            self.distr_params = None
+        self.distr_params = distr_params
         self.use_y_pred = use_y_pred
         self.cv = cv
         self.min_scale = min_scale
@@ -351,6 +348,8 @@ class ResidualDouble(BaseProbaRegressor):
 
         if distr_params is None:
             distr_params = {}
+        else:
+            distr_params = distr_params.copy()
 
         # predict location - this is the same as in _predict
         y_pred_loc = est.predict(X)
