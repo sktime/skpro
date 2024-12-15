@@ -1,6 +1,7 @@
 """Tests for the show_versions utility."""
 import pathlib
 import uuid
+
 from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.utils._maint._show_versions import (
