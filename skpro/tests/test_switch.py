@@ -162,9 +162,10 @@ def _run_test_for_class(cls):
 
         If multiple reasons are present, the first one in the above list is returned.
     """
+    from skbase.utils.dependencies import _check_estimator_deps
+
     from skpro.tests.test_all_estimators import ONLY_CHANGED_MODULES
     from skpro.utils.git_diff import get_packages_with_changed_specs, is_class_changed
-    from skpro.utils.validation._dependencies import _check_estimator_deps
 
     PACKAGE_REQ_CHANGED = get_packages_with_changed_specs()
 

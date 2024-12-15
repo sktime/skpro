@@ -3,6 +3,7 @@
 __author__ = ["fkiraly"]
 
 import pytest
+from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.datatypes._registry import (
     MTYPE_REGISTER,
@@ -11,7 +12,6 @@ from skpro.datatypes._registry import (
     scitype_to_mtype,
 )
 from skpro.tests.test_switch import run_test_module_changed
-from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 MTYPE_SCITYPE_PAIRS = [(k[0], k[1]) for k in MTYPE_REGISTER]
 

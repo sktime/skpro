@@ -143,11 +143,11 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
+        from skbase.utils.dependencies import _check_estimator_deps
         from sklearn.linear_model import LinearRegression, Ridge
 
         from skpro.regression.residual import ResidualDouble
         from skpro.survival.coxph import CoxPH
-        from skpro.utils.validation._dependencies import _check_estimator_deps
 
         regressor = ResidualDouble(LinearRegression())
 

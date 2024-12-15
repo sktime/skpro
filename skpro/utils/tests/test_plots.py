@@ -2,9 +2,9 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 import pytest
+from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.tests.test_switch import run_test_module_changed
-from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
 @pytest.mark.skipif(

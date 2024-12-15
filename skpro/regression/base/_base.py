@@ -3,13 +3,14 @@
 
 import numpy as np
 import pandas as pd
-
-from skpro.base import BaseEstimator
-from skpro.datatypes import check_is_error_msg, check_is_mtype, convert
-from skpro.utils.validation._dependencies import (
+from skbase.utils.dependencies import (
     _check_estimator_deps,
     _check_soft_dependencies,
 )
+
+from skpro.base import BaseEstimator
+from skpro.datatypes import check_is_error_msg, check_is_mtype, convert
+
 
 # allowed input mtypes
 # include mtypes that are core dependencies

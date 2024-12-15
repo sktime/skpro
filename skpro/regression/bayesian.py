@@ -8,8 +8,9 @@ intercept, and noise; implemented using the pymc backend.
 # copyright: skpro developers
 __author__ = ["meraldoantonio"]
 
+from skbase.utils.dependencies import _check_soft_dependencies
+
 from skpro.regression.base import BaseProbaRegressor
-from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
 class BayesianLinearRegressor(BaseProbaRegressor):
