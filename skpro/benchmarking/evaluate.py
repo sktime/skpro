@@ -10,9 +10,9 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.utils.parallel import parallelize
-from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
 def _split(X, y, C, train, test):

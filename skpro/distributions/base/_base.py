@@ -9,12 +9,9 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+from skbase.utils.dependencies import _check_estimator_deps, _check_soft_dependencies
 
 from skpro.base import BaseObject
-from skpro.utils.validation._dependencies import (
-    _check_estimator_deps,
-    _check_soft_dependencies,
-)
 
 
 class BaseDistribution(BaseObject):

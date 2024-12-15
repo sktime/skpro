@@ -3,7 +3,7 @@
 __author__ = ["fkiraly"]
 __all__ = ["check_estimator"]
 
-from skpro.utils.validation._dependencies import _check_soft_dependencies
+from skbase.utils.dependencies import _check_soft_dependencies
 
 
 def check_estimator(

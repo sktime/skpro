@@ -8,6 +8,7 @@ __author__ = ["fkiraly"]
 import numpy as np
 import pandas as pd
 import pytest
+from skbase.utils.dependencies import _check_soft_dependencies
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import KFold, ShuffleSplit
@@ -16,7 +17,6 @@ from skpro.benchmarking.evaluate import evaluate
 from skpro.metrics import CRPS, EmpiricalCoverage, LogLoss, PinballLoss
 from skpro.regression.residual import ResidualDouble
 from skpro.tests.test_switch import run_test_module_changed
-from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
 def _check_evaluate_output(out, cv, y, scoring):

@@ -2,11 +2,11 @@
 
 import pandas as pd
 import pytest
+from skbase.utils.dependencies import _check_soft_dependencies
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
 from skpro.tests.test_switch import run_test_module_changed
-from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     import polars as pl
