@@ -199,7 +199,7 @@ Base classes
 Bayesian
 --------
 
-.. currentmodule:: skpro.regression.bayesian.bayesian_conjugate
+.. currentmodule:: skpro.regression.bayesian
 
 .. autosummary::
     :toctree: auto_generated/
