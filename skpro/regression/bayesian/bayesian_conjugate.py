@@ -265,13 +265,13 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Parameters to create testing instances of the class
         """
         params1 = {
-            "coefs_prior_mu": np.zeros(10),
+            "coefs_prior_mu": np.zeros(10).reshape(-1, 1),
             "coefs_prior_cov": np.eye(10),
             "noise_precision": 1.0,
         }
 
         params2 = {
-            "coefs_prior_mu": np.zeros(10),
+            "coefs_prior_mu": np.zeros(10).reshape(-1, 1),
             "coefs_prior_cov": np.eye(10),
             "noise_precision": 0.5,
         }
