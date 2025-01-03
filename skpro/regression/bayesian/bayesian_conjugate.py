@@ -12,14 +12,13 @@ from skpro.regression.base import BaseProbaRegressor
 class BayesianConjugateLinearRegressor(BaseProbaRegressor):
     """Bayesian probabilistic estimator for linear regression.
 
-    This estimator uses a multivariate Normal conjugate prior for the coefficients.
-    If `coefs_prior_mu` is not provided, a zero mean is assumed.
+    This estimator uses a multivariate Gaussian conjugate prior for the coefficients.
 
-    For inference, it computes the posterior distribution
-    of the coefficients given the data.
+    Gaussian conjugacy implies that if the prior distribution is multivariate Gaussian,
+    and the likelihood is Gaussian,
+    the posterior distribution of the coefficients will also be multivariate Gaussian.
 
-    For prediction, it returns a series of univariate
-    Normal distributions for each data point.
+    Likewise, the posterior predictive will also be a univariate Gaussian.
 
     Example
     -------
@@ -62,23 +61,24 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
     }
 
     def __init__(self, coefs_prior_cov, coefs_prior_mu=None, noise_precision=1):
-        """Initialize the Bayesian Linear Regressor.
+        """Initialize regressor by providing coefficent priors and noise precision.
 
         Parameters
         ----------
         coefs_prior_cov : np.ndarray or list of lists, required
-            Covariance matrix of the prior Normal distribution for coefficients.
-            If list of lists, will be converted to a (D, D) np.array.
+            Covariance matrix of the prior for intercept and coefficients.
+            If list of lists, will be converted to a 2D np.array.
             Must be positive-definite.
 
         coefs_prior_mu : np.ndarray or list, optional
-            Mean vector of the prior Normal distribution for coefficients.
-            If list, will be converted to a np column vector with (shape: (D, 1)),
-            where D is the number of features.
+            Mean vector of the prior for intercept and coefficients.
+            The zeroth element of the vector is the prior for the intercept.
+            If list, will be converted to a np column vector.
             If not provided, assumed to be a column vector of zeroes.
 
         noise_precision : float
-            Known precision of the Gaussian likelihood (inverse of the variance).
+            Known precision of the Gaussian likelihood noise (beta)
+            This is the inverse of the noise variance.
         """
         if coefs_prior_cov is None:
             raise ValueError("`coefs_prior_cov` must be provided.")
