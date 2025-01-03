@@ -65,15 +65,14 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
 
         Parameters
         ----------
-        coefs_prior_cov : np.ndarray or list of lists, required
+        coefs_prior_cov : 2D np.ndarray, required
             Covariance matrix of the prior for intercept and coefficients.
             If list of lists, will be converted to a 2D np.array.
             Must be positive-definite.
 
-        coefs_prior_mu : np.ndarray or list, optional
+        coefs_prior_mu : np.ndarray column vector, optional
             Mean vector of the prior for intercept and coefficients.
             The zeroth element of the vector is the prior for the intercept.
-            If list, will be converted to a np column vector.
             If not provided, assumed to be a column vector of zeroes.
 
         noise_precision : float
@@ -83,16 +82,16 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         if coefs_prior_cov is None:
             raise ValueError("`coefs_prior_cov` must be provided.")
 
-        # Convert coefs_prior_cov to a numpy array
-        self.coefs_prior_cov = np.asarray(coefs_prior_cov, dtype=float)
-
         # Set coefs_prior_mu to a zero vector if not provided
         if coefs_prior_mu is None:
             self.coefs_prior_mu = np.zeros((self.coefs_prior_cov.shape[0], 1))
+        # Ensure coefs_prior_mu is a column vector
+        elif coefs_prior_mu.ndim != 2 or coefs_prior_mu.shape[1] != 1:
+            raise ValueError(
+                "coefs_prior_mu must be a column vector with shape (n_features, 1)."
+            )
         else:
-            self.coefs_prior_mu = np.asarray(coefs_prior_mu, dtype=float)
-            if self.coefs_prior_mu.ndim == 1:
-                self.coefs_prior_mu = self.coefs_prior_mu.reshape(-1, 1)
+            self.coefs_prior_mu = coefs_prior_mu
 
         # Validate dimensions of coefs_prior_mu and coefs_prior_cov
         if self.coefs_prior_mu.shape[0] != self.coefs_prior_cov.shape[0]:
