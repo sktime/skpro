@@ -32,11 +32,11 @@ __all__ = ["convert_dict"]
 
 import numpy as np
 import pandas as pd
+from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.datatypes._base import BaseConverter
 from skpro.datatypes._convert_utils._convert import _extend_conversions
 from skpro.datatypes._table._registry import MTYPE_LIST_TABLE
-from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 ##############################################################
 # methods to convert one machine type to another machine type

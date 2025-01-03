@@ -40,8 +40,8 @@ class HalfLogistic(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.halflogistic import HalfLogistic
 
     >>> hl = HalfLogistic(beta=1)

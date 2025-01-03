@@ -30,8 +30,8 @@ class Delta(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.delta import Delta
 
     >>> delta = Delta(c=[[0, 1], [2, 3], [4, 5]])

@@ -39,8 +39,8 @@ class LogLaplace(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.loglaplace import LogLaplace
 
     >>> ll = LogLaplace(scale=1)

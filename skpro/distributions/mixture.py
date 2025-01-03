@@ -31,8 +31,8 @@ class Mixture(BaseMetaObject, BaseDistribution):
     index : pd.Index, optional, default = inferred from component distributions
     columns : pd.Index, optional, default = inferred from component distributions
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.mixture import Mixture
     >>> from skpro.distributions.normal import Normal
 

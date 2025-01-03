@@ -1,8 +1,9 @@
 """Tests for the test utilities."""
 
+from skbase.utils.dependencies import _check_estimator_deps
+
 from skpro.tests._config import EXCLUDE_ESTIMATORS
 from skpro.tests.test_switch import run_test_for_class
-from skpro.utils.validation._dependencies import _check_estimator_deps
 
 
 def test_exclude_estimators():

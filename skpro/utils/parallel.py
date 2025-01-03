@@ -155,7 +155,7 @@ def _get_parallel_test_fixtures():
     Returns a list of parameter fixtures, where each fixture
     is a dict with keys "backend" and "backend_params".
     """
-    from skpro.utils.validation._dependencies import _check_soft_dependencies
+    from skbase.utils.dependencies import _check_soft_dependencies
 
     fixtures = []
 

@@ -26,8 +26,8 @@ class Binomial(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.binomial import Binomial
 
     >>> d = Binomial(n=[[10, 10], [20, 30], [40, 50]], p=0.5)

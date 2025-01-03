@@ -78,3 +78,10 @@ class SPLL(BaseSurvDistrMetric):
             return pd.DataFrame(res.mean(axis=1), columns=["SPLL"])
         else:
             return res
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Retrieve test parameters."""
+        params1 = {}
+        params2 = {"multivariate": True}
+        return [params1, params2]

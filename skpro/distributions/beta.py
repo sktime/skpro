@@ -29,8 +29,8 @@ class Beta(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.beta import Beta
 
     >>> d = Beta(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
