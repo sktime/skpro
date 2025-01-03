@@ -81,6 +81,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         """
         if coefs_prior_cov is None:
             raise ValueError("`coefs_prior_cov` must be provided.")
+        else:
+            self.coefs_prior_cov = coefs_prior_cov
 
         # Set coefs_prior_mu to a zero vector if not provided
         if coefs_prior_mu is None:
