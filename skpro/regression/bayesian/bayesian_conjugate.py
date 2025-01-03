@@ -265,13 +265,13 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         """
         params1 = {
             "coefs_prior_mu": None,
-            "coefs_prior_cov": np.eye(5),
+            "coefs_prior_cov": np.eye(10),
             "noise_precision": 1.0,
         }
 
         params2 = {
-            "coefs_prior_mu": np.zeros(3),
-            "coefs_prior_cov": np.eye(3),
+            "coefs_prior_mu": np.zeros(10),
+            "coefs_prior_cov": np.eye(10),
             "noise_precision": 0.5,
         }
 
