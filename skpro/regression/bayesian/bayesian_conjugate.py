@@ -10,15 +10,58 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class BayesianConjugateLinearRegressor(BaseProbaRegressor):
-    """Bayesian probabilistic estimator for linear regression.
+    """
+    Bayesian probabilistic estimator for linear regression.
 
-    This estimator uses a multivariate Gaussian conjugate prior for the coefficients.
+    This estimator models the relationship between features `X` and target `t` using
+    a Bayesian linear regression framework with conjugate priors.
+    Specifically, the prior and posterior of the coefficients (`w`) are
+    both  multivariate Gaussians.
 
-    Gaussian conjugacy implies that if the prior distribution is multivariate Gaussian,
-    and the likelihood is Gaussian,
-    the posterior distribution of the coefficients will also be multivariate Gaussian.
+    Model Assumptions
+    -----------------
+    - **Prior for coefficients (`w`)**:
+      Prior for coefficients `w` (including intercept) follow a multivariate Gaussian:
+      ```
+      w ~ N(coefs_prior_mu, coefs_prior_cov)
+      ```
+      where:
+      - `coefs_prior_mu`: Mean vector of the prior distribution for `w`.
+      - `coefs_prior_cov`: Covariance matrix of the prior distribution for `w`.
 
-    Likewise, the posterior predictive will also be a univariate Gaussian.
+    - **Likelihood**:
+      The likelihood of target `t` given features `X` and coefficients `w` is Gaussian:
+      ```
+      t | X, w ~ N(X @ w, sigma^2)
+      ```
+      where:
+      - `sigma^2 = 1 / noise_precision`: Variance of the noise in the data.
+      - `noise_precision`: Known precision (inverse variance) of the noise.
+
+    - **Posterior for coefficients (`w`)**:
+      Using Bayesian conjugacy, posterior of `w` remains Gaussian:
+      ```
+      w | X, t ~ N(coefs_posterior_mu, coefs_posterior_cov)
+      ```
+      with:
+      ```
+      coefs_posterior_cov = (coefs_prior_precision + noise_precision * X.T @ X)^(-1)
+      coefs_posterior_mu = coefs_posterior_cov @ (
+          coefs_prior_precision @ coefs_prior_mu + noise_precision * X.T @ y
+      )
+      ```
+      where:
+      - `coefs_prior_precision = inv(coefs_prior_cov)`.
+
+    - **Predictive distribution**:
+      For a new observation `x`, the predictive distribution of `y` is:
+      ```
+      y_pred | x ~ N(x.T @ coefs_posterior_mu, pred_var)
+      ```
+      where:
+      ```
+      pred_var = x.T @ coefs_posterior_cov @ x + 1 / noise_precision
+      ```
 
     Example
     -------
