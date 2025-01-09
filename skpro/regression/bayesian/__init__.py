@@ -3,6 +3,6 @@
 
 __all__ = ["BayesianConjugateLinearRegressor"]
 
-from skpro.regression.bayesian.bayesian_conjugate import (
+from skpro.skpro.regression.bayesian._bayesian_conjugate import (
     BayesianConjugateLinearRegressor,
 )
