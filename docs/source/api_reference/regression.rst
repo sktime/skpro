@@ -196,8 +196,8 @@ Base classes
 
     BaseProbaRegressor
 
-Bayesian
---------
+BayesianRegressor
+-----------------
 
 .. currentmodule:: skpro.regression.bayesian
 
