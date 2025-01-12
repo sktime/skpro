@@ -6,7 +6,5 @@ __all__ = [
     "BayesianLinearRegressor",
 ]
 
-from skpro.regression.bayesian._linear_conjugate import (
-    BayesianConjugateLinearRegressor,
-)
+from skpro.regression.bayesian._linear_conjugate import BayesianConjugateLinearRegressor
 from skpro.regression.bayesian._linear_mcmc import BayesianLinearRegressor
