@@ -50,15 +50,15 @@ dependencies = [
 [project.optional-dependencies]
 all_extras = [
     "cyclic-boosting>=1.4.0; python_version < '3.12'",
-    "distfit; python_version < '3.13'",
-    "lifelines<0.30.0; python_version < '3.13'",
-    "mapie; python_version < '3.13'",
+    "distfit",
+    "lifelines<0.30.0",
+    "mapie",
     "matplotlib>=3.3.2",
-    "ngboost<0.6.0; python_version < '3.13'",
+    "ngboost<0.6.0",
     "polars<1.20.0",
     "pyarrow<14.0.0; python_version < '3.12'",
-    "pymc; python_version < '3.13'",
-    "scikit-survival<0.24.0; python_version < '3.13'",
+    "pymc",
+    "scikit-survival<0.24.0",
     "statsmodels>=0.12.1",
 ]
 
