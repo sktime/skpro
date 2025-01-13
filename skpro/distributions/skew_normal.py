@@ -1,122 +1,80 @@
-# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-"""Skew-Normal probability distribution."""
+# Copyright (c) 2025, YourName. All rights reserved.
+# This code is licensed under the BSD-3-Clause License.
+
+"""
+Implementation of the Skew Normal distribution using skpro's BaseDistribution.
+"""
 
 __author__ = ["Spinachboul"]
 
 import numpy as np
-import pandas as pd
 from scipy.stats import skewnorm
+from skpro.distributions.base import BaseDistribution
 
-from skpro.distributions.adapters.scipy._distribution import _ScipyAdapter
-
-class SkewNormal(_ScipyAdapter):
-    r"""Skew-normal distribution (skpro native).
-
-    This distribution has a shape (skewness) parameter `shape`, location `loc`,
-    and scale `scale`. It generalizes the normal distribution for skewed data.
+class SkewNormal(BaseDistribution):
+    r"""Skew Normal probability distribution.
 
     Parameters
     ----------
-    shape : float, default=0
-        Skewness parameter, where 0 gives a normal distribution.
-    loc : float, default=0
-        Location (mean) parameter.
-    scale : float, default=1
-        Scale (standard deviation) parameter, must be positive.
-    index : pd.Index, optional
-        Index of the distribution.
-    columns : pd.Index, optional
-        Columns of the distribution.
+    xi : float or np.ndarray
+        Location parameter of the distribution (shift of the mean).
+    scale : float or np.ndarray
+        Scale parameter of the distribution (standard deviation).
+    shape : float or np.ndarray
+        Shape (skewness) parameter of the distribution.
+    index : array-like, optional (default=None)
+        Index for the distribution, for pandas-like behavior.
+    columns : array-like, optional (default=None)
+        Columns for the distribution, for pandas-like behavior.
 
-    Examples
-    --------
+    Examles
+    ----------
     >>> from skpro.distributions.skew_normal import SkewNormal
-    >>> sn = SkewNormal(shape=4, loc=0, scale=1)
+    >>> sn = SkewNormal(xi=0, scale=1, shape=5)
     >>> sn.mean()
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm", "energy"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "authors": ["Spinachboul"],
+        "maintainers": [],
+        "python_version": ">=3.8",
+        "python_dependencies": ["scipy"],
         "distr:measuretype": "continuous",
-        "distr:paramtype": "parametric",
+        "capabilities:approx": ["energy"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "broadcast_init": "on",
     }
 
-    def __init__(self, shape=0, loc=0, scale=1, index=None, columns=None):
-        self._shape = shape
-        self._loc = loc
+    def __init__(self, xi, scale, shape, index=None, columns=None):
+        self._xi = xi
         self._scale = scale
+        self._shape = shape
         super().__init__(index=index, columns=columns)
 
-    @property
-    def shape(self):
-        """Skewness parameter."""
-        return self._shape
-
-    @shape.setter
-    def shape(self, value):
-        self._shape = value
-
-    @property
-    def loc(self):
-        """Location parameter."""
-        return self._loc
-
-    @loc.setter
-    def loc(self, value):
-        self._loc = value
-
-    @property
-    def scale(self):
-        """Scale parameter."""
-        return self._scale
-
-    @scale.setter
-    def scale(self, value):
-        if value <= 0:
-            raise ValueError("Scale must be positive.")
-        self._scale = value
-
-    def _get_scipy_object(self):
-        """Return the scipy.stats.skewnorm object."""
-        return skewnorm
-
-    def _get_scipy_param(self):
-        """Return parameters for the skew-normal distribution."""
-        return self.shape, {"loc": self.loc, "scale": self.scale}
-
     def _mean(self):
-        """Return the mean of the skew-normal distribution."""
-        shape, loc, scale = self.shape, self.loc, self.scale
-        delta = shape / np.sqrt(1 + shape**2)
-        return loc + scale * delta * np.sqrt(2 / np.pi)
+        delta = self._shape / np.sqrt(1 + self._shape**2)
+        mean = self._xi + self._scale * delta * np.sqrt(2 / np.pi)
+        return mean
 
     def _var(self):
-        """Return the variance of the skew-normal distribution."""
-        shape, scale = self.shape, self.scale
-        delta_squared = shape**2 / (1 + shape**2)
-        return scale**2 * (1 - 2 * delta_squared / np.pi)
+        delta_sq = (self._shape**2) / (1 + self._shape**2)
+        variance = self._scale**2 * (1 - (2 * delta_sq / np.pi))
+        return variance
 
     def _pdf(self, x):
-        """Return the PDF of the skew-normal distribution."""
-        return skewnorm.pdf(x, self.shape, loc=self.loc, scale=self.scale)
+        return skewnorm.pdf(x, self._shape, loc=self._xi, scale=self._scale)
 
     def _log_pdf(self, x):
-        """Return the log-PDF of the skew-normal distribution."""
-        return skewnorm.logpdf(x, self.shape, loc=self.loc, scale=self.scale)
+        return skewnorm.logpdf(x, self._shape, loc=self._xi, scale=self._scale)
 
     def _cdf(self, x):
-        """Return the CDF of the skew-normal distribution."""
-        return skewnorm.cdf(x, self.shape, loc=self.loc, scale=self.scale)
+        return skewnorm.cdf(x, self._shape, loc=self._xi, scale=self._scale)
 
     def _ppf(self, p):
-        """Return the PPF of the skew-normal distribution."""
-        return skewnorm.ppf(p, self.shape, loc=self.loc, scale=self.scale)
+        return skewnorm.ppf(p, self._shape, loc=self._xi, scale=self._scale)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
-        """Return testing parameter settings for the estimator."""
-        params1 = {"shape": 4, "loc": 0, "scale": 1}
-        params2 = {"shape": -3, "loc": 5, "scale": 2, "index": pd.Index([0, 1, 2])}
-        return [params1, params2]
+        if parameter_set == "default":
+            return {"xi": 0, "scale": 1, "shape": 5}
+        return [{"xi": -1, "scale": 2, "shape": 3}, {"xi": 0, "scale": 1, "shape": -2}]
