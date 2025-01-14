@@ -21,10 +21,10 @@ class Erlang(_ScipyAdapter):
 
     Parameters
     ----------
-    - k : int or array of int (1D or 2D)  
-    Represents the shape parameter.
-    - lambda_ : float or array of float (1D or 2D)  
-    Represents the rate parameter, which is also the inverse of the scale parameter.
+    - shape : int or array of int (1D or 2D)  
+        Represents the shape parameter.
+    - rate : float or array of float (1D or 2D)  
+        Represents the rate parameter, which is also the inverse of the scale parameter.
     - index : pd.Index, optional, default = RangeIndex
     - columns : pd.Index, optional, default = RangeIndex  
 
@@ -32,7 +32,7 @@ class Erlang(_ScipyAdapter):
     ----------
     >>> from skpro.distributions.erlang import Erlang
 
-    >>> d = Erlang(lambda_=[[1, 1], [2, 3], [4, 5]], k=2)
+    >>> d = Erlang(rate=[[1, 1], [2, 3], [4, 5]], shape=2)
     """
     
     _tags = {
@@ -42,41 +42,41 @@ class Erlang(_ScipyAdapter):
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
-    def __init__(self,lambda_, k, index=None, columns=None):
-        if(lambda_ <= 0):
-            raise ValueError("lambda_ must be greater than 0.")
-        if( isinstance(k, int) == False or k <= 0):
-            raise ValueError("k must be a positive integer.")
-        self.lambda_ = lambda_
-        self.k = k
+    def __init__(self,rate, shape, index=None, columns=None):
+        if(rate <= 0):
+            raise ValueError("Rate must be greater than 0.")
+        if( isinstance(shape, int) == False or shape <= 0):
+            raise ValueError("shape must be a positive integer.")
+        self.rate = rate
+        self.shape = shape
         
         super().__init__(index=index, columns=columns)
     def _get_scipy_object(self) -> rv_continuous:
         return erlang
     
     def _get_scipy_param(self):
-        lambda_ = self._bc_params["lambda_"]
-        k = self._bc_params["k"]
-        return [],{"scale":1/lambda_,"a":k}
+        rate = self._bc_params["rate"]
+        shape = self._bc_params["shape"]
+        return [],{"scale":1/rate,"a":shape}
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
         # Array case examples
         params1 = {
-            "lambda_": 2.0,
-            "k": 3,          
+            "rate": 2.0,
+            "shape": 3,          
             "index": pd.Index([0, 1, 2]),  
             "columns": pd.Index(["x", "y"]),  
         }
         # Scalar case examples
         params2 = {
-            "lambda_": 0.8,
-            "k": 2
+            "rate": 0.8,
+            "shape": 2
         }
         
         params3 = {
-            "lambda_": 3.0,
-            "k": 1
+            "rate": 3.0,
+            "shape": 1
         }
 
         return [params1, params2, params3]
