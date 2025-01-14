@@ -44,13 +44,13 @@ class ConcatDistr(BaseMetaEstimator, BaseDistribution):
     }
 
     def __init__(
-            self,
-            distributions,
-            axis=0,
-            ignore_index=False,
-            index=None,
-            columns=None,
-        ):
+        self,
+        distributions,
+        axis=0,
+        ignore_index=False,
+        index=None,
+        columns=None,
+    ):
         """Initialize concat with list of distributions and axis for concatenation."""
         self.distributions = distributions
         self.axis = axis
