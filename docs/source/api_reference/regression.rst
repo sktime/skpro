@@ -174,6 +174,22 @@ Gaussian process and kernel regression
     GaussianProcess
 
 
+Bayesian regressors
+-------------------
+
+The below Bayesian regressors provide APIs
+for prior and posterior handling.
+
+.. currentmodule:: skpro.regression.bayesian
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    BayesianConjugateLinearRegressor
+    BayesianLinearRegressor
+
+
 Adapters to other interfaces
 ----------------------------
 
@@ -195,15 +211,3 @@ Base classes
     :template: class.rst
 
     BaseProbaRegressor
-
-BayesianRegressor
------------------
-
-.. currentmodule:: skpro.regression.bayesian
-
-.. autosummary::
-    :toctree: auto_generated/
-    :template: class.rst
-
-    BayesianConjugateLinearRegressor
-    BayesianLinearRegressor
