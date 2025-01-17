@@ -55,6 +55,7 @@ Continuous support - non-negative reals
     Beta
     ChiSquared
     Exponential
+    Erlang
     Fisk
     Gamma
     HalfCauchy
