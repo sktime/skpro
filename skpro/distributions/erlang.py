@@ -23,7 +23,7 @@ class Erlang(_ScipyAdapter):
     ----------
     rate : float or array of float (1D or 2D)
         Represents the rate parameter, which is also the inverse of the scale parameter.
-    k : int or array of int (1D or 2D)
+    k : int or array of int (1D or 2D), optional, default = 1
         Represents the shape parameter.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
@@ -43,11 +43,9 @@ class Erlang(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
-    def __init__(self, rate, k, index=None, columns=None):
+    def __init__(self, rate, k=1, index=None, columns=None):
         if rate <= 0:
             raise ValueError("Rate must be greater than 0.")
-        if not isinstance(k, int):
-            raise ValueError("shape must be a positive integer.")
         if k <= 0:
             raise ValueError("shape must be a positive integer.")
         self.rate = rate
