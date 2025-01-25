@@ -105,8 +105,8 @@ class XGBoostLSS(BaseProbaRegressor):
         else:
             self._n_cpu = n_cpu
 
-    def _get_distr(self, distr):
-        """Get distribution object from string."""
+    def _get_xgblss_distr(self, distr):
+        """Get xgboostlss distribution object from string."""
         import importlib
 
         SKPRO_TO_XGBLSS = {
@@ -115,6 +115,16 @@ class XGBoostLSS(BaseProbaRegressor):
         distr = SKPRO_TO_XGBLSS.get(distr, distr)
 
         module_str = "xgboostlss.distributions." + distr
+        object_str = distr
+
+        module = importlib.import_module(module_str)
+        return getattr(module, object_str)
+
+    def _get_skpro_distr(self, distr):
+        """Get skpro distribution object from string."""
+        import importlib
+
+        module_str = "skpro.distributions." + distr
         object_str = distr
 
         module = importlib.import_module(module_str)
@@ -145,10 +155,10 @@ class XGBoostLSS(BaseProbaRegressor):
 
         dtrain = xgb.DMatrix(X, label=y, nthread=n_cpu, silent=True)
 
-        distr = self._get_distr(self.dist)
+        xgblss_distr = self._get_xgblss_distr(self.dist)
 
         xgblss = XGBoostLSS(
-            distr(
+            xgblss_distr(
                 stabilization="None",
                 response_fn="exp",
                 loss_fn="nll",
@@ -231,9 +241,9 @@ class XGBoostLSS(BaseProbaRegressor):
 
         y_pred_xgblss = self.xgblss_.predict(dtest, pred_type="parameters")
 
-        from skpro.distributions.normal import Normal
+        skpro_distr = self._get_skpro_distr(self.dist)
 
-        y_pred = Normal(
+        y_pred = skpro_distr(
             mu=y_pred_xgblss.iloc[:, [0]].values,  # mean is first column
             sigma=y_pred_xgblss.iloc[:, [1]].values,  # scale is second column
             index=index,
