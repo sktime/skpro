@@ -123,7 +123,7 @@ class XGBoostLSS(BaseProbaRegressor):
         self : reference to self
         """
         import xgboost as xgb
-        from xgboostlss.distributions import Gaussian
+        from xgboostlss.distributions.Gaussian import Gaussian
         from xgboostlss.model import XGBoostLSS
 
         self._y_cols = y.columns
