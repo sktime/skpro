@@ -60,6 +60,7 @@ all_extras = [
     "pymc; python_version < '3.13'",
     "scikit-survival<0.24.0; python_version < '3.13'",
     "statsmodels>=0.12.1",
+    "xgboostlss; python_version >= '3.10'",
 ]
 
 dev = [
