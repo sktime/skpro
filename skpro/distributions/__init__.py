@@ -10,6 +10,7 @@ __all__ = [
     "ChiSquared",
     "Delta",
     "Empirical",
+    "Erlang",
     "Exponential",
     "Fisk",
     "Gamma",
@@ -47,6 +48,7 @@ from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.compose import IID
 from skpro.distributions.delta import Delta
 from skpro.distributions.empirical import Empirical
+from skpro.distributions.erlang import Erlang
 from skpro.distributions.exponential import Exponential
 from skpro.distributions.fisk import Fisk
 from skpro.distributions.gamma import Gamma

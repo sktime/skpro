@@ -1,4 +1,39 @@
-"""Extension template for regressors."""
+"""Extension template for regressors.
+
+Purpose of this implementation template:
+    quick implementation of new estimators following the template
+    NOT a concrete class to import! This is NOT a base class or concrete class!
+    This is to be used as a "fill-in" coding template.
+
+How to use this implementation template to implement a new distribution:
+- make a copy of the template in a suitable location, give it a descriptive name.
+- work through all the "todo" comments below
+- fill in code for mandatory methods, and optionally for optional methods
+- do not write to reserved attributes: is_fitted, _is_fitted, _X_metadata, _y_metadata,
+  _tags, _tags_dynamic, _config, _config_dynamic
+- you can add more private methods, but do not override BaseEstimator's private methods
+    an easy way to be safe is to prefix your methods with "_custom"
+- change docstrings for functions and the file
+- ensure interface compatibility by skpro.utils.estimator_checks.check_estimator
+- once complete: use as a local library, or contribute to skpro via PR
+- more details:
+  https://www.sktime.net/en/stable/developer_guide/add_estimators.html
+
+Mandatory methods to implement:
+    fitting         - _fit(self, X, y)
+
+At least one of the following probabilistic prediction methods:
+    predicting quantiles         - _predict_quantiles(self, X, alpha=None)
+    OR predicting intervals      - _predict_interval(self, X, coverage=None)
+    OR predicting distribution   - _predict_proba(self, X)
+
+Optional methods to implement:
+    predicting variance          - _predict_var(self, X, cov=False)
+    updating                     - _update(self, X, y)
+
+Testing - required for test framework and check_estimator usage:
+    get default parameters for test instance(s) - get_test_params()
+"""
 # todo: write an informative docstring for the file or module, remove the above
 # todo: add an appropriate copyright notice for your estimator
 #       estimators contributed to skpro should have the copyright notice at the top
