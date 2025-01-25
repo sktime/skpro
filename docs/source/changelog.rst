@@ -20,6 +20,13 @@ For planned changes and upcoming releases, see roadmap in the
 
 Feature and maintenance release.
 
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``scikit-learn`` bounds have been updated to ``>=0.24.0,<1.7.0``.
+* ``numpy`` bounds have been updated to ``>=1.21.0,<2.3``.
+* ``polars`` (data container soft dependency) bounds have been updated to ``<1.21.0``.
+
 Enhancements
 ~~~~~~~~~~~~
 
