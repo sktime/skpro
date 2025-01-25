@@ -33,8 +33,7 @@ Maintenance
 ~~~~~~~~~~~
 
 * [MNT] Update CODEOWNERS file (:pr:`507`) :user:`fkiraly`
-* [MNT] [Dependabot](deps): Update polars requirement from <1.14.0 to <1.20.0 (:pr:`511`) :user:`dependabot[bot]`
-* [MNT] [Dependabot](deps): Update polars requirement from <1.20.0 to <1.21.0 (:pr:`519`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``polars requirement from ``<1.14.0`` to ``<1.21.0`` (:pr:`511`, :pr:`519`) :user:`dependabot[bot]`
 * [MNT] [Dependabot](deps): Update ``numpy`` requirement from ``<2.2,>=1.21.0`` to ``>=1.21.0,<2.3`` (:pr:`505`) :user:`dependabot[bot]`
 * [MNT] [Dependabot](deps): Update ``scikit-learn`` requirement from ``<1.6.0,>=0.24.0`` to ``>=0.24.0,<1.7.0`` (:pr:`506`) :user:`dependabot[bot]`
 
