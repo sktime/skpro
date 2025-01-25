@@ -19,9 +19,6 @@ __pycache__/*
 .settings
 .idea
 
-# virtual enviornment
-/venv
-
 # Package files
 *.egg
 *.eggs/
