@@ -105,6 +105,16 @@ class XGBoostLSS(BaseProbaRegressor):
         else:
             self._n_cpu = n_cpu
 
+    def _get_distr(self, distr):
+        """Get distribution object from string."""
+        import importlib
+
+        module_str = "xgboostlss.distributions." + distr
+        object_str = distr
+
+        module = importlib.import_module(module_str)
+        return getattr(module, object_str)
+
     def _fit(self, X, y):
         """Fit regressor to training data.
 
@@ -123,7 +133,6 @@ class XGBoostLSS(BaseProbaRegressor):
         self : reference to self
         """
         import xgboost as xgb
-        from xgboostlss.distributions.Gaussian import Gaussian
         from xgboostlss.model import XGBoostLSS
 
         self._y_cols = y.columns
@@ -131,8 +140,10 @@ class XGBoostLSS(BaseProbaRegressor):
 
         dtrain = xgb.DMatrix(X, label=y, nthread=n_cpu, silent=True)
 
+        distr = self._get_distr(self.dist)
+
         xgblss = XGBoostLSS(
-            Gaussian(
+            distr(
                 stabilization="None",
                 response_fn="exp",
                 loss_fn="nll",
