@@ -16,13 +16,13 @@ class TDistribution(BaseDistribution):
     Parameters
     ----------
     mean : float or array of float (1D or 2D)
-        median of the t-distribution distribution.
+        median of the t-distribution.
         Same as the mean, if it exists.
     sd : float or array of float (1D or 2D), must be positive
         scale parameter of the t-distribution.
         Same as the standard deviation in the limit of large degrees of freedom.
     df : float or array of float (1D or 2D), must be positive
-        Degrees of freedom of the t-distribution
+        Degrees of freedom of the t-distribution.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
