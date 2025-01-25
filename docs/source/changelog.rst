@@ -20,7 +20,37 @@ For planned changes and upcoming releases, see roadmap in the
 
 Feature and maintenance release.
 
+Enhancements
+~~~~~~~~~~~~
 
+* [ENH] replace ``skpro`` copy of dependency checkers by ``skbase`` (:pr:`508`) :user:`fkiraly`
+* [ENH] minor reorder or Bayesian regressors (:pr:`515`) :user:`fkiraly`
+* [ENH] Erlang Distribution (:pr:`518`) :user:`RUPESH-KUMAR01`
+* [ENH] interface for ``xgboostlss`` regressors (:pr:`522`) :user:`fkiraly`
+* [ENH] Bayesian Linear Regression using Normal Conjugate Prior (:pr:`500`) :user:`meraldoantonio`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] Update CODEOWNERS file (:pr:`507`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update polars requirement from <1.14.0 to <1.20.0 (:pr:`511`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from <1.20.0 to <1.21.0 (:pr:`519`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``numpy`` requirement from ``<2.2,>=1.21.0`` to ``>=1.21.0,<2.3`` (:pr:`505`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update ``scikit-learn`` requirement from ``<1.6.0,>=0.24.0`` to ``>=0.24.0,<1.7.0`` (:pr:`506`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] extension templates: instruction preamble (:pr:`521`) :user:`fkiraly`
+* [DOC] improved docstring for the ``TDistribution`` (:pr:`523`) :user:`fkiraly`
+
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`meraldoantonio`,
+:user:`RUPESH-KUMAR01`
 
 [2.8.0] - 2024-11-17
 ====================
