@@ -34,6 +34,7 @@ __all__ = [
     "QPD_B",
     "QPD_U",
     "QPD_Johnson",
+    "SkewNormal",
     "TDistribution",
     "TruncatedNormal",
     "Uniform",
@@ -67,6 +68,7 @@ from skpro.distributions.pareto import Pareto
 from skpro.distributions.poisson import Poisson
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
 from skpro.distributions.qpd_empirical import QPD_Empirical
+from skpro.distributions.skew_normal import SkewNormal
 from skpro.distributions.t import TDistribution
 from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.uniform import Uniform
