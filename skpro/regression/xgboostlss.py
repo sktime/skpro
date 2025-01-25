@@ -1,4 +1,5 @@
 """Interface for xgboostlss probabilistic regressor."""
+
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -33,6 +34,26 @@ class XGBoostLSS(BaseProbaRegressor):
     n_cpu: int or str, optional, default="auto"
         Number of CPUs to use for parallel processing of data in ``xgboostlss``.
         Default is "auto" which uses all available CPUs.
+
+    num_boost_round: int, optional, default=100
+        Number of boosting iterations.
+
+    nfold: int, optional, default=5
+        Number of folds in CV used for tuning.
+
+    early_stopping_rounds: int, optional, default=20
+        Number of early stopping round interval.
+        Cross-Validation metric (average of validation metric computed over CV folds)
+        needs to improve at least once every **early_stopping_rounds**
+        round(s) to continue training.
+        The last entry in the evaluation history will represent the best iteration.
+
+    max_minutes: int, optional, default=10
+        Time budget in minutes, i.e., stop study after the given number of minutes.
+
+    n_trials: int, optional, default=30
+        The number of trials in tuning.
+        If this argument is set to None, there is no limitation on the number of trials.
     """
 
     _tags = {
@@ -58,12 +79,22 @@ class XGBoostLSS(BaseProbaRegressor):
         response_fn="exp",
         loss_fn="nll",
         n_cpu="auto",
+        num_boost_round=100,
+        nfold=5,
+        early_stopping_rounds=20,
+        max_minutes=10,
+        n_trials=30,
     ):
         self.dist = dist
         self.stabilization = stabilization
         self.response_fn = response_fn
         self.loss_fn = loss_fn
         self.n_cpu = n_cpu
+        self.num_boost_round = num_boost_round
+        self.nfold = nfold
+        self.early_stopping_rounds = early_stopping_rounds
+        self.max_minutes = max_minutes
+        self.n_trials = n_trials
 
         super().__init__()
 
@@ -102,35 +133,35 @@ class XGBoostLSS(BaseProbaRegressor):
 
         xgblss = XGBoostLSS(
             Gaussian(
-                stabilization="None",  
-                response_fn="exp",      
+                stabilization="None",
+                response_fn="exp",
                 loss_fn="nll",
             )
         )
 
         param_dict = {
-            "eta":              ["float", {"low": 1e-5,   "high": 1,     "log": True}],
-            "max_depth":        ["int",   {"low": 1,      "high": 10,    "log": False}],
-            "gamma":            ["float", {"low": 1e-8,   "high": 40,    "log": True}],
-            "subsample":        ["float", {"low": 0.2,    "high": 1.0,   "log": False}],
-            "colsample_bytree": ["float", {"low": 0.2,    "high": 1.0,   "log": False}],
-            "min_child_weight": ["float", {"low": 1e-8,   "high": 500,   "log": True}],
-            "booster":          ["categorical", ["gbtree"]],
+            "eta": ["float", {"low": 1e-5, "high": 1, "log": True}],
+            "max_depth": ["int", {"low": 1, "high": 10, "log": False}],
+            "gamma": ["float", {"low": 1e-8, "high": 40, "log": True}],
+            "subsample": ["float", {"low": 0.2, "high": 1.0, "log": False}],
+            "colsample_bytree": ["float", {"low": 0.2, "high": 1.0, "log": False}],
+            "min_child_weight": ["float", {"low": 1e-8, "high": 500, "log": True}],
+            "booster": ["categorical", ["gbtree"]],
         }
 
         opt_param = xgblss.hyper_opt(
             param_dict,
             dtrain,
-            num_boost_round=100,
+            num_boost_round=self.num_boost_round,
             # Number of boosting iterations.
-            nfold=5,
+            nfold=self.nfold,
             # Number of cv-folds.
-            early_stopping_rounds=20,
+            early_stopping_rounds=self.early_stopping_rounds,
             # Number of early-stopping rounds
-            max_minutes=10,
+            max_minutes=self.max_minutes,
             # Time budget in minutes,
             # i.e., stop study after the given number of minutes.
-            n_trials=30,
+            n_trials=self.n_trials,
             # The number of trials. If this argument is set to None,
             # there is no limitation on the number of trials.
             silence=True,
@@ -148,11 +179,7 @@ class XGBoostLSS(BaseProbaRegressor):
         del opt_params["opt_rounds"]
 
         # Train Model with optimized hyperparameters
-        xgblss.train(
-            opt_params,
-            dtrain,
-            num_boost_round=n_rounds
-        )
+        xgblss.train(opt_params, dtrain, num_boost_round=n_rounds)
 
         self.xgblss_ = xgblss
         return self
