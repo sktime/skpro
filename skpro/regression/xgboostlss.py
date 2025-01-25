@@ -19,7 +19,7 @@ class XGBoostLSS(BaseProbaRegressor):
         * "Gamma": Gamma distribution.
         * "Laplace": Laplace distribution.
         * "LogNormal": LogNormal distribution.
-        * "StudentT": Student's T distribution.
+        * "TDistribution": Student's T distribution.
         * "Weibull": Weibull distribution.
 
     stabilization: str, optional, default="None"
@@ -163,7 +163,7 @@ class XGBoostLSS(BaseProbaRegressor):
             "Gamma": {"alpha": "concentration", "beta": "rate"},
             "Laplace": {"mu": "loc", "scale": "scale"},
             "LogNormal": {"mu": "loc", "sigma": "scale"},
-            "StudentT": {"mu": "loc", "sd": "scale", "df": "df"},
+            "TDistribution": {"mu": "loc", "sd": "scale", "df": "df"},
             "Weibull": {"scale": "scale", "k": "concentration"},
         }
         map = name_map.get(distr, {})
@@ -316,6 +316,6 @@ class XGBoostLSS(BaseProbaRegressor):
         }
         params2 = {"dist": "Gamma", "max_minutes": 1}
         params3 = {"dist": "Weibull", "max_minutes": 1}
-        params4 = {"dist": "StudentT", "max_minutes": 1}
+        params4 = {"dist": "TDistribution", "max_minutes": 1}
         params5 = {"dist": "Laplace", "max_minutes": 1}
         return [params0, params1, params2, params3, params4, params5]
