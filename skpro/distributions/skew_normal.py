@@ -6,10 +6,10 @@ __author__ = ["Spinachboul"]
 
 from scipy.stats import skewnorm
 
-from skpro.distributions.adapters import ScipyAdapter
+from skpro.distributions.adapters.scipy._distribution import _ScipyAdapter
 
 
-class SkewNormal(ScipyAdapter):
+class SkewNormal(_ScipyAdapter):
     r"""Skew-Normal Probability Distribution.
 
     The skew-normal distribution generalizes the normal distribution by introducing
