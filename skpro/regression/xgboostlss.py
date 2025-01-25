@@ -109,6 +109,11 @@ class XGBoostLSS(BaseProbaRegressor):
         """Get distribution object from string."""
         import importlib
 
+        SKPRO_TO_XGBLSS = {
+            "Normal": "Gaussian",
+        }
+        distr = SKPRO_TO_XGBLSS.get(distr, distr)
+
         module_str = "xgboostlss.distributions." + distr
         object_str = distr
 
