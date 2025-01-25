@@ -16,6 +16,11 @@ class XGBoostLSS(BaseProbaRegressor):
         Valid options are:
 
         * "Normal": Normal distribution.
+        * "Gamma": Gamma distribution.
+        * "Laplace": Laplace distribution.
+        * "LogNormal": LogNormal distribution.
+        * "StudentT": Student's T distribution.
+        * "Weibull": Weibull distribution.
 
     stabilization: str, optional, default="None"
         Stabilization method for the Gradient and Hessian.
@@ -106,11 +111,18 @@ class XGBoostLSS(BaseProbaRegressor):
             self._n_cpu = n_cpu
 
     def _get_xgblss_distr(self, distr):
-        """Get xgboostlss distribution object from string."""
+        """Get xgboostlss distribution object from string.
+
+        Parameters
+        ----------
+        distr : str
+            Distribution name, in skpro, as in self.dist
+        """
         import importlib
 
         SKPRO_TO_XGBLSS = {
             "Normal": "Gaussian",
+            "TDistribution": "StudentT",
         }
         distr = SKPRO_TO_XGBLSS.get(distr, distr)
 
@@ -121,7 +133,13 @@ class XGBoostLSS(BaseProbaRegressor):
         return getattr(module, object_str)
 
     def _get_skpro_distr(self, distr):
-        """Get skpro distribution object from string."""
+        """Get skpro distribution object from string.
+
+        Parameters
+        ----------
+        distr : str
+            Distribution name, in skpro, as in self.dist
+        """
         import importlib
 
         module_str = "skpro.distributions"
@@ -129,6 +147,30 @@ class XGBoostLSS(BaseProbaRegressor):
 
         module = importlib.import_module(module_str)
         return getattr(module, object_str)
+
+    def _get_skpro_val_dict(self, distr, df):
+        """Converts xgboostlss parameters to skpro distribution.
+
+        Parameters
+        ----------
+        distr : str
+            Distribution name, in skpro, as in self.dist
+        df : pd.DataFrame
+            DataFrame of parameters as returned by predict, in xgboostlss.
+        """
+        name_map = {
+            "Normal": {"mu": "loc", "sigma": "scale"},
+            "Gamma": {"alpha": "concentration", "beta": "rate"},
+            "Laplace": {"mu": "loc", "scale": "scale"},
+            "LogNormal": {"mu": "loc", "sigma": "scale"},
+            "StudentT": {"mu": "loc", "sd": "scale", "df": "df"},
+            "Weibull": {"scale": "scale", "k": "concentration"},
+        }
+        map = name_map.get(distr, {})
+
+        vals = {k : df.loc[:, [v]] for k, v in map.items()}
+
+        return vals
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -242,13 +284,9 @@ class XGBoostLSS(BaseProbaRegressor):
         y_pred_xgblss = self.xgblss_.predict(dtest, pred_type="parameters")
 
         skpro_distr = self._get_skpro_distr(self.dist)
+        skpro_distr_vals = self._get_skpro_val_dict(self.dist, y_pred_xgblss)
 
-        y_pred = skpro_distr(
-            mu=y_pred_xgblss.iloc[:, [0]].values,  # mean is first column
-            sigma=y_pred_xgblss.iloc[:, [1]].values,  # scale is second column
-            index=index,
-            columns=columns,
-        )
+        y_pred = skpro_distr(**skpro_distr_vals, index=index, columns=columns)
 
         return y_pred
 
@@ -276,4 +314,8 @@ class XGBoostLSS(BaseProbaRegressor):
             "loss_fn": "crps",
             "max_minutes": 1,
         }
-        return [params0, params1]
+        params2 = {"dist": "Gamma", "max_minutes": 1}
+        params3 = {"dist": "Weibull", "max_minutes": 1}
+        params4 = {"dist": "StudentT", "max_minutes": 1}
+        params5 = {"dist": "Laplace", "max_minutes": 1}
+        return [params0, params1, params2, params3, params4, params5]
