@@ -149,7 +149,7 @@ class XGBoostLSS(BaseProbaRegressor):
         return getattr(module, object_str)
 
     def _get_skpro_val_dict(self, distr, df):
-        """Converts xgboostlss parameters to skpro distribution.
+        """Convert xgboostlss parameters to skpro distribution.
 
         Parameters
         ----------
