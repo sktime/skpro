@@ -14,7 +14,7 @@ class SkewNormal(_ScipyAdapter):
 
     The skew-normal distribution generalizes the normal distribution by introducing
     a shape parameter :math:`\\alpha` to control skewness. It is parameterized by
-    ``xi``, ``scale``, and ``shape``:
+    ``mu``, ``sigma``, and ``alpha``:
 
     .. math:: f(x; \alpha, \\mu, \\sigma) = \frac{2}{\\sigma}
           \\phi\\left(\frac{x - \\mu}{\\sigma}\right)
@@ -27,11 +27,11 @@ class SkewNormal(_ScipyAdapter):
 
     Parameters
     ----------
-    xi : float
+    mu : float
         Location parameter of the distribution (mean shift).
-    scale : float
+    sigma : float
         Scale parameter of the distribution (standard deviation), must be positive.
-    shape : float
+    alpha : float
         Skewness parameter of the distribution:
         - A positive value skews to the right.
         - A negative value skews to the left.
@@ -44,10 +44,7 @@ class SkewNormal(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions import SkewNormal
-    >>> s = SkewNormal(xi=0, scale=1, shape=3)
-    >>> s.mean()  # Expected output: Mean of the skew-normal distribution
-    >>> s.var()   # Expected output: Variance of the skew-normal distribution
-    >>> s.pdf(0)  # Probability density function at x=0
+    >>> s = SkewNormal(mu=0, sigma=1, alpha=3)
     """
 
     _tags = {
@@ -61,18 +58,28 @@ class SkewNormal(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
-    def __init__(self, xi, scale, shape, index=None, columns=None):
-        self.xi = xi
-        self.scale = scale
-        self.shape = shape
+    def __init__(self, mu, sigma, alpha=0, index=None, columns=None):
+        self.mu = mu
+        self.sigma = sigma
+        self.alpha = alpha
         self.index = index
         self.columns = columns
 
-        self.params = {"a": self.shape, "loc": self.xi, "scale": self.scale}
+        super().__init__(index=index, columns=columns)
 
-        super().__init__(
-            scipy_class=skewnorm, index=self.index, columns=self.columns, **self.params
-        )
+    def _get_scipy_object(self):
+        return skewnorm
+
+    def _get_scipy_param(self):
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+        alpha = self._bc_params["alpha"]
+
+        return [], {
+            "loc": mu,
+            "scale": sigma,
+            "a": alpha,
+        }
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -92,9 +99,7 @@ class SkewNormal(_ScipyAdapter):
             - `MyClass(**params)` or `MyClass(**params[i])` creates a valid test.
             - `create_test_instance` uses the first (or only) dictionary in `params`.
         """
-        if parameter_set == "default":
-            return {"xi": 0, "scale": 1, "shape": 5}
         return [
-            {"xi": -1, "scale": 2, "shape": 3},
-            {"xi": 0, "scale": 1, "shape": -2},
+            {"mu": -1, "sigma": 2},
+            {"mu": 0, "sigma": 1, "alpha": -2},
         ]
