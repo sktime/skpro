@@ -124,7 +124,7 @@ class XGBoostLSS(BaseProbaRegressor):
         """Get skpro distribution object from string."""
         import importlib
 
-        module_str = "skpro.distributions." + distr
+        module_str = "skpro.distributions"
         object_str = distr
 
         module = importlib.import_module(module_str)
