@@ -168,7 +168,7 @@ class XGBoostLSS(BaseProbaRegressor):
         }
         map = name_map.get(distr, {})
 
-        vals = {k: df.loc[:, [v]] for k, v in map.items()}
+        vals = {k: df.loc[:, [v]].values for k, v in map.items()}
 
         return vals
 
