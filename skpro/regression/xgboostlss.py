@@ -244,9 +244,10 @@ class XGBoostLSS(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        params0 = {}
+        params0 = {"max_minutes": 1}
         params1 = {
             "stabilization": "L2",
             "loss_fn": "crps",
+            "max_minutes": 1,
         }
         return [params0, params1]
