@@ -163,7 +163,7 @@ class XGBoostLSS(BaseProbaRegressor):
             "Gamma": {"alpha": "concentration", "beta": "rate"},
             "Laplace": {"mu": "loc", "scale": "scale"},
             "LogNormal": {"mu": "loc", "sigma": "scale"},
-            "TDistribution": {"mean": "loc", "sd": "scale", "df": "df"},
+            "TDistribution": {"mu": "loc", "sd": "scale", "df": "df"},
             "Weibull": {"scale": "scale", "k": "concentration"},
         }
         map = name_map.get(distr, {})
