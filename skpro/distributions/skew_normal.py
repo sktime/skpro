@@ -49,8 +49,6 @@ class SkewNormal(_ScipyAdapter):
 
     _tags = {
         "authors": ["Spinachboul"],
-        "maintainers": [],
-        "python_version": ">=3.8",
         "python_dependencies": ["scipy"],
         "distr:measuretype": "continuous",
         "capabilities:approx": ["energy"],
