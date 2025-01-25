@@ -133,6 +133,17 @@ Reduction to probabilistic classification
 
     HistBinnedProbaRegressor
 
+Distributional boosting
+-----------------------
+
+.. currentmodule:: skpro.regression.xgboostlss
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    XGBoostLSS
+
 Naive regressors and baselines
 ------------------------------
 
@@ -173,7 +184,6 @@ Gaussian process and kernel regression
 
     GaussianProcess
 
-
 Bayesian regressors
 -------------------
 
@@ -188,7 +198,6 @@ for prior and posterior handling.
 
     BayesianConjugateLinearRegressor
     BayesianLinearRegressor
-
 
 Adapters to other interfaces
 ----------------------------
