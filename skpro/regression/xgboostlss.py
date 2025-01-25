@@ -129,7 +129,7 @@ class XGBoostLSS(BaseProbaRegressor):
         self._y_cols = y.columns
         n_cpu = self._n_cpu
 
-        dtrain = xgb.DMatrix(X, label=y, n_cpu=n_cpu, silent=True)
+        dtrain = xgb.DMatrix(X, label=y, n_thread=n_cpu, silent=True)
 
         xgblss = XGBoostLSS(
             Gaussian(
@@ -211,7 +211,7 @@ class XGBoostLSS(BaseProbaRegressor):
         y_cols = self._y_cols
         columns = y_cols
 
-        dtest = xgb.DMatrix(X, n_cpu=n_cpu, silent=True)
+        dtest = xgb.DMatrix(X, n_thread=n_cpu, silent=True)
 
         y_pred_xgblss = self.xgblss_.predict(dtest, pred_type="parameters")
 
