@@ -69,7 +69,7 @@ class BaseProbaRegressor(BaseEstimator):
         else:
             return NotImplemented
 
-    def fit(self, X, y, C=None):
+    def fit(self, X, y, C=None, sample_weight=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -86,6 +86,8 @@ class BaseProbaRegressor(BaseEstimator):
         C : ignored, optional (default=None)
             censoring information for survival analysis
             All probabilistic regressors assume data to be uncensored
+        sample_weight : pandas DataFrame, same shape as y, default=None
+            sample weights to fit regressor to
 
         Returns
         -------
@@ -109,13 +111,20 @@ class BaseProbaRegressor(BaseEstimator):
 
         # set fitted flag to True
         self._is_fitted = True
-
-        if not capa_surv:
-            return self._fit(X_inner, y_inner)
+        if sample_weight is None:
+            if not capa_surv:
+                return self._fit(X_inner, y_inner)
+            else:
+                return self._fit(X_inner, y_inner, C=C_inner)
         else:
-            return self._fit(X_inner, y_inner, C=C_inner)
+            if not capa_surv:
+                return self._fit(X_inner, y_inner, sample_weight=sample_weight)
+            else:
+                return self._fit(
+                    X_inner, y_inner, C=C_inner, sample_weight=sample_weight
+                )
 
-    def _fit(self, X, y, C=None):
+    def _fit(self, X, y, C=None, sample_weight=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -127,6 +136,11 @@ class BaseProbaRegressor(BaseEstimator):
             feature instances to fit regressor to
         y : pandas DataFrame, must be same length as X
             labels to fit regressor to
+        C : ignored, optional (default=None)
+            censoring information for survival analysis
+            All probabilistic regressors assume data to be uncensored
+        sample_weight : pandas DataFrame, same shape as y, default=None
+            sample weights to fit regressor to
 
         Returns
         -------
@@ -134,7 +148,7 @@ class BaseProbaRegressor(BaseEstimator):
         """
         raise NotImplementedError
 
-    def update(self, X, y, C=None):
+    def update(self, X, y, C=None, sample_weight=None):
         """Update regressor with a new batch of training data.
 
         Only estimators with the ``capability:update`` tag (value ``True``)
@@ -156,6 +170,8 @@ class BaseProbaRegressor(BaseEstimator):
         C : ignored, optional (default=None)
             censoring information for survival analysis
             All probabilistic regressors assume data to be uncensored
+        sample_weight : pandas DataFrame, same shape as y, default=None
+            sample weights to fit regressor to
 
         Returns
         -------
@@ -175,12 +191,20 @@ class BaseProbaRegressor(BaseEstimator):
         if capa_surv:
             C_inner = check_ret["C_inner"]
 
-        if not capa_surv:
-            return self._update(X_inner, y_inner)
+        if sample_weight is None:
+            if not capa_surv:
+                return self._update(X_inner, y_inner)
+            else:
+                return self._update(X_inner, y_inner, C=C_inner)
         else:
-            return self._update(X_inner, y_inner, C=C_inner)
+            if not capa_surv:
+                return self._update(X_inner, y_inner, sample_weight=sample_weight)
+            else:
+                return self._update(
+                    X_inner, y_inner, C=C_inner, sample_weight=sample_weight
+                )
 
-    def _update(self, X, y, C=None):
+    def _update(self, X, y, C=None, sample_weight=None):
         """Update regressor with a new batch of training data.
 
         State required:
@@ -195,6 +219,11 @@ class BaseProbaRegressor(BaseEstimator):
             feature instances to fit regressor to
         y : pandas DataFrame, must be same length as X
             labels to fit regressor to
+        C : ignored, optional (default=None)
+            censoring information for survival analysis
+            All probabilistic regressors assume data to be uncensored
+        sample_weight : pandas DataFrame, same shape as y, default=None
+            sample weights to fit regressor to
 
         Returns
         -------

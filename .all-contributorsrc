@@ -205,6 +205,17 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "meh2135",
+      "name": "Mike Hankin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/313774?v=4",
+      "profile": "https://github.com/meh2135",
+      "contributions": [
+        "bug",
+        "code",
+        "test"
+      ]
     }
   ]
 }
