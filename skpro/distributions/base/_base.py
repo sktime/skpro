@@ -49,12 +49,15 @@ class BaseDistribution(BaseObject):
     }
 
     def __init__(self, index=None, columns=None):
-        self.index = _coerce_to_pd_index_or_none(index)
-        self.columns = _coerce_to_pd_index_or_none(columns)
+        if index is not None and not isinstance(index, (pd.Index, pd.MultiIndex)):
+            index = pd.Index(index)
+        self.index = index  # Now supports MultiIndex
 
+        # Existing code for columns:
+        self.columns = _coerce_to_pd_index_or_none(columns)
+        
         super().__init__()
         _check_estimator_deps(self)
-
         self._init_shape_bc(index=index, columns=columns)
 
     def _init_shape_bc(self, index=None, columns=None):
@@ -228,22 +231,26 @@ class BaseDistribution(BaseObject):
         return self.iloc[range(start, N)]
 
     def _loc(self, rowidx=None, colidx=None):
-        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
-            return self._at(rowidx, colidx)
-        if is_scalar_notnone(rowidx):
-            rowidx = pd.Index([rowidx])
-        if is_scalar_notnone(colidx):
-            colidx = pd.Index([colidx])
-
+        """Subset distribution by row and column indices."""
         if rowidx is not None:
-            row_iloc = self.index.get_indexer_for(rowidx)
+            if isinstance(self.index, pd.MultiIndex):
+                # Handle MultiIndex subsetting
+                if isinstance(rowidx, str):
+                    # Subset by the first level of the MultiIndex
+                    rowidx = pd.Index([rowidx])
+                row_iloc = self.index.get_level_values(0).get_indexer_for(rowidx)
+            else:
+                # Handle single-level index
+                row_iloc = self.index.get_indexer_for(rowidx)
         else:
             row_iloc = None
+    
         if colidx is not None:
             col_iloc = self.columns.get_indexer_for(colidx)
         else:
             col_iloc = None
-        return self._iloc(rowidx=row_iloc, colidx=col_iloc)
+    
+        return self._iloc(rowidx=row_iloc, colidx=colidx)
 
     def _at(self, rowidx=None, colidx=None):
         if rowidx is not None:
@@ -331,38 +338,31 @@ class BaseDistribution(BaseObject):
         return type(self)(**subset_params)
 
     def _iloc(self, rowidx=None, colidx=None):
-        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
-            return self._iat(rowidx, colidx)
-        if is_scalar_notnone(rowidx):
-            rowidx = pd.Index([rowidx])
-        if is_scalar_notnone(colidx):
-            colidx = pd.Index([colidx])
-
-        subset_params = self._subset_params(rowidx=rowidx, colidx=colidx)
-
-        def subset_not_none(idx, subs):
-            if subs is not None:
-                return idx.take(subs)
+        """Subset distribution by integer row and column indices."""
+        if rowidx is None and colidx is None:
+            return self
+    
+        # Subset parameters
+        subset_params = self._subset_params(rowidx, colidx)
+    
+        # Subset index and columns
+        if rowidx is not None:
+            if isinstance(self.index, pd.MultiIndex):
+                # Subset MultiIndex and drop the first level
+                index_subset = self.index[rowidx].droplevel(0)
             else:
-                return idx
-
-        index_subset = subset_not_none(self.index, rowidx)
-        columns_subset = subset_not_none(self.columns, colidx)
-
-        sk_distr_type = type(self)
-        return sk_distr_type(
-            index=index_subset,
-            columns=columns_subset,
-            **subset_params,
-        )
-
-    def _get_dist_params(self):
-        params = self.get_params(deep=False)
-        paramnames = params.keys()
-        reserved_names = ["index", "columns"]
-        paramnames = [x for x in paramnames if x not in reserved_names]
-
-        return {k: params[k] for k in paramnames}
+                # Subset single-level index
+                index_subset = self.index[rowidx]
+        else:
+            index_subset = self.index
+    
+        if colidx is not None:
+            columns_subset = self.columns[colidx]
+        else:
+            columns_subset = self.columns
+    
+        # Create new distribution with subset parameters
+        return type(self)(index=index_subset, columns=columns_subset, **subset_params)
 
     def get_params_df(self):
         """Return distribution parameters in a dict of DataFrame.
