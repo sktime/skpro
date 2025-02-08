@@ -11,7 +11,7 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
 class MultiVariate_Normal(_ScipyAdapter):
-    r"""Fisk distribution, aka log-logistic distribution.
+    r"""Multivariate Normal distribution, aka log-logistic distribution.
 
     Most methods wrap ``scipy.stats.multivariate_normal``.
 
