@@ -26,6 +26,7 @@ __all__ = [
     "LogNormal",
     "MeanScale",
     "Mixture",
+    "MultiVariate_Normal",
     "Normal",
     "Pareto",
     "Poisson",
