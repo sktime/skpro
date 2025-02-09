@@ -28,9 +28,9 @@ class MultiVariate_Normal(_ScipyAdapter):
 
     Parameters
     ----------
-    mean : array_like, default: ``[0]``
+    mean : array_like, default = ``[0]``
         Mean of the distribution.
-    cov : array_like or `Covariance`, default: ``[1]``
+    cov : array_like or `Covariance`, default = ``[1]``
         Symmetric positive (semi)definite covariance matrix of the distribution.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
@@ -56,7 +56,11 @@ class MultiVariate_Normal(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
-    def __init__(self, mean, cov, index=None, columns=None):
+    def __init__(self, mean=None, cov=None, index=None, columns=None):
+        if mean is None:
+            mean = [0]
+        if cov is None:
+            cov = [1]
         self.mean = mean
         self.cov = cov
 
