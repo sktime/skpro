@@ -54,8 +54,10 @@ class BaseDistribution(BaseObject):
         self.index = index  # Now supports MultiIndex
 
         # Existing code for columns:
-        self.columns = _coerce_to_pd_index_or_none(columns)
-        
+        if columns is not None and not isinstance(columns, (pd.Index, pd.MultiIndex)):
+            columns = pd.Index(columns)
+        self.columns = columns
+
         super().__init__()
         _check_estimator_deps(self)
         self._init_shape_bc(index=index, columns=columns)
@@ -244,12 +246,12 @@ class BaseDistribution(BaseObject):
                 row_iloc = self.index.get_indexer_for(rowidx)
         else:
             row_iloc = None
-    
+
         if colidx is not None:
             col_iloc = self.columns.get_indexer_for(colidx)
         else:
             col_iloc = None
-    
+
         return self._iloc(rowidx=row_iloc, colidx=colidx)
 
     def _at(self, rowidx=None, colidx=None):
@@ -341,10 +343,10 @@ class BaseDistribution(BaseObject):
         """Subset distribution by integer row and column indices."""
         if rowidx is None and colidx is None:
             return self
-    
+
         # Subset parameters
         subset_params = self._subset_params(rowidx, colidx)
-    
+
         # Subset index and columns
         if rowidx is not None:
             if isinstance(self.index, pd.MultiIndex):
@@ -355,12 +357,12 @@ class BaseDistribution(BaseObject):
                 index_subset = self.index[rowidx]
         else:
             index_subset = self.index
-    
+
         if colidx is not None:
             columns_subset = self.columns[colidx]
         else:
             columns_subset = self.columns
-    
+
         # Create new distribution with subset parameters
         return type(self)(index=index_subset, columns=columns_subset, **subset_params)
 
