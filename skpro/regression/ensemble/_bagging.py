@@ -75,7 +75,10 @@ class BaggingRegressor(BaseProbaRegressor):
     >>> y_pred = ens.predict_proba(X_test)
     """
 
-    _tags = {"capability:missing": True}
+    _tags = {
+        "capability:missing": True,
+        "capability:survival": True,
+    }
 
     def __init__(
         self,
@@ -97,10 +100,10 @@ class BaggingRegressor(BaseProbaRegressor):
 
         super().__init__()
 
-        tags_to_clone = ["capability:missing"]
+        tags_to_clone = ["capability:missing", "capability:survival"]
         self.clone_tags(estimator, tags_to_clone)
 
-    def _fit(self, X, y):
+    def _fit(self, X, y, C=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -112,6 +115,8 @@ class BaggingRegressor(BaseProbaRegressor):
             feature instances to fit regressor to
         y : pandas DataFrame, must be same length as X
             labels to fit regressor to
+        C : pandas DataFrame
+            censoring indicator
 
         Returns
         -------
@@ -159,7 +164,12 @@ class BaggingRegressor(BaseProbaRegressor):
 
             yi = y.loc[inst_ix_i].reset_index(drop=True)
 
-            self.estimators_ += [esti.fit(Xi, yi)]
+            if C is None:
+                Ci = None
+            else:
+                Ci = C.loc[inst_ix_i].reset_index(drop=True)
+
+            self.estimators_ += [esti.fit(Xi, yi, Ci)]
 
         return self
 
@@ -212,6 +222,8 @@ class BaggingRegressor(BaseProbaRegressor):
         from sklearn.linear_model import LinearRegression
 
         from skpro.regression.residual import ResidualDouble
+        from skpro.survival.aft import AFTLogNormal
+        from skpro.utils.validation._dependencies import _check_estimator_deps
 
         regressor = ResidualDouble(LinearRegression())
 
@@ -228,8 +240,19 @@ class BaggingRegressor(BaseProbaRegressor):
             "bootstrap": False,
             "bootstrap_features": True,
         }
+        params = [params1, params2, params3]
 
-        return [params1, params2, params3]
+        if _check_estimator_deps(AFTLogNormal, severity="none"):
+            params4 = {
+                "estimator": AFTLogNormal(),
+                "n_samples": 5,
+                "n_features": 2,
+                "bootstrap": False,
+                "bootstrap_features": True,
+            }
+            params += [params4]
+
+        return params
 
 
 def _random_ss_ix(ix, size, replace=True):
