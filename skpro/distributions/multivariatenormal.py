@@ -3,14 +3,13 @@
 
 __author__ = ["HarshvirSandhu"]
 
-import numpy as np
 import pandas as pd
-from scipy.stats import multivariate_normal, rv_continuous
+from scipy.stats import multivariate_normal
 
-from skpro.distributions.adapters.scipy import _ScipyAdapter
+from skpro.distributions.base import BaseDistribution
 
 
-class MultiVariate_Normal(_ScipyAdapter):
+class MultiVariate_Normal(BaseDistribution):
     r"""Multivariate Normal distribution, aka log-logistic distribution.
 
     Most methods wrap ``scipy.stats.multivariate_normal``.
@@ -63,17 +62,21 @@ class MultiVariate_Normal(_ScipyAdapter):
             cov = [1]
         self.mean = mean
         self.cov = cov
+        self.scipy_obj = multivariate_normal(mean=self.mean, cov=self.cov)
 
         super().__init__(index=index, columns=columns)
 
-    def _get_scipy_object(self) -> rv_continuous:
-        return multivariate_normal
+    def pdf(self, x):
+        """Probability density function."""
+        return self.scipy_obj.pdf(x)
 
-    def _get_scipy_param(self):
-        mean = self._bc_params["mean"].ravel()
-        cov = np.diag(self._bc_params["cov"].ravel())
+    def logpdf(self, x):
+        """Logarithmic probability density function."""
+        return self.scipy_obj.logpdf(x)
 
-        return [], {"cov": cov, "mean": mean}
+    def cdf(self, x):
+        """Cumulative distribution function."""
+        return self.scipy_obj.cdf(x)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
