@@ -94,6 +94,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build_wheels,test_unix_wheels,test_windows_wheels]
 
+    permissions:
+      id-token: write
+
     steps:
       - uses: actions/download-artifact@v4
         with:
