@@ -44,14 +44,14 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     ----------
     quantile_regressor : Sklearn compatible quantile regressor
         Tabular quantile regressor for probabilistic prediction methods.
-    alpha_name : str
+    alpha_name : str, default="alpha"
         Alpha parameter name that sets the quantile probability level for the
         quantile_regressor.
-    alpha : list with float
+    alpha : list with float, default=[0.1, 0.25, 0.5, 0.75, 0.9]
         A list of probabilities in the open interval (0, 1).
         For each probability, a quantile_regressor will be fit.
-    mean_regressor : Sklearn compatible regressor or None, default=None
-        Tabular mean regressor for `predict`. Can't predict mean if not provided.
+    mean_regressor : Sklearn compatible regressor, default=quantile_regressor, alpha=0.5
+        Tabular mean regressor for `predict`.
     n_jobs : int or None, default=None
         The number of jobs to run in parallel for `fit` and all probabilistic prediction
         methods. -1 means using all processors, -2 means using all except one processors
@@ -107,9 +107,9 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
     def __init__(
         self,
-        quantile_regressor,
-        alpha_name,
-        alpha,
+        quantile_regressor=None,
+        alpha_name="alpha",
+        alpha=None,
         mean_regressor=None,
         n_jobs=None,
         sort_quantiles=False,
@@ -122,7 +122,6 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         self.sort_quantiles = sort_quantiles
 
         # input checks
-        self._no_mean_reg = True if mean_regressor is None else False
         if len(alpha) == 0:
             raise ValueError("at least one value in alpha is required.")
         elif np.amin(alpha) <= 0 or np.amax(alpha) >= 1:
@@ -132,6 +131,24 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
             )
 
         super().__init__()
+
+        if alpha is None:
+            self._alpha = [0.1, 0.25, 0.5, 0.75, 0.9]
+        else:
+            self._alpha = alpha
+
+        if quantile_regressor is None:
+            from sklearn.ensemble import GradientBoostingRegressor
+
+            self._quantile_regressor = GradientBoostingRegressor()
+        else:
+            self._quantile_regressor = quantile_regressor
+
+        if mean_regressor is None:
+            self._mean_regressor = clone(self._quantile_regressor)
+            self._mean_regressor.set_params(**{self.alpha_name: 0.5})
+        else:
+            self._mean_regressor = mean_regressor
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -151,9 +168,9 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         self : reference to self
         """
         # clone, set alpha and list all regressors
-        regressors = [clone(self.mean_regressor)] if not self._no_mean_reg else []
+        regressors = [clone(self._mean_regressor)]
         for a in self.alpha:
-            q_est = clone(self.quantile_regressor)
+            q_est = clone(self._quantile_regressor)
             q_est = q_est.set_params(**{self.alpha_name: a})
             q_est_p = q_est.get_params()
             if q_est_p[self.alpha_name] != a:
@@ -173,8 +190,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         # put fitted regressors in dict and write to self
         regressors_ = {}
-        if not self._no_mean_reg:
-            regressors_["mean"] = fitted_regressors.pop(0)
+        regressors_["mean"] = fitted_regressors.pop(0)
         for i, a in enumerate(self.alpha):
             regressors_[a] = fitted_regressors[i]
         self.regressors_ = regressors_
@@ -203,9 +219,6 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`
             labels predicted for `X`
         """
-        if self._no_mean_reg:
-            raise ValueError("can't predict: no mean_regressor provided.")
-
         # predict
         X_pred = X.values
         preds = self.regressors_["mean"].predict(X_pred)
@@ -365,6 +378,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
                 "n_jobs": -1,
                 "sort_quantiles": True,
             },
+            {},  # all default values
         ]
 
         return params
