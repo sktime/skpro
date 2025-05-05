@@ -49,11 +49,66 @@ class Normal(BaseDistribution):
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
-        self.mu = mu
-        self.sigma = sigma
+        # Handle mu input
+        if isinstance(mu, pd.DataFrame):
+            self.mu = mu
+            index = mu.index if index is None else index
+            columns = mu.columns if columns is None else columns
+        elif np.isscalar(mu) and index is None and columns is None:
+            # Scalar case: store as scalar, let downstream methods handle it
+            self.mu = mu
+            index = pd.RangeIndex(1) if index is None else index
+            columns = pd.RangeIndex(1) if columns is None else columns
+        else:
+            # Array-like case: convert to DataFrame
+            if columns is None:
+                if np.isscalar(mu):
+                    columns = pd.RangeIndex(1)
+                elif hasattr(mu, 'shape') and len(mu.shape) > 1:
+                    columns = pd.RangeIndex(mu.shape[1])
+                else:
+                    columns = pd.RangeIndex(1)
+            if index is None:
+                if hasattr(mu, 'shape'):
+                    index = pd.RangeIndex(mu.shape[0] if len(mu.shape) > 0 else 1)
+                else:
+                    index = pd.RangeIndex(1)
+            self.mu = pd.DataFrame(mu, index=index, columns=columns)
 
+        # Handle sigma input similarly
+        if isinstance(sigma, pd.DataFrame):
+            self.sigma = sigma
+        elif np.isscalar(sigma) and index is None and columns is None:
+            # Scalar case: store as scalar
+            self.sigma = sigma
+        else:
+            # Array-like case: convert to DataFrame
+            if columns is None:
+                if np.isscalar(sigma):
+                    columns = pd.RangeIndex(1)
+                elif hasattr(sigma, 'shape') and len(sigma.shape) > 1:
+                    columns = pd.RangeIndex(sigma.shape[1])
+                else:
+                    columns = pd.RangeIndex(1)
+            if index is None:
+                if hasattr(sigma, 'shape'):
+                    index = pd.RangeIndex(sigma.shape[0] if len(sigma.shape) > 0 else 1)
+                else:
+                    index = pd.RangeIndex(1)
+            self.sigma = pd.DataFrame(sigma, index=index, columns=columns)
+
+        # Validate sigma
+        if isinstance(self.sigma, pd.DataFrame) and (self.sigma <= 0).any().any():
+            raise ValueError("sigma must be positive")
+        elif not isinstance(self.sigma, pd.DataFrame) and self.sigma <= 0:
+            raise ValueError("sigma must be positive")
+
+        # Call parent constructor
         super().__init__(index=index, columns=columns)
-
+    def _get_dist_params(self):
+        """Return dict of distribution parameters."""
+        return {"mu": self.mu, "sigma": self.sigma}
+        
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
