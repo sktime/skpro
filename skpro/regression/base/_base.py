@@ -336,7 +336,10 @@ class BaseProbaRegressor(BaseEstimator):
 
         from skpro.distributions.normal import Normal
 
-        index = X.index
+        if hasattr(X, "index"):
+            index = X.index
+        else:
+            index = pd.RangeIndex(start=0, stop=len(X), step=1)
         columns = self._get_columns(method="predict")
         pred_dist = Normal(mu=pred_mean, sigma=pred_std, index=index, columns=columns)
 
