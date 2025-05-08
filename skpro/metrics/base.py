@@ -543,6 +543,30 @@ class BaseDistrMetric(BaseProbaMetric):
         return res
 
 
+def _groupby_dot(df, weights):
+    """Groupby dot product.
+
+    Groups df by axis 1, level 1, and applies dot product with weights.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        dataframe to groupby
+    weights : np.array
+        weights to apply to each group
+
+    Returns
+    -------
+    out : pd.DataFrame
+        dataframe with weighted groupby dot product
+    """
+    out = df.T.groupby(level=1).apply(lambda x: x.T.dot(weights)).T
+    # formerly
+    # out = df.groupby(axis=1, level=1).apply(lambda x: x.dot(weights))
+    # but groupby(axis=1) is deprecated
+    return out
+
+
 class BaseSurvDistrMetric(BaseDistrMetric):
     """Intermediate base class for distributional prediction metrics/scores.
 
