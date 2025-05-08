@@ -65,10 +65,27 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         Set to None to disable early stopping and validation
         None enables running over the full data set.
 
-
-    Returns
+    Example
     -------
-    An NGBRegressor object that can be fit.
+    from sklearn.datasets import load_diabetes
+    from sklearn.linear_model import LinearRegression
+    from sklearn.model_selection import train_test_split
+    from skpro.regression.ensemble import NGBoostRegressor
+    from skpro.metrics import LogLoss
+
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    ngb = NGBoostRegressor(
+        dist="Normal",
+        score="LogScore",
+        estimator=LinearRegression(),
+        n_estimators=100,
+    )
+    ngb.fit(X_train, y_train)
+    y_pred = ngb.predict_proba(X_test)
+
+    logloss = LogLoss()
+    score = logloss(y_test, y_pred)
     """
 
     _tags = {
