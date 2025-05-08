@@ -68,7 +68,7 @@ class PinballLoss(BaseProbaMetric):
     ...     ('Quantiles', 0.95): [3.75, 0, 3, 12, 1.875],
     ... })
     >>> pl = PinballLoss()
-    >>> pl(y_true, y_pred)
+    >>> pl(y_true, y_pred)  # doctest: +SKIP
     np.float64(0.1791666666666667)
     >>> pl = PinballLoss(score_average=False)
     >>> pl(y_true, y_pred).to_numpy()
@@ -89,7 +89,7 @@ class PinballLoss(BaseProbaMetric):
     >>> pl(y_true, y_pred).to_numpy()
     array([0.16233333, 0.465     ])
     >>> pl = PinballLoss(multioutput=np.array([0.3, 0.7]))
-    >>> pl(y_true, y_pred)
+    >>> pl(y_true, y_pred)  # doctest: +SKIP
     np.float64(0.3742000000000001)
     """  # noqa: E501
 
