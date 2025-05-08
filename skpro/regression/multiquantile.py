@@ -125,17 +125,15 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         if alpha is None:
             _alpha = [0.1, 0.25, 0.5, 0.75, 0.9]
-        else:
-            _alpha = alpha
-
-        # input checks
-        if len(_alpha) == 0:
+        elif len(alpha) == 0:
             raise ValueError("at least one value in alpha is required.")
-        elif np.amin(_alpha) <= 0 or np.amax(_alpha) >= 1:
+        elif np.amin(alpha) <= 0 or np.amax(alpha) >= 1:
             raise ValueError(
                 "values in alpha must lie in the open interval (0, 1), "
-                f"but found alpha: {_alpha}."
+                f"but found alpha: {alpha}."
             )
+        else:
+            _alpha = alpha
         self._alpha = _alpha
 
         if quantile_regressor is None:
