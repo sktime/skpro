@@ -21,19 +21,23 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         distribution that must be used for
         probabilistic prediction.
         Available distribution types
+
         1. "Normal"
         2. "Laplace"
         3. "LogNormal"
         4. "Poisson"
         5. "TDistribution"
         6. "Exponential"
+
     score : string , default = "LogScore"
         A score from ngboost.scores for LogScore
         rule to compare probabilistic
         predictions P̂ to the observed data y.
+
     estimator : default learner/estimator: DecisionTreeRegressor()
         base learner to use in the boosting algorithm.
         Any instantiated sklearn regressor.
+
     natural_gradient : boolean , default = True
         whether natural gradient must be used or not.
     n_estimators : int , default = 500
