@@ -23,9 +23,11 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
     dist : string , default = "LogNormal"
         assumed distributional form of Y|X=x.
         A distribution from ngboost.distns, e.g. LogNormal
-        Available distribution types
+        Available distribution types:
+
         1. "LogNormal"
         2. "Exponential"
+
     score : string , default = "LogScore"
         rule to compare probabilistic predictions P̂ to the observed data y.
         A score from ngboost.scores, e.g. LogScore
@@ -120,6 +122,7 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
         import pandas as pd
         from ngboost import NGBSurvival
         from ngboost.scores import LogScore
+        from sklearn.base import clone
         from sklearn.tree import DecisionTreeRegressor
 
         # skpro => 0 = uncensored, 1 = (right) censored
@@ -149,6 +152,8 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
                 splitter="best",
                 random_state=None,
             )
+        else:
+            self.estimator_ = clone(self.estimator)
 
         dist_ngboost = self._dist_to_ngboost_instance(self.dist, survival=True)
 
@@ -260,6 +265,8 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
+        from sklearn.linear_model import LinearRegression
+
         params1 = {}
         params2 = {
             "dist": "LogNormal",
@@ -273,5 +280,10 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
             "dist": "Exponential",
             "n_estimators": 600,
         }
+        params5 = {
+            "n_estimators": 200,
+            "minibatch_frac": 0.8,
+            "estimator": LinearRegression(),
+        }
 
-        return [params1, params2, params3, params4]
+        return [params1, params2, params3, params4, params5]
