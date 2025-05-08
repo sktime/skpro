@@ -15,10 +15,40 @@ You can also subscribe to ``skpro``'s
 For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
+
 [2.9.1] - 2025-05-08
 ====================
 
 Minor feature and bugfix release.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] ``MultiQuantileRegressor`` sensible defaults (:pr:`536`) :user:`fkiraly`
+* [ENH] sync probabilistic metrics with ``sktime`` (:pr:`537`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.21.0`` to ``<1.23.0`` (:pr:`528`) :user:`dependabot`
+* [MNT] [Dependabot](deps): Update ``sphinx-gallery`` requirement from ``<0.19.0`` to ``<0.20.0`` (:pr:`529`) :user:`dependabot`
+* [MNT] remove ``tj-actions`` (:pr:`534`) :user:`fkiraly`
+* [MNT] move release to trusted publishers (:pr:`533`) :user:`fkiraly`
+* [MNT] remove deprecated ``pkg_import_alias`` from private soft dependency checker tests (:pr:`539`) :user:`fkiraly`
+* [MNT] reduce dependencies in ``all_extras`` dependency sets (:pr:`541`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] fix typo in changelog (:pr:`532`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] fix ``MapieRegressor`` dependency check, and ``BaseProbaRegressor._predict_proba`` default (:pr:`540`) :user:`fkiraly`
+* [BUG] fix ``NgboostRegressor`` not working with custom ``sklearn`` estimator (:pr:`542`) :user:`fkiraly`
+* [BUG] fix ``all_objects`` lookup in case a tag is used that is not scitype specific (:pr:`538`) :user:`fkiraly`
+* [BUG] fix doctest runs in testing framework (:pr:`543`) :user:`fkiraly`
 
 
 [2.9.0] - 2025-01-26
