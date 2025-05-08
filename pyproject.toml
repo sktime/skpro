@@ -51,14 +51,13 @@ dependencies = [
 all_extras = [
     "cyclic-boosting>=1.4.0; python_version < '3.12'",
     "distfit; python_version < '3.13'",
-    "lifelines<0.30.0; python_version < '3.13'",
+    "lifelines<0.31.0; python_version < '3.13'",
     "mapie; python_version < '3.13'",
     "matplotlib>=3.3.2",
     "ngboost<0.6.0; python_version < '3.13'",
     "polars<1.23.0",
     "pyarrow<14.0.0; python_version < '3.12'",
     "pymc; python_version < '3.13'",
-    "scikit-survival<0.24.0; python_version < '3.13'",
     "statsmodels>=0.12.1",
     "xgboostlss; python_version >= '3.10' and python_version < '3.12'",
 ]
