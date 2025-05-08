@@ -218,7 +218,7 @@ class BaseProbaMetric(BaseObject):
 
         if isinstance(multioutput, str):
             if self.score_average and multioutput == "uniform_average":
-                out = out.mean(axis=1).iloc[0]  # average over all
+                out = out.mean(axis=1)  # average over all
             if self.score_average and multioutput == "raw_values":
                 out = out.T.groupby(level=0).mean().T  # average over scores
             if not self.score_average and multioutput == "uniform_average":
