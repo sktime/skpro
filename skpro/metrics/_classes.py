@@ -9,19 +9,89 @@ from skpro.metrics.base import BaseDistrMetric, BaseProbaMetric
 
 
 class PinballLoss(BaseProbaMetric):
-    """Evaluate the pinball loss at all quantiles given in data.
+    r"""Pinball loss aka quantile loss for quantile/interval predictions.
+
+    Can be used for both quantile and interval predictions.
+
+    For a quantile prediction :math:`\widehat{y}
+    at quantile point :math:`\alpha`,
+    and a ground truth value :math:`y`, the pinball loss is defined as
+    :math:`L_\alpha(y, \widehat{y}) := (y - \widehat{y}) \cdot (\alpha - H(y - \widehat{y}))`,
+    where :math:`H` is the Heaviside step function defined as
+    :math:`H(x) = 1` if :math:`x \ge 0` and :math:`H(x) = 0` otherwise.
+
+    For a symmetric prediction interval :math:`I = [\widehat{y}_{\alpha}, \widehat{y}_{1 - \alpha}]`,
+    the pinball loss is defined as
+    :math:`L_\alpha(y, I) := L_\alpha(y, \widehat{y}_{\alpha}) + L_{1 - \alpha}(y, \widehat{y}_{1 - \alpha})`,
+    or, in terms of coverage :math:`c = 1 - 2\alpha`, as
+    :math:`L_c(y, I) := L_{1/2 - c/2}(y, a) + L_{1/2 + c/2}(y, b)`,
+    if we write :math:`I = [a, b]`.
+
+    * ``evaluate`` computes the average test sample loss.
+    * ``evaluate_by_index`` produces the loss sample by test data point.
+    * ``multivariate`` controls averaging over variables.
+    * ``score_average`` controls averaging over quantiles/intervals.
 
     Parameters
     ----------
-    multioutput : string "uniform_average" or "raw_values" determines how\
-        multioutput results will be treated.
+    multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
+            (n_outputs,), default='uniform_average'
+        Defines whether and how to aggregate metric for across variables.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
 
     score_average : bool, optional, default = True
         specifies whether scores for each quantile should be averaged.
 
-    alpha (optional) : float, list or np.ndarray, specifies what quantiles to \
-        evaluate metric at.
-    """
+        * If True, metric/loss is averaged over all quantiles present in ``y_pred``.
+        * If False, metric/loss is not averaged over quantiles.
+
+    alpha (optional) : float, list of float, or 1D array-like, default=None
+        quantiles to evaluate metric at.
+        Can be specified if no explicit quantiles are present in the direct use of
+        the metric, for instance in benchmarking via ``evaluate``, or tuning
+        via ``ForecastingGridSearchCV``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from skpro.performance_metrics.forecasting.probabilistic import PinballLoss
+    >>> y_true = pd.Series([3, -0.5, 2, 7, 2])
+    >>> y_pred = pd.DataFrame({
+    ...     ('Quantiles', 0.05): [1.25, 0, 1, 4, 0.625],
+    ...     ('Quantiles', 0.5): [2.5, 0, 2, 8, 1.25],
+    ...     ('Quantiles', 0.95): [3.75, 0, 3, 12, 1.875],
+    ... })
+    >>> pl = PinballLoss()
+    >>> pl(y_true, y_pred)
+    np.float64(0.1791666666666667)
+    >>> pl = PinballLoss(score_average=False)
+    >>> pl(y_true, y_pred).to_numpy()
+    array([0.16625, 0.275  , 0.09625])
+    >>> y_true = pd.DataFrame({
+    ...     "Quantiles1": [3, -0.5, 2, 7, 2],
+    ...     "Quantiles2": [4, 0.5, 3, 8, 3],
+    ... })
+    >>> y_pred = pd.DataFrame({
+    ...     ('Quantiles1', 0.05): [1.5, -1, 1, 4, 0.65],
+    ...     ('Quantiles1', 0.5): [2.5, 0, 2, 8, 1.25],
+    ...     ('Quantiles1', 0.95): [3.5, 4, 3, 12, 1.85],
+    ...     ('Quantiles2', 0.05): [2.5, 0, 2, 8, 1.25],
+    ...     ('Quantiles2', 0.5): [5.0, 1, 4, 16, 2.5],
+    ...     ('Quantiles2', 0.95): [7.5, 2, 6, 24, 3.75],
+    ... })
+    >>> pl = PinballLoss(multioutput='raw_values')
+    >>> pl(y_true, y_pred).to_numpy()
+    array([0.16233333, 0.465     ])
+    >>> pl = PinballLoss(multioutput=np.array([0.3, 0.7]))
+    >>> pl(y_true, y_pred)
+    np.float64(0.3742000000000001)
+    """  # noqa: E501
 
     _tags = {
         "scitype:y_pred": "pred_quantiles",
@@ -35,14 +105,16 @@ class PinballLoss(BaseProbaMetric):
         self.metric_args = {"alpha": self._alpha}
         super().__init__(multioutput=multioutput, score_average=score_average)
 
-    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
-        """Evaluate the desired metric on given inputs.
+    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+        """Logic for finding the metric evaluated at each index.
 
-        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
-            Ground truth (correct) target values.
+        y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
+            (fh, n_outputs) where fh is the forecasting horizon
+            Ground truth (correct) target value`s.
 
-        y_pred : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
-            Predicted values.
+        y_pred : pd.Series, pd.DataFrame or np.array of shape (fh,) or  \
+            (fh, n_outputs)  where fh is the forecasting horizon
+            Forecasted values.
 
         multioutput : string "uniform_average" or "raw_values"
             Determines how multioutput results will be treated.
@@ -93,15 +165,52 @@ class PinballLoss(BaseProbaMetric):
 
 
 class EmpiricalCoverage(BaseProbaMetric):
-    """Evaluate the pinball loss at all quantiles given in data.
+    r"""Empirical coverage percentage for interval predictions.
+
+    Applies to interval predictions.
+
+    Should be used together with ``ConstraintViolation`` if reported.
+
+    Up to a constant, ``PinballLoss`` is a weighted sum of ``ConstraintViolation`` and
+    ``EmpiricalCoverage``.
+
+    For an interval prediction :math:`I = [a, b]` and a ground truth value :math:`y`,
+    the empirical coverage loss is defined as
+
+    :math:`L(y, I) := 1, \text{if } y \in I, 0 \text{ otherwise}`.
+
+    When averaged over test samples, variables, or coverages, the average
+    is the same as the empirical coverage percentage, i.e., the percentage of
+    predictions that contain the true value, among the values averaged over.
+
+    * ``evaluate`` computes the average test sample loss.
+    * ``evaluate_by_index`` produces the loss sample by test data point.
+    * ``multivariate`` controls averaging over variables.
+    * ``score_average`` controls averaging over quantiles/intervals.
 
     Parameters
     ----------
-    multioutput : string "uniform_average" or "raw_values" determines how\
-        multioutput results will be treated.
+    multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
+            (n_outputs,), default='uniform_average'
+        Defines whether and how to aggregate metric for across variables.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
 
     score_average : bool, optional, default = True
-        specifies whether scores for each quantile should be averaged.
+        specifies whether scores for each coverage value should be averaged.
+
+        * If True, metric/loss is averaged over all coverages present in ``y_pred``.
+        * If False, metric/loss is not averaged over coverages.
+
+    coverage (optional) : float, list of float, or 1D array-like, default=None
+        nominal coverage to evaluate metric at.
+        Can be specified if no explicit coverages are present in the direct use of
+        the metric, for instance in benchmarking via ``evaluate``, or tuning
+        via ``ForecastingGridSearchCV``.
     """
 
     _tags = {
@@ -109,12 +218,17 @@ class EmpiricalCoverage(BaseProbaMetric):
         "lower_is_better": False,
     }
 
-    def __init__(self, multioutput="uniform_average", score_average=True):
+    def __init__(
+        self, multioutput="uniform_average", score_average=True, coverage=None
+    ):
         self.score_average = score_average
         self.multioutput = multioutput
+        self.coverage = coverage
+        self._coverage = self._check_coverage(coverage)
+        self.metric_args = {"coverage": self._coverage}
         super().__init__(score_average=score_average, multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
@@ -156,19 +270,50 @@ class EmpiricalCoverage(BaseProbaMetric):
     def get_test_params(self):
         """Retrieve test parameters."""
         params1 = {}
-        return [params1]
+        params2 = {"coverage": 0.5}
+        return [params1, params2]
 
 
 class IntervalWidth(BaseProbaMetric):
     """Interval width for interval predictions, sometimes also known as sharpness.
 
+    Applies to interval predictions.
+
+    Also known as "sharpness".
+
+    For an interval prediction :math:`I = [a, b]` and a ground truth value :math:`y`,
+    the interval width is defined as
+
+    :math:`W(y, I) := b - a`.
+
+    * ``evaluate`` computes the average test sample loss.
+    * ``evaluate_by_index`` produces the loss sample by test data point.
+    * ``multivariate`` controls averaging over variables.
+    * ``score_average`` controls averaging over quantiles/intervals.
+
     Parameters
     ----------
-    multioutput : string "uniform_average" or "raw_values" determines how\
-        multioutput results will be treated.
+    multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
+            (n_outputs,), default='uniform_average'
+        Defines whether and how to aggregate metric for across variables.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
 
     score_average : bool, optional, default = True
-        specifies whether scores for each quantile should be averaged.
+        specifies whether scores for each coverage value should be averaged.
+
+        * If True, metric/loss is averaged over all coverages present in ``y_pred``.
+        * If False, metric/loss is not averaged over coverages.
+
+    coverage (optional) : float, list of float, or 1D array-like, default=None
+        nominal coverage to evaluate metric at.
+        Can be specified if no explicit coverages are present in the direct use of
+        the metric, for instance in benchmarking via ``evaluate``, or tuning
+        via ``ForecastingGridSearchCV``.
     """
 
     _tags = {
@@ -176,12 +321,17 @@ class IntervalWidth(BaseProbaMetric):
         "lower_is_better": True,
     }
 
-    def __init__(self, multioutput="uniform_average", score_average=True):
+    def __init__(
+        self, multioutput="uniform_average", score_average=True, coverage=None
+    ):
         self.score_average = score_average
         self.multioutput = multioutput
+        self.coverage = coverage
+        self._coverage = self._check_coverage(coverage)
+        self.metric_args = {"coverage": self._coverage}
         super().__init__(score_average=score_average, multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
@@ -220,19 +370,60 @@ class IntervalWidth(BaseProbaMetric):
     def get_test_params(self):
         """Retrieve test parameters."""
         params1 = {}
-        return [params1]
+        params2 = {"coverage": 0.5}
+        return [params1, params2]
 
 
 class ConstraintViolation(BaseProbaMetric):
-    """Evaluate the pinball loss at all quantiles given in data.
+    r"""Average absolute constraint violations for interval predictions.
+
+    Applies to interval predictions.
+
+    Should be used together with ``EmpiricalCoverage`` if reported.
+
+    Up to a constant, ``PinballLoss`` is a weighted sum of ``ConstraintViolation`` and
+    ``EmpiricalCoverage``.
+
+    For an interval prediction :math:`I = [a, b]` and a ground truth value :math:`y`,
+    the constraint violation loss is defined as
+
+    .. math::
+
+        L(y, I) :=
+        \begin{cases}
+        a - y, & \text{if } y < a \\
+        y - b, & \text{if } y > b \\
+        0, & \text{otherwise}
+        \end{cases}
+
+    * ``evaluate`` computes the average test sample loss.
+    * ``evaluate_by_index`` produces the loss sample by test data point.
+    * ``multivariate`` controls averaging over variables.
+    * ``score_average`` controls averaging over quantiles/intervals.
 
     Parameters
     ----------
-    multioutput : string "uniform_average" or "raw_values" determines how\
-        multioutput results will be treated.
+    multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
+            (n_outputs,), default='uniform_average'
+        Defines whether and how to aggregate metric for across variables.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
 
     score_average : bool, optional, default = True
-        specifies whether scores for each quantile should be averaged.
+        specifies whether scores for each coverage value should be averaged.
+
+        * If True, metric/loss is averaged over all coverages present in ``y_pred``.
+        * If False, metric/loss is not averaged over coverages.
+
+    coverage (optional) : float, list of float, or 1D array-like, default=None
+        nominal coverage to evaluate metric at.
+        Can be specified if no explicit coverages are present in the direct use of
+        the metric, for instance in benchmarking via ``evaluate``, or tuning
+        via ``ForecastingGridSearchCV``.
     """
 
     _tags = {
@@ -240,12 +431,17 @@ class ConstraintViolation(BaseProbaMetric):
         "lower_is_better": True,
     }
 
-    def __init__(self, multioutput="uniform_average", score_average=True):
+    def __init__(
+        self, multioutput="uniform_average", score_average=True, coverage=None
+    ):
         self.score_average = score_average
         self.multioutput = multioutput
+        self.coverage = coverage
+        self._coverage = self._check_coverage(coverage)
+        self.metric_args = {"coverage": self._coverage}
         super().__init__(score_average=score_average, multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
@@ -290,7 +486,8 @@ class ConstraintViolation(BaseProbaMetric):
     def get_test_params(self):
         """Retrieve test parameters."""
         params1 = {}
-        return [params1]
+        params2 = {"coverage": 0.5}
+        return [params1, params2]
 
 
 class LogLoss(BaseDistrMetric):
@@ -309,21 +506,26 @@ class LogLoss(BaseDistrMetric):
     multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
             (n_outputs,), default='uniform_average'
         Defines whether and how to aggregate metric for across variables.
-        If 'uniform_average' (default), errors are mean-averaged across variables.
-        If array-like, errors are weighted averaged across variables, values as weights.
-        If 'raw_values', does not average errors across variables, columns are retained.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
+
     multivariate : bool, optional, default=False
-        if True, behaves as multivariate log-loss
-        log-loss is computed for entire row, results one score per row
-        if False, is univariate log-loss
-        log-loss is computed per variable marginal, results in many scores per row
+
+        * if True, behaves as multivariate log-loss:
+          the log-loss is computed for entire row, results one score per row
+        * if False, is univariate log-loss:
+          the log-loss is computed per variable marginal, results in many scores per row
     """
 
     def __init__(self, multioutput="uniform_average", multivariate=False):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
         res = -y_pred.log_pdf(y_true)
         # replace this by multivariate log_pdf once distr implements
         # i.e., pass multivariate on to log_pdf
@@ -358,17 +560,23 @@ class LinearizedLogLoss(BaseDistrMetric):
     range : positive float, optional, default=1
         range of linearization, i.e., where to linearize the log-loss
         for values smaller than range, the log-loss is linearized
+
     multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
             (n_outputs,), default='uniform_average'
         Defines whether and how to aggregate metric for across variables.
-        If 'uniform_average' (default), errors are mean-averaged across variables.
-        If array-like, errors are weighted averaged across variables, values as weights.
-        If 'raw_values', does not average errors across variables, columns are retained.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
+
     multivariate : bool, optional, default=False
-        if True, behaves as multivariate log-loss
-        log-loss is computed for entire row, results one score per row
-        if False, is univariate log-loss
-        log-loss is computed per variable marginal, results in many scores per row
+
+        * if True, behaves as multivariate squared loss:
+          the score is computed for entire row, results one score per row
+        * if False, is univariate squared loss:
+          the score is computed per variable marginal, results in many scores per row
     """
 
     def __init__(self, range=1, multioutput="uniform_average", multivariate=False):
@@ -427,21 +635,26 @@ class SquaredDistrLoss(BaseDistrMetric):
     multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
             (n_outputs,), default='uniform_average'
         Defines whether and how to aggregate metric for across variables.
-        If 'uniform_average' (default), errors are mean-averaged across variables.
-        If array-like, errors are weighted averaged across variables, values as weights.
-        If 'raw_values', does not average errors across variables, columns are retained.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
+
     multivariate : bool, optional, default=False
-        if True, behaves as multivariate squared loss
-        squared loss is computed for entire row, results one score per row
-        if False, is univariate squared loss
-        squared loss is computed per variable marginal, results in many scores per row
+
+        * if True, behaves as multivariate squared loss:
+          the score is computed for entire row, results one score per row
+        * if False, is univariate squared loss:
+          the score is computed per variable marginal, results in many scores per row
     """
 
     def __init__(self, multioutput="uniform_average", multivariate=False):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
         res = -2 * y_pred.log_pdf(y_true) + y_pred.pdfnorm(a=2)
         # replace this by multivariate log_pdf once distr implements
         # i.e., pass multivariate on to log_pdf
@@ -480,21 +693,26 @@ class CRPS(BaseDistrMetric):
     multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
             (n_outputs,), default='uniform_average'
         Defines whether and how to aggregate metric for across variables.
-        If 'uniform_average' (default), errors are mean-averaged across variables.
-        If array-like, errors are weighted averaged across variables, values as weights.
-        If 'raw_values', does not average errors across variables, columns are retained.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
+
     multivariate : bool, optional, default=False
-        if True, behaves as multivariate CRPS (sum of scores)
-        CRPS is computed for entire row, results one score per row
-        if False, is univariate log-loss, per variable
-        CRPS is computed per variable marginal, results in many scores per row
+
+        * if True, behaves as multivariate CRPS:
+          the score is computed for entire row, results one score per row
+        * if False, is univariate CRPS:
+          the score is computed per variable marginal, results in many scores per row
     """  # noqa: E501
 
     def __init__(self, multioutput="uniform_average", multivariate=False):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
         # CRPS(d, y) = E_X,Y as d [abs(Y-y) - 0.5 abs(X-Y)]
         return y_pred.energy(y_true) - y_pred.energy() / 2
 
@@ -512,7 +730,7 @@ class AUCalibration(BaseDistrMetric):
     Computes the unsigned area between the calibration curve and the diagonal.
 
     The calibration curve is the cumulative curve of the sample of
-    predictive cumulative distibution functions evaluated at the true values.
+    predictive cumulative distribution functions evaluated at the true values.
 
     Mathematically, let :math:`d_1, \dots, d_N` be the predictive distributions,
     let :math:`y_1, \dots, y_N` be the true values, and let :math:`F_i` be the
@@ -543,14 +761,19 @@ class AUCalibration(BaseDistrMetric):
     multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
             (n_outputs,), default='uniform_average'
         Defines whether and how to aggregate metric for across variables.
-        If 'uniform_average' (default), errors are mean-averaged across variables.
-        If array-like, errors are weighted averaged across variables, values as weights.
-        If 'raw_values', does not average errors across variables, columns are retained.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
+
     multivariate : bool, optional, default=False
-        if True, behaves as multivariate metric (sum of scores)
-        The metric is computed for entire row, results one score per row
-        if False, returns univariate metric, per variable
-        The metric is computed per variable marginal, results in many scores per row
+
+        * if True, behaves as multivariate metric (sum of scores):
+          the metric is computed for entire row, results one score per row
+        * if False, is univariate metric, per variable:
+          the metric is computed per variable marginal, results in many scores per row
     """  # noqa: E501
 
     def __init__(self, multioutput="uniform_average", multivariate=False):
