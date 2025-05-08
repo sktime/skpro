@@ -21,16 +21,21 @@ class BaseProbaMetric(BaseObject):
 
     Parameters
     ----------
-    multioutput : {'raw_values', 'uniform_average'}  or array-like of shape \
+    multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
             (n_outputs,), default='uniform_average'
-        Defines how to aggregate metric for multivariate (multioutput) data.
-        If array-like, values used as weights to average the errors.
-        If 'raw_values', returns a full set of errors in case of multioutput input.
-        If 'uniform_average', errors of all outputs are averaged with uniform weight.
+        Defines whether and how to aggregate metric for across variables.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
+
     score_average : bool, optional, default=True
         for interval and quantile losses only
-            if True, metric/loss is averaged by upper/lower and/or quantile
-            if False, metric/loss is not averaged by upper/lower and/or quantile
+
+        * if True, metric/loss is averaged by upper/lower and/or quantile
+        * if False, metric/loss is not averaged by upper/lower and/or quantile
     """
 
     _tags = {
@@ -115,14 +120,21 @@ class BaseProbaMetric(BaseObject):
         # pass to inner function
         out = self._evaluate(y_true_inner, y_pred_inner, **kwargs)
 
-        if self.score_average and multioutput == "uniform_average":
-            out = out.mean(axis=1).iloc[0]  # average over all
-        if self.score_average and multioutput == "raw_values":
-            out = out.T.groupby(level=0).mean().T  # average over scores
-        if not self.score_average and multioutput == "uniform_average":
-            out = out.T.groupby(level=1).mean().T  # average over variables
-        if not self.score_average and multioutput == "raw_values":
-            out = out  # don't average
+        if isinstance(multioutput, str):
+            if self.score_average and multioutput == "uniform_average":
+                out = out.mean(axis=1).iloc[0]  # average over all
+            if self.score_average and multioutput == "raw_values":
+                out = out.T.groupby(level=0).mean().T  # average over scores
+            if not self.score_average and multioutput == "uniform_average":
+                out = out.T.groupby(level=1).mean().T  # average over variables
+            if not self.score_average and multioutput == "raw_values":
+                out = out  # don't average
+        else:  # is np.array with weights
+            if self.score_average:
+                out_raw = out.T.groupby(level=0).mean().T
+                out = out_raw.dot(multioutput)[0]
+            else:
+                out = _groupby_dot(out, multioutput)
 
         if isinstance(out, pd.DataFrame):
             out = out.squeeze(axis=0)
@@ -204,14 +216,21 @@ class BaseProbaMetric(BaseObject):
         # pass to inner function
         out = self._evaluate_by_index(y_true_inner, y_pred_inner, **kwargs)
 
-        if self.score_average and multioutput == "uniform_average":
-            out = out.mean(axis=1)  # average over all
-        if self.score_average and multioutput == "raw_values":
-            out = out.T.groupby(level=0).mean().T  # average over scores
-        if not self.score_average and multioutput == "uniform_average":
-            out = out.T.groupby(level=1).mean().T  # average over variables
-        if not self.score_average and multioutput == "raw_values":
-            out = out  # don't average
+        if isinstance(multioutput, str):
+            if self.score_average and multioutput == "uniform_average":
+                out = out.mean(axis=1)  # average over all
+            if self.score_average and multioutput == "raw_values":
+                out = out.T.groupby(level=0).mean().T  # average over scores
+            if not self.score_average and multioutput == "uniform_average":
+                out = out.T.groupby(level=1).mean().T  # average over variables
+            if not self.score_average and multioutput == "raw_values":
+                out = out  # don't average
+        else:  # is np.array with weights
+            if self.score_average:
+                out_raw = out.T.groupby(level=0).mean().T
+                out = out_raw.dot(multioutput)[0]
+            else:
+                out = _groupby_dot(out, multioutput)
 
         return out
 
@@ -522,6 +541,30 @@ class BaseDistrMetric(BaseProbaMetric):
             res = pd.concat(res_by_col, axis=1)
 
         return res
+
+
+def _groupby_dot(df, weights):
+    """Groupby dot product.
+
+    Groups df by axis 1, level 1, and applies dot product with weights.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        dataframe to groupby
+    weights : np.array
+        weights to apply to each group
+
+    Returns
+    -------
+    out : pd.DataFrame
+        dataframe with weighted groupby dot product
+    """
+    out = df.T.groupby(level=1).apply(lambda x: x.T.dot(weights)).T
+    # formerly
+    # out = df.groupby(axis=1, level=1).apply(lambda x: x.dot(weights))
+    # but groupby(axis=1) is deprecated
+    return out
 
 
 class BaseSurvDistrMetric(BaseDistrMetric):

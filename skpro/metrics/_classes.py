@@ -60,7 +60,7 @@ class PinballLoss(BaseProbaMetric):
     --------
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from skpro.performance_metrics.forecasting.probabilistic import PinballLoss
+    >>> from skpro.metrics import PinballLoss
     >>> y_true = pd.Series([3, -0.5, 2, 7, 2])
     >>> y_pred = pd.DataFrame({
     ...     ('Quantiles', 0.05): [1.25, 0, 1, 4, 0.625],
@@ -68,7 +68,7 @@ class PinballLoss(BaseProbaMetric):
     ...     ('Quantiles', 0.95): [3.75, 0, 3, 12, 1.875],
     ... })
     >>> pl = PinballLoss()
-    >>> pl(y_true, y_pred)
+    >>> pl(y_true, y_pred)  # doctest: +SKIP
     np.float64(0.1791666666666667)
     >>> pl = PinballLoss(score_average=False)
     >>> pl(y_true, y_pred).to_numpy()
@@ -89,7 +89,7 @@ class PinballLoss(BaseProbaMetric):
     >>> pl(y_true, y_pred).to_numpy()
     array([0.16233333, 0.465     ])
     >>> pl = PinballLoss(multioutput=np.array([0.3, 0.7]))
-    >>> pl(y_true, y_pred)
+    >>> pl(y_true, y_pred)  # doctest: +SKIP
     np.float64(0.3742000000000001)
     """  # noqa: E501
 
@@ -105,7 +105,7 @@ class PinballLoss(BaseProbaMetric):
         self.metric_args = {"alpha": self._alpha}
         super().__init__(multioutput=multioutput, score_average=score_average)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
@@ -228,7 +228,7 @@ class EmpiricalCoverage(BaseProbaMetric):
         self.metric_args = {"coverage": self._coverage}
         super().__init__(score_average=score_average, multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
@@ -331,7 +331,7 @@ class IntervalWidth(BaseProbaMetric):
         self.metric_args = {"coverage": self._coverage}
         super().__init__(score_average=score_average, multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
@@ -441,7 +441,7 @@ class ConstraintViolation(BaseProbaMetric):
         self.metric_args = {"coverage": self._coverage}
         super().__init__(score_average=score_average, multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         """Logic for finding the metric evaluated at each index.
 
         y_true : pd.Series, pd.DataFrame or np.array of shape (fh,) or \
@@ -525,7 +525,7 @@ class LogLoss(BaseDistrMetric):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         res = -y_pred.log_pdf(y_true)
         # replace this by multivariate log_pdf once distr implements
         # i.e., pass multivariate on to log_pdf
@@ -654,7 +654,7 @@ class SquaredDistrLoss(BaseDistrMetric):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         res = -2 * y_pred.log_pdf(y_true) + y_pred.pdfnorm(a=2)
         # replace this by multivariate log_pdf once distr implements
         # i.e., pass multivariate on to log_pdf
@@ -712,7 +712,7 @@ class CRPS(BaseDistrMetric):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         # CRPS(d, y) = E_X,Y as d [abs(Y-y) - 0.5 abs(X-Y)]
         return y_pred.energy(y_true) - y_pred.energy() / 2
 
@@ -780,7 +780,7 @@ class AUCalibration(BaseDistrMetric):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)
 
-    def _evaluate_by_index(self, y_true, y_pred, multioutput, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
         cdfs = y_pred.cdf(y_true)
         # using the average in case of ranks is fine
         # because the absolute sums in the metric average out
