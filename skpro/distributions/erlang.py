@@ -32,7 +32,7 @@ class Erlang(_ScipyAdapter):
     --------
     >>> from skpro.distributions.erlang import Erlang
 
-    >>> d = Erlang(rate=[[1, 1], [2, 3], [4, 5]], shape=2)
+    >>> d = Erlang(rate=[[1, 1], [2, 3], [4, 5]], k=2)
     """
 
     _tags = {
