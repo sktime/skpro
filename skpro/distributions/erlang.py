@@ -44,10 +44,6 @@ class Erlang(_ScipyAdapter):
     }
 
     def __init__(self, rate, k=1, index=None, columns=None):
-        if rate <= 0:
-            raise ValueError("Rate must be greater than 0.")
-        if k <= 0:
-            raise ValueError("shape must be a positive integer.")
         self.rate = rate
         self.k = k
 
