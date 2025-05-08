@@ -168,7 +168,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         """
         # clone, set alpha and list all regressors
         regressors = [clone(self._mean_regressor)]
-        for a in self.alpha:
+        for a in self._alpha:
             q_est = clone(self._quantile_regressor)
             q_est = q_est.set_params(**{self.alpha_name: a})
             q_est_p = q_est.get_params()
@@ -190,7 +190,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         # put fitted regressors in dict and write to self
         regressors_ = {}
         regressors_["mean"] = fitted_regressors.pop(0)
-        for i, a in enumerate(self.alpha):
+        for i, a in enumerate(self._alpha):
             regressors_[a] = fitted_regressors[i]
         self.regressors_ = regressors_
 
@@ -254,7 +254,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         # per a in alpha, list fitted regressor that is nearest to a
         regressors = []
         for a in sorted(alpha):
-            nearest_fitted_a = min(self.alpha, key=lambda p: abs(p - a))
+            nearest_fitted_a = min(self._alpha, key=lambda p: abs(p - a))
             regressors.append(self.regressors_[nearest_fitted_a])
 
         # predict
@@ -307,7 +307,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         """
         from skpro.distributions import QPD_Empirical
 
-        alpha_sorted = sorted(self.alpha)
+        alpha_sorted = sorted(self._alpha)
 
         # get quantile prediction for all fitted quantile regressors
         quantile_preds = self._predict_quantiles(X, alpha_sorted)
