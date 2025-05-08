@@ -21,16 +21,21 @@ class BaseProbaMetric(BaseObject):
 
     Parameters
     ----------
-    multioutput : {'raw_values', 'uniform_average'}  or array-like of shape \
+    multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
             (n_outputs,), default='uniform_average'
-        Defines how to aggregate metric for multivariate (multioutput) data.
-        If array-like, values used as weights to average the errors.
-        If 'raw_values', returns a full set of errors in case of multioutput input.
-        If 'uniform_average', errors of all outputs are averaged with uniform weight.
+        Defines whether and how to aggregate metric for across variables.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
+
     score_average : bool, optional, default=True
         for interval and quantile losses only
-            if True, metric/loss is averaged by upper/lower and/or quantile
-            if False, metric/loss is not averaged by upper/lower and/or quantile
+
+        * if True, metric/loss is averaged by upper/lower and/or quantile
+        * if False, metric/loss is not averaged by upper/lower and/or quantile
     """
 
     _tags = {
