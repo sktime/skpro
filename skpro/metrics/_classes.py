@@ -60,7 +60,7 @@ class PinballLoss(BaseProbaMetric):
     --------
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from skpro.performance_metrics.forecasting.probabilistic import PinballLoss
+    >>> from skpro.metrics import PinballLoss
     >>> y_true = pd.Series([3, -0.5, 2, 7, 2])
     >>> y_pred = pd.DataFrame({
     ...     ('Quantiles', 0.05): [1.25, 0, 1, 4, 0.625],
