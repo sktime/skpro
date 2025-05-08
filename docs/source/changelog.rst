@@ -19,7 +19,7 @@ For planned changes and upcoming releases, see roadmap in the
 [2.9.1] - 2025-05-08
 ====================
 
-Minor feature and bugfix release.
+Minor feature, maintenance, and bugfix release.
 
 Enhancements
 ~~~~~~~~~~~~
