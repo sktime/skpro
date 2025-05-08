@@ -126,6 +126,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         """
         from ngboost import NGBRegressor
         from ngboost.scores import LogScore
+        from sklearn.base import clone
         from sklearn.tree import DecisionTreeRegressor
 
         # coerce y to numpy array
@@ -174,7 +175,6 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             validation_fraction=self.validation_fraction,
             early_stopping_rounds=self.early_stopping_rounds,
         )
-        from sklearn.base import clone
 
         self.ngb_ = clone(self.ngb)
         self.ngb_.fit(X, y)
