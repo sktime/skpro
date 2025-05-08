@@ -120,14 +120,21 @@ class BaseProbaMetric(BaseObject):
         # pass to inner function
         out = self._evaluate(y_true_inner, y_pred_inner, **kwargs)
 
-        if self.score_average and multioutput == "uniform_average":
-            out = out.mean(axis=1).iloc[0]  # average over all
-        if self.score_average and multioutput == "raw_values":
-            out = out.T.groupby(level=0).mean().T  # average over scores
-        if not self.score_average and multioutput == "uniform_average":
-            out = out.T.groupby(level=1).mean().T  # average over variables
-        if not self.score_average and multioutput == "raw_values":
-            out = out  # don't average
+        if isinstance(multioutput, str):
+            if self.score_average and multioutput == "uniform_average":
+                out = out.mean(axis=1).iloc[0]  # average over all
+            if self.score_average and multioutput == "raw_values":
+                out = out.T.groupby(level=0).mean().T  # average over scores
+            if not self.score_average and multioutput == "uniform_average":
+                out = out.T.groupby(level=1).mean().T  # average over variables
+            if not self.score_average and multioutput == "raw_values":
+                out = out  # don't average
+        else:  # is np.array with weights
+            if self.score_average:
+                out_raw = out.T.groupby(level=0).mean().T
+                out = out_raw.dot(multioutput)[0]
+            else:
+                out = _groupby_dot(out, multioutput)
 
         if isinstance(out, pd.DataFrame):
             out = out.squeeze(axis=0)
@@ -209,14 +216,21 @@ class BaseProbaMetric(BaseObject):
         # pass to inner function
         out = self._evaluate_by_index(y_true_inner, y_pred_inner, **kwargs)
 
-        if self.score_average and multioutput == "uniform_average":
-            out = out.mean(axis=1)  # average over all
-        if self.score_average and multioutput == "raw_values":
-            out = out.T.groupby(level=0).mean().T  # average over scores
-        if not self.score_average and multioutput == "uniform_average":
-            out = out.T.groupby(level=1).mean().T  # average over variables
-        if not self.score_average and multioutput == "raw_values":
-            out = out  # don't average
+        if isinstance(multioutput, str):
+            if self.score_average and multioutput == "uniform_average":
+                out = out.mean(axis=1).iloc[0]  # average over all
+            if self.score_average and multioutput == "raw_values":
+                out = out.T.groupby(level=0).mean().T  # average over scores
+            if not self.score_average and multioutput == "uniform_average":
+                out = out.T.groupby(level=1).mean().T  # average over variables
+            if not self.score_average and multioutput == "raw_values":
+                out = out  # don't average
+        else:  # is np.array with weights
+            if self.score_average:
+                out_raw = out.T.groupby(level=0).mean().T
+                out = out_raw.dot(multioutput)[0]
+            else:
+                out = _groupby_dot(out, multioutput)
 
         return out
 
