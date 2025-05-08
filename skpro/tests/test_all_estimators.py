@@ -175,7 +175,7 @@ class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
 
     def test_doctest_examples(self, object_class):
         """Runs doctests for estimator class."""
-        run_doctest(estimator_class, name=f"class {estimator_class.__name__}")
+        run_doctest(object_class, name=f"class {object_class.__name__}")
 
     # override this due to reserved_params index, columns, in the BaseDistribution class
     # index and columns params behave like pandas, i.e., are changed after __init__
