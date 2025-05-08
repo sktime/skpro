@@ -145,6 +145,8 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
                 splitter="best",
                 random_state=None,
             )
+        else:
+            self.estimator_ = clone(self.estimator)
 
         dist_ngboost = self._dist_to_ngboost_instance(self.dist, survival=False)
 
@@ -257,10 +259,14 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LinearRegression
+
         params1 = {"dist": "Normal"}
         params2 = {
             "dist": "Laplace",
             "n_estimators": 800,
+            "estimator": LinearRegression(),
         }
         params3 = {}
         params4 = {
@@ -272,6 +278,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             "dist": "LogNormal",
             "learning_rate": 0.001,
             "validation_fraction": 0.2,
+            "estimator": RandomForestRegressor(),
         }
 
         params6 = {
