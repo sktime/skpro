@@ -121,21 +121,22 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         self.n_jobs = n_jobs
         self.sort_quantiles = sort_quantiles
 
-        # input checks
-        if len(alpha) == 0:
-            raise ValueError("at least one value in alpha is required.")
-        elif np.amin(alpha) <= 0 or np.amax(alpha) >= 1:
-            raise ValueError(
-                "values in alpha must lie in the open interval (0, 1), "
-                f"but found alpha: {alpha}."
-            )
-
         super().__init__()
 
         if alpha is None:
-            self._alpha = [0.1, 0.25, 0.5, 0.75, 0.9]
+            _alpha = [0.1, 0.25, 0.5, 0.75, 0.9]
         else:
-            self._alpha = alpha
+            _alpha = alpha
+
+        # input checks
+        if len(_alpha) == 0:
+            raise ValueError("at least one value in alpha is required.")
+        elif np.amin(_alpha) <= 0 or np.amax(_alpha) >= 1:
+            raise ValueError(
+                "values in alpha must lie in the open interval (0, 1), "
+                f"but found alpha: {_alpha}."
+            )
+        self._alpha = _alpha
 
         if quantile_regressor is None:
             from sklearn.ensemble import GradientBoostingRegressor
