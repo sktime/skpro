@@ -21,19 +21,23 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         distribution that must be used for
         probabilistic prediction.
         Available distribution types
+
         1. "Normal"
         2. "Laplace"
         3. "LogNormal"
         4. "Poisson"
         5. "TDistribution"
         6. "Exponential"
+
     score : string , default = "LogScore"
         A score from ngboost.scores for LogScore
         rule to compare probabilistic
         predictions P̂ to the observed data y.
+
     estimator : default learner/estimator: DecisionTreeRegressor()
         base learner to use in the boosting algorithm.
         Any instantiated sklearn regressor.
+
     natural_gradient : boolean , default = True
         whether natural gradient must be used or not.
     n_estimators : int , default = 500
@@ -61,10 +65,27 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         Set to None to disable early stopping and validation
         None enables running over the full data set.
 
-
-    Returns
+    Example
     -------
-    An NGBRegressor object that can be fit.
+    from sklearn.datasets import load_diabetes
+    from sklearn.linear_model import LinearRegression
+    from sklearn.model_selection import train_test_split
+    from skpro.regression.ensemble import NGBoostRegressor
+    from skpro.metrics import LogLoss
+
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    ngb = NGBoostRegressor(
+        dist="Normal",
+        score="LogScore",
+        estimator=LinearRegression(),
+        n_estimators=100,
+    )
+    ngb.fit(X_train, y_train)
+    y_pred = ngb.predict_proba(X_test)
+
+    logloss = LogLoss()
+    score = logloss(y_test, y_pred)
     """
 
     _tags = {
@@ -126,6 +147,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         """
         from ngboost import NGBRegressor
         from ngboost.scores import LogScore
+        from sklearn.base import clone
         from sklearn.tree import DecisionTreeRegressor
 
         # coerce y to numpy array
@@ -145,6 +167,8 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
                 splitter="best",
                 random_state=None,
             )
+        else:
+            self.estimator_ = clone(self.estimator)
 
         dist_ngboost = self._dist_to_ngboost_instance(self.dist, survival=False)
 
@@ -172,7 +196,6 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             validation_fraction=self.validation_fraction,
             early_stopping_rounds=self.early_stopping_rounds,
         )
-        from sklearn.base import clone
 
         self.ngb_ = clone(self.ngb)
         self.ngb_.fit(X, y)
@@ -257,10 +280,14 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LinearRegression
+
         params1 = {"dist": "Normal"}
         params2 = {
             "dist": "Laplace",
             "n_estimators": 800,
+            "estimator": LinearRegression(),
         }
         params3 = {}
         params4 = {
@@ -272,6 +299,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             "dist": "LogNormal",
             "learning_rate": 0.001,
             "validation_fraction": 0.2,
+            "estimator": RandomForestRegressor(),
         }
 
         params6 = {

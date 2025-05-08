@@ -167,7 +167,7 @@ class MapieRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["fkiraly"],
-        "python_dependencies": ["mapie"],
+        "python_dependencies": ["MAPIE"],
         # estimator tags
         # --------------
         "capability:missing": True,
@@ -215,7 +215,7 @@ class MapieRegressor(BaseProbaRegressor):
         self : reference to self
         """
         # construct mapie regressor
-        from mapie.regression.regression import MapieRegressor
+        from mapie.regression import MapieRegressor
 
         PARAMS_TO_FORWARD = [
             "estimator",

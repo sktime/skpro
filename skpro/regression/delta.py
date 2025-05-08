@@ -35,6 +35,7 @@ class DeltaPointRegressor(BaseProbaRegressor):
     >>> from sklearn.linear_model import LinearRegression
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.model_selection import train_test_split
+    >>> from skpro.regression.delta import DeltaPointRegressor
     >>>
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
