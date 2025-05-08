@@ -38,7 +38,8 @@ class MeanScale(BaseDistribution):
     Examples
     --------
     >>> from skpro.distributions.normal import Normal
-
+    >>> from skpro.distributions.meanscale import MeanScale
+    >>>
     >>> n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=2)
     >>> d = MeanScale(d=n, mu=2, sigma=3)
     """
