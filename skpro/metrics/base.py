@@ -342,6 +342,22 @@ class BaseProbaMetric(BaseObject):
 
         return alpha
 
+    def _check_coverage(self, coverage):
+        """Check coverage input and coerce to np.ndarray."""
+        if coverage is None:
+            return None
+
+        if isinstance(coverage, float):
+            coverage = [coverage]
+
+        if not isinstance(coverage, np.ndarray):
+            coverage = np.asarray(coverage)
+
+        if not all((coverage > 0) & (coverage < 1)):
+            raise ValueError("Coverage must be between 0 and 1.")
+
+        return coverage
+
     def _handle_multioutput(self, loss, multioutput):
         """Handle output according to multioutput parameter.
 

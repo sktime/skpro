@@ -16,6 +16,7 @@ from skpro.registry import OBJECT_TAG_LIST, all_objects
 from skpro.tests._config import EXCLUDE_ESTIMATORS, EXCLUDED_TESTS
 from skpro.tests.scenarios.scenarios_getter import retrieve_scenarios
 from skpro.tests.test_switch import run_test_for_class
+from skpro.utils._doctest import run_doctest
 from skpro.utils.deep_equals import deep_equals
 from skpro.utils.random_state import set_random_state
 
@@ -174,9 +175,7 @@ class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
 
     def test_doctest_examples(self, object_class):
         """Runs doctests for estimator class."""
-        import doctest
-
-        doctest.run_docstring_examples(object_class, globals())
+        run_doctest(object_class, name=f"class {object_class.__name__}")
 
     # override this due to reserved_params index, columns, in the BaseDistribution class
     # index and columns params behave like pandas, i.e., are changed after __init__
