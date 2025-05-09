@@ -36,6 +36,7 @@ Maintenance
 * [MNT] move release to trusted publishers (:pr:`533`) :user:`fkiraly`
 * [MNT] remove deprecated ``pkg_import_alias`` from private soft dependency checker tests (:pr:`539`) :user:`fkiraly`
 * [MNT] reduce dependencies in ``all_extras`` dependency sets (:pr:`541`) :user:`fkiraly`
+* [MNT] update release wheel build runner to ``ubuntu-latest`` (:pr:`547`) :user:`fkiraly`
 
 Documentation
 ~~~~~~~~~~~~~
