@@ -167,21 +167,22 @@ def evaluate(
 
     Examples
     --------
+    >>> import pandas as pd
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.linear_model import LinearRegression
     >>> from sklearn.model_selection import KFold
-
+    >>>
     >>> from skpro.benchmarking.evaluate import evaluate
     >>> from skpro.metrics import CRPS
     >>> from skpro.regression.residual import ResidualDouble
-
+    >>>
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
     >>> y = pd.DataFrame(y)  # skpro assumes y is pd.DataFrame
-
+    >>>
     >>> estimator = ResidualDouble(LinearRegression())
     >>> cv = KFold(n_splits=3)
     >>> crps = CRPS()
-
+    >>>
     >>> results = evaluate(estimator=estimator, X=X, y=y, cv=cv, scoring=crps)
     """
     if backend == "dask" and not _check_soft_dependencies("dask", severity="none"):
