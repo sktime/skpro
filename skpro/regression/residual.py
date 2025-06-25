@@ -3,13 +3,32 @@
 
 __author__ = ["fkiraly"]
 
+import warnings
+
 import numpy as np
 import pandas as pd
+from scipy.special import gamma
 from sklearn import clone
 
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.numpy import flatten_to_1D_if_colvector
 from skpro.utils.sklearn import prep_skl_df
+
+
+def half_t_correction(dof: float) -> float:
+    """Get expected value of absolute value of t-distributed variable with mu=0 sigma=1.
+
+    For X ~ t(dof, 0, sigma), the expected value of the absolute value is
+    ``2 * sigma * sqrt(dof) * gamma((dof + 1) / 2) /
+    (sqrt(pi) * (dof - 1) * gamma(dof / 2))``.
+    So E[|X|] / half_t_correction(dof) is an estimate of sigma.
+    """
+    return (
+        2
+        * np.sqrt(dof)
+        * gamma((dof + 1) / 2)
+        / (np.sqrt(np.pi) * (dof - 1) * gamma(dof / 2))
+    )
 
 
 class ResidualDouble(BaseProbaRegressor):
@@ -154,7 +173,7 @@ class ResidualDouble(BaseProbaRegressor):
         else:
             self.estimator_resid_ = clone(estimator_resid)
 
-    def _predict_residuals_cv(self, X, y, cv, est):
+    def _predict_residuals_cv(self, X, y, cv, est=None, sample_weight=None):
         """Predict out-of-sample residuals for y from X using cv.
 
         Parameters
@@ -171,7 +190,8 @@ class ResidualDouble(BaseProbaRegressor):
         y_pred : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        est = self.estimator_resid_
+        if est is None:
+            est = self.estimator_resid_
         method = "predict"
         y_pred = y.copy()
 
@@ -179,12 +199,18 @@ class ResidualDouble(BaseProbaRegressor):
             X_train = X.iloc[tr_idx]
             X_test = X.iloc[tt_idx]
             y_train = y[tr_idx]
-            fitted_est = clone(est).fit(X_train, y_train)
+            if sample_weight is None:
+                fitted_est = clone(est).fit(X_train, y_train)
+            else:
+                sample_weight_train = sample_weight[tr_idx]
+                fitted_est = clone(est).fit(
+                    X_train, y_train, sample_weight=sample_weight_train
+                )
             y_pred[tt_idx] = getattr(fitted_est, method)(X_test)
 
         return y_pred
 
-    def _fit(self, X, y):
+    def _fit(self, X, y, sample_weight=None):
         """Fit regressor to training data.
 
         Writes to self:
@@ -196,6 +222,8 @@ class ResidualDouble(BaseProbaRegressor):
             feature instances to fit regressor to
         y : pandas DataFrame, must be same length as X
             labels to fit regressor to
+        sample_weight : pandas DataFrame, same length as X, default=None
+            sample weights to fit regressor to
 
         Returns
         -------
@@ -215,8 +243,10 @@ class ResidualDouble(BaseProbaRegressor):
         # flatten column vector to 1D array to avoid sklearn complaints
         y = y.values
         y = flatten_to_1D_if_colvector(y)
-
-        est.fit(X, y)
+        if sample_weight is None:
+            est.fit(X, y)
+        else:
+            est.fit(X, y, sample_weight=sample_weight)
 
         if cv is None:
             y_pred = est.predict(X)
@@ -229,6 +259,13 @@ class ResidualDouble(BaseProbaRegressor):
             resids = (y - y_pred) ** 2
         else:
             resids = residual_trafo.fit_transform(y - y_pred)
+            warnings.warn(
+                (
+                    "Arbitrary transforms will result in abberrant behavior in "
+                    "the predict_proba method."
+                ),
+                stacklevel=2,
+            )
 
         resids = flatten_to_1D_if_colvector(resids)
 
@@ -241,7 +278,10 @@ class ResidualDouble(BaseProbaRegressor):
         # coerce X to pandas DataFrame with string column names
         X_r = prep_skl_df(X_r, copy_df=True)
 
-        est_r.fit(X_r, resids)
+        if sample_weight is None:
+            est_r.fit(X_r, resids)
+        else:
+            est_r.fit(X_r, resids, sample_weight=sample_weight)
 
         return self
 
@@ -295,6 +335,7 @@ class ResidualDouble(BaseProbaRegressor):
         est = self.estimator_
         est_r = self.estimator_resid_
         use_y_pred = self.use_y_pred
+        residual_trafo = self.residual_trafo
         distr_type = self.distr_type
         distr_loc_scale_name = self.distr_loc_scale_name
         distr_params = self.distr_params
@@ -307,6 +348,8 @@ class ResidualDouble(BaseProbaRegressor):
 
         if distr_params is None:
             distr_params = {}
+        else:
+            distr_params = distr_params.copy()
 
         # predict location - this is the same as in _predict
         y_pred_loc = est.predict(X)
@@ -325,6 +368,19 @@ class ResidualDouble(BaseProbaRegressor):
         X_r = prep_skl_df(X_r, copy_df=True)
 
         y_pred_scale = est_r.predict(X_r)
+        if residual_trafo == "absolute":
+            pass
+        elif residual_trafo == "squared":
+            y_pred_scale = np.sqrt(y_pred_scale)
+        else:
+            y_pred_scale = residual_trafo.inverse_transform(y_pred_scale)
+            warnings.warn(
+                (
+                    "Arbitrary residual transforms will result in unpredictable"
+                    " behavior."
+                ),
+                stacklevel=2,
+            )
         y_pred_scale = y_pred_scale.clip(min=min_scale)
         y_pred_scale = y_pred_scale.reshape(-1, n_cols)
 
@@ -335,17 +391,69 @@ class ResidualDouble(BaseProbaRegressor):
 
             distr_type = Normal
             distr_loc_scale_name = ("mu", "sigma")
+            if residual_trafo == "absolute":
+                y_pred_scale = y_pred_scale / np.sqrt(2 / np.pi)
         elif distr_type == "Laplace":
             from skpro.distributions.laplace import Laplace
 
             distr_type = Laplace
             distr_loc_scale_name = ("mu", "scale")
-        elif distr_type in ["Cauchy", "t"]:
+            if residual_trafo == "squared":
+                y_pred_scale = y_pred_scale / np.sqrt(2.0)
+        elif distr_type == "t":
             from skpro.distributions.t import TDistribution
 
             distr_type = TDistribution
             distr_loc_scale_name = ("mu", "sigma")
+            # Extract degrees of freedom
+            df = distr_params["df"]
+            if residual_trafo == "absolute":
+                if df <= 1:
+                    warnings.warn(
+                        (
+                            "Both the t-distribution and the half t-distribution have "
+                            "no first moment for df<=1, so predict_proba will result "
+                            "in erratic behavior."
+                        ),
+                        stacklevel=2,
+                    )
+                y_pred_scale = y_pred_scale / half_t_correction(df)
+            elif residual_trafo == "squared":
+                if df <= 2:
+                    warnings.warn(
+                        (
+                            "t-distribution has no second moment for df <= 2, and no "
+                            "first moment for df <= 1, so predict_proba will result "
+                            "in erratic behavior."
+                        ),
+                        stacklevel=2,
+                    )
+                elif df <= 3:
+                    warnings.warn(
+                        (
+                            "Degrees of freedom less than 3 tends to yield poor"
+                            " results for squared residuals."
+                        ),
+                        stacklevel=2,
+                    )
+                y_pred_scale = y_pred_scale / np.sqrt(df / (df - 2))
+        elif distr_type == "Cauchy":
+            from skpro.distributions.t import TDistribution as CauchyDistribution
 
+            warnings.warn(
+                (
+                    "Cauchy distribution has no first or second moments, so "
+                    "predict_proba will result in erratic behavior."
+                ),
+                stacklevel=2,
+            )
+
+            distr_type = CauchyDistribution
+            distr_loc_scale_name = ("mu", "sigma")
+            distr_params = {"df": 1}
+
+        else:
+            raise NotImplementedError(f"distr_type {distr_type} not implemented")
         # collate all parameters for the distribution constructor
         # distribution params, if passed
         params = distr_params
