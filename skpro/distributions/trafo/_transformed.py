@@ -38,7 +38,7 @@ class TransformedDistribution(BaseDistribution):
     --------
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from skpro.distributions.compose import TransformedDistribution
+    >>> from skpro.distributions.trafo import TransformedDistribution
     >>> from skpro.distributions import Normal
     >>>
     >>> n = Normal(mu=0, sigma=1)
@@ -47,8 +47,10 @@ class TransformedDistribution(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": [
+            "pdfnorm", "mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"
+        ],
+        "capabilities:exact": [],
         "distr:measuretype": "continuous",
         "distr:paramtype": "composite",
     }
@@ -65,14 +67,17 @@ class TransformedDistribution(BaseDistribution):
         self.transform = transform
         self.assume_monotonic = assume_monotonic
 
+        self._is_scalar_dist = self.distribution.ndim == 0
+
         # determine index and columns
-        if index is None or columns is None:
-            _example = self.distribution.sample()
-            if isinstance(_example, pd.DataFrame):
-                if index is None:
-                    index = _example.index
-                if columns is None:
-                    columns = _example.columns
+        if not self._is_scalar_dist:
+            if index is None or columns is None:
+                _example = self.distribution.sample()
+                if isinstance(_example, pd.DataFrame):
+                    if index is None:
+                        index = _example.index
+                    if columns is None:
+                        columns = _example.columns
 
         super().__init__(index=index, columns=columns)
 
@@ -109,19 +114,23 @@ class TransformedDistribution(BaseDistribution):
 
         samples = []
 
-        for i in range(n):
+        for _ in range(n):
             new_sample = trafo(self.distribution.sample())
-            if not isinstance(new_sample, pd.DataFrame):
-                new_sample = pd.DataFrame(
-                    new_sample, index=self.index, columns=self.columns
-                )
-            else:
-                new_sample.index = self.index
-                new_sample.columns = self.columns
+            if not self._is_scalar_dist:
+                if not isinstance(new_sample, pd.DataFrame):
+                    new_sample = pd.DataFrame(
+                        new_sample, index=self.index, columns=self.columns
+                    )
+                else:
+                    new_sample.index = self.index
+                    new_sample.columns = self.columns
             samples.append(new_sample)
 
         if n_samples is None:
             return samples[0]
+
+        if self._is_scalar_dist:
+            return pd.DataFrame(samples)
 
         # if n_samples is int, we return a DataFrame with MultiIndex
         res = pd.concat(samples, axis=0, keys=range(n))

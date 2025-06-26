@@ -4,4 +4,4 @@
 
 __all__ = ["TransformedDistribution"]
 
-from skpro.distributions.compose._transformed import TransformedDistribution
+from skpro.distributions.trafo._transformed import TransformedDistribution
