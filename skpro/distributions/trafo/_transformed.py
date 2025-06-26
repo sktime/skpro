@@ -86,6 +86,21 @@ class TransformedDistribution(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
+    def _iloc(self, rowidx=None, colidx=None):
+        distr = self.distribution.iloc[rowidx, colidx]
+        cls = type(self)
+        return cls(
+            distribution=distr,
+            transform=self.transform,
+            assume_monotonic=self.assume_monotonic,
+        )
+
+    def _iat(self, rowidx=None, colidx=None):
+        if rowidx is None or colidx is None:
+            raise ValueError("iat method requires both row and column index")
+        self_subset = self.iloc[[rowidx], [colidx]]
+        return type(self)(distribution=self_subset.distribution.iat[0, 0])
+
     def sample(self, n_samples=None):
         """Sample from the distribution.
 
@@ -163,3 +178,8 @@ class TransformedDistribution(BaseDistribution):
         }
 
         return [params1, params2]
+
+
+def is_scalar_notnone(obj):
+    """Check if obj is scalar and not None."""
+    return obj is not None and np.isscalar(obj)
