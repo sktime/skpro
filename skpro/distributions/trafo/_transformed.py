@@ -52,13 +52,11 @@ class TransformedDistribution(BaseDistribution):
             "mean",
             "var",
             "energy",
-            "pdf",
-            "log_pdf",
             "cdf",
             "ppf",
         ],
         "capabilities:exact": [],
-        "distr:measuretype": "continuous",
+        "distr:measuretype": "discrete",
         "distr:paramtype": "composite",
     }
 
