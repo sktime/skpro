@@ -27,7 +27,7 @@ class TransformedDistribution(BaseDistribution):
         function that is applied to the distribution, must be applicable
         to array-likes of the same shape as ``self``.
 
-    assume_monotonic : bool, optional, default = False
+    assume_monotonic : bool, optional, default = True
         whether to assume that the transform is monotonic, i.e., that
         the distribution is transformed in a way that preserves order of sample values.
 
@@ -64,7 +64,7 @@ class TransformedDistribution(BaseDistribution):
         self,
         distribution,
         transform,
-        assume_monotonic=False,
+        assume_monotonic=True,
         index=None,
         columns=None,
     ):
@@ -114,6 +114,31 @@ class TransformedDistribution(BaseDistribution):
             raise ValueError("iat method requires both row and column index")
         self_subset = self.iloc[[rowidx], [colidx]]
         return type(self)(distribution=self_subset.distribution.iat[0, 0])
+
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        if not self.assume_monotonic:
+            raise ValueError(
+                "ppf is implemented only for monotonic transforms, "
+                "set `assume_monotonic=True` to use this method"
+            )
+
+        trafo = self.transform
+
+        inner_ppf = self.distribution.ppf(p)
+
+        return trafo(inner_ppf)
 
     def sample(self, n_samples=None):
         """Sample from the distribution.
