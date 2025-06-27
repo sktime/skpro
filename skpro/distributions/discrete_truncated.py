@@ -20,8 +20,18 @@ class LeftTruncatedDiscrete(BaseDistribution):
         The lower bound below which values are truncated (excluded from sampling).
     """
 
-    def __init__(self, distribution: BaseDistribution, lower_bound: int):
-        super().__init__()
+    _tags = {
+        "capabilities:approx": ["energy", "pmf", "cdf"],
+        "capabilities:exact": ["ppf", "mean", "var", "log_pmf"],
+        "distr:measuretype": "discrete",
+        "distr:paramtype": "parametric",
+        "broadcast_init": "on",
+    }
+
+    def __init__(self, distribution: BaseDistribution, lower_bound: int, index=None, columns=None):
+        assert distribution._tags["distr:measuretype"] == "discrete", ""
+
+        super().__init__(index=index, columns=columns)
         self.distribution = distribution
         self.lower_bound = lower_bound
 
@@ -29,7 +39,7 @@ class LeftTruncatedDiscrete(BaseDistribution):
         u = Uniform(0.0, 1.0).sample(n_samples)
         return self._ppf(u)
 
-    def _log_pdf(self, x):
+    def _log_pmf(self, x):
         is_invalid = x <= self.low
 
         log_prob_base = self.distribution.log_prob(x)
@@ -47,3 +57,14 @@ class LeftTruncatedDiscrete(BaseDistribution):
         x = low_cdf + normalizer * u
 
         return self.distribution.ppf(x)
+
+    def _mean(self):
+        low_cdf = self.distribution.cdf(self.lower_bound)
+        normalizer = 1.0 - low_cdf
+        return self.distribution.mean() / normalizer
+
+    def _var(self):
+        low_cdf = self.distribution.cdf(self.lower_bound)
+        normalizer = 1.0 - low_cdf
+        mean = self._mean()
+        return (self.distribution.var() + mean**2) / normalizer - mean**2
