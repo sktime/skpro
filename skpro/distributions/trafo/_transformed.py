@@ -142,7 +142,7 @@ class TransformedDistribution(BaseDistribution):
             # if the transform returns a DataFrame, we ensure the index and columns
             outer_ppf.index = self.index
             outer_ppf.columns = self.columns
-        else:
+        elif not self._is_scalar_dist:
             # if the transform returns a scalar or array, we  convert it to DataFrame
             outer_ppf = pd.DataFrame(outer_ppf, index=self.index, columns=self.columns)
 
