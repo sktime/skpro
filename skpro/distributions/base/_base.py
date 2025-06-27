@@ -920,7 +920,7 @@ class BaseDistribution(BaseObject):
             "by approximating the expected value by the indicator function on "
             f"{N} samples"
         )
-        warn(self._method_error_msg("mean", fill_in=approx_method))
+        warn(self._method_error_msg("cdf", fill_in=approx_method))
 
         splx = self._sample_multiply(x, N)
         sply = self.sample(N)
