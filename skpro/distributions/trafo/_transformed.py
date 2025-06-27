@@ -78,21 +78,35 @@ class TransformedDistribution(BaseDistribution):
         if not self._is_scalar_dist:
             if index is None or columns is None:
                 _example = self.distribution.sample()
-                if isinstance(_example, pd.DataFrame):
-                    if index is None:
-                        index = _example.index
-                    if columns is None:
-                        columns = _example.columns
+                n_rows = _example.shape[0]
+                n_cols = _example.shape[1]
+                if index is None:
+                    index = pd.RangeIndex(n_rows)
+                if columns is None:
+                    columns = pd.RangeIndex(n_cols)
 
         super().__init__(index=index, columns=columns)
 
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
+
+        if rowidx is not None:
+            new_index = self.index[rowidx]
+        else:
+            new_index = self.index
+
+        if colidx is not None:
+            new_columns = self.columns[colidx]
+        else:
+            new_columns = self.columns
+
         cls = type(self)
         return cls(
             distribution=distr,
             transform=self.transform,
             assume_monotonic=self.assume_monotonic,
+            index=new_index,
+            columns=new_columns,
         )
 
     def _iat(self, rowidx=None, colidx=None):
