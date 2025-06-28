@@ -274,7 +274,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        y_pred = self.regressor_.predict_quantiles(X=X)
+        y_pred = self.regressor_.predict_proba(X=X)
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
             transform=self.transformer_.inverse_transform,
