@@ -31,12 +31,13 @@ class LeftTruncatedDiscrete(BaseDistribution):
     def __init__(self, distribution: BaseDistribution, lower_bound: int, index=None, columns=None):
         assert distribution._tags["distr:measuretype"] == "discrete", ""
 
-        super().__init__(index=index, columns=columns)
         self.distribution = distribution
         self.lower_bound = lower_bound
 
+        super().__init__(index=index, columns=columns)
+
     def _sample(self, n_samples: int):
-        u = Uniform(0.0, 1.0).sample(n_samples)
+        u = Uniform(0.0, 1.0, index=self.index, columns=self.columns).sample(n_samples)
         return self._ppf(u)
 
     def _log_pmf(self, x):
@@ -51,10 +52,10 @@ class LeftTruncatedDiscrete(BaseDistribution):
 
         return np.where(is_invalid, -np.inf, log_prob_truncated)
 
-    def _ppf(self, u):
+    def _ppf(self, p):
         low_cdf = self.distribution.cdf(self.lower_bound)
         normalizer = 1.0 - low_cdf
-        x = low_cdf + normalizer * u
+        x = low_cdf + normalizer * p
 
         return self.distribution.ppf(x)
 
@@ -68,3 +69,15 @@ class LeftTruncatedDiscrete(BaseDistribution):
         normalizer = 1.0 - low_cdf
         mean = self._mean()
         return (self.distribution.var() + mean**2) / normalizer - mean**2
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        from skpro.distributions import Poisson
+
+        poisson = Poisson(mu=1.0)
+        params1 = {
+            "distribution": poisson,
+            "lower_bound": 0,
+        }
+
+        return [params1]
