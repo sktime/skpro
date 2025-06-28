@@ -1,7 +1,8 @@
+"""Left Truncated Discrete Distribution."""
+
 import numpy as np
 import pandas as pd
 
-from skpro.distributions import Uniform
 from skpro.distributions.base import BaseDistribution
 
 
@@ -19,6 +20,7 @@ class LeftTruncatedDiscrete(BaseDistribution):
 
     lower_bound : int
         The lower bound below which values are truncated (excluded from sampling).
+
     """
 
     _tags = {
@@ -29,7 +31,9 @@ class LeftTruncatedDiscrete(BaseDistribution):
         "broadcast_init": "on",
     }
 
-    def __init__(self, distribution: BaseDistribution, lower_bound: int, index=None, columns=None):
+    def __init__(
+        self, distribution: BaseDistribution, lower_bound: int, index=None, columns=None
+    ):
         assert distribution._tags["distr:measuretype"] == "discrete", ""
 
         self.distribution = distribution
@@ -68,7 +72,7 @@ class LeftTruncatedDiscrete(BaseDistribution):
         return (self.distribution.var() + mean**2) / normalizer - mean**2
 
     @classmethod
-    def get_test_params(cls, parameter_set="default"):
+    def get_test_params(cls, parameter_set="default"):  # noqa: D102
         from skpro.distributions import Poisson
 
         # scalar
@@ -117,4 +121,7 @@ class LeftTruncatedDiscrete(BaseDistribution):
             raise ValueError("iat method requires both row and column index")
         self_subset = self.iloc[[rowidx], [colidx]]
 
-        return type(self)(distribution=self_subset.distribution.iat[0, 0], lower_bound=self.lower_bound)
+        return type(self)(
+            distribution=self_subset.distribution.iat[0, 0],
+            lower_bound=self.lower_bound,
+        )

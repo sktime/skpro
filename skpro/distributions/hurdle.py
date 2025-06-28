@@ -1,7 +1,8 @@
+"""Hurdle distribution implementation."""
+
 import numpy as np
 from numpy.typing import ArrayLike
 
-from skpro.distributions import Binomial
 from skpro.distributions.base import BaseDistribution
 from skpro.distributions.discrete_truncated import LeftTruncatedDiscrete
 
@@ -19,6 +20,7 @@ class Hurdle(BaseDistribution):
 
     distribution : LeftTruncatedDiscrete
         The zero-truncated distribution for positive outcomes.
+
     """
 
     _tags = {
@@ -29,8 +31,16 @@ class Hurdle(BaseDistribution):
         "broadcast_init": "on",
     }
 
-    def __init__(self, p: ArrayLike, distribution: LeftTruncatedDiscrete, index=None, columns=None):
-        assert distribution.lower_bound == 0, "The positive distribution must be zero-truncated."
+    def __init__(
+        self,
+        p: ArrayLike,
+        distribution: LeftTruncatedDiscrete,
+        index=None,
+        columns=None,
+    ):
+        assert (
+            distribution.lower_bound == 0
+        ), "The positive distribution must be zero-truncated."
 
         self.p = p
         self.distribution = distribution
@@ -62,11 +72,12 @@ class Hurdle(BaseDistribution):
         return np.where(p <= prob_zero, 0.0, y_positive)
 
     @classmethod
-    def get_test_params(cls, parameter_set="default"):
-        from skpro.distributions import Poisson, LeftTruncatedDiscrete
+    def get_test_params(cls, parameter_set="default"):  # noqa: D102
+        from skpro.distributions import LeftTruncatedDiscrete, Poisson
 
         left_truncated_discrete = LeftTruncatedDiscrete(
-            Poisson(mu=1.0), lower_bound=0,
+            Poisson(mu=1.0),
+            lower_bound=0,
         )
 
         params_1 = {
