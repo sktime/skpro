@@ -339,7 +339,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         y_pred = self.regressor_.predict_quantiles(X=X)
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
-            transform=self.transformer_,
+            transform=self.transformer_.inverse_transform,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"]
@@ -385,3 +385,36 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         y = y.loc[:, idx]
 
         return y
+    @classmethod
+
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator.
+
+        Parameters
+        ----------
+        parameter_set : str, default="default"
+            Name of the set of test parameters to return, for use in tests. If no
+            special parameters are defined for a value, will return `"default"` set.
+
+        Returns
+        -------
+        params : dict or list of dict, default = {}
+            Parameters to create testing instances of the class
+            Each dict are parameters to construct an "interesting" test instance, i.e.,
+            `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
+            `create_test_instance` uses the first (or only) dictionary in `params`
+        """
+        from sklearn.preprocessing import StandardScaler
+
+        from skpro.regression.linear import DummyProbaRegressor
+        from skpro.survival.compose import ConditionUncensored
+
+        params1 = {
+            "regressor": DummyProbaRegressor(),
+            "transformer": StandardScaler(),
+        }
+        params2 = {
+            "regressor": ConditionUncensored.create_test_instance(),
+            "transformer": StandardScaler(),
+        }
+        return [params1, params2]
