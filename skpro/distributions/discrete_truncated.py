@@ -21,7 +21,6 @@ class LeftTruncatedDiscrete(BaseDistribution):
     """
 
     _tags = {
-        "object_type": "transform",
         "capabilities:approx": ["energy", "pmf", "cdf"],
         "capabilities:exact": ["ppf", "mean", "var", "log_pmf"],
         "distr:measuretype": "discrete",
