@@ -17,10 +17,12 @@ __all__ = [
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
+    "Hurdle",
     "IID",
     "InverseGamma",
     "Histogram",
     "Laplace",
+    "LeftTruncatedDiscrete",
     "Logistic",
     "LogLaplace",
     "LogNormal",
@@ -73,3 +75,5 @@ from skpro.distributions.t import TDistribution
 from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
+from skpro.distributions.discrete_truncated import LeftTruncatedDiscrete
+from skpro.distributions.hurdle import Hurdle
