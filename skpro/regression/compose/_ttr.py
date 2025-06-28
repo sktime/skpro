@@ -315,7 +315,9 @@ class TransformedTargetRegressor(BaseProbaRegressor):
                 temp = yt[ix].columns
                 yt[ix].columns = self._y_metadata["feature_names"]
             yt[ix] = transformer.inverse_transform(X=yt[ix])
-            if len(yt[ix].columns) == 1:
+            if not isinstance(yt[ix], pd.DataFrame):
+                yt[ix] = pd.DataFrame(yt[ix], index=y.index, columns=temp)
+            elif len(yt[ix].columns) == 1:
                 yt[ix].columns = temp
         y = pd.concat(yt, axis=1)
         flipcols = [n - 1] + list(range(n - 1))
