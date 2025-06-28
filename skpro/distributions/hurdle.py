@@ -48,8 +48,7 @@ class Hurdle(BaseDistribution):
         is_zero = x == 0
         return np.where(is_zero, log_prob_zero, log_prob_positive)
 
-    @property
-    def mean(self):
+    def _mean(self):
         return self.p * self.distribution.mean()
 
     def _ppf(self, p):
