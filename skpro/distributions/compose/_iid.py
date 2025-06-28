@@ -24,7 +24,8 @@ class IID(BaseDistribution):
     Parameters
     ----------
     distribution : skpro distribution - scalar, or shape (1, d)
-        mean of the normal distribution
+        distribution to sample from
+
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
