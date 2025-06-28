@@ -47,7 +47,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
     ----------
     regressor_ : the fitted regressor, BaseProbaRegressor descendant
         clone of ``regressor``, fitted to transformed target variable
-    transformer_ : the fitted transformer, sklearn transformer  
+    transformer_ : the fitted transformer, sklearn transformer
         clone of ``transformer``, fitted to target variable
     """
 
