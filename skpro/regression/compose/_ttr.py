@@ -13,104 +13,42 @@ from skpro.utils.sklearn import prep_skl_df
 
 
 class TransformedTargetRegressor(BaseProbaRegressor):
-    """Pipeline for probabilistic supervised regression.
+    """Transformed target regressor for probabilistic supervised regression.
 
-    Pipeline is only applying the given transformers
-    to X. The regressor can also be a TransformedTargetregressor containing
-    transformers to transform y.
+    The ``TransformedTargetRegressor`` takes a regressor and a transformer,
+    and applies the transformer to the target variable before fitting the regressor,
+    and applies the inverse of the transformer to the predictions of the regressor.
 
-    For a list `t1`, `t2`, ..., `tN`, `r`
-        where `t[i]` are transformers, and `r` is an sktime regressor,
-        the pipeline behaves as follows:
+    ``fit(X, y)`` - changes state by running ``transformer.fit_transform`` with ``X=X``,
+        then runnings ``regressor.fit`` with `X` being the output of
+        ``transformer.fit_transform``.
 
-    `fit(X, y)` - changes state by running `t1.fit_transform` with `X=X`, `y=y`
-        then `t2.fit_transform` on `X=` the output of `t1.fit_transform`, `y=y`, etc
-        sequentially, with `t[i]` receiving the output of `t[i-1]` as `X`,
-        then running `r.fit` with `X` being the output of `t[N]`, and `y=y`
-    `predict(X)` - result is of executing `r.predict`, with `X=X`
-        being the result of the following process:
-        running `t1.fit_transform` with `X=X`,
-        then `t2.fit_transform` on `X=` the output of `t1.fit_transform`, etc
-        sequentially, with `t[i]` receiving the output of `t[i-1]` as `X`,
-        and returning th output of `tN` to pass to `r.predict` as `X`.
-    `predict_interval(X)`, `predict_quantiles(X)` - as `predict(X)`,
-        with `predict_interval` or `predict_quantiles` substituted for `predict`
-    `predict_var`, `predict_proba` - uses base class default to obtain
-        crude estimates from `predict_quantiles`.
+    ``predict(X)`` - result is of executing ``regressor.predict``, with `X=X`
+        then applies ``transformer.inverse_transform`` to the output of
+        ``regressor.predict``.
 
-    `get_params`, `set_params` uses `sklearn` compatible nesting interface
-        if list is unnamed, names are generated as names of classes
-        if names are non-unique, `f"_{str(i)}"` is appended to each name string
-            where `i` is the total count of occurrence of a non-unique string
-            inside the list of names leading up to it (inclusive)
+    ``predict_interval(X)``, ``predict_quantiles(X)`` - as ``predict(X)``,
+        with ``predict_interval`` or ``predict_quantiles`` substituted for ``predict``
 
-    `Pipeline` can also be created by using the magic multiplication
-        on any regressor, i.e., if `my_regressor` inherits from `BaseProbaRegressor`,
-            and `my_t1`, `my_t2`, are an `sklearn` transformer,
-            then, for instance, `my_t1 * my_t2 * my_regressor`
-            will result in the same object as  obtained from the constructor
-            `Pipeline([my_t1, my_t2, my_regressor])`
-        magic multiplication can also be used with (str, transformer) pairs,
-            as long as one element in the chain is a regressor
+    ``predict_proba(X)`` - first executes ``regressor.predict_proba(X)``,
+        then returns a ``TransformedDistribution`` object with
+        ``distribution=regressor.predict_proba(X)``, and
+        ``transform=transformer.inverse_transform``.
 
     Parameters
     ----------
-    steps : list of sktime transformers and regressors, or
-        list of tuples (str, estimator) of sktime transformers or regressors
-            the list must contain exactly one regressor
-        these are "blueprint" transformers resp regressors,
-            regressor/transformer states do not change when `fit` is called
+    regressor : skpro regressor, BaseProbaRegressor descendant
+        probabilistic regressor to fit on transformed target variable
+    transformer : sklearn transformer, optional (default=None)
+        transformer to apply to target variable before fitting regressor,
+        and to apply inverse transform to predictions of regressor
 
     Attributes
     ----------
-    steps_ : list of tuples (str, estimator) of sktime transformers or regressors
-        clones of estimators in `steps` which are fitted in the pipeline
-        is always in (str, estimator) format, even if `steps` is just a list
-        strings not passed in `steps` are replaced by unique generated strings
-        i-th transformer in `steps_` is clone of i-th in `steps`
-    regressor_ : estimator, reference to the unique regressor in steps_
-
-    Examples
-    --------
-    >>> from skpro.regression.compose import Pipeline
-    >>> from skpro.regression.residual import ResidualDouble
-    >>> from sklearn.datasets import load_diabetes
-    >>> from sklearn.impute import SimpleImputer as Imputer
-    >>> from sklearn.linear_model import LinearRegression
-    >>> from sklearn.model_selection import train_test_split
-    >>> from sklearn.preprocessing import MinMaxScaler
-    >>>
-    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
-    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
-    >>>
-    >>> reg_mean = LinearRegression()
-    >>> reg_proba = ResidualDouble(reg_mean)
-
-    Example 1: string/estimator pairs
-
-    >>> pipe = Pipeline(steps=[
-    ...     ("imputer", Imputer()),
-    ...     ("scaler", MinMaxScaler()),
-    ...     ("regressor", reg_proba),
-    ... ])
-    >>> pipe.fit(X_train, y_train)
-    Pipeline(...)
-    >>> y_pred = pipe.predict(X=X_test)
-    >>> y_pred_proba = pipe.predict_proba(X=X_test)
-
-    Example 2: without strings
-
-    >>> pipe = Pipeline([
-    ...     Imputer(),
-    ...     MinMaxScaler(),
-    ...     ("regressor", reg_proba),
-    ... ])
-
-    Example 3: using the dunder method
-    (requires bracketing as sklearn does not support dunders)
-
-    >>> reg_proba = ResidualDouble(reg_mean)
-    >>> pipe = Imputer() * (MinMaxScaler() * reg_proba)
+    regressor_ : the fitted regressor, BaseProbaRegressor descendant
+        clone of ``regressor``, fitted to transformed target variable
+    transformer_ : the fitted transformer, sklearn transformer  
+        clone of ``transformer``, fitted to target variable
     """
 
     _tags = {
