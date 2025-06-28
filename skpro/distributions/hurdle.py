@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import ArrayLike
 
 from skpro.distributions import Binomial
 from skpro.distributions.base import BaseDistribution
@@ -13,10 +14,10 @@ class Hurdle(BaseDistribution):
 
     Parameters
     ----------
-    probs : np.ndarray
-        The probabilities of the Bernoulli gate (zero vs. positive).
+    p : np.ndarray
+        The probability of getting a non-zero value.
 
-    positive_dist : LeftTruncatedDiscrete
+    distribution : LeftTruncatedDiscrete
         The zero-truncated distribution for positive outcomes.
     """
 
@@ -28,41 +29,56 @@ class Hurdle(BaseDistribution):
         "broadcast_init": "on",
     }
 
-    def __init__(self, probs: np.ndarray, positive_dist: LeftTruncatedDiscrete, index=None, columns=None):
+    def __init__(self, p: ArrayLike, distribution: LeftTruncatedDiscrete, index=None, columns=None):
+        assert distribution.lower_bound == 0, "The positive distribution must be zero-truncated."
+
+        self.p = p
+        self.distribution = distribution
+
         super().__init__(index=index, columns=columns)
-        assert positive_dist.lower_bound == 0, "The positive distribution must be zero-truncated."
-
-        self.probs = probs
-        self.positive_dist = positive_dist
-
 
     def sample(self, n_samples=None):
-        is_positive = Binomial(n=1, p=self.probs).sample()
-        positive_values = self.positive_dist.sample(n_samples)
+        is_positive = Binomial(n=1, p=self.p, index=self.index, columns=self.columns).sample()
+        positive_values = self.distribution.sample(n_samples)
 
         return np.where(is_positive, positive_values, 0.0)
 
-    def log_pmf(self, value):
-        log_prob_zero = -np.log1p(self.probs)
-        log_prob_gate_pass = -np.log1p(np.reciprocal(self.probs))  # log(sigmoid(logits))
+    def _log_pmf(self, x):
+        log_prob_zero = -np.log1p(self.p)
+        log_prob_gate_pass = -np.log1p(np.reciprocal(self.p))
 
-        log_prob_positive_value = self.positive_dist.log_pmf(value)
+        log_prob_positive_value = self.distribution.log_pmf(x)
 
         log_prob_positive = log_prob_gate_pass + log_prob_positive_value
 
-        is_zero = (value == 0)
+        is_zero = x == 0
         return np.where(is_zero, log_prob_zero, log_prob_positive)
 
     @property
     def mean(self):
-        return self.probs * self.positive_dist.mean
+        return self.p * self.distribution.mean()
 
-    def ppf(self, x):
-        prob_zero = 1.0 - self.probs
+    def _ppf(self, p):
+        prob_zero = 1.0 - self.p
 
-        q_rescaled = (x - prob_zero) / self.probs
+        q_rescaled = (p - prob_zero) / self.p
 
         q_rescaled = np.clip(q_rescaled, 0.0, 1.0)
-        y_positive = self.positive_dist.ppf(q_rescaled)
+        y_positive = self.distribution.ppf(q_rescaled)
 
-        return np.where(x <= prob_zero, 0.0, y_positive)
+        return np.where(p <= prob_zero, 0.0, y_positive)
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        from skpro.distributions import Poisson, LeftTruncatedDiscrete
+
+        left_truncated_discrete = LeftTruncatedDiscrete(
+            Poisson(mu=1.0), lower_bound=0,
+        )
+
+        params_1 = {
+            "p": 0.3,
+            "distribution": left_truncated_discrete,
+        }
+
+        return [params_1]
