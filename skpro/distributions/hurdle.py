@@ -75,3 +75,36 @@ class Hurdle(BaseDistribution):
         }
 
         return [params_1]
+
+    # TODO: this is duplicated now and will also be for `TransformedDistribution`,
+    #  perhaps add a mixin for this functionality?
+    def _iloc(self, rowidx=None, colidx=None):
+        distr = self.distribution.iloc[rowidx, colidx]
+        p = self.p
+
+        if rowidx is not None:
+            new_index = self.index[rowidx]
+
+            if isinstance(self.p, np.ndarray) and self.p.ndim > 0:
+                p = p[rowidx]
+        else:
+            new_index = self.index
+
+        if colidx is not None:
+            new_columns = self.columns[colidx]
+
+            if isinstance(self.p, np.ndarray) and self.p.ndim > 0:
+                p = p[:, colidx]
+        else:
+            new_columns = self.columns
+
+        cls = type(self)
+        return cls(
+            p=p,
+            distribution=distr,
+            index=new_index,
+            columns=new_columns,
+        )
+
+    def _iat(self, rowidx=None, colidx=None):
+        raise NotImplementedError("")
