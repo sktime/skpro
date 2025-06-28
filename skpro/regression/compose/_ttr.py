@@ -313,7 +313,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             yt[ix] = y.xs(ix, level=levels, axis=1)
             if len(yt[ix].columns) == 1:
                 temp = yt[ix].columns
-                yt[ix].columns = self._y.columns
+                yt[ix].columns = self._y_metadata["feature_names"]
             yt[ix] = transformer.inverse_transform(X=yt[ix])
             if len(yt[ix].columns) == 1:
                 yt[ix].columns = temp
