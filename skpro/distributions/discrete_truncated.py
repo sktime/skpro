@@ -21,6 +21,7 @@ class LeftTruncatedDiscrete(BaseDistribution):
     """
 
     _tags = {
+        "object_type": "transform",
         "capabilities:approx": ["energy", "pmf", "cdf"],
         "capabilities:exact": ["ppf", "mean", "var", "log_pmf"],
         "distr:measuretype": "discrete",
@@ -40,11 +41,11 @@ class LeftTruncatedDiscrete(BaseDistribution):
         return self._ppf(u)
 
     def _log_pmf(self, x):
-        is_invalid = x <= self.low
+        is_invalid = x <= self.lower_bound
 
-        log_prob_base = self.distribution.log_prob(x)
+        log_prob_base = self.distribution.log_pmf(x)
 
-        log_prob_at_zero = self.base_dist.log_prob(self.low)
+        log_prob_at_zero = self.distribution.log_pmf(self.lower_bound)
         log_normalizer = np.log1p(-np.exp(log_prob_at_zero))
 
         log_prob_truncated = log_prob_base - log_normalizer
