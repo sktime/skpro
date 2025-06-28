@@ -36,10 +36,6 @@ class LeftTruncatedDiscrete(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def _sample(self, n_samples: int):
-        u = Uniform(0.0, 1.0, index=self.index, columns=self.columns).sample(n_samples)
-        return self._ppf(u)
-
     def _log_pmf(self, x):
         is_invalid = x <= self.lower_bound
 

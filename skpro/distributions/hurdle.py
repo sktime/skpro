@@ -37,12 +37,6 @@ class Hurdle(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def sample(self, n_samples=None):
-        is_positive = Binomial(n=1, p=self.p, index=self.index, columns=self.columns).sample()
-        positive_values = self.distribution.sample(n_samples)
-
-        return np.where(is_positive, positive_values, 0.0)
-
     def _log_pmf(self, x):
         log_prob_zero = -np.log1p(self.p)
         log_prob_gate_pass = -np.log1p(np.reciprocal(self.p))
