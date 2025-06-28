@@ -17,10 +17,12 @@ __all__ = [
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
+    "Hurdle",
     "IID",
     "InverseGamma",
     "Histogram",
     "Laplace",
+    "LeftTruncatedDiscrete",
     "Logistic",
     "LogLaplace",
     "LogNormal",
@@ -47,6 +49,7 @@ from skpro.distributions.binomial import Binomial
 from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.compose import IID
 from skpro.distributions.delta import Delta
+from skpro.distributions.discrete_truncated import LeftTruncatedDiscrete
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.erlang import Erlang
 from skpro.distributions.exponential import Exponential
@@ -56,6 +59,7 @@ from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halflogistic import HalfLogistic
 from skpro.distributions.halfnormal import HalfNormal
 from skpro.distributions.histogram import Histogram
+from skpro.distributions.hurdle import Hurdle
 from skpro.distributions.inversegamma import InverseGamma
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
