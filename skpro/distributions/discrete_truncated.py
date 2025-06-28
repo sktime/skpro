@@ -1,7 +1,6 @@
 """Left Truncated Discrete Distribution."""
 
 import numpy as np
-import pandas as pd
 
 from skpro.distributions.base import BaseDistribution
 
@@ -73,6 +72,8 @@ class LeftTruncatedDiscrete(BaseDistribution):
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
+        import pandas as pd
+
         from skpro.distributions import Poisson
 
         # scalar
