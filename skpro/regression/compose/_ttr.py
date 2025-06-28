@@ -342,7 +342,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             transform=self.transformer_.inverse_transform,
             assume_monotonic=True,
             index=X.index,
-            columns=self._y_metadata["feature_names"]
+            columns=self._y_metadata["feature_names"],
         )
         return y_pred_it
 
@@ -385,8 +385,8 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         y = y.loc[:, idx]
 
         return y
-    @classmethod
 
+    @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator.
 
