@@ -164,7 +164,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         # transform y
         if self.transformer_ is not None:
             t = self.transformer_
-            yt = t.fit_transform(y=y)
+            yt = t.fit_transform(X=y)
             if not isinstance(yt, pd.DataFrame):
                 yt = pd.DataFrame(yt, index=y.index)
         else:
