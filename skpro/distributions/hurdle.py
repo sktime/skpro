@@ -14,11 +14,11 @@ class Hurdle(BaseDistribution):
 
     Combines a Bernoulli gate for zero vs. non-zero outcomes with a zero-truncated
     distribution for the positive outcomes. Mathematically this can be expressed as:
-        .. math::
-            Y_t = \begin{cases}
-                    X \sim f(x \vert x > 0) &\text{ with probability } \pi, \\
-                    0 &\text{ with probability } 1 - \pi,
-                \end{cases}
+    .. math::
+        Y_t = \begin{cases}
+                X \sim f(x \vert x > 0) &\text{ with probability } \pi, \\
+                0 &\text{ with probability } 1 - \pi,
+              \end{cases}
 
     where :math:`\pi` is the probability of getting a non-zero value, and
     :math:`f(x \vert x > 0)` is the probability mass function of the zero-truncated
