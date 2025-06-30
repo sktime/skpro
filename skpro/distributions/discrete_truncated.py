@@ -7,10 +7,17 @@ from skpro.distributions.base import BaseDistribution
 
 # TODO: Implement a general discrete truncation and let this inherit from it
 class LeftTruncatedDiscrete(BaseDistribution):
-    """A left truncated discrete distribution _not_ including the lower bound.
+    r"""A left truncated discrete distribution _not_ including the lower bound.
 
-    This distribution samples from a given discrete distribution but excludes the
-    values below a specified lower bound.
+    Assume that the base distribution is a discrete distribution with a support of
+    non-negative integers (e.g., Poisson, Binomial, etc.). This distribution samples
+    from the base distribution but excludes the values below a specified lower bound.
+    Mathematically, it can be expressed as:
+        .. math::
+            Y \sim f(y \vert y > \lambda) = \frac{f(y)}{1 - F(\lambda)},
+
+    where :math:`\lambda` is the lower bound, and :math:`f(y)` is the probability mass
+    function.
 
     Parameters
     ----------
