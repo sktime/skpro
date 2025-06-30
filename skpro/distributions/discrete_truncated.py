@@ -66,17 +66,6 @@ class LeftTruncatedDiscrete(BaseDistribution):
 
         return self.distribution.ppf(x)
 
-    def _mean(self):
-        low_cdf = self.distribution.cdf(self.lower_bound)
-        normalizer = 1.0 - low_cdf
-        return self.distribution.mean() / normalizer
-
-    def _var(self):
-        low_cdf = self.distribution.cdf(self.lower_bound)
-        normalizer = 1.0 - low_cdf
-        mean = self._mean()
-        return (self.distribution.var() + mean**2) / normalizer - mean**2
-
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
         import pandas as pd
