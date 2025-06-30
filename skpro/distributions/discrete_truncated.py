@@ -13,6 +13,7 @@ class LeftTruncatedDiscrete(BaseDistribution):
     non-negative integers (e.g., Poisson, Binomial, etc.). This distribution samples
     from the base distribution but excludes the values below a specified lower bound.
     Mathematically, it can be expressed as:
+
     .. math::
         Y \sim f(y \vert y > \lambda) = \frac{f(y)}{1 - F(\lambda)},
 
