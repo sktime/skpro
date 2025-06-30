@@ -79,6 +79,8 @@ Integer support
 
     Binomial
     Poisson
+    LeftTruncatedDiscrete
+    Hurdle
 
 Non-parametric and empirical distributions
 ------------------------------------------
