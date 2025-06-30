@@ -66,12 +66,12 @@ class Hurdle(BaseDistribution):
         super().__init__(index=index, columns=columns)
 
     def _log_pmf(self, x):
-        log_prob_zero = -np.log1p(self.p)
-        log_prob_gate_pass = -np.log1p(np.reciprocal(self.p))
+        log_prob_zero = np.log(1.0 - self.p)
+        log_prob_hurdle = np.log(self.p)
 
         log_prob_positive_value = self.distribution.log_pmf(x)
 
-        log_prob_positive = log_prob_gate_pass + log_prob_positive_value
+        log_prob_positive = log_prob_hurdle + log_prob_positive_value
 
         is_zero = x == 0
         return np.where(is_zero, log_prob_zero, log_prob_positive)
