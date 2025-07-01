@@ -3,29 +3,20 @@
 import numpy as np
 
 from skpro.distributions.base import BaseDistribution
+from skpro.distributions.truncated import TruncatedDistribution
 
 
-# TODO: Implement a general discrete truncation and let this inherit from it
-class LeftTruncatedDiscrete(BaseDistribution):
-    r"""A left truncated discrete distribution _not_ including the lower bound.
+class LeftTruncated(TruncatedDistribution):
+    r"""A left truncated distribution _not_ including the lower bound.
 
-    Assume that the base distribution is a discrete distribution with a support of
-    non-negative integers (e.g., Poisson, Binomial, etc.). This distribution samples
-    from the base distribution but excludes the values below a specified lower bound.
-    Mathematically, it can be expressed as:
-
-    .. math::
-        Y \sim f(y \vert y > \lambda) = \frac{f(y)}{1 - F(\lambda)},
-
-    where :math:`\lambda` is the lower bound, and :math:`f(y)` is the probability mass
-    function.
+    See :class:`TruncatedDistribution` for more details.
 
     Parameters
     ----------
     distribution : BaseDistribution
         The base discrete distribution from which to sample.
 
-    lower_bound : int
+    lower : int
         The lower bound below which values are truncated (excluded from sampling).
 
     """
