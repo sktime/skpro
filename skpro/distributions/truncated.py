@@ -149,9 +149,18 @@ class _TruncatedDistribution(BaseDistribution):
 
 
 class ContinuousTruncatedDistribution(_TruncatedDistribution):
-    """A truncated continuous distribution _not_ including the lower bound.
+    r"""A truncated continuous distribution _not_ including the lower bound.
 
-    See :class:`_TruncatedDistribution` for more details.
+    Given a univariate distribution, this distribution samples from the base
+    distribution but truncates the values to lie between a specified lower and
+    upper bound.
+    Mathematically, it can be expressed as:
+
+    .. math::
+        Y \sim f(y \vert a \le y \leq b) = \frac{f(y)}{F(b) - F(a)},
+
+    where :math:`a` and :math:`b` is the lower and upper bound respectively, and
+    :math:`f(y)` is the probability mass/density function.
     """
 
     _tags = {
@@ -203,9 +212,9 @@ class ContinuousTruncatedDistribution(_TruncatedDistribution):
 
 
 class DiscreteTruncatedDistribution(_TruncatedDistribution):
-    """A truncated discrete distribution _not_ including the lower bound.
+    r"""A truncated discrete distribution _not_ including the lower bound.
 
-    See :class:`_TruncatedDistribution` for more details.
+    See :class:`ContinuousTruncatedDistribution` for more details.
     """
 
     _tags = {
