@@ -28,7 +28,7 @@ class DiscreteLeftTruncated(DiscreteTruncatedDistribution):
     }
 
     def __init__(
-        self, distribution: BaseDistribution, lower: float, index=None, columns=None
+        self, distribution: BaseDistribution, lower: int, index=None, columns=None
     ):
         super().__init__(distribution, lower=lower, index=index, columns=columns)
 
@@ -57,34 +57,3 @@ class DiscreteLeftTruncated(DiscreteTruncatedDistribution):
         }
 
         return [params1, params2]
-
-    def _iloc(self, rowidx=None, colidx=None):
-        distr = self.distribution.iloc[rowidx, colidx]
-
-        if rowidx is not None:
-            new_index = self.index[rowidx]
-        else:
-            new_index = self.index
-
-        if colidx is not None:
-            new_columns = self.columns[colidx]
-        else:
-            new_columns = self.columns
-
-        cls = type(self)
-        return cls(
-            distribution=distr,
-            lower=self.lower,
-            index=new_index,
-            columns=new_columns,
-        )
-
-    def _iat(self, rowidx=None, colidx=None):
-        if rowidx is None or colidx is None:
-            raise ValueError("iat method requires both row and column index")
-        self_subset = self.iloc[[rowidx], [colidx]]
-
-        return type(self)(
-            distribution=self_subset.distribution.iat[0, 0],
-            lower=self.lower,
-        )
