@@ -77,7 +77,9 @@ class TruncatedDistribution(BaseDistribution):
         return np.log(normalizer) if as_log else normalizer
 
     def _calculate_density(self, x: np.ndarray, fun, as_log: bool):
-        is_invalid = self.lower < x <= self.upper
+        inf = float("inf")
+
+        is_valid = (x > (self.lower or -inf)) & (x <= (self.upper or inf))
 
         prob_base = fun(x)
         normalizer = self._get_normalizer(as_log=as_log)
@@ -87,7 +89,7 @@ class TruncatedDistribution(BaseDistribution):
         else:
             prob_truncated = prob_base / normalizer
 
-        return np.where(is_invalid, -np.inf if as_log else 0.0, prob_truncated)
+        return np.where(is_valid, prob_truncated, -inf if as_log else 0.0)
 
     def _log_pmf(self, x):
         return self._calculate_density(x, self.distribution.log_pmf, as_log=True)
@@ -126,6 +128,7 @@ class TruncatedDistribution(BaseDistribution):
         params1 = {
             "distribution": poisson,
             "lower": 0,
+            "upper": 5,
         }
 
         # array
@@ -135,6 +138,7 @@ class TruncatedDistribution(BaseDistribution):
         params2 = {
             "distribution": n_array,
             "lower": 0,
+            "upper": 5,
             "index": idx,
             "columns": cols,
         }
@@ -157,7 +161,8 @@ class TruncatedDistribution(BaseDistribution):
         cls = type(self)
         return cls(
             distribution=distr,
-            lower_bound=self.lower_bound,
+            lower=self.lower,
+            upper=self.upper,
             index=new_index,
             columns=new_columns,
         )
@@ -169,5 +174,6 @@ class TruncatedDistribution(BaseDistribution):
 
         return type(self)(
             distribution=self_subset.distribution.iat[0, 0],
-            lower_bound=self.lower_bound,
+            lower=self.lower,
+            upper=self.upper,
         )
