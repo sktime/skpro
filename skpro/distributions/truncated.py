@@ -5,7 +5,8 @@ import numpy as np
 from skpro.distributions.base import BaseDistribution
 
 
-# TODO: WIP
+# TODO: I think I need to split the truncation into discrete and continuous as
+#  tests fail since it implements both pdf and pmf
 class TruncatedDistribution(BaseDistribution):
     r"""A truncated discrete distribution _not_ including the lower bound.
 
@@ -34,17 +35,15 @@ class TruncatedDistribution(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["energy", "pmf", "cdf"],
+        "capabilities:approx": ["energy", "cdf"],
         "capabilities:exact": [
             "ppf",
-            "mean",
-            "var",
             "log_pmf",
             "log_pdf",
             "pmf",
             "pdf",
         ],
-        "distr:measuretype": "discrete",
+        "distr:measuretype": "mixed",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
