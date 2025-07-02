@@ -35,13 +35,14 @@ class TruncatedDistribution(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["energy", "cdf"],
+        "capabilities:approx": ["energy"],
         "capabilities:exact": [
             "ppf",
             "log_pmf",
             "log_pdf",
             "pmf",
             "pdf",
+            "cdf",
         ],
         "distr:measuretype": "mixed",
         "distr:paramtype": "parametric",
@@ -115,6 +116,18 @@ class TruncatedDistribution(BaseDistribution):
 
         shifted_p = p * factor + offset
         return self.distribution.ppf(shifted_p)
+
+    def _cdf(self, x):
+        prob_at_lower = (
+            self.distribution.cdf(self.lower) if self.lower is not None else 0.0
+        )
+        prob_at_upper = (
+            self.distribution.cdf(self.upper) if self.upper is not None else 1.0
+        )
+
+        return (self.distribution.cdf(x) - prob_at_lower) / (
+            prob_at_upper - prob_at_lower
+        )
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
