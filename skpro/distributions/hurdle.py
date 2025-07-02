@@ -51,7 +51,7 @@ class Hurdle(BaseDistribution):
         columns=None,
     ):
         assert (
-            distribution.lower_bound == 0
+            distribution.lower == 0
         ), "The positive distribution must be zero-truncated."
 
         if isinstance(p, np.ndarray) and p.ndim == 1:
@@ -99,7 +99,7 @@ class Hurdle(BaseDistribution):
         # scalar
         left_truncated_discrete = LeftTruncated(
             Poisson(mu=1.0),
-            lower_bound=0,
+            lower=0,
         )
 
         params_1 = {
@@ -115,7 +115,7 @@ class Hurdle(BaseDistribution):
         poisson = Poisson(mu=mu, columns=cols, index=idx)
         left_truncated_discrete = LeftTruncated(
             poisson,
-            lower_bound=0,
+            lower=0,
             index=idx,
             columns=cols,
         )
