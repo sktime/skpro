@@ -265,6 +265,7 @@ class DiscreteTruncatedDistribution(_TruncatedDistribution):
         return [params1, params2]
 
 
+# TODO: where to put this?
 def TruncatedDistribution(
     distribution: BaseDistribution,
     *,

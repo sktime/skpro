@@ -55,6 +55,7 @@ Continuous support - non-negative reals
     Alpha
     Beta
     ChiSquared
+    ContinuousTruncatedDistribution
     Exponential
     Erlang
     Fisk
@@ -79,6 +80,7 @@ Integer support
 
     Binomial
     Poisson
+    DiscreteTruncatedDistribution
     LeftTruncatedDiscrete
     Hurdle
 
