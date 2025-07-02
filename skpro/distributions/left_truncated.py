@@ -1,7 +1,5 @@
 """Left Truncated Discrete Distribution."""
 
-import numpy as np
-
 from skpro.distributions.base import BaseDistribution
 from skpro.distributions.truncated import TruncatedDistribution
 
@@ -30,33 +28,9 @@ class LeftTruncated(TruncatedDistribution):
     }
 
     def __init__(
-        self, distribution: BaseDistribution, lower_bound: int, index=None, columns=None
+        self, distribution: BaseDistribution, lower: float, index=None, columns=None
     ):
-        assert distribution._tags["distr:measuretype"] == "discrete", ""
-
-        self.distribution = distribution
-        self.lower_bound = lower_bound
-
-        super().__init__(index=index, columns=columns)
-
-    def _log_pmf(self, x):
-        is_invalid = x <= self.lower_bound
-
-        log_prob_base = self.distribution.log_pmf(x)
-
-        log_prob_at_zero = self.distribution.log_pmf(self.lower_bound)
-        log_normalizer = np.log1p(-np.exp(log_prob_at_zero))
-
-        log_prob_truncated = log_prob_base - log_normalizer
-
-        return np.where(is_invalid, -np.inf, log_prob_truncated)
-
-    def _ppf(self, p):
-        low_cdf = self.distribution.cdf(self.lower_bound)
-        normalizer = 1.0 - low_cdf
-        x = low_cdf + normalizer * p
-
-        return self.distribution.ppf(x)
+        super().__init__(distribution, lower=lower, index=index, columns=columns)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
@@ -68,7 +42,7 @@ class LeftTruncated(TruncatedDistribution):
         poisson = Poisson(mu=1.0)
         params1 = {
             "distribution": poisson,
-            "lower_bound": 0,
+            "lower": 0,
         }
 
         # array
@@ -77,7 +51,7 @@ class LeftTruncated(TruncatedDistribution):
         n_array = Poisson(mu=[[1, 2], [3, 4]], columns=cols, index=idx)
         params2 = {
             "distribution": n_array,
-            "lower_bound": 0,
+            "lower": 0,
             "index": idx,
             "columns": cols,
         }
@@ -100,7 +74,7 @@ class LeftTruncated(TruncatedDistribution):
         cls = type(self)
         return cls(
             distribution=distr,
-            lower_bound=self.lower_bound,
+            lower=self.lower,
             index=new_index,
             columns=new_columns,
         )
@@ -112,5 +86,5 @@ class LeftTruncated(TruncatedDistribution):
 
         return type(self)(
             distribution=self_subset.distribution.iat[0, 0],
-            lower_bound=self.lower_bound,
+            lower=self.lower,
         )
