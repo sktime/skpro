@@ -36,8 +36,8 @@ class Hurdle(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["energy", "pmf", "cdf"],
-        "capabilities:exact": ["ppf", "mean", "var", "log_pmf"],
+        "capabilities:approx": ["energy", "cdf"],
+        "capabilities:exact": ["ppf", "mean", "var", "log_pmf", "pmf"],
         "distr:measuretype": "discrete",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -77,8 +77,25 @@ class Hurdle(BaseDistribution):
         is_zero = x == 0
         return np.where(is_zero, log_prob_zero, log_prob_positive)
 
+    def _pmf(self, x):
+        prob_zero = 1.0 - self.p
+        prob_hurdle = self.p
+
+        prob_positive_value = self.distribution.pmf(x)
+
+        prob_positive = prob_hurdle * prob_positive_value
+
+        is_zero = x == 0
+        return np.where(is_zero, prob_zero, prob_positive)
+
     def _mean(self):
         return self.p * self.distribution.mean()
+
+    def _var(self):
+        mean_positive = self.distribution.mean()
+        var_positive = self.distribution.var()
+
+        return self.p * var_positive + mean_positive * self.p * (1.0 - self.p)
 
     def _ppf(self, p):
         prob_zero = 1.0 - self.p
