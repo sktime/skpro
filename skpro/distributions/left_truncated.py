@@ -1,10 +1,10 @@
 """Left Truncated Discrete Distribution."""
 
 from skpro.distributions.base import BaseDistribution
-from skpro.distributions.truncated import TruncatedDistribution
+from skpro.distributions.truncated import DiscreteTruncatedDistribution
 
 
-class LeftTruncated(TruncatedDistribution):
+class DiscreteLeftTruncated(DiscreteTruncatedDistribution):
     r"""A left truncated distribution _not_ including the lower bound.
 
     See :class:`TruncatedDistribution` for more details.
