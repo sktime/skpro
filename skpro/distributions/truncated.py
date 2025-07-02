@@ -14,7 +14,7 @@ class _TruncatedDistribution(BaseDistribution):
     Mathematically, it can be expressed as:
 
     .. math::
-        Y \sim f(y \vert a \le y \leq b) = \frac{f(y)}{F(b) - F(a)},
+        Y \sim f(y \vert a \lt y \leq b) = \frac{f(y)}{F(b) - F(a)},
 
     where :math:`a` and :math:`b` is the lower and upper bound respectively, and
     :math:`f(y)` is the probability mass/density function.
