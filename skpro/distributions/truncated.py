@@ -35,7 +35,7 @@ class TruncatedDistribution(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["energy"],
+        "capabilities:approx": ["energy", "mean", "var"],
         "capabilities:exact": [
             "ppf",
             "log_pmf",
