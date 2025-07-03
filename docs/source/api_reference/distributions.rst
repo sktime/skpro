@@ -55,7 +55,6 @@ Continuous support - non-negative reals
     Alpha
     Beta
     ChiSquared
-    ContinuousTruncatedDistribution
     Exponential
     Erlang
     Fisk
@@ -80,8 +79,6 @@ Integer support
 
     Binomial
     Poisson
-    DiscreteTruncatedDistribution
-    LeftTruncatedDiscrete
     Hurdle
 
 Non-parametric and empirical distributions
@@ -116,6 +113,8 @@ Parametric families
     :template: class.rst
 
     MeanScale
+    TruncatedDistribution
+    LeftTruncated
 
 Mixture composition
 ~~~~~~~~~~~~~~~~~~~
