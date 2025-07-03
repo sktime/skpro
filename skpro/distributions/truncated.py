@@ -1,4 +1,5 @@
 """Truncated distributions."""
+from typing import Tuple
 
 import numpy as np
 
@@ -61,7 +62,7 @@ class _TruncatedDistribution(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def _get_normalizer(self, as_log: bool = False):
+    def _get_low_high_prob(self) -> Tuple[float, float]:
         prob_at_lower = (
             self.distribution.cdf(self.lower) if self.lower is not None else 0.0
         )
@@ -69,9 +70,7 @@ class _TruncatedDistribution(BaseDistribution):
             self.distribution.cdf(self.upper) if self.upper is not None else 1.0
         )
 
-        normalizer = prob_at_upper - prob_at_lower
-
-        return np.log(normalizer) if as_log else normalizer
+        return prob_at_lower, prob_at_upper
 
     def _calculate_density(self, x: np.ndarray, fun, as_log: bool):
         inf = float("inf")
@@ -79,23 +78,19 @@ class _TruncatedDistribution(BaseDistribution):
         is_valid = (x > (self.lower or -inf)) & (x <= (self.upper or inf))
 
         prob_base = fun(x)
-        normalizer = self._get_normalizer(as_log=as_log)
+        cdf_lower, cdf_upper = self._get_low_high_prob()
+
+        normalizer = cdf_upper - cdf_lower
 
         if as_log:
-            prob_truncated = prob_base - normalizer
+            prob_truncated = prob_base - np.log(normalizer)
         else:
             prob_truncated = prob_base / normalizer
 
         return np.where(is_valid, prob_truncated, -inf if as_log else 0.0)
 
     def _ppf(self, p):
-        prob_at_lower = (
-            self.distribution.cdf(self.lower) if self.lower is not None else 0.0
-        )
-        prob_at_upper = (
-            self.distribution.cdf(self.upper) if self.upper is not None else 1.0
-        )
-
+        prob_at_lower, prob_at_upper = self._get_low_high_prob()
         factor = prob_at_upper - prob_at_lower
         offset = prob_at_lower
 
@@ -103,12 +98,7 @@ class _TruncatedDistribution(BaseDistribution):
         return self.distribution.ppf(shifted_p)
 
     def _cdf(self, x):
-        prob_at_lower = (
-            self.distribution.cdf(self.lower) if self.lower is not None else 0.0
-        )
-        prob_at_upper = (
-            self.distribution.cdf(self.upper) if self.upper is not None else 1.0
-        )
+        prob_at_lower, prob_at_upper = self._get_low_high_prob()
 
         return (self.distribution.cdf(x) - prob_at_lower) / (
             prob_at_upper - prob_at_lower
