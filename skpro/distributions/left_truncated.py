@@ -1,10 +1,10 @@
 """Left Truncated Discrete Distribution."""
 
 from skpro.distributions.base import BaseDistribution
-from skpro.distributions.truncated import DiscreteTruncatedDistribution
+from skpro.distributions.truncated import TruncatedDistribution
 
 
-class DiscreteLeftTruncated(DiscreteTruncatedDistribution):
+class LeftTruncated(TruncatedDistribution):
     r"""A left truncated distribution _not_ including the lower bound.
 
     See :class:`TruncatedDistribution` for more details.
@@ -22,13 +22,13 @@ class DiscreteLeftTruncated(DiscreteTruncatedDistribution):
     _tags = {
         "capabilities:approx": ["energy", "pmf", "cdf"],
         "capabilities:exact": ["ppf", "mean", "var", "log_pmf"],
-        "distr:measuretype": "discrete",
+        "distr:measuretype": "mixed",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
 
     def __init__(
-        self, distribution: BaseDistribution, lower: int, index=None, columns=None
+        self, distribution: BaseDistribution, lower: float, index=None, columns=None
     ):
         super().__init__(
             distribution, lower=lower, upper=None, index=index, columns=columns

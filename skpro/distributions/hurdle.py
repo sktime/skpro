@@ -4,7 +4,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 from skpro.distributions.base import BaseDistribution
-from skpro.distributions.left_truncated import DiscreteLeftTruncated
+from skpro.distributions.left_truncated import LeftTruncated
 
 
 # TODO: how to handle index/columns in these transformed distributions? must they be
@@ -30,7 +30,7 @@ class Hurdle(BaseDistribution):
     p : np.ndarray
         The probability of getting a non-zero value.
 
-    distribution : DiscreteLeftTruncated
+    distribution : LeftTruncated
         The zero-truncated distribution for positive outcomes.
 
     """
@@ -46,7 +46,7 @@ class Hurdle(BaseDistribution):
     def __init__(
         self,
         p: ArrayLike,
-        distribution: DiscreteLeftTruncated,
+        distribution: LeftTruncated,
         index=None,
         columns=None,
     ):
@@ -111,10 +111,10 @@ class Hurdle(BaseDistribution):
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
         import pandas as pd
 
-        from skpro.distributions import DiscreteLeftTruncated, Poisson
+        from skpro.distributions import LeftTruncated, Poisson
 
         # scalar
-        left_truncated_discrete = DiscreteLeftTruncated(
+        left_truncated_discrete = LeftTruncated(
             Poisson(mu=1.0),
             lower=0,
         )
@@ -130,7 +130,7 @@ class Hurdle(BaseDistribution):
         cols = pd.Index(["a", "b", "c"])
 
         poisson = Poisson(mu=mu, columns=cols, index=idx)
-        left_truncated_discrete = DiscreteLeftTruncated(
+        left_truncated_discrete = LeftTruncated(
             poisson,
             lower=0,
             index=idx,

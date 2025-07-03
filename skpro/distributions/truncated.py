@@ -6,7 +6,7 @@ import numpy as np
 from skpro.distributions.base import BaseDistribution
 
 
-class _TruncatedDistribution(BaseDistribution):
+class TruncatedDistribution(BaseDistribution):
     r"""A truncated discrete distribution _not_ including the lower bound.
 
     Given a univariate distribution, this distribution samples from the base
@@ -43,6 +43,7 @@ class _TruncatedDistribution(BaseDistribution):
             "pdf",
             "cdf",
         ],
+        "distr:measuretype": "mixed",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
@@ -104,6 +105,18 @@ class _TruncatedDistribution(BaseDistribution):
             prob_at_upper - prob_at_lower
         )
 
+    def _log_pdf(self, x):
+        return self._calculate_density(x, self.distribution.log_pdf, as_log=True)
+
+    def _pdf(self, x):
+        return self._calculate_density(x, self.distribution.pdf, as_log=False)
+
+    def _pmf(self, x):
+        return self._calculate_density(x, self.distribution.pmf, as_log=False)
+
+    def _log_pmf(self, x):
+        return self._calculate_density(x, self.distribution.log_pmf, as_log=True)
+
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
 
@@ -137,100 +150,11 @@ class _TruncatedDistribution(BaseDistribution):
             upper=self.upper,
         )
 
-
-class ContinuousTruncatedDistribution(_TruncatedDistribution):
-    r"""A truncated continuous distribution _not_ including the lower bound.
-
-    Given a univariate distribution, this distribution samples from the base
-    distribution but truncates the values to lie between a specified lower and
-    upper bound.
-    Mathematically, it can be expressed as:
-
-    .. math::
-        Y \sim f(y \vert a \le y \leq b) = \frac{f(y)}{F(b) - F(a)},
-
-    where :math:`a` and :math:`b` is the lower and upper bound respectively, and
-    :math:`f(y)` is the probability mass/density function.
-    """
-
-    _tags = {
-        "capabilities:approx": ["energy", "mean", "var"],
-        "capabilities:exact": [
-            "ppf",
-            "log_pdf",
-            "pdf",
-            "cdf",
-        ],
-        "distr:measuretype": "continuous",
-        "distr:paramtype": "parametric",
-        "broadcast_init": "on",
-    }
-
-    def _log_pdf(self, x):
-        return self._calculate_density(x, self.distribution.log_pdf, as_log=True)
-
-    def _pdf(self, x):
-        return self._calculate_density(x, self.distribution.pdf, as_log=False)
-
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
         import pandas as pd
 
-        from skpro.distributions import Normal
-
-        # scalar
-        dist = Normal(mu=1.0, sigma=1.0)
-        params1 = {
-            "distribution": dist,
-            "lower": 0,
-            "upper": 5,
-        }
-
-        # array
-        idx = pd.Index([1, 2])
-        cols = pd.Index(["a", "b"])
-        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1.0, columns=cols, index=idx)
-        params2 = {
-            "distribution": n_array,
-            "lower": 0,
-            "upper": 5,
-            "index": idx,
-            "columns": cols,
-        }
-
-        return [params1, params2]
-
-
-class DiscreteTruncatedDistribution(_TruncatedDistribution):
-    r"""A truncated discrete distribution _not_ including the lower bound.
-
-    See :class:`ContinuousTruncatedDistribution` for more details.
-    """
-
-    _tags = {
-        "capabilities:approx": ["energy", "mean", "var"],
-        "capabilities:exact": [
-            "ppf",
-            "log_pmf",
-            "pmf",
-            "cdf",
-        ],
-        "distr:measuretype": "discrete",
-        "distr:paramtype": "parametric",
-        "broadcast_init": "on",
-    }
-
-    def _log_pmf(self, x):
-        return self._calculate_density(x, self.distribution.log_pmf, as_log=True)
-
-    def _pmf(self, x):
-        return self._calculate_density(x, self.distribution.pmf, as_log=False)
-
-    @classmethod
-    def get_test_params(cls, parameter_set="default"):  # noqa: D102
-        import pandas as pd
-
-        from skpro.distributions import Poisson
+        from skpro.distributions import Normal, Poisson
 
         # scalar
         dist = Poisson(mu=1.0)
@@ -252,50 +176,24 @@ class DiscreteTruncatedDistribution(_TruncatedDistribution):
             "columns": cols,
         }
 
-        return [params1, params2]
+        # scalar
+        dist = Normal(mu=1.0, sigma=1.0)
+        params3 = {
+            "distribution": dist,
+            "lower": 0,
+            "upper": 5,
+        }
 
+        # array
+        idx = pd.Index([1, 2])
+        cols = pd.Index(["a", "b"])
+        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1.0, columns=cols, index=idx)
+        params4 = {
+            "distribution": n_array,
+            "lower": 0,
+            "upper": 5,
+            "index": idx,
+            "columns": cols,
+        }
 
-# TODO: where to put this?
-def TruncatedDistribution(
-    distribution: BaseDistribution,
-    *,
-    lower: float = None,
-    upper: float = None,
-    index=None,
-    columns=None,
-) -> _TruncatedDistribution:
-    """Create a truncated distribution.
-
-    Main interface for creating truncated distributions.
-
-    Parameters
-    ----------
-    distribution : BaseDistribution
-        The base discrete distribution from which to sample.
-
-    lower : int, optional
-        The lower bound below which values are truncated.
-
-    upper : int, optional
-        The upper bound above which values are truncated.
-    """
-    measure_type = distribution.get_tag("distr:measuretype")
-    if measure_type == "continuous":
-        return ContinuousTruncatedDistribution(
-            distribution=distribution,
-            lower=lower,
-            upper=upper,
-            index=index,
-            columns=columns,
-        )
-
-    if measure_type == "discrete":
-        return DiscreteTruncatedDistribution(
-            distribution=distribution,
-            lower=lower,
-            upper=upper,
-            index=index,
-            columns=columns,
-        )
-
-    raise ValueError(f"Unknown measure type: {measure_type}!")
+        return [params1, params2, params3, params4]

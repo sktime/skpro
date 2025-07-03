@@ -8,9 +8,7 @@ __all__ = [
     "Beta",
     "Binomial",
     "ChiSquared",
-    "ContinuousTruncatedDistribution",
     "Delta",
-    "DiscreteTruncatedDistribution",
     "Empirical",
     "Erlang",
     "Exponential",
@@ -24,7 +22,7 @@ __all__ = [
     "InverseGamma",
     "Histogram",
     "Laplace",
-    "DiscreteLeftTruncated",
+    "LeftTruncated",
     "Logistic",
     "LogLaplace",
     "LogNormal",
@@ -64,7 +62,7 @@ from skpro.distributions.histogram import Histogram
 from skpro.distributions.hurdle import Hurdle
 from skpro.distributions.inversegamma import InverseGamma
 from skpro.distributions.laplace import Laplace
-from skpro.distributions.left_truncated import DiscreteLeftTruncated
+from skpro.distributions.left_truncated import LeftTruncated
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal
@@ -77,11 +75,7 @@ from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
 from skpro.distributions.qpd_empirical import QPD_Empirical
 from skpro.distributions.skew_normal import SkewNormal
 from skpro.distributions.t import TDistribution
-from skpro.distributions.truncated import (
-    ContinuousTruncatedDistribution,
-    DiscreteTruncatedDistribution,
-    TruncatedDistribution,
-)
+from skpro.distributions.truncated import TruncatedDistribution
 from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
