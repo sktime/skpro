@@ -79,6 +79,7 @@ Integer support
 
     Binomial
     Poisson
+    Hurdle
 
 Non-parametric and empirical distributions
 ------------------------------------------
@@ -112,6 +113,8 @@ Parametric families
     :template: class.rst
 
     MeanScale
+    TruncatedDistribution
+    LeftTruncated
 
 Mixture composition
 ~~~~~~~~~~~~~~~~~~~
