@@ -3,9 +3,9 @@
 import numpy as np
 from numpy.typing import ArrayLike
 
-from skpro.distributions import TruncatedDistribution
 from skpro.distributions.base import BaseDistribution
 from skpro.distributions.left_truncated import LeftTruncated
+from skpro.distributions.truncated import TruncatedDistribution
 
 
 # TODO: how to handle index/columns in these transformed distributions? must they be
@@ -47,7 +47,7 @@ class Hurdle(BaseDistribution):
     def __init__(
         self,
         p: ArrayLike,
-        distribution,
+        distribution: BaseDistribution,
         index=None,
         columns=None,
     ):
