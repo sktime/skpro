@@ -32,14 +32,14 @@ class Hurdle(BaseDistribution):
         The probability of getting a non-zero value.
 
     distribution : BaseDistribution
-        The zero-truncated distribution for positive outcomes.
+        Arbitrary distribution.
 
     """
 
     _tags = {
         "capabilities:approx": ["energy", "cdf"],
         "capabilities:exact": ["ppf", "mean", "var", "log_pmf", "pmf"],
-        "distr:measuretype": "discrete",
+        "distr:measuretype": "mixed",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
@@ -103,6 +103,28 @@ class Hurdle(BaseDistribution):
         is_zero = x == 0
         return np.where(is_zero, prob_zero, prob_positive)
 
+    def _log_pdf(self, x):
+        log_prob_zero = np.log(1.0 - self.p)
+        log_prob_hurdle = np.log(self.p)
+
+        log_prob_positive_value = self._truncated_distribution.log_pdf(x)
+
+        log_prob_positive = log_prob_hurdle + log_prob_positive_value
+
+        is_zero = x == 0
+        return np.where(is_zero, log_prob_zero, log_prob_positive)
+
+    def _pdf(self, x):
+        prob_zero = 1.0 - self.p
+        prob_hurdle = self.p
+
+        prob_positive_value = self._truncated_distribution.pdf(x)
+
+        prob_positive = prob_hurdle * prob_positive_value
+
+        is_zero = x == 0
+        return np.where(is_zero, prob_zero, prob_positive)
+
     def _mean(self):
         return self.p * self._truncated_distribution.mean()
 
@@ -155,7 +177,24 @@ class Hurdle(BaseDistribution):
             "columns": cols,
         }
 
-        return [params_1, params_2, params_3]
+        params = [params_1, params_2, params_3]
+
+        # continuous
+        from skpro.distributions import Normal
+
+        params_1 = {
+            "p": 0.3,
+            "distribution": Normal(mu=1.0, sigma=1.0),
+        }
+
+        params_2 = {
+            "p": 0.3,
+            "distribution": Normal(mu=mu, sigma=1.0, columns=cols, index=idx),
+            "index": idx,
+            "columns": cols,
+        }
+
+        return params + [params_1, params_2]
 
     # TODO: this is duplicated now and will also be for `TransformedDistribution`,
     #  perhaps add a mixin for this functionality?
