@@ -30,7 +30,7 @@ class Hurdle(BaseDistribution):
     p : np.ndarray
         The probability of getting a non-zero value.
 
-    distribution : LeftTruncated
+    distribution : BaseDistribution
         The zero-truncated distribution for positive outcomes.
 
     """
@@ -46,14 +46,10 @@ class Hurdle(BaseDistribution):
     def __init__(
         self,
         p: ArrayLike,
-        distribution: LeftTruncated,
+        distribution: BaseDistribution,
         index=None,
         columns=None,
     ):
-        assert (
-            distribution.lower == 0
-        ), "The positive distribution must be zero-truncated."
-
         if isinstance(p, np.ndarray) and p.ndim == 1:
             raise ValueError("p must be a scalar or a 2D array.")
         elif isinstance(p, np.ndarray) and p.ndim == 2:
@@ -66,11 +62,23 @@ class Hurdle(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
+    # NB: not sure how much we need to conform with sklearn, but according to their
+    # docs we shouldn't modify the input variables:
+    # https://scikit-learn.org/stable/developers/develop.html
+    @property
+    def _truncated_distribution(self) -> LeftTruncated:
+        return LeftTruncated(
+            self.distribution,
+            lower=0,
+            index=self.index,
+            columns=self.columns,
+        )
+
     def _log_pmf(self, x):
         log_prob_zero = np.log(1.0 - self.p)
         log_prob_hurdle = np.log(self.p)
 
-        log_prob_positive_value = self.distribution.log_pmf(x)
+        log_prob_positive_value = self._truncated_distribution.log_pmf(x)
 
         log_prob_positive = log_prob_hurdle + log_prob_positive_value
 
@@ -81,7 +89,7 @@ class Hurdle(BaseDistribution):
         prob_zero = 1.0 - self.p
         prob_hurdle = self.p
 
-        prob_positive_value = self.distribution.pmf(x)
+        prob_positive_value = self._truncated_distribution.pmf(x)
 
         prob_positive = prob_hurdle * prob_positive_value
 
@@ -89,11 +97,11 @@ class Hurdle(BaseDistribution):
         return np.where(is_zero, prob_zero, prob_positive)
 
     def _mean(self):
-        return self.p * self.distribution.mean()
+        return self.p * self._truncated_distribution.mean()
 
     def _var(self):
-        mean_positive = self.distribution.mean()
-        var_positive = self.distribution.var()
+        mean_positive = self._truncated_distribution.mean()
+        var_positive = self._truncated_distribution.var()
 
         return self.p * var_positive + mean_positive * self.p * (1.0 - self.p)
 
@@ -103,7 +111,7 @@ class Hurdle(BaseDistribution):
         q_rescaled = (p - prob_zero) / self.p
 
         q_rescaled = np.clip(q_rescaled, 0.0, 1.0)
-        y_positive = self.distribution.ppf(q_rescaled)
+        y_positive = self._truncated_distribution.ppf(q_rescaled)
 
         return np.where(p <= prob_zero, 0.0, y_positive)
 
@@ -111,17 +119,12 @@ class Hurdle(BaseDistribution):
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
         import pandas as pd
 
-        from skpro.distributions import LeftTruncated, Poisson
+        from skpro.distributions import Poisson
 
         # scalar
-        left_truncated_discrete = LeftTruncated(
-            Poisson(mu=1.0),
-            lower=0,
-        )
-
         params_1 = {
             "p": 0.3,
-            "distribution": left_truncated_discrete,
+            "distribution": Poisson(mu=1.0),
         }
 
         # array 1
@@ -130,15 +133,9 @@ class Hurdle(BaseDistribution):
         cols = pd.Index(["a", "b", "c"])
 
         poisson = Poisson(mu=mu, columns=cols, index=idx)
-        left_truncated_discrete = LeftTruncated(
-            poisson,
-            lower=0,
-            index=idx,
-            columns=cols,
-        )
         params_2 = {
             "p": 0.3,
-            "distribution": left_truncated_discrete,
+            "distribution": poisson,
             "index": idx,
             "columns": cols,
         }
@@ -146,7 +143,7 @@ class Hurdle(BaseDistribution):
         # array 2
         params_3 = {
             "p": np.array([0.2, 0.3]).reshape(-1, 1),
-            "distribution": left_truncated_discrete,
+            "distribution": poisson,
             "index": idx,
             "columns": cols,
         }
