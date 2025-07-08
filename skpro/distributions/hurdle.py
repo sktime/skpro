@@ -3,6 +3,7 @@
 import numpy as np
 from numpy.typing import ArrayLike
 
+from skpro.distributions import TruncatedDistribution
 from skpro.distributions.base import BaseDistribution
 from skpro.distributions.left_truncated import LeftTruncated
 
@@ -66,7 +67,13 @@ class Hurdle(BaseDistribution):
     # docs we shouldn't modify the input variables:
     # https://scikit-learn.org/stable/developers/develop.html
     @property
-    def _truncated_distribution(self) -> LeftTruncated:
+    def _truncated_distribution(self) -> TruncatedDistribution:
+        if (
+            isinstance(self.distribution, TruncatedDistribution)
+            and self.distribution.lower == 0
+        ):
+            return self.distribution
+
         return LeftTruncated(
             self.distribution,
             lower=0,
