@@ -67,7 +67,7 @@ class Hurdle(BaseDistribution):
     # docs we shouldn't modify the input variables:
     # https://scikit-learn.org/stable/developers/develop.html
     @property
-    def _truncated_distribution(self) -> TruncatedDistribution:
+    def __truncated_distribution(self) -> TruncatedDistribution:
         if (
             isinstance(self.distribution, TruncatedDistribution)
             and self.distribution.lower == 0
@@ -85,7 +85,7 @@ class Hurdle(BaseDistribution):
         log_prob_zero = np.log(1.0 - self.p)
         log_prob_hurdle = np.log(self.p)
 
-        log_prob_positive_value = self._truncated_distribution.log_pmf(x)
+        log_prob_positive_value = self.__truncated_distribution.log_pmf(x)
 
         log_prob_positive = log_prob_hurdle + log_prob_positive_value
 
@@ -96,7 +96,7 @@ class Hurdle(BaseDistribution):
         prob_zero = 1.0 - self.p
         prob_hurdle = self.p
 
-        prob_positive_value = self._truncated_distribution.pmf(x)
+        prob_positive_value = self.__truncated_distribution.pmf(x)
 
         prob_positive = prob_hurdle * prob_positive_value
 
@@ -104,11 +104,11 @@ class Hurdle(BaseDistribution):
         return np.where(is_zero, prob_zero, prob_positive)
 
     def _mean(self):
-        return self.p * self._truncated_distribution.mean()
+        return self.p * self.__truncated_distribution.mean()
 
     def _var(self):
-        mean_positive = self._truncated_distribution.mean()
-        var_positive = self._truncated_distribution.var()
+        mean_positive = self.__truncated_distribution.mean()
+        var_positive = self.__truncated_distribution.var()
 
         return self.p * var_positive + mean_positive * self.p * (1.0 - self.p)
 
@@ -118,7 +118,7 @@ class Hurdle(BaseDistribution):
         q_rescaled = (p - prob_zero) / self.p
 
         q_rescaled = np.clip(q_rescaled, 0.0, 1.0)
-        y_positive = self._truncated_distribution.ppf(q_rescaled)
+        y_positive = self.__truncated_distribution.ppf(q_rescaled)
 
         return np.where(p <= prob_zero, 0.0, y_positive)
 
