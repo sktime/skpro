@@ -61,7 +61,10 @@ class TruncatedDistribution(BaseDistribution):
         self.lower = lower
         self.upper = upper
 
-        super().__init__(index=index, columns=columns)
+        super().__init__(
+            index=index if index is not None else distribution.index,
+            columns=columns if columns is not None else distribution.columns,
+        )
 
     def _get_low_high_prob(self) -> Tuple[float, float]:
         prob_at_lower = (

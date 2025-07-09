@@ -61,7 +61,10 @@ class Hurdle(BaseDistribution):
         self.p = p
         self.distribution = distribution
 
-        super().__init__(index=index, columns=columns)
+        super().__init__(
+            index=index if index is not None else distribution.index,
+            columns=columns if columns is not None else distribution.columns,
+        )
 
     # NB: not sure how much we need to conform with sklearn, but according to their
     # docs we shouldn't modify the input variables:
