@@ -1,4 +1,5 @@
 """Left Truncated Discrete Distribution."""
+from typing import Union
 
 from skpro.distributions.base import BaseDistribution
 from skpro.distributions.truncated import TruncatedDistribution
@@ -28,7 +29,11 @@ class LeftTruncated(TruncatedDistribution):
     }
 
     def __init__(
-        self, distribution: BaseDistribution, lower: float, index=None, columns=None
+        self,
+        distribution: BaseDistribution,
+        lower: Union[float, int],
+        index=None,
+        columns=None,
     ):
         super().__init__(
             distribution, lower=lower, upper=None, index=index, columns=columns

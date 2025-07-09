@@ -1,5 +1,5 @@
 """Truncated distributions."""
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 
@@ -52,8 +52,8 @@ class TruncatedDistribution(BaseDistribution):
         self,
         distribution: BaseDistribution,
         *,
-        lower: float = None,
-        upper: float = None,
+        lower: Union[float, int] = None,
+        upper: Union[float, int] = None,
         index=None,
         columns=None,
     ):
