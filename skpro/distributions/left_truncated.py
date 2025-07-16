@@ -13,7 +13,7 @@ class LeftTruncated(TruncatedDistribution):
     Parameters
     ----------
     distribution : BaseDistribution
-        The base discrete distribution from which to sample.
+        The distribution to truncate from the left, _not_ including the lower bound.
 
     lower : int
         The lower bound below which values are truncated (excluded from sampling).
