@@ -23,10 +23,10 @@ class TruncatedDistribution(BaseDistribution):
     Parameters
     ----------
     distribution : BaseDistribution
-        The base discrete distribution from which to sample.
+        The distribution to truncate.
 
     lower : int, optional
-        The lower bound below which values are truncated.
+        The lower bound below which values are truncated, _not_ including it.
 
     upper : int, optional
         The upper bound above which values are truncated.
