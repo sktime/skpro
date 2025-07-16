@@ -34,6 +34,14 @@ class Hurdle(BaseDistribution):
     distribution : BaseDistribution
         Arbitrary distribution.
 
+    Examples
+    --------
+    >>> from skpro.distributions import Normal, Hurdle
+    >>>
+    >>> base = Normal(mu=1.0, sigma=1.0)
+    >>> hurdle = Hurdle(0.5, base)
+    >>> samples = truncated.sample(1000)
+
     """
 
     _tags = {
