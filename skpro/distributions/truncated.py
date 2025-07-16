@@ -25,10 +25,10 @@ class TruncatedDistribution(BaseDistribution):
     distribution : BaseDistribution
         The distribution to truncate.
 
-    lower : int, optional
+    lower : Union[float, int], optional
         The lower bound below which values are truncated, _not_ including it.
 
-    upper : int, optional
+    upper : Union[float, int], optional
         The upper bound above which values are truncated.
 
     Examples
