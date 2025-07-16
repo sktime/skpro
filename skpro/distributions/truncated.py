@@ -7,7 +7,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class TruncatedDistribution(BaseDistribution):
-    r"""A truncated discrete distribution _not_ including the lower bound.
+    r"""A truncated distribution _not_ including the lower bound.
 
     Given a univariate distribution, this distribution samples from the base
     distribution but truncates the values to lie between a specified lower and
