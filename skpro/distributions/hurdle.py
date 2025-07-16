@@ -28,7 +28,7 @@ class Hurdle(BaseDistribution):
 
     Parameters
     ----------
-    p : np.ndarray
+    p : ArrayLike
         The probability of getting a non-zero value.
 
     distribution : BaseDistribution
