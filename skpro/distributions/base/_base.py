@@ -49,12 +49,17 @@ class BaseDistribution(BaseObject):
     }
 
     def __init__(self, index=None, columns=None):
-        self.index = _coerce_to_pd_index_or_none(index)
-        self.columns = _coerce_to_pd_index_or_none(columns)
+        if index is not None and not isinstance(index, (pd.Index, pd.MultiIndex)):
+            index = pd.Index(index)
+        self.index = index  # Now supports MultiIndex
+
+        # Existing code for columns:
+        if columns is not None and not isinstance(columns, (pd.Index, pd.MultiIndex)):
+            columns = pd.Index(columns)
+        self.columns = columns
 
         super().__init__()
         _check_estimator_deps(self)
-
         self._init_shape_bc(index=index, columns=columns)
 
     def _init_shape_bc(self, index=None, columns=None):
@@ -227,35 +232,49 @@ class BaseDistribution(BaseObject):
         start = max(0, start)
         return self.iloc[range(start, N)]
 
+
     def _loc(self, rowidx=None, colidx=None):
-        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
-            return self._at(rowidx, colidx)
-        if is_scalar_notnone(rowidx):
-            rowidx = pd.Index([rowidx])
-        if is_scalar_notnone(colidx):
-            colidx = pd.Index([colidx])
-
+        """Subset distribution by label-based indexing."""
+        # Convert mu and sigma to DataFrames if they aren't already
+        # MultiIndex support
+        mu = self.mu if isinstance(self.mu, pd.DataFrame) else pd.DataFrame(
+            self.mu,
+            index=self.index if self.index is not None else pd.RangeIndex(len(self.mu) if hasattr(self.mu, '__len__') else 1),
+            columns=self.columns if self.columns is not None else pd.RangeIndex(self.mu.shape[1] if hasattr(self.mu, 'shape') else 1),
+        )
+        sigma = self.sigma if isinstance(self.sigma, pd.DataFrame) else pd.DataFrame(
+            self.sigma,
+            index=self.index if self.index is not None else pd.RangeIndex(len(self.sigma) if hasattr(self.sigma, '__len__') else 1),
+            columns=self.columns if self.columns is not None else pd.RangeIndex(self.sigma.shape[1] if hasattr(self.sigma, 'shape') else 1),
+        )
+    
+        # Handle row subsetting
         if rowidx is not None:
-            row_iloc = self.index.get_indexer_for(rowidx)
+            if isinstance(mu.index, pd.MultiIndex) and isinstance(rowidx, tuple):
+                # Subset with tuple, ensure DataFrame output
+                mu_subset = mu.loc[[rowidx]]  # Double brackets to keep as DataFrame
+                sigma_subset = sigma.loc[[rowidx]]
+            else:
+                # Scalar or other row index
+                mu_subset = mu.loc[rowidx]
+                sigma_subset = sigma.loc[rowidx]
         else:
-            row_iloc = None
+            mu_subset = mu
+            sigma_subset = sigma
+    
+        # Handle column subsetting
         if colidx is not None:
-            col_iloc = self.columns.get_indexer_for(colidx)
-        else:
-            col_iloc = None
-        return self._iloc(rowidx=row_iloc, colidx=col_iloc)
-
-    def _at(self, rowidx=None, colidx=None):
-        if rowidx is not None:
-            row_iloc = self.index.get_indexer_for([rowidx])[0]
-        else:
-            row_iloc = None
-        if colidx is not None:
-            col_iloc = self.columns.get_indexer_for([colidx])[0]
-        else:
-            col_iloc = None
-        return self._iat(rowidx=row_iloc, colidx=col_iloc)
-
+            mu_subset = mu_subset.loc[:, colidx]
+            sigma_subset = sigma_subset.loc[:, colidx]
+    
+        # Ensure mu_subset and sigma_subset have the correct index if not explicitly set
+        if mu_subset.index.name is None and hasattr(mu_subset.index, 'names'):
+            mu_subset.index = mu_subset.index.rename([name if name is not None else f"level_{i}" for i, name in enumerate(mu_subset.index.names)])
+        if sigma_subset.index.name is None and hasattr(sigma_subset.index, 'names'):
+            sigma_subset.index = sigma_subset.index.rename([name if name is not None else f"level_{i}" for i, name in enumerate(sigma_subset.index.names)])
+    
+        return type(self)(mu=mu_subset, sigma=sigma_subset)
+    
     def _subset_params(self, rowidx, colidx, coerce_scalar=False):
         """Subset distribution parameters to given rows and columns.
 
@@ -275,14 +294,10 @@ class BaseDistribution(BaseObject):
             Keys are parameter names of ``self``, values are the subsetted parameters.
         """
         params = self._get_dist_params()
-
         subset_param_dict = {}
         for param, val in params.items():
             subset_param_dict[param] = self._subset_param(
-                val=val,
-                rowidx=rowidx,
-                colidx=colidx,
-                coerce_scalar=coerce_scalar,
+                val=val, rowidx=rowidx, colidx=colidx, coerce_scalar=coerce_scalar
             )
         return subset_param_dict
 
@@ -307,9 +322,16 @@ class BaseDistribution(BaseObject):
         """
         if val is None:
             return None
+        if isinstance(val, pd.DataFrame):
+            if rowidx is not None:
+                if isinstance(rowidx, int):  # Single integer case
+                    val = val.iloc[[rowidx]]  # Double brackets to keep as DataFrame
+                else:  # Slice or list of integers
+                    val = val.iloc[rowidx]
+            if colidx is not None:
+                val = val.iloc[:, colidx]
+            return val
         arr = np.array(val)
-        # if len(arr.shape) == 0:
-        # do nothing with arr
         if len(arr.shape) == 2 and rowidx is not None:
             arr = arr[rowidx, :]
         if len(arr.shape) == 1 and colidx is not None:
@@ -320,7 +342,7 @@ class BaseDistribution(BaseObject):
             arr = arr.astype("float")
         if coerce_scalar:
             arr = arr[(0,) * len(arr.shape)]
-        return arr
+        return arr  
 
     def _iat(self, rowidx=None, colidx=None):
         if rowidx is None or colidx is None:
@@ -331,39 +353,38 @@ class BaseDistribution(BaseObject):
         return type(self)(**subset_params)
 
     def _iloc(self, rowidx=None, colidx=None):
-        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
-            return self._iat(rowidx, colidx)
-        if is_scalar_notnone(rowidx):
-            rowidx = pd.Index([rowidx])
-        if is_scalar_notnone(colidx):
-            colidx = pd.Index([colidx])
-
-        subset_params = self._subset_params(rowidx=rowidx, colidx=colidx)
-
-        def subset_not_none(idx, subs):
-            if subs is not None:
-                return idx.take(subs)
+        """Subset distribution by integer row and column indices."""
+        if rowidx is None and colidx is None:
+            return self
+    
+        # Subset parameters
+        subset_params = self._subset_params(rowidx, colidx)
+    
+        # Subset index and columns
+        if rowidx is not None:
+            if isinstance(self.index, pd.MultiIndex):
+                # Use iloc-style integer indexing, ensure MultiIndex is preserved
+                if isinstance(rowidx, int):  # Single integer case
+                    index_subset = pd.MultiIndex.from_tuples([self.index[rowidx]])
+                else:  # Slice or list of integers
+                    index_subset = self.index[rowidx]
+                    # Drop the first level only for multi-row subsets
+                    if index_subset.nlevels > 1 and not isinstance(rowidx, int):
+                        index_subset = index_subset.droplevel(0)
             else:
-                return idx
-
-        index_subset = subset_not_none(self.index, rowidx)
-        columns_subset = subset_not_none(self.columns, colidx)
-
-        sk_distr_type = type(self)
-        return sk_distr_type(
-            index=index_subset,
-            columns=columns_subset,
-            **subset_params,
-        )
-
-    def _get_dist_params(self):
-        params = self.get_params(deep=False)
-        paramnames = params.keys()
-        reserved_names = ["index", "columns"]
-        paramnames = [x for x in paramnames if x not in reserved_names]
-
-        return {k: params[k] for k in paramnames}
-
+                # Subset single-level index
+                index_subset = self.index[rowidx]
+        else:
+            index_subset = self.index
+    
+        if colidx is not None:
+            columns_subset = self.columns[colidx]
+        else:
+            columns_subset = self.columns
+    
+        # Create new distribution with subset parameters
+        return type(self)(index=index_subset, columns=columns_subset, **subset_params)
+        
     def get_params_df(self):
         """Return distribution parameters in a dict of DataFrame.
 
@@ -1673,34 +1694,38 @@ class _Indexer:
         )
 
     def __getitem__(self, key):
-        """Getitem dunder, for use in my_distr.loc[index] and my_distr.iloc[index]."""
-
-        def is_noneslice(obj):
-            res = isinstance(obj, slice)
-            res = res and obj.start is None and obj.stop is None and obj.step is None
-            return res
-
-        ref = self.ref
-        indexer = getattr(ref, self.method)
-
-        if isinstance(key, tuple):
-            if not len(key) == 2:
-                raise ValueError(
-                    "there should be one or two keys when calling .loc, "
-                    "e.g., mydist[key], or mydist[key1, key2]"
-                )
-            rows = key[0]
-            cols = key[1]
-            if is_noneslice(rows) and is_noneslice(cols):
-                return ref
-            elif is_noneslice(cols):
-                return indexer(rowidx=rows, colidx=None)
-            elif is_noneslice(rows):
-                return indexer(rowidx=None, colidx=cols)
-            else:
-                return indexer(rowidx=rows, colidx=cols)
+        # If key is not a tuple, it's a row index
+        if not isinstance(key, tuple):
+            rows = key
+            cols = None
         else:
-            return indexer(rowidx=key, colidx=None)
+            # If index is MultiIndex, check if key matches the number of levels
+            if isinstance(self.ref.index, pd.MultiIndex):
+                nlevels = self.ref.index.nlevels
+                if len(key) == nlevels:
+                    # Try using key as a row index
+                    try:
+                        self.ref.mu.loc[key]
+                        rows = key
+                        cols = None
+                    except KeyError:
+                        # If it fails, assume (row, col)
+                        if len(key) == 2:
+                            rows, cols = key
+                        else:
+                            raise ValueError(f"Invalid index: {key}")
+                elif len(key) == 2:
+                    # Assume (row, col)
+                    rows, cols = key
+                else:
+                    raise ValueError(f"Invalid index length for MultiIndex with {nlevels} levels: {key}")
+            else:
+                # Non-MultiIndex: tuple means (row, col)
+                if len(key) == 2:
+                    rows, cols = key
+                else:
+                    raise ValueError(f"Invalid index for non-MultiIndex: {key}")
+        return getattr(self.ref, self.method)(rowidx=rows, colidx=cols)
 
 
 class _BaseTFDistribution(BaseDistribution):
