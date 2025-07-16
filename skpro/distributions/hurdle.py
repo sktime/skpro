@@ -40,7 +40,7 @@ class Hurdle(BaseDistribution):
     >>>
     >>> base = Normal(mu=1.0, sigma=1.0)
     >>> hurdle = Hurdle(0.5, base)
-    >>> samples = truncated.sample(1000)
+    >>> samples = hurdle.sample(1000)
 
     """
 
