@@ -45,8 +45,8 @@ class Hurdle(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["energy", "cdf"],
-        "capabilities:exact": ["ppf", "mean", "var", "log_pmf", "pmf"],
+        "capabilities:approx": ["energy"],
+        "capabilities:exact": ["ppf", "mean", "var", "log_pmf", "pmf", "cdf"],
         "distr:measuretype": "mixed",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -154,6 +154,12 @@ class Hurdle(BaseDistribution):
         y_positive = self._truncated_distribution.ppf(q_rescaled)
 
         return np.where(p <= prob_zero, 0.0, y_positive)
+
+    def _cdf(self, x):
+        is_positive = x > 0.0
+        prob_positive = self._truncated_distribution.cdf(x)
+
+        return np.where(is_positive, self.p * (1.0 + prob_positive), 1.0 - self.p)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
