@@ -159,7 +159,9 @@ class Hurdle(BaseDistribution):
         is_positive = x > 0.0
         prob_positive = self._truncated_distribution.cdf(x)
 
-        return np.where(is_positive, self.p * (1.0 + prob_positive), 1.0 - self.p)
+        return np.where(
+            is_positive, (1.0 - self.p) + self.p * prob_positive, 1.0 - self.p
+        )
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
