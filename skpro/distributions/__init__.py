@@ -28,6 +28,7 @@ __all__ = [
     "LogNormal",
     "MeanScale",
     "Mixture",
+    "NegativeBinomial",
     "Normal",
     "Pareto",
     "Poisson",
@@ -68,6 +69,7 @@ from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal
 from skpro.distributions.meanscale import MeanScale
 from skpro.distributions.mixture import Mixture
+from skpro.distributions.negative_binomial import NegativeBinomial
 from skpro.distributions.normal import Normal
 from skpro.distributions.pareto import Pareto
 from skpro.distributions.poisson import Poisson
