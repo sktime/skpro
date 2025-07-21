@@ -11,7 +11,7 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
 class NegativeBinomial(_ScipyAdapter):
-    """Negative binomial distribution..
+    """Negative binomial distribution.
 
     Most methods wrap ``scipy.stats.nbinom``.
 
