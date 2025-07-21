@@ -33,8 +33,8 @@ class NegativeBinomial(_ScipyAdapter):
     """
 
     _tags = {
-        "capabilities:approx": ["ppf", "energy"],
-        "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf"],
+        "capabilities:approx": ["energy"],
+        "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"],
         "distr:measuretype": "discrete",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
