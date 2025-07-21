@@ -1,7 +1,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-"""Poisson probability distribution."""
+"""Negative binomial probability distribution."""
 
-__author__ = ["fkiraly", "malikrafsan"]
+__author__ = ["tingiskhan"]
 
 import pandas as pd
 from numpy.typing import ArrayLike
