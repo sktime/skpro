@@ -23,6 +23,7 @@ Composition
     :template: class.rst
 
     Pipeline
+    TransformedTargetRegressor
 
 Model selection and tuning
 --------------------------
