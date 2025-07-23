@@ -350,14 +350,16 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         from collections import OrderedDict
 
         assert isinstance(ix, pd.MultiIndex)
-        
+
         # Get level 0 values
         level_0_vals = ix.get_level_values(0)
 
         # Determine the unique values in order of first appearance
         unique_vals = list(OrderedDict.fromkeys(level_0_vals))
         if len(new_values) != len(unique_vals):
-            raise ValueError("Length of new_values must match number of unique values in level 0.")
+            raise ValueError(
+                "Length of new_values must match number of unique values in level 0."
+            )
 
         # Create mapping from old to new
         mapping = dict(zip(unique_vals, new_values))
