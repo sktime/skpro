@@ -78,8 +78,9 @@ Integer support
     :template: class.rst
 
     Binomial
-    Poisson
     Hurdle
+    NegativeBinomial
+    Poisson
 
 Non-parametric and empirical distributions
 ------------------------------------------
