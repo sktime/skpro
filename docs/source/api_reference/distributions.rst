@@ -78,6 +78,8 @@ Integer support
     :template: class.rst
 
     Binomial
+    Hurdle
+    NegativeBinomial
     Poisson
 
 Non-parametric and empirical distributions
@@ -112,6 +114,8 @@ Parametric families
     :template: class.rst
 
     MeanScale
+    TruncatedDistribution
+    LeftTruncated
 
 Mixture composition
 ~~~~~~~~~~~~~~~~~~~
