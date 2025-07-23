@@ -119,7 +119,7 @@ def check_estimator(
         if not _has_kwarg(test_runner, "verbose"):
             kwargs = {}
         else:
-            kwargs = {"verbose": verbose}
+            kwargs = {"verbose": verbose and raise_exceptions}
 
         test_cls_results = test_runner(
             obj=estimator,
