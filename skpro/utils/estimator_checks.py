@@ -146,6 +146,7 @@ def check_estimator(
 
     return results
 
+
 def _has_kwarg(method, kwarg_name):
     """Check if a method has a keyword argument named `kwarg_name`.
 
