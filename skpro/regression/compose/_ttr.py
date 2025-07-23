@@ -170,6 +170,8 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         if not isinstance(y_pred_it, pd.DataFrame):
             y_cols = self._y_metadata["feature_names"]
             y_pred_it = pd.DataFrame(y_pred_it, index=X.index, columns=y_cols)
+        else:
+            y_pred_it.columns = self._y_metadata["feature_names"]
         return y_pred_it
 
     def _predict_quantiles(self, X, alpha):
@@ -194,10 +196,12 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             Entries are quantile predictions, for var in col index,
                 at quantile probability in second col index, for the row index.
         """
-        y_pred = self.regressor_.predict_quantiles(X=X)
+        y_pred = self.regressor_.predict_quantiles(X=X, alpha=alpha)
         y_pred_it = self._get_inverse_transform_pred_int(
             transformer=self.transformer_, y=y_pred
         )
+        cols = self._y_metadata["feature_names"]
+        y_pred_it.columns = self._replace_column_level(y_pred_it.columns, cols)
         return y_pred_it
 
     def _predict_interval(self, X, coverage):
@@ -227,10 +231,12 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             Upper/lower interval end are equivalent to
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
-        y_pred = self.regressor_.predict_quantiles(X=X)
+        y_pred = self.regressor_.predict_interval(X=X, coverage=coverage)
         y_pred_it = self._get_inverse_transform_pred_int(
             transformer=self.transformer_, y=y_pred
         )
+        cols = self._y_metadata["feature_names"]
+        y_pred_it.columns = self._replace_column_level(y_pred_it.columns, cols)
         return y_pred_it
 
     def _predict_var(self, X):
@@ -325,6 +331,45 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         y = y.loc[:, idx]
 
         return y
+
+    def _replace_column_level(self, ix, new_values):
+        """Replace the values at level 0 of a MultiIndex.
+
+        Parameters
+        ----------
+        ix : pd.MultiIndex
+            The input MultiIndex columns.
+        new_values : Iterable
+            New values to replace at level 0.
+
+        Returns
+        -------
+        pd.MultiIndex
+            A new MultiIndex with updated MultiIndex.
+        """
+        from collections import OrderedDict
+
+        assert isinstance(ix, pd.MultiIndex)
+        
+        # Get level 0 values
+        level_0_vals = ix.get_level_values(0)
+
+        # Determine the unique values in order of first appearance
+        unique_vals = list(OrderedDict.fromkeys(level_0_vals))
+        if len(new_values) != len(unique_vals):
+            raise ValueError("Length of new_values must match number of unique values in level 0.")
+
+        # Create mapping from old to new
+        mapping = dict(zip(unique_vals, new_values))
+        replaced_level_0 = [mapping[val] for val in level_0_vals]
+
+        # Construct new levels
+        new_levels = [
+            replaced_level_0 if i == 0 else ix.get_level_values(i)
+            for i in range(ix.nlevels)
+        ]
+
+        return pd.MultiIndex.from_arrays(new_levels)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
