@@ -19,12 +19,27 @@ For planned changes and upcoming releases, see roadmap in the
 [2.9.2] - 2025-07-23
 ====================
 
-Highlights
-~~~~~~~~~~
+Feature release: transformed distribution, new distributions, and probabilistic ``TransformedTargetRegressor``.
 
 Enhancements
 ~~~~~~~~~~~~
 
+* [ENH] transformed distribution (:pr:`555`) :user:`fkiraly`
+* [ENH] ``Hurdle`` and ``LeftTruncatedDiscrete`` distributions (:pr:`557`) :user:`tingiskhan`
+* [ENH] Negative Binomial distribution (:pr:`560`) :user:`tingiskhan`
+* [ENH] probabilistic ``TransformedTargetRegressor`` (:pr:`558`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.25.0`` to ``<1.30.0`` (:pr:`550`) :user:`@dependabot[bot]`
+* [MNT] [Dependabot](deps): Update pandas requirement from ``<2.3.0,>=1.1.0`` to ``>=1.1.0,<2.4.0`` (:pr:`551`) :user:`@dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.30.0`` to ``<1.32.0``  (:pr:`553`) :user:`@dependabot[bot]`
+
+Fixes
+~~~~~
+
+* [BUG] correct warning message for distribution ``cdf`` in approximate case (:pr:`556`) :user:`fkiraly`
 
 
 [2.9.1] - 2025-05-08
