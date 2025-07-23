@@ -28,6 +28,7 @@ Enhancements
 * [ENH] ``Hurdle`` and ``LeftTruncatedDiscrete`` distributions (:pr:`557`) :user:`tingiskhan`
 * [ENH] Negative Binomial distribution (:pr:`560`) :user:`tingiskhan`
 * [ENH] probabilistic ``TransformedTargetRegressor`` (:pr:`558`) :user:`fkiraly`
+* [ENH] verbose printout for ``check_estimator`` in ``raise_exceptions`` case (:pr:`562`) :user:`fkiraly`
 
 Maintenance
 ~~~~~~~~~~~
