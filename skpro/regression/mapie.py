@@ -17,7 +17,8 @@ class MapieRegressor(BaseProbaRegressor):
     ``mapie`` package.
 
     NOTE: only for the "all-in-one" regressor present in ``mapie<1.0``. Later
-    ``mapie`` versions have a more modular interface.
+    ``mapie`` versions have a more modular interface, this class is not
+    compatible with ``MAPIE>=1.0``.
 
     Uses jackknife+ to estimate prediction intervals on a per-sample basis.
 
