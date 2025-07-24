@@ -29,6 +29,7 @@ Enhancements
 * [ENH] Negative Binomial distribution (:pr:`560`) :user:`tingiskhan`
 * [ENH] probabilistic ``TransformedTargetRegressor`` (:pr:`558`) :user:`fkiraly`
 * [ENH] verbose printout for ``check_estimator`` in ``raise_exceptions`` case (:pr:`562`) :user:`fkiraly`
+* [ENH] ``MAPIE<1.0`` bound for legacy ``MapieRegressor`` (:pr:`564`) :user:`fkiraly`
 
 Maintenance
 ~~~~~~~~~~~
