@@ -195,10 +195,10 @@ class CoxPHlifelines(_LifelinesAdapter, BaseSurvReg):
         params1 = {}
 
         params2 = {
-            "baseline_estimation_method": "spline",
+            # "baseline_estimation_method": "spline",
             "penalizer": 0.01,
             "l1_ratio": 0.01,
-            "n_baseline_knots": 5,
+            # "n_baseline_knots": 5,
         }
 
         # breakpoints are specific to data ranges,
