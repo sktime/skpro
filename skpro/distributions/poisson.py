@@ -54,7 +54,7 @@ class Poisson(_ScipyAdapter):
         """Return testing parameter settings for the estimator."""
         params1 = {"mu": [[1, 1], [2, 3], [4, 5]]}
         params2 = {
-            "mu": 0,
+            "mu": 0.1,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
