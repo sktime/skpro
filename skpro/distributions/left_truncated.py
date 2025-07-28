@@ -20,14 +20,6 @@ class LeftTruncated(TruncatedDistribution):
 
     """
 
-    _tags = {
-        "capabilities:approx": ["energy", "pmf", "cdf"],
-        "capabilities:exact": ["ppf", "mean", "var", "log_pmf"],
-        "distr:measuretype": "mixed",
-        "distr:paramtype": "parametric",
-        "broadcast_init": "on",
-    }
-
     def __init__(
         self,
         distribution: BaseDistribution,
@@ -64,19 +56,21 @@ class LeftTruncated(TruncatedDistribution):
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
         import pandas as pd
 
-        from skpro.distributions import Poisson
+        from skpro.distributions import NegativeBinomial
 
         # scalar
-        poisson = Poisson(mu=1.0)
+        dist = NegativeBinomial(mu=1.0, alpha=1.0)
         params1 = {
-            "distribution": poisson,
+            "distribution": dist,
             "lower": 0,
         }
 
         # array
         idx = pd.Index([1, 2])
         cols = pd.Index(["a", "b"])
-        n_array = Poisson(mu=[[1, 2], [3, 4]], columns=cols, index=idx)
+        n_array = NegativeBinomial(
+            mu=[[1, 2], [3, 4]], alpha=1.0, columns=cols, index=idx
+        )
         params2 = {
             "distribution": n_array,
             "lower": 0,
