@@ -10,5 +10,4 @@ EXCLUDE_ESTIMATORS = [
 
 EXCLUDED_TESTS = {
     "GLMRegressor": ["test_online_update"],  # see 497
-    "Hurdle": ["test_ppf_and_cdf"],  # see 556
 }
