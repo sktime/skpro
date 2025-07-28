@@ -167,12 +167,12 @@ class Hurdle(BaseDistribution):
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
         import pandas as pd
 
-        from skpro.distributions import Poisson
+        from skpro.distributions import NegativeBinomial
 
         # scalar
         params_1 = {
             "p": 0.3,
-            "distribution": Poisson(mu=1.0),
+            "distribution": NegativeBinomial(mu=1.0, alpha=1.0),
         }
 
         # array 1
@@ -180,10 +180,10 @@ class Hurdle(BaseDistribution):
         idx = pd.Index([0, 1])
         cols = pd.Index(["a", "b", "c"])
 
-        poisson = Poisson(mu=mu, columns=cols, index=idx)
+        negbin = NegativeBinomial(mu=mu, alpha=1.0, columns=cols, index=idx)
         params_2 = {
             "p": 0.3,
-            "distribution": poisson,
+            "distribution": negbin,
             "index": idx,
             "columns": cols,
         }
@@ -191,7 +191,7 @@ class Hurdle(BaseDistribution):
         # array 2
         params_3 = {
             "p": np.array([0.2, 0.3]).reshape(-1, 1),
-            "distribution": poisson,
+            "distribution": negbin,
             "index": idx,
             "columns": cols,
         }
