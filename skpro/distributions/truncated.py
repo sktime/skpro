@@ -74,6 +74,18 @@ class TruncatedDistribution(BaseDistribution):
             columns=columns if columns is not None else distribution.columns,
         )
 
+        # the measure type of this distribution is discrete if the inner distribution
+        # is discrete, and it is continuous if the inner distribution is continuous;
+        # if the measure type of the inner distribution is mixed,
+        # the result is indeterminate, but we keep it as mixed for API reasons
+        inner_measuretype = distribution.get_tag("distr:measuretype", "mixed")
+        self.set_tags(**{"distr:measuretype": inner_measuretype})
+
+        methods_to_remove = {
+            "discrete": ["pdf", "log_pdf"],
+            "continuous": ["pmf", "log_pmf"],
+        }
+
         # the capabilities of this (self) distribution are exact
         # if and only if the capabilities of the inner distribution are exact
         self_exact_capas = self.get_tag("capabilities:exact", []).copy()
@@ -84,15 +96,17 @@ class TruncatedDistribution(BaseDistribution):
                 self_exact_capas.remove(capa)
                 self_approx_capas.append(capa)
 
+        # TODO: this can most likely by made prettier
+        if inner_measuretype in methods_to_remove:
+            for method in methods_to_remove[inner_measuretype]:
+                if method in self_exact_capas:
+                    self_exact_capas.remove(method)
+
+                if method in self_approx_capas:
+                    self_approx_capas.remove(method)
+
         self.set_tags(**{"capabilities:exact": self_exact_capas})
         self.set_tags(**{"capabilities:approx": self_approx_capas})
-
-        # the measure type of this distribution is discrete if the inner distribution
-        # is discrete, and it is continuous if the inner distribution is continuous;
-        # if the measure type of the inner distribution is mixed,
-        # the result is indeterminate, but we keep it as mixed for API reasons
-        inner_measuretype = distribution.get_tag("distr:measuretype", "mixed")
-        self.set_tags(**{"distr:measuretype": inner_measuretype})
 
         inner_paramtype = distribution.get_tag("distr:paramtype", "parametric")
         if inner_paramtype != "parametric":
