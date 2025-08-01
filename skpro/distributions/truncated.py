@@ -38,7 +38,6 @@ class TruncatedDistribution(BaseDistribution):
     >>> base = Normal(mu=1.0, sigma=1.0)
     >>> truncated = TruncatedDistribution(base, lower=0.0, upper=5.0)
     >>> samples = truncated.sample(1000)
-
     """
 
     _tags = {
