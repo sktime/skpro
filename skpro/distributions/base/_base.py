@@ -1391,17 +1391,21 @@ class BaseDistribution(BaseObject):
         If self is not scalar with index and columns,
         coerces x to a pd.DataFrame with index and columns as self.
 
-        If self is scalar, coerces x to a scalar (0D) np.ndarray.
+        If self is scalar, coerces x to a np.float64 instead.
         """
+        # scalar case
+        if self.ndim == 0:
+            x = np.float64(x)
+            return x
+
+        # array-like case
         x = np.array(x)
         if flatten:
             x = x.reshape(1, -1)
         df_shape = self.shape
         x = np.broadcast_to(x, df_shape)
-        if self.ndim != 0:
-            df = pd.DataFrame(x, index=self.index, columns=self.columns)
-            return df
-        return x
+        df = pd.DataFrame(x, index=self.index, columns=self.columns)
+        return df
 
     def _coerce_to_self_index_np(self, x, flatten=False):
         """Coerce input to type similar to self.
@@ -1417,6 +1421,11 @@ class BaseDistribution(BaseObject):
             if True, flattens x before broadcasting
             if False, broadcasts x as is
         """
+        # scalar case
+        if self.ndim == 0:
+            x = np.float64(x)
+            return x
+
         x = np.array(x)
         if flatten:
             x = x.reshape(1, -1)
