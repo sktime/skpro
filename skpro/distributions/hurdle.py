@@ -172,7 +172,12 @@ class Hurdle(BaseDistribution):
 
         q_rescaled = (p - prob_zero) / self.p
 
-        q_rescaled = np.clip(q_rescaled, 0.0, 1.0)
+        # NB: some parameterizations of discrete distributions may lead to rounding
+        # errors, causing "off-by-one" issues in the quantile function. As a
+        # workaround we subtract a small epsilon value.
+        eps = np.finfo(q_rescaled.dtype).eps
+
+        q_rescaled = np.clip(q_rescaled - eps, 0.0, 1.0)
         y_positive = self._truncated_distribution.ppf(q_rescaled)
 
         return np.where(p <= prob_zero, 0.0, y_positive)
@@ -189,12 +194,12 @@ class Hurdle(BaseDistribution):
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
         import pandas as pd
 
-        from skpro.distributions import Poisson
+        from skpro.distributions import NegativeBinomial
 
         # scalar
         params_1 = {
             "p": 0.3,
-            "distribution": Poisson(mu=1.0),
+            "distribution": NegativeBinomial(mu=1.0, alpha=1.0),
         }
 
         # array 1
@@ -202,10 +207,10 @@ class Hurdle(BaseDistribution):
         idx = pd.Index([0, 1])
         cols = pd.Index(["a", "b", "c"])
 
-        poisson = Poisson(mu=mu, columns=cols, index=idx)
+        negbin = NegativeBinomial(mu=mu, alpha=1.0, columns=cols, index=idx)
         params_2 = {
             "p": 0.3,
-            "distribution": poisson,
+            "distribution": negbin,
             "index": idx,
             "columns": cols,
         }
@@ -213,7 +218,7 @@ class Hurdle(BaseDistribution):
         # array 2
         params_3 = {
             "p": np.array([0.2, 0.3]).reshape(-1, 1),
-            "distribution": poisson,
+            "distribution": negbin,
             "index": idx,
             "columns": cols,
         }
