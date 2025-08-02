@@ -38,7 +38,6 @@ class TruncatedDistribution(BaseDistribution):
     >>> base = Normal(mu=1.0, sigma=1.0)
     >>> truncated = TruncatedDistribution(base, lower=0.0, upper=5.0)
     >>> samples = truncated.sample(1000)
-
     """
 
     _tags = {
@@ -73,6 +72,30 @@ class TruncatedDistribution(BaseDistribution):
             index=index if index is not None else distribution.index,
             columns=columns if columns is not None else distribution.columns,
         )
+
+        # the capabilities of this (self) distribution are exact
+        # if and only if the capabilities of the inner distribution are exact
+        self_exact_capas = self.get_tag("capabilities:exact", []).copy()
+        self_approx_capas = self.get_tag("capabilities:approx", []).copy()
+        distr_exact_capas = distribution.get_tag("capabilities:exact", []).copy()
+        for capa in self_exact_capas:
+            if capa not in distr_exact_capas:
+                self_exact_capas.remove(capa)
+                self_approx_capas.append(capa)
+
+        self.set_tags(**{"capabilities:exact": self_exact_capas})
+        self.set_tags(**{"capabilities:approx": self_approx_capas})
+
+        # the measure type of this distribution is discrete if the inner distribution
+        # is discrete, and it is continuous if the inner distribution is continuous;
+        # if the measure type of the inner distribution is mixed,
+        # the result is indeterminate, but we keep it as mixed for API reasons
+        inner_measuretype = distribution.get_tag("distr:measuretype", "mixed")
+        self.set_tags(**{"distr:measuretype": inner_measuretype})
+
+        inner_paramtype = distribution.get_tag("distr:paramtype", "parametric")
+        if inner_paramtype != "parametric":
+            self.set_tags(**{"distr:paramtype": inner_paramtype})
 
     def _get_low_high_prob(self) -> Tuple[float, float]:
         prob_at_lower = (
