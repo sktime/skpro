@@ -650,7 +650,7 @@ class BaseDistribution(BaseObject):
         res = getattr(d, method)(**kwargs_inner)
 
         # if the result is not a DataFrame, coerce it to one
-        # ensur the index and columns are the same as d
+        # ensure the index and columns are the same as d
         if not isinstance(res, pd.DataFrame) and self.ndim > 1:
             if columns is not None:
                 res_cols = pd.Index(columns)
@@ -1421,11 +1421,6 @@ class BaseDistribution(BaseObject):
             if True, flattens x before broadcasting
             if False, broadcasts x as is
         """
-        # scalar case
-        if self.ndim == 0:
-            x = np.float64(x)
-            return x
-
         x = np.array(x)
         if flatten:
             x = x.reshape(1, -1)
