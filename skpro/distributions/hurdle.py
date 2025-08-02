@@ -172,7 +172,12 @@ class Hurdle(BaseDistribution):
 
         q_rescaled = (p - prob_zero) / self.p
 
-        q_rescaled = np.clip(q_rescaled, 0.0, 1.0)
+        # NB: some parameterizations of discrete distributions may lead to rounding
+        # errors, causing "off-by-one" issues in the quantile function. As a
+        # workaround we subtract a small epsilon value.
+        eps = np.finfo(q_rescaled.dtype).eps
+
+        q_rescaled = np.clip(q_rescaled - eps, 0.0, 1.0)
         y_positive = self._truncated_distribution.ppf(q_rescaled)
 
         return np.where(p <= prob_zero, 0.0, y_positive)
