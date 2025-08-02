@@ -1392,6 +1392,25 @@ class BaseDistribution(BaseObject):
         coerces x to a pd.DataFrame with index and columns as self.
 
         If self is scalar, coerces x to a np.float64 instead.
+
+        Parameters
+        ----------
+        x : array-like, np.ndarray coercible
+            input to be coerced to self
+        flatten : bool, optional, default=True
+            if True, flattens x before broadcasting
+            if False, broadcasts x as is
+
+        Returns
+        -------
+        pd.DataFrame or np.float64
+            coerced input, with same index and columns as self, or float
+
+            * if self is scalar: returns a np.float64
+            * if self is array-like: returns a pd.DataFrame with same index and columns
+              as self, and shape broadcasted to self.shape
+
+            If ``flatten`` is True, flattens ``x`` before broadcasting,
         """
         # scalar case
         if self.ndim == 0:
@@ -1420,42 +1439,14 @@ class BaseDistribution(BaseObject):
         flatten : bool, optional, default=True
             if True, flattens x before broadcasting
             if False, broadcasts x as is
+
+        Returns
+        -------
+        np.ndarray of same shape as self
+            coerced input, with same index and columns as self, or float
+            Return is ``x`` broadcasted to ``self.shape``, via ``np.broadcast_to``.
+            If ``flatten`` is True, flattens ``x`` before broadcasting,
         """
-        # scalar case
-        if self.ndim == 0:
-            x = np.float64(x)
-            return x
-
-        # array-like case
-        x = np.array(x)
-        if flatten:
-            x = x.reshape(1, -1)
-        df_shape = self.shape
-        x = np.broadcast_to(x, df_shape)
-        df = pd.DataFrame(x, index=self.index, columns=self.columns)
-        return df
-
-    def _coerce_to_self_index_np(self, x, flatten=False):
-        """Coerce input to type similar to self.
-
-        Coerces x to a np.ndarray with same shape as self.
-        Broadcasts x to self.shape, if necessary, via np.broadcast_to.
-
-        If self is scalar, coerces x to a np.float64 instead.
-
-        Parameters
-        ----------
-        x : array-like, np.ndarray coercible
-            input to be coerced to self
-        flatten : bool, optional, default=True
-            if True, flattens x before broadcasting
-            if False, broadcasts x as is
-        """
-        # scalar case
-        if self.ndim == 0:
-            x = np.float64(x)
-            return x
-
         x = np.array(x)
         if flatten:
             x = x.reshape(1, -1)
