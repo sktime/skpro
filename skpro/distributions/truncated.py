@@ -130,6 +130,13 @@ class TruncatedDistribution(BaseDistribution):
         offset = prob_at_lower
 
         shifted_p = p * factor + offset
+
+        # NB: some parameterizations of discrete distributions may lead to rounding
+        # errors, causing "off-by-one" issues in the quantile function. As a
+        # workaround we subtract a small epsilon value.
+        eps = np.finfo(shifted_p.dtype).eps
+        shifted_p = np.clip(shifted_p - eps, 0.0, 1.0)
+
         return self.distribution.ppf(shifted_p)
 
     def _cdf(self, x):
