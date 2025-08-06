@@ -9,7 +9,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class MeanScale(BaseDistribution):
-    r"""Composition for mean/scale family of distributions, or offset and scaling.
+    r"""Composition for offset and scaling, and mean/scale family of distributions.
 
     This distribution allows composition with an additive offset and a
     multiplicative scaling of a component distribution ``d``.
