@@ -806,39 +806,6 @@ class BaseDistribution(BaseObject):
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
 
-    def pdfj(self, x):
-        r"""Probability density function.
-
-        Let :math:`X` be a random variables with the distribution of ``self``,
-        taking values in ``(N, n)`` ``DataFrame``-s
-        Let :math:`x\in \mathbb{R}^{N\times n}`.
-        By :math:`p_{X_{ij}}`, denote the marginal pdf of :math:`X` at the
-        :math:`(i,j)`-th entry.
-
-        The output of this method, for input ``x`` representing :math:`x`,
-        is a ``DataFrame`` with same columns and indices as ``self``,
-        and entries :math:`p_{X_{ij}}(x_{ij})`.
-
-        If ``self`` has a mixed or discrete distribution, this returns
-        the weighted continuous part of `self`'s distribution instead of the pdf,
-        i.e., the marginal pdf integrate to the weight of the continuous part.
-
-        Parameters
-        ----------
-        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
-            representing :math:`x`, as above
-
-        Returns
-        -------
-        ``pd.DataFrame`` with same columns and index as ``self``
-            containing :math:`p_{X_{ij}}(x_{ij})`, as above
-        """
-        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
-        if distr_type == "discrete":
-            return self._coerce_to_self_index_df(0, flatten=False)
-
-        return self._boilerplate("_pdf", x=x)
-
     def _pdf(self, x):
         """Probability density function.
 
