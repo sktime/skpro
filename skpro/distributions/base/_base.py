@@ -236,48 +236,14 @@ class BaseDistribution(BaseObject):
             colidx = pd.Index([colidx])
 
         if rowidx is not None:
-            row_iloc = self._get_indexer_like_pandas(self.index, rowidx)
+            row_iloc = self.index.get_indexer_for(rowidx)
         else:
             row_iloc = None
         if colidx is not None:
-            col_iloc = self._get_indexer_like_pandas(self.columns, colidx)
+            col_iloc = self.columns.get_indexer_for(colidx)
         else:
             col_iloc = None
         return self._iloc(rowidx=row_iloc, colidx=col_iloc)
-
-    def _get_indexer_like_pandas(self, index, keys):
-        """
-        A unified helper that mimics pandas' get_indexer_for but supports:
-
-        - scalar key (e.g., "a", ("a", 1))
-        - tuple key (partial or full)
-        - list of keys (partial or full)
-        - works for both Index and MultiIndex
-
-        Returns:
-            np.ndarray of positions (integers)
-        """
-        if is_scalar_notnone(keys) or isinstance(keys, tuple):
-            keys = [keys]
-
-        if isinstance(index, pd.MultiIndex):
-            # Use get_locs for each key (full or partial)
-            ilocs = []
-            for key in keys:
-                if isinstance(key, slice):
-                    ilocs.append(index.slice_indexer(key.start, key.stop, key.step))
-                else:
-                    iloc = index.get_locs([key])
-                    if isinstance(iloc, slice):
-                        iloc = np.arange(len(index))[iloc]
-                    ilocs.append(iloc)
-            return np.concatenate(ilocs) if ilocs else np.array([], dtype=int)
-        # if not isinstance(index, pd.MultiIndex):
-        # Regular Index
-        if isinstance(keys, slice):
-            return np.arange(len(index))[index.slice_indexer(keys.start, keys.stop, keys.step)]
-        return index.get_indexer(keys)
-
 
     def _at(self, rowidx=None, colidx=None):
         if rowidx is not None:
