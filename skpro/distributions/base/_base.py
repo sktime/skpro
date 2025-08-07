@@ -246,7 +246,8 @@ class BaseDistribution(BaseObject):
         return self._iloc(rowidx=row_iloc, colidx=col_iloc)
 
     def _get_indexer_like_pandas(self, index, keys):
-        """
+        """Return indexer for keys in index.
+
         A unified helper that mimics pandas' get_indexer_for but supports:
 
         - scalar key (e.g., "a", ("a", 1))
@@ -254,8 +255,9 @@ class BaseDistribution(BaseObject):
         - list of keys (partial or full)
         - works for both Index and MultiIndex
 
-        Returns:
-            np.ndarray of positions (integers)
+        Returns
+        -------
+        np.ndarray of positions (integers)
         """
         if is_scalar_notnone(keys) or isinstance(keys, tuple):
             keys = [keys]
@@ -275,7 +277,9 @@ class BaseDistribution(BaseObject):
         # if not isinstance(index, pd.MultiIndex):
         # Regular Index
         if isinstance(keys, slice):
-            return np.arange(len(index))[index.slice_indexer(keys.start, keys.stop, keys.step)]
+            return np.arange(len(index))[
+                index.slice_indexer(keys.start, keys.stop, keys.step)
+            ]
         return index.get_indexer(keys)
 
 
