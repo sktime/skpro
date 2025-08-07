@@ -236,14 +236,48 @@ class BaseDistribution(BaseObject):
             colidx = pd.Index([colidx])
 
         if rowidx is not None:
-            row_iloc = self.index.get_indexer_for(rowidx)
+            row_iloc = self._get_indexer_like_pandas(self.index, rowidx)
         else:
             row_iloc = None
         if colidx is not None:
-            col_iloc = self.columns.get_indexer_for(colidx)
+            col_iloc = self._get_indexer_like_pandas(self.columns, colidx)
         else:
             col_iloc = None
         return self._iloc(rowidx=row_iloc, colidx=col_iloc)
+
+    def _get_indexer_like_pandas(self, index, keys):
+        """
+        A unified helper that mimics pandas' get_indexer_for but supports:
+
+        - scalar key (e.g., "a", ("a", 1))
+        - tuple key (partial or full)
+        - list of keys (partial or full)
+        - works for both Index and MultiIndex
+
+        Returns:
+            np.ndarray of positions (integers)
+        """
+        if is_scalar_notnone(keys) or isinstance(keys, tuple):
+            keys = [keys]
+
+        if isinstance(index, pd.MultiIndex):
+            # Use get_locs for each key (full or partial)
+            ilocs = []
+            for key in keys:
+                if isinstance(key, slice):
+                    ilocs.append(index.slice_indexer(key.start, key.stop, key.step))
+                else:
+                    iloc = index.get_locs([key])
+                    if isinstance(iloc, slice):
+                        iloc = np.arange(len(index))[iloc]
+                    ilocs.append(iloc)
+            return np.concatenate(ilocs) if ilocs else np.array([], dtype=int)
+        # if not isinstance(index, pd.MultiIndex):
+        # Regular Index
+        if isinstance(keys, slice):
+            return np.arange(len(index))[index.slice_indexer(keys.start, keys.stop, keys.step)]
+        return index.get_indexer(keys)
+
 
     def _at(self, rowidx=None, colidx=None):
         if rowidx is not None:
@@ -771,6 +805,61 @@ class BaseDistribution(BaseObject):
             return np.log(res)
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
+
+    def pdfj(self, x):
+        r"""Probability density function.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in ``(N, n)`` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`p_{X_{ij}}`, denote the marginal pdf of :math:`X` at the
+        :math:`(i,j)`-th entry.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`p_{X_{ij}}(x_{ij})`.
+
+        If ``self`` has a mixed or discrete distribution, this returns
+        the weighted continuous part of `self`'s distribution instead of the pdf,
+        i.e., the marginal pdf integrate to the weight of the continuous part.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`p_{X_{ij}}(x_{ij})`, as above
+        """
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if distr_type == "discrete":
+            return self._coerce_to_self_index_df(0, flatten=False)
+
+        return self._boilerplate("_pdf", x=x)
+
+    def _pdf(self, x):
+        """Probability density function.
+
+        Private method, to be implemented by subclasses.
+        """
+        self_has_logpdf = self._has_implementation_of("log_pdf")
+        self_has_logpdf = self_has_logpdf or self._has_implementation_of("_log_pdf")
+        if self_has_logpdf:
+            approx_method = (
+                "by exponentiating the output returned by the log_pdf method, "
+                "this may be numerically unstable"
+            )
+            warn(self._method_error_msg("pdf", fill_in=approx_method))
+
+            x = self._coerce_to_self_index_df(x, flatten=False)
+            res = self.log_pdf(x=x)
+            if isinstance(res, pd.DataFrame):
+                res = res.values
+            return np.exp(res)
+
+        raise NotImplementedError(self._method_error_msg("pdf", "error"))
 
     def pmf(self, x):
         r"""Probability mass function.
