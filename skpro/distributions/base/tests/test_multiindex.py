@@ -3,8 +3,8 @@
 Uses the Normal distribution, but is intended to trigger the base layer.
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 
 from skpro.distributions.normal import Normal
