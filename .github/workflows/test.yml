@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: repository checkout step
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: python environment step
         uses: actions/setup-python@v5
@@ -44,7 +44,7 @@ jobs:
         run: python3 -m pip install pre-commit
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -75,7 +75,7 @@ jobs:
     needs: code-quality
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -97,7 +97,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - run: git remote set-branches origin 'main'
 
@@ -136,7 +136,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - run: git remote set-branches origin 'main'
 
