@@ -16,6 +16,12 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.9.3] - 2025-08-17
+====================
+
+Feature release: Hurdle and zero-inflated distributions
+
+
 [2.9.2] - 2025-07-23
 ====================
 
