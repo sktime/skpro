@@ -16,6 +16,44 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.9.3] - 2025-08-17
+====================
+
+Feature, maintenance, and bugfix release.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] Moves epsilon offset logic to `TruncatedDistribution` from `Hurdle` (:pr:`577`) :user:`tingiskhan`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.32.0`` to ``<1.33.0`` by @dependabot[bot] in https://github.com/sktime/skpro/pull/572
+* [MNT] [Dependabot](deps): Bump ``actions/download-artifact`` from 4 to 5 (:pr:`579`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump ``actions/checkout`` from 4 to 5 (:pr:`581`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] fix badge link to license in README (:pr:`575`) :user:`fkiraly`
+* [DOC] corrected and improved docstring for ``MeanScale`` distribution family (:pr:`578`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] correctly set tags for ``Poisson`` distribution (:pr:`570`) :user:`fkiraly`
+* [BUG] fix ``pdf`` and ``pmf`` default return type in scalar case (:pr:`574`) :user:`fkiraly`
+* [BUG] Addresses stochasticity of Hurdle tests (:pr:`568`) :user:`tingiskhan`
+* [BUG] correctly set tags of ``Hurdle`` and ``Truncated`` depending on inner distribution (:pr:`569`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`tingiskhan`
+
+
 [2.9.2] - 2025-07-23
 ====================
 
