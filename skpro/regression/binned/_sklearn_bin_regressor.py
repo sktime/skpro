@@ -47,6 +47,21 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
         bin's boundaries np.array([bins[i],bins[i+1]]).
     classes_proba_ : pd.DataFrame
         Contains the class probabilites.
+
+    Examples
+    --------
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from skpro.regression.binned import HistBinnedProbaRegressor
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> clf = RandomForestClassifier()
+    >>> reg = HistBinnedProbaRegressor(clf=clf, bins=5)
+    >>> reg.fit(X_train, y_train)
+    HistBinnedProbaRegressor(...)
+    >>> y_pred = reg.predict_proba(X_test)
+    >>> y_pred_int = reg.predict_interval(X_test)
     """
 
     _tags = {
@@ -149,30 +164,6 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
         self.classes_ = self.clf_.classes_
 
         return self
-
-    def _predict(self, X):
-        """Predict labels for data from features.
-
-        State required:
-            Requires state to be "fitted" = self.is_fitted=True
-
-        Accesses in self:
-            Fitted model attributes ending in "_"
-
-        Parameters
-        ----------
-        X : pandas DataFrame, must have same columns as X in `fit`
-            data to predict labels for
-
-        Returns
-        -------
-        y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
-            labels predicted for `X`
-        """
-        X = prep_skl_df(X)
-        y_pred = self.clf_.predict(X)
-        y_pred_df = pd.DataFrame(y_pred, index=X.index, columns=self._y_cols)
-        return y_pred_df
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
