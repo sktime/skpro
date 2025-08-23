@@ -33,9 +33,10 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
     clf : instance of a sklearn classifier
         Classifier to wrap, must have ``predict`` and ``predict_proba``.
     bins : int or 1D array of float, default: 10
-        1. If ``int`` then it will be considered as the number of bins.
-        2. Else if it is an array then it will be used as the bin boundaries.
-        If the requirement is ``n`` bins then the ``len(bins)`` must be ``n+1``.
+
+        * If ``int`` then it will be considered as the number of bins.
+        * Else if it is an array then it will be used as the bin boundaries.
+          If the requirement is ``n`` bins then the ``len(bins)`` must be ``n+1``.
 
     Attributes
     ----------
