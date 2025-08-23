@@ -33,9 +33,10 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
     clf : instance of a sklearn classifier
         Classifier to wrap, must have ``predict`` and ``predict_proba``.
     bins : int or 1D array of float, default: 10
-        1. If ``int`` then it will be considered as the number of bins.
-        2. Else if it is an array then it will be used as the bin boundaries.
-        If the requirement is ``n`` bins then the ``len(bins)`` must be ``n+1``.
+
+        * If ``int`` then it will be considered as the number of bins.
+        * Else if it is an array then it will be used as the bin boundaries.
+          If the requirement is ``n`` bins then the ``len(bins)`` must be ``n+1``.
 
     Attributes
     ----------
@@ -47,6 +48,21 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
         bin's boundaries np.array([bins[i],bins[i+1]]).
     classes_proba_ : pd.DataFrame
         Contains the class probabilites.
+
+    Examples
+    --------
+    >>> from skpro.regression.binned import HistBinnedProbaRegressor
+    >>> from sklearn.ensemble import RandomForestClassifier
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>>
+    >>> hist_reg = HistBinnedProbaRegressor(RandomForestClassifier(), bins=5)
+    >>> hist_reg.fit(X_train, y_train)
+    >>>
+    >>> y_pred = hist_reg.predict(X_test)
     """
 
     _tags = {
