@@ -43,6 +43,9 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         assert isinstance(y_pred, pd.DataFrame)
         assert (y_pred.index == X_test.index).all()
         assert (y_pred.columns == y_train.columns).all()
+        # check that return is float dtype
+        for col in y_pred.columns:
+            assert pd.api.types.is_float_dtype(y_pred[col])
 
         # test predict_proba output contract
         y_pred_proba = regressor.predict_proba(X_test)
