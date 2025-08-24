@@ -49,7 +49,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all_extras = [
-    "cyclic-boosting>=1.4.0; python_version < '3.12'",
+    "cyclic-boosting>=1.4.0; python_version < '3.13'",
     "distfit; python_version < '3.13'",
     "lifelines<0.31.0; python_version < '3.13'",
     "mapie; python_version < '3.13'",
