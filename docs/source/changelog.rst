@@ -24,17 +24,32 @@ Feature, maintenance, and bugfix release.
 Enhancements
 ~~~~~~~~~~~~
 
+* [ENH] replace apply linalg norm with native pandas ufuncs (:pr:`592`) :user:`joshdunnlime`
+
 Maintenance
 ~~~~~~~~~~~
+
+* [MNT] Check versions in  wheels workflow (:pr:`583`) :user:`szepeviktor`
+* [MNT] update ``numpy`` bound to ``numpy<2.4`` (:pr:`584`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.33.0`` to ``<1.34.0`` (:pr:`587`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump ``actions/setup-python`` from 5 to 6 (:pr:`590`) :user:`dependabot[bot]`
 
 Documentation
 ~~~~~~~~~~~~~
 
+* [DOC] improved docstring for ``HistBinnedProbaRegressor`` (:pr:`586`) :user:`fkiraly`
+
 Fixes
 ~~~~~
 
+* [BUG] fix ``HistBinnedRegressor.predict`` return type (:pr:`585`) :user:`fkiraly`
+
 Contributors
 ~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`joshdunnlime`,
+:user:`szepeviktor`
 
 
 [2.9.3] - 2025-08-17
