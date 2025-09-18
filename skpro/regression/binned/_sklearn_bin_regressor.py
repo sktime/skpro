@@ -61,6 +61,7 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
     >>>
     >>> hist_reg = HistBinnedProbaRegressor(RandomForestClassifier(), bins=5)
     >>> hist_reg.fit(X_train, y_train)
+    HistBinnedProbaRegressor(...)
     >>>
     >>> y_pred = hist_reg.predict(X_test)
     """
@@ -165,30 +166,6 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
         self.classes_ = self.clf_.classes_
 
         return self
-
-    def _predict(self, X):
-        """Predict labels for data from features.
-
-        State required:
-            Requires state to be "fitted" = self.is_fitted=True
-
-        Accesses in self:
-            Fitted model attributes ending in "_"
-
-        Parameters
-        ----------
-        X : pandas DataFrame, must have same columns as X in `fit`
-            data to predict labels for
-
-        Returns
-        -------
-        y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
-            labels predicted for `X`
-        """
-        X = prep_skl_df(X)
-        y_pred = self.clf_.predict(X)
-        y_pred_df = pd.DataFrame(y_pred, index=X.index, columns=self._y_cols)
-        return y_pred_df
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
