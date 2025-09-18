@@ -64,6 +64,8 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
     HistBinnedProbaRegressor(...)
     >>>
     >>> y_pred = hist_reg.predict(X_test)
+    >>> y_pred_proba = reg.predict_proba(X_test)
+    >>> y_pred_int = reg.predict_interval(X_test)
     """
 
     _tags = {
