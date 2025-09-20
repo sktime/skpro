@@ -534,7 +534,7 @@ class QPD_B(BaseDistribution):
 
 
 class QPD_U(BaseDistribution):
-    """Johnson Quantile-Parameterized Distributions with bounded mode.
+    """Johnson Quantile-Parameterized Distributions with unbounded mode.
 
     see https://repositories.lib.utexas.edu/bitstream/handle/2152
         /63037/HADLOCK-DISSERTATION-2017.pdf
