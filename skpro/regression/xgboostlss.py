@@ -21,6 +21,7 @@ class XGBoostLSS(BaseProbaRegressor):
         * "LogNormal": LogNormal distribution.
         * "TDistribution": Student's T distribution.
         * "Weibull": Weibull distribution.
+        * "Beta": Beta distribution.
 
     stabilization: str, optional, default="None"
         Stabilization method for the Gradient and Hessian.
@@ -165,6 +166,7 @@ class XGBoostLSS(BaseProbaRegressor):
             "LogNormal": {"mu": "loc", "sigma": "scale"},
             "TDistribution": {"mu": "loc", "sigma": "scale", "df": "df"},
             "Weibull": {"scale": "scale", "k": "concentration"},
+            "Beta": {"alpha": "concentration1", "beta": "concentration0"},
         }
         map = name_map.get(distr, {})
 
