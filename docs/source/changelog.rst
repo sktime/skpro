@@ -60,7 +60,7 @@ Feature, maintenance, and bugfix release.
 Enhancements
 ~~~~~~~~~~~~
 
-* [ENH] Moves epsilon offset logic to `TruncatedDistribution` from `Hurdle` (:pr:`577`) :user:`tingiskhan`
+* [ENH] Moves epsilon offset logic to ``TruncatedDistribution`` from ``Hurdle`` (:pr:`577`) :user:`tingiskhan`
 
 Maintenance
 ~~~~~~~~~~~
