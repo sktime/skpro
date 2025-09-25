@@ -320,4 +320,5 @@ class XGBoostLSS(BaseProbaRegressor):
         params3 = {"dist": "Weibull", "max_minutes": 1}
         params4 = {"dist": "TDistribution", "max_minutes": 1}
         params5 = {"dist": "Laplace", "max_minutes": 1}
-        return [params0, params1, params2, params3, params4, params5]
+        params6 = {"dist": "Beta", "max_minutes": 1}
+        return [params0, params1, params2, params3, params4, params5, params6]
