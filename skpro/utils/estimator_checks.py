@@ -1,3 +1,6 @@
+# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+# mostly based on the sktime utility of the same name (BSD-3 Clause)
+# which in turn was inspired by the scikit-learn utility of the same name
 """Estimator checker for extension."""
 
 __author__ = ["fkiraly"]
@@ -18,9 +21,10 @@ def check_estimator(
     """Run all tests on one single estimator.
 
     Tests that are run on estimator:
-        all tests in test_all_estimators
-        all interface compatibility tests from the module of estimator's scitype
-            for example, test_all_regressors if estimator is a regressor
+
+    * all tests in ``test_all_estimators``
+    * all interface compatibility tests from the module of estimator's scitype
+      for example, ``test_all_regressors`` if estimator is a regressor
 
     Parameters
     ----------
