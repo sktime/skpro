@@ -3,6 +3,9 @@
 
 __author__ = ["fkiraly"]
 
+import warnings
+from functools import partial
+
 import numpy as np
 import pandas as pd
 
@@ -68,7 +71,7 @@ class TransformedDistribution(BaseDistribution):
         columns=None,
     ):
         self.distribution = distribution
-        self.transform = transform
+        self.transformer_ = transform
         self.assume_monotonic = assume_monotonic
 
         self._is_scalar_dist = self.distribution.ndim == 0
@@ -86,6 +89,56 @@ class TransformedDistribution(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
+    def log_pdf(self, x: pd.DataFrame):
+        r"""Logarithmic probability density function.
+
+        Parameters
+        ----------
+        x : pd.DataFrame, same shape as ``self``
+            points where the log-pdf is evaluated
+
+        Returns
+        -------
+        pd.DataFrame, same shape as ``self``
+            log-pdf values at the given points
+
+        Notes
+        -----
+        The log-pdf for the transformed dist is computed via the
+        change-of-variables formula:
+
+        TODO: Some mathematical notation here...
+
+        Currently, we implement log-pdf only for transforms that have a
+        linear transform and scaler Jacobian, e.g., MinMaxScaler.
+        """
+        dist = self.distribution
+
+        if hasattr(dist, "_distribution_attr"):
+            obj = getattr(dist, dist._distribution_attr)
+            args, kwds = dist._get_scipy_param()
+            log_pdf = partial(obj.logpdf, *args, **kwds)
+        else:
+            log_pdf = dist.log_pdf
+
+        x_ = self.transformer_.transform(x)
+
+        if hasattr(self.transformer_, "mms"):
+            # if the transform has a MinMaxScaler, we can compute the Jacobian
+            jac = abs(1 / self.transformer_.mms.scale_)
+            return log_pdf(x_) + np.log(jac)[0]
+        else:
+            warnings.warn(
+                "log_pdf is implemented only for transforms that have "
+                "linear transform and scaler Jacobian, e.g., MinMaxScaler. "
+                "log_pdf will return a result that can be reliably compared to "
+                "other scores using identical transforms but not to other "
+                "LogLoss scores.",
+                stacklevel=2,
+            )
+
+        return obj.logpdf(x_, *args, **kwds)
+
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
 
@@ -102,7 +155,7 @@ class TransformedDistribution(BaseDistribution):
         cls = type(self)
         return cls(
             distribution=distr,
-            transform=self.transform,
+            transform=self.transformer_,
             assume_monotonic=self.assume_monotonic,
             index=new_index,
             columns=new_columns,
@@ -133,7 +186,7 @@ class TransformedDistribution(BaseDistribution):
                 "set `assume_monotonic=True` to use this method"
             )
 
-        trafo = self.transform
+        trafo = self.transformer_.inverse_transform
 
         inner_ppf = self.distribution.ppf(p)
         outer_ppf = trafo(inner_ppf)
@@ -177,7 +230,7 @@ class TransformedDistribution(BaseDistribution):
         else:
             n = n_samples
 
-        trafo = self.transform
+        trafo = self.transformer_.inverse_transform
 
         samples = []
 

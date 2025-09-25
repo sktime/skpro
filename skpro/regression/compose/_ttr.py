@@ -24,7 +24,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         ``transformer.fit_transform``.
 
     ``predict(X)`` - result is of executing ``regressor.predict``, with `X=X`
-        then applies ``transformer.inverse_transform`` to the output of
+        then applies ``transformer`` to the output of
         ``regressor.predict``.
 
     ``predict_interval(X)``, ``predict_quantiles(X)`` - as ``predict(X)``,
@@ -33,7 +33,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
     ``predict_proba(X)`` - first executes ``regressor.predict_proba(X)``,
         then returns a ``TransformedDistribution`` object with
         ``distribution=regressor.predict_proba(X)``, and
-        ``transform=transformer.inverse_transform``.
+        ``transform=transformer``.
 
     Parameters
     ----------
@@ -69,6 +69,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             "capability:survival",
             "capability:update",
         ]
+
         self.clone_tags(self.regressor_, tags_to_clone)
 
     def _fit(self, X, y, C=None):
@@ -167,6 +168,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         """
         y_pred = self.regressor_.predict(X=X)
         y_pred_it = self.transformer_.inverse_transform(y_pred)
+
         if not isinstance(y_pred_it, pd.DataFrame):
             y_cols = self._y_metadata["feature_names"]
             y_pred_it = pd.DataFrame(y_pred_it, index=X.index, columns=y_cols)
@@ -215,7 +217,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
         coverage : guaranteed list of float of unique values
-           nominal coverage(s) of predictive interval(s)
+            nominal coverage(s) of predictive interval(s)
 
         Returns
         -------
@@ -283,7 +285,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         y_pred = self.regressor_.predict_proba(X=X)
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
-            transform=self.transformer_.inverse_transform,
+            transform=self.transformer_,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"],
