@@ -276,7 +276,7 @@ class TransformedDistribution(BaseDistribution):
 
         from skpro.distributions import Normal
 
-        ft = FunctionTransformer(func=np.exp, inverse_func=np.log)
+        ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
 
         n_scalar = Normal(mu=0, sigma=1)
         # scalar case example
