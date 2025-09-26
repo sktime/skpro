@@ -81,7 +81,7 @@ def evaluate(
     X : pandas DataFrame
         Feature instances to use in evaluation experiment
     y : pd.DataFrame, must be same length as X
-        Labels to used in the evaluation experiment
+        Labels to use in the evaluation experiment
     scoring : subclass of skpro.performance_metrics.BaseMetric or list of same,
         default=None. Used to get a score function that takes y_pred and y_test
         arguments and accept y_train as keyword argument.
@@ -152,6 +152,7 @@ def evaluate(
         Row index is splitter index of train/test fold in ``cv``.
         Entries in the i-th row are for the i-th train/test split in ``cv``.
         Columns are as follows:
+
         - test_{scoring.name}: (float) Model performance score.
           If ``scoring`` is a list,
           then there is a column withname ``test_{scoring.name}`` for each scorer.
@@ -405,7 +406,7 @@ def _check_scores(metrics):
 
     Parameters
     ----------
-    metrics : sktime accepted metrics object or a list of them or None
+    metrics : skpro accepted metrics object or a list of them or None
 
     Return
     ------
