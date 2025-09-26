@@ -42,6 +42,9 @@ class TransformedTargetRegressor(BaseProbaRegressor):
     transformer : sklearn transformer, optional (default=None)
         transformer to apply to target variable before fitting regressor,
         and to apply inverse transform to predictions of regressor
+    numerical_diff : bool, optional (default=False)
+        if True, use numerical_diff to compute jacobian of inverse transform
+        in ``predict_proba`` method
 
     Attributes
     ----------
@@ -56,9 +59,10 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         "capability:missing": True,
     }
 
-    def __init__(self, regressor, transformer=None):
+    def __init__(self, regressor, transformer=None, numerical_diff=True):
         self.regressor = regressor
         self.transformer = transformer
+        self.numerical_diff = numerical_diff
         super().__init__()
 
         self.regressor_ = regressor.clone()
@@ -285,10 +289,11 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         y_pred = self.regressor_.predict_proba(X=X)
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
-            transform=self.transformer_,
+            transformer=self.transformer_,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"],
+            numerical_diff=self.numerical_diff,
         )
         return y_pred_it
 

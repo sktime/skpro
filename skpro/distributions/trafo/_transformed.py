@@ -3,7 +3,6 @@
 
 __author__ = ["fkiraly"]
 
-import warnings
 from functools import partial
 
 import numpy as np
@@ -65,14 +64,16 @@ class TransformedDistribution(BaseDistribution):
     def __init__(
         self,
         distribution,
-        transform,
+        transformer,
         assume_monotonic=True,
         index=None,
         columns=None,
+        numerical_diff=True,
     ):
         self.distribution = distribution
-        self.transformer_ = transform
+        self.transformer = transformer
         self.assume_monotonic = assume_monotonic
+        self.numerical_diff = numerical_diff
 
         self._is_scalar_dist = self.distribution.ndim == 0
 
@@ -101,18 +102,10 @@ class TransformedDistribution(BaseDistribution):
         -------
         pd.DataFrame, same shape as ``self``
             log-pdf values at the given points
-
-        Notes
-        -----
-        The log-pdf for the transformed dist is computed via the
-        change-of-variables formula:
-
-        TODO: Some mathematical notation here...
-
-        Currently, we implement log-pdf only for transforms that have a
-        linear transform and scaler Jacobian, e.g., MinMaxScaler.
         """
         dist = self.distribution
+        transformer = self.transformer
+        x_ = transformer.transform(x)
 
         if hasattr(dist, "_distribution_attr"):
             obj = getattr(dist, dist._distribution_attr)
@@ -121,23 +114,43 @@ class TransformedDistribution(BaseDistribution):
         else:
             log_pdf = dist.log_pdf
 
-        x_ = self.transformer_.transform(x)
+        jac = self._jacobian(x)
+        return log_pdf(x_) - np.log(jac).reshape(x.shape)
 
-        if hasattr(self.transformer_, "mms"):
-            # if the transform has a MinMaxScaler, we can compute the Jacobian
-            jac = abs(1 / self.transformer_.mms.scale_)
-            return log_pdf(x_) + np.log(jac)[0]
+    def _jacobian(self, x: pd.DataFrame):
+        """Compute the Jacobian matrix of the transform at x.
+
+        Parameters
+        ----------
+        x : pd.DataFrame, same shape as ``self``
+            points where the Jacobian is evaluated
+
+        Returns
+        -------
+        np.ndarray of shape (n, n, m, m) where (n, m) is the shape of ``self``
+            Jacobian matrices at the given points
+        """
+        transformer = self.transformer
+
+        if hasattr(transformer, "scale_"):
+            # if the transform has scale_, we can compute the Jacobian
+            jac = abs(1 / transformer.scale_)
+            jac = np.ones_like(x) * jac
+            # TODO: return x-shaped array
+            return jac
+        elif self.numerical_diff:
+            # implement numpy differentiation here
+            x_t_np = transformer.transform(x).values.reshape(-1)
+            x_np = x.values.reshape(-1)
+            grad = ordered_gradient(x_np, x_t_np)
+            jac = np.abs(grad)
+            return jac
         else:
-            warnings.warn(
-                "log_pdf is implemented only for transforms that have "
-                "linear transform and scaler Jacobian, e.g., MinMaxScaler. "
-                "log_pdf will return a result that can be reliably compared to "
-                "other scores using identical transforms but not to other "
-                "LogLoss scores.",
-                stacklevel=2,
+            raise NotImplementedError(
+                "Jacobian computation not implemented for this transformer, "
+                "set `numerical_diff=True` to use numerical differentiation or "
+                "use a transformer with `scale_` attribute, e.g., MinMaxScaler"
             )
-
-        return obj.logpdf(x_, *args, **kwds)
 
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
@@ -155,7 +168,7 @@ class TransformedDistribution(BaseDistribution):
         cls = type(self)
         return cls(
             distribution=distr,
-            transform=self.transformer_,
+            transformer=self.transformer,
             assume_monotonic=self.assume_monotonic,
             index=new_index,
             columns=new_columns,
@@ -186,7 +199,7 @@ class TransformedDistribution(BaseDistribution):
                 "set `assume_monotonic=True` to use this method"
             )
 
-        trafo = self.transformer_.inverse_transform
+        trafo = self.transformer.inverse_transform
 
         inner_ppf = self.distribution.ppf(p)
         outer_ppf = trafo(inner_ppf)
@@ -230,7 +243,7 @@ class TransformedDistribution(BaseDistribution):
         else:
             n = n_samples
 
-        trafo = self.transformer_.inverse_transform
+        trafo = self.transformer.inverse_transform
 
         samples = []
 
@@ -259,20 +272,24 @@ class TransformedDistribution(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        from sklearn.preprocessing import FunctionTransformer
+
         from skpro.distributions import Normal
+
+        ft = FunctionTransformer(func=np.exp, inverse_func=np.log)
 
         n_scalar = Normal(mu=0, sigma=1)
         # scalar case example
         params1 = {
             "distribution": n_scalar,
-            "transform": np.exp,
+            "transformer": ft,
         }
 
         # array case example
         n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["c", "d"]))
         params2 = {
             "distribution": n_array,
-            "transform": np.exp,
+            "transformer": ft,
             "index": pd.Index([1, 2]),
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
@@ -283,3 +300,24 @@ class TransformedDistribution(BaseDistribution):
 def is_scalar_notnone(obj):
     """Check if obj is scalar and not None."""
     return obj is not None and np.isscalar(obj)
+
+
+def ordered_gradient(f, x):
+    """Compute np.gradient(f, x) but safely handles when not already unsorted by x."""
+    # Ensure numpy arrays
+    f = np.asarray(f)
+    x = np.asarray(x)
+
+    # Sort x and reorder f accordingly
+    sort_idx = np.argsort(x)
+    x_sorted = x[sort_idx]
+    f_sorted = f[sort_idx]
+
+    # Compute gradient
+    grad_sorted = np.gradient(f_sorted, x_sorted)
+
+    # Map back to original order
+    grad = np.empty_like(grad_sorted)
+    grad[sort_idx] = grad_sorted
+
+    return grad
