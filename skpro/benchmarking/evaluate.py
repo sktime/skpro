@@ -135,12 +135,14 @@ def evaluate(
 
     C : pd.DataFrame, optional (default=None)
         censoring information to use in the evaluation experiment,
-        should have same column name as y, same length as X and y
-        should have entries 0 and 1 (float or int)
-        0 = uncensored, 1 = (right) censored
-        if None, all observations are assumed to be uncensored
+
+        * should have same column name as y, same length as X and y
+        * should have entries 0 and 1 (float or int),
+          0 = uncensored, 1 = (right) censored
+
+        if None, all observations are assumed to be uncensored.
         Can be passed to any probabilistic regressor,
-        but is ignored if capability:survival tag is False.
+        but is ignored if ``capability:survival`` tag is ``False``.
 
     Returns
     -------

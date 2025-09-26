@@ -85,7 +85,9 @@ class BaseProbaRegressor(BaseEstimator):
             labels to fit regressor to
         C : ignored, optional (default=None)
             censoring information for survival analysis
-            All probabilistic regressors assume data to be uncensored
+            All probabilistic regressors assume data to be uncensored,
+            and ignore this input unless the ``capability:survival`` tag is ``True``.
+            Present for API consistency with survival regressors.
 
         Returns
         -------
