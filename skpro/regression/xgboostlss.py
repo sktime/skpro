@@ -59,7 +59,7 @@ class XGBoostLSS(BaseProbaRegressor):
     n_trials: int, optional, default=30
         The number of trials in tuning.
         If this argument is set to None, there is no limitation on the number of trials.
-        If set to 0, no tuning is done, and default parameters of xgboost are used.
+        If set to 0, no tuning is done, and default parameters of XGBoostLSS are used.
     """
 
     _tags = {
@@ -212,50 +212,70 @@ class XGBoostLSS(BaseProbaRegressor):
             opt_params = {}  # empty dict, use default parameters
             n_rounds = self.num_boost_round
         else:
-            param_dict = {
-                "eta": ["float", {"low": 1e-5, "high": 1, "log": True}],
-                "max_depth": ["int", {"low": 1, "high": 10, "log": False}],
-                "gamma": ["float", {"low": 1e-8, "high": 40, "log": True}],
-                "subsample": ["float", {"low": 0.2, "high": 1.0, "log": False}],
-                "colsample_bytree": ["float", {"low": 0.2, "high": 1.0, "log": False}],
-                "min_child_weight": ["float", {"low": 1e-8, "high": 500, "log": True}],
-                "booster": ["categorical", ["gbtree"]],
-            }
-
-            opt_param = xgblss.hyper_opt(
-                param_dict,
-                dtrain,
-                num_boost_round=self.num_boost_round,
-                # Number of boosting iterations.
-                nfold=self.nfold,
-                # Number of cv-folds.
-                early_stopping_rounds=self.early_stopping_rounds,
-                # Number of early-stopping rounds
-                max_minutes=self.max_minutes,
-                # Time budget in minutes,
-                # i.e., stop study after the given number of minutes.
-                n_trials=self.n_trials,
-                # The number of trials. If this argument is set to None,
-                # there is no limitation on the number of trials.
-                silence=True,
-                # Controls the verbosity of the trail,
-                # i.e., user can silence the outputs of the trail.
-                seed=123,
-                # Seed used to generate cv-folds.
-                hp_seed=123,
-                # Seed for random number generator used
-                # in the Bayesian hyperparameter search.
-            )
-
-            opt_params = opt_param.copy()
-            n_rounds = opt_params["opt_rounds"]
-            del opt_params["opt_rounds"]
+            opt_params = self._hyper_opt(xgblss, dtrain)
+            n_rounds = opt_params.pop("n_estimators", self.num_boost_round)
 
         # Train Model with optimized hyperparameters
         xgblss.train(opt_params, dtrain, num_boost_round=n_rounds)
 
         self.xgblss_ = xgblss
         return self
+
+    def _hyper_opt(self, xgblss, dtrain):
+        """Run internal hyperparameter optimization.
+
+        Uses ``xgboostlss.hyper_opt`` function to run hyperparameter optimization.
+
+        Parameters
+        ----------
+        xgblss : xgboostlss.model.XGBoostLSS instance
+            xgboostlss model instance, as created in ``_fit`` method
+        dtrain : xgboost.DMatrix
+            training data, as created in ``_fit`` method
+
+        Returns
+        -------
+        opt_params : dict
+            dictionary of hyperparameters to be passed to xgboostlss
+        """
+        param_dict = {
+            "eta": ["float", {"low": 1e-5, "high": 1, "log": True}],
+            "max_depth": ["int", {"low": 1, "high": 10, "log": False}],
+            "gamma": ["float", {"low": 1e-8, "high": 40, "log": True}],
+            "subsample": ["float", {"low": 0.2, "high": 1.0, "log": False}],
+            "colsample_bytree": ["float", {"low": 0.2, "high": 1.0, "log": False}],
+            "min_child_weight": ["float", {"low": 1e-8, "high": 500, "log": True}],
+            "booster": ["categorical", ["gbtree"]],
+        }
+
+        opt_param = xgblss.hyper_opt(
+            param_dict,
+            dtrain,
+            num_boost_round=self.num_boost_round,
+            # Number of boosting iterations.
+            nfold=self.nfold,
+            # Number of cv-folds.
+            early_stopping_rounds=self.early_stopping_rounds,
+            # Number of early-stopping rounds
+            max_minutes=self.max_minutes,
+            # Time budget in minutes,
+            # i.e., stop study after the given number of minutes.
+            n_trials=self.n_trials,
+            # The number of trials. If this argument is set to None,
+            # there is no limitation on the number of trials.
+            silence=True,
+            # Controls the verbosity of the trail,
+            # i.e., user can silence the outputs of the trail.
+            seed=123,
+            # Seed used to generate cv-folds.
+            hp_seed=123,
+            # Seed for random number generator used
+            # in the Bayesian hyperparameter search.
+        )
+
+        opt_params = opt_param.copy()
+
+        return opt_params
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
