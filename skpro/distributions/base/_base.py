@@ -1753,7 +1753,7 @@ class _Indexer:
         # handle special case of multiindex in loc with single tuple key
         if isinstance(key, tuple) and not any(isinstance(k, tuple) for k in key):
             if isinstance(ref.index, pd.MultiIndex) and self.method == "_loc":
-                if type(self).__name__ != "Empirical":
+                if type(ref).__name__ != "Empirical":
                     return indexer(rowidx=key, colidx=None)
 
         # general case
