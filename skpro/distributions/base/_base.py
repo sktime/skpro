@@ -274,6 +274,8 @@ class BaseDistribution(BaseObject):
             if isinstance(key, slice):
                 ilocs.append(index.slice_indexer(key.start, key.stop, key.step))
             else:
+                if not isinstance(key, tuple):
+                    key = [key]
                 iloc = index.get_locs(key)
                 if isinstance(iloc, slice):
                     iloc = np.arange(len(index))[iloc]
