@@ -259,28 +259,26 @@ class BaseDistribution(BaseObject):
         -------
         np.ndarray of positions (integers)
         """
+        # regular index, not multiindex
+        if not isinstance(index, pd.MultiIndex):
+            return index.get_indexer_for(keys)
+
+        # if isinstance(index, pd.MultiIndex):
+
         if is_scalar_notnone(keys) or isinstance(keys, tuple):
             keys = [keys]
 
-        if isinstance(index, pd.MultiIndex):
-            # Use get_locs for each key (full or partial)
-            ilocs = []
-            for key in keys:
-                if isinstance(key, slice):
-                    ilocs.append(index.slice_indexer(key.start, key.stop, key.step))
-                else:
-                    iloc = index.get_locs([key])
-                    if isinstance(iloc, slice):
-                        iloc = np.arange(len(index))[iloc]
-                    ilocs.append(iloc)
-            return np.concatenate(ilocs) if ilocs else np.array([], dtype=int)
-        # if not isinstance(index, pd.MultiIndex):
-        # Regular Index
-        if isinstance(keys, slice):
-            return np.arange(len(index))[
-                index.slice_indexer(keys.start, keys.stop, keys.step)
-            ]
-        return index.get_indexer(keys)
+        # Use get_locs for each key (full or partial)
+        ilocs = []
+        for key in keys:
+            if isinstance(key, slice):
+                ilocs.append(index.slice_indexer(key.start, key.stop, key.step))
+            else:
+                iloc = index.get_locs([key])
+                if isinstance(iloc, slice):
+                    iloc = np.arange(len(index))[iloc]
+                ilocs.append(iloc)
+        return np.concatenate(ilocs) if ilocs else np.array([], dtype=int)
 
     def _at(self, rowidx=None, colidx=None):
         if rowidx is not None:
