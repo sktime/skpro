@@ -809,28 +809,6 @@ class BaseDistribution(BaseObject):
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
 
-    def _pdf(self, x):
-        """Probability density function.
-
-        Private method, to be implemented by subclasses.
-        """
-        self_has_logpdf = self._has_implementation_of("log_pdf")
-        self_has_logpdf = self_has_logpdf or self._has_implementation_of("_log_pdf")
-        if self_has_logpdf:
-            approx_method = (
-                "by exponentiating the output returned by the log_pdf method, "
-                "this may be numerically unstable"
-            )
-            warn(self._method_error_msg("pdf", fill_in=approx_method))
-
-            x = self._coerce_to_self_index_df(x, flatten=False)
-            res = self.log_pdf(x=x)
-            if isinstance(res, pd.DataFrame):
-                res = res.values
-            return np.exp(res)
-
-        raise NotImplementedError(self._method_error_msg("pdf", "error"))
-
     def pmf(self, x):
         r"""Probability mass function.
 
