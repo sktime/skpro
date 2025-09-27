@@ -274,7 +274,7 @@ class BaseDistribution(BaseObject):
             if isinstance(key, slice):
                 ilocs.append(index.slice_indexer(key.start, key.stop, key.step))
             else:
-                iloc = index.get_locs([key])
+                iloc = index.get_locs(key)
                 if isinstance(iloc, slice):
                     iloc = np.arange(len(index))[iloc]
                 ilocs.append(iloc)
@@ -1748,6 +1748,12 @@ class _Indexer:
         ref = self.ref
         indexer = getattr(ref, self.method)
 
+        # handle special case of multiindex in loc with single tuple key
+        if isinstance(key, tuple) and not any(isinstance(k, tuple) for k in key):
+            if isinstance(ref.index, pd.MultiIndex):
+                return indexer(rowidx=key, colidx=None)
+
+        # general case
         if isinstance(key, tuple):
             if not len(key) == 2:
                 raise ValueError(
