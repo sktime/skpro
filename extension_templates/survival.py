@@ -128,14 +128,22 @@ class ClassName(BaseSurvReg):
         ----------
         X : pandas DataFrame
             feature instances to fit regressor to
+
         y : pd.DataFrame, must be same length as X
             labels to fit regressor to
+
         C : pd.DataFrame, optional (default=None)
             censoring information for survival analysis,
-            should have same column name as y, same length as X and y
-            should have entries 0 and 1 (float or int)
-            0 = uncensored, 1 = (right) censored
-            if None, all observations are assumed to be uncensored
+
+            * should have same column name as y, same length as X and y
+            * should have entries 0 and 1 (float or int),
+              0 = uncensored, 1 = (right) censored
+
+            if None, all observations are assumed to be uncensored.
+
+        Returns
+        -------
+        self : Reference to self.
         """
         # insert logic for estimator here
         # fitted parameters should be written to parameters ending in underscore
