@@ -12,6 +12,17 @@ by default, this is off, including for default local runs of pytest
 
 __author__ = ["fkiraly"]
 
+import os
+
+from skbase.utils.dependencies import _check_soft_dependencies
+
+# used to prevent tkinter related errors in CI
+if _check_soft_dependencies("matplotlib", severity="none"):
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        import matplotlib
+
+        matplotlib.use("Agg")
+
 
 def pytest_addoption(parser):
     """Pytest command line parser options adder."""

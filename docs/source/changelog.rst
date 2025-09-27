@@ -16,6 +16,80 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.9.4] - 2025-09-18
+====================
+
+Feature, maintenance, and bugfix release.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] replace apply linalg norm with native pandas ufuncs (:pr:`592`) :user:`joshdunnlime`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] Check versions in  wheels workflow (:pr:`583`) :user:`szepeviktor`
+* [MNT] update ``numpy`` bound to ``numpy<2.4`` (:pr:`584`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.33.0`` to ``<1.34.0`` (:pr:`587`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump ``actions/setup-python`` from 5 to 6 (:pr:`590`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] improved docstring for ``HistBinnedProbaRegressor`` (:pr:`586`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] fix ``HistBinnedRegressor.predict`` return type (:pr:`585`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`joshdunnlime`,
+:user:`szepeviktor`
+
+
+[2.9.3] - 2025-08-17
+====================
+
+Feature, maintenance, and bugfix release.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] Moves epsilon offset logic to `TruncatedDistribution` from `Hurdle` (:pr:`577`) :user:`tingiskhan`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.32.0`` to ``<1.33.0`` by @dependabot[bot] in https://github.com/sktime/skpro/pull/572
+* [MNT] [Dependabot](deps): Bump ``actions/download-artifact`` from 4 to 5 (:pr:`579`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump ``actions/checkout`` from 4 to 5 (:pr:`581`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] fix badge link to license in README (:pr:`575`) :user:`fkiraly`
+* [DOC] corrected and improved docstring for ``MeanScale`` distribution family (:pr:`578`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] correctly set tags for ``Poisson`` distribution (:pr:`570`) :user:`fkiraly`
+* [BUG] fix ``pdf`` and ``pmf`` default return type in scalar case (:pr:`574`) :user:`fkiraly`
+* [BUG] Addresses stochasticity of Hurdle tests (:pr:`568`) :user:`tingiskhan`
+* [BUG] correctly set tags of ``Hurdle`` and ``Truncated`` depending on inner distribution (:pr:`569`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`tingiskhan`
+
+
 [2.9.2] - 2025-07-23
 ====================
 

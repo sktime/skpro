@@ -39,6 +39,7 @@ __all__ = [
     "QPD_Johnson",
     "SkewNormal",
     "TDistribution",
+    "TransformedDistribution",
     "TruncatedDistribution",
     "TruncatedNormal",
     "Uniform",
@@ -77,6 +78,7 @@ from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
 from skpro.distributions.qpd_empirical import QPD_Empirical
 from skpro.distributions.skew_normal import SkewNormal
 from skpro.distributions.t import TDistribution
+from skpro.distributions.trafo import TransformedDistribution
 from skpro.distributions.truncated import TruncatedDistribution
 from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.uniform import Uniform
