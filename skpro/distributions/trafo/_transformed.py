@@ -7,6 +7,7 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
+from sklearn.base import TransformerMixin
 
 from skpro.distributions.base import BaseDistribution
 
@@ -66,14 +67,14 @@ class TransformedDistribution(BaseDistribution):
     def __init__(
         self,
         distribution,
-        transformer,
+        transform,
         assume_monotonic=True,
         index=None,
         columns=None,
         numerical_diff=True,
     ):
         self.distribution = distribution
-        self.transformer = transformer
+        self.transform = transform
         self.assume_monotonic = assume_monotonic
         self.numerical_diff = numerical_diff
 
@@ -106,8 +107,15 @@ class TransformedDistribution(BaseDistribution):
             log-pdf values at the given points
         """
         dist = self.distribution
-        transformer = self.transformer
-        x_ = transformer.transform(x)
+        transform = self.transform
+
+        if isinstance(transform, TransformerMixin):
+            x_ = transform.transform(x)
+        else:
+            raise NotImplementedError(
+                "Transform must be a sklearn TransformerMixin, "
+                "other transform types not implemented yet."
+            )
 
         if hasattr(dist, "_distribution_attr"):
             obj = getattr(dist, dist._distribution_attr)
@@ -132,17 +140,21 @@ class TransformedDistribution(BaseDistribution):
         np.ndarray of shape (n, n, m, m) where (n, m) is the shape of ``self``
             Jacobian matrices at the given points
         """
-        transformer = self.transformer
+        transform = self.transform
 
-        if hasattr(transformer, "scale_"):
+        if hasattr(transform, "scale_"):
             # if the transform has scale_, we can compute the Jacobian
-            jac = abs(1 / transformer.scale_)
+            jac = abs(1 / transform.scale_)
             jac = np.ones_like(x) * jac
             # TODO: return x-shaped array
             return jac
+        elif hasattr(transform, "transform_diff"):
+            # if the transform has transform_diff, we can compute the Jacobian
+            jac = abs(1 / transform.transform_diff(x).values)
+
         elif self.numerical_diff:
             # implement numpy differentiation here
-            x_t_np = transformer.transform(x).values.reshape(-1)
+            x_t_np = transform.transform(x).values.reshape(-1)
             x_np = x.values.reshape(-1)
             grad = ordered_gradient(x_np, x_t_np)
             jac = np.abs(grad)
@@ -170,7 +182,7 @@ class TransformedDistribution(BaseDistribution):
         cls = type(self)
         return cls(
             distribution=distr,
-            transformer=self.transformer,
+            transform=self.transform,
             assume_monotonic=self.assume_monotonic,
             index=new_index,
             columns=new_columns,
@@ -201,7 +213,10 @@ class TransformedDistribution(BaseDistribution):
                 "set `assume_monotonic=True` to use this method"
             )
 
-        trafo = self.transformer.inverse_transform
+        if isinstance(self.transform, TransformerMixin):
+            trafo = self.transform.inverse_transform
+        else:
+            trafo = self.transform
 
         inner_ppf = self.distribution.ppf(p)
         outer_ppf = trafo(inner_ppf)
@@ -245,7 +260,10 @@ class TransformedDistribution(BaseDistribution):
         else:
             n = n_samples
 
-        trafo = self.transformer.inverse_transform
+        if isinstance(self.transform, TransformerMixin):
+            trafo = self.transform.inverse_transform
+        else:
+            trafo = self.transform
 
         samples = []
 
