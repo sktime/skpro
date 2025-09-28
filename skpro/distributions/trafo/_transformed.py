@@ -40,12 +40,14 @@ class TransformedDistribution(BaseDistribution):
     --------
     >>> import numpy as np
     >>> import pandas as pd
+    >>> from sklearn.preprocessing import FunctionTransformer
     >>> from skpro.distributions.trafo import TransformedDistribution
     >>> from skpro.distributions import Normal
     >>>
     >>> n = Normal(mu=0, sigma=1)
     >>> # transform the distribution by taking the exponential
-    >>> t = TransformedDistribution(distribution=n, transform=np.exp)
+    >>> ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
+    >>> t = TransformedDistribution(distribution=n, transformer=ft)
     """
 
     _tags = {
