@@ -36,10 +36,12 @@ class BaseSurvReg(BaseProbaRegressor):
             labels to fit regressor to
         C : pd.DataFrame, optional (default=None)
             censoring information for survival analysis,
-            should have same column name as y, same length as X and y
-            should have entries 0 and 1 (float or int)
+
+            * should have same column name as y, same length as X and y
+            * should have entries 0 and 1 (float or int),
             0 = uncensored, 1 = (right) censored
-            if None, all observations are assumed to be uncensored
+
+            if None, all observations are assumed to be uncensored.
 
         Returns
         -------
