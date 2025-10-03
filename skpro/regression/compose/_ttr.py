@@ -42,9 +42,6 @@ class TransformedTargetRegressor(BaseProbaRegressor):
     transformer : sklearn transformer, optional (default=None)
         transformer to apply to target variable before fitting regressor,
         and to apply inverse transform to predictions of regressor
-    numerical_diff : bool, optional (default=False)
-        if True, use numerical_diff to compute jacobian of inverse transform
-        in ``predict_proba`` method
 
     Attributes
     ----------
@@ -59,14 +56,10 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         "capability:missing": True,
     }
 
-    def __init__(self, regressor, transformer=None, numerical_diff=True):
+    def __init__(self, regressor, transformer):
         self.regressor = regressor
         self.transformer = transformer
-        self.numerical_diff = numerical_diff
         super().__init__()
-
-        self.regressor_ = regressor.clone()
-        self.transformer_ = clone(transformer) if transformer else None
 
         tags_to_clone = [
             "capability:multioutput",
@@ -74,7 +67,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             "capability:update",
         ]
 
-        self.clone_tags(self.regressor_, tags_to_clone)
+        self.clone_tags(self.regressor, tags_to_clone)
 
     def _fit(self, X, y, C=None):
         """Fit regressor to training data.
@@ -101,6 +94,13 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
+        self.regressor_ = self.regressor.clone()
+
+        if hasattr(self.transformer, "clone"):
+            self.transformer_ = self.transformer.clone()
+        else:
+            self.transformer_ = clone(self.transformer)
+
         # coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
@@ -287,14 +287,15 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         y_pred = self.regressor_.predict_proba(X=X)
+
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
             transform=self.transformer_,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"],
-            numerical_diff=self.numerical_diff,
         )
+
         return y_pred_it
 
     def _get_inverse_transform_pred_int(self, transformer, y):

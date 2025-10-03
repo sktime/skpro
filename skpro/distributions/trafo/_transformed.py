@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import TransformerMixin
 
+from skpro.compose import BaseDifferentiableTransformer, DifferentiableTransformer
 from skpro.distributions.base import BaseDistribution
 
 
@@ -48,7 +49,7 @@ class TransformedDistribution(BaseDistribution):
     >>> n = Normal(mu=0, sigma=1)
     >>> # transform the distribution by taking the exponential
     >>> ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
-    >>> t = TransformedDistribution(distribution=n, transformer=ft)
+    >>> t = TransformedDistribution(distribution=n, transform=ft)
     """
 
     _tags = {
@@ -71,14 +72,31 @@ class TransformedDistribution(BaseDistribution):
         assume_monotonic=True,
         index=None,
         columns=None,
-        numerical_diff=True,
     ):
         self.distribution = distribution
         self.transform = transform
         self.assume_monotonic = assume_monotonic
-        self.numerical_diff = numerical_diff
 
         self._is_scalar_dist = self.distribution.ndim == 0
+
+        if isinstance(transform, BaseDifferentiableTransformer):
+            self.transformer_ = transform
+        elif isinstance(transform, TransformerMixin):
+            self.transformer_ = DifferentiableTransformer(transformer=transform)
+        elif callable(transform):
+            bound_instance = getattr(transform, "__self__", None)
+
+            if isinstance(bound_instance, TransformerMixin):
+                self.transformer_ = DifferentiableTransformer(
+                    transformer=bound_instance
+                )
+            else:
+                # TODO: better error message
+                raise ValueError(
+                    "If transform is a callable, it must be a bound method of a class."
+                )
+
+        self.transformer_._fit_with_fitted_transformer()
 
         # determine index and columns
         if not self._is_scalar_dist:
@@ -107,10 +125,9 @@ class TransformedDistribution(BaseDistribution):
             log-pdf values at the given points
         """
         dist = self.distribution
-        transform = self.transform
 
-        if isinstance(transform, TransformerMixin):
-            x_ = transform.transform(x)
+        if isinstance(self.transformer_, BaseDifferentiableTransformer):
+            x_ = self.transformer_.transform(x)
         else:
             raise NotImplementedError(
                 "Transform must be a sklearn TransformerMixin, "
@@ -124,47 +141,8 @@ class TransformedDistribution(BaseDistribution):
         else:
             log_pdf = dist.log_pdf
 
-        jac = self._jacobian(x)
-        return log_pdf(x_) - np.log(jac).reshape(x.shape)
-
-    def _jacobian(self, x: pd.DataFrame):
-        """Compute the Jacobian matrix of the transform at x.
-
-        Parameters
-        ----------
-        x : pd.DataFrame, same shape as ``self``
-            points where the Jacobian is evaluated
-
-        Returns
-        -------
-        np.ndarray of shape (n, n, m, m) where (n, m) is the shape of ``self``
-            Jacobian matrices at the given points
-        """
-        transform = self.transform
-
-        if hasattr(transform, "scale_"):
-            # if the transform has scale_, we can compute the Jacobian
-            jac = abs(1 / transform.scale_)
-            jac = np.ones_like(x) * jac
-            # TODO: return x-shaped array
-            return jac
-        elif hasattr(transform, "transform_diff"):
-            # if the transform has transform_diff, we can compute the Jacobian
-            jac = abs(1 / transform.transform_diff(x).values)
-
-        elif self.numerical_diff:
-            # implement numpy differentiation here
-            x_t_np = transform.transform(x).values.reshape(-1)
-            x_np = x.values.reshape(-1)
-            grad = ordered_gradient(x_np, x_t_np)
-            jac = np.abs(grad)
-            return jac
-        else:
-            raise NotImplementedError(
-                "Jacobian computation not implemented for this transformer, "
-                "set `numerical_diff=True` to use numerical differentiation or "
-                "use a transformer with `scale_` attribute, e.g., MinMaxScaler"
-            )
+        jac = np.abs(self.transformer_.inverse_transform_diff(x))
+        return log_pdf(x_) - np.log(jac).reshape(-1, 1)
 
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
@@ -302,14 +280,14 @@ class TransformedDistribution(BaseDistribution):
         # scalar case example
         params1 = {
             "distribution": n_scalar,
-            "transformer": ft,
+            "transform": ft,
         }
 
         # array case example
         n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["c", "d"]))
         params2 = {
             "distribution": n_array,
-            "transformer": ft,
+            "transform": ft,
             "index": pd.Index([1, 2]),
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }

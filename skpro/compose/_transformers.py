@@ -1,12 +1,13 @@
-"""skpro Transformers for regression."""
+"""Differentiable transformers for skpro."""
 
 import numpy as np
-from sklearn.base import clone
+from sklearn.base import TransformerMixin, check_is_fitted, clone
+from sklearn.exceptions import NotFittedError
 
 from skpro.base import BaseEstimator
 
 
-class BaseTransformer(BaseEstimator):
+class BaseTransformer(BaseEstimator, TransformerMixin):
     """Base class for transformer objects."""
 
     def __init__(self, transformer):
@@ -17,8 +18,17 @@ class BaseTransformer(BaseEstimator):
         transformer : callable, optional
             Maybe only allow sklearn transformers for now.
         """
-        self.transformer_ = clone(transformer) if transformer else None
+        self.transformer = transformer
         super().__init__()
+
+    def _fit_with_fitted_transformer(self):
+        """Fit with already fitted transformer if possible."""
+        try:
+            check_is_fitted(self.transformer)
+            self.transformer_ = self.transformer
+        except NotFittedError:
+            pass
+        return self
 
     def fit(self, X, y=None):
         """Fit transformer to y.
@@ -34,7 +44,11 @@ class BaseTransformer(BaseEstimator):
         -------
         self : reference to self
         """
+        self.transformer_ = clone(self.transformer)
         self.transformer_.fit(X)
+
+        # TODO: sklearn <1.2 compat issue
+        self.transformer_.set_output(transform="pandas")
         return self
 
     def transform(self, X, y=None):
@@ -52,7 +66,7 @@ class BaseTransformer(BaseEstimator):
         Xt : array-like, shape (n_samples,) or (n_samples, n_outputs)
             Transformed target values.
         """
-        Xt = self.transformer_.transform(X.reshape(-1, 1))
+        Xt = self.transformer_.transform(X)
         return Xt
 
     def inverse_transform(self, X, y=None):
@@ -65,22 +79,22 @@ class BaseTransformer(BaseEstimator):
 
 
 class BaseDifferentiableTransformer(BaseTransformer):
-    """Differentiable transformer for TTR."""
+    """Differentiable transformer."""
 
-    def __init__(self, transformer, transform_diff_fcn=None, inverse_diff_fcn=None):
-        """Differentiable transformer for TTR.
+    def __init__(self, transformer, transform_diff_func=None, inverse_diff_func=None):
+        """Differentiable transformer.
 
         Parameters
         ----------
         transformer : callable, optional
             Maybe only allow sklearn transformers for now.
-        transform_diff_fcn : callable, optional
+        transform_diff_func : callable, optional
             Function to compute the derivative of the transform function.
-        inverse_diff_fcn : callable, optional
+        inverse_diff_func : callable, optional
             Function to compute the derivative of the inverse transform function.
         """
-        self.transform_diff_fcn = transform_diff_fcn
-        self.inverse_diff_fcn = inverse_diff_fcn
+        self.transform_diff_func = transform_diff_func
+        self.inverse_diff_func = inverse_diff_func
         super().__init__(transformer=transformer)
 
     def transform_diff(self, X):
@@ -91,8 +105,8 @@ class BaseDifferentiableTransformer(BaseTransformer):
         X : array-like, shape (n_samples,) or (n_samples, 1)
             Input data.
         """
-        if self.transform_diff_fcn is not None:
-            return self.transform_diff_fcn(X)
+        if self.transform_diff_func is not None:
+            return self.transform_diff_func(X)
         elif (
             hasattr(self.transformer_, "scale_")
             and self.transformer_.scale_ is not None
@@ -114,8 +128,8 @@ class BaseDifferentiableTransformer(BaseTransformer):
         """
         Xt = self.transform(X)
 
-        if self.inverse_diff_fcn is not None:
-            diff = self.inverse_diff_fcn(Xt)
+        if self.inverse_diff_func is not None:
+            diff = self.inverse_diff_func(Xt)
         elif (
             hasattr(self.transformer_, "scale_")
             and self.transformer_.scale_ is not None
