@@ -3,6 +3,8 @@
 
 __author__ = ["fkiraly"]
 
+from functools import partial
+
 import numpy as np
 import pandas as pd
 
@@ -85,6 +87,72 @@ class TransformedDistribution(BaseDistribution):
                     columns = pd.RangeIndex(n_cols)
 
         super().__init__(index=index, columns=columns)
+
+    def pdf(self, x: pd.DataFrame):
+        r"""Probability density function.
+
+        Parameters
+        ----------
+        x : pd.DataFrame, same shape as ``self``
+            points where the pdf is evaluated
+
+        Returns
+        -------
+        pd.DataFrame, same shape as ``self``
+            pdf values at the given points
+        """
+        dist = self.distribution
+
+        if isinstance(self.transformer_, "BaseDifferentiableTransformer"):
+            x_ = self.transformer_.transform(x)
+        else:
+            raise NotImplementedError(
+                "Transform must be a DifferentiableTransformer, "
+                "other transform types not yet supported."
+            )
+
+        if hasattr(dist, "_distribution_attr"):
+            obj = getattr(dist, dist._distribution_attr)
+            args, kwds = dist._get_scipy_param()
+            pdf = partial(obj.pdf, *args, **kwds)
+        else:
+            raise NotImplementedError
+
+        jac = np.abs(self.transformer_.inverse_transform_diff(x))
+        return pdf(x_) / jac.reshape(-1, 1)
+
+    def log_pdf(self, x: pd.DataFrame):
+        r"""Logarithmic probability density function.
+
+        Parameters
+        ----------
+        x : pd.DataFrame, same shape as ``self``
+            points where the log-pdf is evaluated
+
+        Returns
+        -------
+        pd.DataFrame, same shape as ``self``
+            log-pdf values at the given points
+        """
+        dist = self.distribution
+
+        if isinstance(self.transformer_, "BaseDifferentiableTransformer"):
+            x_ = self.transformer_.transform(x)
+        else:
+            raise NotImplementedError(
+                "Transform must be a DifferentiableTransformer, "
+                "other transform types not yet supported."
+            )
+
+        if hasattr(dist, "_distribution_attr"):
+            obj = getattr(dist, dist._distribution_attr)
+            args, kwds = dist._get_scipy_param()
+            log_pdf = partial(obj.logpdf, *args, **kwds)
+        else:
+            raise NotImplementedError
+
+        jac = np.abs(self.transformer_.inverse_transform_diff(x))
+        return log_pdf(x_) - np.log(jac).reshape(-1, 1)
 
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
