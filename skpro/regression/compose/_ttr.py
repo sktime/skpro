@@ -24,7 +24,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         ``transformer.fit_transform``.
 
     ``predict(X)`` - result is of executing ``regressor.predict``, with `X=X`
-        then applies ``transformer`` to the output of
+        then applies ``transformer.inverse_transform`` to the output of
         ``regressor.predict``.
 
     ``predict_interval(X)``, ``predict_quantiles(X)`` - as ``predict(X)``,
@@ -33,7 +33,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
     ``predict_proba(X)`` - first executes ``regressor.predict_proba(X)``,
         then returns a ``TransformedDistribution`` object with
         ``distribution=regressor.predict_proba(X)``, and
-        ``transform=transformer``.
+        ``transform=transformer.inverse_transform``.
 
     Parameters
     ----------
@@ -56,18 +56,20 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         "capability:missing": True,
     }
 
-    def __init__(self, regressor, transformer):
+    def __init__(self, regressor, transformer=None):
         self.regressor = regressor
         self.transformer = transformer
         super().__init__()
+
+        self.regressor_ = regressor.clone()
+        self.transformer_ = clone(transformer) if transformer else None
 
         tags_to_clone = [
             "capability:multioutput",
             "capability:survival",
             "capability:update",
         ]
-
-        self.clone_tags(self.regressor, tags_to_clone)
+        self.clone_tags(self.regressor_, tags_to_clone)
 
     def _fit(self, X, y, C=None):
         """Fit regressor to training data.
@@ -94,13 +96,6 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        self.regressor_ = self.regressor.clone()
-
-        if hasattr(self.transformer, "clone"):
-            self.transformer_ = self.transformer.clone()
-        else:
-            self.transformer_ = clone(self.transformer)
-
         # coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
@@ -172,7 +167,6 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         """
         y_pred = self.regressor_.predict(X=X)
         y_pred_it = self.transformer_.inverse_transform(y_pred)
-
         if not isinstance(y_pred_it, pd.DataFrame):
             y_cols = self._y_metadata["feature_names"]
             y_pred_it = pd.DataFrame(y_pred_it, index=X.index, columns=y_cols)
@@ -287,15 +281,13 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         y_pred = self.regressor_.predict_proba(X=X)
-
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
-            transform=self.transformer_,
+            transform=self.transformer_.inverse_transform,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"],
         )
-
         return y_pred_it
 
     def _get_inverse_transform_pred_int(self, transformer, y):

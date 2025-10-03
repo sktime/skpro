@@ -3,13 +3,9 @@
 
 __author__ = ["fkiraly"]
 
-from functools import partial
-
 import numpy as np
 import pandas as pd
-from sklearn.base import TransformerMixin
 
-from skpro.compose import BaseDifferentiableTransformer, DifferentiableTransformer
 from skpro.distributions.base import BaseDistribution
 
 
@@ -42,14 +38,12 @@ class TransformedDistribution(BaseDistribution):
     --------
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from sklearn.preprocessing import FunctionTransformer
     >>> from skpro.distributions.trafo import TransformedDistribution
     >>> from skpro.distributions import Normal
     >>>
     >>> n = Normal(mu=0, sigma=1)
     >>> # transform the distribution by taking the exponential
-    >>> ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
-    >>> t = TransformedDistribution(distribution=n, transform=ft)
+    >>> t = TransformedDistribution(distribution=n, transform=np.exp)
     """
 
     _tags = {
@@ -79,25 +73,6 @@ class TransformedDistribution(BaseDistribution):
 
         self._is_scalar_dist = self.distribution.ndim == 0
 
-        if isinstance(transform, BaseDifferentiableTransformer):
-            self.transformer_ = transform
-        elif isinstance(transform, TransformerMixin):
-            self.transformer_ = DifferentiableTransformer(transformer=transform)
-        elif callable(transform):
-            bound_instance = getattr(transform, "__self__", None)
-
-            if isinstance(bound_instance, TransformerMixin):
-                self.transformer_ = DifferentiableTransformer(
-                    transformer=bound_instance
-                )
-            else:
-                # TODO: better error message
-                raise ValueError(
-                    "If transform is a callable, it must be a bound method of a class."
-                )
-
-        self.transformer_._fit_with_fitted_transformer()
-
         # determine index and columns
         if not self._is_scalar_dist:
             if index is None or columns is None:
@@ -110,39 +85,6 @@ class TransformedDistribution(BaseDistribution):
                     columns = pd.RangeIndex(n_cols)
 
         super().__init__(index=index, columns=columns)
-
-    def log_pdf(self, x: pd.DataFrame):
-        r"""Logarithmic probability density function.
-
-        Parameters
-        ----------
-        x : pd.DataFrame, same shape as ``self``
-            points where the log-pdf is evaluated
-
-        Returns
-        -------
-        pd.DataFrame, same shape as ``self``
-            log-pdf values at the given points
-        """
-        dist = self.distribution
-
-        if isinstance(self.transformer_, BaseDifferentiableTransformer):
-            x_ = self.transformer_.transform(x)
-        else:
-            raise NotImplementedError(
-                "Transform must be a sklearn TransformerMixin, "
-                "other transform types not implemented yet."
-            )
-
-        if hasattr(dist, "_distribution_attr"):
-            obj = getattr(dist, dist._distribution_attr)
-            args, kwds = dist._get_scipy_param()
-            log_pdf = partial(obj.logpdf, *args, **kwds)
-        else:
-            log_pdf = dist.log_pdf
-
-        jac = np.abs(self.transformer_.inverse_transform_diff(x))
-        return log_pdf(x_) - np.log(jac).reshape(-1, 1)
 
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
@@ -191,10 +133,7 @@ class TransformedDistribution(BaseDistribution):
                 "set `assume_monotonic=True` to use this method"
             )
 
-        if isinstance(self.transform, TransformerMixin):
-            trafo = self.transform.inverse_transform
-        else:
-            trafo = self.transform
+        trafo = self.transform
 
         inner_ppf = self.distribution.ppf(p)
         outer_ppf = trafo(inner_ppf)
@@ -238,10 +177,7 @@ class TransformedDistribution(BaseDistribution):
         else:
             n = n_samples
 
-        if isinstance(self.transform, TransformerMixin):
-            trafo = self.transform.inverse_transform
-        else:
-            trafo = self.transform
+        trafo = self.transform
 
         samples = []
 
@@ -270,24 +206,20 @@ class TransformedDistribution(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        from sklearn.preprocessing import FunctionTransformer
-
         from skpro.distributions import Normal
-
-        ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
 
         n_scalar = Normal(mu=0, sigma=1)
         # scalar case example
         params1 = {
             "distribution": n_scalar,
-            "transform": ft,
+            "transform": np.exp,
         }
 
         # array case example
         n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["c", "d"]))
         params2 = {
             "distribution": n_array,
-            "transform": ft,
+            "transform": np.exp,
             "index": pd.Index([1, 2]),
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
@@ -298,24 +230,3 @@ class TransformedDistribution(BaseDistribution):
 def is_scalar_notnone(obj):
     """Check if obj is scalar and not None."""
     return obj is not None and np.isscalar(obj)
-
-
-def ordered_gradient(f, x):
-    """Compute np.gradient(f, x) but safely handles when not already unsorted by x."""
-    # Ensure numpy arrays
-    f = np.asarray(f)
-    x = np.asarray(x)
-
-    # Sort x and reorder f accordingly
-    sort_idx = np.argsort(x)
-    x_sorted = x[sort_idx]
-    f_sorted = f[sort_idx]
-
-    # Compute gradient
-    grad_sorted = np.gradient(f_sorted, x_sorted)
-
-    # Map back to original order
-    grad = np.empty_like(grad_sorted)
-    grad[sort_idx] = grad_sorted
-
-    return grad
