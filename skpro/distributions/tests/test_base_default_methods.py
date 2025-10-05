@@ -135,7 +135,6 @@ class _DistrDefaultMethodTesterOnlySample(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-
     def sample(self, n_samples=None):
         """Sample from the distribution.
 
@@ -157,7 +156,7 @@ class _DistrDefaultMethodTesterOnlySample(BaseDistribution):
         # else: self.ndim is 2
         if n_samples is None:
             res_shape = self.shape
-            vals = np.random.normal(loc=self.mu, scale=self.sigma, size=res_shape),
+            vals = np.random.normal(loc=self.mu, scale=self.sigma, size=res_shape)
             return pd.DataFrame(vals, index=self.index, columns=self.columns)
         # else: n_samples is given
         res_shape = (n_samples * self.shape[0], self.shape[1])
