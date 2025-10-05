@@ -777,7 +777,7 @@ class BaseDistribution(BaseObject):
         self_has_impl_cdf = self._has_implementation_of("cdf")
         self_has_approx_cdf = "cdf" in self.get_class_tag("capabilities:approx", [])
         self_has_exact_cdf = self_has_impl_cdf and not self_has_approx_cdf
-        
+    
         if self_has_pdf or self_has_exact_cdf:
             approx_method = (
                 "by taking the logarithm of the output returned by the pdf method, "
