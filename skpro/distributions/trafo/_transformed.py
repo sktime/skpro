@@ -57,7 +57,7 @@ class TransformedDistribution(BaseDistribution):
             "cdf",
         ],
         "capabilities:exact": ["ppf", "pdf", "log_pdf"],
-        "distr:measuretype": "discrete",
+        "distr:measuretype": "mixed",
         "distr:paramtype": "composite",
     }
 
