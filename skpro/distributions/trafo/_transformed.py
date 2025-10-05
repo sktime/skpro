@@ -3,7 +3,6 @@
 
 __author__ = ["fkiraly"]
 
-from functools import partial
 from warnings import warn
 
 import numpy as np
@@ -56,10 +55,8 @@ class TransformedDistribution(BaseDistribution):
             "var",
             "energy",
             "cdf",
-            "log_pdf",
-            "pdf",
         ],
-        "capabilities:exact": ["ppf"],
+        "capabilities:exact": ["ppf", "pdf", "log_pdf"],
         "distr:measuretype": "discrete",
         "distr:paramtype": "composite",
     }
@@ -91,7 +88,7 @@ class TransformedDistribution(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def pdf(self, x: pd.DataFrame):
+    def _pdf(self, x):
         r"""Probability density function.
 
         This currently implements an approximation of the pdf, by using the
@@ -115,29 +112,27 @@ class TransformedDistribution(BaseDistribution):
         if hasattr(dist, "_distribution_attr"):
             obj = getattr(dist, dist._distribution_attr)
             args, kwds = dist._get_scipy_param()
-            pdf = partial(obj.pdf, *args, **kwds)
+            pdf_out = obj.pdf(x_, *args, **kwds)
         else:
-            pdf = dist.pdf
+            pdf_out = dist.pdf(x_)
 
         warn(
-            "While the pdf method of TransformedDistribution in general should "
+            "The pdf method of TransformedDistribution in general should "
             "preserve direction. It is currently only an approximation and may be "
             "inconsistent with other pdf calculations.",
         )
 
-        pdf_out = pdf(x_)
-
         if isinstance(pdf_out, pd.DataFrame):
-            # if the transform returns a DataFrame, we ensure the index and columns
-            pdf_out.index = self.index
-            pdf_out.columns = self.columns
+            if self.index is not None:
+                pdf_out.index = self.index
+            if self.columns is not None:
+                pdf_out.columns = self.columns
         elif not self._is_scalar_dist:
-            # if the transform returns a scalar or array, we  convert it to DataFrame
             pdf_out = pd.DataFrame(pdf_out, index=self.index, columns=self.columns)
 
         return pdf_out
 
-    def log_pdf(self, x: pd.DataFrame):
+    def _log_pdf(self, x):
         r"""Logarithmic probability density function.
 
         This currently implements an approximation of the log-pdf, by using the
@@ -161,24 +156,22 @@ class TransformedDistribution(BaseDistribution):
         if hasattr(dist, "_distribution_attr"):
             obj = getattr(dist, dist._distribution_attr)
             args, kwds = dist._get_scipy_param()
-            log_pdf = partial(obj.logpdf, *args, **kwds)
+            log_pdf_out = obj.logpdf(x_, *args, **kwds)
         else:
-            log_pdf = dist.log_pdf
+            log_pdf_out = dist.log_pdf(x_)
 
         warn(
-            "While the log_pdf method of TransformedDistribution in general should "
+            "The log_pdf method of TransformedDistribution in general should "
             "preserve direction. It is currently only an approximation and may be "
             "inconsistent with other log_pdf calculations.",
         )
 
-        log_pdf_out = log_pdf(x_)
-
         if isinstance(log_pdf_out, pd.DataFrame):
-            # if the transform returns a DataFrame, we ensure the index and columns
-            log_pdf_out.index = self.index
-            log_pdf_out.columns = self.columns
+            if self.index is not None:
+                log_pdf_out.index = self.index
+            if self.columns is not None:
+                log_pdf_out.columns = self.columns
         elif not self._is_scalar_dist:
-            # if the transform returns a scalar or array, we  convert it to DataFrame
             log_pdf_out = pd.DataFrame(
                 log_pdf_out, index=self.index, columns=self.columns
             )
