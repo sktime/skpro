@@ -2,6 +2,7 @@
 
 import numpy as np
 from sklearn.base import TransformerMixin, check_is_fitted, clone
+from sklearn.exceptions import NotFittedError
 from sklearn.pipeline import FunctionTransformer
 
 from skpro.base import BaseEstimator
@@ -23,8 +24,11 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
 
     def _fit_with_fitted_transformer(self):
         """Fit with already fitted transformer if possible."""
-        check_is_fitted(self.transformer)
-        self.transformer_ = self.transformer
+        try:
+            check_is_fitted(self.transformer)
+            self.transformer_ = self.transformer
+        except NotFittedError:
+            pass
         return self
 
     def fit(self, X, y=None):
