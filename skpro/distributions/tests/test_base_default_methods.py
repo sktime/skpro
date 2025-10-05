@@ -110,7 +110,7 @@ def test_base_default():
 
 
 # normal distribution with only sample method
-class _DistrDefaultMethodTesterMinimal(BaseDistribution):
+class _DistrDefaultMethodTesterOnlySample(BaseDistribution):
     """Tester distribution for default methods."""
 
     _tags = {
@@ -135,6 +135,36 @@ class _DistrDefaultMethodTesterMinimal(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
+
+    def sample(self, n_samples=None):
+        """Sample from the distribution.
+
+        Parameters
+        ----------
+        n_samples : int, optional, default = None
+            number of samples to draw from the distribution
+
+        Returns
+        -------
+        pd.DataFrame
+            samples from the distribution
+        """
+        if self.ndim == 0:
+            if n_samples is None:
+                return np.random.normal(loc=self.mu, scale=self.sigma)
+            res = np.random.normal(loc=self.mu, scale=self.sigma, size=n_samples)
+            return pd.DataFrame(res)
+        # else: self.ndim is 2
+        if n_samples is None:
+            res_shape = self.shape
+            vals = np.random.normal(loc=self.mu, scale=self.sigma, size=res_shape),
+            return pd.DataFrame(vals, index=self.index, columns=self.columns)
+        # else: n_samples is given
+        res_shape = (n_samples * self.shape[0], self.shape[1])
+        vals = np.random.normal(loc=self.mu, scale=self.sigma, size=res_shape)
+        multiindes = pd.MultiIndex.from_product(np.arange(n_samples), self.index)
+        return pd.DataFrame(vals, index=multiindes, columns=self.columns)
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
@@ -157,5 +187,5 @@ class _DistrDefaultMethodTesterMinimal(BaseDistribution):
 )
 def test_base_default_minimal_cdf():
     """Test default cdf method."""
-    minimal_n = _DistrDefaultMethodTesterMinimal(mu=0, sigma=1)
+    minimal_n = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
