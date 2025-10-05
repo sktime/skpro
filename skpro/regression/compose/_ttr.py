@@ -103,8 +103,12 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         if self.transformer_ is not None:
             t = self.transformer_
             yt = t.fit_transform(X=y)
+
             if not isinstance(yt, pd.DataFrame):
-                yt = pd.DataFrame(yt, index=y.index)
+                yt = pd.DataFrame(yt, index=y.index, columns=y.columns)
+            else:
+                yt.index = y.index
+                yt.columns = y.columns
         else:
             yt = y
 
