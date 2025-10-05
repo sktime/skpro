@@ -33,7 +33,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
     ``predict_proba(X)`` - first executes ``regressor.predict_proba(X)``,
         then returns a ``TransformedDistribution`` object with
         ``distribution=regressor.predict_proba(X)``, and
-        ``transform=transformer.inverse_transform``.
+        ``transform=transformer``.
 
     Parameters
     ----------
@@ -287,7 +287,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         y_pred = self.regressor_.predict_proba(X=X)
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
-            transform=self.transformer_.inverse_transform,
+            transform=self.transformer_,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"],

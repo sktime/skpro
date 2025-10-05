@@ -3,11 +3,10 @@
 
 __author__ = ["fkiraly"]
 
-from warnings import warn
-
 import numpy as np
 import pandas as pd
 
+from skpro.compose import DifferentiableTransformer
 from skpro.distributions.base import BaseDistribution
 
 
@@ -40,12 +39,14 @@ class TransformedDistribution(BaseDistribution):
     --------
     >>> import numpy as np
     >>> import pandas as pd
+    >>> from sklearn.preprocessing import FunctionTransformer
     >>> from skpro.distributions.trafo import TransformedDistribution
     >>> from skpro.distributions import Normal
     >>>
     >>> n = Normal(mu=0, sigma=1)
     >>> # transform the distribution by taking the exponential
-    >>> t = TransformedDistribution(distribution=n, transform=np.exp)
+    >>> ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
+    >>> t = TransformedDistribution(distribution=n, transform=ft)
     """
 
     _tags = {
@@ -55,10 +56,8 @@ class TransformedDistribution(BaseDistribution):
             "var",
             "energy",
             "cdf",
-            "pdf",
-            "log_pdf",
         ],
-        "capabilities:exact": ["ppf"],
+        "capabilities:exact": ["ppf", "pdf", "log_pdf"],
         "distr:measuretype": "mixed",
         "distr:paramtype": "composite",
     }
@@ -76,6 +75,9 @@ class TransformedDistribution(BaseDistribution):
         self.assume_monotonic = assume_monotonic
 
         self._is_scalar_dist = self.distribution.ndim == 0
+        self.transformer_ = DifferentiableTransformer._coerce_to_differentiable(
+            transform
+        )
 
         # determine index and columns
         if not self._is_scalar_dist:
@@ -109,7 +111,7 @@ class TransformedDistribution(BaseDistribution):
             pdf values at the given points
         """
         dist = self.distribution
-        x_ = self.transform(x)
+        x_ = self.transformer_.transform(x)
 
         if hasattr(dist, "_distribution_attr"):
             obj = getattr(dist, dist._distribution_attr)
@@ -117,12 +119,6 @@ class TransformedDistribution(BaseDistribution):
             pdf_out = obj.pdf(x_, *args, **kwds)
         else:
             pdf_out = dist.pdf(x_)
-
-        warn(
-            "The pdf method of TransformedDistribution in general should "
-            "preserve direction. It is currently only an approximation and may be "
-            "inconsistent with other pdf calculations.",
-        )
 
         if isinstance(pdf_out, pd.DataFrame):
             if self.index is not None:
@@ -132,7 +128,16 @@ class TransformedDistribution(BaseDistribution):
         elif not self._is_scalar_dist:
             pdf_out = pd.DataFrame(pdf_out, index=self.index, columns=self.columns)
 
-        return pdf_out
+        if self.transformer_._check_inverse_func():
+            jacobian = np.abs(self.transformer_.inverse_transform_diff(x)).reshape(
+                -1, 1
+            )
+        else:
+            raise ValueError(
+                "The transform must have an inverse_transform to compute the pdf.",
+            )
+
+        return pdf_out / jacobian.reshape(-1, 1)
 
     def _log_pdf(self, x):
         r"""Logarithmic probability density function.
@@ -153,7 +158,7 @@ class TransformedDistribution(BaseDistribution):
             log-pdf values at the given points
         """
         dist = self.distribution
-        x_ = self.transform(x)
+        x_ = self.transformer_.transform(x)
 
         if hasattr(dist, "_distribution_attr"):
             obj = getattr(dist, dist._distribution_attr)
@@ -161,12 +166,6 @@ class TransformedDistribution(BaseDistribution):
             log_pdf_out = obj.logpdf(x_, *args, **kwds)
         else:
             log_pdf_out = dist.log_pdf(x_)
-
-        warn(
-            "The log_pdf method of TransformedDistribution in general should "
-            "preserve direction. It is currently only an approximation and may be "
-            "inconsistent with other log_pdf calculations.",
-        )
 
         if isinstance(log_pdf_out, pd.DataFrame):
             if self.index is not None:
@@ -178,7 +177,16 @@ class TransformedDistribution(BaseDistribution):
                 log_pdf_out, index=self.index, columns=self.columns
             )
 
-        return log_pdf_out
+        if self.transformer_._check_inverse_func():
+            jacobian = np.abs(self.transformer_.inverse_transform_diff(x)).reshape(
+                -1, 1
+            )
+        else:
+            raise ValueError(
+                "The transform must have an inverse_transform to compute the log-pdf.",
+            )
+
+        return log_pdf_out - np.log(jacobian)
 
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
@@ -227,8 +235,7 @@ class TransformedDistribution(BaseDistribution):
                 "set `assume_monotonic=True` to use this method"
             )
 
-        trafo = self.transform
-
+        trafo = self.transformer_.inverse_transform
         inner_ppf = self.distribution.ppf(p)
         outer_ppf = trafo(inner_ppf)
 
@@ -271,7 +278,7 @@ class TransformedDistribution(BaseDistribution):
         else:
             n = n_samples
 
-        trafo = self.transform
+        trafo = self.transformer_.inverse_transform
 
         samples = []
 
@@ -300,7 +307,11 @@ class TransformedDistribution(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        from sklearn.preprocessing import FunctionTransformer
+
         from skpro.distributions import Normal
+
+        ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
 
         n_scalar = Normal(mu=0, sigma=1)
         # scalar case example
@@ -318,7 +329,14 @@ class TransformedDistribution(BaseDistribution):
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
 
-        return [params1, params2]
+        params3 = {
+            "distribution": n_array,
+            "transform": ft,
+            "index": pd.Index([1, 2]),
+            "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
+        }
+
+        return [params1, params2, params3]
 
 
 def is_scalar_notnone(obj):
