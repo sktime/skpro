@@ -182,7 +182,7 @@ class TransformedDistribution(BaseDistribution):
             cdf values at the given points
         """
         if self.inverse_transform is None:
-            return super()._cdf(p)
+            return super().cdf(p)
 
         inv_trafo = self.inverse_transform
 
