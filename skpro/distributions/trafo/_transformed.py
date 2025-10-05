@@ -168,7 +168,7 @@ class TransformedDistribution(BaseDistribution):
 
         return outer_ppf
 
-    def _cdf(self, p):
+    def _cdf(self, x):
         """Cumulative distribution function.
 
         Parameters
@@ -182,12 +182,12 @@ class TransformedDistribution(BaseDistribution):
             cdf values at the given points
         """
         if self.inverse_transform is None:
-            return super().cdf(p)
+            return super()._cdf(x)
 
         inv_trafo = self.inverse_transform
 
-        inv_p = inv_trafo(p)
-        cdf_res = self.distribution.cdf(inv_p)
+        inv_x = inv_trafo(x)
+        cdf_res = self.distribution.cdf(inv_x)
 
         if isinstance(cdf_res, pd.DataFrame):
             # if the transform returns a DataFrame, we ensure the index and columns
