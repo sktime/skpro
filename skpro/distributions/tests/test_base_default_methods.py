@@ -107,3 +107,55 @@ def test_base_default():
     check_estimator invokes a TestAllDistributions call.
     """
     check_estimator(_DistrDefaultMethodTester, raise_exceptions=True)
+
+
+# normal distribution with only sample method
+class _DistrDefaultMethodTesterMinimal(BaseDistribution):
+    """Tester distribution for default methods."""
+
+    _tags = {
+        "capabilities:approx": [
+            "pdfnorm",
+            "mean",
+            "var",
+            "energy",
+            "log_pdf",
+            "cdf",
+            "pdf",
+            "ppf",
+        ],
+        "capabilities:exact": [],
+        "distr:measuretype": "continuous",
+        "broadcast_init": "on",
+    }
+
+    def __init__(self, mu, sigma, index=None, columns=None):
+        self.mu = mu
+        self.sigma = sigma
+
+        super().__init__(index=index, columns=columns)
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        # array case examples
+        params1 = {"mu": [[0, 1], [2, 3], [4, 5]], "sigma": 1}
+        params2 = {
+            "mu": 0,
+            "sigma": 1,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
+        }
+        # scalar case examples
+        params3 = {"mu": 1, "sigma": 2}
+        return [params1, params2, params3]
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_base_default_minimal_cdf():
+    """Test default cdf method."""
+    minimal_n = _DistrDefaultMethodTesterMinimal(mu=0, sigma=1)
+    assert minimal_n.cdf(0) < minimal_n.cdf(100)
