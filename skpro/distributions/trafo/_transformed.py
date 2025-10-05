@@ -88,9 +88,13 @@ class TransformedDistribution(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
+        # transformed discret distributions are always discrete
+        # (otherwise we only know that they are mixed)
         if distribution.get_tag("measuretype") == "discrete":
             self.set_tags(**{"distr:measuretype": "discrete"})
 
+        # if inverse_transform is given, we can do exact cdf
+        # due to the formula F_g(x)(y) = F_X(g^-1(x))
         if self.inverse_transform is not None:
             self.set_tags(
                 **{
