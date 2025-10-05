@@ -103,8 +103,12 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         if self.transformer_ is not None:
             t = self.transformer_
             yt = t.fit_transform(X=y)
+
             if not isinstance(yt, pd.DataFrame):
-                yt = pd.DataFrame(yt, index=y.index)
+                yt = pd.DataFrame(yt, index=y.index, columns=y.columns)
+            else:
+                yt.index = y.index
+                yt.columns = y.columns
         else:
             yt = y
 
@@ -215,7 +219,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
         coverage : guaranteed list of float of unique values
-           nominal coverage(s) of predictive interval(s)
+            nominal coverage(s) of predictive interval(s)
 
         Returns
         -------

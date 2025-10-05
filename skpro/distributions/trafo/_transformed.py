@@ -3,6 +3,8 @@
 
 __author__ = ["fkiraly"]
 
+from warnings import warn
+
 import numpy as np
 import pandas as pd
 
@@ -53,9 +55,11 @@ class TransformedDistribution(BaseDistribution):
             "var",
             "energy",
             "cdf",
+            "pdf",
+            "log_pdf",
         ],
         "capabilities:exact": ["ppf"],
-        "distr:measuretype": "discrete",
+        "distr:measuretype": "mixed",
         "distr:paramtype": "composite",
     }
 
@@ -85,6 +89,84 @@ class TransformedDistribution(BaseDistribution):
                     columns = pd.RangeIndex(n_cols)
 
         super().__init__(index=index, columns=columns)
+
+    def _pdf(self, x):
+        r"""Probability density function.
+
+        This currently implements an approximation of the pdf, by using the
+        simplified assumption that the pdf of the transformed distribution is
+        descriptive the pdf on the original distribution. For positive monotonic
+        transformations, direction is preserved, but magnitude and scale may not be.
+
+        Parameters
+        ----------
+        x : pd.DataFrame, same shape as ``self``
+            points where the pdf is evaluated
+
+        Returns
+        -------
+        pd.DataFrame, same shape as ``self``
+            pdf values at the given points
+        """
+        dist = self.distribution
+        x_ = self.transform(x)
+        pdf_out = dist.pdf(x_)
+
+        warn(
+            "The pdf method of TransformedDistribution in general should "
+            "preserve direction. It is currently only an approximation and may be "
+            "inconsistent with other pdf calculations.",
+        )
+
+        if isinstance(pdf_out, pd.DataFrame):
+            if self.index is not None:
+                pdf_out.index = self.index
+            if self.columns is not None:
+                pdf_out.columns = self.columns
+        elif not self._is_scalar_dist:
+            pdf_out = pd.DataFrame(pdf_out, index=self.index, columns=self.columns)
+
+        return pdf_out
+
+    def _log_pdf(self, x):
+        r"""Logarithmic probability density function.
+
+        This currently implements an approximation of the log-pdf, by using the
+        simplified assumption that the log-pdf of the transformed distribution is
+        descriptive the log-pdf on the original distribution. For positive monotonic
+        transformations, direction is preserved, but magnitude and scale may not be.
+
+        Parameters
+        ----------
+        x : pd.DataFrame, same shape as ``self``
+            points where the log-pdf is evaluated
+
+        Returns
+        -------
+        pd.DataFrame, same shape as ``self``
+            log-pdf values at the given points
+        """
+        dist = self.distribution
+        x_ = self.transform(x)
+        log_pdf_out = dist.log_pdf(x_)
+
+        warn(
+            "The log_pdf method of TransformedDistribution in general should "
+            "preserve direction. It is currently only an approximation and may be "
+            "inconsistent with other log_pdf calculations.",
+        )
+
+        if isinstance(log_pdf_out, pd.DataFrame):
+            if self.index is not None:
+                log_pdf_out.index = self.index
+            if self.columns is not None:
+                log_pdf_out.columns = self.columns
+        elif not self._is_scalar_dist:
+            log_pdf_out = pd.DataFrame(
+                log_pdf_out, index=self.index, columns=self.columns
+            )
+
+        return log_pdf_out
 
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
