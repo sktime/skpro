@@ -110,13 +110,7 @@ class TransformedDistribution(BaseDistribution):
         """
         dist = self.distribution
         x_ = self.transform(x)
-
-        if hasattr(dist, "_distribution_attr"):
-            obj = getattr(dist, dist._distribution_attr)
-            args, kwds = dist._get_scipy_param()
-            pdf_out = obj.pdf(x_, *args, **kwds)
-        else:
-            pdf_out = dist.pdf(x_)
+        pdf_out = dist.pdf(x_)
 
         warn(
             "The pdf method of TransformedDistribution in general should "
@@ -154,13 +148,7 @@ class TransformedDistribution(BaseDistribution):
         """
         dist = self.distribution
         x_ = self.transform(x)
-
-        if hasattr(dist, "_distribution_attr"):
-            obj = getattr(dist, dist._distribution_attr)
-            args, kwds = dist._get_scipy_param()
-            log_pdf_out = obj.logpdf(x_, *args, **kwds)
-        else:
-            log_pdf_out = dist.log_pdf(x_)
+        log_pdf_out = dist.log_pdf(x_)
 
         warn(
             "The log_pdf method of TransformedDistribution in general should "
