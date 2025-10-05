@@ -151,7 +151,7 @@ class TransformedDistribution(BaseDistribution):
                 "set `assume_monotonic=True` to use this method"
             )
         elif not self.assume_monotonic and self.inverse_transform is not None:
-            return super().ppf(p)
+            return super()._ppf(p)
 
         trafo = self.transform
 
