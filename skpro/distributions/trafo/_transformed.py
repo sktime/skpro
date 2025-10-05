@@ -275,7 +275,24 @@ class TransformedDistribution(BaseDistribution):
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
 
-        return [params1, params2]
+        # array case example with inverse transform
+        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["c", "d"]))
+        params3 = {
+            "distribution": n_array,
+            "transform": np.exp,
+            "inverse_transform": np.log,
+            "index": pd.Index([1, 2]),
+            "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
+        }
+
+        # scalar case example with inverse transform
+        params4 = {
+            "distribution": n_scalar,
+            "transform": np.exp,
+            "inverse_transform": np.log,
+        }
+
+        return [params1, params2, params3, params4]
 
 
 def is_scalar_notnone(obj):
