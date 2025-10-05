@@ -55,8 +55,10 @@ class TransformedDistribution(BaseDistribution):
             "var",
             "energy",
             "cdf",
+            "pdf",
+            "log_pdf",
         ],
-        "capabilities:exact": ["ppf", "pdf", "log_pdf"],
+        "capabilities:exact": ["ppf"],
         "distr:measuretype": "mixed",
         "distr:paramtype": "composite",
     }
