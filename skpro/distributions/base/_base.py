@@ -924,7 +924,7 @@ class BaseDistribution(BaseObject):
 
         splx = self._sample_multiply(x, N)
         sply = self.sample(N)
-        spl = splx <= sply
+        spl = sply <= splx
         return self._sample_mean(spl)
 
     def surv(self, x):
