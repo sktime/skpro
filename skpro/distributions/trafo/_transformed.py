@@ -150,8 +150,8 @@ class TransformedDistribution(BaseDistribution):
                 "ppf is implemented only for monotonic transforms, "
                 "set `assume_monotonic=True` to use this method"
             )
-        elif self.inverse_transform is not None:
-            return super()._ppf(p)
+        elif not self.assume_monotonic and self.inverse_transform is not None:
+            return super().ppf(p)
 
         trafo = self.transform
 
