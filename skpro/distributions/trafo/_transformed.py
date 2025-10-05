@@ -286,8 +286,8 @@ class TransformedDistribution(BaseDistribution):
         n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["c", "d"]))
         params3 = {
             "distribution": n_array,
-            "transform": np.log,
-            "inverse_transform": np.exp,
+            "transform": lambda x: 2*x,
+            "inverse_transform": lambda x: x/2,
             "index": pd.Index([1, 2]),
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
