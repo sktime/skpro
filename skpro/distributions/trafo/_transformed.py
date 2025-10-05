@@ -94,7 +94,7 @@ class TransformedDistribution(BaseDistribution):
         if self.inverse_transform is not None:
             self.set_tags(
                 **{
-                    "capabilities:exact": ["ppf", "cdf"]
+                    "capabilities:exact": ["ppf", "cdf"],
                     "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
                 }
             )
