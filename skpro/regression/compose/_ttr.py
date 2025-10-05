@@ -284,6 +284,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
             transform=self.transformer_.inverse_transform,
+            inverse_transform=self.transformer_.transform,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"],

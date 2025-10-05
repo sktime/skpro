@@ -55,7 +55,7 @@ class TransformedDistribution(BaseDistribution):
             "cdf",
         ],
         "capabilities:exact": ["ppf"],
-        "distr:measuretype": "discrete",
+        "distr:measuretype": "mixed",
         "distr:paramtype": "composite",
     }
 
@@ -64,11 +64,13 @@ class TransformedDistribution(BaseDistribution):
         distribution,
         transform,
         assume_monotonic=True,
+        inverse_transform=None,
         index=None,
         columns=None,
     ):
         self.distribution = distribution
         self.transform = transform
+        self.inverse_transform = inverse_transform
         self.assume_monotonic = assume_monotonic
 
         self._is_scalar_dist = self.distribution.ndim == 0
@@ -85,6 +87,17 @@ class TransformedDistribution(BaseDistribution):
                     columns = pd.RangeIndex(n_cols)
 
         super().__init__(index=index, columns=columns)
+
+        if distribution.get_tag("measuretype") == "discrete":
+            self.set_tags(**{"distr:measuretype": "discrete"})
+
+        if self.inverse_transform is not None:
+            self.set_tags(
+                **{
+                    "capabilities:exact": ["ppf", "cdf"]
+                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
+                }
+            )
 
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
@@ -127,11 +140,14 @@ class TransformedDistribution(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             ppf values at the given points
         """
-        if not self.assume_monotonic:
+        if not self.assume_monotonic and self.inverse_transform is None:
             raise ValueError(
+                "if inverse_transform is not given, "
                 "ppf is implemented only for monotonic transforms, "
                 "set `assume_monotonic=True` to use this method"
             )
+        elif self.inverse_transform is not None:
+            return super()._ppf(p)
 
         trafo = self.transform
 
@@ -147,6 +163,37 @@ class TransformedDistribution(BaseDistribution):
             outer_ppf = pd.DataFrame(outer_ppf, index=self.index, columns=self.columns)
 
         return outer_ppf
+
+    def _cdf(self, p):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        if self.inverse_transform is None:
+            return super()._cdf(p)
+
+        inv_trafo = self.inverse_transform
+
+        inv_p = inv_trafo(p)
+        cdf_res = self.distribution.cdf(inv_p)
+
+        if isinstance(cdf_res, pd.DataFrame):
+            # if the transform returns a DataFrame, we ensure the index and columns
+            cdf_res.index = self.index
+            cdf_res.columns = self.columns
+        elif not self._is_scalar_dist:
+            # if the transform returns a scalar or array, we  convert it to DataFrame
+            cdf_res = pd.DataFrame(cdf_res, index=self.index, columns=self.columns)
+
+        return cdf_res
 
     def sample(self, n_samples=None):
         """Sample from the distribution.
