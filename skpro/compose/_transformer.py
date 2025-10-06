@@ -205,7 +205,7 @@ class BaseDifferentiableTransformer(BaseTransformer):
 class DifferentiableTransformer(BaseDifferentiableTransformer):
     """Differentiable transformer for TTR with default numerical differentiation."""
 
-    def __init__(self, transformer):
+    def __init__(self, transformer, transform_func_diff=None, inverse_func_diff=None):
         """Differentiable transformer for TTR with default numerical differentiation.
 
         Parameters
@@ -213,7 +213,9 @@ class DifferentiableTransformer(BaseDifferentiableTransformer):
         transformer : callable, optional
             Maybe only allow sklearn transformers for now.
         """
-        super().__init__(transformer=transformer)
+        super().__init__(
+            transformer=transformer, transform_func_diff=None, inverse_func_diff=None
+        )
 
     @classmethod
     def _coerce_to_differentiable(cls, transform):
