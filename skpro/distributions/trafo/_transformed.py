@@ -157,7 +157,9 @@ class TransformedDistribution(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             ppf values at the given points
         """
-        p = pd.DataFrame(p, index=self.index, columns=self.columns)
+        if self.ndim != 0:
+            p = pd.DataFrame(p, index=self.index, columns=self.columns)
+
         if not self.assume_monotonic and self.inverse_transform is None:
             raise ValueError(
                 "if inverse_transform is not given, "
@@ -200,7 +202,9 @@ class TransformedDistribution(BaseDistribution):
 
         inv_trafo = self.inverse_transform
 
-        x = pd.DataFrame(x, index=self.index, columns=self.columns)
+        if self.ndim != 0:
+            x = pd.DataFrame(x, index=self.index, columns=self.columns)
+
         inv_x = inv_trafo(x)
         cdf_res = self.distribution.cdf(inv_x)
 
