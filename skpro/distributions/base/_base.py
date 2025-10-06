@@ -715,9 +715,7 @@ class BaseDistribution(BaseObject):
                 res = res.values
             return np.exp(res)
 
-        self_has_impl_cdf = self._has_implementation_of("cdf")
-        self_has_approx_cdf = "cdf" in self.get_class_tag("capabilities:approx", [])
-        self_has_exact_cdf = self_has_impl_cdf and not self_has_approx_cdf
+        self_has_exact_cdf = "cdf" in self.get_tag("capabilities:exact")
 
         if self_has_exact_cdf:
             approx_method = (
@@ -774,9 +772,7 @@ class BaseDistribution(BaseObject):
         self_has_pdf = self._has_implementation_of("pdf")
         self_has_pdf = self_has_pdf or self._has_implementation_of("_pdf")
 
-        self_has_impl_cdf = self._has_implementation_of("cdf")
-        self_has_approx_cdf = "cdf" in self.get_class_tag("capabilities:approx", [])
-        self_has_exact_cdf = self_has_impl_cdf and not self_has_approx_cdf
+        self_has_exact_cdf = "cdf" in self.get_tag("capabilities:exact")
 
         if self_has_pdf or self_has_exact_cdf:
             approx_method = (
@@ -801,7 +797,7 @@ class BaseDistribution(BaseObject):
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
 
     @staticmethod
-    def _approx_derivative(cls, x, fun, h=1e-7):
+    def _approx_derivative(x, fun, h=1e-7):
         """Approximate the derivative of the log PDF using finite differences.
 
         Uses sixth-degree central difference formula.
