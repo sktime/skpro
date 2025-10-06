@@ -123,14 +123,19 @@ class TransformedDistribution(BaseDistribution):
         else:
             new_columns = self.columns
 
+        # these parameters are manually subset
+        # the other parameters are passed through
+        POP_PARAMS = ["distribution", "index", "columns"]
+
         cls = type(self)
+        params_dict = self.get_params(deep=False)
+        [params_dict.pop(param) for param in POP_PARAMS]
+
         return cls(
             distribution=distr,
-            transform=self.transform,
-            inverse_transform=self.inverse_transform,
-            assume_monotonic=self.assume_monotonic,
             index=new_index,
             columns=new_columns,
+            **params_dict,
         )
 
     def _iat(self, rowidx=None, colidx=None):
@@ -152,6 +157,9 @@ class TransformedDistribution(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             ppf values at the given points
         """
+        if self.ndim != 0:
+            p = pd.DataFrame(p, index=self.index, columns=self.columns)
+
         if not self.assume_monotonic and self.inverse_transform is None:
             raise ValueError(
                 "if inverse_transform is not given, "
@@ -181,7 +189,7 @@ class TransformedDistribution(BaseDistribution):
 
         Parameters
         ----------
-        p : 2D np.ndarray, same shape as ``self``
+        x : 2D np.ndarray, same shape as ``self``
             values to evaluate the cdf at
 
         Returns
@@ -193,6 +201,9 @@ class TransformedDistribution(BaseDistribution):
             return super()._cdf(x)
 
         inv_trafo = self.inverse_transform
+
+        if self.ndim != 0:
+            x = pd.DataFrame(x, index=self.index, columns=self.columns)
 
         inv_x = inv_trafo(x)
         cdf_res = self.distribution.cdf(inv_x)
