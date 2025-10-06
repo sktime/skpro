@@ -127,6 +127,7 @@ class TransformedDistribution(BaseDistribution):
         return cls(
             distribution=distr,
             transform=self.transform,
+            inverse_transform=self.inverse_transform,
             assume_monotonic=self.assume_monotonic,
             index=new_index,
             columns=new_columns,
