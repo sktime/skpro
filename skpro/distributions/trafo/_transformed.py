@@ -349,11 +349,11 @@ def _coerce_to_scalar(x):
     """Coerce numpy or pd.DataFrame to numpy float."""
     if isinstance(x, pd.DataFrame):
         if x.shape != (1, 1):
-            raise ValueError("input DataFrame must be of shape (1, 1) to coerce to scalar")
+            raise ValueError("input must be of shape (1, 1) to coerce to scalar")
         return x.iat[0, 0]
     elif isinstance(x, np.ndarray):
         if x.shape != (1, 1):
-            raise ValueError("input array must be of shape (1, 1) to coerce to scalar")
+            raise ValueError("input must be of shape (1, 1) to coerce to scalar")
         return x[0, 0]
     else:
         return x
