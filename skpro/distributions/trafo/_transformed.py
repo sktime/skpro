@@ -123,13 +123,19 @@ class TransformedDistribution(BaseDistribution):
         else:
             new_columns = self.columns
 
+        # these parameters are manually subset
+        # the other parameters are passed through
+        POP_PARAMS = ["distribution", "index", "columns"]
+
         cls = type(self)
+        params_dict = self.get_params(deep=False)
+        [params_dict.pop(param) for param in POP_PARAMS]
+
         return cls(
             distribution=distr,
-            transform=self.transform,
-            assume_monotonic=self.assume_monotonic,
             index=new_index,
             columns=new_columns,
+            **params_dict,
         )
 
     def _iat(self, rowidx=None, colidx=None):
