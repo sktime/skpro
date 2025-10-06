@@ -79,6 +79,14 @@ class TransformedDistribution(BaseDistribution):
             transform
         )
 
+        if self.transformer_._check_inverse_func():
+            self.set_tags(
+                **{
+                    "capabilities:exact": ["ppf", "cdf"],
+                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
+                }
+            )
+
         # determine index and columns
         if not self._is_scalar_dist:
             if index is None or columns is None:
