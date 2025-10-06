@@ -128,6 +128,17 @@ Mixture composition
 
     Mixture
 
+Transformation composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    TransformedDistribution
+
 Sampling and multivariate composition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

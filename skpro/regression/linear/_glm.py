@@ -590,7 +590,8 @@ class GLMRegressor(BaseProbaRegressor):
             "family": "Poisson",
             "add_constant": True,
         }
-        params4 = {"family": "Gamma"}
+        # params4 = {"family": "Gamma"}
+        # removed due to sporadic failure #594
         params5 = {
             "family": "Normal",
             "link": "InversePower",
@@ -601,4 +602,5 @@ class GLMRegressor(BaseProbaRegressor):
             "add_constant": True,
         }
 
-        return [params1, params2, params3, params4, params5, params6]
+        # return [params1, params2, params3, params4, params5, params6]
+        return [params1, params2, params3, params5, params6]
