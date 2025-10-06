@@ -227,7 +227,6 @@ class TransformedDistribution(BaseDistribution):
             x = pd.DataFrame(x, index=self.index, columns=self.columns)
         else:
             x = pd.DataFrame([[float(x)]])
-            print(x.dtypes)
 
         inv_x = inv_trafo(x)
         if self.ndim == 0:
