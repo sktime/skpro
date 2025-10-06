@@ -111,30 +111,36 @@ class TransformedDistribution(BaseDistribution):
             )
 
     def _iloc(self, rowidx=None, colidx=None):
+        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
+            return self._iat(rowidx, colidx)
+        if is_scalar_notnone(rowidx):
+            rowidx = pd.Index([rowidx])
+        if is_scalar_notnone(colidx):
+            colidx = pd.Index([colidx])
+
+        def subset_not_none(idx, subs):
+            if subs is not None:
+                return idx.take(subs)
+            else:
+                return idx
+
+        index_subset = subset_not_none(self.index, rowidx)
+        columns_subset = subset_not_none(self.columns, colidx)
+
         distr = self.distribution.iloc[rowidx, colidx]
-
-        if rowidx is not None:
-            new_index = self.index[rowidx]
-        else:
-            new_index = self.index
-
-        if colidx is not None:
-            new_columns = self.columns[colidx]
-        else:
-            new_columns = self.columns
 
         # these parameters are manually subset
         # the other parameters are passed through
         POP_PARAMS = ["distribution", "index", "columns"]
 
-        cls = type(self)
+        sk_distr_type = type(self)
         params_dict = self.get_params(deep=False)
         [params_dict.pop(param) for param in POP_PARAMS]
 
-        return cls(
+        return sk_distr_type(
             distribution=distr,
-            index=new_index,
-            columns=new_columns,
+            index=index_subset,
+            columns=columns_subset,
             **params_dict,
         )
 
@@ -142,7 +148,17 @@ class TransformedDistribution(BaseDistribution):
         if rowidx is None or colidx is None:
             raise ValueError("iat method requires both row and column index")
         self_subset = self.iloc[[rowidx], [colidx]]
-        return type(self)(distribution=self_subset.distribution.iat[0, 0])
+
+        POP_PARAMS = ["distribution", "index", "columns"]
+
+        sk_distr_type = type(self)
+        params_dict = self.get_params(deep=False)
+        [params_dict.pop(param) for param in POP_PARAMS]
+
+        return sk_distr_type(
+            distribution=self_subset.distribution.iat[0, 0],
+            **params_dict,
+        )
 
     def _ppf(self, p):
         """Quantile function = percent point function = inverse cdf.
@@ -157,9 +173,6 @@ class TransformedDistribution(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             ppf values at the given points
         """
-        if self.ndim != 0:
-            p = pd.DataFrame(p, index=self.index, columns=self.columns)
-
         if not self.assume_monotonic and self.inverse_transform is None:
             raise ValueError(
                 "if inverse_transform is not given, "
@@ -169,10 +182,18 @@ class TransformedDistribution(BaseDistribution):
         elif not self.assume_monotonic and self.inverse_transform is not None:
             return super().ppf(p)
 
+        if self.ndim != 0:
+            p = pd.DataFrame(p, index=self.index, columns=self.columns)
+
         trafo = self.transform
 
         inner_ppf = self.distribution.ppf(p)
+
+        if self.ndim == 0:
+            inner_ppf = pd.DataFrame([[inner_ppf]], columns=[self.columns[0]])
         outer_ppf = trafo(inner_ppf)
+        if self.ndim == 0:
+            outer_ppf = _coerce_to_scalar(outer_ppf)
 
         if isinstance(outer_ppf, pd.DataFrame):
             # if the transform returns a DataFrame, we ensure the index and columns
@@ -204,8 +225,13 @@ class TransformedDistribution(BaseDistribution):
 
         if self.ndim != 0:
             x = pd.DataFrame(x, index=self.index, columns=self.columns)
+        else:
+            x = pd.DataFrame([[x]], columns=[self.columns[0]])
 
         inv_x = inv_trafo(x)
+        if self.ndim == 0:
+            inv_x = _coerce_to_scalar(inv_x)
+
         cdf_res = self.distribution.cdf(inv_x)
 
         if isinstance(cdf_res, pd.DataFrame):
@@ -317,3 +343,17 @@ class TransformedDistribution(BaseDistribution):
 def is_scalar_notnone(obj):
     """Check if obj is scalar and not None."""
     return obj is not None and np.isscalar(obj)
+
+
+def _coerce_to_scalar(x):
+    """Coerce numpy or pd.DataFrame to numpy float."""
+    if isinstance(x, pd.DataFrame):
+        if x.shape != (1, 1):
+            raise ValueError("input DataFrame must be of shape (1, 1) to coerce to scalar")
+        return x.iat[0, 0]
+    elif isinstance(x, np.ndarray):
+        if x.shape != (1, 1):
+            raise ValueError("input array must be of shape (1, 1) to coerce to scalar")
+        return x[0, 0]
+    else:
+        return x
