@@ -44,6 +44,13 @@ class TransformedDistribution(BaseDistribution):
     >>> n = Normal(mu=0, sigma=1)
     >>> # transform the distribution by taking the exponential
     >>> t = TransformedDistribution(distribution=n, transform=np.exp)
+
+    If the inverse is known, it can be given to ensure more methods are exact:
+    >>> t = TransformedDistribution(
+    ...     distribution=n,
+    ...     transform=np.exp,
+    ...     inverse_transform=np.log,
+    ... )
     """
 
     _tags = {
@@ -55,7 +62,7 @@ class TransformedDistribution(BaseDistribution):
             "cdf",
         ],
         "capabilities:exact": ["ppf"],
-        "distr:measuretype": "discrete",
+        "distr:measuretype": "mixed",
         "distr:paramtype": "composite",
     }
 
@@ -64,11 +71,13 @@ class TransformedDistribution(BaseDistribution):
         distribution,
         transform,
         assume_monotonic=True,
+        inverse_transform=None,
         index=None,
         columns=None,
     ):
         self.distribution = distribution
         self.transform = transform
+        self.inverse_transform = inverse_transform
         self.assume_monotonic = assume_monotonic
 
         self._is_scalar_dist = self.distribution.ndim == 0
@@ -86,6 +95,21 @@ class TransformedDistribution(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
+        # transformed discret distributions are always discrete
+        # (otherwise we only know that they are mixed)
+        if distribution.get_tag("distr:measuretype") == "discrete":
+            self.set_tags(**{"distr:measuretype": "discrete"})
+
+        # if inverse_transform is given, we can do exact cdf
+        # due to the formula F_g(x)(y) = F_X(g^-1(x))
+        if self.inverse_transform is not None:
+            self.set_tags(
+                **{
+                    "capabilities:exact": ["ppf", "cdf"],
+                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
+                }
+            )
+
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
 
@@ -99,13 +123,19 @@ class TransformedDistribution(BaseDistribution):
         else:
             new_columns = self.columns
 
+        # these parameters are manually subset
+        # the other parameters are passed through
+        POP_PARAMS = ["distribution", "index", "columns"]
+
         cls = type(self)
+        params_dict = self.get_params(deep=False)
+        [params_dict.pop(param) for param in POP_PARAMS]
+
         return cls(
             distribution=distr,
-            transform=self.transform,
-            assume_monotonic=self.assume_monotonic,
             index=new_index,
             columns=new_columns,
+            **params_dict,
         )
 
     def _iat(self, rowidx=None, colidx=None):
@@ -127,11 +157,17 @@ class TransformedDistribution(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             ppf values at the given points
         """
-        if not self.assume_monotonic:
+        if self.ndim != 0:
+            p = pd.DataFrame(p, index=self.index, columns=self.columns)
+
+        if not self.assume_monotonic and self.inverse_transform is None:
             raise ValueError(
+                "if inverse_transform is not given, "
                 "ppf is implemented only for monotonic transforms, "
                 "set `assume_monotonic=True` to use this method"
             )
+        elif not self.assume_monotonic and self.inverse_transform is not None:
+            return super().ppf(p)
 
         trafo = self.transform
 
@@ -147,6 +183,40 @@ class TransformedDistribution(BaseDistribution):
             outer_ppf = pd.DataFrame(outer_ppf, index=self.index, columns=self.columns)
 
         return outer_ppf
+
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        if self.inverse_transform is None:
+            return super()._cdf(x)
+
+        inv_trafo = self.inverse_transform
+
+        if self.ndim != 0:
+            x = pd.DataFrame(x, index=self.index, columns=self.columns)
+
+        inv_x = inv_trafo(x)
+        cdf_res = self.distribution.cdf(inv_x)
+
+        if isinstance(cdf_res, pd.DataFrame):
+            # if the transform returns a DataFrame, we ensure the index and columns
+            cdf_res.index = self.index
+            cdf_res.columns = self.columns
+        elif not self._is_scalar_dist:
+            # if the transform returns a scalar or array, we  convert it to DataFrame
+            cdf_res = pd.DataFrame(cdf_res, index=self.index, columns=self.columns)
+
+        return cdf_res
 
     def sample(self, n_samples=None):
         """Sample from the distribution.
@@ -224,7 +294,24 @@ class TransformedDistribution(BaseDistribution):
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
 
-        return [params1, params2]
+        # array case example with inverse transform
+        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["c", "d"]))
+        params3 = {
+            "distribution": n_array,
+            "transform": lambda x: 2 * x,
+            "inverse_transform": lambda x: x / 2,
+            "index": pd.Index([1, 2]),
+            "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
+        }
+
+        # scalar case example with inverse transform
+        params4 = {
+            "distribution": n_scalar,
+            "transform": np.exp,
+            "inverse_transform": np.log,
+        }
+
+        return [params1, params2, params3, params4]
 
 
 def is_scalar_notnone(obj):
