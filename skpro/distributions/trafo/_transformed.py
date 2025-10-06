@@ -190,7 +190,7 @@ class TransformedDistribution(BaseDistribution):
         inner_ppf = self.distribution.ppf(p)
 
         if self.ndim == 0:
-            inner_ppf = pd.DataFrame([[inner_ppf]], columns=[self.columns[0]])
+            inner_ppf = pd.DataFrame([[inner_ppf]])
         outer_ppf = trafo(inner_ppf)
         if self.ndim == 0:
             outer_ppf = _coerce_to_scalar(outer_ppf)
@@ -226,7 +226,7 @@ class TransformedDistribution(BaseDistribution):
         if self.ndim != 0:
             x = pd.DataFrame(x, index=self.index, columns=self.columns)
         else:
-            x = pd.DataFrame([[x]], columns=[self.columns[0]])
+            x = pd.DataFrame([[x]])
 
         inv_x = inv_trafo(x)
         if self.ndim == 0:
