@@ -49,6 +49,27 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         clone of ``regressor``, fitted to transformed target variable
     transformer_ : the fitted transformer, sklearn transformer
         clone of ``transformer``, fitted to target variable
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from sklearn.datasets import load_diabetes
+    >>> from skpro.regression.residual import ResidualDouble
+    >>> from skpro.regression.compose import TransformedTargetRegressor
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> from sklearn.model_selection import train_test_split
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> y = pd.DataFrame(y)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>>
+    >>> reg = TransformedTargetRegressor(
+    ...     regressor=ResidualDouble.create_test_instance(),
+    ...     transformer=StandardScaler()
+    ... )
+    >>> reg.fit(X_train, y_train)
+    TransformedTargetRegressor(...)
+    >>> y_pred = reg.predict_proba(X_test)
     """
 
     _tags = {

@@ -21,6 +21,7 @@ class XGBoostLSS(BaseProbaRegressor):
         * "LogNormal": LogNormal distribution.
         * "TDistribution": Student's T distribution.
         * "Weibull": Weibull distribution.
+        * "Beta": Beta distribution.
 
     stabilization: str, optional, default="None"
         Stabilization method for the Gradient and Hessian.
@@ -59,6 +60,7 @@ class XGBoostLSS(BaseProbaRegressor):
     n_trials: int, optional, default=30
         The number of trials in tuning.
         If this argument is set to None, there is no limitation on the number of trials.
+        If set to 0, no tuning is done, and default parameters of XGBoostLSS are used.
     """
 
     _tags = {
@@ -165,6 +167,7 @@ class XGBoostLSS(BaseProbaRegressor):
             "LogNormal": {"mu": "loc", "sigma": "scale"},
             "TDistribution": {"mu": "loc", "sigma": "scale", "df": "df"},
             "Weibull": {"scale": "scale", "k": "concentration"},
+            "Beta": {"alpha": "concentration1", "beta": "concentration0"},
         }
         map = name_map.get(distr, {})
 
@@ -207,6 +210,36 @@ class XGBoostLSS(BaseProbaRegressor):
             )
         )
 
+        if self.n_trials == 0:
+            opt_params = {}  # empty dict, use default parameters
+            n_rounds = self.num_boost_round
+        else:
+            opt_params = self._hyper_opt(xgblss, dtrain)
+            n_rounds = opt_params.pop("n_estimators", self.num_boost_round)
+
+        # Train Model with optimized hyperparameters
+        xgblss.train(opt_params, dtrain, num_boost_round=n_rounds)
+
+        self.xgblss_ = xgblss
+        return self
+
+    def _hyper_opt(self, xgblss, dtrain):
+        """Run internal hyperparameter optimization.
+
+        Uses ``xgboostlss.hyper_opt`` function to run hyperparameter optimization.
+
+        Parameters
+        ----------
+        xgblss : xgboostlss.model.XGBoostLSS instance
+            xgboostlss model instance, as created in ``_fit`` method
+        dtrain : xgboost.DMatrix
+            training data, as created in ``_fit`` method
+
+        Returns
+        -------
+        opt_params : dict
+            dictionary of hyperparameters to be passed to xgboostlss
+        """
         param_dict = {
             "eta": ["float", {"low": 1e-5, "high": 1, "log": True}],
             "max_depth": ["int", {"low": 1, "high": 10, "log": False}],
@@ -243,14 +276,8 @@ class XGBoostLSS(BaseProbaRegressor):
         )
 
         opt_params = opt_param.copy()
-        n_rounds = opt_params["opt_rounds"]
-        del opt_params["opt_rounds"]
 
-        # Train Model with optimized hyperparameters
-        xgblss.train(opt_params, dtrain, num_boost_round=n_rounds)
-
-        self.xgblss_ = xgblss
-        return self
+        return opt_params
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
@@ -318,4 +345,6 @@ class XGBoostLSS(BaseProbaRegressor):
         params3 = {"dist": "Weibull", "max_minutes": 1}
         params4 = {"dist": "TDistribution", "max_minutes": 1}
         params5 = {"dist": "Laplace", "max_minutes": 1}
-        return [params0, params1, params2, params3, params4, params5]
+        params6 = {"n_trials": 0, "max_minutes": 1}
+        params7 = {"dist": "Beta", "max_minutes": 1}
+        return [params0, params1, params2, params3, params4, params5, params6, params7]

@@ -924,7 +924,7 @@ class BaseDistribution(BaseObject):
 
         splx = self._sample_multiply(x, N)
         sply = self.sample(N)
-        spl = splx <= sply
+        spl = sply <= splx
         return self._sample_mean(spl)
 
     def surv(self, x):
@@ -1204,7 +1204,7 @@ class BaseDistribution(BaseObject):
 
         # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx, sply
         spl = splx - sply
-        energy = spl.apply(np.linalg.norm, axis=1, ord=1)
+        energy = spl.abs().sum(axis=1)
 
         # todo: check if can use self._sample_mean
         if self.ndim > 0:
