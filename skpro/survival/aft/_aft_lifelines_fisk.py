@@ -8,7 +8,6 @@ import numpy as np
 from skpro.distributions.fisk import Fisk
 from skpro.survival.adapters.lifelines import _LifelinesAdapter
 from skpro.survival.base import BaseSurvReg
-from skpro.utils.sklearn import prep_skl_df
 
 
 class AFTFisk(_LifelinesAdapter, BaseSurvReg):
@@ -145,7 +144,7 @@ class AFTFisk(_LifelinesAdapter, BaseSurvReg):
             if self.alpha_cols == "all":
                 return {"ancillary": True}
             else:
-                return {"ancillary": prep_skl_df(X[self.alpha_cols])}
+                return {"ancillary": X[self.alpha_cols]}
         else:
             return {}
 
@@ -172,10 +171,6 @@ class AFTFisk(_LifelinesAdapter, BaseSurvReg):
             df = X[self.alpha_cols]
         else:
             df = X
-
-        if ancillary is not None:
-            ancillary = prep_skl_df(ancillary)
-        df = prep_skl_df(df)
 
         lifelines_est = getattr(self, self._estimator_attr)
         ll_pred_proba = lifelines_est._prep_inputs_for_prediction_and_return_scores

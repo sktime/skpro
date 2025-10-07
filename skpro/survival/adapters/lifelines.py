@@ -116,7 +116,6 @@ class _LifelinesAdapter:
             to_concat.append(C_col)
 
         df = pd.concat(to_concat, axis=1)
-        df = prep_skl_df(df)
 
         self._y_cols = y.columns  # remember column names for later
         y_name = y.columns[0]

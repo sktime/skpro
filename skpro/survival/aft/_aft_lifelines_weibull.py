@@ -8,7 +8,6 @@ import numpy as np
 from skpro.distributions.weibull import Weibull
 from skpro.survival.adapters.lifelines import _LifelinesAdapter
 from skpro.survival.base import BaseSurvReg
-from skpro.utils.sklearn import prep_skl_df
 
 
 class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
@@ -152,7 +151,7 @@ class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
             if self.scale_cols == "all":
                 return {"ancillary": True}
             else:
-                return {"ancillary": prep_skl_df(X[self.scale_cols])}
+                return {"ancillary": X[self.scale_cols]}
         else:
             return {}
 
@@ -179,10 +178,6 @@ class AFTWeibull(_LifelinesAdapter, BaseSurvReg):
             df = X[self.scale_cols]
         else:
             df = X
-
-        if ancillary is not None:
-            ancillary = prep_skl_df(ancillary)
-        df = prep_skl_df(df)
 
         lifelines_est = getattr(self, self._estimator_attr)
         ll_pred_proba = lifelines_est._prep_inputs_for_prediction_and_return_scores
