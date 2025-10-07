@@ -219,11 +219,10 @@ class BaggingRegressor(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from skbase.utils.dependencies import _check_estimator_deps
         from sklearn.linear_model import LinearRegression
 
         from skpro.regression.residual import ResidualDouble
-        from skpro.survival.aft import AFTLogNormal
+        from skpro.survival.compose import ConditionUncensored
 
         regressor = ResidualDouble(LinearRegression())
 
@@ -240,19 +239,15 @@ class BaggingRegressor(BaseProbaRegressor):
             "bootstrap": False,
             "bootstrap_features": True,
         }
-        params = [params1, params2, params3]
+        params4 = {
+            "estimator": ConditionUncensored.create_test_instance(),
+            "n_samples": 5,
+            "n_features": 2,
+            "bootstrap": False,
+            "bootstrap_features": True,
+        }
 
-        if _check_estimator_deps(AFTLogNormal, severity="none"):
-            params4 = {
-                "estimator": AFTLogNormal(),
-                "n_samples": 5,
-                "n_features": 2,
-                "bootstrap": False,
-                "bootstrap_features": True,
-            }
-            params += [params4]
-
-        return params
+        return [params1, params2, params3, params4]
 
 
 def _random_ss_ix(ix, size, replace=True):
