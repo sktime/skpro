@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Fisk(_ScipyAdapter):
     r"""Fisk distribution, aka log-logistic distribution.
 
+    Most methods wrap ``scipy.stats.fisk``.
+
     The Fisk distribution is parametrized by a scale parameter :math:`\alpha`
     and a shape parameter :math:`\beta`, such that the cumulative distribution
     function (CDF) is given by:
@@ -27,8 +29,8 @@ class Fisk(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.fisk import Fisk
 
     >>> d = Fisk(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)

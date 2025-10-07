@@ -26,8 +26,8 @@ Base
 Parametric distributions
 ------------------------
 
-Continuous support
-~~~~~~~~~~~~~~~~~~
+Continuous support - full reals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -35,13 +35,36 @@ Continuous support
     :toctree: auto_generated/
     :template: class.rst
 
-    Beta
-    ChiSquared
-    Fisk
     Laplace
     Logistic
     Normal
+    SkewNormal
     TDistribution
+    TruncatedNormal
+
+
+Continuous support - non-negative reals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    Alpha
+    Beta
+    ChiSquared
+    Exponential
+    Erlang
+    Fisk
+    Gamma
+    HalfCauchy
+    HalfLogistic
+    HalfNormal
+    InverseGamma
+    LogLaplace
+    Pareto
     Weibull
 
 
@@ -54,8 +77,10 @@ Integer support
     :toctree: auto_generated/
     :template: class.rst
 
+    Binomial
+    Hurdle
+    NegativeBinomial
     Poisson
-
 
 Non-parametric and empirical distributions
 ------------------------------------------
@@ -68,13 +93,32 @@ Non-parametric and empirical distributions
 
     Delta
     Empirical
+    Histogram
     QPD_Empirical
+    QPD_Johnson
     QPD_U
     QPD_S
     QPD_B
 
+
 Composite distributions
 -----------------------
+
+Parametric families
+~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MeanScale
+    TruncatedDistribution
+    LeftTruncated
+
+Mixture composition
+~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -83,3 +127,25 @@ Composite distributions
     :template: class.rst
 
     Mixture
+
+Transformation composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    TransformedDistribution
+
+Sampling and multivariate composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    IID

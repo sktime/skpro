@@ -57,8 +57,8 @@ class QPD_Empirical(Empirical):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> import pandas as pd
     >>> from skpro.distributions import QPD_Empirical
 

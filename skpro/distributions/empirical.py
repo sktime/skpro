@@ -42,8 +42,8 @@ class Empirical(BaseDistribution):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> import pandas as pd
     >>> from skpro.distributions.empirical import Empirical
 
@@ -193,7 +193,7 @@ class Empirical(BaseDistribution):
     def _slice_ix(self, obj, ix):
         """Slice obj by index ix, applied to MultiIndex levels 1 ... last.
 
-        obj is assumed to have MultiIndex, and slicing occurrs on the
+        obj is assumed to have MultiIndex, and slicing occurs on the
         last levels, 1 ... last.
 
         ix can be a simple index or MultiIndex,
@@ -274,9 +274,10 @@ class Empirical(BaseDistribution):
         if rowidx is None or colidx is None:
             raise ValueError("iat method requires both row and column index")
         self_subset = self.iloc[[rowidx], [colidx]]
-        spl_subset = self_subset.spl.droplevel(0)
+        levels_to_drop = list(range(1, self_subset.spl.index.nlevels))
+        spl_subset = self_subset.spl.droplevel(levels_to_drop)
         if self.weights is not None:
-            wts_subset = self_subset.weights.droplevel(0)
+            wts_subset = self_subset.weights.droplevel(levels_to_drop)
         else:
             wts_subset = None
 
@@ -402,16 +403,22 @@ class Empirical(BaseDistribution):
         Parameters
         ----------
         n_samples : int, optional, default = None
+            number of samples to draw from the distribution
 
         Returns
         -------
-        if `n_samples` is `None`:
-        returns a sample that contains a single sample from `self`,
-        in `pd.DataFrame` mtype format convention, with `index` and `columns` as `self`
-        if n_samples is `int`:
-        returns a `pd.DataFrame` that contains `n_samples` i.i.d. samples from `self`,
-        in `pd-multiindex` mtype format convention, with same `columns` as `self`,
-        and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
+        pd.DataFrame
+            samples from the distribution
+
+            * if ``n_samples`` is ``None``:
+            returns a sample that contains a single sample from ``self``,
+            in ``pd.DataFrame`` mtype format convention, with ``index`` and ``columns``
+            as ``self``
+            * if n_samples is ``int``:
+            returns a ``pd.DataFrame`` that contains ``n_samples`` i.i.d.
+            samples from ``self``, in ``pd-multiindex`` mtype format convention,
+            with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
+            of ``RangeIndex(n_samples)`` and ``self.index``
         """
         # for now, always defaulting to the standard logic
         # todo: address issue #283

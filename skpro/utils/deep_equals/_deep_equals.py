@@ -8,8 +8,7 @@ Objects compared can have one of the following valid types:
 """
 from skbase.utils.deep_equals._common import _make_ret
 from skbase.utils.deep_equals._deep_equals import deep_equals as _deep_equals
-
-from skpro.utils.validation._dependencies import _check_soft_dependencies
+from skbase.utils.dependencies import _check_soft_dependencies
 
 __author__ = ["fkiraly"]
 __all__ = ["deep_equals"]

@@ -36,6 +36,41 @@ class BaseSurvReg(BaseProbaRegressor):
             labels to fit regressor to
         C : pd.DataFrame, optional (default=None)
             censoring information for survival analysis,
+
+            * should have same column name as y, same length as X and y
+            * should have entries 0 and 1 (float or int),
+            0 = uncensored, 1 = (right) censored
+
+            if None, all observations are assumed to be uncensored.
+
+        Returns
+        -------
+        self : reference to self
+        """
+        super().fit(X=X, y=y, C=C)
+        return self
+
+    def update(self, X, y, C=None):
+        """Update regressor with a new batch of training data.
+
+        Only estimators with the ``capability:update`` tag (value ``True``)
+        provide this method, otherwise the method ignores the call and
+        discards the data passed.
+
+        State required:
+            Requires state to be "fitted".
+
+        Writes to self:
+            Updates fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pd.DataFrame, must be same length as X
+            labels to fit regressor to
+        C : pd.DataFrame, optional (default=None)
+            censoring information for survival analysis,
             should have same column name as y, same length as X and y
             should have entries 0 and 1 (float or int)
             0 = uncensored, 1 = (right) censored
@@ -45,5 +80,5 @@ class BaseSurvReg(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        super().fit(X=X, y=y, C=C)
+        super().update(X=X, y=y, C=C)
         return self

@@ -2,12 +2,14 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 import pytest
+from skbase.utils.dependencies import _check_soft_dependencies
 
-from skpro.utils.validation._dependencies import _check_soft_dependencies
+from skpro.tests.test_switch import run_test_module_changed
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("matplotlib", severity="none"),
+    not run_test_module_changed("skpro.utils")
+    or not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip test if required soft dependency for matplotlib not available",
 )
 def test_plot_crossplot_interval():
@@ -37,7 +39,8 @@ def test_plot_crossplot_interval():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("matplotlib", severity="none"),
+    not run_test_module_changed("skpro.utils")
+    or not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip test if required soft dependency for matplotlib not available",
 )
 def test_plot_crossplot_std():
@@ -66,7 +69,8 @@ def test_plot_crossplot_std():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("matplotlib", severity="none"),
+    not run_test_module_changed("skpro.utils")
+    or not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip test if required soft dependency for matplotlib not available",
 )
 def test_plot_crossplot_loss():

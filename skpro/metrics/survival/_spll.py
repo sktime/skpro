@@ -4,10 +4,10 @@
 import numpy as np
 import pandas as pd
 
-from skpro.metrics.base import BaseDistrMetric
+from skpro.metrics.base import BaseSurvDistrMetric
 
 
-class SPLL(BaseDistrMetric):
+class SPLL(BaseSurvDistrMetric):
     r"""Survival Process Logarithmic Loss for distributional predictions.
 
     Same as the negative log-likelihood of the survival process (see [1]_),
@@ -78,3 +78,10 @@ class SPLL(BaseDistrMetric):
             return pd.DataFrame(res.mean(axis=1), columns=["SPLL"])
         else:
             return res
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Retrieve test parameters."""
+        params1 = {}
+        params2 = {"multivariate": True}
+        return [params1, params2]

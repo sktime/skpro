@@ -25,6 +25,9 @@ class _CommonTags:
 class BaseObject(_CommonTags, _BaseObject):
     """Base class for fittable objects."""
 
+    def __init__(self):
+        super().__init__()
+
 
 class BaseEstimator(_CommonTags, _BaseEstimator):
     """Base class for fittable objects."""

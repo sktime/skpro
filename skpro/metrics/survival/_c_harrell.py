@@ -4,10 +4,10 @@
 import numpy as np
 import pandas as pd
 
-from skpro.metrics.base import BaseDistrMetric
+from skpro.metrics.base import BaseSurvDistrMetric
 
 
-class ConcordanceHarrell(BaseDistrMetric):
+class ConcordanceHarrell(BaseSurvDistrMetric):
     r"""Concordance index (Harrell).
 
     Fraction of concordant test index pairs among all comparale pairs,
@@ -219,3 +219,13 @@ class ConcordanceHarrell(BaseDistrMetric):
             return pd.DataFrame(res_df.mean(axis=1), columns=["C_Harrell"])
         else:
             return res_df
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        # array case examples
+        params1 = {}
+        params2 = {"score": "quantile", "score_args": {"alpha": 0.5}}
+        params3 = {"normalization": "index"}
+
+        return [params1, params2, params3]

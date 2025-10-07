@@ -13,6 +13,7 @@ __author__ = ["fkiraly"]
 
 
 from copy import deepcopy
+from inspect import isclass
 from operator import itemgetter
 from pathlib import Path
 
@@ -122,15 +123,15 @@ def all_objects(
     --------
     >>> from skpro.registry import all_objects
     >>> # return a complete list of objects as pd.Dataframe
-    >>> all_objects(as_dataframe=True)
+    >>> all_objects(as_dataframe=True)  # doctest: +SKIP
     >>> # return all probabilistic regressors by filtering for object type
-    >>> all_objects("regressor_proba", as_dataframe=True)
+    >>> all_objects("regressor_proba", as_dataframe=True)  # doctest: +SKIP
     >>> # return all regressors which handle missing data in the input by tag filtering
     >>> all_objects(
     ...     "regressor_proba",
     ...     filter_tags={"capability:missing": True},
     ...     as_dataframe=True
-    ... )
+    ... )  # doctest: +SKIP
 
     References
     ----------
@@ -148,25 +149,39 @@ def all_objects(
     result = []
     ROOT = str(Path(__file__).parent.parent)  # skpro package root directory
 
-    if isinstance(filter_tags, str):
-        filter_tags = {filter_tags: True}
-    filter_tags = filter_tags.copy() if filter_tags else None
+    def _coerce_to_str(obj):
+        if isinstance(obj, (list, tuple)):
+            return [_coerce_to_str(o) for o in obj]
+        if isclass(obj):
+            obj = obj.get_tag("object_type")
+        return obj
 
-    if object_types:
-        if filter_tags and "object_type" not in filter_tags.keys():
-            object_tag_filter = {"object_type": object_types}
-        elif filter_tags:
-            filter_tags_filter = filter_tags.get("object_type", [])
-            if isinstance(object_types, str):
-                object_types = [object_types]
-            object_tag_update = {"object_type": object_types + filter_tags_filter}
-            filter_tags.update(object_tag_update)
+    def _coerce_to_list_of_str(obj):
+        obj = _coerce_to_str(obj)
+        if isinstance(obj, str):
+            return [obj]
+        return obj
+
+    if object_types is not None:
+        object_types = _coerce_to_list_of_str(object_types)
+        object_types = list(set(object_types))
+
+    if object_types is not None:
+        if filter_tags is None:
+            filter_tags = {}
+        elif isinstance(filter_tags, str):
+            filter_tags = {filter_tags: True}
         else:
-            object_tag_filter = {"object_type": object_types}
-        if filter_tags:
-            filter_tags.update(object_tag_filter)
+            filter_tags = filter_tags.copy()
+
+        if "object_type" in filter_tags:
+            obj_field = filter_tags["object_type"]
+            obj_field = _coerce_to_list_of_str(obj_field)
+            obj_field = obj_field + object_types
         else:
-            filter_tags = object_tag_filter
+            obj_field = object_types
+
+        filter_tags["object_type"] = obj_field
 
     result = _all_objects(
         object_types=[BaseObject, BaseEstimator],

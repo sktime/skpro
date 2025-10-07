@@ -3,6 +3,7 @@
 __author__ = ["fkiraly"]
 
 import pytest
+from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.datatypes._registry import (
     MTYPE_REGISTER,
@@ -10,11 +11,15 @@ from skpro.datatypes._registry import (
     mtype_to_scitype,
     scitype_to_mtype,
 )
-from skpro.utils.validation._dependencies import _check_soft_dependencies
+from skpro.tests.test_switch import run_test_module_changed
 
 MTYPE_SCITYPE_PAIRS = [(k[0], k[1]) for k in MTYPE_REGISTER]
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes"),
+    reason="Test only if skpro.datatypes has been changed",
+)
 @pytest.mark.parametrize("mtype, scitype", MTYPE_SCITYPE_PAIRS)
 def test_mtype_to_scitype(mtype, scitype):
     """Tests that mtype_to_scitype yields the correct output for a string.
@@ -37,6 +42,10 @@ def test_mtype_to_scitype(mtype, scitype):
     assert result == scitype, msg
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes"),
+    reason="Test only if skpro.datatypes has been changed",
+)
 def test_mtype_to_scitype_list():
     """Tests that mtype_to_scitype yields the correct output for a list.
 
@@ -60,6 +69,10 @@ def test_mtype_to_scitype_list():
     assert result == expected_scitype_list, msg
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.datatypes"),
+    reason="Test only if skpro.datatypes has been changed",
+)
 @pytest.mark.parametrize("mtype, scitype", MTYPE_SCITYPE_PAIRS)
 def test_scitype_to_mtype(mtype, scitype):
     """Tests that scitype_to_mtype yields the correct output for a string.

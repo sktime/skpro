@@ -10,9 +10,9 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.utils.parallel import parallelize
-from skpro.utils.validation._dependencies import _check_soft_dependencies
 
 
 def _split(X, y, C, train, test):
@@ -81,7 +81,7 @@ def evaluate(
     X : pandas DataFrame
         Feature instances to use in evaluation experiment
     y : pd.DataFrame, must be same length as X
-        Labels to used in the evaluation experiment
+        Labels to use in the evaluation experiment
     scoring : subclass of skpro.performance_metrics.BaseMetric or list of same,
         default=None. Used to get a score function that takes y_pred and y_test
         arguments and accept y_train as keyword argument.
@@ -135,12 +135,14 @@ def evaluate(
 
     C : pd.DataFrame, optional (default=None)
         censoring information to use in the evaluation experiment,
-        should have same column name as y, same length as X and y
-        should have entries 0 and 1 (float or int)
-        0 = uncensored, 1 = (right) censored
-        if None, all observations are assumed to be uncensored
+
+        * should have same column name as y, same length as X and y
+        * should have entries 0 and 1 (float or int),
+          0 = uncensored, 1 = (right) censored
+
+        if None, all observations are assumed to be uncensored.
         Can be passed to any probabilistic regressor,
-        but is ignored if capability:survival tag is False.
+        but is ignored if ``capability:survival`` tag is ``False``.
 
     Returns
     -------
@@ -150,6 +152,7 @@ def evaluate(
         Row index is splitter index of train/test fold in ``cv``.
         Entries in the i-th row are for the i-th train/test split in ``cv``.
         Columns are as follows:
+
         - test_{scoring.name}: (float) Model performance score.
           If ``scoring`` is a list,
           then there is a column withname ``test_{scoring.name}`` for each scorer.
@@ -167,21 +170,22 @@ def evaluate(
 
     Examples
     --------
+    >>> import pandas as pd
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.linear_model import LinearRegression
     >>> from sklearn.model_selection import KFold
-
+    >>>
     >>> from skpro.benchmarking.evaluate import evaluate
     >>> from skpro.metrics import CRPS
     >>> from skpro.regression.residual import ResidualDouble
-
+    >>>
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
     >>> y = pd.DataFrame(y)  # skpro assumes y is pd.DataFrame
-
+    >>>
     >>> estimator = ResidualDouble(LinearRegression())
     >>> cv = KFold(n_splits=3)
     >>> crps = CRPS()
-
+    >>>
     >>> results = evaluate(estimator=estimator, X=X, y=y, cv=cv, scoring=crps)
     """
     if backend == "dask" and not _check_soft_dependencies("dask", severity="none"):
@@ -402,7 +406,7 @@ def _check_scores(metrics):
 
     Parameters
     ----------
-    metrics : sktime accepted metrics object or a list of them or None
+    metrics : skpro accepted metrics object or a list of them or None
 
     Return
     ------

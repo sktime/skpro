@@ -21,16 +21,21 @@ class BaseProbaMetric(BaseObject):
 
     Parameters
     ----------
-    multioutput : {'raw_values', 'uniform_average'}  or array-like of shape \
+    multioutput : {'raw_values', 'uniform_average'} or array-like of shape \
             (n_outputs,), default='uniform_average'
-        Defines how to aggregate metric for multivariate (multioutput) data.
-        If array-like, values used as weights to average the errors.
-        If 'raw_values', returns a full set of errors in case of multioutput input.
-        If 'uniform_average', errors of all outputs are averaged with uniform weight.
+        Defines whether and how to aggregate metric for across variables.
+
+        * If 'uniform_average' (default), errors are mean-averaged across variables.
+        * If array-like, errors are weighted averaged across variables,
+          values as weights.
+        * If 'raw_values', does not average errors across variables,
+          columns are retained.
+
     score_average : bool, optional, default=True
         for interval and quantile losses only
-            if True, metric/loss is averaged by upper/lower and/or quantile
-            if False, metric/loss is not averaged by upper/lower and/or quantile
+
+        * if True, metric/loss is averaged by upper/lower and/or quantile
+        * if False, metric/loss is not averaged by upper/lower and/or quantile
     """
 
     _tags = {
@@ -60,15 +65,16 @@ class BaseProbaMetric(BaseObject):
         Returns
         -------
         loss : float or 1-column pd.DataFrame with calculated metric value(s)
-            metric is always averaged (arithmetic) over fh values
-            if multioutput = "raw_values",
-                will have a column level corresponding to variables in y_true
-            if multioutput = multioutput = "uniform_average" or or array-like
-                entries will be averaged over output variable column
-            if score_average = False,
-                will have column levels corresponding to quantiles/intervals
-            if score_average = True,
-                entries will be averaged over quantiles/interval column
+            metric is always averaged (arithmetic) over instances
+
+            * if ``multioutput = "raw_values"``,
+              will have a column level corresponding to variables in ``y_true``
+            * if ``multioutput = multioutput = "uniform_average"`` or or array-like
+              entries will be averaged over output variable column
+            * if ``score_average = False``,
+              will have column levels corresponding to quantiles/intervals
+            * if ``score_average = True``,
+              entries will be averaged over quantiles/interval column
         """
         return self.evaluate(y_true, y_pred, **kwargs)
 
@@ -87,15 +93,16 @@ class BaseProbaMetric(BaseObject):
         Returns
         -------
         loss : float or 1-column pd.DataFrame with calculated metric value(s)
-            metric is always averaged (arithmetic) over fh values
-            if multioutput = "raw_values",
-                will have a column level corresponding to variables in y_true
-            if multioutput = multioutput = "uniform_average" or or array-like
-                entries will be averaged over output variable column
-            if score_average = False,
-                will have column levels corresponding to quantiles/intervals
-            if score_average = True,
-                entries will be averaged over quantiles/interval column
+            metric is always averaged (arithmetic) over instances
+
+            * if ``multioutput = "raw_values"``,
+              will have a column level corresponding to variables in ``y_true``
+            * if ``multioutput = multioutput = "uniform_average"`` or or array-like
+              entries will be averaged over output variable column
+            * if ``score_average = False``,
+              will have column levels corresponding to quantiles/intervals
+            * if ``score_average = True``,
+              entries will be averaged over quantiles/interval column
         """
         # Input checks and conversions
         y_true_inner, y_pred_inner, multioutput = self._check_ys(
@@ -113,14 +120,21 @@ class BaseProbaMetric(BaseObject):
         # pass to inner function
         out = self._evaluate(y_true_inner, y_pred_inner, **kwargs)
 
-        if self.score_average and multioutput == "uniform_average":
-            out = out.mean(axis=1).iloc[0]  # average over all
-        if self.score_average and multioutput == "raw_values":
-            out = out.T.groupby(level=0).mean().T  # average over scores
-        if not self.score_average and multioutput == "uniform_average":
-            out = out.T.groupby(level=1).mean().T  # average over variables
-        if not self.score_average and multioutput == "raw_values":
-            out = out  # don't average
+        if isinstance(multioutput, str):
+            if self.score_average and multioutput == "uniform_average":
+                out = out.mean(axis=1).iloc[0]  # average over all
+            if self.score_average and multioutput == "raw_values":
+                out = out.T.groupby(level=0).mean().T  # average over scores
+            if not self.score_average and multioutput == "uniform_average":
+                out = out.T.groupby(level=1).mean().T  # average over variables
+            if not self.score_average and multioutput == "raw_values":
+                out = out  # don't average
+        else:  # is np.array with weights
+            if self.score_average:
+                out_raw = out.T.groupby(level=0).mean().T
+                out = out_raw.dot(multioutput)[0]
+            else:
+                out = _groupby_dot(out, multioutput)
 
         if isinstance(out, pd.DataFrame):
             out = out.squeeze(axis=0)
@@ -172,16 +186,19 @@ class BaseProbaMetric(BaseObject):
 
         Returns
         -------
-        loss : pd.DataFrame of length len(fh), with calculated metric value(s)
+        loss : pd.DataFrame of same length as ``y_true``,
+            calculated metric value(s).
+
             i-th column contains metric value(s) for prediction at i-th fh element
-            if multioutput = "raw_values",
-                will have a column level corresponding to variables in y_true
-            if multioutput = multioutput = "uniform_average" or or array-like
-                entries will be averaged over output variable column
-            if score_average = False,
-                will have column levels corresponding to quantiles/intervals
-            if score_average = True,
-                entries will be averaged over quantiles/interval column
+
+            * if multioutput = "raw_values",
+              will have a column level corresponding to variables in y_true
+            * if multioutput = multioutput = "uniform_average" or or array-like
+              entries will be averaged over output variable column
+            * if score_average = False,
+              will have column levels corresponding to quantiles/intervals
+            * if score_average = True,
+              entries will be averaged over quantiles/interval column
         """
         # Input checks and conversions
         y_true_inner, y_pred_inner, multioutput = self._check_ys(
@@ -199,14 +216,21 @@ class BaseProbaMetric(BaseObject):
         # pass to inner function
         out = self._evaluate_by_index(y_true_inner, y_pred_inner, **kwargs)
 
-        if self.score_average and multioutput == "uniform_average":
-            out = out.mean(axis=1)  # average over all
-        if self.score_average and multioutput == "raw_values":
-            out = out.T.groupby(level=0).mean().T  # average over scores
-        if not self.score_average and multioutput == "uniform_average":
-            out = out.T.groupby(level=1).mean().T  # average over variables
-        if not self.score_average and multioutput == "raw_values":
-            out = out  # don't average
+        if isinstance(multioutput, str):
+            if self.score_average and multioutput == "uniform_average":
+                out = out.mean(axis=1)  # average over all
+            if self.score_average and multioutput == "raw_values":
+                out = out.T.groupby(level=0).mean().T  # average over scores
+            if not self.score_average and multioutput == "uniform_average":
+                out = out.T.groupby(level=1).mean().T  # average over variables
+            if not self.score_average and multioutput == "raw_values":
+                out = out  # don't average
+        else:  # is np.array with weights
+            if self.score_average:
+                out_raw = out.T.groupby(level=0).mean().T
+                out = out_raw.dot(multioutput)[0]
+            else:
+                out = _groupby_dot(out, multioutput)
 
         return out
 
@@ -224,7 +248,7 @@ class BaseProbaMetric(BaseObject):
             Ground truth (correct) target values.
 
         y_pred : return object of probabilistic predictition method scitype:y_pred
-            must have same index and columns as y_true
+            must have same index and columns as ``y_true``.
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
         """
         n = y_true.shape[0]
@@ -337,8 +361,24 @@ class BaseProbaMetric(BaseObject):
 
         return alpha
 
+    def _check_coverage(self, coverage):
+        """Check coverage input and coerce to np.ndarray."""
+        if coverage is None:
+            return None
+
+        if isinstance(coverage, float):
+            coverage = [coverage]
+
+        if not isinstance(coverage, np.ndarray):
+            coverage = np.asarray(coverage)
+
+        if not all((coverage > 0) & (coverage < 1)):
+            raise ValueError("Coverage must be between 0 and 1.")
+
+        return coverage
+
     def _handle_multioutput(self, loss, multioutput):
-        """Specificies how multivariate outputs should be handled.
+        """Handle output according to multioutput parameter.
 
         Parameters
         ----------
@@ -396,7 +436,9 @@ class BaseDistrMetric(BaseProbaMetric):
         Returns
         -------
         loss : float or 1-column pd.DataFrame with calculated metric value(s)
+
             float if multioutput = "uniform_average" or multivariate = True
+
             1-column df if multioutput = "raw_values" and metric is not multivariate
             metric is always averaged (arithmetic) over rows
         """
@@ -444,7 +486,22 @@ class BaseDistrMetric(BaseProbaMetric):
 
         y_pred : skpro BaseDistribution of same shape as y_true
             Predictive distribution.
-            Must have same index and columns as y_true.
+            Must have same index and columns as ``y_true``.
+
+        Returns
+        -------
+        loss : ``pd.Series`` or ``pd.DataFrame``
+            Calculated metric, by time point (default=jackknife pseudo-values).
+
+            ``pd.Series`` if ``self.multioutput="uniform_average"`` or array-like
+
+            * index is equal to index of ``y_true``
+            * entry at index i is metric at time i, averaged over variables
+
+            ``pd.DataFrame`` if ``self.multioutput="raw_values"``
+
+            * index and columns equal to those of ``y_true``
+            * i,j-th entry is metric at time i, at variable j
         """
         multioutput = self.multioutput
 
@@ -484,3 +541,101 @@ class BaseDistrMetric(BaseProbaMetric):
             res = pd.concat(res_by_col, axis=1)
 
         return res
+
+
+def _groupby_dot(df, weights):
+    """Groupby dot product.
+
+    Groups df by axis 1, level 1, and applies dot product with weights.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        dataframe to groupby
+    weights : np.array
+        weights to apply to each group
+
+    Returns
+    -------
+    out : pd.DataFrame
+        dataframe with weighted groupby dot product
+    """
+    out = df.T.groupby(level=1).apply(lambda x: x.T.dot(weights)).T
+    # formerly
+    # out = df.groupby(axis=1, level=1).apply(lambda x: x.dot(weights))
+    # but groupby(axis=1) is deprecated
+    return out
+
+
+class BaseSurvDistrMetric(BaseDistrMetric):
+    """Intermediate base class for distributional prediction metrics/scores.
+
+    Developer note:
+    Same as BaseSurvDistrMetric, except for tag set and docstring overrides.
+    """
+
+    _tags = {"capability:survival": True}
+
+    def evaluate(self, y_true, y_pred, **kwargs):
+        """Evaluate the  metric on given inputs.
+
+        Parameters
+        ----------
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
+            Ground truth (correct) target values.
+
+        y_pred : return object of probabilistic predictition method scitype:y_pred
+            must have same index and columns as y_true
+            Predicted values, i-th row is prediction for i-th row of ``y_true``.
+
+        C_true : pd.Series, pd.DataFrame, np.ndarray, optional (default=None)
+            censoring information for survival analysis,
+            should have same column name as y, same length as X and y
+            should have entries 0 and 1 (float or int)
+            0 = uncensored, 1 = (right) censored
+            if None, all observations are assumed to be uncensored
+
+        Returns
+        -------
+        loss : float or 1-column pd.DataFrame with calculated metric value(s)
+            float if multioutput = "uniform_average" or multivariate = True
+            1-column df if multioutput = "raw_values" and metric is not multivariate
+            metric is always averaged (arithmetic) over rows
+        """
+        return super().evaluate(y_true=y_true, y_pred=y_pred, **kwargs)
+
+    def evaluate_by_index(self, y_true, y_pred, **kwargs):
+        """Evaluate the metric by instance index (row).
+
+        Parameters
+        ----------
+        y_true : pd.Series, pd.DataFrame, 1D np.array, or 2D np.ndarray
+            Ground truth (correct) target values.
+
+        y_pred : skpro BaseDistribution of same shape as y_true
+            Predictive distribution.
+            Must have same index and columns as y_true.
+
+        C_true : pd.Series, pd.DataFrame, np.ndarray, optional (default=None)
+            censoring information for survival analysis,
+            should have same column name as y, same length as X and y
+            should have entries 0 and 1 (float or int)
+            0 = uncensored, 1 = (right) censored
+            if None, all observations are assumed to be uncensored
+
+        Returns
+        -------
+        loss : ``pd.Series`` or ``pd.DataFrame``
+            Calculated metric, by time point (default=jackknife pseudo-values).
+
+            ``pd.Series`` if ``self.multioutput="uniform_average"`` or array-like
+
+            * index is equal to index of ``y_true``
+            * entry at index i is metric at time i, averaged over variables
+
+            ``pd.DataFrame`` if ``self.multioutput="raw_values"``
+
+            * index and columns equal to those of ``y_true``
+            * i,j-th entry is metric at time i, at variable j
+        """
+        return super().evaluate_by_index(y_true=y_true, y_pred=y_pred, **kwargs)

@@ -3,18 +3,22 @@
 
 import numpy as np
 import pandas as pd
+from skbase.utils.dependencies import _check_estimator_deps, _check_soft_dependencies
 
 from skpro.base import BaseEstimator
 from skpro.datatypes import check_is_error_msg, check_is_mtype, convert
-from skpro.utils.validation._dependencies import _check_estimator_deps
 
 # allowed input mtypes
+# include mtypes that are core dependencies
 ALLOWED_MTYPES = [
     "pd_DataFrame_Table",
     "pd_Series_Table",
     "numpy1D",
     "numpy2D",
 ]
+# include polars eager table if the soft dependency is installed
+if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
+    ALLOWED_MTYPES.append("polars_eager_table")
 
 
 class BaseProbaRegressor(BaseEstimator):
@@ -26,6 +30,7 @@ class BaseProbaRegressor(BaseEstimator):
         "capability:survival": False,
         "capability:multioutput": False,
         "capability:missing": True,
+        "capability:update": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
@@ -80,7 +85,9 @@ class BaseProbaRegressor(BaseEstimator):
             labels to fit regressor to
         C : ignored, optional (default=None)
             censoring information for survival analysis
-            All probabilistic regressors assume data to be uncensored
+            All probabilistic regressors assume data to be uncensored,
+            and ignore this input unless the ``capability:survival`` tag is ``True``.
+            Present for API consistency with survival regressors.
 
         Returns
         -------
@@ -115,6 +122,74 @@ class BaseProbaRegressor(BaseEstimator):
 
         Writes to self:
             Sets fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pandas DataFrame, must be same length as X
+            labels to fit regressor to
+
+        Returns
+        -------
+        self : reference to self
+        """
+        raise NotImplementedError
+
+    def update(self, X, y, C=None):
+        """Update regressor with a new batch of training data.
+
+        Only estimators with the ``capability:update`` tag (value ``True``)
+        provide this method, otherwise the method ignores the call and
+        discards the data passed.
+
+        State required:
+            Requires state to be "fitted".
+
+        Writes to self:
+            Updates fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pd.DataFrame, must be same length as X
+            labels to fit regressor to
+        C : ignored, optional (default=None)
+            censoring information for survival analysis
+            All probabilistic regressors assume data to be uncensored
+
+        Returns
+        -------
+        self : reference to self
+        """
+        capa_online = self.get_tag("capability:update")
+        capa_surv = self.get_tag("capability:survival")
+
+        if not capa_online:
+            return self
+
+        check_ret = self._check_X_y(X, y, C, return_metadata=True)
+
+        # get inner X, y, C
+        X_inner = check_ret["X_inner"]
+        y_inner = check_ret["y_inner"]
+        if capa_surv:
+            C_inner = check_ret["C_inner"]
+
+        if not capa_surv:
+            return self._update(X_inner, y_inner)
+        else:
+            return self._update(X_inner, y_inner, C=C_inner)
+
+    def _update(self, X, y, C=None):
+        """Update regressor with a new batch of training data.
+
+        State required:
+            Requires state to be "fitted".
+
+        Writes to self:
+            Updates fitted model attributes ending in "_".
 
         Parameters
         ----------
@@ -263,8 +338,11 @@ class BaseProbaRegressor(BaseEstimator):
 
         from skpro.distributions.normal import Normal
 
-        index = pred_mean.index
-        columns = pred_mean.columns
+        if hasattr(X, "index"):
+            index = X.index
+        else:
+            index = pd.RangeIndex(start=0, stop=len(X), step=1)
+        columns = self._get_columns(method="predict")
         pred_dist = Normal(mu=pred_mean, sigma=pred_std, index=index, columns=columns)
 
         return pred_dist
@@ -372,12 +450,9 @@ class BaseProbaRegressor(BaseEstimator):
         # change the column labels (multiindex) to the format for intervals
         # idx returned by _predict_quantiles is
         #   2-level MultiIndex with variable names, alpha
-        idx = pred_int.columns
-        # variable names (unique, in same order)
-        var_names = idx.get_level_values(0).unique()
         # idx returned by _predict_interval should be
         #   3-level MultiIndex with variable names, coverage, lower/upper
-        int_idx = pd.MultiIndex.from_product([var_names, coverage, ["lower", "upper"]])
+        int_idx = self._get_columns(method="predict_interval", coverage=coverage)
         pred_int.columns = int_idx
 
         return pred_int
@@ -488,12 +563,9 @@ class BaseProbaRegressor(BaseEstimator):
             # change the column labels (multiindex) to the format for intervals
             # idx returned by _predict_interval is
             #   3-level MultiIndex with variable names, coverage, lower/upper
-            idx = pred_int.columns
-            # variable names (unique, in same order)
-            var_names = idx.get_level_values(0).unique()
             # idx returned by _predict_quantiles should be
             #   is 2-level MultiIndex with variable names, alpha
-            int_idx = pd.MultiIndex.from_product([var_names, alpha])
+            int_idx = self._get_columns(method="predict_quantiles", alpha=alpha)
             pred_int.columns = int_idx
 
         elif implements_proba or implements_var:
@@ -744,7 +816,7 @@ class BaseProbaRegressor(BaseEstimator):
             y,
             ALLOWED_MTYPES,
             "Table",
-            return_metadata=["n_instances"],
+            return_metadata=["n_instances", "feature_names"],
             var_name="y",
             msg_return_dict="list",
         )
@@ -838,3 +910,62 @@ class BaseProbaRegressor(BaseEstimator):
             raise ValueError(f"values in {name} must be unique, but found duplicates")
 
         return alpha
+
+    def _get_varnames(self):
+        """Return variable column for DataFrame-like returns.
+
+        Primarily used as helper for probabilistic predict-like methods.
+        Assumes that _check_X_y has been called, and self._y_metadata set.
+
+        Returns
+        -------
+        varnames : iterable of integer or str variable names
+            can be list or pd.Index
+            variable names for DataFrame-like returns
+            identical to self._y_varnames if this attribute exists
+        """
+        featnames = self._y_metadata["feature_names"]
+        return featnames
+
+    def _get_columns(self, method="predict", **kwargs):
+        """Return column names for DataFrame-like returns.
+
+        Primarily used as helper for probabilistic predict-like methods.
+        Assumes that _check_X_y has been called, and self._y_metadata set.
+
+        Parameter
+        ---------
+        method : str, optional (default="predict")
+            method for which to return column names
+            one of "predict", "predict_interval", "predict_quantiles", "predict_var"
+        kwargs : dict
+            additional keyword arguments passed to private method
+            important: args to private method, e.g., _predict, _predict_interval
+
+        Returns
+        -------
+        columns : pd.Index
+            column names
+        """
+        featnames = self._get_varnames()
+
+        if method in ["predict", "predict_var"]:
+            return featnames
+        else:
+            assert method in ["predict_interval", "predict_quantiles"]
+
+        if method == "predict_interval":
+            coverage = kwargs.get("coverage", None)
+            if coverage is None:
+                raise ValueError(
+                    "coverage must be passed to _get_columns for predict_interval"
+                )
+            return pd.MultiIndex.from_product([featnames, coverage, ["lower", "upper"]])
+
+        if method == "predict_quantiles":
+            alpha = kwargs.get("alpha", None)
+            if alpha is None:
+                raise ValueError(
+                    "alpha must be passed to _get_columns for predict_quantiles"
+                )
+            return pd.MultiIndex.from_product([featnames, alpha])

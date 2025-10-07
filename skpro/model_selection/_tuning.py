@@ -4,8 +4,6 @@
 __author__ = ["fkiraly"]
 __all__ = ["GridSearchCV", "RandomizedSearchCV"]
 
-from warnings import warn
-
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import ParameterGrid, ParameterSampler, check_cv
@@ -22,13 +20,10 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         "capability:missing": True,
     }
 
-    # todo 2.3.0: remove pre_dispatch and n_jobs params
     def __init__(
         self,
         estimator,
         cv,
-        n_jobs=None,
-        pre_dispatch=None,
         backend="loky",
         refit=True,
         scoring=None,
@@ -39,8 +34,6 @@ class BaseGridSearch(_DelegatedProbaRegressor):
     ):
         self.estimator = estimator
         self.cv = cv
-        self.n_jobs = n_jobs
-        self.pre_dispatch = pre_dispatch
         self.backend = backend
         self.refit = refit
         self.scoring = scoring
@@ -117,22 +110,8 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         scoring = self.scoring
         scoring_name = f"test_{scoring.name}"
 
-        # todo 2.3.0: remove this logic and only use backend_params
         backend = self.backend
         backend_params = self.backend_params if self.backend_params else {}
-        if backend in ["threading", "multiprocessing", "loky"]:
-            n_jobs = self.n_jobs
-            pre_dispatch = self.pre_dispatch
-            backend_params["n_jobs"] = n_jobs
-            backend_params["pre_dispatch"] = pre_dispatch
-            if n_jobs is not None or pre_dispatch is not None:
-                warn(
-                    f"in {self.__class__.__name__}, n_jobs and pre_dispatch "
-                    "parameters are deprecated and will be removed in 2.3.0. "
-                    "Please use n_jobs and pre_dispatch directly in the backend_params "
-                    "argument instead.",
-                    stacklevel=2,
-                )
 
         def _fit_and_score(params, meta):
             # Clone estimator.
@@ -300,22 +279,21 @@ class GridSearchCV(BaseGridSearch):
 
         * If None, defaults to CRPS()
 
-    n_jobs: int, optional (default=None)
-        Number of jobs to run in parallel.
-        None means 1 unless in a joblib.parallel_backend context.
-        -1 means using all processors.
     refit : bool, optional (default=True)
         True = refit the estimator with the best parameters on the entire data in fit
         False = no refitting takes place. The estimator cannot be used to predict.
         This is to be used to tune the hyperparameters, and then use the estimator
         as a parameter estimator, e.g., via get_fitted_params or PluginParamsestimator.
+
     verbose: int, optional (default=0)
+
     return_n_best_estimators : int, default=1
         In case the n best estimator should be returned, this value can be set
         and the n best estimators will be assigned to n_best_estimators_
-    pre_dispatch : str, optional (default='2*n_jobs')
+
     error_score : numeric value or the str 'raise', optional (default=np.nan)
         The test score returned when a estimator fails to be fitted.
+
     return_train_score : bool, optional (default=False)
 
     backend : {"dask", "loky", "multiprocessing", "threading"}, by default "loky".
@@ -414,25 +392,23 @@ class GridSearchCV(BaseGridSearch):
         cv,
         param_grid,
         scoring=None,
-        n_jobs=None,
         refit=True,
         verbose=0,
         return_n_best_estimators=1,
-        pre_dispatch="2*n_jobs",
         backend="loky",
         error_score=np.nan,
+        backend_params=None,
     ):
         super().__init__(
             estimator=estimator,
             scoring=scoring,
-            n_jobs=n_jobs,
             refit=refit,
             cv=cv,
             verbose=verbose,
             return_n_best_estimators=return_n_best_estimators,
-            pre_dispatch=pre_dispatch,
             backend=backend,
             error_score=error_score,
+            backend_params=backend_params,
         )
         self.param_grid = param_grid
 
@@ -484,8 +460,7 @@ class GridSearchCV(BaseGridSearch):
 
         from skpro.metrics import CRPS, PinballLoss
         from skpro.regression.residual import ResidualDouble
-        from skpro.survival.coxph import CoxPH
-        from skpro.utils.validation._dependencies import _check_estimator_deps
+        from skpro.survival.compose._reduce_cond_unc import ConditionUncensored
 
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
@@ -506,18 +481,14 @@ class GridSearchCV(BaseGridSearch):
             "error_score": "raise",
         }
 
-        params = [param1, param2]
-
-        # testing with survival predictor
-        if _check_estimator_deps(CoxPH, severity="none"):
-            param3 = {
-                "estimator": CoxPH(alpha=0.05),
-                "cv": KFold(n_splits=4),
-                "param_grid": {"method": ["lpl", "elastic_net"]},
-                "scoring": PinballLoss(),
-                "error_score": "raise",
-            }
-            params.append(param3)
+        params3 = {
+            "estimator": ConditionUncensored(ResidualDouble(LinearRegression())),
+            "cv": KFold(n_splits=4),
+            "param_grid": {"estimator__fit_intercept": [True, False]},
+            "scoring": PinballLoss(),
+            "error_score": "raise",
+        }
+        params = [param1, param2, params3]
 
         return params
 
@@ -576,26 +547,23 @@ class RandomizedSearchCV(BaseGridSearch):
 
         * If None, defaults to CRPS()
 
-    n_jobs : int, optional (default=None)
-        Number of jobs to run in parallel.
-        None means 1 unless in a joblib.parallel_backend context.
-        -1 means using all processors.
     refit : bool, optional (default=True)
         True = refit the estimator with the best parameters on the entire data in fit
         False = no refitting takes place. The estimator cannot be used to predict.
         This is to be used to tune the hyperparameters, and then use the estimator
         as a parameter estimator, e.g., via get_fitted_params or PluginParamsestimator.
+
     verbose : int, optional (default=0)
+
     return_n_best_estimators: int, default=1
         In case the n best estimator should be returned, this value can be set
         and the n best estimators will be assigned to n_best_estimators_
-    pre_dispatch : str, optional (default='2*n_jobs')
+
     random_state : int, RandomState instance or None, default=None
         Pseudo random number generator state used for random uniform sampling
         from lists of possible values instead of scipy.stats distributions.
         Pass an int for reproducible output across multiple
         function calls.
-    pre_dispatch : str, optional (default='2*n_jobs')
 
     backend : {"dask", "loky", "multiprocessing", "threading"}, by default "loky".
         Runs parallel evaluate if specified and `strategy` is set as "refit".
@@ -688,26 +656,22 @@ class RandomizedSearchCV(BaseGridSearch):
         param_distributions,
         n_iter=10,
         scoring=None,
-        n_jobs=None,
         refit=True,
         verbose=0,
         return_n_best_estimators=1,
         random_state=None,
-        pre_dispatch="2*n_jobs",
-        backend="loky",
         error_score=np.nan,
+        backend_params=None,
     ):
         super().__init__(
             estimator=estimator,
             scoring=scoring,
-            n_jobs=n_jobs,
             refit=refit,
             cv=cv,
             verbose=verbose,
             return_n_best_estimators=return_n_best_estimators,
-            pre_dispatch=pre_dispatch,
-            backend=backend,
             error_score=error_score,
+            backend_params=backend_params,
         )
         self.param_distributions = param_distributions
         self.n_iter = n_iter
@@ -740,8 +704,7 @@ class RandomizedSearchCV(BaseGridSearch):
 
         from skpro.metrics import CRPS, PinballLoss
         from skpro.regression.residual import ResidualDouble
-        from skpro.survival.coxph import CoxPH
-        from skpro.utils.validation._dependencies import _check_estimator_deps
+        from skpro.survival.compose._reduce_cond_unc import ConditionUncensored
 
         linreg1 = LinearRegression()
         linreg2 = LinearRegression(fit_intercept=False)
@@ -762,17 +725,13 @@ class RandomizedSearchCV(BaseGridSearch):
             "error_score": "raise",
         }
 
-        params = [param1, param2]
-
-        # testing with survival predictor
-        if _check_estimator_deps(CoxPH, severity="none"):
-            param3 = {
-                "estimator": CoxPH(alpha=0.05),
-                "cv": KFold(n_splits=4),
-                "param_distributions": {"method": ["lpl", "elastic_net"]},
-                "scoring": PinballLoss(),
-                "error_score": "raise",
-            }
-            params += [param3]
+        params3 = {
+            "estimator": ConditionUncensored(ResidualDouble(LinearRegression())),
+            "cv": KFold(n_splits=4),
+            "param_distributions": {"estimator__fit_intercept": [True, False]},
+            "scoring": PinballLoss(),
+            "error_score": "raise",
+        }
+        params = [param1, param2, params3]
 
         return params

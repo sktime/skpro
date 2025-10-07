@@ -23,23 +23,68 @@ __all__ = [
     "mtype",
 ]
 
-from warnings import warn
+from functools import lru_cache
 
 import numpy as np
 
+from skpro.datatypes._base import BaseDatatype
 from skpro.datatypes._common import _metadata_requested, _ret
 from skpro.datatypes._proba import check_dict_Proba
 from skpro.datatypes._registry import AMBIGUOUS_MTYPES, SCITYPE_LIST, mtype_to_scitype
-from skpro.datatypes._table import check_dict_Table
 
-# pool convert_dict-s
-check_dict = dict()
-check_dict.update(check_dict_Table)
-check_dict.update(check_dict_Proba)
+
+def get_check_dict(soft_deps="present"):
+    """Retrieve check_dict, caches the first time it is requested.
+
+    This is to avoid repeated, time consuming crawling in generate_check_dict,
+    which would otherwise be called every time check_dict is requested.
+
+    Parameters
+    ----------
+    soft_deps : str, optional - one of "present", "all"
+        "present" - only checks with soft dependencies present are included
+        "all" - all checks are included
+    """
+    if soft_deps not in ["present", "all"]:
+        raise ValueError(
+            "Error in get_check_dict, soft_deps argument must be 'present' or 'all', "
+            f"found {soft_deps}"
+        )
+    check_dict = generate_check_dict(soft_deps=soft_deps)
+    return check_dict.copy()
+
+
+@lru_cache(maxsize=1)
+def generate_check_dict(soft_deps="present"):
+    """Generate check_dict using lookup."""
+    from skbase.utils.dependencies import _check_estimator_deps
+
+    from skpro.utils.retrieval import _all_classes
+
+    classes = _all_classes("skpro.datatypes")
+    classes = [x[1] for x in classes]
+    classes = [x for x in classes if issubclass(x, BaseDatatype)]
+    classes = [x for x in classes if not x.__name__.startswith("Base")]
+
+    # subset only to data types with soft dependencies present
+    if soft_deps == "present":
+        classes = [x for x in classes if _check_estimator_deps(x, severity="none")]
+
+    check_dict = dict()
+    for cls in classes:
+        k = cls()
+        key = k._get_key()
+        check_dict[key] = k
+
+    # temporary while refactoring
+    check_dict.update(check_dict_Proba)
+
+    return check_dict
 
 
 def _check_scitype_valid(scitype: str = None):
     """Check validity of scitype."""
+    check_dict = get_check_dict()
     valid_scitypes = list({x[1] for x in check_dict.keys()})
 
     if not isinstance(scitype, str):
@@ -78,14 +123,13 @@ def _coerce_list_of_str(obj, var_name="obj"):
     return obj
 
 
-# todo 2.3.0: change default for msg_return_dict to "dict", update docstring
 def check_is_mtype(
     obj,
     mtype,
     scitype: str = None,
     return_metadata=False,
     var_name="obj",
-    msg_return_dict=None,
+    msg_return_dict="dict",
 ):
     """Check object for compliance with mtype specification, return metadata.
 
@@ -103,47 +147,51 @@ def check_is_mtype(
         if str, list of str, metadata return dict is subset to keys in return_metadata
     var_name: str, optional, default="obj"
         name of input in error messages
-    msg_return_dict: str, "list" or "dict", optional, default="list"
-        whether returned msg, if returned is a str, dict or list
-        if "list", msg is str if mtype is str, list of str if mtype is list
-        if "dict", msg is dict if mtype is str, list of str if mtype is list,
-        if dict, has with mtype as key and error message for mtype as value
+    msg_return_dict: str, one of ``"list"`` or ``"dict"``, optional, default="dict"
+        whether returned msg, if returned, is a str, dict or list
+
+        * if ``msg_return_dict="list"``,
+          returned ``msg`` is ``str`` if ``mtype`` is ``str``,
+          returned ``msg`` is ``list`` of ``str`` if ``mtype`` is ``list``
+
+        * if ``msg_return_dict="dict"``,
+          returned ``msg`` is ``str`` if ``mtype`` is ``str``,
+          returned ``msg`` is ``dict`` of ``str`` if ``mtype`` is ``list``.
+          If ``dict``, has str in ``mtype`` as key,
+          and error message for mtype as value.
 
     Returns
     -------
-    valid: bool - whether obj is a valid object of mtype/scitype
-    msg: str or list/dict of str - error messages if object is not valid, otherwise None
-        list or dict type is controlled via msg_return_dict
-        if str: error message for tested mtype
-        it list: list of len(mtype) with message per mtype if list, same order as mtype
-        if dict: dict with mtype as key and error message for mtype as value
+    valid: bool
+        whether obj is a valid object of mtype/scitype
+    msg: str or list/dict of str
+        error messages if object is not valid, otherwise None,
         returned only if return_metadata is True or str, list of str
+
+        whether ``list`` or ``dict`` type is controlled via msg_return_dict
+
+        * if ``str``: error message for tested mtype
+        * if ``list``:
+          list of len(mtype) with message per mtype if list, same order as mtype
+        * if ``dict``: dict with mtype as key and error message for mtype as value
+
     metadata: dict - metadata about obj if valid, otherwise None
-            returned only if return_metadata is True or str, list of str
+        returned only if ``return_metadata`` is True or str, list of str
+
         Keys populated depend on (assumed, otherwise identified) scitype of obj.
+
         Always returned:
-            "mtype": str, mtype of obj (assumed or inferred)
-            "scitype": str, scitype of obj (assumed or inferred)
-        For scitype "Series":
-            "is_univariate": bool, True iff series has one variable
-            "is_equally_spaced": bool, True iff series index is equally spaced
-            "is_empty": bool, True iff series has no variables or no instances
-            "has_nans": bool, True iff the series contains NaN values
-        For scitype "Panel":
-            "is_univariate": bool, True iff all series in panel have one variable
-            "is_equally_spaced": bool, True iff all series indices are equally spaced
-            "is_equal_length": bool, True iff all series in panel are of equal length
-            "is_empty": bool, True iff one or more of the series in the panel are empty
-            "is_one_series": bool, True iff there is only one series in the panel
-            "has_nans": bool, True iff the panel contains NaN values
-            "n_instances": int, number of instances in the panel
+        * "mtype": str, mtype of obj (assumed or inferred)
+        * "scitype": str, scitype of obj (assumed or inferred)
+
         For scitype "Table":
-            "is_univariate": bool, True iff table has one variable
-            "is_empty": bool, True iff table has no variables or no instances
-            "has_nans": bool, True iff the panel contains NaN values
-            "n_instances": int, number of instances/rows in the table
-        For scitype "Alignment":
-            currently none
+
+        * "is_univariate": bool, True iff table has one variable
+        * "is_empty": bool, True iff table has no variables or no instances
+        * "has_nans": bool, True iff the panel contains NaN values
+        * "n_instances": int, number of instances/rows in the table
+        * "n_features": int, number of variables in table
+        * "feature_names": list of int or object, names of variables in table
 
     Raises
     ------
@@ -152,23 +200,14 @@ def check_is_mtype(
     """
     mtype = _coerce_list_of_str(mtype, var_name="mtype")
 
+    check_dict = get_check_dict()
     valid_keys = check_dict.keys()
 
     # we loop through individual mtypes in mtype and see whether they pass the check
     #  for each check we remember whether it passed and what it returned
-
-    # initialize loop variables
     if msg_return_dict is None:
-        # todo 2.3.0: remove this warning, and change default to "dict"
-        warn(
-            "From skpro 2.3.0 onwards, msg return of check_is_mtype "
-            "will default to dict if mtype is a list. "
-            "To retain the old behaviour, set msg_return_dict='list' explicitly. "
-            "To move to the new behaviour, set msg_return_dict='dict' explicitly. "
-            "Setting msg_return_dict explicitly will silence the warning."
-        )
-        msg = []
-        msg_return_dict = "list"
+        msg_return_dict = "dict"
+        msg = dict()
     elif msg_return_dict == "list":
         msg = []
     elif msg_return_dict == "dict":
@@ -223,7 +262,10 @@ def check_is_mtype(
     # c. no mtype is found - then return False and all error messages if requested
     else:
         if len(msg) == 1:
-            msg = msg[0]
+            if msg_return_dict == "list":
+                msg = msg[0]
+            else:
+                msg = list(msg.values())[0]
 
         return _ret(False, msg, None, return_metadata)
 
@@ -269,7 +311,11 @@ def check_raise(obj, mtype: str, scitype: str = None, var_name: str = "input"):
         raise TypeError(msg)
 
 
-def mtype(obj, as_scitype=None, exclude_mtypes=AMBIGUOUS_MTYPES):
+def mtype(
+    obj,
+    as_scitype=None,
+    exclude_mtypes=AMBIGUOUS_MTYPES,
+):
     """Infer the mtype of an object considered as a specific scitype.
 
     Parameters
@@ -302,6 +348,7 @@ def mtype(obj, as_scitype=None, exclude_mtypes=AMBIGUOUS_MTYPES):
         for scitype in as_scitype:
             _check_scitype_valid(scitype)
 
+    check_dict = get_check_dict()
     m_plus_scitypes = [
         (x[0], x[1]) for x in check_dict.keys() if x[0] not in exclude_mtypes
     ]
@@ -411,6 +458,7 @@ def check_is_scitype(
     for x in scitype:
         _check_scitype_valid(x)
 
+    check_dict = get_check_dict()
     valid_keys = check_dict.keys()
 
     # find all the mtype keys corresponding to the scitypes
@@ -539,7 +587,7 @@ def scitype(obj, candidate_scitypes=SCITYPE_LIST, exclude_mtypes=AMBIGUOUS_MTYPE
     if len(valid_scitypes) > 1:
         raise TypeError(
             "Error in function scitype, more than one valid scitype identified:"
-            f"{ valid_scitypes}"
+            f"{valid_scitypes}"
         )
     if len(valid_scitypes) == 0:
         raise TypeError(

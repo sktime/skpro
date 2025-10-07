@@ -43,6 +43,9 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         assert isinstance(y_pred, pd.DataFrame)
         assert (y_pred.index == X_test.index).all()
         assert (y_pred.columns == y_train.columns).all()
+        # check that return is float dtype
+        for col in y_pred.columns:
+            assert pd.api.types.is_float_dtype(y_pred[col])
 
         # test predict_proba output contract
         y_pred_proba = regressor.predict_proba(X_test)
@@ -166,3 +169,40 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         # check predict_quantiles output contract
         pred_q = regressor.predict_quantiles(X_test, alpha)
         self._check_predict_quantiles(pred_q, X_test, y_train, alpha)
+
+    def test_online_update(self, object_instance):
+        """Test online update of regressor."""
+        import pandas as pd
+        from sklearn.datasets import load_diabetes
+        from sklearn.model_selection import train_test_split
+
+        X, y = load_diabetes(return_X_y=True, as_frame=True)
+        X = X.iloc[:70]
+        y = y.iloc[:70]
+        y = pd.DataFrame(y)
+
+        X_train, X_test, y_train, _ = train_test_split(X, y)
+        X_fit, X_update, y_fit, y_update = train_test_split(X_train, y_train)
+        X_upd1, X_upd2, y_upd1, y_upd2 = train_test_split(X_update, y_update)
+
+        regressor = object_instance
+        regressor.fit(X_fit, y_fit)
+
+        regressor.update(X_upd1, y_upd1)
+        y_pred1 = regressor.predict(X_upd1)
+        y_pred2 = regressor.predict(X_upd2)
+
+        # check predict output contract
+        assert isinstance(y_pred2, pd.DataFrame)
+        assert (y_pred1.index == X_upd1.index).all()
+        assert (y_pred1.columns == y_fit.columns).all()
+        assert (y_pred2.index == X_upd2.index).all()
+        assert (y_pred2.columns == y_fit.columns).all()
+
+        regressor.update(X_upd2, y_upd2)
+        y_pred_test = regressor.predict(X_test)
+
+        # check predict output contract
+        assert isinstance(y_pred_test, pd.DataFrame)
+        assert (y_pred_test.index == X_test.index).all()
+        assert (y_pred_test.columns == y_fit.columns).all()

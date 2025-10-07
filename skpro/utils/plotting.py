@@ -1,8 +1,7 @@
 """Utility functions for plotting."""
 import numpy as np
 import pandas as pd
-
-from skpro.utils.validation._dependencies import _check_soft_dependencies
+from skbase.utils.dependencies import _check_soft_dependencies
 
 __authors__ = ["fkiraly", "frthjf"]
 
@@ -37,8 +36,8 @@ def plot_crossplot_interval(y_true, y_pred, coverage=None, ax=None):
         If ax was None, a new figure is created and returned
         If ax was not None, the same ax is returned with plot added
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.utils.plotting import plot_crossplot_interval  # doctest: +SKIP
     >>> from skpro.regression.residual import ResidualDouble  # doctest: +SKIP
     >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
@@ -119,8 +118,8 @@ def plot_crossplot_std(y_true, y_pred, ax=None):
         If ax was None, a new figure is created and returned
         If ax was not None, the same ax is returned with plot added
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.utils.plotting import plot_crossplot_std  # doctest: +SKIP
     >>> from skpro.regression.residual import ResidualDouble  # doctest: +SKIP
     >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
@@ -191,8 +190,8 @@ def plot_crossplot_loss(y_true, y_pred, metric, ax=None):
         If ax was None, a new figure is created and returned
         If ax was not None, the same ax is returned with plot added
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.utils.plotting import plot_crossplot_loss  # doctest: +SKIP
     >>> from skpro.metrics import CRPS  # doctest: +SKIP
     >>> from skpro.regression.residual import ResidualDouble  # doctest: +SKIP

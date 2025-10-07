@@ -5,7 +5,87 @@
     "url": "https://skpro.readthedocs.io/en/latest/"
   },
   {
-    "name": "2.2.2 (stable)",
+    "name": "2.9.4 (stable)",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.9./"
+  },
+  {
+    "name": "2.9.3",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.9.3/"
+  },
+  {
+    "name": "2.9.2",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.9.2/"
+  },
+  {
+    "name": "2.9.1",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.9.1/"
+  },
+  {
+    "name": "2.9.0",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.9.0/"
+  },
+  {
+    "name": "2.8.0",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.8.0/"
+  },
+  {
+    "name": "2.7.0",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.7.0/"
+  },
+  {
+    "name": "2.6.0",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.6.0/"
+  },
+  {
+    "name": "2.5.1",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.5.1/"
+  },
+  {
+    "name": "2.5.0",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.5.0/"
+  },
+  {
+    "name": "2.4.2",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.4.2/"
+  },
+  {
+    "name": "2.4.1",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.4.1/"
+  },
+  {
+    "name": "2.4.0",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.4.0/"
+  },
+  {
+    "name": "2.3.2",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.3.2/"
+  },
+  {
+    "name": "2.3.1",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.3.1/"
+  },
+  {
+    "name": "2.3.0",
+    "version": "stable",
+    "url": "https://skpro.readthedocs.io/en/v2.3.0/"
+  },
+  {
+    "name": "2.2.2",
     "version": "stable",
     "url": "https://skpro.readthedocs.io/en/v2.2.2/"
   },

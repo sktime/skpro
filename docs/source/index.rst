@@ -13,10 +13,11 @@ Features
 ``skpro`` provides unified, ``sklearn`` and ``skbase`` compatible interfaces to:
 
 * tabular **supervised regressors for probabilistic prediction** - interval, quantile and distribution predictions
+* tabular **probabilistic time-to-event and survival prediction** - instance-individual survival distributions
 * **metrics to evaluate probabilistic predictions**, e.g., pinball loss, empirical coverage, CRPS
 * **reductions** to turn ``sklearn`` regressors into probabilistic ``skpro`` regressors, such as bootstrap or conformal
 * building **pipelines and composite models**, including tuning via probabilistic performance metrics
-* symbolic **probability distributions** with value domain of `pandas.DataFrame`-s and `pandas`-like interface
+* symbolic **probability distributions** with value domain of ``pandas.DataFrame``-s and ``pandas``-like interface
 
 Technical specification
 =======================

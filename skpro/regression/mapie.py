@@ -16,6 +16,10 @@ class MapieRegressor(BaseProbaRegressor):
     Direct interface to ``mapie.regression.regression.MapieRegressor`` from the
     ``mapie`` package.
 
+    NOTE: only for the "all-in-one" regressor present in ``mapie<1.0``. Later
+    ``mapie`` versions have a more modular interface, this class is not
+    compatible with ``MAPIE>=1.0``.
+
     Uses jackknife+ to estimate prediction intervals on a per-sample basis.
 
     Any (non-probabilistic) sklearn regressor can be used as the base regressor,
@@ -144,30 +148,30 @@ class MapieRegressor(BaseProbaRegressor):
     conformity_scores_: ArrayLike of shape (n_samples_train,)
         Conformity scores between ``y_train`` and ``y_pred``.
 
-    Example
-    -------
-    >>> from skpro.regression.mapie import MapieRegressor  # doctest: +SKIP
-    >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
-    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
-    >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
+    Examples
+    --------
+    >>> from skpro.regression.mapie import MapieRegressor
+    >>> from sklearn.ensemble import RandomForestRegressor
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
     >>>
-    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
-    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
     >>>
-    >>> reg_tabular = RandomForestRegressor()  # doctest: +SKIP
+    >>> reg_tabular = RandomForestRegressor()
     >>>
-    >>> reg_proba = MapieRegressor(reg_tabular)  # doctest: +SKIP
-    >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
+    >>> reg_proba = MapieRegressor(reg_tabular)
+    >>> reg_proba.fit(X_train, y_train)
     MapieRegressor(...)
-    >>> y_pred_int = reg_proba.predict_interval(X_test)  # doctest: +SKIP
-    >>> y_pred_dist = reg_proba.predict_proba(X_test)  # doctest: +SKIP
+    >>> y_pred_int = reg_proba.predict_interval(X_test)
+    >>> y_pred_dist = reg_proba.predict_proba(X_test)
     """
 
     _tags = {
         # packaging info
         # --------------
         "authors": ["fkiraly"],
-        "python_dependencies": ["mapie"],
+        "python_dependencies": ["MAPIE<1.0"],
         # estimator tags
         # --------------
         "capability:missing": True,
@@ -215,7 +219,7 @@ class MapieRegressor(BaseProbaRegressor):
         self : reference to self
         """
         # construct mapie regressor
-        from mapie.regression.regression import MapieRegressor
+        from mapie.regression import MapieRegressor
 
         PARAMS_TO_FORWARD = [
             "estimator",

@@ -1,6 +1,9 @@
-"""Interface adapter for the Generalized Linear Model Regressor with Gaussian Link."""
+"""Interface adapter for the Generalized Linear Model Regressor."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
+__author__ = ["ShreeshaM07", "julian-fong"]
+
+import numpy as np
 import pandas as pd
 
 from skpro.regression.base import BaseProbaRegressor
@@ -18,11 +21,45 @@ class GLMRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
+    family : string, default : "Normal"
+        The family parameter denotes the type of distribution
+        that will be used.
+        Available family/distributions are
+        1."Normal"
+        2."Poisson"
+        3."Gamma"
+    link : string, default : None
+        This parameter is used to represent the link function to be
+        used with the distribution.
+        If default is None it will internally replace with default of the
+        respective family. The default is the first string
+        against each family below.
+        Available safe options for the respective family are:
+        ``Normal`` : "Identity", "Log", "InversePower";
+        ``Poisson`` : "Log", "Identity", "Sqrt";
+        ``Gamma`` : "InversePower", "Log", "Identity";
+    offset_var : string or int, default = None
+        Pass the column name as a string or column number as an int in X.
+        If string, then the exog or ``X`` passed while ``fit``-ting
+        must have an additional column with column name passed through
+        ``offset_var`` with any values against each row. When ``predict``ing
+        have an additional column with name same as string passed through ``offset_var``
+        in X with all the ``offset_var`` values for predicting
+        stored in the column for each row.
+        If ``int`` it corresponding column number will be considered.
+    exposure_var : string or int, default = None
+        Pass the column name as a string or column number as an int in X.
+        If string, then the exog or ``X`` passed while ``fit``-ting
+        must have an additional column with column name passed through
+        ``exposure_var`` with any values against each row. When ``predict``ing
+        have additional column with name same as string passed through ``exposure_var``
+        in X with all the ``exposure_var`` values for predicting
+        stored in the column for each row.
+        If ``int`` it corresponding column number will be considered.
     missing : str
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
         If 'raise', an error is raised. Default = 'none'
-
     start_params : array_like (optional)
         Initial guess of the solution for the loglikelihood maximization.
         The default is family-specific and is given by the
@@ -157,8 +194,8 @@ class GLMRegressor(BaseProbaRegressor):
     """
 
     _tags = {
-        "authors": ["julian-fong"],
-        "maintainers": ["julian-fong"],
+        "authors": ["ShreeshaM07", "julian-fong"],
+        "maintainers": ["ShreeshaM07", "julian-fong"],
         "python_version": None,
         "python_dependencies": "statsmodels",
         "capability:multioutput": False,
@@ -167,8 +204,46 @@ class GLMRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
+    def _str_to_sm_family(self, family, link):
+        """Convert the string to a statsmodel object.
+
+        If the link function is also explcitly mentioned then include then
+        that must be passed to the family/distribution object.
+        """
+        from warnings import warn
+
+        from statsmodels.genmod.families.family import Gamma, Gaussian, Poisson
+        from statsmodels.genmod.families.links import Identity, InversePower, Log, Sqrt
+
+        sm_fmly = {
+            "Normal": Gaussian,
+            "Poisson": Poisson,
+            "Gamma": Gamma,
+        }
+
+        links = {
+            "Log": Log,
+            "Identity": Identity,
+            "InversePower": InversePower,
+            "Sqrt": Sqrt,
+        }
+
+        if link in links:
+            link_function = links[link]()
+            try:
+                return sm_fmly[family](link_function)
+            except Exception:
+                msg = "Invalid link for family, default link will be used"
+                warn(msg)
+
+        return sm_fmly[family]()
+
     def __init__(
         self,
+        family="Normal",
+        link=None,
+        offset_var=None,
+        exposure_var=None,
         missing="none",
         start_params=None,
         maxiter=100,
@@ -184,9 +259,11 @@ class GLMRegressor(BaseProbaRegressor):
         add_constant=False,
     ):
         super().__init__()
-        from statsmodels.genmod.families.family import Gaussian
 
-        self._family = Gaussian()
+        self.family = family
+        self.link = link
+        self.offset_var = offset_var
+        self.exposure_var = exposure_var
         self.missing = missing
         self.start_params = start_params
         self.maxiter = maxiter
@@ -200,6 +277,24 @@ class GLMRegressor(BaseProbaRegressor):
         self.disp = disp
         self.max_start_irls = max_start_irls
         self.add_constant = add_constant
+
+        self._family = self.family
+        self._link = self.link
+        self._offset_var = self.offset_var
+        self._exposure_var = self.exposure_var
+        self._missing = self.missing
+        self._start_params = self.start_params
+        self._maxiter = self.maxiter
+        self._method = self.method
+        self._tol = self.tol
+        self._scale = self.scale
+        self._cov_type = self.cov_type
+        self._cov_kwds = self.cov_kwds
+        self._use_t = self.use_t
+        self._full_output = self.full_output
+        self._disp = self.disp
+        self._max_start_irls = self.max_start_irls
+        self._add_constant = self.add_constant
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -227,32 +322,43 @@ class GLMRegressor(BaseProbaRegressor):
         """
         from statsmodels.genmod.generalized_linear_model import GLM
 
-        X_ = self._prep_x(X)
+        # remove the offset and exposure columns which
+        # was inserted to maintain the shape
+        offset_var = self._offset_var
+        exposure_var = self._exposure_var
+
+        X_ = self._prep_x(X, offset_var, exposure_var, False)
 
         y_col = y.columns
+
+        family = self._family
+        link = self._link
+        sm_family = self._str_to_sm_family(family=family, link=link)
 
         glm_estimator = GLM(
             endog=y,
             exog=X_,
-            family=self._family,
-            missing=self.missing,
+            family=sm_family,
+            missing=self._missing,
         )
 
         self._estimator = glm_estimator
 
-        fitted_glm_model = glm_estimator.fit(
-            self.start_params,
-            self.maxiter,
-            self.method,
-            self.tol,
-            self.scale,
-            self.cov_type,
-            self.cov_kwds,
-            self.use_t,
-            self.full_output,
-            self.disp,
-            self.max_start_irls,
-        )
+        glm_fit_params = {
+            "start_params": self._start_params,
+            "maxiter": self._maxiter,
+            "method": self._method,
+            "tol": self._tol,
+            "scale": self._scale,
+            "cov_type": self._cov_type,
+            "cov_kwds": self._cov_kwds,
+            "use_t": self._use_t,
+            "full_output": self._full_output,
+            "disp": self._disp,
+            "max_start_irls": self._max_start_irls,
+        }
+
+        fitted_glm_model = glm_estimator.fit(**glm_fit_params)
 
         PARAMS_TO_FORWARD = {
             "df_model_": glm_estimator.df_model,
@@ -304,13 +410,61 @@ class GLMRegressor(BaseProbaRegressor):
         -------
         y : pandas DataFrame, same length as `X`, with same columns as y in fit
         """
-        X_ = self._prep_x(X)
+        offset_var = self._offset_var
+        exposure_var = self._exposure_var
+        offset_arr = None
+        exposure_arr = None
+
+        X_, offset_arr, exposure_arr = self._prep_x(X, offset_var, exposure_var, True)
 
         index = X_.index
         y_column = self.y_col
-        y_pred_series = self.glm_fit_.predict(X_)
+        y_pred_series = self.glm_fit_.predict(
+            X_, offset=offset_arr, exposure=exposure_arr
+        )
         y_pred = pd.DataFrame(y_pred_series, index=index, columns=y_column)
 
+        return y_pred
+
+    def _params_sm_to_skpro(self, y_predictions_df, index, columns, family):
+        """Convert the statsmodels output to equivalent skpro distribution."""
+        from skpro.distributions.gamma import Gamma
+        from skpro.distributions.normal import Normal
+        from skpro.distributions.poisson import Poisson
+
+        skpro_distr = {
+            "Normal": Normal,
+            "Poisson": Poisson,
+            "Gamma": Gamma,
+        }
+
+        params = {}
+        skp_dist = Normal
+
+        if family in skpro_distr:
+            skp_dist = skpro_distr[family]
+
+        if skp_dist == Normal:
+            y_mu = y_predictions_df["mean"].rename("mu").to_frame()
+            y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
+            params["mu"] = y_mu
+            params["sigma"] = y_sigma
+        elif skp_dist == Poisson:
+            y_mu = y_predictions_df["mean"].rename("mu").to_frame()
+            params["mu"] = y_mu
+        elif skp_dist == Gamma:
+            y_mean = y_predictions_df["mean"]
+            y_sd = y_predictions_df["mean_se"]
+            y_alpha = (y_mean / y_sd) ** 2
+            y_beta = (y_mean / (y_sd**2)).rename("beta").to_frame()
+            y_alpha = y_alpha.rename("alpha").to_frame()
+            params["alpha"] = y_alpha
+            params["beta"] = y_beta
+
+        params["index"] = index
+        params["columns"] = columns
+
+        y_pred = skp_dist(**params)
         return y_pred
 
     def _predict_proba(self, X):
@@ -332,29 +486,33 @@ class GLMRegressor(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        from skpro.distributions.normal import Normal
+        # remove the offset and exposure columns
+        # which was inserted to maintain the shape
+        offset_var = self._offset_var
+        exposure_var = self._exposure_var
 
-        X_ = self._prep_x(X)
+        X_ = self._prep_x(X, offset_var, exposure_var, False)
 
         # instead of using the conventional predict() method, we use statsmodels
         # get_prediction method, which returns a pandas df that contains
         # the prediction and prediction variance i.e mu and sigma
         y_column = self.y_col
         y_predictions_df = self.glm_fit_.get_prediction(X_).summary_frame()
-        y_mu = y_predictions_df["mean"].rename("mu").to_frame()
-        y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
-        params = {
-            "mu": y_mu,
-            "sigma": y_sigma,
-            "index": X_.index,
-            "columns": y_column,
-        }
-        y_pred = Normal(**params)
+
+        # convert the returned values to skpro equivalent distribution
+        family = self._family
+        index = X_.index
+        columns = y_column
+
+        y_pred = self._params_sm_to_skpro(y_predictions_df, index, columns, family)
         return y_pred
 
-    def _prep_x(self, X):
+    def _prep_x(self, X, offset_var, exposure_var, rtn_off_exp_arr):
         """
         Return a copy of X with an added constant of self.add_constant = True.
+
+        If rtn_off_exp_arr is True it will also return offset and exposure
+        arrays along with updated X.
 
         Parameters
         ----------
@@ -366,13 +524,46 @@ class GLMRegressor(BaseProbaRegressor):
         X_ : pandas DataFrame
             A copy of the input X with an added column 'const' with is an
             array of len(X) of 1s
+        offset_arr : numpy.array
+            The copy of column which is meant for offsetting present in X.
+        exposure_arr : numpy.array
+            The copy of column which is meant for exposure present in X.
         """
         from statsmodels.tools import add_constant
 
-        if self.add_constant:
+        offset_arr = None
+        exposure_arr = None
+        if offset_var is not None:
+            if isinstance(offset_var, str):
+                offset_var = pd.Index([offset_var])
+                offset_arr = np.array(X[offset_var]).flatten()
+            elif isinstance(offset_var, int):
+                offset_arr = np.array(X.iloc[:, offset_var]).flatten()
+                offset_var = pd.Index([X.iloc[:, offset_var].name])
+        if exposure_var is not None:
+            if isinstance(exposure_var, str):
+                exposure_var = pd.Index([exposure_var])
+                exposure_arr = np.array(X[exposure_var]).flatten()
+            elif isinstance(exposure_var, int):
+                exposure_arr = np.array(X.iloc[:, exposure_var]).flatten()
+                exposure_var = pd.Index([X.iloc[:, exposure_var].name])
+        # drop the offset and exposure columns from X
+        columns_to_drop = []
+        if offset_var is not None:
+            columns_to_drop.append(offset_var[0])
+        if exposure_var is not None:
+            columns_to_drop.append(exposure_var[0])
+        if columns_to_drop:
+            X = X.drop(columns_to_drop, axis=1)
+
+        if self._add_constant:
             X_ = add_constant(X)
+            if rtn_off_exp_arr:
+                return X_, offset_arr, exposure_arr
             return X_
         else:
+            if rtn_off_exp_arr:
+                return X, offset_arr, exposure_arr
             return X
 
     @classmethod
@@ -395,5 +586,21 @@ class GLMRegressor(BaseProbaRegressor):
         """
         params1 = {}
         params2 = {"add_constant": True}
+        params3 = {
+            "family": "Poisson",
+            "add_constant": True,
+        }
+        # params4 = {"family": "Gamma"}
+        # removed due to sporadic failure #594
+        params5 = {
+            "family": "Normal",
+            "link": "InversePower",
+        }
+        params6 = {
+            "family": "Poisson",
+            "link": "Log",
+            "add_constant": True,
+        }
 
-        return [params1, params2]
+        # return [params1, params2, params3, params4, params5, params6]
+        return [params1, params2, params3, params5, params6]

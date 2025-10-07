@@ -199,11 +199,11 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
+        from skbase.utils.dependencies import _check_estimator_deps
         from sklearn.preprocessing import StandardScaler
 
         from skpro.regression.residual import ResidualDouble
         from skpro.survival.coxph import CoxPH
-        from skpro.utils.validation._dependencies import _check_estimator_deps
 
         params = []
 
@@ -336,7 +336,11 @@ class Pipeline(_Pipeline):
 
         super().__init__()
 
-        tags_to_clone = ["capability:multioutput", "capability:survival"]
+        tags_to_clone = [
+            "capability:multioutput",
+            "capability:survival",
+            "capability:update",
+        ]
         self.clone_tags(self.regressor_, tags_to_clone)
 
     @property
@@ -425,6 +429,38 @@ class Pipeline(_Pipeline):
         r.fit(X, y, C=C)
         self.steps_[-1] = (name, r)
 
+        return self
+
+    def _update(self, X, y, C=None):
+        """Update regressor with a new batch of training data.
+
+        State required:
+            Requires state to be "fitted" = self.is_fitted=True
+
+        Writes to self:
+            Updates fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to fit regressor to
+        y : pd.DataFrame, must be same length as X
+            labels to fit regressor to
+        C : pd.DataFrame, optional (default=None)
+            censoring information for survival analysis,
+            should have same column name as y, same length as X and y
+            should have entries 0 and 1 (float or int)
+            0 = uncensored, 1 = (right) censored
+            if None, all observations are assumed to be uncensored
+            Can be passed to any probabilistic regressor,
+            but is ignored if capability:survival tag is False.
+
+        Returns
+        -------
+        self : reference to self
+        """
+        X = self._transform(X)
+        self.regressor_.update(X=X, y=y, C=C)
         return self
 
     def _predict(self, X):

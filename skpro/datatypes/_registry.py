@@ -46,7 +46,10 @@ MTYPE_REGISTER = []
 MTYPE_REGISTER += MTYPE_REGISTER_TABLE
 MTYPE_REGISTER += MTYPE_REGISTER_PROBA
 
-MTYPE_SOFT_DEPS = {}
+MTYPE_SOFT_DEPS = {
+    "polars_eager_table": "polars",
+    "polars_lazy_table": "polars",
+}
 
 
 # mtypes to exclude in checking since they are ambiguous and rare
@@ -191,7 +194,7 @@ def scitype_to_mtype(scitype: str, softdeps: str = "exclude"):
         return mtypes
 
     if softdeps == "present":
-        from skpro.utils.validation._dependencies import _check_soft_dependencies
+        from skbase.utils.dependencies import _check_soft_dependencies
 
         def present(x):
             """Return True if x has satisfied soft dependency or has no soft dep."""

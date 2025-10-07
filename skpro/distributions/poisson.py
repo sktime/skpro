@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Poisson(_ScipyAdapter):
     """Poisson distribution.
 
+    Most methods wrap ``scipy.stats.poisson``.
+
     Parameters
     ----------
     mu : float or array of float (1D or 2D)
@@ -19,16 +21,16 @@ class Poisson(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions import Poisson
 
     >>> distr = Poisson(mu=[[1, 1], [2, 3], [4, 5]])
     """
 
     _tags = {
-        "capabilities:approx": ["ppf", "energy"],
-        "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf"],
+        "capabilities:approx": ["energy", "pdfnorm"],
+        "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"],
         "distr:measuretype": "discrete",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -52,7 +54,7 @@ class Poisson(_ScipyAdapter):
         """Return testing parameter settings for the estimator."""
         params1 = {"mu": [[1, 1], [2, 3], [4, 5]]}
         params2 = {
-            "mu": 0,
+            "mu": 0.1,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }

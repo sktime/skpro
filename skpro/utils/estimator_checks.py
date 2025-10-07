@@ -3,7 +3,7 @@
 __author__ = ["fkiraly"]
 __all__ = ["check_estimator"]
 
-from skpro.utils.validation._dependencies import _check_soft_dependencies
+from skbase.utils.dependencies import _check_soft_dependencies
 
 
 def check_estimator(
@@ -114,13 +114,21 @@ def check_estimator(
     results = {}
 
     for test_cls in test_clss_for_est:
-        test_cls_results = test_cls().run_tests(
+        test_runner = test_cls().run_tests
+
+        if not _has_kwarg(test_runner, "verbose"):
+            kwargs = {}
+        else:
+            kwargs = {"verbose": verbose and raise_exceptions}
+
+        test_cls_results = test_runner(
             obj=estimator,
             raise_exceptions=raise_exceptions,
             tests_to_run=tests_to_run,
             fixtures_to_run=fixtures_to_run,
             tests_to_exclude=tests_to_exclude,
             fixtures_to_exclude=fixtures_to_exclude,
+            **kwargs,
         )
         results.update(test_cls_results)
 
@@ -137,3 +145,28 @@ def check_estimator(
         print(msg)  # noqa T001
 
     return results
+
+
+def _has_kwarg(method, kwarg_name):
+    """Check if a method has a keyword argument named `kwarg_name`.
+
+    Parameters
+    ----------
+    method : callable
+        The method to check for the keyword argument.
+    kwarg_name : str
+        The name of the keyword argument to check for.
+
+    Returns
+    -------
+    bool
+        True if the method has the keyword argument, False otherwise.
+    """
+    import inspect
+
+    sig = inspect.signature(method)
+    for param in sig.parameters.values():
+        if param.kind in (param.KEYWORD_ONLY, param.POSITIONAL_OR_KEYWORD):
+            if param.name == kwarg_name:
+                return True
+    return False

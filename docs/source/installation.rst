@@ -76,17 +76,17 @@ To install the latest development version of ``skpro``, the sequence
 of steps is as follows:
 
 
-1. Clone the ``skpro`` `Github repository`_
+1. Clone the ``skpro`` `GitHub repository`_
 2. Create a new virtual environment via ``conda`` and activate it.
 3. Use ``pip`` to build ``skpro`` from source and install development dependencies
 
 
 Detail instructions for each step is provided below.
 
-Step 1 - Clone Github repository
+Step 1 - Clone GitHub repository
 --------------------------------
 
-The ``skpro`` `Github repository`_ should be cloned to a local directory.
+The ``skpro`` `GitHub repository`_ should be cloned to a local directory.
 
 To install the latest version using the ``git`` command line, use the following steps:
 
@@ -97,7 +97,7 @@ To install the latest version using the ``git`` command line, use the following 
 4. Make sure you are on the main branch: :code:`git checkout main`
 5. Make sure your local version is up-to-date: :code:`git pull`
 
-See Github's `repository clone documentation`_
+See GitHub's `repository clone documentation`_
 for additional details.
 
 .. hint::
@@ -108,7 +108,7 @@ for additional details.
     Where ``<VERSION>`` is a valid version string that can be found by inspecting the
     repository's ``git`` tags, by running ``git tag``.
 
-    You can also download a specific release version from the Github repository's
+    You can also download a specific release version from the GitHub repository's
     zip archive of `releases <https://github.com/sktime/skpro/releases>`_.
 
 Step 2 - Create a new virtual environment

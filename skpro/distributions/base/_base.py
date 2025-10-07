@@ -9,12 +9,9 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+from skbase.utils.dependencies import _check_estimator_deps, _check_soft_dependencies
 
 from skpro.base import BaseObject
-from skpro.utils.validation._dependencies import (
-    _check_estimator_deps,
-    _check_soft_dependencies,
-)
 
 
 class BaseDistribution(BaseObject):
@@ -67,7 +64,7 @@ class BaseDistribution(BaseObject):
         default broadcasting and pre-initialization is not desired or applicable,
         e.g., distribution parameters are not array-like.
 
-        If overriden, must set ``self._shape``: this should be an empty tuple
+        If overridden, must set ``self._shape``: this should be an empty tuple
         if the distribution is scalar, or a pair of integers otherwise.
         """
         if self.get_tags()["broadcast_init"] == "off":
@@ -281,24 +278,49 @@ class BaseDistribution(BaseObject):
 
         subset_param_dict = {}
         for param, val in params.items():
-            if val is None:
-                subset_param_dict[param] = None
-                continue
-            arr = np.array(val)
-            # if len(arr.shape) == 0:
-            # do nothing with arr
-            if len(arr.shape) == 2 and rowidx is not None:
-                arr = arr[rowidx, :]
-            if len(arr.shape) == 1 and colidx is not None:
-                arr = arr[colidx]
-            if len(arr.shape) >= 2 and colidx is not None:
-                arr = arr[:, colidx]
-            if np.issubdtype(arr.dtype, np.integer):
-                arr = arr.astype("float")
-            if coerce_scalar:
-                arr = arr[(0,) * len(arr.shape)]
-            subset_param_dict[param] = arr
+            subset_param_dict[param] = self._subset_param(
+                val=val,
+                rowidx=rowidx,
+                colidx=colidx,
+                coerce_scalar=coerce_scalar,
+            )
         return subset_param_dict
+
+    def _subset_param(self, val, rowidx, colidx, coerce_scalar=False):
+        """Subset a single distribution parameter value to given rows and columns.
+
+        Parameters
+        ----------
+        val : scalar, 1D, 2D, array-like, or None
+            Distribution parameter that is to be subsetted.
+        rowidx : None, numpy index/slice coercible, or int
+            Rows to subset to. If None, no subsetting is done.
+        colidx : None, numpy index/slice coercible, or int
+            Columns to subset to. If None, no subsetting is done.
+        coerce_scalar : bool, optional, default=False
+            If True, and the subsetted parameter is a scalar, coerce it to a scalar.
+
+        Returns
+        -------
+        scalar, 1D, 2D, array-like, or None
+            Subsetted distribution parameter.
+        """
+        if val is None:
+            return None
+        arr = np.array(val)
+        # if len(arr.shape) == 0:
+        # do nothing with arr
+        if len(arr.shape) == 2 and rowidx is not None:
+            arr = arr[rowidx, :]
+        if len(arr.shape) == 1 and colidx is not None:
+            arr = arr[colidx]
+        if len(arr.shape) >= 2 and colidx is not None:
+            arr = arr[:, colidx]
+        if np.issubdtype(arr.dtype, np.integer):
+            arr = arr.astype("float")
+        if coerce_scalar:
+            arr = arr[(0,) * len(arr.shape)]
+        return arr
 
     def _iat(self, rowidx=None, colidx=None):
         if rowidx is None or colidx is None:
@@ -559,6 +581,12 @@ class BaseDistribution(BaseObject):
         bc_params = self.get_tags()["broadcast_params"]
         if bc_params is None:
             bc_params = kwargs_as_np.keys()
+        else:
+            bc_params = bc_params.copy()
+            if "index" in kwargs_as_np:
+                bc_params.append("index")
+            if "columns" in kwargs_as_np:
+                bc_params.append("columns")
 
         args_as_np = [kwargs_as_np[k] for k in bc_params]
         bc = np.broadcast_arrays(*args_as_np)
@@ -622,7 +650,7 @@ class BaseDistribution(BaseObject):
         res = getattr(d, method)(**kwargs_inner)
 
         # if the result is not a DataFrame, coerce it to one
-        # ensur the index and columns are the same as d
+        # ensure the index and columns are the same as d
         if not isinstance(res, pd.DataFrame) and self.ndim > 1:
             if columns is not None:
                 res_cols = pd.Index(columns)
@@ -892,11 +920,11 @@ class BaseDistribution(BaseObject):
             "by approximating the expected value by the indicator function on "
             f"{N} samples"
         )
-        warn(self._method_error_msg("mean", fill_in=approx_method))
+        warn(self._method_error_msg("cdf", fill_in=approx_method))
 
         splx = self._sample_multiply(x, N)
         sply = self.sample(N)
-        spl = splx <= sply
+        spl = sply <= splx
         return self._sample_mean(spl)
 
     def surv(self, x):
@@ -1138,6 +1166,23 @@ class BaseDistribution(BaseObject):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
+        approx_spl_size = self.get_tag("approx_energy_spl")
+        if x is not None and self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the energy expectation by the integral "
+                "of the absolute difference of x to the ppf,"
+                f"with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("energy", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [np.abs(self.ppf(p) - x) for p in ps]
+            en3D = np.array(qs)
+            energy = np.mean(en3D, axis=0)
+            if self.ndim > 0:
+                energy = np.sum(energy, axis=1)
+            return energy
+
         # we want to approximate E[abs(X-Y)]
         # if x = None, X,Y are i.i.d. copies of self
         # if x is not None, X=x (constant), Y=self
@@ -1159,7 +1204,7 @@ class BaseDistribution(BaseObject):
 
         # approx E[abs(X-Y)] via mean of samples of abs(X-Y) obtained from splx, sply
         spl = splx - sply
-        energy = spl.apply(np.linalg.norm, axis=1, ord=1)
+        energy = spl.abs().sum(axis=1)
 
         # todo: check if can use self._sample_mean
         if self.ndim > 0:
@@ -1233,6 +1278,20 @@ class BaseDistribution(BaseObject):
         Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_mean_spl")
+        if self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the expected value by the integral of the ppf, "
+                f"with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("mean", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [self.ppf(p) for p in ps]
+            np3D = np.array(qs)
+            means = np.mean(np3D, axis=0)
+            return means
+
+        # else we have to rely on samples
         approx_method = (
             "by approximating the expected value by the arithmetic mean of "
             f"{approx_spl_size} samples"
@@ -1262,6 +1321,26 @@ class BaseDistribution(BaseObject):
         Private method, to be implemented by subclasses.
         """
         approx_spl_size = self.get_tag("approx_var_spl")
+        if self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the variancee integrals of the ppf, "
+                "integral of ppf-squared minus square of integral of ppf, "
+                f"each with {approx_spl_size} equidistant nodes"
+            )
+            warn(self._method_error_msg("var", fill_in=approx_method))
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [self.ppf(p) for p in ps]
+            qsq = [q**2 for q in qs]
+
+            mean3D = np.array(qs)
+            means = np.mean(mean3D, axis=0)
+
+            mom2s3D = np.array(qsq)
+            mom2s = np.mean(mom2s3D, axis=0)
+
+            return mom2s - means**2
+
         approx_method = (
             "by approximating the variance by the arithmetic mean of "
             f"{approx_spl_size} samples of squared differences"
@@ -1271,7 +1350,7 @@ class BaseDistribution(BaseObject):
         spl1 = self.sample(approx_spl_size)
         spl2 = self.sample(approx_spl_size)
         spl = (spl1 - spl2) ** 2
-        return self._sample_mean(spl)
+        return self._sample_mean(spl) / 2
 
     def pdfnorm(self, a=2):
         r"""a-norm of pdf, defaults to 2-norm.
@@ -1312,17 +1391,40 @@ class BaseDistribution(BaseObject):
         If self is not scalar with index and columns,
         coerces x to a pd.DataFrame with index and columns as self.
 
-        If self is scalar, coerces x to a scalar (0D) np.ndarray.
+        If self is scalar, coerces x to a np.float64 instead.
+
+        Parameters
+        ----------
+        x : array-like, np.ndarray coercible
+            input to be coerced to self
+        flatten : bool, optional, default=True
+            if True, flattens x before broadcasting
+            if False, broadcasts x as is
+
+        Returns
+        -------
+        pd.DataFrame or np.float64
+            coerced input, with same index and columns as self, or float
+
+            * if self is scalar: returns a np.float64
+            * if self is array-like: returns a pd.DataFrame with same index and columns
+              as self, and shape broadcasted to self.shape
+
+            If ``flatten`` is True, flattens ``x`` before broadcasting,
         """
+        # scalar case
+        if self.ndim == 0:
+            x = np.float64(x)
+            return x
+
+        # array-like case
         x = np.array(x)
         if flatten:
             x = x.reshape(1, -1)
         df_shape = self.shape
         x = np.broadcast_to(x, df_shape)
-        if self.ndim != 0:
-            df = pd.DataFrame(x, index=self.index, columns=self.columns)
-            return df
-        return x
+        df = pd.DataFrame(x, index=self.index, columns=self.columns)
+        return df
 
     def _coerce_to_self_index_np(self, x, flatten=False):
         """Coerce input to type similar to self.
@@ -1337,6 +1439,13 @@ class BaseDistribution(BaseObject):
         flatten : bool, optional, default=True
             if True, flattens x before broadcasting
             if False, broadcasts x as is
+
+        Returns
+        -------
+        np.ndarray of same shape as self
+            coerced input, with same index and columns as self, or float
+            Return is ``x`` broadcasted to ``self.shape``, via ``np.broadcast_to``.
+            If ``flatten`` is True, flattens ``x`` before broadcasting,
         """
         x = np.array(x)
         if flatten:
@@ -1405,16 +1514,22 @@ class BaseDistribution(BaseObject):
         Parameters
         ----------
         n_samples : int, optional, default = None
+            number of samples to draw from the distribution
 
         Returns
         -------
-        if `n_samples` is `None`:
-        returns a sample that contains a single sample from `self`,
-        in `pd.DataFrame` mtype format convention, with `index` and `columns` as `self`
-        if n_samples is `int`:
-        returns a `pd.DataFrame` that contains `n_samples` i.i.d. samples from `self`,
-        in `pd-multiindex` mtype format convention, with same `columns` as `self`,
-        and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
+        pd.DataFrame
+            samples from the distribution
+
+            * if ``n_samples`` is ``None``:
+            returns a sample that contains a single sample from ``self``,
+            in ``pd.DataFrame`` mtype format convention, with ``index`` and ``columns``
+            as ``self``
+            * if n_samples is ``int``:
+            returns a ``pd.DataFrame`` that contains ``n_samples`` i.i.d.
+            samples from ``self``, in ``pd-multiindex`` mtype format convention,
+            with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
+            of ``RangeIndex(n_samples)`` and ``self.index``
         """
 
         def gen_unif():
@@ -1437,7 +1552,7 @@ class BaseDistribution(BaseObject):
 
         raise NotImplementedError(self._method_error_msg("sample", "error"))
 
-    def plot(self, fun="pdf", ax=None, **kwargs):
+    def plot(self, fun=None, ax=None, **kwargs):
         """Plot the distribution.
 
         Different distribution defining functions can be selected for plotting
@@ -1450,7 +1565,7 @@ class BaseDistribution(BaseObject):
 
         Parameters
         ----------
-        fun : str, optional, default="pdf"
+        fun : str, optional, default="pdf" for continuous distributions, otherwise "cdf"
             the function to plot, one of "pdf", "cdf", "ppf"
         ax : matplotlib Axes object, optional
             matplotlib Axes to plot in
@@ -1468,6 +1583,12 @@ class BaseDistribution(BaseObject):
         _check_soft_dependencies("matplotlib", obj="distribution plot")
 
         from matplotlib.pyplot import subplots
+
+        if fun is None:
+            if self.get_tag("distr:measuretype", "mixed") == "continuous":
+                fun = "pdf"
+            else:
+                fun = "cdf"
 
         if self.ndim > 0:
             if "x_bounds" not in kwargs:
@@ -1521,7 +1642,7 @@ class BaseDistribution(BaseObject):
             fig.supxlabel(f"{x_argname}")
             return fig, ax
 
-        # for now, all plots default ot this function
+        # for now, all plots default to this function
         # but this could be changed to a dispatch mechanism
         # e.g., using this line instead
         # plot_fun_name = f"_plot_{fun}"
@@ -1717,16 +1838,22 @@ class _BaseTFDistribution(BaseDistribution):
         Parameters
         ----------
         n_samples : int, optional, default = None
+            number of samples to draw from the distribution
 
         Returns
         -------
-        if `n_samples` is `None`:
-        returns a sample that contains a single sample from `self`,
-        in `pd.DataFrame` mtype format convention, with `index` and `columns` as `self`
-        if n_samples is `int`:
-        returns a `pd.DataFrame` that contains `n_samples` i.i.d. samples from `self`,
-        in `pd-multiindex` mtype format convention, with same `columns` as `self`,
-        and `MultiIndex` that is product of `RangeIndex(n_samples)` and `self.index`
+        pd.DataFrame
+            samples from the distribution
+
+            * if ``n_samples`` is ``None``:
+            returns a sample that contains a single sample from ``self``,
+            in ``pd.DataFrame`` mtype format convention, with ``index`` and ``columns``
+            as ``self``
+            * if n_samples is ``int``:
+            returns a ``pd.DataFrame`` that contains ``n_samples`` i.i.d.
+            samples from ``self``, in ``pd-multiindex`` mtype format convention,
+            with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
+            of ``RangeIndex(n_samples)`` and ``self.index``
         """
         if n_samples is None:
             np_spl = self.distr.sample().numpy()

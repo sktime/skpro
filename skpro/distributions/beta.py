@@ -12,6 +12,8 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Beta(_ScipyAdapter):
     r"""Beta distribution.
 
+    Most methods wrap ``scipy.stats.beta``.
+
     The Beta distribution is parametrized by two shape parameters :math:`\alpha`
     and :math:`\beta`, such that the probability density function (PDF) is given by:
 
@@ -27,8 +29,8 @@ class Beta(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions.beta import Beta
 
     >>> d = Beta(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)

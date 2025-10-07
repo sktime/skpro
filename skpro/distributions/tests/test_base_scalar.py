@@ -12,10 +12,17 @@ __author__ = ["fkiraly"]
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from skpro.distributions.normal import Normal
+from skpro.distributions.poisson import Poisson
+from skpro.tests.test_switch import run_test_module_changed
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_scalar_distribution():
     """Test scalar distribution logic."""
     # test params
@@ -47,6 +54,10 @@ def test_scalar_distribution():
     assert spl_mult.index.equals(pd.RangeIndex(5))
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_broadcast_ambiguous():
     """Test broadcasting in cases of ambiguous parameter dimensions."""
     mu = [1]
@@ -88,3 +99,27 @@ def test_broadcast_ambiguous():
     assert isinstance(spl_mult.index, pd.MultiIndex)
     assert spl_mult.index.nlevels == 2
     assert spl_mult.columns.equals(pd.RangeIndex(1))
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_scalar_pmf_pdf_default():
+    """Tests that pmf and pdf default to scalar float.
+
+    Failure case of #573.
+    """
+    n = Normal(2, 3)
+
+    assert isinstance(n.pdf(3), np.float64)
+    assert isinstance(n.log_pdf(3), np.float64)
+    assert isinstance(n.pmf(3), np.float64)
+    assert isinstance(n.log_pmf(3), np.float64)
+
+    p = Poisson(mu=2)
+
+    assert isinstance(p.pdf(3), np.float64)
+    assert isinstance(p.log_pdf(3), np.float64)
+    assert isinstance(p.pmf(3), np.float64)
+    assert isinstance(p.log_pmf(3), np.float64)
