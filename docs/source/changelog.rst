@@ -20,7 +20,8 @@ For planned changes and upcoming releases, see roadmap in the
 =====================
 
 Python 3.14 compatibility, Python 3.9 end-of-life.
-Also feature, bugfix, and maintenance release.
+
+Feature, bugfix, and maintenance release.
 
 Enhancements
 ~~~~~~~~~~~~
