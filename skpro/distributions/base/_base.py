@@ -236,14 +236,51 @@ class BaseDistribution(BaseObject):
             colidx = pd.Index([colidx])
 
         if rowidx is not None:
-            row_iloc = self.index.get_indexer_for(rowidx)
+            row_iloc = self._get_indexer_like_pandas(self.index, rowidx)
         else:
             row_iloc = None
         if colidx is not None:
-            col_iloc = self.columns.get_indexer_for(colidx)
+            col_iloc = self._get_indexer_like_pandas(self.columns, colidx)
         else:
             col_iloc = None
         return self._iloc(rowidx=row_iloc, colidx=col_iloc)
+
+    def _get_indexer_like_pandas(self, index, keys):
+        """Return indexer for keys in index.
+
+        A unified helper that mimics pandas' get_indexer_for but supports:
+
+        - scalar key (e.g., "a", ("a", 1))
+        - tuple key (partial or full)
+        - list of keys (partial or full)
+        - works for both Index and MultiIndex
+
+        Returns
+        -------
+        np.ndarray of positions (integers)
+        """
+        # regular index, not multiindex
+        if not isinstance(index, pd.MultiIndex):
+            return index.get_indexer_for(keys)
+
+        # if isinstance(index, pd.MultiIndex):
+
+        if is_scalar_notnone(keys) or isinstance(keys, tuple):
+            keys = [keys]
+
+        # Use get_locs for each key (full or partial)
+        ilocs = []
+        for key in keys:
+            if isinstance(key, slice):
+                ilocs.append(index.slice_indexer(key.start, key.stop, key.step))
+            else:
+                if not isinstance(key, tuple):
+                    key = [key]
+                iloc = index.get_locs(key)
+                if isinstance(iloc, slice):
+                    iloc = np.arange(len(index))[iloc]
+                ilocs.append(iloc)
+        return np.concatenate(ilocs) if ilocs else np.array([], dtype=int)
 
     def _at(self, rowidx=None, colidx=None):
         if rowidx is not None:
@@ -1762,6 +1799,13 @@ class _Indexer:
         ref = self.ref
         indexer = getattr(ref, self.method)
 
+        # handle special case of multiindex in loc with single tuple key
+        if isinstance(key, tuple) and not any(isinstance(k, tuple) for k in key):
+            if isinstance(ref.index, pd.MultiIndex) and self.method == "_loc":
+                if type(ref).__name__ != "Empirical":
+                    return indexer(rowidx=key, colidx=None)
+
+        # general case
         if isinstance(key, tuple):
             if not len(key) == 2:
                 raise ValueError(
