@@ -16,6 +16,15 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.10.0] - 2025-10-09
+=====================
+
+Python 3.14 compatibility, Python 3.9 end-of-life, and maintenance release.
+
+Enhancements
+~~~~~~~~~~~~
+
+
 [2.9.4] - 2025-09-18
 ====================
 
