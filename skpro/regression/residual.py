@@ -70,20 +70,24 @@ class ResidualDouble(BaseProbaRegressor):
         default = sklearn DummyRegressor(strategy="mean")
     residual_trafo : str, or transformer, default="absolute"
         determines the labels predicted by ``estimator_resid``
-        absolute = absolute residuals
-        squared = squared residuals
-        if transformer, applies fit_transform to batch of signed residuals
+
+        * ``"absolute"`` = absolute residuals
+        * ``"squared"`` = squared residuals
+        * if transformer, applies ``fit_transform`` to batch of signed residuals
+
     distr_type : str or BaseDistribution, default = "Normal"
         type of distribution to predict
         str options are "Normal", "Laplace", "Cauchy", "t"
     distr_loc_scale_name : tuple of length two, default = ("loc", "scale")
         names of the parameters in the distribution to use for location and scale
-        if ``distr_type`` is a string, this is overridden to the correct parameters
-        if ``distr_type`` is a BaseDistribution, this is used to determine the
-        location and scale parameters that the predictions are passed to
+
+        * if ``distr_type`` is a string, this is overridden to the correct parameters
+        * if ``distr_type`` is a BaseDistribution, this is used to determine the
+          location and scale parameters that the predictions are passed to
+
     distr_params : dict, default = {}
         parameters to pass to the distribution
-        must be valid parameters of ``distr_type``, if ``BaseDistribution``
+        must be valid parameters of ``distr_type``, if ``BaseDistribution``;
         must be default or dict with key ``df``, if ``t`` distribution
     use_y_pred : bool, default=False
         whether to use the predicted location in predicting the scale of the residual
