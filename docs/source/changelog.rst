@@ -19,7 +19,8 @@ For planned changes and upcoming releases, see roadmap in the
 [2.10.0] - 2025-10-09
 =====================
 
-Python 3.14 compatibility, Python 3.9 end-of-life, and maintenance release.
+Python 3.14 compatibility, Python 3.9 end-of-life.
+Also feature, bugfix, and maintenance release.
 
 Enhancements
 ~~~~~~~~~~~~
