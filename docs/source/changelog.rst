@@ -32,6 +32,7 @@ Enhancements
 * [ENH] Allow ``n_trials=0`` for fast optimisation-free training of ``XGBoostLSS`` (:pr:`600`) :user:`joshdunnlime`
 * [ENH] extend ``BaggingRegressor`` to survival models (:pr:`319`) :user:`fkiraly`
 * [ENH] distributions approximate ``pdf`` and ``log_pdf`` via ``cdf`` numerical derivative if not implemented (:pr:`610`) :user:`fkiraly`
+* [ENH] ``pandas.Multiindex`` support for distributions (:pr:`580`) :user:`fkiraly`
 
 Maintenance
 ~~~~~~~~~~~
