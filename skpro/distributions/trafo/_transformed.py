@@ -56,8 +56,6 @@ class TransformedDistribution(BaseDistribution):
             "var",
             "energy",
             "cdf",
-            "pdf",
-            "log_pdf",
         ],
         "capabilities:exact": ["ppf"],
         "distr:measuretype": "mixed",
@@ -77,17 +75,6 @@ class TransformedDistribution(BaseDistribution):
         self.assume_monotonic = assume_monotonic
 
         self._is_scalar_dist = self.distribution.ndim == 0
-        self.transformer_ = DifferentiableTransformer._coerce_to_differentiable(
-            transform
-        )
-
-        if self.transformer_._check_inverse_func():
-            self.set_tags(
-                **{
-                    "capabilities:exact": ["ppf", "cdf"],
-                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
-                }
-            )
 
         # determine index and columns
         if not self._is_scalar_dist:
@@ -100,7 +87,32 @@ class TransformedDistribution(BaseDistribution):
                 if columns is None:
                     columns = pd.RangeIndex(n_cols)
 
+        self.transformer_ = DifferentiableTransformer._coerce_to_differentiable(
+            transform, index=index, columns=columns
+        )
+
         super().__init__(index=index, columns=columns)
+
+        # Set tags after super().__init__() to ensure they persist
+        if self.transformer_._check_inverse_func():
+            self.set_tags(
+                **{
+                    "capabilities:exact": ["ppf", "pdf", "log_pdf"],
+                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
+                }
+            )
+        else:
+            self.set_tags(
+                **{
+                    "capabilities:exact": [],
+                    "capabilities:approx": [
+                        "pdfnorm",
+                        "mean",
+                        "var",
+                        "energy",
+                    ],
+                }
+            )
 
     def _pdf(self, x):
         r"""Probability density function.
@@ -133,15 +145,13 @@ class TransformedDistribution(BaseDistribution):
             pdf_out = pd.DataFrame(pdf_out, index=self.index, columns=self.columns)
 
         if self.transformer_._check_inverse_func():
-            jacobian = np.abs(self.transformer_.inverse_transform_diff(x)).reshape(
-                -1, 1
-            )
+            jacobian = np.abs(self.transformer_.inverse_transform_diff(x))
         else:
             raise ValueError(
                 "The transform must have an inverse_transform to compute the pdf.",
             )
 
-        return pdf_out / jacobian.reshape(-1, 1)
+        return pdf_out / jacobian
 
     def _log_pdf(self, x):
         r"""Logarithmic probability density function.
@@ -176,9 +186,7 @@ class TransformedDistribution(BaseDistribution):
             )
 
         if self.transformer_._check_inverse_func():
-            jacobian = np.abs(self.transformer_.inverse_transform_diff(x)).reshape(
-                -1, 1
-            )
+            jacobian = np.abs(self.transformer_.inverse_transform_diff(x))
         else:
             raise ValueError(
                 "The transform must have an inverse_transform to compute the log-pdf.",
@@ -319,7 +327,8 @@ class TransformedDistribution(BaseDistribution):
         }
 
         # array case example
-        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["c", "d"]))
+        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["a", "b"]))
+
         params2 = {
             "distribution": n_array,
             "transform": np.exp,

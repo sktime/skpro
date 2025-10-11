@@ -1,11 +1,20 @@
 """Transformers for skpro."""
 
 import numpy as np
+import pandas as pd
 from sklearn.base import TransformerMixin, check_is_fitted, clone
 from sklearn.exceptions import NotFittedError
 from sklearn.pipeline import FunctionTransformer
 
 from skpro.base import BaseEstimator
+
+# Optional import for more advanced numerical differentiation
+try:
+    import numdifftools as nd
+
+    HAS_NUMDIFFTOOLS = True
+except ImportError:
+    HAS_NUMDIFFTOOLS = False
 
 
 class BaseTransformer(BaseEstimator, TransformerMixin):
@@ -22,11 +31,13 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
         self.transformer = transformer
         super().__init__()
 
-    def _fit_with_fitted_transformer(self):
+    def _fit_with_fitted_transformer(self, index=None, columns=None):
         """Fit with already fitted transformer if possible."""
         try:
             check_is_fitted(self.transformer)
             self.transformer_ = self.transformer
+            self.index = index
+            self.columns = columns
         except NotFittedError:
             pass
         return self
@@ -48,8 +59,20 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
         self.transformer_ = clone(self.transformer)
         self.transformer_.fit(X)
 
-        # TODO: sklearn <1.2 compat issue
-        self.transformer_.set_output(transform="pandas")
+        if isinstance(X, pd.DataFrame):
+            self.index = X.index
+            self.columns = X.columns
+        else:
+            X = np.asarray(X)
+            if X.ndim == 1:
+                self.index = pd.RangeIndex(X.shape[0])
+                self.columns = pd.Index([0])
+            else:
+                n_samples, n_cols = X.shape
+                if self.index is None:
+                    self.index = pd.RangeIndex(n_samples)
+                if self.columns is None:
+                    self.columns = pd.RangeIndex(n_cols)
         return self
 
     def transform(self, X, y=None):
@@ -67,15 +90,41 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
         Xt : array-like, shape (n_samples,) or (n_samples, n_outputs)
             Transformed target values.
         """
+        check_is_fitted(self.transformer_)
         Xt = self.transformer_.transform(X)
+
+        if isinstance(Xt, pd.DataFrame):
+            Xt.index = self.index
+            Xt.columns = self.columns
+        else:
+            Xt = np.asarray(Xt)
+            if Xt.ndim == 1:
+                Xt = pd.Series(Xt, index=self.index, name=self.columns[0])
+            else:
+                Xt = pd.DataFrame(Xt, index=self.index, columns=self.columns)
         return Xt
 
     def inverse_transform(self, X, y=None):
         """Inverse transform y using the transformer."""
-        if self.transformer_ is not None:
-            Xt = self.transformer_.inverse_transform(X)
+        check_is_fitted(self.transformer_)
+        Xt = self.transformer_.inverse_transform(X)
+
+        if isinstance(Xt, pd.DataFrame):
+            Xt.index = self.index
+            Xt.columns = self.columns
         else:
-            Xt = X
+            Xt = np.asarray(Xt)
+            if Xt.ndim == 1:
+                Xt = pd.Series(Xt, index=self.index, name=self.columns[0])
+            elif Xt.ndim == 0:
+                Xt = Xt.item()
+            else:
+                Xt = pd.DataFrame(
+                    Xt.reshape(len(self.index), len(self.columns)),
+                    index=self.index,
+                    columns=self.columns,
+                )
+
         return Xt
 
 
@@ -141,8 +190,8 @@ class BaseDifferentiableTransformer(BaseTransformer):
 
         return diff
 
-    def _numerical_diff(self, func, X):
-        """Apply numerical differentiation.
+    def _numerical_diff(self, func, X, delta=1e-6):
+        """Apply numerical differentiation using central difference.
 
         Parameters
         ----------
@@ -150,22 +199,47 @@ class BaseDifferentiableTransformer(BaseTransformer):
             Function to differentiate.
         X : array-like, shape (n_samples,) or (n_samples, 1)
             Input data.
+        delta : float, default=1e-6
+            Step size for numerical differentiation.
 
         Returns
         -------
         diff : array-like, shape (n_samples,) or (n_samples, 1)
             Numerical derivative of the transformation at X.
         """
-        # TODO: use finite difference
         X = np.asarray(X)
         original_shape = X.shape
-        X = X.flatten()
-        sort_idx = np.argsort(X)
-        x_sorted = X[sort_idx]
-        y_sorted = func(x_sorted.reshape(-1, 1)).flatten()
-        grad = np.gradient(y_sorted, x_sorted)
-        diff = np.zeros_like(X)
-        diff[sort_idx] = grad
+        X_flat = X.flatten()
+
+        if HAS_NUMDIFFTOOLS:
+            # Use numdifftools for more accurate differentiation if available
+            def func_1d(x_val):
+                # Handle scalar input for numdifftools
+                if np.isscalar(x_val):
+                    x_val = np.array([[x_val]])
+                else:
+                    x_val = np.array(x_val).reshape(-1, 1)
+                return func(x_val).flatten()[0]
+
+            # Calculate derivative for each point
+            diff = np.zeros_like(X_flat)
+            for i, x_val in enumerate(X_flat):
+                derivative_func = nd.Derivative(func_1d, n=1, step=delta)
+                diff[i] = derivative_func(x_val)
+        else:
+            # Use custom central difference implementation
+            diff = np.zeros_like(X_flat)
+
+            for i, x_val in enumerate(X_flat):
+                # Central difference: f'(x) = (f(x+h) - f(x-h)) / (2*h)
+                x_plus = np.array([[x_val + delta]])
+                x_minus = np.array([[x_val - delta]])
+
+                f_plus = func(x_plus).flatten()[0]
+                f_minus = func(x_minus).flatten()[0]
+
+                diff[i] = (f_plus - f_minus) / (2 * delta)
+
         return diff.reshape(original_shape)
 
     def _check_inverse_func(self):
@@ -198,8 +272,9 @@ class BaseDifferentiableTransformer(BaseTransformer):
         """
         from sklearn.preprocessing import MinMaxScaler
 
-        params = {"transformer": MinMaxScaler()}
-        return params
+        params1 = {"transformer": MinMaxScaler()}
+        params2 = {"transformer": np.log}
+        return [params1, params2]
 
 
 class DifferentiableTransformer(BaseDifferentiableTransformer):
@@ -218,7 +293,7 @@ class DifferentiableTransformer(BaseDifferentiableTransformer):
         )
 
     @classmethod
-    def _coerce_to_differentiable(cls, transform):
+    def _coerce_to_differentiable(cls, transform, index=None, columns=None):
         """Coerce transform to DifferentiableTransformer if possible.
 
         Takes a BaseDifferentiableTransformer, TransformerMixin, a bound method
@@ -228,6 +303,10 @@ class DifferentiableTransformer(BaseDifferentiableTransformer):
         ----------
         transform : callable or BaseDifferentiableTransformer or TransformerMixin
             transformation to be coerced
+        index : pd.Index, optional
+            index to be used if transform is not a fitted transformer
+        columns : pd.Index, optional
+            columns to be used if transform is not a fitted transformer
 
         Returns
         -------
@@ -253,4 +332,4 @@ class DifferentiableTransformer(BaseDifferentiableTransformer):
                 "or a BaseDifferentiableTransformer."
             )
 
-        return transformer._fit_with_fitted_transformer()
+        return transformer._fit_with_fitted_transformer(index=index, columns=columns)
