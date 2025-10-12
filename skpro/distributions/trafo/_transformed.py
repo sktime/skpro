@@ -112,21 +112,24 @@ class TransformedDistribution(BaseDistribution):
 
         # Check inverse function availability
         inverse_status = self.transformer_._check_inverse_func()
-        has_transformer_inverse = inverse_status is False  # False, "approx", or "exact"
+        has_transformer_inverse = inverse_status is not False
         has_separate_inverse = self.inverse_transform is not None
 
         if has_transformer_inverse or has_separate_inverse:
             exact_methods = []
             approx_methods = ["pdfnorm", "mean", "var", "energy"]
 
-            # ppf and cdf: exact if transformer has inverse OR separate inverse provided
-            # The distinction between "approx" and "exact" inverse doesn't matter here
-            # because ppf/cdf use the inverse function itself, not its derivative
-            if has_transformer_inverse:
-                exact_methods.extend(["ppf", "cdf"])
-            elif has_separate_inverse:
-                # ppf uses transformer_.inverse_transform, cdf can use separate inverse
+            # ppf uses transformer_.transform, which is always available
+            # So ppf can be exact even without an inverse
+            exact_methods.append("ppf")
+
+            # cdf uses self.inverse_transform parameter (not transformer inverse)
+            # So cdf can only be exact when the separate inverse_transform provided
+            if has_separate_inverse:
                 exact_methods.append("cdf")
+            else:
+                # No separate inverse_transform, cdf will use sampling approximation
+                approx_methods.append("cdf")
 
             # pdf and log_pdf require the derivative of inverse transform
             # Only exact if transformer has exact derivative (not numerical)
@@ -298,7 +301,7 @@ class TransformedDistribution(BaseDistribution):
         if self.ndim != 0:
             p = pd.DataFrame(p, index=self.index, columns=self.columns)
 
-        trafo = self.transformer_.inverse_transform
+        trafo = self.transformer_.transform
         inner_ppf = self.distribution.ppf(p)
 
         if self.ndim == 0:
@@ -385,7 +388,7 @@ class TransformedDistribution(BaseDistribution):
         else:
             n = n_samples
 
-        trafo = self.transformer_.inverse_transform
+        trafo = self.transformer_.transform
 
         samples = []
 
@@ -419,8 +422,11 @@ class TransformedDistribution(BaseDistribution):
         from skpro.compose._transformer import DifferentiableTransformer
         from skpro.distributions import Normal
 
-        ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
-        dft = DifferentiableTransformer(ft, inverse_func_diff=lambda x: 1 / x)
+        # use arcsinh as both it and its inverse are defined on all of R
+        ft = FunctionTransformer(func=np.arcsinh, inverse_func=np.sinh)
+        dft = DifferentiableTransformer(
+            ft, inverse_func_diff=lambda x: 1 / ((x**2 + 1) ** 0.5)
+        )
 
         n_scalar = Normal(mu=0, sigma=1)
         # scalar case example
