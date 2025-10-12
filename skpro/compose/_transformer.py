@@ -33,11 +33,13 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
 
     def _fit_with_fitted_transformer(self, index=None, columns=None):
         """Fit with already fitted transformer if possible."""
+        # Always initialize index and columns
+        self.index = index
+        self.columns = columns
+
         try:
             check_is_fitted(self.transformer)
             self.transformer_ = self.transformer
-            self.index = index
-            self.columns = columns
         except NotFittedError:
             pass
         return self
@@ -94,14 +96,28 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
         Xt = self.transformer_.transform(X)
 
         if isinstance(Xt, pd.DataFrame):
-            Xt.index = self.index
-            Xt.columns = self.columns
+            if self.index is not None:
+                Xt.index = self.index
+            if self.columns is not None:
+                Xt.columns = self.columns
         else:
             Xt = np.asarray(Xt)
-            if Xt.ndim == 1:
-                Xt = pd.Series(Xt, index=self.index, name=self.columns[0])
+            if Xt.ndim == 0:
+                Xt = Xt.item()
+            elif Xt.ndim == 1:
+                index = self.index if self.index is not None else pd.RangeIndex(len(Xt))
+                name = self.columns[0] if self.columns is not None else 0
+                Xt = pd.Series(Xt, index=index, name=name)
             else:
-                Xt = pd.DataFrame(Xt, index=self.index, columns=self.columns)
+                index = (
+                    self.index if self.index is not None else pd.RangeIndex(Xt.shape[0])
+                )
+                columns = (
+                    self.columns
+                    if self.columns is not None
+                    else pd.RangeIndex(Xt.shape[1])
+                )
+                Xt = pd.DataFrame(Xt, index=index, columns=columns)
         return Xt
 
     def inverse_transform(self, X, y=None):
@@ -110,19 +126,31 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
         Xt = self.transformer_.inverse_transform(X)
 
         if isinstance(Xt, pd.DataFrame):
-            Xt.index = self.index
-            Xt.columns = self.columns
+            if self.index is not None:
+                Xt.index = self.index
+            if self.columns is not None:
+                Xt.columns = self.columns
         else:
             Xt = np.asarray(Xt)
             if Xt.ndim == 1:
-                Xt = pd.Series(Xt, index=self.index, name=self.columns[0])
+                index = self.index if self.index is not None else pd.RangeIndex(len(Xt))
+                name = self.columns[0] if self.columns is not None else 0
+                Xt = pd.Series(Xt, index=index, name=name)
             elif Xt.ndim == 0:
                 Xt = Xt.item()
             else:
+                index = (
+                    self.index if self.index is not None else pd.RangeIndex(Xt.shape[0])
+                )
+                columns = (
+                    self.columns
+                    if self.columns is not None
+                    else pd.RangeIndex(Xt.shape[1])
+                )
                 Xt = pd.DataFrame(
-                    Xt.reshape(len(self.index), len(self.columns)),
-                    index=self.index,
-                    columns=self.columns,
+                    Xt.reshape(len(index), len(columns)),
+                    index=index,
+                    columns=columns,
                 )
 
         return Xt
@@ -243,14 +271,43 @@ class BaseDifferentiableTransformer(BaseTransformer):
         return diff.reshape(original_shape)
 
     def _check_inverse_func(self):
-        """Check if inverse function is available."""
+        """Check if inverse function is available.
+
+        Returns
+        -------
+        str or False
+            - False if no inverse function is available
+            - "approx" if inverse will use numerical differentiation
+            - "exact" if inverse has an explicit function or scale_ attribute
+        """
+        # Check if inverse_transform is available at all
         if not hasattr(self.transformer_, "inverse_transform") or (
             hasattr(self.transformer_, "inverse_func")
             and self.transformer_.inverse_func is None
         ):
             return False
-        else:
-            return True
+
+        # Check if we have explicit derivative function
+        if self.inverse_func_diff is not None:
+            return "exact"
+
+        # Check if transformer has scale_ attribute (e.g., MinMaxScaler, StandardScaler)
+        if (
+            hasattr(self.transformer_, "scale_")
+            and self.transformer_.scale_ is not None
+        ):
+            return "exact"
+
+        # Check if transformer has an explicit inverse_func (e.g., FunctionTransformer)
+        if (
+            hasattr(self.transformer_, "inverse_func")
+            and self.transformer_.inverse_func is not None
+        ):
+            # Has inverse but will use numerical differentiation
+            return "approx"
+
+        # Has inverse_transform but will use numerical differentiation
+        return "approx"
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -287,9 +344,15 @@ class DifferentiableTransformer(BaseDifferentiableTransformer):
         ----------
         transformer : callable, optional
             Maybe only allow sklearn transformers for now.
+        transform_func_diff : callable, optional
+            Function to compute the derivative of the transform function.
+        inverse_func_diff : callable, optional
+            Function to compute the derivative of the inverse transform function.
         """
         super().__init__(
-            transformer=transformer, transform_func_diff=None, inverse_func_diff=None
+            transformer=transformer,
+            transform_func_diff=transform_func_diff,
+            inverse_func_diff=inverse_func_diff,
         )
 
     @classmethod

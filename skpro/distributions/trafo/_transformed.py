@@ -110,16 +110,35 @@ class TransformedDistribution(BaseDistribution):
         if distribution.get_tag("distr:measuretype") == "discrete":
             self.set_tags(**{"distr:measuretype": "discrete"})
 
-        # if inverse_transform is given, we can do exact cdf
-        # due to the formula F_g(x)(y) = F_X(g^-1(x))
-        if (
-            self.inverse_transform is not None
-            or self.transformer_._check_inverse_func()
-        ):
+        # Check inverse function availability
+        inverse_status = self.transformer_._check_inverse_func()
+        has_transformer_inverse = inverse_status is False  # False, "approx", or "exact"
+        has_separate_inverse = self.inverse_transform is not None
+
+        if has_transformer_inverse or has_separate_inverse:
+            exact_methods = []
+            approx_methods = ["pdfnorm", "mean", "var", "energy"]
+
+            # ppf and cdf: exact if transformer has inverse OR separate inverse provided
+            # The distinction between "approx" and "exact" inverse doesn't matter here
+            # because ppf/cdf use the inverse function itself, not its derivative
+            if has_transformer_inverse:
+                exact_methods.extend(["ppf", "cdf"])
+            elif has_separate_inverse:
+                # ppf uses transformer_.inverse_transform, cdf can use separate inverse
+                exact_methods.append("cdf")
+
+            # pdf and log_pdf require the derivative of inverse transform
+            # Only exact if transformer has exact derivative (not numerical)
+            if inverse_status == "exact":
+                exact_methods.extend(["pdf", "log_pdf"])
+            elif inverse_status == "approx":
+                approx_methods.extend(["pdf", "log_pdf"])
+
             self.set_tags(
                 **{
-                    "capabilities:exact": ["ppf", "cdf", "pdf", "log_pdf"],
-                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
+                    "capabilities:exact": exact_methods,
+                    "capabilities:approx": approx_methods,
                 }
             )
 
@@ -272,6 +291,7 @@ class TransformedDistribution(BaseDistribution):
                 "ppf is implemented only for monotonic transforms, "
                 "set `assume_monotonic=True` to use this method"
             )
+
         elif not self.assume_monotonic and self.inverse_transform is not None:
             return super().ppf(p)
 
@@ -396,9 +416,11 @@ class TransformedDistribution(BaseDistribution):
         """Return testing parameter settings for the estimator."""
         from sklearn.preprocessing import FunctionTransformer
 
+        from skpro.compose._transformer import DifferentiableTransformer
         from skpro.distributions import Normal
 
         ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
+        dft = DifferentiableTransformer(ft, inverse_func_diff=lambda x: 1 / x)
 
         n_scalar = Normal(mu=0, sigma=1)
         # scalar case example
@@ -441,7 +463,12 @@ class TransformedDistribution(BaseDistribution):
             "inverse_transform": np.log,
         }
 
-        return [params1, params2, params3, params4, params5]
+        params6 = {
+            "distribution": n_array,
+            "transform": dft,
+        }
+
+        return [params1, params2, params3, params4, params5, params6]
 
 
 def is_scalar_notnone(obj):
