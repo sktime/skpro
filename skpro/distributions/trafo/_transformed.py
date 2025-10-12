@@ -6,6 +6,7 @@ __author__ = ["fkiraly"]
 import numpy as np
 import pandas as pd
 
+from skpro.compose import DifferentiableTransformer
 from skpro.distributions.base import BaseDistribution
 
 
@@ -38,6 +39,7 @@ class TransformedDistribution(BaseDistribution):
     --------
     >>> import numpy as np
     >>> import pandas as pd
+    >>> from sklearn.preprocessing import FunctionTransformer
     >>> from skpro.distributions.trafo import TransformedDistribution
     >>> from skpro.distributions import Normal
     >>>
@@ -51,6 +53,10 @@ class TransformedDistribution(BaseDistribution):
     ...     transform=np.exp,
     ...     inverse_transform=np.log,
     ... )
+
+    Can also be constructed with a ``FunctionTransformer``:
+    >>> ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
+    >>> t = TransformedDistribution(distribution=n, transform=ft)
     """
 
     _tags = {
@@ -93,6 +99,10 @@ class TransformedDistribution(BaseDistribution):
                 if columns is None:
                     columns = pd.RangeIndex(n_cols)
 
+        self.transformer_ = DifferentiableTransformer._coerce_to_differentiable(
+            transform, index=index, columns=columns
+        )
+
         super().__init__(index=index, columns=columns)
 
         # transformed discret distributions are always discrete
@@ -100,15 +110,120 @@ class TransformedDistribution(BaseDistribution):
         if distribution.get_tag("distr:measuretype") == "discrete":
             self.set_tags(**{"distr:measuretype": "discrete"})
 
-        # if inverse_transform is given, we can do exact cdf
-        # due to the formula F_g(x)(y) = F_X(g^-1(x))
-        if self.inverse_transform is not None:
+        # Check inverse function availability
+        inverse_status = self.transformer_._check_inverse_func()
+        has_transformer_inverse = inverse_status is not False
+        has_separate_inverse = self.inverse_transform is not None
+
+        if has_transformer_inverse or has_separate_inverse:
+            exact_methods = []
+            approx_methods = ["pdfnorm", "mean", "var", "energy"]
+
+            # ppf uses transformer_.transform, which is always available
+            # So ppf can be exact even without an inverse
+            exact_methods.append("ppf")
+
+            # cdf uses self.inverse_transform parameter (not transformer inverse)
+            # So cdf can only be exact when the separate inverse_transform provided
+            if has_separate_inverse:
+                exact_methods.append("cdf")
+            else:
+                # No separate inverse_transform, cdf will use sampling approximation
+                approx_methods.append("cdf")
+
+            # pdf and log_pdf require the derivative of inverse transform
+            # Only exact if transformer has exact derivative (not numerical)
+            if inverse_status == "exact":
+                exact_methods.extend(["pdf", "log_pdf"])
+            elif inverse_status == "approx":
+                approx_methods.extend(["pdf", "log_pdf"])
+
             self.set_tags(
                 **{
-                    "capabilities:exact": ["ppf", "cdf"],
-                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
+                    "capabilities:exact": exact_methods,
+                    "capabilities:approx": approx_methods,
                 }
             )
+
+    def _pdf(self, x):
+        r"""Probability density function.
+
+        This currently implements an approximation of the pdf, by using the
+        simplified assumption that the pdf of the transformed distribution is
+        descriptive the pdf on the original distribution. For positive monotonic
+        transformations, direction is preserved, but magnitude and scale may not be.
+
+        Parameters
+        ----------
+        x : pd.DataFrame, same shape as ``self``
+            points where the pdf is evaluated
+
+        Returns
+        -------
+        pd.DataFrame, same shape as ``self``
+            pdf values at the given points
+        """
+        dist = self.distribution
+        x_ = self.transformer_.transform(x)
+        pdf_out = dist.pdf(x_)
+
+        if isinstance(pdf_out, pd.DataFrame):
+            if self.index is not None:
+                pdf_out.index = self.index
+            if self.columns is not None:
+                pdf_out.columns = self.columns
+        elif not self._is_scalar_dist:
+            pdf_out = pd.DataFrame(pdf_out, index=self.index, columns=self.columns)
+
+        if self.transformer_._check_inverse_func():
+            jacobian = np.abs(self.transformer_.inverse_transform_diff(x))
+        else:
+            raise ValueError(
+                "The transform must have an inverse_transform to compute the pdf.",
+            )
+
+        return pdf_out / jacobian
+
+    def _log_pdf(self, x):
+        r"""Logarithmic probability density function.
+
+        This currently implements an approximation of the log-pdf, by using the
+        simplified assumption that the log-pdf of the transformed distribution is
+        descriptive the log-pdf on the original distribution. For positive monotonic
+        transformations, direction is preserved, but magnitude and scale may not be.
+
+        Parameters
+        ----------
+        x : pd.DataFrame, same shape as ``self``
+            points where the log-pdf is evaluated
+
+        Returns
+        -------
+        pd.DataFrame, same shape as ``self``
+            log-pdf values at the given points
+        """
+        dist = self.distribution
+        x_ = self.transformer_.transform(x)
+        log_pdf_out = dist.log_pdf(x_)
+
+        if isinstance(log_pdf_out, pd.DataFrame):
+            if self.index is not None:
+                log_pdf_out.index = self.index
+            if self.columns is not None:
+                log_pdf_out.columns = self.columns
+        elif not self._is_scalar_dist:
+            log_pdf_out = pd.DataFrame(
+                log_pdf_out, index=self.index, columns=self.columns
+            )
+
+        if self.transformer_._check_inverse_func():
+            jacobian = np.abs(self.transformer_.inverse_transform_diff(x))
+        else:
+            raise ValueError(
+                "The transform must have an inverse_transform to compute the log-pdf.",
+            )
+
+        return log_pdf_out - np.log(jacobian)
 
     def _iloc(self, rowidx=None, colidx=None):
         if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
@@ -179,14 +294,14 @@ class TransformedDistribution(BaseDistribution):
                 "ppf is implemented only for monotonic transforms, "
                 "set `assume_monotonic=True` to use this method"
             )
+
         elif not self.assume_monotonic and self.inverse_transform is not None:
             return super().ppf(p)
 
         if self.ndim != 0:
             p = pd.DataFrame(p, index=self.index, columns=self.columns)
 
-        trafo = self.transform
-
+        trafo = self.transformer_.transform
         inner_ppf = self.distribution.ppf(p)
 
         if self.ndim == 0:
@@ -273,7 +388,7 @@ class TransformedDistribution(BaseDistribution):
         else:
             n = n_samples
 
-        trafo = self.transform
+        trafo = self.transformer_.transform
 
         samples = []
 
@@ -302,7 +417,16 @@ class TransformedDistribution(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        from sklearn.preprocessing import FunctionTransformer
+
+        from skpro.compose._transformer import DifferentiableTransformer
         from skpro.distributions import Normal
+
+        # use arcsinh as both it and its inverse are defined on all of R
+        ft = FunctionTransformer(func=np.arcsinh, inverse_func=np.sinh)
+        dft = DifferentiableTransformer(
+            ft, inverse_func_diff=lambda x: 1 / ((x**2 + 1) ** 0.5)
+        )
 
         n_scalar = Normal(mu=0, sigma=1)
         # scalar case example
@@ -312,7 +436,8 @@ class TransformedDistribution(BaseDistribution):
         }
 
         # array case example
-        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["c", "d"]))
+        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["a", "b"]))
+
         params2 = {
             "distribution": n_array,
             "transform": np.exp,
@@ -330,14 +455,26 @@ class TransformedDistribution(BaseDistribution):
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
 
-        # scalar case example with inverse transform
         params4 = {
+            "distribution": n_array,
+            "transform": ft,
+            "index": pd.Index([1, 2]),
+            "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
+        }
+
+        # scalar case example with inverse transform
+        params5 = {
             "distribution": n_scalar,
             "transform": np.exp,
             "inverse_transform": np.log,
         }
 
-        return [params1, params2, params3, params4]
+        params6 = {
+            "distribution": n_array,
+            "transform": dft,
+        }
+
+        return [params1, params2, params3, params4, params5, params6]
 
 
 def is_scalar_notnone(obj):

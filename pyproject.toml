@@ -60,6 +60,7 @@ all_extras = [
     "pymc; python_version < '3.13'",
     "statsmodels>=0.12.1",
     "xgboostlss; python_version >= '3.10' and python_version < '3.12'",
+    "numdifftools>=0.9.20; python_version < '3.12'",
 ]
 
 dev = [
