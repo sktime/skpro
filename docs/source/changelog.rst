@@ -16,6 +16,132 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.10.0] - 2025-10-09
+=====================
+
+Python 3.14 compatibility, Python 3.9 end-of-life.
+
+Feature, bugfix, and maintenance release.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``skpro`` is now compatible with ``python 3.14``.
+* ``skpro`` no longer supports ``python 3.9``.
+* ``scikit-learn`` bounds have been updated to ``>=0.24.0,<1.8.0``.
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.13.0``.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] ``TransformedDistribution`` and ``TransformedTargetRegressor`` ``cdf`` support (:pr:`611`) :user:`fkiraly`, :user:`joshdunnlime`
+* [ENH] export all distributions in ``skpro.distributions``, minor fixes to API reference (:pr:`598`) :user:`fkiraly`
+* [ENH] Add Beta Distribution to ``XGBoostLSS`` (:pr:`599`) :user:`joshdunnlime`
+* [ENH] Allow ``n_trials=0`` for fast optimisation-free training of ``XGBoostLSS`` (:pr:`600`) :user:`joshdunnlime`
+* [ENH] extend ``BaggingRegressor`` to survival models (:pr:`319`) :user:`fkiraly`
+* [ENH] distributions approximate ``pdf`` and ``log_pdf`` via ``cdf`` numerical derivative if not implemented (:pr:`610`) :user:`fkiraly`
+* [ENH] ``pandas.Multiindex`` support for distributions (:pr:`580`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] python 3.14 compatibility and python 3.9 end-of-life (:pr:`618`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] improve docstring formatting for description of censoring variable ``C`` (:pr:`604`) :user:`fkiraly`
+* [DOC] minor docstring formatting in survival predictor extension template (:pr:`606`) :user:`fkiraly`
+* [DOC] minor documentation improvements (:pr:`609`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] fix approximate ``cdf`` for distributions without implementation (:pr:`613`) :user:`fkiraly`
+* [BUG] fix ``TransformedDistribution._iloc`` by passing ``inverse_transform`` (:pr:`614`) :user:`joshdunnlime`
+* [BUG] fixes to ``TransformedDistribution`` subsetting (:pr:`616`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`joshdunnlime`
+
+
+[2.9.4] - 2025-09-18
+====================
+
+Feature, maintenance, and bugfix release.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] replace apply linalg norm with native pandas ufuncs (:pr:`592`) :user:`joshdunnlime`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] Check versions in  wheels workflow (:pr:`583`) :user:`szepeviktor`
+* [MNT] update ``numpy`` bound to ``numpy<2.4`` (:pr:`584`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.33.0`` to ``<1.34.0`` (:pr:`587`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump ``actions/setup-python`` from 5 to 6 (:pr:`590`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] improved docstring for ``HistBinnedProbaRegressor`` (:pr:`586`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] fix ``HistBinnedRegressor.predict`` return type (:pr:`585`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`joshdunnlime`,
+:user:`szepeviktor`
+
+
+[2.9.3] - 2025-08-17
+====================
+
+Feature, maintenance, and bugfix release.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] Moves epsilon offset logic to `TruncatedDistribution` from `Hurdle` (:pr:`577`) :user:`tingiskhan`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update ``polars`` requirement from ``<1.32.0`` to ``<1.33.0`` by @dependabot[bot] in https://github.com/sktime/skpro/pull/572
+* [MNT] [Dependabot](deps): Bump ``actions/download-artifact`` from 4 to 5 (:pr:`579`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump ``actions/checkout`` from 4 to 5 (:pr:`581`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] fix badge link to license in README (:pr:`575`) :user:`fkiraly`
+* [DOC] corrected and improved docstring for ``MeanScale`` distribution family (:pr:`578`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] correctly set tags for ``Poisson`` distribution (:pr:`570`) :user:`fkiraly`
+* [BUG] fix ``pdf`` and ``pmf`` default return type in scalar case (:pr:`574`) :user:`fkiraly`
+* [BUG] Addresses stochasticity of Hurdle tests (:pr:`568`) :user:`tingiskhan`
+* [BUG] correctly set tags of ``Hurdle`` and ``Truncated`` depending on inner distribution (:pr:`569`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`tingiskhan`
+
+
 [2.9.2] - 2025-07-23
 ====================
 

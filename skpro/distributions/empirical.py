@@ -270,6 +270,24 @@ class Empirical(BaseDistribution):
             columns=subs_colidx,
         )
 
+    def _loc(self, rowidx=None, colidx=None):
+        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
+            return self._at(rowidx, colidx)
+        if is_scalar_notnone(rowidx):
+            rowidx = pd.Index([rowidx])
+        if is_scalar_notnone(colidx):
+            colidx = pd.Index([colidx])
+
+        if rowidx is not None:
+            row_iloc = self.index.get_indexer_for(rowidx)
+        else:
+            row_iloc = None
+        if colidx is not None:
+            col_iloc = self.columns.get_indexer_for(colidx)
+        else:
+            col_iloc = None
+        return self._iloc(rowidx=row_iloc, colidx=col_iloc)
+
     def _iat(self, rowidx=None, colidx=None):
         if rowidx is None or colidx is None:
             raise ValueError("iat method requires both row and column index")
