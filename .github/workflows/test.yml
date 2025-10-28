@@ -237,9 +237,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install OSX packages
-        run: ./.github/scripts/install_osx_dependencies.sh
-
       - name: Force non-GUI Matplotlib backend (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         shell: pwsh
