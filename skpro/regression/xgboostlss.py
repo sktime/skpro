@@ -70,6 +70,7 @@ class XGBoostLSS(BaseProbaRegressor):
         # StatMixedML, EchoDel for the original xgboostlss package
         "maintainers": ["fkiraly"],
         "python_dependencies": ["xgboostlss"],  # PEP 440 python dependencies specifier,
+        "python_version": "<3.12",
         #
         # estimator tags
         # --------------
@@ -77,6 +78,9 @@ class XGBoostLSS(BaseProbaRegressor):
         "capability:missing": True,  # can the estimator handle missing data?
         "X_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit, _predict
         "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
+        # CI and test flags
+        # -----------------
+        "tests:vm": True,  # requires its own test VM to run
     }
 
     def __init__(

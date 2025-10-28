@@ -101,6 +101,20 @@ OBJECT_TAG_REGISTER = [
         "license type for interfaced packages: 'copyleft', 'permissive', 'copyright'. \
         may be incorrect, NO LIABILITY assumed for this field",
     ),
+    # CI and test flags
+    # -----------------
+    (
+        "tests:libs",
+        "object",
+        ("list", "str"),
+        "list of library dependencies required for tests",
+    ),
+    (
+        "tests:vm",
+        "object",
+        "bool",
+        "whether tests require their own VM to run",
+    ),
     # ------------------
     # BaseProbaRegressor
     # ------------------
