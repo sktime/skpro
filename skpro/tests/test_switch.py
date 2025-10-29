@@ -331,7 +331,7 @@ def run_test_module_changed(module):
         True iff: at least one of the modules or its submodules have changed,
         or if ``ONLY_CHANGED_MODULES`` is False
     """
-    from skpro.tests.test_all_estimators import ONLY_CHANGED_MODULES
+    from skpro.tests._config import ONLY_CHANGED_MODULES
     from skpro.utils.git_diff import is_module_changed
 
     # if ONLY_CHANGED_MODULES is off: always True

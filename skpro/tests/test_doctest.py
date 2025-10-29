@@ -6,7 +6,7 @@ import inspect
 import pkgutil
 from functools import lru_cache
 
-from skpro.tests.test_all_estimators import ONLY_CHANGED_MODULES
+from skpro.tests._config import ONLY_CHANGED_MODULES
 from skpro.tests.test_switch import run_test_module_changed
 from skpro.utils._doctest import run_doctest
 
