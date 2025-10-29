@@ -119,7 +119,7 @@ OBJECT_TAG_REGISTER = [
         "tests:skip_by_name",
         "estimator",
         ("list", "str"),
-        "list of test names to skip when running check_estimator",
+        "list of test names to skip when running estimator checks on CI",
     )
     # ------------------
     # BaseProbaRegressor
