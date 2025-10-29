@@ -25,7 +25,7 @@ def run_test_vm(cls_name):
         Name of the estimator class to test, e.g., "ExampleForecaster".
 
     Raises
-    -------
+    ------
     Exception
         if the ``check_estimator`` fails, or if the estimator is not found.
     """
