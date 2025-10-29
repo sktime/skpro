@@ -115,6 +115,12 @@ OBJECT_TAG_REGISTER = [
         "bool",
         "whether tests require their own VM to run",
     ),
+    (
+        "tests:skip_by_name",
+        "estimator",
+        ("list", "str"),
+        "list of test names to skip when running check_estimator",
+    )
     # ------------------
     # BaseProbaRegressor
     # ------------------
