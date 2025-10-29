@@ -21,7 +21,7 @@ __author__ = ["fkiraly"]
 
 import re
 
-from skpro.registry._lookup import all_estimators
+from skpro.registry._lookup import all_objects
 
 
 def _extract_class_names(spec):
@@ -57,7 +57,7 @@ def craft(spec):
     ----------
     spec : str, skpro/skbase compatible object specification
         i.e., a string that executes to construct an object if all imports were present
-        imports inferred are of any classes in the scope of ``all_estimators``
+        imports inferred are of any classes in the scope of ``all_objects``
         option 1: a string that evaluates to an estimator
         option 2: a sequence of assignments in valid python code,
             with the object to be defined preceded by a "return"
@@ -68,7 +68,7 @@ def craft(spec):
     obj : skbase BaseObject descendant, constructed from ``spec``
         this will have the property that ``spec == str(obj)`` (up to formatting)
     """
-    register = dict(all_estimators())  # noqa: F841
+    register = dict(all_objects())  # noqa: F841
 
     try:
         obj = eval(spec, globals(), register)
@@ -102,7 +102,7 @@ def deps(spec):
     ----------
     spec : str, skpro/skbase compatible object specification
         i.e., a string that executes to construct an object if all imports were present.
-        imports inferred are of any classes in the scope of ``all_estimators``
+        imports inferred are of any classes in the scope of ``all_objects``
 
         * option 1: a string that evaluates to an estimator
         * option 2: a sequence of assignments in valid python code,
@@ -115,7 +115,7 @@ def deps(spec):
         each str is PEP 440 compatible requirement string for craft(spec)
         if spec has no requirements, return is [], the length 0 list
     """
-    register = dict(all_estimators())
+    register = dict(all_objects())
 
     dep_strs = []
 
@@ -123,7 +123,7 @@ def deps(spec):
         if x not in register.keys():
             raise RuntimeError(
                 f"class {x} is required to build spec, but was not found "
-                "in all_estimators scope"
+                "in all_objects scope"
             )
         cls = register[x]
 
@@ -160,7 +160,7 @@ def imports(spec):
     ----------
     spec : str, skpro/skbase compatible object specification
         i.e., a string that executes to construct an object if all imports were present
-        imports inferred are of any classes in the scope of ``all_estimators``
+        imports inferred are of any classes in the scope of ``all_objects``
         option 1: a string that evaluates to an estimator
         option 2: a sequence of assignments in valid python code,
             with the object to be defined preceded by a "return"
@@ -172,7 +172,7 @@ def imports(spec):
         python code consisting of all import statements required for spec
         imports cover object/estimator classes found as sub-strings of spec
     """
-    register = dict(all_estimators())
+    register = dict(all_objects())
 
     import_strs = []
 
@@ -180,7 +180,7 @@ def imports(spec):
         if x not in register.keys():
             raise RuntimeError(
                 f"class {x} is required to build spec, but was not found "
-                "in all_estimators scope"
+                "in all_objects scope"
             )
         cls = register[x]
 

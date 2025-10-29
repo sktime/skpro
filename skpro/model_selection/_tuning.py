@@ -264,8 +264,8 @@ class GridSearchCV(BaseGridSearch):
         scoring metric to use in tuning the estimator
 
         * skpro metric objects (BaseMetric) descendants can be searched
-        with the ``registry.all_estimators`` search utility,
-        for instance via ``all_estimators("metric", as_dataframe=True)``
+        with the ``registry.all_objects`` search utility,
+        for instance via ``all_objects("metric", as_dataframe=True)``
 
         * If callable, must have signature
         `(y_true: pd.DataFrame, y_pred: BaseDistribution) -> float`,
@@ -532,8 +532,8 @@ class RandomizedSearchCV(BaseGridSearch):
         scoring metric to use in tuning the estimator
 
         * skpro metric objects (BaseMetric) descendants can be searched
-        with the ``registry.all_estimators`` search utility,
-        for instance via ``all_estimators("metric", as_dataframe=True)``
+        with the ``registry.all_objects`` search utility,
+        for instance via ``all_objects("metric", as_dataframe=True)``
 
         * If callable, must have signature
         `(y_true: pd.DataFrame, y_pred: BaseDistribution) -> float`,
