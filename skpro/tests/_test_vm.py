@@ -49,7 +49,7 @@ def run_test_vm(cls_name):
         skips = cls.get_class_tag("tests:skip_by_name", None)
         check_estimator(cls, raise_exceptions=True, tests_to_exclude=skips)
     else:
-        print(
+        print(  # noqa: T201
             f"Skipping estimator: {cls} due to incompatibility "
             "with python or OS version."
         )  # noqa: T201
