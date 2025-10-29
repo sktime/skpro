@@ -52,4 +52,4 @@ def run_test_vm(cls_name):
         print(
             f"Skipping estimator: {cls} due to incompatibility "
             "with python or OS version."
-        )
+        )  # noqa: T201
