@@ -35,7 +35,7 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     """Pytest configuration preamble."""
-    from skpro.tests import test_all_estimators
+    from skpro.tests import _config
 
     if config.getoption("--only_changed_modules") in [True, "True"]:
-        test_all_estimators.ONLY_CHANGED_MODULES = True
+        _config.ONLY_CHANGED_MODULES = True

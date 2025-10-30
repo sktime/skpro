@@ -20,10 +20,6 @@ from skpro.utils._doctest import run_doctest
 from skpro.utils.deep_equals import deep_equals
 from skpro.utils.random_state import set_random_state
 
-# whether to test only estimators from modules that are changed w.r.t. main
-# default is False, can be set to True by pytest --only_changed_modules True flag
-ONLY_CHANGED_MODULES = False
-
 
 class PackageConfig:
     """Contains package config variables for test classes."""

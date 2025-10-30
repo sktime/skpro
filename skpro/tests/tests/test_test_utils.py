@@ -20,11 +20,11 @@ def test_run_test_for_class():
     # estimator with soft deps
     from skpro.regression.mapie import MapieRegressor
 
+    # boolean flag for whether to run tests for all estimators
+    from skpro.tests._config import ONLY_CHANGED_MODULES
+
     # estimator on the exception list
     from skpro.tests._config_test_dummy import DummySkipped
-
-    # boolean flag for whether to run tests for all estimators
-    from skpro.tests.test_all_estimators import ONLY_CHANGED_MODULES
 
     # shorthands
     f_on_excl_list = DummySkipped
