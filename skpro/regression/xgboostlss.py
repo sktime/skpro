@@ -77,6 +77,9 @@ class XGBoostLSS(BaseProbaRegressor):
         "capability:missing": True,  # can the estimator handle missing data?
         "X_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit, _predict
         "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
+        # CI and test flags
+        # -----------------
+        "tests:vm": True,  # requires its own test VM to run
     }
 
     def __init__(
