@@ -26,6 +26,9 @@ class BaseDistribution(BaseObject):
         # -------------
         "distr:measuretype": "mixed",  # distribution type, mixed, continuous, discrete
         "distr:paramtype": "general",
+        "property:multivariate": False,  # whether distribution is multivariate
+        "property:indep_axes": (0, 1),  # axes along which distr is independent
+        #
         # parameterization type - parametric, nonparametric, composite
         #
         # default parameter settings for MC estimates
@@ -679,6 +682,8 @@ class BaseDistribution(BaseObject):
                 x_inner = x.values
             # else, coerce to a numpy array if needed
             # then, broadcast it to the shape of self
+            if k == "axis":
+                x_inner = _coerce_to_tuple(x)
             else:
                 x_inner = self._coerce_to_self_index_np(x, flatten=False)
             kwargs_inner[k] = x_inner
@@ -729,7 +734,7 @@ class BaseDistribution(BaseObject):
           :math:`p_{X_{i \cdot}}(x_{i \cdot})`, where :math:`X_{i \cdot}` is the
           random variable corresponding to the :math:`i`-th row of :math:`X`,
           :math:`x_{i \cdot}` is the :math:`i`-th row of :math:`x`,
-        * ``axis=(0, 1)`` : joint pdf along rows and columns.
+        * ``axis=(0, 1)`` or ``axis=="all"`` : joint pdf along rows and columns.
           Result is a single scalar value, corresponding to
           :math:`p_{X}(x)`, where :math:`p_{X}` is the joint pdf of :math:`X`.
 
@@ -737,7 +742,7 @@ class BaseDistribution(BaseObject):
         ----------
         x : ``pandas.DataFrame`` or 2D ``np.ndarray``
             representing :math:`x`, as above
-        axis : None or tuple of int, default=None
+        axis : None, ``"all"``, or tuple of int, default=None
             Axes or axis along which the pdf is joint:
 
             * None : marginal pdfs are returned (default).
@@ -764,9 +769,38 @@ class BaseDistribution(BaseObject):
         if distr_type == "discrete":
             return self._coerce_to_self_index_df(0, flatten=False)
 
-        return self._boilerplate("_pdf", x=x)
+        # handle joint / marginalization
+        indep_axes = self.get_tag("property:indep_axes", (0, 1))
+        if axis is not None:
+            if axis == "all":
+                axis = (0, 1)
+            axis = _coerce_to_tuple(axis)
 
-    def _pdf(self, x):
+            axes_to_pass = tuple([ax for ax in axis if ax not in indep_axes])
+            axes_to_handle_here = [ax for ax in axis if ax in indep_axes]
+
+            axs = {"axis": axes_to_pass} if len(axes_to_pass) > 0 else {}
+        else:
+            axs = {}
+            axes_to_handle_here = []
+
+        pdf_val = self._boilerplate("_pdf", x=x, **axs)
+
+        # handle marginalization over independent axes
+        for ax in axes_to_handle_here:
+            pdf_val = pdf_val.prod(axis=ax)
+            if isinstance(pdf_val, pd.Series):
+                if ax == 0:
+                    pdf_val = pdf_val.to_frame().T
+                    pdf_val.index = pd.Index([0])
+                else:
+                    pdf_val = pdf_val.to_frame(name="pdf")
+        if len(axis) == 2:
+            pdf_val = pdf_val.values[0, 0]
+
+        return pdf_val
+
+    def _pdf(self, x, axis=None):
         """Probability density function.
 
         Private method, to be implemented by subclasses.
@@ -2030,3 +2064,15 @@ def _coerce_to_pd_index_or_none(x):
     if isinstance(x, pd.Index):
         return x
     return pd.Index(x)
+
+
+def _coerce_to_tuple(x):
+    """Coerce to tuple."""
+    if x is None:
+        return ()
+    if isinstance(x, tuple):
+        return x
+    # if iterable but not string, coerce to tuple
+    if hasattr(x, "__iter__") and not isinstance(x, str):
+        return tuple(x)
+    return (x,)  # else, make single-element tuple
