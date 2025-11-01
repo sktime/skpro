@@ -324,6 +324,15 @@ class GLMRegressor(BaseProbaRegressor):
 
         # remove the offset and exposure columns which
         # was inserted to maintain the shape
+        family = self._family
+        link = self._link
+
+        # ensure numerical stability for Gamma by injecting an intercept
+        self._auto_added_constant = False
+        if family == "Gamma" and not self._add_constant:
+            self._add_constant = True
+            self._auto_added_constant = True
+
         offset_var = self._offset_var
         exposure_var = self._exposure_var
 
@@ -331,8 +340,6 @@ class GLMRegressor(BaseProbaRegressor):
 
         y_col = y.columns
 
-        family = self._family
-        link = self._link
         sm_family = self._str_to_sm_family(family=family, link=link)
 
         glm_estimator = GLM(
