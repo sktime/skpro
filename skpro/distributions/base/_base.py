@@ -699,7 +699,7 @@ class BaseDistribution(BaseObject):
             res = res[()]
         return res
 
-    def pdf(self, x):
+    def pdf(self, x, axis=None):
         r"""Probability density function.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
@@ -713,18 +713,52 @@ class BaseDistribution(BaseObject):
         and entries :math:`p_{X_{ij}}(x_{ij})`.
 
         If ``self`` has a mixed or discrete distribution, this returns
-        the weighted continuous part of `self`'s distribution instead of the pdf,
+        the weighted continuous part of ``self``'s distribution instead of the pdf,
         i.e., the marginal pdf integrate to the weight of the continuous part.
+
+        Joint pdfs can be obtained by specifying the ``axis`` argument:
+
+        * ``axis=0`` : joint pdf along rows.
+          Result is a single-row ``DataFrame`` corresponding to
+          :math:`p_{X_{\cdot j}}(x_{\cdot j})`, where :math:`X_{\cdot j}` is the
+          random variable corresponding to the :math:`j`-th column of :math:`X`,
+          :math:`x_{\cdot j}` is the :math:`j`-th column of :math:`x`,
+          and :math:`p_{X_{\cdot j}}` is the joint pdf of :math:`X_{\cdot j}`.
+        * ``axis=1`` : joint pdf along columns.
+          Result is a single-column ``DataFrame`` corresponding to
+          :math:`p_{X_{i \cdot}}(x_{i \cdot})`, where :math:`X_{i \cdot}` is the
+          random variable corresponding to the :math:`i`-th row of :math:`X`,
+          :math:`x_{i \cdot}` is the :math:`i`-th row of :math:`x`,
+        * ``axis=(0, 1)`` : joint pdf along rows and columns.
+          Result is a single scalar value, corresponding to
+          :math:`p_{X}(x)`, where :math:`p_{X}` is the joint pdf of :math:`X`.
 
         Parameters
         ----------
         x : ``pandas.DataFrame`` or 2D ``np.ndarray``
             representing :math:`x`, as above
+        axis : None or tuple of int, default=None
+            Axes or axis along which the pdf is joint:
+
+            * None : marginal pdfs are returned (default).
+              Result has same shape as ``self`` and same index and columns.
+            * 0 : joint pdf along rows, result has one row and same columns as ``self``.
+            * 1 : joint pdf along columns,
+              result has one column and same index as ``self``.
+            * (0, 1) : joint pdf along rows and columns,
+              result is a single scalar, a numpy float.
 
         Returns
         -------
-        ``pd.DataFrame`` with same columns and index as ``self``
-            containing :math:`p_{X_{ij}}(x_{ij})`, as above
+        ``pd.DataFrame``
+            with same columns and index as ``self`` at default (``axis=None``),
+            containing :math:`p_{X_{ij}}(x_{ij})`, as above.
+
+            * if ``axis=0``, single-row ``DataFrame`` with joint pdfs along rows,
+              columns same as ``self``, row index is ``[0]``
+            * if ``axis=1``, single-column ``DataFrame`` with joint pdfs along columns
+              index same as ``self``, column name is ``'pdf'``
+            * if ``axis=(0, 1)``, single scalar value, a numpy float
         """
         distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
         if distr_type == "discrete":
@@ -832,39 +866,6 @@ class BaseDistribution(BaseObject):
             return np.log(res)
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
-
-    def pdfj(self, x):
-        r"""Probability density function.
-
-        Let :math:`X` be a random variables with the distribution of ``self``,
-        taking values in ``(N, n)`` ``DataFrame``-s
-        Let :math:`x\in \mathbb{R}^{N\times n}`.
-        By :math:`p_{X_{i}}`, denote the marginal pdf of :math:`X` at the
-        :math:`i)`-th row.
-
-        The output of this method, for input ``x`` representing :math:`x`,
-        is a ``DataFrame`` with same indices as ``self``, a single column ``'pdf'``,
-        and entries :math:`p_{X_{i}}(x_{i})`.
-
-        If ``self`` has a mixed or discrete distribution, this returns
-        the weighted continuous part of `self`'s distribution instead of the pdf,
-        i.e., the marginal pdf integrated to the weight of the continuous part.
-
-        Parameters
-        ----------
-        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
-            representing :math:`x`, as above
-
-        Returns
-        -------
-        ``pd.DataFrame`` with same index as ``self`` and single column ``'pdf'``,
-            containing :math:`p_{X_{i}}(x_{i})`, as above
-        """
-        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
-        if distr_type == "discrete":
-            return self._coerce_to_self_index_df(0, flatten=False)
-
-        return self._boilerplate("_jpdf", x=x)
 
     @staticmethod
     def _approx_derivative(x, fun, h=1e-7):
