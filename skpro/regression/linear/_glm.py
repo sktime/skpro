@@ -1,4 +1,5 @@
 """Interface adapter for the Generalized Linear Model Regressor."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["ShreeshaM07", "julian-fong"]
@@ -597,8 +598,7 @@ class GLMRegressor(BaseProbaRegressor):
             "family": "Poisson",
             "add_constant": True,
         }
-        # params4 = {"family": "Gamma"}
-        # removed due to sporadic failure #594
+        params4 = {"family": "Gamma"}
         params5 = {
             "family": "Normal",
             "link": "InversePower",
@@ -609,5 +609,4 @@ class GLMRegressor(BaseProbaRegressor):
             "add_constant": True,
         }
 
-        # return [params1, params2, params3, params4, params5, params6]
-        return [params1, params2, params3, params5, params6]
+        return [params1, params2, params3, params4, params5, params6]
