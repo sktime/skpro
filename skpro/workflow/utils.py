@@ -32,7 +32,7 @@ class InfoView(View):
 
     def parse(self, data):
         if self.with_group:
-            return "%s [%s]" % (data[self.key], data["group"])
+            return "{} [{}]".format(data[self.key], data["group"])
 
         return data[self.key]
 

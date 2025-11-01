@@ -67,13 +67,13 @@ class CrossValidationController(Controller):
         self.optimizer = optimizer
 
     def identifier(self):
-        return "CrossValidation(data=%s, loss_func=%s)" % (
+        return "CrossValidation(data={}, loss_func={})".format(
             self.data.name,
             self.loss_func.__name__,
         )
 
     def __repr__(self):
-        return "CrossValidation(data=%s, loss_func=%s, cv=%s, tune=%s)" % (
+        return "CrossValidation(data={}, loss_func={}, cv={}, tune={})".format(
             self.data.name,
             self.loss_func.__name__,
             repr(self.cv),
@@ -81,10 +81,9 @@ class CrossValidationController(Controller):
         )
 
     def description(self):
-        return "CV(%s, %s)" % (self.data.name, self.loss_func.__name__)
+        return "CV({}, {})".format(self.data.name, self.loss_func.__name__)
 
     def run(self, model):
-
         if self.tune:
             tuning = model.tuning
         else:
