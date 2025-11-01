@@ -1,5 +1,6 @@
 """Registry and lookup functionality."""
 
+from skpro.registry._craft import craft, deps, imports
 from skpro.registry._lookup import all_objects, all_tags
 from skpro.registry._scitype import scitype
 from skpro.registry._tags import (
@@ -14,5 +15,8 @@ __all__ = [
     "all_objects",
     "all_tags",
     "check_tag_is_valid",
+    "craft",
+    "deps",
+    "imports",
     "scitype",
 ]
