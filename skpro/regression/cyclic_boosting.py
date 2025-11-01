@@ -128,6 +128,9 @@ class CyclicBoosting(BaseProbaRegressor):
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
+        # CI and test flags
+        # -----------------
+        "tests:vm": True,  # requires its own test VM to run
     }
 
     def __init__(
