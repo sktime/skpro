@@ -81,7 +81,7 @@ class CrossValidationController(Controller):
         )
 
     def description(self):
-        return "CV({}, {})".format(self.data.name, self.loss_func.__name__)
+        return f"CV({self.data.name}, {self.loss_func.__name__})"
 
     def run(self, model):
         if self.tune:
