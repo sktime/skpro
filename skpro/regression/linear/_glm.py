@@ -1,4 +1,5 @@
 """Interface adapter for the Generalized Linear Model Regressor."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["ShreeshaM07", "julian-fong"]
@@ -324,6 +325,15 @@ class GLMRegressor(BaseProbaRegressor):
 
         # remove the offset and exposure columns which
         # was inserted to maintain the shape
+        family = self._family
+        link = self._link
+
+        # ensure numerical stability for Gamma by injecting an intercept
+        self._auto_added_constant = False
+        if family == "Gamma" and not self._add_constant:
+            self._add_constant = True
+            self._auto_added_constant = True
+
         offset_var = self._offset_var
         exposure_var = self._exposure_var
 
@@ -331,8 +341,6 @@ class GLMRegressor(BaseProbaRegressor):
 
         y_col = y.columns
 
-        family = self._family
-        link = self._link
         sm_family = self._str_to_sm_family(family=family, link=link)
 
         glm_estimator = GLM(
@@ -590,8 +598,7 @@ class GLMRegressor(BaseProbaRegressor):
             "family": "Poisson",
             "add_constant": True,
         }
-        # params4 = {"family": "Gamma"}
-        # removed due to sporadic failure #594
+        params4 = {"family": "Gamma"}
         params5 = {
             "family": "Normal",
             "link": "InversePower",
@@ -602,5 +609,4 @@ class GLMRegressor(BaseProbaRegressor):
             "add_constant": True,
         }
 
-        # return [params1, params2, params3, params4, params5, params6]
-        return [params1, params2, params3, params5, params6]
+        return [params1, params2, params3, params4, params5, params6]
