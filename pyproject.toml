@@ -55,7 +55,7 @@ all_extras = [
     "matplotlib>=3.3.2",
     "ngboost<0.6.0",
     "polars<1.36.0",
-    "pymc",
+    "pymc<3.14",
     "statsmodels>=0.12.1",
 ]
 
