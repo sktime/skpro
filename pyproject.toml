@@ -50,10 +50,10 @@ dependencies = [
 [project.optional-dependencies]
 all_extras = [
     "distfit",
-    "lifelines<0.31.0",
+    "lifelines<0.31.0; python_version < '3.14'",
     "mapie",
     "matplotlib>=3.3.2",
-    "ngboost<0.6.0",
+    "ngboost<0.6.0; python_version < '3.14'",
     "polars<1.36.0",
     "pymc<3.14",
     "statsmodels>=0.12.1",
