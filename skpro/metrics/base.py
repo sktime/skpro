@@ -78,7 +78,7 @@ class BaseProbaMetric(BaseObject):
         """
         return self.evaluate(y_true, y_pred, **kwargs)
 
-    def evaluate(self, y_true, y_pred, **kwargs):
+    def evaluate(self, y_true, y_pred, sample_weight=None, **kwargs):
         """Evaluate the metric on given inputs.
 
         Parameters
@@ -89,6 +89,10 @@ class BaseProbaMetric(BaseObject):
         y_pred : return object of probabilistic predictition method scitype:y_pred
             must have same index and columns as y_true
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
+
+        sample_weight : None or 1D array-like, default=None
+            Optional weights for instances. Passed through to evaluate_by_index /
+            _evaluate/_evaluate_by_index implementations.
 
         Returns
         -------
@@ -118,7 +122,9 @@ class BaseProbaMetric(BaseObject):
             )
 
         # pass to inner function
-        out = self._evaluate(y_true_inner, y_pred_inner, **kwargs)
+        out = self._evaluate(
+            y_true_inner, y_pred_inner, sample_weight=sample_weight, **kwargs
+        )
 
         if isinstance(multioutput, str):
             if self.score_average and multioutput == "uniform_average":
@@ -141,7 +147,7 @@ class BaseProbaMetric(BaseObject):
 
         return out
 
-    def _evaluate(self, y_true, y_pred, **kwargs):
+    def _evaluate(self, y_true, y_pred, sample_weight=None, **kwargs):
         """Evaluate the metric on given inputs.
 
         Private _evaluate, called by public evaluate.
@@ -161,7 +167,9 @@ class BaseProbaMetric(BaseObject):
         """
         # Default implementation relies on implementation of evaluate_by_index
         try:
-            index_df = self._evaluate_by_index(y_true, y_pred)
+            index_df = self._evaluate_by_index(
+                y_true, y_pred, sample_weight=sample_weight, **kwargs
+            )
             out_df = pd.DataFrame(index_df.mean(axis=0)).T
             out_df.columns = index_df.columns
             return out_df
@@ -172,7 +180,7 @@ class BaseProbaMetric(BaseObject):
             )
             raise RecursionError(msg) from _err
 
-    def evaluate_by_index(self, y_true, y_pred, **kwargs):
+    def evaluate_by_index(self, y_true, y_pred, sample_weight=None, **kwargs):
         """Evaluate the metric by instance index (row).
 
         Parameters
@@ -183,6 +191,9 @@ class BaseProbaMetric(BaseObject):
         y_pred : return object of probabilistic predictition method scitype:y_pred
             must have same index and columns as y_true
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
+
+        sample_weight : None or 1D array-like, default=None
+            Optional weights for instances. Passed through to _evaluate_by_index implementations.
 
         Returns
         -------
@@ -214,7 +225,9 @@ class BaseProbaMetric(BaseObject):
             )
 
         # pass to inner function
-        out = self._evaluate_by_index(y_true_inner, y_pred_inner, **kwargs)
+        out = self._evaluate_by_index(
+            y_true_inner, y_pred_inner, sample_weight=sample_weight, **kwargs
+        )
 
         if isinstance(multioutput, str):
             if self.score_average and multioutput == "uniform_average":
@@ -234,7 +247,7 @@ class BaseProbaMetric(BaseObject):
 
         return out
 
-    def _evaluate_by_index(self, y_true, y_pred, **kwargs):
+    def _evaluate_by_index(self, y_true, y_pred, sample_weight=None, **kwargs):
         """Evaluate the metric by instance index (row).
 
         Private _evaluate_by_index, called by public evaluate_by_index.
@@ -254,14 +267,28 @@ class BaseProbaMetric(BaseObject):
         n = y_true.shape[0]
         out_series = pd.Series(index=y_pred.index)
         try:
-            x_bar = self.evaluate(y_true, y_pred, self.multioutput, **kwargs)
+            x_bar = self.evaluate(y_true, y_pred, sample_weight=sample_weight, **kwargs)
+
             for i in range(n):
-                out_series[i] = n * x_bar - (n - 1) * self.evaluate(
-                    np.vstack((y_true[:i, :], y_true[i + 1 :, :])),  # noqa
-                    np.vstack((y_pred[:i, :], y_pred[i + 1 :, :])),  # noqa
-                    self.multioutput,
-                    **kwargs,
+                if isinstance(y_true, np.ndarray):
+                    y_true_loo = np.vstack((y_true[:i, :], y_true[i + 1 :, :]))  # noqa
+                    y_pred_loo = np.vstack((y_pred[:i, :], y_pred[i + 1 :, :]))  # noqa
+                else:
+                    y_true_loo = y_true.drop(y_true.index[i])
+                    y_pred_loo = y_pred.drop(y_pred.index[i])
+
+                if sample_weight is None:
+                    sw_loo = None
+                else:
+                    sw_arr = np.asarray(sample_weight)
+                    sw_loo = np.concatenate([sw_arr[:i], sw_arr[i + 1 :]])
+
+                loo_val = self.evaluate(
+                    y_true_loo, y_pred_loo, sample_weight=sw_loo, **kwargs
                 )
+
+                out_series.iloc[i] = n * x_bar - (n - 1) * loo_val
+
             return out_series
         except RecursionError:
             raise RecursionError(
