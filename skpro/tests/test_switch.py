@@ -191,7 +191,7 @@ def _run_test_for_class(
     """
     from skbase.utils.dependencies import _check_estimator_deps
 
-    from skpro.utils.git_diff import get_packages_with_changed_specs, is_class_changed
+    from skbase.utils.git_diff import get_packages_with_changed_specs, is_class_changed
 
     PACKAGE_REQ_CHANGED = get_packages_with_changed_specs()
 
@@ -332,7 +332,7 @@ def run_test_module_changed(module):
         or if ``ONLY_CHANGED_MODULES`` is False
     """
     from skpro.tests._config import ONLY_CHANGED_MODULES
-    from skpro.utils.git_diff import is_module_changed
+    from skbase.utils.git_diff import is_module_changed
 
     # if ONLY_CHANGED_MODULES is off: always True
     # tests are always run if soft dependencies are present
