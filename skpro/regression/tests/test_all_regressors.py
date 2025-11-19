@@ -210,8 +210,8 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
     # pyGAM adapter specific tests
     def test_pygam_adapter_distributions(self, object_instance):
         """Test pyGAM adapter with different distributions."""
-        from skpro.tests.test_switch import run_test_for_class
         from skpro.regression.adapters.pygam import PyGAMAdapter
+        from skpro.tests.test_switch import run_test_for_class
 
         # only run for PyGAMAdapter instances
         if not isinstance(object_instance, PyGAMAdapter):
@@ -237,7 +237,12 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
 
         # make sure it detected the distribution
         assert hasattr(adapter, "_actual_distribution")
-        assert adapter._actual_distribution in ["normal", "poisson", "gamma", "inverse_gaussian"]
+        assert adapter._actual_distribution in [
+            "normal",
+            "poisson",
+            "gamma",
+            "inverse_gaussian",
+        ]
 
         # make sure predictions work
         y_pred = adapter.predict(X_test)

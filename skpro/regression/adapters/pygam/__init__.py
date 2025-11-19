@@ -4,4 +4,3 @@
 from skpro.regression.adapters.pygam._pygam_proba import PyGAMAdapter
 
 __all__ = ["PyGAMAdapter"]
-

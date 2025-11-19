@@ -32,7 +32,8 @@ class PyGAMAdapter(BaseProbaRegressor):
         - 'poisson': Poisson distribution
         - 'gamma': Gamma distribution
         - 'inv_gauss' or 'inverse_gaussian': Inverse Gaussian distribution
-        If estimator is provided, this parameter is ignored (uses estimator's distribution).
+        If estimator is provided, this parameter is ignored
+        (uses estimator's distribution).
     link : str, optional (default='identity')
         Link function for the GAM model. Common options include:
         - 'identity': identity link (for normal distribution)
@@ -76,7 +77,9 @@ class PyGAMAdapter(BaseProbaRegressor):
         "python_dependencies": "pygam",
     }
 
-    def __init__(self, estimator=None, distribution="normal", link="identity", **gam_params):
+    def __init__(
+        self, estimator=None, distribution="normal", link="identity", **gam_params
+    ):
         self.estimator = estimator
         self.distribution = distribution
         self.link = link
@@ -129,7 +132,8 @@ class PyGAMAdapter(BaseProbaRegressor):
             "inv_gauss": "inverse_gaussian",
             "inverse_gaussian": "inverse_gaussian",
             "inv_gaussian": "inverse_gaussian",
-            "binomial": "binomial",  # not really used for regression but keeping for completeness
+            # not really used for regression but keeping for completeness
+            "binomial": "binomial",
         }
 
         # default to normal if we can't figure it out
@@ -281,7 +285,9 @@ class PyGAMAdapter(BaseProbaRegressor):
                     pass
 
             # make sure we have valid std values (no NaN/inf nonsense)
-            if y_pred_std is None or (hasattr(y_pred_std, '__len__') and len(y_pred_std) == 0):
+            if y_pred_std is None or (
+                hasattr(y_pred_std, "__len__") and len(y_pred_std) == 0
+            ):
                 # default to a small positive value if we don't have std
                 y_pred_std = np.full((len(index), len(columns)), 0.1)
             else:
@@ -316,9 +322,7 @@ class PyGAMAdapter(BaseProbaRegressor):
             # if we have std, we can estimate the scale parameter
             if y_pred_std is None:
                 # fallback to a default scale
-                y_pred_scale = pd.DataFrame(
-                    0.1, index=index, columns=columns
-                ).values
+                y_pred_scale = pd.DataFrame(0.1, index=index, columns=columns).values
             else:
                 # approximate scale from variance
                 y_pred_scale = (y_pred_std**2) / y_pred_mean
@@ -339,7 +343,8 @@ class PyGAMAdapter(BaseProbaRegressor):
             )
 
         elif dist_name == "inverse_gaussian":
-            # inverse gaussian isn't in skpro yet, so just use normal as an approximation
+            # inverse gaussian isn't in skpro yet,
+            # so just use normal as an approximation
             from skpro.distributions.normal import Normal
 
             if y_pred_std is None:
@@ -408,4 +413,3 @@ class PyGAMAdapter(BaseProbaRegressor):
         param3 = {"estimator": GAM(distribution="normal", link="identity")}
 
         return [param1, param2, param3]
-
