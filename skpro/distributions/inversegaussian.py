@@ -69,3 +69,19 @@ class InverseGaussian(_ScipyAdapter):
         scipy_mu = mu / scale
 
         return [scipy_mu], {"scale": scipy_scale}
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator."""
+        # array case examples
+        params1 = {"mu": [2, 3.5], "scale": [[1, 1], [2, 3], [4, 5]]}
+        params2 = {
+            "mu": 2.5,
+            "scale": 1.5,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
+        }
+        # scalar case examples
+        params3 = {"mu": 3.0, "scale": 2.0}
+
+        return [params1, params2, params3]
