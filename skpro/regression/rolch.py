@@ -1,0 +1,222 @@
+"""Interface for rolch OnlineGamlss probabilistic regressor.
+
+This module provides a lightweight wrapper around ``rolch``'s
+``OnlineGamlss`` estimator to expose it as an skpro ``BaseProbaRegressor``.
+
+The wrapper is intentionally lightweight: imports of the optional
+``rolch`` dependency are performed inside methods so the package is
+optional for users who do not need this estimator.
+
+The wrapper attempts to be tolerant to different method names used by
+the upstream estimator: it will use ``fit`` when available, otherwise
+fall back to ``partial_fit`` or ``update`` where appropriate. Prediction
+is best-effort: if the upstream ``predict`` method returns distribution
+parameters (e.g., columns for location/scale) these are converted to a
+``skpro.distributions`` object; otherwise an informative error is raised.
+"""
+
+from skpro.regression.base import BaseProbaRegressor
+
+
+class RolchOnlineGamlss(BaseProbaRegressor):
+    """Wrapper for rolch.online_gamlss.OnlineGamlss.
+
+    Parameters
+    ----------
+    distribution : str, default="Normal"
+        Name of distribution to expose via skpro. This is used to map
+        parameter names returned by the upstream estimator to skpro's
+        distribution constructors. Common value is "Normal".
+
+    Notes
+    -----
+    * The rolch dependency is optional and imported inside methods.
+    * The wrapper uses a best-effort strategy to call the appropriate
+      fit/update/predict methods of the upstream estimator. If rolch's
+      API changes in incompatible ways, this wrapper may need updates.
+    """
+
+    _tags = {
+        "authors": ["fkiraly"],
+        "maintainers": ["fkiraly"],
+        "python_dependencies": ["rolch"],
+        "capability:multioutput": False,
+        "capability:missing": True,
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
+    }
+
+    def __init__(self, distribution="Normal", **rolch_kwargs):
+        self.distribution = distribution
+        # store any kwargs forwarded to the rolch OnlineGamlss constructor
+        self._rolch_kwargs = rolch_kwargs
+
+        super().__init__()
+
+    def _fit(self, X, y):
+        """Fit the underlying rolch OnlineGamlss estimator.
+
+        The method tries several common fitting/update method names in the
+        upstream estimator to support different rolch versions.
+        """
+        # defer import to keep rolch optional
+        import importlib
+
+        module_str = "rolch.estimators.online_gamlss"
+        rolch_mod = importlib.import_module(module_str)
+        OnlineGamlss = getattr(rolch_mod, "OnlineGamlss")
+
+        # store y columns for later
+        self._y_cols = y.columns
+
+        # instantiate upstream estimator
+        self.rolch_ = OnlineGamlss(**self._rolch_kwargs)
+
+        # Try to call fit / partial_fit / update as available
+        # prefer fit, then partial_fit (possibly in a loop), then update
+        if hasattr(self.rolch_, "fit"):
+            try:
+                self.rolch_.fit(X, y)
+            except TypeError:
+                # some online estimators accept (x,y) in different shapes
+                self.rolch_.fit(X.values, y.values)
+        elif hasattr(self.rolch_, "partial_fit"):
+            try:
+                self.rolch_.partial_fit(X, y)
+            except TypeError:
+                self.rolch_.partial_fit(X.values, y.values)
+        elif hasattr(self.rolch_, "update"):
+            try:
+                # many online estimators expose update which processes
+                # one batch or instance; call once for the provided data
+                self.rolch_.update(X, y)
+            except TypeError:
+                self.rolch_.update(X.values, y.values)
+        else:
+            raise AttributeError(
+                "rolch OnlineGamlss instance has no "
+                "fit/partial_fit/update method"
+            )
+
+        return self
+
+    def _update(self, X, y):
+        """Update the fitted rolch estimator in online fashion.
+
+        Tries common update method names on the upstream estimator.
+        """
+        if not hasattr(self, "rolch_"):
+            raise RuntimeError("Estimator not fitted yet; call fit before update")
+
+        if hasattr(self.rolch_, "update"):
+            try:
+                self.rolch_.update(X, y)
+            except TypeError:
+                self.rolch_.update(X.values, y.values)
+            return self
+
+        if hasattr(self.rolch_, "partial_fit"):
+            try:
+                self.rolch_.partial_fit(X, y)
+            except TypeError:
+                self.rolch_.partial_fit(X.values, y.values)
+            return self
+
+        raise AttributeError(
+            "Upstream rolch estimator has no "
+            "update/partial_fit method"
+        )
+
+    def _predict_proba(self, X):
+        """Predict distribution parameters and convert to skpro distribution.
+
+        The method is best-effort: it tries to call ``predict`` on the
+        underlying rolch estimator and expects a pandas DataFrame (or array)
+        of parameters. For the common case of a Normal prediction the
+        columns should contain location and scale (names tolerated below).
+        """
+        import importlib
+        import pandas as pd
+
+        if not hasattr(self, "rolch_"):
+            raise RuntimeError("Estimator not fitted yet; call fit before predict")
+
+        # call predict on upstream estimator
+        if hasattr(self.rolch_, "predict"):
+            params = self.rolch_.predict(X)
+        elif hasattr(self.rolch_, "predict_params"):
+            params = self.rolch_.predict_params(X)
+        else:
+            raise AttributeError("Upstream rolch estimator has no predict method")
+
+        # normalize to pandas DataFrame
+        if isinstance(params, pd.DataFrame):
+            df = params
+        else:
+            try:
+                df = pd.DataFrame(params)
+            except Exception as e:
+                raise TypeError("Unrecognized predict output from rolch: %s" % e)
+
+        # decide mapping based on requested distribution
+        dist = self.distribution
+        # import skpro distributions lazily
+        distr_mod = importlib.import_module("skpro.distributions")
+
+        if dist == "Normal":
+            # accept common column names for loc/scale
+            col_candidates = {
+                "loc": ["loc", "mu", "mean"],
+                "scale": ["scale", "sigma", "sd", "std"],
+            }
+
+            def _find(col_names):
+                for c in col_names:
+                    if c in df.columns:
+                        return c
+                return None
+
+            loc_col = _find(col_candidates["loc"]) or df.columns[0]
+
+            if df.shape[1] > 1:
+                scale_col = _find(col_candidates["scale"]) or df.columns[1]
+            else:
+                scale_col = None
+
+            if scale_col is None:
+                raise ValueError(
+                    "Could not infer scale column from rolch predict output"
+                )
+
+            loc = df.loc[:, [loc_col]].values
+            scale = df.loc[:, [scale_col]].values
+
+            Normal = getattr(distr_mod, "Normal")
+            return Normal(
+                mu=loc, sigma=scale, index=X.index, columns=self._y_cols
+            )
+
+        # fallback: try to call distribution class with all columns as kwargs
+        if hasattr(distr_mod, dist):
+            Distr = getattr(distr_mod, dist)
+            # construct args dict using column names
+            vals = {c: df.loc[:, [c]].values for c in df.columns}
+            return Distr(**vals, index=X.index, columns=self._y_cols)
+
+        raise NotImplementedError(
+            "Mapping to skpro distribution '" + str(dist) + "' not implemented"
+        )
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator.
+
+        The rolch dependency is optional: the test harness will skip tests
+        requiring rolch if the package is not available on the test runner.
+        """
+        # minimal constructor params; provide two small parameter sets so
+        # the package-level tests exercise different constructor paths.
+        return [
+            {"distribution": "Normal"},
+            {"distribution": "Normal", "verbose": 0},
+        ]

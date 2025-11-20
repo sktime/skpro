@@ -106,6 +106,14 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
 
     MapieRegressor
 
+.. currentmodule:: skpro.regression.rolch
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    RolchOnlineGamlss
+
 .. currentmodule:: skpro.regression.ensemble
 
 .. autosummary::
