@@ -52,7 +52,7 @@ class GAMRegressor(BaseProbaRegressor):
 
     _tags = {
         "authors": ["Omswastik-11"],
-        "maintainers": ["Omswastik-11"],
+        "maintainers": ["fkiraly"],
         "python_dependencies": ["pygam"],
         "capability:multioutput": False,
         "capability:missing": True,
@@ -165,10 +165,8 @@ class GAMRegressor(BaseProbaRegressor):
         if mu.ndim == 1:
             mu = mu.reshape(-1, 1)
 
-        # Get the distribution name
         dist_name = self.distribution
         if not isinstance(dist_name, str):
-            # If distribution is an object, try to get its name
             if hasattr(dist_name, "name"):
                 dist_name = dist_name.name
             else:
