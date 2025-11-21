@@ -187,6 +187,13 @@ class GAMRegressor(BaseProbaRegressor):
             "poisson": "poisson",
             "gamma": "gamma",
             "binomial": "binomial",
+            "inv_gauss": "inv_gauss",
+            "inverse_gaussian": "inv_gauss",
+            "normaldist": "normal",
+            "poissondist": "poisson",
+            "gammadist": "gamma",
+            "binomialdist": "binomial",
+            "invgaussdist": "inv_gauss",
         }
         dist_name = dist_map.get(dist_name, "normal")
 
