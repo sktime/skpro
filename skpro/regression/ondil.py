@@ -18,7 +18,7 @@ parameters (e.g., columns for location/scale) these are converted to a
 from skpro.regression.base import BaseProbaRegressor
 
 
-class RolchOnlineGamlss(BaseProbaRegressor):
+class OndilOnlineGamlss(BaseProbaRegressor):
     """Wrapper for ondil.online_gamlss.OnlineGamlss.
 
     Parameters
@@ -47,18 +47,18 @@ class RolchOnlineGamlss(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, distribution="Normal", **rolch_kwargs):
+    def __init__(self, distribution="Normal", **ondil_kwargs):
         self.distribution = distribution
         # store any kwargs forwarded to the ondil OnlineGamlss constructor
-        self._rolch_kwargs = rolch_kwargs
+        self._ondil_kwargs = ondil_kwargs
 
         super().__init__()
 
     def _fit(self, X, y):
-        """Fit the underlying rolch OnlineGamlss estimator.
+        """Fit the underlying ondil OnlineGamlss estimator.
 
         The method tries several common fitting/update method names in the
-        upstream estimator to support different rolch versions.
+        upstream estimator to support different ondil versions.
         """
         # defer import to keep ondil optional
         import importlib
@@ -71,28 +71,28 @@ class RolchOnlineGamlss(BaseProbaRegressor):
         self._y_cols = y.columns
 
         # instantiate upstream estimator
-        self.rolch_ = OnlineGamlss(**self._rolch_kwargs)
+        self._ondil = OnlineGamlss(**self._ondil_kwargs)
 
         # Try to call fit / partial_fit / update as available
         # prefer fit, then partial_fit (possibly in a loop), then update
-        if hasattr(self.rolch_, "fit"):
+        if hasattr(self._ondil, "fit"):
             try:
-                self.rolch_.fit(X, y)
+                self._ondil.fit(X, y)
             except TypeError:
                 # some online estimators accept (x,y) in different shapes
-                self.rolch_.fit(X.values, y.values)
-        elif hasattr(self.rolch_, "partial_fit"):
+                self._ondil.fit(X.values, y.values)
+        elif hasattr(self._ondil, "partial_fit"):
             try:
-                self.rolch_.partial_fit(X, y)
+                self._ondil.partial_fit(X, y)
             except TypeError:
-                self.rolch_.partial_fit(X.values, y.values)
-        elif hasattr(self.rolch_, "update"):
+                self._ondil.partial_fit(X.values, y.values)
+        elif hasattr(self._ondil, "update"):
             try:
                 # many online estimators expose update which processes
                 # one batch or instance; call once for the provided data
-                self.rolch_.update(X, y)
+                self._ondil.update(X, y)
             except TypeError:
-                self.rolch_.update(X.values, y.values)
+                self._ondil.update(X.values, y.values)
         else:
             raise AttributeError(
                 "ondil OnlineGamlss instance has no " "fit/partial_fit/update method"
@@ -105,21 +105,21 @@ class RolchOnlineGamlss(BaseProbaRegressor):
 
         Tries common update method names on the upstream estimator.
         """
-        if not hasattr(self, "rolch_"):
+        if not hasattr(self, "_ondil"):
             raise RuntimeError("Estimator not fitted yet; call fit before update")
 
-        if hasattr(self.rolch_, "update"):
+        if hasattr(self._ondil, "update"):
             try:
-                self.rolch_.update(X, y)
+                self._ondil.update(X, y)
             except TypeError:
-                self.rolch_.update(X.values, y.values)
+                self._ondil.update(X.values, y.values)
             return self
 
-        if hasattr(self.rolch_, "partial_fit"):
+        if hasattr(self._ondil, "partial_fit"):
             try:
-                self.rolch_.partial_fit(X, y)
+                self._ondil.partial_fit(X, y)
             except TypeError:
-                self.rolch_.partial_fit(X.values, y.values)
+                self._ondil.partial_fit(X.values, y.values)
             return self
 
         raise AttributeError(
@@ -137,14 +137,14 @@ class RolchOnlineGamlss(BaseProbaRegressor):
         import importlib
         import pandas as pd
 
-        if not hasattr(self, "rolch_"):
+        if not hasattr(self, "_ondil"):
             raise RuntimeError("Estimator not fitted yet; call fit before predict")
 
         # call predict on upstream estimator
-        if hasattr(self.rolch_, "predict"):
-            params = self.rolch_.predict(X)
-        elif hasattr(self.rolch_, "predict_params"):
-            params = self.rolch_.predict_params(X)
+        if hasattr(self._ondil, "predict"):
+            params = self._ondil.predict(X)
+        elif hasattr(self._ondil, "predict_params"):
+            params = self._ondil.predict_params(X)
         else:
             raise AttributeError("Upstream ondil estimator has no predict method")
 
@@ -208,8 +208,8 @@ class RolchOnlineGamlss(BaseProbaRegressor):
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator.
 
-        The rolch dependency is optional: the test harness will skip tests
-        requiring rolch if the package is not available on the test runner.
+        The ondil dependency is optional: the test harness will skip tests
+        requiring ondil if the package is not available on the test runner.
         """
         # minimal constructor params; provide two small parameter sets so
         # the package-level tests exercise different constructor paths.
