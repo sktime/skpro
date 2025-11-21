@@ -10,7 +10,7 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
 class InverseGaussian(_ScipyAdapter):
-    r"""Inverse Gaussian distribution.
+    r"""Inverse Gaussian distribution, aka Wald distribution.
 
     Most methods wrap ``scipy.stats.invgauss``.
 
