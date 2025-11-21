@@ -65,7 +65,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
 
         module_str = "ondil.estimators.online_gamlss"
         ondil_mod = importlib.import_module(module_str)
-        OnlineGamlss = getattr(ondil_mod, "OnlineGamlss")
+        OnlineGamlss = ondil_mod.OnlineGamlss
 
         # store y columns for later
         self._y_cols = y.columns
@@ -190,7 +190,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
             loc = df.loc[:, [loc_col]].values
             scale = df.loc[:, [scale_col]].values
 
-            Normal = getattr(distr_mod, "Normal")
+            Normal = distr_mod.Normal
             return Normal(mu=loc, sigma=scale, index=X.index, columns=self._y_cols)
 
         # fallback: try to call distribution class with all columns as kwargs
