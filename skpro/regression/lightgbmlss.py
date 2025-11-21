@@ -352,4 +352,3 @@ class LightGBMLSS(BaseProbaRegressor):
         params6 = {"n_trials": 0, "max_minutes": 1}
         params7 = {"dist": "Beta", "max_minutes": 1}
         return [params0, params1, params2, params3, params4, params5, params6, params7]
-
