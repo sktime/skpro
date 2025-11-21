@@ -95,8 +95,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
                 self.rolch_.update(X.values, y.values)
         else:
             raise AttributeError(
-                "ondil OnlineGamlss instance has no "
-                "fit/partial_fit/update method"
+                "ondil OnlineGamlss instance has no " "fit/partial_fit/update method"
             )
 
         return self
@@ -124,8 +123,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
             return self
 
         raise AttributeError(
-            "Upstream ondil estimator has no "
-            "update/partial_fit method"
+            "Upstream ondil estimator has no " "update/partial_fit method"
         )
 
     def _predict_proba(self, X):
@@ -193,9 +191,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
             scale = df.loc[:, [scale_col]].values
 
             Normal = getattr(distr_mod, "Normal")
-            return Normal(
-                mu=loc, sigma=scale, index=X.index, columns=self._y_cols
-            )
+            return Normal(mu=loc, sigma=scale, index=X.index, columns=self._y_cols)
 
         # fallback: try to call distribution class with all columns as kwargs
         if hasattr(distr_mod, dist):
