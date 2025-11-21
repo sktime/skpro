@@ -3,21 +3,21 @@ import pandas as pd
 import numpy as np
 
 try:
-    import rolch  # noqa: F401
+    import ondil  # noqa: F401
 except Exception:
-    rolch = None
+    ondil = None
 
 from skpro.regression.rolch import RolchOnlineGamlss
 
 
-if rolch is None:
-    pytest.skip("rolch not installed", allow_module_level=True)
+if ondil is None:
+    pytest.skip("ondil not installed", allow_module_level=True)
 
 
 def test_rolch_instantiation_and_get_test_params():
     """Basic smoke test for the Rolch wrapper.
 
-    The test is skipped if the optional dependency ``rolch`` is not
+    The test is skipped if the optional dependency ``ondil`` is not
     installed. It verifies that ``get_test_params`` returns at least one
     parameter set and that the estimator can be instantiated with it.
     """

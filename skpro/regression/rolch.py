@@ -1,10 +1,10 @@
-"""Interface for rolch OnlineGamlss probabilistic regressor.
+"""Interface for ondil OnlineGamlss probabilistic regressor.
 
-This module provides a lightweight wrapper around ``rolch``'s
+This module provides a lightweight wrapper around ``ondil``'s
 ``OnlineGamlss`` estimator to expose it as an skpro ``BaseProbaRegressor``.
 
 The wrapper is intentionally lightweight: imports of the optional
-``rolch`` dependency are performed inside methods so the package is
+``ondil`` dependency are performed inside methods so the package is
 optional for users who do not need this estimator.
 
 The wrapper attempts to be tolerant to different method names used by
@@ -19,7 +19,7 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class RolchOnlineGamlss(BaseProbaRegressor):
-    """Wrapper for rolch.online_gamlss.OnlineGamlss.
+    """Wrapper for ondil.online_gamlss.OnlineGamlss.
 
     Parameters
     ----------
@@ -30,25 +30,26 @@ class RolchOnlineGamlss(BaseProbaRegressor):
 
     Notes
     -----
-    * The rolch dependency is optional and imported inside methods.
-    * The wrapper uses a best-effort strategy to call the appropriate
-      fit/update/predict methods of the upstream estimator. If rolch's
-      API changes in incompatible ways, this wrapper may need updates.
+        * The ondil dependency is optional and imported inside methods.
+        * The wrapper uses a best-effort strategy to call the appropriate
+            fit/update/predict methods of the upstream estimator. If ondil's
+            API changes in incompatible ways, this wrapper may need updates.
     """
 
     _tags = {
-        "authors": ["fkiraly"],
+        "authors": ["arnavk23"],
         "maintainers": ["fkiraly"],
-        "python_dependencies": ["rolch"],
+        "python_dependencies": ["ondil"],
         "capability:multioutput": False,
         "capability:missing": True,
+        "capability:update": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
     def __init__(self, distribution="Normal", **rolch_kwargs):
         self.distribution = distribution
-        # store any kwargs forwarded to the rolch OnlineGamlss constructor
+        # store any kwargs forwarded to the ondil OnlineGamlss constructor
         self._rolch_kwargs = rolch_kwargs
 
         super().__init__()
@@ -59,12 +60,12 @@ class RolchOnlineGamlss(BaseProbaRegressor):
         The method tries several common fitting/update method names in the
         upstream estimator to support different rolch versions.
         """
-        # defer import to keep rolch optional
+        # defer import to keep ondil optional
         import importlib
 
-        module_str = "rolch.estimators.online_gamlss"
-        rolch_mod = importlib.import_module(module_str)
-        OnlineGamlss = getattr(rolch_mod, "OnlineGamlss")
+        module_str = "ondil.estimators.online_gamlss"
+        ondil_mod = importlib.import_module(module_str)
+        OnlineGamlss = getattr(ondil_mod, "OnlineGamlss")
 
         # store y columns for later
         self._y_cols = y.columns
@@ -94,14 +95,14 @@ class RolchOnlineGamlss(BaseProbaRegressor):
                 self.rolch_.update(X.values, y.values)
         else:
             raise AttributeError(
-                "rolch OnlineGamlss instance has no "
+                "ondil OnlineGamlss instance has no "
                 "fit/partial_fit/update method"
             )
 
         return self
 
     def _update(self, X, y):
-        """Update the fitted rolch estimator in online fashion.
+        """Update the fitted ondil estimator in online fashion.
 
         Tries common update method names on the upstream estimator.
         """
@@ -123,7 +124,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
             return self
 
         raise AttributeError(
-            "Upstream rolch estimator has no "
+            "Upstream ondil estimator has no "
             "update/partial_fit method"
         )
 
@@ -131,7 +132,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
         """Predict distribution parameters and convert to skpro distribution.
 
         The method is best-effort: it tries to call ``predict`` on the
-        underlying rolch estimator and expects a pandas DataFrame (or array)
+        underlying ondil estimator and expects a pandas DataFrame (or array)
         of parameters. For the common case of a Normal prediction the
         columns should contain location and scale (names tolerated below).
         """
@@ -147,7 +148,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
         elif hasattr(self.rolch_, "predict_params"):
             params = self.rolch_.predict_params(X)
         else:
-            raise AttributeError("Upstream rolch estimator has no predict method")
+            raise AttributeError("Upstream ondil estimator has no predict method")
 
         # normalize to pandas DataFrame
         if isinstance(params, pd.DataFrame):
@@ -156,7 +157,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
             try:
                 df = pd.DataFrame(params)
             except Exception as e:
-                raise TypeError("Unrecognized predict output from rolch: %s" % e)
+                raise TypeError("Unrecognized predict output from ondil: %s" % e)
 
         # decide mapping based on requested distribution
         dist = self.distribution
@@ -185,7 +186,7 @@ class RolchOnlineGamlss(BaseProbaRegressor):
 
             if scale_col is None:
                 raise ValueError(
-                    "Could not infer scale column from rolch predict output"
+                    "Could not infer scale column from ondil predict output"
                 )
 
             loc = df.loc[:, [loc_col]].values
