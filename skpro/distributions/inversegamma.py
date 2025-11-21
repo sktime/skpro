@@ -25,9 +25,9 @@ class InverseGamma(_ScipyAdapter):
     Parameters
     ----------
     alpha : float or array of float (1D or 2D)
-        It represents the shape parameter.
+        The shape parameter.
     beta : float or array of float (1D or 2D)
-        It represents the scale parameter.
+        The scale parameter.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
