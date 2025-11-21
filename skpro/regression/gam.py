@@ -6,12 +6,12 @@ __author__ = ["Omswastik-11"]
 import numpy as np
 import pandas as pd
 
-from skpro.regression.base import BaseProbaRegressor
-from skpro.distributions.normal import Normal
-from skpro.distributions.poisson import Poisson
-from skpro.distributions.gamma import Gamma
 # from skpro.distributions.inversegaussian import InverseGaussian
 from skpro.distributions.binomial import Binomial
+from skpro.distributions.gamma import Gamma
+from skpro.distributions.normal import Normal
+from skpro.distributions.poisson import Poisson
+from skpro.regression.base import BaseProbaRegressor
 
 
 class GAMRegressor(BaseProbaRegressor):
@@ -40,9 +40,6 @@ class GAMRegressor(BaseProbaRegressor):
         added to the decision function.
     verbose : bool, optional (default=False)
         whether to show pyGAM warnings.
-    **kwargs : dict
-        Additional arguments passed to the distribution constructor.
-        For example, `levels` for 'binomial' distribution.
 
     Attributes
     ----------
@@ -56,6 +53,7 @@ class GAMRegressor(BaseProbaRegressor):
         "python_dependencies": ["pygam"],
         "capability:multioutput": False,
         "capability:missing": True,
+        "capability:update": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
     }
@@ -70,7 +68,6 @@ class GAMRegressor(BaseProbaRegressor):
         callbacks=None,
         fit_intercept=True,
         verbose=False,
-        **kwargs,
     ):
         self.terms = terms
         self.distribution = distribution
@@ -80,7 +77,6 @@ class GAMRegressor(BaseProbaRegressor):
         self.callbacks = callbacks
         self.fit_intercept = fit_intercept
         self.verbose = verbose
-        self.kwargs = kwargs
 
         super().__init__()
 
@@ -120,7 +116,6 @@ class GAMRegressor(BaseProbaRegressor):
             callbacks=callbacks,
             fit_intercept=self.fit_intercept,
             verbose=self.verbose,
-            **self.kwargs,
         )
 
         self.estimator_.fit(X_np, y_np)
@@ -142,8 +137,22 @@ class GAMRegressor(BaseProbaRegressor):
         """
         X_np = X.values
         y_pred_np = self.estimator_.predict(X_np)
-        
+
         return pd.DataFrame(y_pred_np, index=X.index, columns=self._y_cols)
+
+    def _get_distribution_name(self, dist):
+        """Extract distribution name from pyGAM estimator."""
+        if dist is None:
+            return "normal"
+        if isinstance(dist, str):
+            return dist.lower()
+        if hasattr(dist, "name"):
+            return dist.name
+        if hasattr(dist, "__name__"):
+            return dist.__name__
+        if hasattr(dist, "__class__"):
+            return dist.__class__.__name__.lower()
+        return str(dist).lower()
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
@@ -160,28 +169,39 @@ class GAMRegressor(BaseProbaRegressor):
         """
         X_np = X.values
         mu = self.estimator_.predict_mu(X_np)
-        
+
         # Ensure mu is 2D if it's 1D, to match (n_samples, n_outputs)
         if mu.ndim == 1:
             mu = mu.reshape(-1, 1)
 
-        dist_name = self.distribution
-        if not isinstance(dist_name, str):
-            if hasattr(dist_name, "name"):
-                dist_name = dist_name.name
-            else:
-                # Fallback or error? 
-                # Assuming standard pygam distributions if object is passed
-                # But we need to map it to skpro distribution
-                raise ValueError("Custom distribution objects not fully supported for predict_proba yet, please use string names.")
+        dist = getattr(self.estimator_, "distribution", None)
+        if dist is None:
+            dist = getattr(self.estimator_, "_distribution", None)
+
+        dist_name = self._get_distribution_name(dist)
+
+        # Map common names
+        dist_map = {
+            "normal": "normal",
+            "gaussian": "normal",
+            "poisson": "poisson",
+            "gamma": "gamma",
+            "binomial": "binomial",
+        }
+        dist_name = dist_map.get(dist_name, "normal")
 
         # Get scale from statistics if available, else from estimator.distribution
-        if hasattr(self.estimator_, "statistics_") and "scale" in self.estimator_.statistics_:
+        if (
+            hasattr(self.estimator_, "statistics_")
+            and "scale" in self.estimator_.statistics_
+        ):
             scale = self.estimator_.statistics_["scale"]
-        elif hasattr(self.estimator_, "distribution") and hasattr(self.estimator_.distribution, "scale"):
+        elif hasattr(self.estimator_, "distribution") and hasattr(
+            self.estimator_.distribution, "scale"
+        ):
             scale = self.estimator_.distribution.scale
         else:
-            scale = 1.0 # Default fallback
+            scale = 1.0  # Default fallback
 
         index = X.index
         columns = self._y_cols
@@ -202,11 +222,9 @@ class GAMRegressor(BaseProbaRegressor):
             # Parameters: n (levels), p.
             # mu = n * p => p = mu / n.
             levels = 1
-            if "levels" in self.kwargs:
-                levels = self.kwargs["levels"]
-            elif hasattr(self.estimator_.distribution, "levels"):
+            if hasattr(self.estimator_.distribution, "levels"):
                 levels = self.estimator_.distribution.levels
-            
+
             p = mu / levels
             # Clip p to [0, 1] to avoid numerical issues
             p = np.clip(p, 0, 1)
@@ -221,16 +239,10 @@ class GAMRegressor(BaseProbaRegressor):
             beta = 1.0 / (scale * mu)
             return Gamma(alpha=alpha, beta=beta, index=index, columns=columns)
 
-        
-        # elif dist_name == "inv_gauss":
-        #     # Inverse Gaussian distribution
-        #     # pygam scale is dispersion phi = 1/lambda
-        #     # lambda = 1/phi
-        #     lambda_param = 1.0 / scale
-        #     return InverseGaussian(mu=mu, scale=lambda_param, index=index, columns=columns)
-
         else:
-            raise ValueError(f"Unsupported distribution: {dist_name}")
+            # Fallback to Normal
+            sigma = np.sqrt(scale)
+            return Normal(mu=mu, sigma=sigma, index=index, columns=columns)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -239,7 +251,5 @@ class GAMRegressor(BaseProbaRegressor):
             {"distribution": "normal", "terms": "auto"},
             {"distribution": "poisson", "terms": "auto"},
             {"distribution": "gamma", "terms": "auto"},
-            {"distribution": "binomial", "terms": "auto"},
-            # {"distribution": "inv_gauss", "terms": "auto"},
         ]
         return params
