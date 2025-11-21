@@ -17,10 +17,13 @@ class InverseGaussian(_ScipyAdapter):
     The Inverse Gaussian distribution is parameterized by mean :math:`\mu` and
     shape parameter :math:`\lambda` (scale), such that the pdf is
 
-    .. math:: f(x) = \sqrt{\frac{\lambda}{2\pi x^3}} \exp\left(-\frac{\lambda(x-\mu)^2}{2\mu^2 x}\right)
+    .. math:: f(x) = \sqrt{\frac{\lambda}{2\pi x^3}}
+              \exp\left(-\frac{\lambda(x-\mu)^2}{2\mu^2 x}\right)
 
-    Note: This parameterization corresponds to `numpy.random.wald(mean=mu, scale=lambda)`.
-    In `scipy.stats.invgauss(mu_scipy, scale=scale_scipy)`, the parameters are related as:
+    Note: This parameterization corresponds to
+    `numpy.random.wald(mean=mu, scale=lambda)`.
+    In `scipy.stats.invgauss(mu_scipy, scale=scale_scipy)`, the parameters are
+    related as:
     `scale_scipy = lambda`
     `mu_scipy = mu / lambda`
 
@@ -57,14 +60,14 @@ class InverseGaussian(_ScipyAdapter):
     def _get_scipy_object(self) -> rv_continuous:
         return invgauss
 
-    def _get_scipy_param(self) -> dict:
+    def _get_scipy_param(self):
         mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
 
         # Mapping to scipy parameters
         # scipy_scale = scale (lambda)
         # scipy_mu = mu / scale
-        
+
         scipy_scale = scale
         scipy_mu = mu / scale
 
