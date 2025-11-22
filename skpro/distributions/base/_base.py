@@ -344,6 +344,13 @@ class BaseDistribution(BaseObject):
         """
         if val is None:
             return None
+
+        if isinstance(val, BaseDistribution):
+            if coerce_scalar:
+                return val.iat[rowidx, colidx]
+            else:
+                return val.iloc[rowidx, colidx]
+
         arr = np.array(val)
         # if len(arr.shape) == 0:
         # do nothing with arr
