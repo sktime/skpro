@@ -145,8 +145,6 @@ Distributional boosting
 
     XGBoostLSS
 
------------------------
-
 .. currentmodule:: skpro.regression.lightgbmlss
 
 .. autosummary::
