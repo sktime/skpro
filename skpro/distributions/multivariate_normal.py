@@ -111,9 +111,10 @@ class MultivariateNormal(_ScipyAdapter):
         return out
 
     def _ppf(self, p):
-        """Inverse transform for multivariate normal via
-        marginal normal ppf + linear transform.
-
+        """Inverse transform for multivariate normal.
+        
+        Parameters
+        ----------
         p : 2D np.ndarray same shape as self (n_rows, n_cols)
             or scalar/array broadcastable
 
