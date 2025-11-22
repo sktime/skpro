@@ -19,5 +19,4 @@ EXCLUDE_ESTIMATORS = [
 
 EXCLUDED_TESTS = {
     "GLMRegressor": ["test_online_update"],  # see 497
-    "PyGAMAdapter": ["test_online_update"],  # pyGAM does not support online update
 }
