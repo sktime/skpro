@@ -168,26 +168,13 @@ class GlumRegressor(BaseProbaRegressor):
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
-        """Return testing parameter settings for the estimator.
-
-        Parameters
-        ----------
-        parameter_set : str, default="default"
-            Name of the set of test parameters to return, for use in tests. If no
-            special parameters are defined for a value, will return `"default"` set.
-
-        Returns
-        -------
-        params : dict or list of dict, default = {}
-            Parameters to create testing instances of the class
-            Each dict are parameters to construct an "interesting" test instance, i.e.,
-            ``MyClass(**params)`` or ``MyClass(**params[i])`` creates a valid
-            test instance.
-            ``create_test_instance`` uses the first (or only) dictionary in ``params``
-        """
+        """Return testing parameter settings for the estimator."""
         params1 = {"family": "normal"}
         params2 = {"family": "gamma", "link": "log"}
-        return [params1, params2]
+        params3 = {"family": "poisson"}
+        params4 = {"family": "negative.binomial"}
+        params5 = {"family": "normal", "alpha": 0.1, "l1_ratio": 0.5}
+        return [params1, params2, params3, params4, params5]
 
     def _fit(self, X, y):
         """Fit the model.
