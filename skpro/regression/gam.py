@@ -1,7 +1,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Generalized Additive Models (GAM) Regressor."""
 
-__author__ = ["Omswastik-11"]
+__author__ = ["Omswastik-11", "dswah"]
 
 import numpy as np
 import pandas as pd
@@ -48,7 +48,7 @@ class GAMRegressor(BaseProbaRegressor):
     """
 
     _tags = {
-        "authors": ["Omswastik-11"],
+        "authors": ["Omswastik-11", "dswah"],
         "maintainers": ["fkiraly"],
         "python_dependencies": ["pygam"],
         "capability:multioutput": False,

@@ -91,28 +91,37 @@ def test_gam_gamma_distribution():
 def test_gam_binomial_distribution():
     """Test GAM regressor with Binomial distribution."""
     import warnings
-    
+
     from skpro.distributions.binomial import Binomial
-    
+
     np.random.seed(42)
-    
+
     # Generate synthetic data with proportions
-    X = pd.DataFrame({
-        "x1": np.linspace(0, 10, 100),
-        "x2": np.random.randn(100),
-    })
-    
+    X = pd.DataFrame(
+        {
+            "x1": np.linspace(0, 10, 100),
+            "x2": np.random.randn(100),
+        }
+    )
+
     # Generate binomial proportions (values in [0, 1])
     p_true = 1 / (1 + np.exp(-(-2 + 0.3 * X["x1"] + 0.2 * X["x2"])))
-    y = pd.DataFrame({"y": np.clip(p_true + np.random.normal(0, 0.05, 100), 0.01, 0.99)})
-    
+    y = pd.DataFrame(
+        {"y": np.clip(p_true + np.random.normal(0, 0.05, 100), 0.01, 0.99)}
+    )
+
     from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=0
+    )
 
     # Suppress pygam's RuntimeWarning for McFadden R² calculation
     with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*invalid value encountered.*")
-        
+        warnings.filterwarnings(
+            "ignore", category=RuntimeWarning, message=".*invalid value encountered.*"
+        )
+
         reg = GAMRegressor(distribution="binomial", link="logit", terms="auto")
         reg.fit(X_train, y_train)
         y_pred = reg.predict(X_test)
@@ -155,11 +164,12 @@ def test_gam_with_custom_terms():
 )
 def test_gam_predict_proba_returns_distribution():
     """Test that predict_proba returns proper distribution objects."""
+    from sklearn.datasets import load_diabetes
+    from sklearn.model_selection import train_test_split
+
     from skpro.distributions.gamma import Gamma
     from skpro.distributions.normal import Normal
     from skpro.distributions.poisson import Poisson
-    from sklearn.datasets import load_diabetes
-    from sklearn.model_selection import train_test_split
 
     X, y = load_diabetes(return_X_y=True, as_frame=True)
     y = pd.DataFrame(y)
@@ -178,7 +188,7 @@ def test_gam_predict_proba_returns_distribution():
     y_train_pos, y_test_pos = train_test_split(y_pos, random_state=0, test_size=0.25)
     X_train_pos = X_train
     X_test_pos = X_test
-    
+
     reg_poisson = GAMRegressor(distribution="poisson", link="log")
     reg_poisson.fit(X_train_pos, y_train_pos)
     y_proba_poisson = reg_poisson.predict_proba(X_test_pos)
