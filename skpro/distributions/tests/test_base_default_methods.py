@@ -316,3 +316,28 @@ def test_composite_distribution_iloc_iat():
     assert scalar.distribution.mean() == 4
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_subset_param_with_none_indices():
+    """Test _subset_param with None indices (no subsetting)."""
+    from skpro.distributions import Normal
+
+    inner_dist = Normal(
+        mu=[[1, 2], [3, 4]],
+        sigma=1,
+        index=pd.Index([0, 1]),
+        columns=pd.Index(["a", "b"]),
+    )
+
+    composite = _CompositeDistributionTester(distribution=inner_dist)
+    result = composite._subset_param(
+        inner_dist, rowidx=None, colidx=None, coerce_scalar=False
+    )
+
+    assert isinstance(result, BaseDistribution)
+    assert result.shape == inner_dist.shape
+    np.testing.assert_array_equal(result.mean().values, inner_dist.mean().values)
+
+
