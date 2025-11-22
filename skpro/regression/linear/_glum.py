@@ -6,7 +6,17 @@ __author__ = ["Omswastik-11"]
 
 import numpy as np
 import pandas as pd
-from glum import GeneralizedLinearRegressor
+from skbase.utils.dependencies import _check_soft_dependencies
+
+if _check_soft_dependencies("glum", severity="none"):
+    from glum import GeneralizedLinearRegressor
+else:
+
+    class GeneralizedLinearRegressor:
+        """Dummy class for when glum is not installed."""
+
+        pass
+
 
 from skpro.distributions.gamma import Gamma
 from skpro.distributions.negative_binomial import NegativeBinomial
