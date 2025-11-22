@@ -7,6 +7,7 @@ Testing works via TestAllDistributions which discovers the classes in
 here, executes the public methods in interface conformance tests,
 which in turn triggers the fallback defaults.
 """
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
@@ -341,3 +342,45 @@ def test_subset_param_with_none_indices():
     np.testing.assert_array_equal(result.mean().values, inner_dist.mean().values)
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_subset_param_backward_compatibility():
+    """Test that _subset_param still works correctly with array-like parameters."""
+    from skpro.distributions import Normal
+
+    dist = Normal(mu=[[1, 2], [3, 4]], sigma=1)
+    mu_array = np.array([[1, 2], [3, 4]])
+    subset_mu = dist._subset_param(
+        mu_array, rowidx=[0], colidx=None, coerce_scalar=False
+    )
+
+    assert isinstance(subset_mu, np.ndarray)
+    np.testing.assert_array_equal(subset_mu, np.array([[1, 2]]))
+
+    scalar_mu = dist._subset_param(mu_array, rowidx=0, colidx=0, coerce_scalar=True)
+
+    assert isinstance(scalar_mu, (np.ndarray, float, int))
+    assert scalar_mu == 1
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_composite_distribution_with_scalar_inner():
+    """Test composite distribution with scalar inner distribution."""
+    from skpro.distributions import Normal
+
+    inner_dist = Normal(mu=5, sigma=2)
+    composite = _CompositeDistributionTester(distribution=inner_dist, scalar_param=3)
+
+    assert composite.ndim == 0
+    assert composite.distribution.ndim == 0
+
+    scalar_result = composite.iat[0, 0]
+
+    assert isinstance(scalar_result, _CompositeDistributionTester)
+    assert scalar_result.ndim == 0
+    assert scalar_result.distribution.mean() == 5
