@@ -17,39 +17,80 @@ from skpro.regression.base import BaseProbaRegressor
 class GAMRegressor(BaseProbaRegressor):
     """Generalized Additive Model (GAM) Regressor.
 
-    Wraps the `pygam` library.
+    Wraps the ``pygam`` library to provide probabilistic predictions using
+    Generalized Additive Models with various distribution families.
 
     Parameters
     ----------
     terms : expression specifying terms to model, optional (default='auto')
         By default a univariate spline term will be allocated for each feature.
-    distribution : str or pygam.Distribution, optional (default='normal')
-        Distribution to use in the model.
-        Supported strings: 'normal', 'binomial', 'poisson', 'gamma'.
+        Can be a ``pygam`` terms expression for custom model specification.
+    distribution : str or pygam.Distribution, optional (default='Normal')
+        Distribution family to use in the model.
+        Supported strings (case-insensitive):
+
+        * ``'Normal'`` or ``'Gaussian'`` - Normal/Gaussian distribution
+        * ``'Poisson'`` - Poisson distribution for count data
+        * ``'Gamma'`` - Gamma distribution for positive continuous data
+        * ``'Binomial'`` - Binomial distribution for binary/proportion data
+
+        Alternatively, can pass a ``pygam.Distribution`` object directly.
     link : str or pygam.Link, optional (default='identity')
-        Link function to use in the model.
+        Link function to use in the model. Common options:
+
+        * ``'identity'`` - for Normal distribution
+        * ``'log'`` - for Poisson, Gamma distributions
+        * ``'logit'`` - for Binomial distribution
+        * ``'inverse'`` - for Gamma distribution
+
+        Alternatively, can pass a ``pygam.Link`` object directly.
     max_iter : int, optional (default=100)
         Maximum number of iterations allowed for the solver to converge.
     tol : float, optional (default=1e-4)
         Tolerance for stopping criteria.
     callbacks : list of str or list of CallBack objects, optional
         Names of callback objects to call during the optimization loop.
-        Default is ['deviance', 'diffs'].
+        Default is ``['deviance', 'diffs']``.
     fit_intercept : bool, optional (default=True)
         Specifies if a constant (a.k.a. bias or intercept) should be
         added to the decision function.
     verbose : bool, optional (default=False)
-        whether to show pyGAM warnings.
+        Whether to show pyGAM warnings.
 
     Attributes
     ----------
     estimator_ : pygam.GAM
         The fitted pygam estimator.
+
+    Examples
+    --------
+    >>> from skpro.regression.gam import GAMRegressor
+    >>> from sklearn.datasets import make_regression
+    >>> import pandas as pd
+    >>>
+    >>> X, y = make_regression(n_samples=100, n_features=3, random_state=42)
+    >>> X = pd.DataFrame(X, columns=['f1', 'f2', 'f3'])
+    >>> y = pd.DataFrame(y, columns=['target'])
+    >>>
+    >>> # Normal distribution (default)
+    >>> gam_normal = GAMRegressor(distribution='Normal')
+    >>> gam_normal.fit(X, y)  # doctest: +SKIP
+    GAMRegressor(...)
+    >>>
+    >>> # Poisson distribution for count data
+    >>> gam_poisson = GAMRegressor(distribution='Poisson', link='log')
+    >>> gam_poisson.fit(X, y)  # doctest: +SKIP
+    GAMRegressor(...)
+    >>>
+    >>> # Gamma distribution for positive continuous data
+    >>> gam_gamma = GAMRegressor(distribution='Gamma', link='log')
+    >>> gam_gamma.fit(X, y)  # doctest: +SKIP
+    GAMRegressor(...)
     """
 
     _tags = {
         "authors": ["Omswastik-11", "dswah"],
-        "maintainers": ["fkiraly"],
+        "maintainers": ["fkiraly", "Omswastik-11", "dswah"],
         "python_dependencies": ["pygam"],
         "capability:multioutput": False,
         "capability:missing": True,
@@ -180,20 +221,17 @@ class GAMRegressor(BaseProbaRegressor):
 
         dist_name = self._get_distribution_name(dist)
 
-        # Map common names
+        # Map common names to skpro distribution names
         dist_map = {
             "normal": "normal",
             "gaussian": "normal",
             "poisson": "poisson",
             "gamma": "gamma",
             "binomial": "binomial",
-            "inv_gauss": "inv_gauss",
-            "inverse_gaussian": "inv_gauss",
             "normaldist": "normal",
             "poissondist": "poisson",
             "gammadist": "gamma",
             "binomialdist": "binomial",
-            "invgaussdist": "inv_gauss",
         }
         dist_name = dist_map.get(dist_name, "normal")
 
@@ -254,9 +292,22 @@ class GAMRegressor(BaseProbaRegressor):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        from skbase.utils.dependencies import _check_soft_dependencies
+
+        # if pygam isn't installed, return a marker so tests know to skip
+        if not _check_soft_dependencies("pygam", severity="none"):
+            return {"distribution": "runtests-no-pygam"}
         params = [
             {"distribution": "normal", "terms": "auto"},
-            {"distribution": "poisson", "terms": "auto"},
-            {"distribution": "gamma", "terms": "auto"},
+            {"distribution": "poisson", "terms": "auto", "link": "log"},
+            {"distribution": "gamma", "terms": "auto", "link": "log"},
+            {
+                "distribution": "normal",
+                "terms": "auto",
+                "max_iter": 50,
+                "fit_intercept": False,
+            },
+            {"distribution": "poisson", "link": "identity", "max_iter": 50},
+            {"distribution": "gamma", "link": "inverse", "tol": 1e-3},
         ]
         return params
