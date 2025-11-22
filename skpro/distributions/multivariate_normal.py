@@ -10,7 +10,7 @@ from scipy.stats import multivariate_normal, norm
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 class MultivariateNormal(_ScipyAdapter):
-    r"""Multivariate Normal distribution.
+    """Multivariate Normal distribution.
 
     Parameters
     ----------
@@ -36,6 +36,7 @@ class MultivariateNormal(_ScipyAdapter):
 
     >>> distr = MultivariateNormal(mean=[0, 0], cov=[[1, 0], [0, 1]])
     """
+
     _tags = {
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
@@ -117,7 +118,6 @@ class MultivariateNormal(_ScipyAdapter):
         -------
         2D np.ndarray same shape as self
         """
-
         p = np.asarray(p)
 
         if self.ndim == 0:
