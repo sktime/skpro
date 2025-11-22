@@ -10,7 +10,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Pareto(BaseDistribution):
-    r"""Pareto distribution (skpro native).
+    r"""Pareto distribution.
 
     The scale is represented by the parameter ``scale``,
     and the Pareto index (or shape parameter) :math:`\alpha`

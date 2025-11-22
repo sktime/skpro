@@ -10,7 +10,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class IID(BaseDistribution):
-    r"""An i.i.d. sample of a given distribution.
+    r"""An iid sample of a given distribution.
 
     Constructed with a scalar or row distribution.
 
