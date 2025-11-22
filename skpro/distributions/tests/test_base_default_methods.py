@@ -188,3 +188,37 @@ def test_base_default_minimal_cdf():
     """Test default cdf method."""
     minimal_n = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
+
+
+class _CompositeDistributionTester(BaseDistribution):
+    """Composite distribution for testing _subset_param with distribution parameters."""
+
+    _tags = {
+        "capabilities:approx": [],
+        "capabilities:exact": ["mean"],
+        "distr:measuretype": "continuous",
+        "distr:paramtype": "composite",
+        "broadcast_init": "on",
+    }
+
+    def __init__(self, distribution, scalar_param=1.0, index=None, columns=None):
+        """Initialize composite distribution.
+
+        Parameters
+        ----------
+        distribution : BaseDistribution
+            Inner distribution parameter.
+        scalar_param : float, default=1.0
+            A scalar parameter for testing.
+        index : pd.Index, optional
+            Index for the distribution.
+        columns : pd.Index, optional
+            Columns for the distribution.
+        """
+        self.distribution = distribution
+        self.scalar_param = scalar_param
+
+        super().__init__(
+            index=index if index is not None else distribution.index,
+            columns=columns if columns is not None else distribution.columns,
+        )
