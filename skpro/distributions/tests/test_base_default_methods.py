@@ -276,3 +276,43 @@ def test_subset_param_with_distribution_object():
     assert subset_iat.mean() == 1
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_composite_distribution_iloc_iat():
+    """Test that composite distributions work with default iloc/iat."""
+    from skpro.distributions import Normal
+
+    inner_dist = Normal(
+        mu=[[1, 2], [3, 4], [5, 6]],
+        sigma=1,
+        index=pd.Index([0, 1, 2]),
+        columns=pd.Index(["x", "y"]),
+    )
+
+    composite = _CompositeDistributionTester(distribution=inner_dist, scalar_param=10)
+    subset = composite.iloc[[0, 1], :]
+
+    assert isinstance(subset, _CompositeDistributionTester)
+    assert subset.shape == (2, 2)
+    assert subset.scalar_param == 10  # Scalar param should be preserved
+    assert subset.distribution.shape == (2, 2)
+
+    expected_means = np.array([[1, 2], [3, 4]])
+    np.testing.assert_array_almost_equal(
+        subset.distribution.mean().values, expected_means
+    )
+    subset_col = composite.iloc[:, [0]]
+
+    assert subset_col.shape == (3, 1)
+    assert subset_col.distribution.shape == (3, 1)
+
+    scalar = composite.iat[1, 1]
+
+    assert isinstance(scalar, _CompositeDistributionTester)
+    assert scalar.ndim == 0
+    assert scalar.distribution.ndim == 0
+    assert scalar.distribution.mean() == 4
+
+
