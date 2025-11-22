@@ -18,7 +18,7 @@ from skpro.regression.base import BaseProbaRegressor
 class GlumRegressor(BaseProbaRegressor):
     """Fits a generalized linear model using the glum package.
 
-    Direct interface to ``glum.GeneralizedLinearRegressor``.
+    Direct interface to glum.GeneralizedLinearRegressor.
 
     Parameters
     ----------
