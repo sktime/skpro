@@ -74,7 +74,6 @@ class _StatMixedMLMixin(BaseProbaRegressor):
         early_stopping_rounds=20,
         max_minutes=10,
         n_trials=30,
-        **kwargs,
     ):
         self.dist = dist
         self.stabilization = stabilization
@@ -88,7 +87,7 @@ class _StatMixedMLMixin(BaseProbaRegressor):
         self.n_trials = n_trials
 
         # let concrete class tags be applied
-        super().__init__(**kwargs)
+        super().__init__()
 
         if n_cpu == "auto":
             import multiprocessing

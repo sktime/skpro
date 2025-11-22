@@ -26,9 +26,6 @@ class LightGBMLSS(_StatMixedMLMixin):
         "tests:vm": True,  # requires its own test VM to run
     }
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def _get_lgblss_distr(self, distr):
         """Get lightgbmlss distribution object from string.
 

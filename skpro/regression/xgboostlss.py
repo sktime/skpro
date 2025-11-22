@@ -28,9 +28,6 @@ class XGBoostLSS(_StatMixedMLMixin):
         "tests:vm": True,  # requires its own test VM to run
     }
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def _get_xgblss_distr(self, distr):
         """Get xgboostlss distribution object from string.
 
