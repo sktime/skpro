@@ -328,19 +328,23 @@ class BaseDistribution(BaseObject):
 
         Parameters
         ----------
-        val : scalar, 1D, 2D, array-like, or None
+        val : scalar, 1D, 2D, array-like, BaseDistribution, or None
             Distribution parameter that is to be subsetted.
+            If a BaseDistribution instance, its iloc or iat method is used.
+            If array-like, numpy array indexing is used.
         rowidx : None, numpy index/slice coercible, or int
             Rows to subset to. If None, no subsetting is done.
         colidx : None, numpy index/slice coercible, or int
             Columns to subset to. If None, no subsetting is done.
         coerce_scalar : bool, optional, default=False
             If True, and the subsetted parameter is a scalar, coerce it to a scalar.
+            For BaseDistribution parameters, this uses iat instead of iloc.
 
         Returns
         -------
-        scalar, 1D, 2D, array-like, or None
+        scalar, 1D, 2D, array-like, BaseDistribution, or None
             Subsetted distribution parameter.
+            For BaseDistribution parameters, returns the result of iloc or iat.
         """
         if val is None:
             return None
