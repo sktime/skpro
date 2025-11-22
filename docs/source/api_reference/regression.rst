@@ -106,6 +106,14 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
 
     MapieRegressor
 
+.. currentmodule:: skpro.regression.ondil
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    OndilOnlineGamlss
+
 .. currentmodule:: skpro.regression.ensemble
 
 .. autosummary::
