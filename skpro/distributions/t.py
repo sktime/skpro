@@ -11,7 +11,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class TDistribution(BaseDistribution):
-    """Student's t-distribution (skpro native).
+    """Student's t-distribution.
 
     Parameters
     ----------
