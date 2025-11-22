@@ -243,3 +243,36 @@ class _CompositeDistributionTester(BaseDistribution):
         return [params1, params2]
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_subset_param_with_distribution_object():
+    """Test that _subset_param handles BaseDistribution objects correctly."""
+    from skpro.distributions import Normal
+
+    inner_dist = Normal(
+        mu=[[1, 2, 3], [4, 5, 6]],
+        sigma=1,
+        index=pd.Index([0, 1]),
+        columns=pd.Index(["a", "b", "c"]),
+    )
+    composite = _CompositeDistributionTester(distribution=inner_dist)
+    subset_iloc = composite._subset_param(
+        inner_dist, rowidx=[0], colidx=None, coerce_scalar=False
+    )
+
+    assert isinstance(subset_iloc, BaseDistribution)
+    assert subset_iloc.shape == (1, 3)
+
+    expected_means = np.array([[1, 2, 3]])
+    np.testing.assert_array_almost_equal(subset_iloc.mean().values, expected_means)
+    subset_iat = composite._subset_param(
+        inner_dist, rowidx=0, colidx=0, coerce_scalar=True
+    )
+
+    assert isinstance(subset_iat, BaseDistribution)
+    assert subset_iat.ndim == 0
+    assert subset_iat.mean() == 1
+
+
