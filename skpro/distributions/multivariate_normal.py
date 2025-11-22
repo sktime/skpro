@@ -9,6 +9,7 @@ from scipy.stats import multivariate_normal, norm
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
+
 class MultivariateNormal(_ScipyAdapter):
     """Multivariate Normal distribution.
 
@@ -56,63 +57,65 @@ class MultivariateNormal(_ScipyAdapter):
 
     def _get_scipy_object(self):
         return multivariate_normal
-    
+
     def _get_scipy_param(self):
         mean = self._bc_params["mean"]
         cov = self._bc_params["cov"]
 
         return [], {"mean": mean, "cov": cov}
-    
+
     def _pdf(self, x):
-       """Joint pdf evaluated row-wise; broadcast scalar joint pdf across columns."""
-       mean = self._bc_params["mean"]
-       cov = self._bc_params["cov"]
-       x = np.asarray(x)
-       
-       # scalar distribution (0-d): pass through to scipy
-       if self.ndim == 0:
-        return multivariate_normal.pdf(x, mean=mean, cov=cov)
-       
-       n_row, n_col = self.shape
-       out = np.zeros((n_row, n_col), dtype=float)
-       
-       # handle broadcasted param shapes
-       mean_arr = np.asarray(mean)
-       cov_arr = np.asarray(cov)
-       for i in range(n_row):
+        """Joint pdf evaluated row-wise; broadcast scalar joint pdf across columns."""
+        mean = self._bc_params["mean"]
+        cov = self._bc_params["cov"]
+        x = np.asarray(x)
+
+        # scalar distribution (0-d): pass through to scipy
+        if self.ndim == 0:
+            return multivariate_normal.pdf(x, mean=mean, cov=cov)
+
+        n_row, n_col = self.shape
+        out = np.zeros((n_row, n_col), dtype=float)
+
+        # handle broadcasted param shapes
+        mean_arr = np.asarray(mean)
+        cov_arr = np.asarray(cov)
+        for i in range(n_row):
             xi = x[i] if x.ndim == 2 else x
             mi = mean_arr[i] if mean_arr.ndim == 2 else mean_arr
             ci = cov_arr[i] if cov_arr.ndim == 3 else cov_arr
             p = multivariate_normal.pdf(xi, mean=mi, cov=ci)
             out[i, :] = p
-       return out
-    
+        return out
+
     def _log_pdf(self, x):
-       """Row-wise joint log-pdf, broadcast across columns to match framework shape."""
-       mean = self._bc_params["mean"]
-       cov = self._bc_params["cov"]
-       x = np.asarray(x)
-       
-       if self.ndim == 0:
+        """Row-wise joint log-pdf, broadcast across columns to match framework shape."""
+        mean = self._bc_params["mean"]
+        cov = self._bc_params["cov"]
+        x = np.asarray(x)
+
+        if self.ndim == 0:
             return multivariate_normal.logpdf(x, mean=mean, cov=cov)
-       
-       n_row, n_col = self.shape
-       out = np.zeros((n_row, n_col), dtype=float)
-       
-       mean_arr = np.asarray(mean)
-       cov_arr = np.asarray(cov)
-       for i in range(n_row):
+
+        n_row, n_col = self.shape
+        out = np.zeros((n_row, n_col), dtype=float)
+
+        mean_arr = np.asarray(mean)
+        cov_arr = np.asarray(cov)
+        for i in range(n_row):
             xi = x[i] if x.ndim == 2 else x
             mi = mean_arr[i] if mean_arr.ndim == 2 else mean_arr
             ci = cov_arr[i] if cov_arr.ndim == 3 else cov_arr
             lp = multivariate_normal.logpdf(xi, mean=mi, cov=ci)
             out[i, :] = lp
-       return out
+        return out
 
     def _ppf(self, p):
-        """Inverse transform for multivariate normal via marginal normal ppf + linear transform.
+        """Inverse transform for multivariate normal via
+        marginal normal ppf + linear transform.
 
-        p : 2D np.ndarray same shape as self (n_rows, n_cols) or scalar/array broadcastable
+        p : 2D np.ndarray same shape as self (n_rows, n_cols)
+            or scalar/array broadcastable
 
         Returns
         -------
@@ -124,7 +127,7 @@ class MultivariateNormal(_ScipyAdapter):
             mu = self._bc_params["mean"]
             cov = self._bc_params["cov"]
             return norm.ppf(p, loc=float(mu), scale=float(np.sqrt(cov)))
-        
+
         n_row, n_col = self.shape
 
         if p.ndim == 0:
@@ -159,7 +162,7 @@ class MultivariateNormal(_ScipyAdapter):
             out[i, :] = xi
 
         return out
-    
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
