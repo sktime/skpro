@@ -222,3 +222,24 @@ class _CompositeDistributionTester(BaseDistribution):
             index=index if index is not None else distribution.index,
             columns=columns if columns is not None else distribution.columns,
         )
+
+    def _mean(self):
+        """Mean of the distribution - just delegates to inner distribution."""
+        return self.distribution.mean()
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings."""
+        from skpro.distributions import Normal
+
+        params1 = {
+            "distribution": Normal(mu=[[1, 2], [3, 4]], sigma=1),
+            "scalar_param": 2.0,
+        }
+        params2 = {
+            "distribution": Normal(mu=0, sigma=1),
+            "scalar_param": 1.0,
+        }
+        return [params1, params2]
+
+
