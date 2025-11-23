@@ -119,7 +119,7 @@ class GlumRegressor(BaseProbaRegressor):
 
     _tags = {
         "authors": ["Omswastik-11"],
-        "maintainers": ["fkiraly" , "Omswastik-11"],
+        "maintainers": ["fkiraly", "Omswastik-11"],
         "capability:missing": False,
         "python_dependencies": "glum",
     }
