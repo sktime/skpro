@@ -234,6 +234,8 @@ class GlumRegressor(BaseProbaRegressor):
 
         self.estimator_.fit(X, np.ravel(y))
 
+        self._y_cols = y.columns
+
         # Estimate dispersion
         mu = self.estimator_.predict(X)
         self.dispersion_ = self.estimator_.family_instance.dispersion(np.ravel(y), mu)
@@ -255,7 +257,7 @@ class GlumRegressor(BaseProbaRegressor):
         """
         y_pred = self.estimator_.predict(X)
         if isinstance(X, pd.DataFrame):
-            return pd.DataFrame(y_pred, index=X.index)
+            return pd.DataFrame(y_pred, index=X.index, columns=self._y_cols)
         return y_pred
 
     def _predict_var(self, X):
@@ -274,7 +276,7 @@ class GlumRegressor(BaseProbaRegressor):
         mu = self.estimator_.predict(X)
         var = self.estimator_.family_instance.variance(mu, dispersion=self.dispersion_)
         if isinstance(X, pd.DataFrame):
-            return pd.DataFrame(var, index=X.index)
+            return pd.DataFrame(var, index=X.index, columns=self._y_cols)
         return var
 
     def _predict_proba(self, X):
@@ -305,14 +307,14 @@ class GlumRegressor(BaseProbaRegressor):
             # Variance = dispersion * v(mu) = dispersion * 1 = dispersion
             # So sigma = sqrt(dispersion)
             sigma = np.sqrt(self.dispersion_)
-            return Normal(mu=mu, sigma=sigma, index=X.index, columns=None)
+            return Normal(mu=mu, sigma=sigma, index=X.index, columns=self._y_cols)
 
         elif "poisson" in family_str:
             # Poisson distribution
             # skpro Poisson takes mu.
             # If dispersion != 1, it's not standard Poisson.
             # But skpro Poisson is standard.
-            return Poisson(mu=mu, index=X.index, columns=None)
+            return Poisson(mu=mu, index=X.index, columns=self._y_cols)
 
         elif "gamma" in family_str:
             # Gamma distribution
@@ -322,7 +324,7 @@ class GlumRegressor(BaseProbaRegressor):
             # beta = 1 / (dispersion * mu)
             alpha = 1.0 / self.dispersion_
             beta = 1.0 / (self.dispersion_ * mu)
-            return Gamma(alpha=alpha, beta=beta, index=X.index, columns=None)
+            return Gamma(alpha=alpha, beta=beta, index=X.index, columns=self._y_cols)
 
         elif "negative.binomial" in family_str:
             # Negative Binomial
@@ -350,7 +352,7 @@ class GlumRegressor(BaseProbaRegressor):
                 mu=mu,
                 alpha=alpha,
                 index=X.index,
-                columns=None,
+                columns=self._y_cols,
             )
 
         else:
