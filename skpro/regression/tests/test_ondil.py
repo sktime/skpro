@@ -1,6 +1,6 @@
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 try:
     import ondil  # noqa: F401
@@ -8,7 +8,6 @@ except Exception:
     ondil = None
 
 from skpro.regression.ondil import OndilOnlineGamlss
-
 
 if ondil is None:
     pytest.skip("ondil not installed", allow_module_level=True)

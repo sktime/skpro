@@ -135,6 +135,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         columns should contain location and scale (names tolerated below).
         """
         import importlib
+
         import pandas as pd
 
         if not hasattr(self, "_ondil"):
