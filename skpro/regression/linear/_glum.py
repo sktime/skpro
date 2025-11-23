@@ -30,6 +30,9 @@ class GlumRegressor(BaseProbaRegressor):
 
     Direct interface to glum.GeneralizedLinearRegressor.
 
+    For more information, see:
+    https://glum.readthedocs.io/en/latest/index.html
+
     Parameters
     ----------
     family : str or ExponentialDispersionModel, default='normal'
@@ -105,11 +108,18 @@ class GlumRegressor(BaseProbaRegressor):
         If true, then robust standard errors are computed by default.
     expected_information : bool, default=False
         If true, then the expected information matrix is computed by default.
+
+    Attributes
+    ----------
+    estimator_ : GeneralizedLinearRegressor
+        The fitted glum GeneralizedLinearRegressor estimator.
+    dispersion_ : float
+        The estimated dispersion parameter.
     """
 
     _tags = {
         "authors": ["Omswastik-11"],
-        "maintainers": ["fkiraly"],
+        "maintainers": ["fkiraly" , "Omswastik-11"],
         "capability:missing": False,
         "python_dependencies": "glum",
     }
