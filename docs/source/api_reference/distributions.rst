@@ -81,6 +81,7 @@ Integer support
     Hurdle
     NegativeBinomial
     Poisson
+    ZeroInflated
 
 Non-parametric and empirical distributions
 ------------------------------------------
