@@ -236,14 +236,51 @@ class BaseDistribution(BaseObject):
             colidx = pd.Index([colidx])
 
         if rowidx is not None:
-            row_iloc = self.index.get_indexer_for(rowidx)
+            row_iloc = self._get_indexer_like_pandas(self.index, rowidx)
         else:
             row_iloc = None
         if colidx is not None:
-            col_iloc = self.columns.get_indexer_for(colidx)
+            col_iloc = self._get_indexer_like_pandas(self.columns, colidx)
         else:
             col_iloc = None
         return self._iloc(rowidx=row_iloc, colidx=col_iloc)
+
+    def _get_indexer_like_pandas(self, index, keys):
+        """Return indexer for keys in index.
+
+        A unified helper that mimics pandas' get_indexer_for but supports:
+
+        - scalar key (e.g., "a", ("a", 1))
+        - tuple key (partial or full)
+        - list of keys (partial or full)
+        - works for both Index and MultiIndex
+
+        Returns
+        -------
+        np.ndarray of positions (integers)
+        """
+        # regular index, not multiindex
+        if not isinstance(index, pd.MultiIndex):
+            return index.get_indexer_for(keys)
+
+        # if isinstance(index, pd.MultiIndex):
+
+        if is_scalar_notnone(keys) or isinstance(keys, tuple):
+            keys = [keys]
+
+        # Use get_locs for each key (full or partial)
+        ilocs = []
+        for key in keys:
+            if isinstance(key, slice):
+                ilocs.append(index.slice_indexer(key.start, key.stop, key.step))
+            else:
+                if not isinstance(key, tuple):
+                    key = [key]
+                iloc = index.get_locs(key)
+                if isinstance(iloc, slice):
+                    iloc = np.arange(len(index))[iloc]
+                ilocs.append(iloc)
+        return np.concatenate(ilocs) if ilocs else np.array([], dtype=int)
 
     def _at(self, rowidx=None, colidx=None):
         if rowidx is not None:
@@ -715,6 +752,18 @@ class BaseDistribution(BaseObject):
                 res = res.values
             return np.exp(res)
 
+        self_has_exact_cdf = "cdf" in self.get_tag("capabilities:exact")
+
+        if self_has_exact_cdf:
+            approx_method = (
+                "by numerically differentiating the output returned by the cdf method, "
+                "using sixth-degree central differences at an epsilon of 1e-7."
+            )
+            warn(self._method_error_msg("pdf", fill_in=approx_method))
+            x = self._coerce_to_self_index_df(x, flatten=False)
+            res = self._approx_derivative(x=x, fun=self.cdf)
+            return res
+
         raise NotImplementedError(self._method_error_msg("pdf", "error"))
 
     def log_pdf(self, x):
@@ -757,11 +806,23 @@ class BaseDistribution(BaseObject):
 
         Private method, to be implemented by subclasses.
         """
-        if self._has_implementation_of("pdf") or self._has_implementation_of("_pdf"):
+        self_has_pdf = self._has_implementation_of("pdf")
+        self_has_pdf = self_has_pdf or self._has_implementation_of("_pdf")
+
+        self_has_exact_cdf = "cdf" in self.get_tag("capabilities:exact")
+
+        if self_has_pdf or self_has_exact_cdf:
             approx_method = (
                 "by taking the logarithm of the output returned by the pdf method, "
                 "this may be numerically unstable"
             )
+            if not self_has_pdf:
+                approx_method = (
+                    "by numerically differentiating the cdf method, "
+                    "using sixth-degree central differences at an epsilon of 1e-7, "
+                    "and then taking logarithms, this may be numerically unstable"
+                )
+
             warn(self._method_error_msg("log_pdf", fill_in=approx_method))
 
             x = self._coerce_to_self_index_df(x, flatten=False)
@@ -771,6 +832,31 @@ class BaseDistribution(BaseObject):
             return np.log(res)
 
         raise NotImplementedError(self._method_error_msg("log_pdf", "error"))
+
+    @staticmethod
+    def _approx_derivative(x, fun, h=1e-7):
+        """Approximate the derivative of the log PDF using finite differences.
+
+        Uses sixth-degree central difference formula.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            The input data for which to compute the derivative.
+        fun : callable
+            The function for which to compute the derivative.
+        h : float
+            The finite difference step size.
+
+        Returns
+        -------
+        ``pandas.DataFrame`` or 2D ``np.ndarray``
+            The approximate derivative of the log PDF at the given points.
+        """
+        offsets = np.array([-3, -2, -1, 1, 2, 3]) * h
+        coeffs = np.array([-1, 9, -45, 45, -9, 1]) / 60.0
+        shifted_vals = [fun(x + offset) for offset in offsets]
+        return sum(c * v for c, v in zip(coeffs, shifted_vals))
 
     def pmf(self, x):
         r"""Probability mass function.
@@ -1713,6 +1799,13 @@ class _Indexer:
         ref = self.ref
         indexer = getattr(ref, self.method)
 
+        # handle special case of multiindex in loc with single tuple key
+        if isinstance(key, tuple) and not any(isinstance(k, tuple) for k in key):
+            if isinstance(ref.index, pd.MultiIndex) and self.method == "_loc":
+                if type(ref).__name__ != "Empirical":
+                    return indexer(rowidx=key, colidx=None)
+
+        # general case
         if isinstance(key, tuple):
             if not len(key) == 2:
                 raise ValueError(

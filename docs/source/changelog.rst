@@ -16,6 +16,58 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.10.0] - 2025-10-09
+=====================
+
+Python 3.14 compatibility, Python 3.9 end-of-life.
+
+Feature, bugfix, and maintenance release.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``skpro`` is now compatible with ``python 3.14``.
+* ``skpro`` no longer supports ``python 3.9``.
+* ``scikit-learn`` bounds have been updated to ``>=0.24.0,<1.8.0``.
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.14.0``.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] ``TransformedDistribution`` and ``TransformedTargetRegressor`` ``cdf`` support (:pr:`611`) :user:`fkiraly`, :user:`joshdunnlime`
+* [ENH] export all distributions in ``skpro.distributions``, minor fixes to API reference (:pr:`598`) :user:`fkiraly`
+* [ENH] Add Beta Distribution to ``XGBoostLSS`` (:pr:`599`) :user:`joshdunnlime`
+* [ENH] Allow ``n_trials=0`` for fast optimisation-free training of ``XGBoostLSS`` (:pr:`600`) :user:`joshdunnlime`
+* [ENH] extend ``BaggingRegressor`` to survival models (:pr:`319`) :user:`fkiraly`
+* [ENH] distributions approximate ``pdf`` and ``log_pdf`` via ``cdf`` numerical derivative if not implemented (:pr:`610`) :user:`fkiraly`
+* [ENH] ``pandas.Multiindex`` support for distributions (:pr:`580`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] python 3.14 compatibility and python 3.9 end-of-life (:pr:`618`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] improve docstring formatting for description of censoring variable ``C`` (:pr:`604`) :user:`fkiraly`
+* [DOC] minor docstring formatting in survival predictor extension template (:pr:`606`) :user:`fkiraly`
+* [DOC] minor documentation improvements (:pr:`609`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] fix approximate ``cdf`` for distributions without implementation (:pr:`613`) :user:`fkiraly`
+* [BUG] fix ``TransformedDistribution._iloc`` by passing ``inverse_transform`` (:pr:`614`) :user:`joshdunnlime`
+* [BUG] fixes to ``TransformedDistribution`` subsetting (:pr:`616`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`fkiraly`,
+:user:`joshdunnlime`
+
+
 [2.9.4] - 2025-09-18
 ====================
 

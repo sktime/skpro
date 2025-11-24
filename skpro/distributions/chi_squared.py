@@ -10,7 +10,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class ChiSquared(BaseDistribution):
-    """Chi-Squared distribution (skpro native).
+    """Chi-Squared distribution.
 
     Parameters
     ----------

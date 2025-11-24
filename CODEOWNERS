@@ -9,6 +9,6 @@
 # Algorithm maintainers are programmatically queryable
 # via Estimator.get_class_tag("maintainers").
 # Further lookup such as "which algorithms does M maintain"
-# can be carried out using registry.all_estimators
+# can be carried out using registry.all_objects
 
 * @benheid @felipeangelimvieira @fkiraly @fnhirwa @geetu040 @pranavvp16 @sairevanth25 @XinyuWuu
