@@ -1,5 +1,7 @@
 """Transformers for skpro."""
 
+import warnings
+
 import numpy as np
 import pandas as pd
 from sklearn.base import TransformerMixin, check_is_fitted, clone
@@ -8,13 +10,27 @@ from sklearn.pipeline import FunctionTransformer
 
 from skpro.base import BaseEstimator
 
-# Optional import for more advanced numerical differentiation
-try:
-    import numdifftools as nd
+# Optional import for scipy derivative
+HAS_SCIPY_DERIVATIVE = False
+scipy_derivative = None
+SCIPY_DERIVATIVE_NEW_API = False
 
-    HAS_NUMDIFFTOOLS = True
+try:
+    # Try scipy.differentiate first (scipy >= 1.14.0)
+    from scipy.differentiate import derivative as scipy_derivative
+
+    HAS_SCIPY_DERIVATIVE = True
+    SCIPY_DERIVATIVE_NEW_API = True
 except ImportError:
-    HAS_NUMDIFFTOOLS = False
+    try:
+        # Fall back to scipy.misc (scipy < 1.14.0)
+        # Note: scipy.misc.derivative is deprecated and removed in scipy 2.0.0
+        from scipy.misc import derivative as scipy_derivative
+
+        HAS_SCIPY_DERIVATIVE = True
+        SCIPY_DERIVATIVE_NEW_API = False
+    except (ImportError, AttributeError):
+        pass
 
 
 class BaseTransformer(BaseEstimator, TransformerMixin):
@@ -30,19 +46,6 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
         """
         self.transformer = transformer
         super().__init__()
-
-    def _fit_with_fitted_transformer(self, index=None, columns=None):
-        """Fit with already fitted transformer if possible."""
-        # Always initialize index and columns
-        self.index = index
-        self.columns = columns
-
-        try:
-            check_is_fitted(self.transformer)
-            self.transformer_ = self.transformer
-        except NotFittedError:
-            pass
-        return self
 
     def fit(self, X, y=None):
         """Fit transformer to y.
@@ -175,6 +178,19 @@ class BaseDifferentiableTransformer(BaseTransformer):
         self.inverse_func_diff = inverse_func_diff
         super().__init__(transformer=transformer)
 
+    def _fit_with_fitted_transformer(self, index=None, columns=None):
+        """Fit with already fitted transformer if possible."""
+        # Always initialize index and columns
+        self.index = index
+        self.columns = columns
+
+        try:
+            check_is_fitted(self.transformer)
+            self.transformer_ = self.transformer
+        except NotFittedError:
+            pass
+        return self
+
     def transform_diff(self, X):
         """Compute the derivative of the transform function at X.
 
@@ -218,7 +234,7 @@ class BaseDifferentiableTransformer(BaseTransformer):
 
         return diff
 
-    def _numerical_diff(self, func, X, delta=1e-6):
+    def _numerical_diff(self, func, X, delta=1e-8):
         """Apply numerical differentiation using central difference.
 
         Parameters
@@ -227,7 +243,7 @@ class BaseDifferentiableTransformer(BaseTransformer):
             Function to differentiate.
         X : array-like, shape (n_samples,) or (n_samples, 1)
             Input data.
-        delta : float, default=1e-6
+        delta : float, default=1e-8
             Step size for numerical differentiation.
 
         Returns
@@ -239,22 +255,39 @@ class BaseDifferentiableTransformer(BaseTransformer):
         original_shape = X.shape
         X_flat = X.flatten()
 
-        if HAS_NUMDIFFTOOLS:
-            # Use numdifftools for more accurate differentiation if available
-            def func_1d(x_val):
-                # Handle scalar input for numdifftools
-                if np.isscalar(x_val):
-                    x_val = np.array([[x_val]])
-                else:
-                    x_val = np.array(x_val).reshape(-1, 1)
-                return func(x_val).flatten()[0]
-
-            # Calculate derivative for each point
+        if HAS_SCIPY_DERIVATIVE and scipy_derivative is not None:
+            # Use scipy.derivative (from differentiate or misc module)
             diff = np.zeros_like(X_flat)
+
             for i, x_val in enumerate(X_flat):
-                derivative_func = nd.Derivative(func_1d, n=1, step=delta)
-                diff[i] = derivative_func(x_val)
+                # Wrapper function that scipy.derivative can work with
+                def func_1d(x):
+                    x_reshaped = np.array([[x]])
+                    result = func(x_reshaped).flatten()[0]
+                    return result
+
+                if SCIPY_DERIVATIVE_NEW_API:
+                    # New API (scipy >= 1.14.0): scipy.differentiate.derivative
+                    # Returns a result object with .df attribute
+                    result = scipy_derivative(
+                        func_1d, x_val, initial_step=delta, maxiter=1
+                    )
+
+                    diff[i] = result.df
+                else:
+                    # Old API (scipy < 1.14.0): scipy.misc.derivative
+                    # Returns the derivative directly, uses 'dx' parameter
+                    diff[i] = scipy_derivative(func_1d, x_val, dx=delta)
         else:
+            # Warn user that scipy is not available
+            warnings.warn(
+                "scipy.derivative is not available. Falling back to custom "
+                "central difference implementation. For better numerical "
+                "differentiation, install scipy >= 0.14.0.",
+                UserWarning,
+                stacklevel=2,
+            )
+
             # Use custom central difference implementation
             diff = np.zeros_like(X_flat)
 
