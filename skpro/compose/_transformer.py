@@ -262,15 +262,29 @@ class BaseDifferentiableTransformer(BaseTransformer):
             for i, x_val in enumerate(X_flat):
                 # Wrapper function that scipy.derivative can work with
                 def func_1d(x):
-                    x_reshaped = np.array([[x]])
-                    result = func(x_reshaped).flatten()[0]
-                    return result
+                    x = np.asarray(x)
+                    if x.ndim == 0:
+                        x_reshaped = np.array([[x.item()]])
+                        result = func(x_reshaped).flatten()[0]
+
+                        if SCIPY_DERIVATIVE_NEW_API:
+                            return np.array(result)
+                        else:
+                            return result
+                    else:
+                        x_reshaped = x.reshape(-1, 1)
+                        result = func(x_reshaped).flatten()
+                        return result.reshape(x.shape)
 
                 if SCIPY_DERIVATIVE_NEW_API:
                     # New API (scipy >= 1.14.0): scipy.differentiate.derivative
                     # Returns a result object with .df attribute
                     result = scipy_derivative(
-                        func_1d, x_val, initial_step=delta, maxiter=1
+                        func_1d,
+                        x_val,
+                        initial_step=delta,
+                        maxiter=10,
+                        preserve_shape=True,
                     )
 
                     diff[i] = result.df
