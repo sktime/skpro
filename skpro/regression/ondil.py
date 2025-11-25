@@ -73,29 +73,16 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         # instantiate upstream estimator
         self._ondil = OnlineGamlss(**self._ondil_kwargs)
 
-        # Try to call fit / partial_fit / update as available
-        # prefer fit, then partial_fit (possibly in a loop), then update
-        if hasattr(self._ondil, "fit"):
-            try:
-                self._ondil.fit(X, y)
-            except TypeError:
-                # some online estimators accept (x,y) in different shapes
-                self._ondil.fit(X.values, y.values)
-        elif hasattr(self._ondil, "partial_fit"):
-            try:
-                self._ondil.partial_fit(X, y)
-            except TypeError:
-                self._ondil.partial_fit(X.values, y.values)
-        elif hasattr(self._ondil, "update"):
-            try:
-                # many online estimators expose update which processes
-                # one batch or instance; call once for the provided data
-                self._ondil.update(X, y)
-            except TypeError:
-                self._ondil.update(X.values, y.values)
+        # Prefer `fit`, then `partial_fit`, then `update`.
+        for method_name in ("fit", "partial_fit", "update"):
+            if hasattr(self._ondil, method_name):
+                method = getattr(self._ondil, method_name)
+                # Call the upstream method with the provided X, y.
+                method(X, y)
+                break
         else:
             raise AttributeError(
-                "ondil OnlineGamlss instance has no " "fit/partial_fit/update method"
+                "ondil OnlineGamlss instance has no fit/partial_fit/update method"
             )
 
         return self
@@ -109,21 +96,15 @@ class OndilOnlineGamlss(BaseProbaRegressor):
             raise RuntimeError("Estimator not fitted yet; call fit before update")
 
         if hasattr(self._ondil, "update"):
-            try:
-                self._ondil.update(X, y)
-            except TypeError:
-                self._ondil.update(X.values, y.values)
+            self._ondil.update(X, y)
             return self
 
         if hasattr(self._ondil, "partial_fit"):
-            try:
-                self._ondil.partial_fit(X, y)
-            except TypeError:
-                self._ondil.partial_fit(X.values, y.values)
+            self._ondil.partial_fit(X, y)
             return self
 
         raise AttributeError(
-            "Upstream ondil estimator has no " "update/partial_fit method"
+            "Upstream ondil estimator has no update/partial_fit method"
         )
 
     def _predict_proba(self, X):

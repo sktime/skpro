@@ -58,6 +58,14 @@ Online learning
     OnlineRefitEveryN
     OnlineDontRefit
 
+.. currentmodule:: skpro.regression.ondil
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    OndilOnlineGamlss
+
 Reduction - adding ``predict_proba``
 ------------------------------------
 
@@ -112,7 +120,6 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
     :toctree: auto_generated/
     :template: class.rst
 
-    OndilOnlineGamlss
 
 .. currentmodule:: skpro.regression.ensemble
 
