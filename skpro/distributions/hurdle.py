@@ -13,18 +13,9 @@ from skpro.distributions.truncated import TruncatedDistribution
 def _set_to_constant_where_negative(const: float):
     def outer(fun: Callable):
         @functools.wraps(fun)
-        def inner(*args, **kwargs):
-            if len(args) >= 2:
-                x = args[1]
-            else:
-                x = kwargs.get("x", None)
+        def inner(self, x):
+            result = fun(self, x)
 
-            if x is None:
-                return fun(*args, **kwargs)
-
-            result = fun(*args, **kwargs)
-
-            # Ensure x is an array-like before comparison
             return np.where(np.asarray(x) < 0, const, result)
 
         return inner
