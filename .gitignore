@@ -42,3 +42,6 @@ docs/api/*
 docs/_build/*
 cover/*
 MANIFEST
+
+# Virtual environments
+.venv/

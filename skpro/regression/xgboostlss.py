@@ -115,6 +115,10 @@ class XGBoostLSS(BaseProbaRegressor):
         else:
             self._n_cpu = n_cpu
 
+        # If n_trials is not zero, optuna is required for hyperparameter optimization
+        if n_trials != 0:
+            self.set_tags(**{"python_dependencies": ["xgboostlss", "optuna"]})
+
     def _get_xgblss_distr(self, distr):
         """Get xgboostlss distribution object from string.
 
