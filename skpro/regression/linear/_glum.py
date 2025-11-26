@@ -121,7 +121,8 @@ class GlumRegressor(BaseProbaRegressor):
         "authors": ["Omswastik-11"],
         "maintainers": ["fkiraly", "Omswastik-11"],
         "capability:missing": False,
-        "python_dependencies": "glum",
+        "python_dependencies": "glum; python_version < '3.14'",
+        "tests:vm": True,
     }
 
     def __init__(
