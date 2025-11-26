@@ -157,6 +157,24 @@ class GAMRegressor(BaseProbaRegressor):
         if callbacks is None:
             callbacks = ["deviance", "diffs"]
 
+        dist_name = self._get_distribution_name(self.distribution)
+
+        # Map common names to skpro distribution names
+        dist_map = {
+            "normal": "normal",
+            "gaussian": "normal",
+            "poisson": "poisson",
+            "gamma": "gamma",
+            "binomial": "binomial",
+            "normaldist": "normal",
+            "poissondist": "poisson",
+            "gammadist": "gamma",
+            "binomialdist": "binomial",
+        }
+        dist_name = dist_map.get(dist_name, "normal")
+
+        self._dist_name = dist_name
+
         self.estimator_ = GAM(
             terms=self.terms,
             distribution=self.distribution,
@@ -224,26 +242,6 @@ class GAMRegressor(BaseProbaRegressor):
         if mu.ndim == 1:
             mu = mu.reshape(-1, 1)
 
-        dist = getattr(self.estimator_, "distribution", None)
-        if dist is None:
-            dist = getattr(self.estimator_, "_distribution", None)
-
-        dist_name = self._get_distribution_name(dist)
-
-        # Map common names to skpro distribution names
-        dist_map = {
-            "normal": "normal",
-            "gaussian": "normal",
-            "poisson": "poisson",
-            "gamma": "gamma",
-            "binomial": "binomial",
-            "normaldist": "normal",
-            "poissondist": "poisson",
-            "gammadist": "gamma",
-            "binomialdist": "binomial",
-        }
-        dist_name = dist_map.get(dist_name, "normal")
-
         # Get scale from statistics if available, else from estimator.distribution
         if (
             hasattr(self.estimator_, "statistics_")
@@ -259,6 +257,8 @@ class GAMRegressor(BaseProbaRegressor):
 
         index = X.index
         columns = self._y_cols
+
+        dist_name = self._dist_name
 
         if dist_name == "normal":
             # Normal distribution
