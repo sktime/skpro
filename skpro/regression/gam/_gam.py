@@ -1,5 +1,5 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-"""Generalized Additive Models (GAM) Regressor."""
+"""Generalized Additive Models (GAM) Regressor using pygam."""
 
 __author__ = ["Omswastik-11", "ravjot07"]
 
@@ -15,10 +15,14 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class GAMRegressor(BaseProbaRegressor):
-    """Generalized Additive Model (GAM) Regressor.
+    """Generalized Additive Model (GAM) Regressor using pygam.
 
     Wraps the ``pygam`` library to provide probabilistic predictions using
     Generalized Additive Models with various distribution families.
+
+    The ``distribution``
+    parameter determines which skpro distribution will be returned in
+    ``predict_proba``.
 
     Parameters
     ----------
