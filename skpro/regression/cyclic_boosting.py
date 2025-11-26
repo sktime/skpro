@@ -21,6 +21,10 @@ import pandas as pd
 
 from skpro.distributions.qpd import QPD_Johnson
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils._distribution_alias import (
+    DISTRIBUTION_NOT_GIVEN,
+    resolve_distribution_kwarg,
+)
 
 
 class CyclicBoosting(BaseProbaRegressor):
@@ -83,11 +87,17 @@ class CyclicBoosting(BaseProbaRegressor):
         be on a bounded interval, with support between ``lower`` and ``upper``.
     maximal_iterations : int, default=10
         maximum number of iterations for the cyclic boosting algorithm
-    dist_type: str, one of ``'normal'`` (default), ``'logistic'``
+    distribution : str, optional, default="normal"
         inner base distribution to use for the Johnson QPD, i.e., before
         arcosh and similar transformations.
         Available options are ``'normal'`` (default), ``'logistic'``,
         or ``'sinhlogistic'``.
+    dist_type : str, optional, default=None
+        Deprecated alias for ``distribution`` kept for backwards compatibility.
+    dist : str, optional, default=None
+        Alias matching the XGBoostLSS API.
+    distr_type : str, optional, default=None
+        Alias matching the ResidualDouble API.
 
     Attributes
     ----------
@@ -133,6 +143,38 @@ class CyclicBoosting(BaseProbaRegressor):
         "tests:vm": True,  # requires its own test VM to run
     }
 
+    @property
+    def distribution(self):
+        return getattr(self, "_distribution", None)
+
+    @distribution.setter
+    def distribution(self, value):
+        self._distribution = value
+
+    @property
+    def dist_type(self):
+        return self.distribution
+
+    @dist_type.setter
+    def dist_type(self, value):
+        self.distribution = value
+
+    @property
+    def dist(self):
+        return self.distribution
+
+    @dist.setter
+    def dist(self, value):
+        self.distribution = value
+
+    @property
+    def distr_type(self):
+        return self.distribution
+
+    @distr_type.setter
+    def distr_type(self, value):
+        self.distribution = value
+
     def __init__(
         self,
         feature_groups=None,
@@ -142,8 +184,12 @@ class CyclicBoosting(BaseProbaRegressor):
         lower=None,
         upper=None,
         maximal_iterations=10,
-        dist_type: Union[str, None] = "normal",
+        distribution=DISTRIBUTION_NOT_GIVEN,
         dist_shape: Union[float, None] = 0.0,
+        *,
+        dist_type: Union[str, None] = DISTRIBUTION_NOT_GIVEN,
+        dist=DISTRIBUTION_NOT_GIVEN,
+        distr_type=DISTRIBUTION_NOT_GIVEN,
     ):
         self.feature_groups = feature_groups
         self.feature_properties = feature_properties
@@ -152,7 +198,17 @@ class CyclicBoosting(BaseProbaRegressor):
         self.lower = lower
         self.upper = upper
         self.maximal_iterations = maximal_iterations
-        self.dist_type = dist_type
+        resolved_dist = resolve_distribution_kwarg(
+            estimator_name=self.__class__.__name__,
+            default="normal",
+            alias_values={
+                "distribution": distribution,
+                "dist_type": dist_type,
+                "dist": dist,
+                "distr_type": distr_type,
+            },
+        )
+        self.distribution = resolved_dist
         self.dist_shape = dist_shape
 
         super().__init__()

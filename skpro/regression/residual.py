@@ -8,6 +8,10 @@ import pandas as pd
 from sklearn import clone
 
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils._distribution_alias import (
+    DISTRIBUTION_NOT_GIVEN,
+    resolve_distribution_kwarg,
+)
 from skpro.utils.numpy import flatten_to_1D_if_colvector
 from skpro.utils.sklearn import prep_skl_df
 
@@ -75,9 +79,15 @@ class ResidualDouble(BaseProbaRegressor):
         * ``"squared"`` = squared residuals
         * if transformer, applies ``fit_transform`` to batch of signed residuals
 
-    distr_type : str or BaseDistribution, default = "Normal"
+    distribution : str or BaseDistribution, default = "Normal"
         type of distribution to predict
         str options are "Normal", "Laplace", "Cauchy", "t"
+    distr_type : str or BaseDistribution, optional
+        Deprecated alias for ``distribution`` kept for backwards compatibility.
+    dist : str or BaseDistribution, optional
+        Alias matching the XGBoostLSS API.
+    dist_type : str or BaseDistribution, optional
+        Alias matching the CyclicBoosting API.
     distr_loc_scale_name : tuple of length two, default = ("loc", "scale")
         names of the parameters in the distribution to use for location and scale
 
@@ -125,22 +135,69 @@ class ResidualDouble(BaseProbaRegressor):
 
     _tags = {"capability:missing": True}
 
+    @property
+    def distribution(self):
+        """Return the configured predictive distribution."""
+        return getattr(self, "_distribution", None)
+
+    @distribution.setter
+    def distribution(self, value):
+        self._distribution = value
+
+    @property
+    def distr_type(self):
+        return self.distribution
+
+    @distr_type.setter
+    def distr_type(self, value):
+        self.distribution = value
+
+    @property
+    def dist(self):
+        return self.distribution
+
+    @dist.setter
+    def dist(self, value):
+        self.distribution = value
+
+    @property
+    def dist_type(self):
+        return self.distribution
+
+    @dist_type.setter
+    def dist_type(self, value):
+        self.distribution = value
+
     def __init__(
         self,
         estimator,
         estimator_resid=None,
         residual_trafo="absolute",
-        distr_type="Normal",
+        distribution=DISTRIBUTION_NOT_GIVEN,
         distr_loc_scale_name=None,
         distr_params=None,
         use_y_pred=False,
         cv=None,
         min_scale=1e-10,
+        *,
+        distr_type=DISTRIBUTION_NOT_GIVEN,
+        dist=DISTRIBUTION_NOT_GIVEN,
+        dist_type=DISTRIBUTION_NOT_GIVEN,
     ):
         self.estimator = estimator
         self.estimator_resid = estimator_resid
         self.residual_trafo = residual_trafo
-        self.distr_type = distr_type
+        resolved_dist = resolve_distribution_kwarg(
+            estimator_name=self.__class__.__name__,
+            default="Normal",
+            alias_values={
+                "distribution": distribution,
+                "distr_type": distr_type,
+                "dist": dist,
+                "dist_type": dist_type,
+            },
+        )
+        self.distribution = resolved_dist
         self.distr_loc_scale_name = distr_loc_scale_name
         self.distr_params = distr_params
         self.use_y_pred = use_y_pred
@@ -396,14 +453,14 @@ class ResidualDouble(BaseProbaRegressor):
             "min_scale": 1e-7,
             "residual_trafo": "squared",
             "use_y_pred": True,
-            "distr_type": "Laplace",
+            "distribution": "Laplace",
         }
         params3 = {
             "estimator": LinearRegression(),
             "estimator_resid": RandomForestRegressor(),
             "min_scale": 1e-6,
             "use_y_pred": True,
-            "distr_type": "t",
+            "distribution": "t",
             "distr_params": {"df": 3},
             "cv": KFold(n_splits=3),
         }

@@ -16,6 +16,17 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+Unreleased
+==========
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] harmonize the ``distribution`` keyword across probabilistic regressors
+  (``ResidualDouble``, ``CyclicBoosting``, ``XGBoostLSS``) to support consistent
+  aliases such as ``dist_type`` and ``distr_type`` across models.
+
+
 [2.10.0] - 2025-10-09
 =====================
 
