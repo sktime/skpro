@@ -1,135 +1,133 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-"""GAM regressor using pyGAM."""
+"""Generalized Additive Models (GAM) Regressor."""
 
-__author__ = ["ravjot"]
+__author__ = ["Omswastik-11", "ravjot07"]
 
 import numpy as np
 import pandas as pd
 
+# from skpro.distributions.inversegaussian import InverseGaussian
+from skpro.distributions.binomial import Binomial
+from skpro.distributions.gamma import Gamma
+from skpro.distributions.normal import Normal
+from skpro.distributions.poisson import Poisson
 from skpro.regression.base import BaseProbaRegressor
-from skpro.utils.sklearn import prep_skl_df
 
 
 class GAMRegressor(BaseProbaRegressor):
-    """Generalized Additive Models regressor using pyGAM.
+    """Generalized Additive Model (GAM) Regressor.
 
-    Wraps pyGAM's GAM model for probabilistic regression. The distribution
-    parameter determines which skpro distribution will be returned in
-    predict_proba.
+    Wraps the ``pygam`` library to provide probabilistic predictions using
+    Generalized Additive Models with various distribution families.
 
     Parameters
     ----------
-    distribution : str, optional (default='normal')
-        Distribution family for the GAM model. Common options include:
+    terms : expression specifying terms to model, optional (default='auto')
+        By default a univariate spline term will be allocated for each feature.
+        Can be a ``pygam`` terms expression for custom model specification.
 
-        - 'normal' or 'gaussian': Normal distribution
-        - 'poisson': Poisson distribution
-        - 'gamma': Gamma distribution
-        - 'inv_gauss' or 'inverse_gaussian': Inverse Gaussian distribution
+    distribution : str or pygam.Distribution, optional (default='Normal')
+        Distribution family to use in the model.
+        Supported strings (case-insensitive):
 
-    link : str, optional (default='identity')
-        Link function for the GAM model. Common options include:
+        * ``'Normal'`` or ``'Gaussian'`` - Normal/Gaussian distribution
+        * ``'Poisson'`` - Poisson distribution for count data
+        * ``'Gamma'`` - Gamma distribution for positive continuous data
+        * ``'Binomial'`` - Binomial distribution for binary/proportion data
 
-        - 'identity': identity link (for normal distribution)
-        - 'log': log link (for poisson, gamma, inverse_gaussian)
-        - 'inverse': inverse link (for gamma)
-    **gam_params : dict
-        Additional parameters to pass to pyGAM GAM constructor.
-        See pyGAM documentation for full list of parameters.
+        Alternatively, can pass a ``pygam.Distribution`` object directly.
+
+    link : str or pygam.Link, optional (default='identity')
+        Link function to use in the model. Common options:
+
+        * ``'identity'`` - for Normal distribution
+        * ``'log'`` - for Poisson, Gamma distributions
+        * ``'logit'`` - for Binomial distribution
+        * ``'inverse'`` - for Gamma distribution
+
+        Alternatively, can pass a ``pygam.Link`` object directly.
+
+    max_iter : int, optional (default=100)
+        Maximum number of iterations allowed for the solver to converge.
+    tol : float, optional (default=1e-4)
+        Tolerance for stopping criteria.
+    callbacks : list of str or list of CallBack objects, optional
+        Names of callback objects to call during the optimization loop.
+        Default is ``['deviance', 'diffs']``.
+    fit_intercept : bool, optional (default=True)
+        Specifies if a constant (a.k.a. bias or intercept) should be
+        added to the decision function.
+    verbose : bool, optional (default=False)
+        Whether to show pyGAM warnings.
 
     Attributes
     ----------
     estimator_ : pygam.GAM
-        Fitted pyGAM GAM model
+        The fitted pygam estimator.
 
     Examples
     --------
     >>> from skpro.regression.gam import GAMRegressor
-    >>> from sklearn.datasets import load_diabetes
-    >>> from sklearn.model_selection import train_test_split
+    >>> from sklearn.datasets import make_regression
+    >>> import pandas as pd
     >>>
-    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
-    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> X, y = make_regression(n_samples=100, n_features=3, random_state=42)
+    >>> X = pd.DataFrame(X, columns=['f1', 'f2', 'f3'])
+    >>> y = pd.DataFrame(y, columns=['target'])
     >>>
-    >>> # Using normal distribution
-    >>> reg = GAMRegressor(distribution='normal', link='identity')
-    >>> reg.fit(X_train, y_train)
-    >>> y_pred_proba = reg.predict_proba(X_test)
+    >>> # Normal distribution (default)
+    >>> gam_normal = GAMRegressor(distribution='Normal')
+    >>> gam_normal.fit(X, y)
+    GAMRegressor(...)
     >>>
-    >>> # Using poisson distribution
-    >>> reg_poisson = GAMRegressor(distribution='poisson', link='log')
-    >>> reg_poisson.fit(X_train, y_train)
-    >>> y_pred_proba = reg_poisson.predict_proba(X_test)
+    >>> # Poisson distribution for count data
+    >>> gam_poisson = GAMRegressor(distribution='Poisson', link='log')
+    >>> gam_poisson.fit(X, y)
+    GAMRegressor(...)
+    >>>
+    >>> # Gamma distribution for positive continuous data
+    >>> gam_gamma = GAMRegressor(distribution='Gamma', link='log')
+    >>> gam_gamma.fit(X, y)
+    GAMRegressor(...)
     """
 
     _tags = {
+        "authors": ["dswah", "Omswastik-11", "ravjot07"],
+        # dswah for pygam package
+        "maintainers": ["fkiraly", "Omswastik-11", "dswah"],
+        "python_dependencies": ["pygam"],
         "capability:multioutput": False,
-        "capability:missing": False,
+        "capability:missing": True,
         "capability:update": False,
-        "python_dependencies": "pygam",
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
+        "tests:vm": True,
     }
 
-    def __init__(self, distribution="normal", link="identity", **gam_params):
+    def __init__(
+        self,
+        terms="auto",
+        distribution="normal",
+        link="identity",
+        max_iter=100,
+        tol=1e-4,
+        callbacks=None,
+        fit_intercept=True,
+        verbose=False,
+    ):
+        self.terms = terms
         self.distribution = distribution
         self.link = link
-        self.gam_params = gam_params
+        self.max_iter = max_iter
+        self.tol = tol
+        self.callbacks = callbacks
+        self.fit_intercept = fit_intercept
+        self.verbose = verbose
+
         super().__init__()
-
-        # keep track of what distribution we're actually using
-        self._actual_distribution = None
-
-    def _get_distribution_name(self, estimator):
-        """Extract distribution name from pyGAM estimator.
-
-        Parameters
-        ----------
-        estimator : pygam.GAM
-            pyGAM GAM estimator
-
-        Returns
-        -------
-        str
-            Distribution name (normalized to common names)
-        """
-        # try to figure out what distribution this GAM is using
-        dist = getattr(estimator, "distribution", None)
-        if dist is None:
-            dist = getattr(estimator, "_distribution", None)
-
-        # normalize it to a string we can work with
-        if dist is None:
-            dist_str = "normal"
-        elif isinstance(dist, str):
-            dist_str = dist.lower()
-        else:
-            # might be a class or object, try to get its name
-            if hasattr(dist, "__name__"):
-                dist_str = dist.__name__.lower()
-            elif hasattr(dist, "__class__"):
-                dist_str = dist.__class__.__name__.lower()
-            else:
-                dist_str = str(dist).lower()
-
-        # map different naming variations to our standard names
-        dist_mapping = {
-            "normal": "normal",
-            "gaussian": "normal",
-            "poisson": "poisson",
-            "gamma": "gamma",
-            "inv_gauss": "inverse_gaussian",
-            "inverse_gaussian": "inverse_gaussian",
-            "inv_gaussian": "inverse_gaussian",
-            "binomial": "binomial",
-        }
-
-        # default to normal if we can't figure it out
-        return dist_mapping.get(dist_str, "normal")
 
     def _fit(self, X, y):
         """Fit regressor to training data.
-
-        Writes to self:
-            Sets fitted model attributes ending in "_".
 
         Parameters
         ----------
@@ -144,249 +142,177 @@ class GAMRegressor(BaseProbaRegressor):
         """
         from pygam import GAM
 
-        # build GAM with specified parameters
-        gam_params = {"distribution": self.distribution, "link": self.link}
-        gam_params.update(self.gam_params)
-        self.estimator_ = GAM(**gam_params)
-        self._actual_distribution = self._get_distribution_name(self.estimator_)
+        # pygam expects numpy arrays
+        X_np = X.values
+        y_np = y.values.flatten()
 
         self._y_cols = y.columns
 
-        # pyGAM wants numpy arrays, not DataFrames
-        X_inner = prep_skl_df(X)
-        if isinstance(X_inner, pd.DataFrame):
-            X_inner = X_inner.values
+        # Handle callbacks default
+        callbacks = self.callbacks
+        if callbacks is None:
+            callbacks = ["deviance", "diffs"]
 
-        y_inner = prep_skl_df(y)
-        if isinstance(y_inner, pd.DataFrame) and len(y_inner.columns) == 1:
-            y_inner = y_inner.iloc[:, 0].values
-        elif isinstance(y_inner, pd.DataFrame):
-            y_inner = y_inner.values
+        self.estimator_ = GAM(
+            terms=self.terms,
+            distribution=self.distribution,
+            link=self.link,
+            max_iter=self.max_iter,
+            tol=self.tol,
+            callbacks=callbacks,
+            fit_intercept=self.fit_intercept,
+            verbose=self.verbose,
+        )
 
-        # now fit it
-        self.estimator_.fit(X_inner, y_inner)
+        self.estimator_.fit(X_np, y_np)
 
         return self
 
     def _predict(self, X):
         """Predict labels for data from features.
 
-        State required:
-            Requires state to be "fitted" = self.is_fitted=True
-
-        Accesses in self:
-            Fitted model attributes ending in "_"
-
         Parameters
         ----------
-        X : pandas DataFrame, must have same columns as X in `fit`
+        X : pandas DataFrame
             data to predict labels for
 
         Returns
         -------
-        y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
-            labels predicted for `X`
+        y : pandas DataFrame
+            labels predicted for X
         """
-        # convert to numpy for pyGAM
-        X_inner = prep_skl_df(X)
-        if isinstance(X_inner, pd.DataFrame):
-            X_inner = X_inner.values
+        X_np = X.values
+        y_pred_np = self.estimator_.predict(X_np)
 
-        # get predictions
-        y_pred = self.estimator_.predict(X_inner)
+        return pd.DataFrame(y_pred_np, index=X.index, columns=self._y_cols)
 
-        # make sure it's 2D so we can wrap it in a DataFrame
-        if y_pred.ndim == 1:
-            y_pred = y_pred.reshape(-1, 1)
-
-        y_pred_df = pd.DataFrame(y_pred, index=X.index, columns=self._y_cols)
-        return y_pred_df
+    def _get_distribution_name(self, dist):
+        """Extract distribution name from pyGAM estimator."""
+        if dist is None:
+            return "normal"
+        if isinstance(dist, str):
+            return dist.lower()
+        if hasattr(dist, "name"):
+            return dist.name
+        if hasattr(dist, "__name__"):
+            return dist.__name__
+        if hasattr(dist, "__class__"):
+            return dist.__class__.__name__.lower()
+        return str(dist).lower()
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
 
-        State required:
-            Requires state to be "fitted".
-
-        Accesses in self:
-            Fitted model attributes ending in "_"
-
         Parameters
         ----------
-        X : pandas DataFrame, must have same columns as X in `fit`
+        X : pandas DataFrame
             data to predict labels for
 
         Returns
         -------
-        y_pred : skpro BaseDistribution, same length as `X`
-            labels predicted for `X`
+        y_pred : skpro BaseDistribution
+            labels predicted for X
         """
-        # convert to numpy
-        X_inner = prep_skl_df(X)
-        if isinstance(X_inner, pd.DataFrame):
-            X_inner = X_inner.values
+        X_np = X.values
+        mu = self.estimator_.predict_mu(X_np)
 
-        # get the mean predictions
-        y_pred_mean = self.estimator_.predict(X_inner)
-        if y_pred_mean.ndim == 1:
-            y_pred_mean = y_pred_mean.reshape(-1, 1)
+        # Ensure mu is 2D if it's 1D, to match (n_samples, n_outputs)
+        if mu.ndim == 1:
+            mu = mu.reshape(-1, 1)
 
-        # try to get standard errors if pyGAM provides them
-        y_pred_std = None
-        try:
-            if hasattr(self.estimator_, "prediction_intervals"):
-                intervals = self.estimator_.prediction_intervals(X_inner, width=0.95)
-                if intervals is not None:
-                    # approximate std from the 95% interval
-                    y_pred_std = (intervals[:, 1] - intervals[:, 0]) / (2 * 1.96)
-                    if y_pred_std.ndim == 1:
-                        y_pred_std = y_pred_std.reshape(-1, 1)
-        except Exception:
-            pass
+        dist = getattr(self.estimator_, "distribution", None)
+        if dist is None:
+            dist = getattr(self.estimator_, "_distribution", None)
 
-        # figure out which distribution we need
-        dist_name = self._actual_distribution
+        dist_name = self._get_distribution_name(dist)
+
+        # Map common names to skpro distribution names
+        dist_map = {
+            "normal": "normal",
+            "gaussian": "normal",
+            "poisson": "poisson",
+            "gamma": "gamma",
+            "binomial": "binomial",
+            "normaldist": "normal",
+            "poissondist": "poisson",
+            "gammadist": "gamma",
+            "binomialdist": "binomial",
+        }
+        dist_name = dist_map.get(dist_name, "normal")
+
+        # Get scale from statistics if available, else from estimator.distribution
+        if (
+            hasattr(self.estimator_, "statistics_")
+            and "scale" in self.estimator_.statistics_
+        ):
+            scale = self.estimator_.statistics_["scale"]
+        elif hasattr(self.estimator_, "distribution") and hasattr(
+            self.estimator_.distribution, "scale"
+        ):
+            scale = self.estimator_.distribution.scale
+        else:
+            scale = 1.0  # Default fallback
 
         index = X.index
         columns = self._y_cols
 
-        # create the right skpro distribution based on what pyGAM is using
         if dist_name == "normal":
-            from skpro.distributions.normal import Normal
-
-            # try to get std if we don't have it yet
-            if y_pred_std is None:
-                try:
-                    if hasattr(self.estimator_, "standard_error"):
-                        y_pred_std = self.estimator_.standard_error(X_inner)
-                        if y_pred_std.ndim == 1:
-                            y_pred_std = y_pred_std.reshape(-1, 1)
-                except Exception:
-                    pass
-
-            # make sure we have valid std values (no NaN/inf nonsense)
-            if y_pred_std is None or (
-                hasattr(y_pred_std, "__len__") and len(y_pred_std) == 0
-            ):
-                # default to a small positive value if we don't have std
-                y_pred_std = np.full((len(index), len(columns)), 0.1)
-            else:
-                y_pred_std = np.array(y_pred_std)
-                # replace any NaN or inf with something reasonable
-                y_pred_std = np.nan_to_num(y_pred_std, nan=0.1, posinf=0.1, neginf=0.1)
-                # keep it positive
-                y_pred_std = np.clip(y_pred_std, a_min=1e-6, a_max=None)
-
-            y_pred_dist = Normal(
-                mu=pd.DataFrame(y_pred_mean, index=index, columns=columns),
-                sigma=pd.DataFrame(y_pred_std, index=index, columns=columns),
-                index=index,
-                columns=columns,
-            )
+            # Normal distribution
+            # pygam scale is variance (sigma^2) (dispersion)
+            sigma = np.sqrt(scale)
+            return Normal(mu=mu, sigma=sigma, index=index, columns=columns)
 
         elif dist_name == "poisson":
-            from skpro.distributions.poisson import Poisson
+            # Poisson distribution
+            # Parameter is mu. Scale is 1 (or ignored if overdispersion).
+            return Poisson(mu=mu, index=index, columns=columns)
 
-            # poisson just needs the mean
-            y_pred_dist = Poisson(
-                mu=pd.DataFrame(y_pred_mean, index=index, columns=columns),
-                index=index,
-                columns=columns,
-            )
+        elif dist_name == "binomial":
+            # Binomial distribution
+            # Parameters: n (levels), p.
+            # mu = n * p => p = mu / n.
+            levels = 1
+            if hasattr(self.estimator_.distribution, "levels"):
+                levels = self.estimator_.distribution.levels
+
+            p = mu / levels
+            # Clip p to [0, 1] to avoid numerical issues
+            p = np.clip(p, 0, 1)
+            return Binomial(n=levels, p=p, index=index, columns=columns)
 
         elif dist_name == "gamma":
-            from skpro.distributions.gamma import Gamma
-
-            # gamma needs shape and rate parameters
-            # if we have std, we can estimate the scale parameter
-            if y_pred_std is None:
-                # fallback to a default scale
-                y_pred_scale = pd.DataFrame(0.1, index=index, columns=columns).values
-            else:
-                # approximate scale from variance
-                y_pred_scale = (y_pred_std**2) / y_pred_mean
-                y_pred_scale = y_pred_scale.clip(min=1e-6)
-
-            # calculate shape parameter from mean and scale
-            y_pred_shape = y_pred_mean / y_pred_scale
-            y_pred_shape = y_pred_shape.clip(min=1e-6)
-
-            # rate is just 1/scale
-            y_pred_rate = 1.0 / y_pred_scale
-
-            y_pred_dist = Gamma(
-                alpha=pd.DataFrame(y_pred_shape, index=index, columns=columns),
-                beta=pd.DataFrame(y_pred_rate, index=index, columns=columns),
-                index=index,
-                columns=columns,
-            )
-
-        elif dist_name == "inverse_gaussian":
-            # inverse gaussian isn't in skpro yet,
-            # so just use normal as an approximation
-            from skpro.distributions.normal import Normal
-
-            if y_pred_std is None:
-                y_pred_std = np.full((len(index), len(columns)), 0.1)
-            else:
-                y_pred_std = np.array(y_pred_std)
-                y_pred_std = np.nan_to_num(y_pred_std, nan=0.1, posinf=0.1, neginf=0.1)
-                y_pred_std = np.clip(y_pred_std, a_min=1e-6, a_max=None)
-
-            y_pred_dist = Normal(
-                mu=pd.DataFrame(y_pred_mean, index=index, columns=columns),
-                sigma=pd.DataFrame(y_pred_std, index=index, columns=columns),
-                index=index,
-                columns=columns,
-            )
+            # Gamma distribution
+            # pygam scale is dispersion phi = 1/alpha
+            # alpha = 1/phi
+            # beta = 1/(phi * mu)
+            alpha = 1.0 / scale
+            beta = 1.0 / (scale * mu)
+            return Gamma(alpha=alpha, beta=beta, index=index, columns=columns)
 
         else:
-            # don't recognize this distribution, default to normal
-            from skpro.distributions.normal import Normal
-
-            if y_pred_std is None:
-                y_pred_std = np.full((len(index), len(columns)), 0.1)
-            else:
-                y_pred_std = np.array(y_pred_std)
-                y_pred_std = np.nan_to_num(y_pred_std, nan=0.1, posinf=0.1, neginf=0.1)
-                y_pred_std = np.clip(y_pred_std, a_min=1e-6, a_max=None)
-
-            y_pred_dist = Normal(
-                mu=pd.DataFrame(y_pred_mean, index=index, columns=columns),
-                sigma=pd.DataFrame(y_pred_std, index=index, columns=columns),
-                index=index,
-                columns=columns,
-            )
-
-        return y_pred_dist
+            # Fallback to Normal
+            sigma = np.sqrt(scale)
+            return Normal(mu=mu, sigma=sigma, index=index, columns=columns)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
-        """Return testing parameter settings for the estimator.
-
-        Parameters
-        ----------
-        parameter_set : str, default="default"
-            Name of the set of test parameters to return, for use in tests. If no
-            special parameters are defined for a value, will return `"default"` set.
-
-        Returns
-        -------
-        params : dict or list of dict, default = {}
-            Parameters to create testing instances of the class
-            Each dict are parameters to construct an "interesting" test instance, i.e.,
-            `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
-            `create_test_instance` uses the first (or only) dictionary in `params`
-        """
+        """Return testing parameter settings for the estimator."""
         from skbase.utils.dependencies import _check_soft_dependencies
 
         # if pygam isn't installed, return a marker so tests know to skip
         if not _check_soft_dependencies("pygam", severity="none"):
             return {"distribution": "runtests-no-pygam"}
-
-        # return a few different parameter sets for testing
-        param1 = {"distribution": "normal", "link": "identity"}
-        param2 = {"distribution": "poisson", "link": "log"}
-        param3 = {"distribution": "gamma", "link": "log"}
-
-        return [param1, param2, param3]
+        params = [
+            {"distribution": "normal", "terms": "auto"},
+            {"distribution": "poisson", "terms": "auto", "link": "log"},
+            {"distribution": "gamma", "terms": "auto", "link": "log"},
+            {
+                "distribution": "normal",
+                "terms": "auto",
+                "max_iter": 50,
+                "fit_intercept": False,
+            },
+            {"distribution": "poisson", "link": "identity", "max_iter": 50},
+            {"distribution": "gamma", "link": "inverse", "tol": 1e-3},
+        ]
+        return params
