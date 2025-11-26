@@ -177,7 +177,7 @@ Linear regression
 Generalized Additive Models
 ---------------------------
 
-.. currentmodule:: skpro.regression.pygam
+.. currentmodule:: skpro.regression.gam
 
 .. autosummary::
     :toctree: auto_generated/
