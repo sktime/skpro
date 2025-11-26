@@ -118,10 +118,17 @@ class GlumRegressor(BaseProbaRegressor):
     """
 
     _tags = {
+        # Packaging information
+        # ---------------------
         "authors": ["Omswastik-11"],
         "maintainers": ["fkiraly", "Omswastik-11"],
+        "python_dependencies": "glum",
+        "python_version": "<3.14",
+        # Estimator type
+        # --------------
         "capability:missing": False,
-        "python_dependencies": "glum; python_version < '3.14'",
+        # CI and test flags
+        # -----------------
         "tests:vm": True,
     }
 
