@@ -177,7 +177,7 @@ class GAMRegressor(BaseProbaRegressor):
 
         self.estimator_ = GAM(
             terms=self.terms,
-            distribution=self.distribution,
+            distribution=dist_name,
             link=self.link,
             max_iter=self.max_iter,
             tol=self.tol,
