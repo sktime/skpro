@@ -18,6 +18,7 @@ class BaseDistribution(BaseObject):
     """Base probability distribution."""
 
     # default tag values - these typically make the "safest" assumption
+
     _tags = {
         "object_type": "distribution",  # type of object, e.g., 'distribution'
         "python_version": None,  # PEP 440 python version specifier to limit versions
@@ -46,6 +47,14 @@ class BaseDistribution(BaseObject):
         "broadcast_init": "off",  # whether to auto-broadcast params in __init__
         "broadcast_inner": "array",  # whether inner args are array or scalar-like
         # if "scalar", assumes scalar, and broadcasts in boilerplate
+    }
+
+    # For setting the overriding of the Monte Carlo parameters
+    _config = {
+        "approx_mean_spl": None,  # sample size used in MC estimates of mean
+        "approx_var_spl": None,  # sample size used in MC estimates of var
+        "approx_energy_spl": None,  # sample size used in MC estimates of energy
+        "approx_spl": None,  # sample size used in other MC estimates
     }
 
     def __init__(self, index=None, columns=None):
@@ -502,6 +511,14 @@ class BaseDistribution(BaseObject):
             return msg_approx
         else:
             return msg
+
+    def _get_mc_param(self, tag_name):
+        """For Monte Carlo setting to allow config overrides"""
+        config_val = self.get_config().get(tag_name)
+        if config_val is not None:
+            return config_val
+        else:
+            return self.get_tag(tag_name)
 
     def _get_bc_params(self, *args, dtype=None, oned_as="row", return_shape=False):
         """Fully broadcast tuple of parameters given param shapes and index, columns.
@@ -1001,7 +1018,7 @@ class BaseDistribution(BaseObject):
 
         Private method, to be implemented by subclasses.
         """
-        N = self.get_tag("approx_spl")
+        N = self._get_mc_param("approx_spl")
         approx_method = (
             "by approximating the expected value by the indicator function on "
             f"{N} samples"
@@ -1252,7 +1269,7 @@ class BaseDistribution(BaseObject):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        approx_spl_size = self.get_tag("approx_energy_spl")
+        approx_spl_size = self._get_mc_param("approx_energy_spl")
         if x is not None and self._has_implementation_of("_ppf"):
             approx_method = (
                 "by approximating the energy expectation by the integral "
@@ -1363,7 +1380,7 @@ class BaseDistribution(BaseObject):
 
         Private method, to be implemented by subclasses.
         """
-        approx_spl_size = self.get_tag("approx_mean_spl")
+        approx_spl_size = self._get_mc_param("approx_mean_spl")
         if self._has_implementation_of("_ppf"):
             approx_method = (
                 "by approximating the expected value by the integral of the ppf, "
@@ -1406,7 +1423,7 @@ class BaseDistribution(BaseObject):
 
         Private method, to be implemented by subclasses.
         """
-        approx_spl_size = self.get_tag("approx_var_spl")
+        approx_spl_size = self._get_mc_param("approx_var_spl")
         if self._has_implementation_of("_ppf"):
             approx_method = (
                 "by approximating the variancee integrals of the ppf, "
@@ -1459,7 +1476,7 @@ class BaseDistribution(BaseObject):
         if a == 1:
             return pd.DataFrame(1.0, index=self.index, columns=self.columns)
 
-        approx_spl_size = self.get_tag("approx_spl")
+        approx_spl_size = self._get_mc_param("approx_spl")
         approx_method = (
             f"by approximating the {a}-norm of the pdf by the arithmetic mean of "
             f"{approx_spl_size} samples"
