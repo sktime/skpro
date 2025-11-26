@@ -50,7 +50,6 @@ dependencies = [
 [project.optional-dependencies]
 all_extras = [
     "distfit; python_version < '3.13'",
-    "glum; python_version < '3.14'",
     "lifelines<0.31.0; python_version < '3.13'",
     "mapie; python_version < '3.13'",
     "matplotlib>=3.3.2",
