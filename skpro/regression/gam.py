@@ -97,6 +97,7 @@ class GAMRegressor(BaseProbaRegressor):
         "capability:update": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
+        "tests:vm": True,
     }
 
     def __init__(
