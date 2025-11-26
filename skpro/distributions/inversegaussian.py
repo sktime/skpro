@@ -21,20 +21,20 @@ class InverseGaussian(_ScipyAdapter):
               \exp\left(-\frac{\lambda(x-\mu)^2}{2\mu^2 x}\right)
 
     The mean :math:`\mu` is represented by the parameter ``mu``,
-    and the shape parameter :math:`\lambda` by the parameter ``lam``.
+    and the shape parameter :math:`\lambda` by the parameter ``scale``.
 
     Note: This parameterization corresponds to
-    ``numpy.random.wald(mean=mu, scale=lam)``.
+    ``numpy.random.wald(mean=mu, scale=scale)``.
     In ``scipy.stats.invgauss(mu_scipy, scale=scale_scipy)``, the parameters are
     related as:
-    ``scale_scipy = lam``
-    ``mu_scipy = mu / lam``
+    ``scale_scipy = scale``
+    ``mu_scipy = mu / scale``
 
     Parameters
     ----------
     mu : float or array of float (1D or 2D), must be positive
         mean of the distribution
-    lam : float or array of float (1D or 2D), must be positive
+    scale : float or array of float (1D or 2D), must be positive
         shape parameter (lambda) of the distribution
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
@@ -43,7 +43,7 @@ class InverseGaussian(_ScipyAdapter):
     --------
     >>> from skpro.distributions.inversegaussian import InverseGaussian
 
-    >>> d = InverseGaussian(mu=[[1, 1], [2, 3], [4, 5]], lam=1)
+    >>> d = InverseGaussian(mu=[[1, 1], [2, 3], [4, 5]], scale=1)
     """
 
     _tags = {
@@ -54,9 +54,9 @@ class InverseGaussian(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
-    def __init__(self, mu, lam, index=None, columns=None):
+    def __init__(self, mu, scale, index=None, columns=None):
         self.mu = mu
-        self.lam = lam
+        self.scale = scale
 
         super().__init__(index=index, columns=columns)
 
@@ -65,14 +65,14 @@ class InverseGaussian(_ScipyAdapter):
 
     def _get_scipy_param(self):
         mu = self._bc_params["mu"]
-        lam = self._bc_params["lam"]
+        scale = self._bc_params["scale"]
 
         # Mapping to scipy parameters
-        # scipy_scale = lam (lambda)
-        # scipy_mu = mu / lam
+        # scipy_scale = scale (lambda)
+        # scipy_mu = mu / scale
 
-        scipy_scale = lam
-        scipy_mu = mu / lam
+        scipy_scale = scale
+        scipy_mu = mu / scale
 
         return [scipy_mu], {"scale": scipy_scale}
 
@@ -80,14 +80,14 @@ class InverseGaussian(_ScipyAdapter):
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
         # array case examples
-        params1 = {"mu": [2, 3.5], "lam": [[1, 1], [2, 3], [4, 5]]}
+        params1 = {"mu": [2, 3.5], "scale": [[1, 1], [2, 3], [4, 5]]}
         params2 = {
             "mu": 2.5,
-            "lam": 1.5,
+            "scale": 1.5,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
         }
         # scalar case examples
-        params3 = {"mu": 3.0, "lam": 2.0}
+        params3 = {"mu": 3.0, "scale": 2.0}
 
         return [params1, params2, params3]
