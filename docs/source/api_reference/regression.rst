@@ -174,6 +174,17 @@ Linear regression
     GLMRegressor
     PoissonRegressor
 
+Generalized Additive Models
+---------------------------
+
+.. currentmodule:: skpro.regression.pygam
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    GAMRegressor
+
 Gaussian process and kernel regression
 --------------------------------------
 
