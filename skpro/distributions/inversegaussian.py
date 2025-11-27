@@ -14,28 +14,27 @@ class InverseGaussian(_ScipyAdapter):
 
     Most methods wrap ``scipy.stats.invgauss``.
 
-    The Inverse Gaussian distribution is parameterized by mean :math:`\mu` and
-    shape parameter :math:`\lambda`, such that the pdf is
+    The Inverse Gaussian distribution (Wald) when using SciPy's
+    parameterization is specified by a shape parameter ``mu`` and a
+    ``scale`` parameter. In SciPy these are the positional and keyword
+    parameters of ``scipy.stats.invgauss(mu, scale=scale)``. The
+    mean of the distribution is given by ``mean = mu * scale``.
 
-    .. math:: f(x) = \sqrt{\frac{\lambda}{2\pi x^3}}
-              \exp\left(-\frac{\lambda(x-\mu)^2}{2\mu^2 x}\right)
+    In terms of SciPy's parameters the pdf can be written as
 
-    The mean :math:`\mu` is represented by the parameter ``mu``,
-    and the shape parameter :math:`\lambda` by the parameter ``scale``.
+    .. math:: f(x) = \sqrt{\frac{\nobreak scale}{2\pi x^3}}
+              \exp\left(-\nobreak scale\frac{(x-\nobreak mu\,scale)^2}{2(\nobreak mu\,scale)^2 x}\right)
 
-    Note: This parameterization corresponds to
-    ``numpy.random.wald(mean=mu, scale=scale)``.
-    In ``scipy.stats.invgauss(mu_scipy, scale=scale_scipy)``, the parameters are
-    related as:
-    ``scale_scipy = scale``
-    ``mu_scipy = mu / scale``
+    Here ``mu`` and ``scale`` follow SciPy's naming: ``mu`` is the
+    (dimensionless) shape parameter and ``scale`` scales the
+    distribution.
 
     Parameters
     ----------
     mu : float or array of float (1D or 2D), must be positive
-        mean of the distribution
+        shape parameter (dimensionless)
     scale : float or array of float (1D or 2D), must be positive
-        shape parameter (lambda) of the distribution
+        scale parameter (multiplies the distribution)
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -43,7 +42,7 @@ class InverseGaussian(_ScipyAdapter):
     --------
     >>> from skpro.distributions.inversegaussian import InverseGaussian
 
-    >>> d = InverseGaussian(mu=[[1, 1], [2, 3], [4, 5]], scale=1)
+    >>> d = InverseGaussian(mu=1.0, scale=1.0)
     """
 
     _tags = {
@@ -64,17 +63,12 @@ class InverseGaussian(_ScipyAdapter):
         return invgauss
 
     def _get_scipy_param(self):
+        # Pass parameters directly to scipy.stats.invgauss.
+        # SciPy's invgauss accepts a shape parameter `mu` and a keyword  `scale`.
         mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
 
-        # Mapping to scipy parameters
-        # scipy_scale = scale (lambda)
-        # scipy_mu = mu / scale
-
-        scipy_scale = scale
-        scipy_mu = mu / scale
-
-        return [scipy_mu], {"scale": scipy_scale}
+        return [mu], {"scale": scale}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
