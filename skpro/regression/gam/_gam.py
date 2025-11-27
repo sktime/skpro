@@ -78,6 +78,7 @@ class GAMRegressor(BaseProbaRegressor):
     >>> X, y = make_regression(n_samples=100, n_features=3, random_state=42)
     >>> X = pd.DataFrame(X, columns=['f1', 'f2', 'f3'])
     >>> y = pd.DataFrame(y, columns=['target'])
+    >>> y_positive = y.abs() + 1  # ensure positive targets for Poisson/Gamma
     >>>
     >>> # Normal distribution (default)
     >>> gam_normal = GAMRegressor(distribution='Normal')
@@ -86,12 +87,12 @@ class GAMRegressor(BaseProbaRegressor):
     >>>
     >>> # Poisson distribution for count data
     >>> gam_poisson = GAMRegressor(distribution='Poisson', link='log')
-    >>> gam_poisson.fit(X, y)
+    >>> gam_poisson.fit(X, y_positive)
     GAMRegressor(...)
     >>>
     >>> # Gamma distribution for positive continuous data
     >>> gam_gamma = GAMRegressor(distribution='Gamma', link='log')
-    >>> gam_gamma.fit(X, y)
+    >>> gam_gamma.fit(X, y_positive)
     GAMRegressor(...)
     """
 
