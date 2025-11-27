@@ -172,6 +172,7 @@ Linear regression
     ARDRegression
     BayesianRidge
     GLMRegressor
+    GlumRegressor
     PoissonRegressor
 
 Generalized Additive Models
