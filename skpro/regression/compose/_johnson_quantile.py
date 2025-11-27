@@ -89,7 +89,6 @@ class JohnsonQPDRegressor(BaseProbaRegressor):
     _tags = {
         "capability:missing": False,
         "capability:survival": False,
-        "capability:quantile": True,
     }
 
     def __init__(
@@ -248,28 +247,35 @@ class JohnsonQPDRegressor(BaseProbaRegressor):
         elif isinstance(qv_high, pd.Series):
             qv_high = qv_high.values
 
-        # enforce quantile ordering and minimum spread
-        # if quantile estimates are degenerate or misordered,
-        # use symmetric spread around median with minimum width
-        q_range = np.abs(qv_high - qv_low)
-        min_spread = np.maximum(q_range * 0.01, 1e-3)
-        spread = np.maximum(min_spread, q_range / 2.0)
+        # ensure quantiles are valid floats
+        qv_low = np.asarray(qv_low, dtype=float)
+        qv_median = np.asarray(qv_median, dtype=float)
+        qv_high = np.asarray(qv_high, dtype=float)
+        qv_median = np.nan_to_num(qv_median, nan=0.0)
 
-        qv_low_fixed = qv_median - spread
-        qv_high_fixed = qv_median + spread
+        # enforce minimum spread to prevent degenerate distributions
+        pred_half = np.abs(qv_high - qv_low) / 2.0
+        data_scale = np.maximum(np.abs(qv_median), 1.0)
+        min_half = np.maximum(data_scale * 0.05, 1e-3)
+        half_spread = np.maximum(pred_half, min_half)
 
-        # apply bounds if specified
+        # apply symmetric spread around median
+        qv_low_fixed = qv_median - half_spread
+        qv_high_fixed = qv_median + half_spread
+
+        # user-specified bounds
         if self.lower is not None:
             qv_low_fixed = np.maximum(qv_low_fixed, self.lower)
-            qv_median = np.maximum(qv_median, self.lower)
-            qv_high_fixed = np.maximum(qv_high_fixed, self.lower)
-
+            qv_median = np.maximum(qv_median, self.lower + 1e-6)
         if self.upper is not None:
-            qv_low_fixed = np.minimum(qv_low_fixed, self.upper)
-            qv_median = np.minimum(qv_median, self.upper)
             qv_high_fixed = np.minimum(qv_high_fixed, self.upper)
+            qv_median = np.minimum(qv_median, self.upper - 1e-6)
 
-        # construct QPD_Johnson distribution
+        # enforce strict ordering for QPD stability
+        eps = 1e-6
+        qv_low_fixed = np.minimum(qv_low_fixed, qv_median - eps)
+        qv_high_fixed = np.maximum(qv_high_fixed, qv_median + eps)
+
         dist = QPD_Johnson(
             alpha=self.alpha,
             qv_low=qv_low_fixed,
@@ -283,6 +289,39 @@ class JohnsonQPDRegressor(BaseProbaRegressor):
         )
 
         return dist
+
+    def _predict_var(self, X):
+        """Predict variance.
+
+        Uses quantile spread to estimate variance assuming normality.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            features to predict variance for
+
+        Returns
+        -------
+        pd.DataFrame
+            variance predictions, same shape as y
+        """
+        from scipy.stats import norm
+
+        X = prep_skl_df(X, copy_df=True)
+
+        qv_low = np.asarray(self.estimator_low_.predict(X), dtype=float).flatten()
+        qv_high = np.asarray(self.estimator_high_.predict(X), dtype=float).flatten()
+
+        z_low = norm.ppf(self.alpha)
+        z_high = norm.ppf(1 - self.alpha)
+        z_spread = z_high - z_low
+
+        sigma = np.abs(qv_high - qv_low) / z_spread
+        var = (sigma**2).reshape(-1, 1)
+
+        return pd.DataFrame(
+            var, index=X.index, columns=self._y_metadata["feature_names"]
+        )
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -305,14 +344,13 @@ class JohnsonQPDRegressor(BaseProbaRegressor):
         from sklearn.linear_model import QuantileRegressor
 
         params1 = {
-            "estimator": QuantileRegressor(alpha=0.0),
+            "estimator": QuantileRegressor(alpha=0.0, solver="highs"),
             "alpha": 0.1,
         }
 
         params2 = {
-            "estimator": QuantileRegressor(alpha=0.0),
+            "estimator": QuantileRegressor(alpha=0.0, solver="highs"),
             "alpha": 0.25,
-            "lower": 0.0,
         }
 
         return [params1, params2]
