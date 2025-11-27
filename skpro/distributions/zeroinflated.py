@@ -96,6 +96,13 @@ class ZeroInflated(BaseDistribution):
 
     @property
     def _truncated_distribution(self) -> TruncatedDistribution:
+        if (
+            isinstance(self.distribution, TruncatedDistribution)
+            and self.distribution.lower == 0
+            and self.distribution.inclusive_lower
+        ):
+            return self.distribution
+
         return TruncatedDistribution(
             self.distribution,
             lower=0.0,
