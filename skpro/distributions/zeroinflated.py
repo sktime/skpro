@@ -127,16 +127,19 @@ class ZeroInflated(BaseDistribution):
         log_prob_non_zero = log_prob_active + log_prob_base
 
         is_zero = x == 0
-        return np.where(is_zero, log_prob_total_zero, log_prob_non_zero)
+        log_prob_res = np.where(is_zero, log_prob_total_zero, log_prob_non_zero)
+        return np.where(x < 0, -np.inf, log_prob_res)
 
     def _pmf(self, x):
         prob_weighted_base = self.p * self._truncated_distribution.pmf(x)
         prob_structural_zero = 1.0 - self.p
 
-        # Returns: (1-p) + p*f(0) if x==0, else p*f(x)
-        return np.where(
+        prob_res = np.where(
             x == 0, prob_weighted_base + prob_structural_zero, prob_weighted_base
         )
+        
+        # Returns: (1-p) + p*f(0) if x==0, 0 if x < 0 else p*f(x)
+        return np.where(x < 0, 0.0, prob_res)
 
     def _log_pdf(self, x):
         log_prob_structural_zero = np.log(1.0 - self.p)
@@ -146,7 +149,8 @@ class ZeroInflated(BaseDistribution):
         log_prob_non_zero = log_prob_active + log_prob_base
 
         is_zero = x == 0
-        return np.where(is_zero, log_prob_structural_zero, log_prob_non_zero)
+        log_prob_res = np.where(is_zero, log_prob_structural_zero, log_prob_non_zero)
+        return np.where(x < 0, -np.inf, log_prob_res)
 
     def _pdf(self, x):
         prob_structural_zero = 1.0 - self.p
@@ -154,7 +158,8 @@ class ZeroInflated(BaseDistribution):
         prob_non_zero = prob_active * self._truncated_distribution.pdf(x)
 
         is_zero = x == 0
-        return np.where(is_zero, prob_structural_zero, prob_non_zero)
+        prob_res = np.where(is_zero, prob_structural_zero, prob_non_zero)
+        return np.where(x < 0, 0.0, prob_res)
 
     def _mean(self):
         return self.p * self._truncated_distribution.mean()
