@@ -23,7 +23,8 @@ class InverseGaussian(_ScipyAdapter):
     In terms of SciPy's parameters the pdf can be written as
 
     .. math:: f(x) = \sqrt{\frac{\nobreak scale}{2\pi x^3}}
-              \exp\left(-\nobreak scale\frac{(x-\nobreak mu\,scale)^2}{2(\nobreak mu\,scale)^2 x}\right)
+              \exp\left(-\nobreak scale\frac{(x-\nobreak mu\,scale)^2}
+              {2(\nobreak mu\,scale)^2 x}\right)
 
     Here ``mu`` and ``scale`` follow SciPy's naming: ``mu`` is the
     (dimensionless) shape parameter and ``scale`` scales the
