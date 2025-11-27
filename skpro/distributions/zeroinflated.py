@@ -1,5 +1,7 @@
 """Zero-Inflated distribution implementation."""
 
+__author__ = ["khushmagrawal"]
+
 import numpy as np
 from numpy.typing import ArrayLike
 
@@ -172,7 +174,9 @@ class ZeroInflated(BaseDistribution):
         prob_structural_zero = 1.0 - self.p
 
         q_rescaled = (p - prob_structural_zero) / self.p
-        q_rescaled = np.clip(q_rescaled, 0.0, 1.0)
+
+        eps = np.finfo(q_rescaled.dtype).eps
+        q_rescaled = np.clip(q_rescaled - eps, 0.0, 1.0)
 
         y_base = self._truncated_distribution.ppf(q_rescaled)
 
