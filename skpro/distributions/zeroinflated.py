@@ -98,6 +98,8 @@ class ZeroInflated(BaseDistribution):
 
     @property
     def _truncated_distribution(self) -> TruncatedDistribution:
+        # TODO: return self.distribution if it is naturally non-negative.
+        # requires support tag (check #246)
         if (
             isinstance(self.distribution, TruncatedDistribution)
             and self.distribution.lower == 0
@@ -137,7 +139,7 @@ class ZeroInflated(BaseDistribution):
         prob_res = np.where(
             x == 0, prob_weighted_base + prob_structural_zero, prob_weighted_base
         )
-        
+
         # Returns: (1-p) + p*f(0) if x==0, 0 if x < 0 else p*f(x)
         return np.where(x < 0, 0.0, prob_res)
 
