@@ -172,7 +172,19 @@ Linear regression
     ARDRegression
     BayesianRidge
     GLMRegressor
+    GlumRegressor
     PoissonRegressor
+
+Generalized Additive Models
+---------------------------
+
+.. currentmodule:: skpro.regression.gam
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    GAMRegressor
 
 Gaussian process and kernel regression
 --------------------------------------
