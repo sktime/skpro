@@ -42,6 +42,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         "python_dependencies": ["ondil"],
         "capability:multioutput": False,
         "capability:missing": True,
+        "tests:vm": True,
         "capability:update": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
@@ -65,7 +66,17 @@ class OndilOnlineGamlss(BaseProbaRegressor):
 
         module_str = "ondil.estimators.online_gamlss"
         ondil_mod = importlib.import_module(module_str)
-        OnlineGamlss = ondil_mod.OnlineGamlss
+        try:
+            OnlineGamlss = ondil_mod.OnlineGamlss
+        except AttributeError:
+            try:
+                OnlineGamlss = ondil_mod.OnlineDistributionalRegression
+            except AttributeError as exc:
+                raise ImportError(
+                    "ondil.estimators.online_gamlss does not expose '"
+                    "OnlineDistributionalRegression' or 'OnlineGamlss' - "
+                    "please install a compatible ondil version"
+                ) from exc
 
         # store y columns for later
         self._y_cols = y.columns
