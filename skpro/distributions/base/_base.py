@@ -513,7 +513,7 @@ class BaseDistribution(BaseObject):
             return msg
 
     def _get_mc_param(self, tag_name):
-        """For Monte Carlo setting to allow config overrides"""
+        """For Monte Carlo setting to allow config overrides."""
         config_val = self.get_config().get(tag_name)
         if config_val is not None:
             return config_val
