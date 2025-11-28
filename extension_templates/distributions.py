@@ -331,7 +331,7 @@ class ClassName(BaseDistribution):
         return res
 
     # todo: consider implementing
-    # at least one of _ppf and sample must be implemented
+    # at least one of _ppf and _sample must be implemented
     # if not implemented, uses _ppf for sampling (inverse cdf on uniform)
     def _sample(self, n_samples=None):
         """Sample from the distribution.
