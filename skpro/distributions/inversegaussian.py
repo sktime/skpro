@@ -20,15 +20,14 @@ class InverseGaussian(_ScipyAdapter):
     parameters of ``scipy.stats.invgauss(mu, scale=scale)``. The
     mean of the distribution is given by ``mean = mu * scale``.
 
-    In terms of SciPy's parameters the pdf can be written as
+    The common shape-scale parameterization with mean :math:`\nu` and
+    shape :math:`\lambda` has pdf:
 
-    .. math:: f(x) = \sqrt{\frac{\nobreak scale}{2\pi x^3}}
-              \exp\left(-\nobreak scale\frac{(x-\nobreak mu\,scale)^2}
-              {2(\nobreak mu\,scale)^2 x}\right)
+    .. math:: f(x; \nu, \lambda) = \sqrt{\frac{\lambda}{2 \pi x^3}}
+              \exp\left(-\frac{\lambda (x - \nu)^2}{2 \nu^2 x}\right)
 
-    Here ``mu`` and ``scale`` follow SciPy's naming: ``mu`` is the
-    (dimensionless) shape parameter and ``scale`` scales the
-    distribution.
+    This is equivalent to SciPy's parameterization with
+    ``mu = nu / lam`` and ``scale = lam``.
 
     Parameters
     ----------
