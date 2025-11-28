@@ -33,6 +33,8 @@ class TransformedDistribution(BaseDistribution):
 
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
+    random_state : None, int, RandomState, or np.random.Generator, optional
+        Seed or generator controlling sampling randomness.
 
     Examples
     --------
@@ -74,6 +76,7 @@ class TransformedDistribution(BaseDistribution):
         inverse_transform=None,
         index=None,
         columns=None,
+        random_state=None,
     ):
         self.distribution = distribution
         self.transform = transform
@@ -93,7 +96,7 @@ class TransformedDistribution(BaseDistribution):
                 if columns is None:
                     columns = pd.RangeIndex(n_cols)
 
-        super().__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns, random_state=random_state)
 
         # transformed discret distributions are always discrete
         # (otherwise we only know that they are mixed)
@@ -244,15 +247,13 @@ class TransformedDistribution(BaseDistribution):
 
         return cdf_res
 
-    def sample(self, n_samples=None, random_state=None):
+    def sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
-        random_state : None, int, np.random.RandomState, np.random.Generator
-            Controls the randomness of sampling.
 
         Returns
         -------
@@ -274,14 +275,13 @@ class TransformedDistribution(BaseDistribution):
             n = 1
         else:
             n = n_samples
-        rngs = self._spawn_rngs(self._resolve_random_state(random_state), n)
 
         trafo = self.transform
 
         samples = []
 
-        for child_rng in rngs:
-            new_sample = trafo(self.distribution.sample(random_state=child_rng))
+        for _ in range(n):
+            new_sample = trafo(self.distribution.sample())
             if not self._is_scalar_dist:
                 if not isinstance(new_sample, pd.DataFrame):
                     new_sample = pd.DataFrame(

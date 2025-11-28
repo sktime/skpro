@@ -30,6 +30,8 @@ class Mixture(BaseMetaObject, BaseDistribution):
         Relevant only in ``sample`` method and non-marginal outputs.
     index : pd.Index, optional, default = inferred from component distributions
     columns : pd.Index, optional, default = inferred from component distributions
+    random_state : None, int, RandomState, or np.random.Generator, optional
+        Seed or generator to control sampling randomness.
 
     Examples
     --------
@@ -58,6 +60,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         indep_cols=True,
         index=None,
         columns=None,
+        random_state=None,
     ):
         self.distributions = distributions
         self.weights = weights
@@ -78,7 +81,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         if columns is None:
             columns = self._distributions[0][1].columns
 
-        super().__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns, random_state=random_state)
 
     def _iloc(self, rowidx=None, colidx=None):
         dists = self._distributions
@@ -177,15 +180,13 @@ class Mixture(BaseMetaObject, BaseDistribution):
         """Cumulative distribution function."""
         return self._average("cdf", x)
 
-    def sample(self, n_samples=None, random_state=None):
+    def sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
-        random_state : None, int, np.random.RandomState, np.random.Generator
-            Controls the randomness of sampling.
 
         Returns
         -------
@@ -204,7 +205,6 @@ class Mixture(BaseMetaObject, BaseDistribution):
         """
         indep_rows = self.indep_rows
         indep_cols = self.indep_cols
-        rng = self._resolve_random_state(random_state)
 
         if n_samples is None:
             N = 1
@@ -213,7 +213,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         # deal with fully dependent case
         if not indep_rows and not indep_cols or self.ndim == 0:
-            return self._sample_blocked(n_samples=n_samples, rng=rng)
+            return self._sample_blocked(n_samples=n_samples)
 
         # we know that indep_rows and indep_cols are True, and self.ndim > 0
         rd_size = list(self.shape)
@@ -227,15 +227,12 @@ class Mixture(BaseMetaObject, BaseDistribution):
             rd_size[1] = 1
 
         n_dist = len(self._distributions)
-        selector = rng.choice(n_dist, size=rd_size, p=self._weights)
+        selector = self._rng.choice(n_dist, size=rd_size, p=self._weights)
         indicators = [selector == i for i in range(n_dist)]
         indicators = [np.broadcast_to(ind, full_size) for ind in indicators]
 
         dists = [d[1] for d in self._distributions]
-        child_rngs = self._spawn_rngs(rng, len(dists))
-        raw_samples = [
-            d.sample(N, random_state=child_rngs[i]).values for i, d in enumerate(dists)
-        ]
+        raw_samples = [d.sample(N).values for d in dists]
         masked_samples = [ind * raw for ind, raw in zip(indicators, raw_samples)]
         masked_samples = np.array(masked_samples)
         sample = masked_samples.sum(axis=0)
@@ -248,7 +245,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         spl = pd.DataFrame(sample, index=spl_index, columns=self.columns)
         return spl
 
-    def _sample_blocked(self, n_samples, rng):
+    def _sample_blocked(self, n_samples):
         """Sample from the distribution with blocked rows and columns."""
         if n_samples is None:
             N = 1
@@ -257,12 +254,8 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         n_dist = len(self._distributions)
 
-        selector = rng.choice(n_dist, size=N, p=self._weights)
-        child_rngs = self._spawn_rngs(rng, N)
-        samples = [
-            self._distributions[i][1].sample(random_state=child_rngs[j])
-            for j, i in enumerate(selector)
-        ]
+        selector = self._rng.choice(n_dist, size=N, p=self._weights)
+        samples = [self._distributions[i][1].sample() for i in selector]
 
         if n_samples is None:
             return samples[0]

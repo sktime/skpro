@@ -333,15 +333,13 @@ class ClassName(BaseDistribution):
     # todo: consider implementing
     # at least one of _ppf and sample must be implemented
     # if not implemented, uses _ppf for sampling (inverse cdf on uniform)
-    def sample(self, n_samples=None, random_state=None):
+    def sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
-        random_state : None, int, np.random.RandomState, np.random.Generator
-            Controls the randomness of sampling.
 
         Returns
         -------
