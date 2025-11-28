@@ -187,13 +187,15 @@ class _DelegatedDistribution(BaseDistribution):
         delegate = self._get_delegate()
         return delegate.pdfnorm(a=a)
 
-    def sample(self, n_samples=None):
+    def sample(self, n_samples=None, random_state=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : None, int, np.random.RandomState, np.random.Generator
+            Controls the randomness of sampling.
 
         Returns
         -------
@@ -211,4 +213,4 @@ class _DelegatedDistribution(BaseDistribution):
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
         delegate = self._get_delegate()
-        return delegate.sample(n_samples=n_samples)
+        return delegate.sample(n_samples=n_samples, random_state=random_state)

@@ -244,13 +244,15 @@ class TransformedDistribution(BaseDistribution):
 
         return cdf_res
 
-    def sample(self, n_samples=None):
+    def sample(self, n_samples=None, random_state=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : None, int, np.random.RandomState, np.random.Generator
+            Controls the randomness of sampling.
 
         Returns
         -------
@@ -272,13 +274,14 @@ class TransformedDistribution(BaseDistribution):
             n = 1
         else:
             n = n_samples
+        rngs = self._spawn_rngs(self._resolve_random_state(random_state), n)
 
         trafo = self.transform
 
         samples = []
 
-        for _ in range(n):
-            new_sample = trafo(self.distribution.sample())
+        for child_rng in rngs:
+            new_sample = trafo(self.distribution.sample(random_state=child_rng))
             if not self._is_scalar_dist:
                 if not isinstance(new_sample, pd.DataFrame):
                     new_sample = pd.DataFrame(

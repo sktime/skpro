@@ -415,13 +415,15 @@ class Empirical(BaseDistribution):
         ppf_val = self._apply_per_ix(_ppf_np, {"assume_sorted": True}, x=p)
         return ppf_val
 
-    def sample(self, n_samples=None):
+    def sample(self, n_samples=None, random_state=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : None, int, np.random.RandomState, np.random.Generator
+            Controls the randomness of sampling.
 
         Returns
         -------
@@ -441,7 +443,7 @@ class Empirical(BaseDistribution):
         # for now, always defaulting to the standard logic
         # todo: address issue #283
         if self.ndim >= 0:
-            return super().sample(n_samples=n_samples)
+            return super().sample(n_samples=n_samples, random_state=random_state)
 
         spl = self.spl
         timestamps = self._instances

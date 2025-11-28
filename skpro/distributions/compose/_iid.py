@@ -294,13 +294,15 @@ class IID(BaseDistribution):
         """
         return self._broadcast_iid("energy", x=x)
 
-    def sample(self, n_samples=None):
+    def sample(self, n_samples=None, random_state=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : None, int, np.random.RandomState, np.random.Generator
+            Controls the randomness of sampling.
 
         Returns
         -------
@@ -319,8 +321,9 @@ class IID(BaseDistribution):
         """
         # if delegate has ppf,
         dist_has_impl = self.distribution._has_implementation_of
+        rng = self._resolve_random_state(random_state)
         if dist_has_impl("_ppf") or dist_has_impl("ppf"):
-            return super().sample(n_samples=n_samples)
+            return super().sample(n_samples=n_samples, random_state=rng)
 
         # else we sample manually, this will be less efficient due to loops
         if n_samples is None:
@@ -331,11 +334,29 @@ class IID(BaseDistribution):
         samples = np.zeros(target_shape)
 
         if self._bc_cols:
+            n_draws = target_shape[0] * target_shape[1]
+        else:
+            n_draws = target_shape[0]
+        rng_iter = iter(self._spawn_rngs(rng, n_draws))
+
+        def _draw_scalar():
+            draw = self.distribution.sample(random_state=next(rng_iter))
+            if isinstance(draw, pd.DataFrame):
+                draw = draw.values
+            return np.asarray(draw).reshape(-1)[0]
+
+        def _draw_row():
+            draw = self.distribution.sample(random_state=next(rng_iter))
+            if isinstance(draw, pd.DataFrame):
+                draw = draw.values
+            return np.asarray(draw).reshape(-1)
+
+        if self._bc_cols:
             for i, j in np.ndindex(target_shape):
-                samples[i, j] = self.distribution.sample()
+                samples[i, j] = _draw_scalar()
         else:
             for i in range(target_shape[0]):
-                samples[i] = self.distribution.sample()
+                samples[i] = _draw_row()
 
         if n_samples is None:
             res_index = self.index

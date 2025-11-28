@@ -14,6 +14,9 @@ from skbase.utils.dependencies import _check_estimator_deps, _check_soft_depende
 from skpro.base import BaseObject
 
 
+_DEFAULT_RNG = np.random.default_rng()
+
+
 class BaseDistribution(BaseObject):
     """Base probability distribution."""
 
@@ -1594,13 +1597,36 @@ class BaseDistribution(BaseObject):
         quantiles = qres.loc[:, cols]
         return quantiles
 
-    def sample(self, n_samples=None):
+    def _resolve_random_state(self, random_state):
+        """Return numpy Generator for given random_state specification."""
+        if isinstance(random_state, np.random.Generator):
+            return random_state
+        if isinstance(random_state, np.random.RandomState):
+            seed = random_state.randint(0, np.iinfo(np.uint32).max)
+            return np.random.default_rng(seed)
+        if random_state is None:
+            return _DEFAULT_RNG
+        return np.random.default_rng(random_state)
+
+    def _spawn_rngs(self, rng, n_children):
+        """Spawn `n_children` Generators derived from `rng`."""
+        if n_children <= 0:
+            return []
+        max_uint32 = np.iinfo(np.uint32).max
+        seeds = rng.integers(0, max_uint32, size=n_children, dtype=np.uint32)
+        return [np.random.default_rng(int(seed)) for seed in np.atleast_1d(seeds)]
+
+    def sample(self, n_samples=None, random_state=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : None, int, np.random.RandomState, np.random.Generator
+            Controls the random variates generated. If None, a shared generator
+            is used. Passing an integer or Generator instance makes sampling
+            reproducible.
 
         Returns
         -------
@@ -1618,8 +1644,10 @@ class BaseDistribution(BaseObject):
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
 
+        rng = self._resolve_random_state(random_state)
+
         def gen_unif():
-            np_unif = np.random.uniform(size=self.shape)
+            np_unif = rng.uniform(size=self.shape)
             if self.ndim > 0:
                 return pd.DataFrame(np_unif, index=self.index, columns=self.columns)
             return np_unif
@@ -1925,13 +1953,15 @@ class _BaseTFDistribution(BaseDistribution):
             dist_at_x = self
             return dist_at_x.distr.cdf(x)
 
-    def sample(self, n_samples=None):
+    def sample(self, n_samples=None, random_state=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : None, int, np.random.RandomState, np.random.Generator
+            Controls the randomness of sampling.
 
         Returns
         -------
@@ -1948,11 +1978,20 @@ class _BaseTFDistribution(BaseDistribution):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
+        seed = None
+        if random_state is not None:
+            seed_rng = self._resolve_random_state(random_state)
+            seed = int(seed_rng.integers(0, np.iinfo(np.uint32).max))
+
+        sample_kwargs = {}
+        if seed is not None:
+            sample_kwargs["seed"] = seed
+
         if n_samples is None:
-            np_spl = self.distr.sample().numpy()
+            np_spl = self.distr.sample(**sample_kwargs).numpy()
             return pd.DataFrame(np_spl, index=self.index, columns=self.columns)
         else:
-            np_spl = self.distr.sample(n_samples).numpy()
+            np_spl = self.distr.sample(n_samples, **sample_kwargs).numpy()
             np_spl = np_spl.reshape(-1, np_spl.shape[-1])
             mi = _prod_multiindex(range(n_samples), self.index)
             df_spl = pd.DataFrame(np_spl, index=mi, columns=self.columns)

@@ -177,13 +177,15 @@ class Mixture(BaseMetaObject, BaseDistribution):
         """Cumulative distribution function."""
         return self._average("cdf", x)
 
-    def sample(self, n_samples=None):
+    def sample(self, n_samples=None, random_state=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : None, int, np.random.RandomState, np.random.Generator
+            Controls the randomness of sampling.
 
         Returns
         -------
@@ -202,6 +204,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         """
         indep_rows = self.indep_rows
         indep_cols = self.indep_cols
+        rng = self._resolve_random_state(random_state)
 
         if n_samples is None:
             N = 1
@@ -210,7 +213,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         # deal with fully dependent case
         if not indep_rows and not indep_cols or self.ndim == 0:
-            return self._sample_blocked(n_samples=n_samples)
+            return self._sample_blocked(n_samples=n_samples, rng=rng)
 
         # we know that indep_rows and indep_cols are True, and self.ndim > 0
         rd_size = list(self.shape)
@@ -224,12 +227,15 @@ class Mixture(BaseMetaObject, BaseDistribution):
             rd_size[1] = 1
 
         n_dist = len(self._distributions)
-        selector = np.random.choice(n_dist, size=rd_size, p=self._weights)
+        selector = rng.choice(n_dist, size=rd_size, p=self._weights)
         indicators = [selector == i for i in range(n_dist)]
         indicators = [np.broadcast_to(ind, full_size) for ind in indicators]
 
         dists = [d[1] for d in self._distributions]
-        raw_samples = [d.sample(N).values for d in dists]
+        child_rngs = self._spawn_rngs(rng, len(dists))
+        raw_samples = [
+            d.sample(N, random_state=child_rngs[i]).values for i, d in enumerate(dists)
+        ]
         masked_samples = [ind * raw for ind, raw in zip(indicators, raw_samples)]
         masked_samples = np.array(masked_samples)
         sample = masked_samples.sum(axis=0)
@@ -242,7 +248,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         spl = pd.DataFrame(sample, index=spl_index, columns=self.columns)
         return spl
 
-    def _sample_blocked(self, n_samples):
+    def _sample_blocked(self, n_samples, rng):
         """Sample from the distribution with blocked rows and columns."""
         if n_samples is None:
             N = 1
@@ -251,9 +257,12 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         n_dist = len(self._distributions)
 
-        selector = np.random.choice(n_dist, size=N, p=self._weights)
-
-        samples = [self._distributions[i][1].sample() for i in selector]
+        selector = rng.choice(n_dist, size=N, p=self._weights)
+        child_rngs = self._spawn_rngs(rng, N)
+        samples = [
+            self._distributions[i][1].sample(random_state=child_rngs[j])
+            for j, i in enumerate(selector)
+        ]
 
         if n_samples is None:
             return samples[0]
