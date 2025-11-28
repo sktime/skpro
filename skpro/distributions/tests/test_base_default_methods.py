@@ -188,3 +188,26 @@ def test_base_default_minimal_cdf():
     """Test default cdf method."""
     minimal_n = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
+
+def test_mc_config_overrides_tags(monkeypatch):
+    """Configs override Monte Carlo defaults while preserving fallback."""
+    dist = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
+    orig_sample = _DistrDefaultMethodTesterOnlySample.sample
+    called_with = []
+
+    def wrapped_sample(self, n_samples=None):
+        called_with.append(n_samples)
+        return orig_sample(self, n_samples=n_samples)
+
+    monkeypatch.setattr(
+        _DistrDefaultMethodTesterOnlySample, "sample", wrapped_sample, raising=False
+    )
+
+    configured_size = 5
+    dist.set_config(approx_mean_spl=configured_size)
+    dist.mean()
+    assert called_with[-1] == configured_size
+
+    dist.set_config(approx_mean_spl=None)
+    dist.mean()
+    assert called_with[-1] == dist.get_tag("approx_mean_spl")
