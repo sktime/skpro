@@ -78,6 +78,7 @@ Integer support
     :template: class.rst
 
     Binomial
+    Geometric
     Hurdle
     NegativeBinomial
     Poisson
