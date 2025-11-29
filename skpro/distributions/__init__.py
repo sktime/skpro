@@ -21,6 +21,7 @@ __all__ = [
     "Hurdle",
     "IID",
     "InverseGamma",
+    "InverseGaussian",
     "Histogram",
     "Laplace",
     "LeftTruncated",
@@ -65,6 +66,7 @@ from skpro.distributions.halfnormal import HalfNormal
 from skpro.distributions.histogram import Histogram
 from skpro.distributions.hurdle import Hurdle
 from skpro.distributions.inversegamma import InverseGamma
+from skpro.distributions.inversegaussian import InverseGaussian
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.left_truncated import LeftTruncated
 from skpro.distributions.logistic import Logistic

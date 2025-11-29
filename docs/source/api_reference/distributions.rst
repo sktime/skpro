@@ -63,6 +63,7 @@ Continuous support - non-negative reals
     HalfLogistic
     HalfNormal
     InverseGamma
+    InverseGaussian
     LogLaplace
     Pareto
     Weibull
