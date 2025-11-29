@@ -48,10 +48,10 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, distribution="Normal", **ondil_kwargs):
+    def __init__(self, distribution="Normal", ondil_init_params=None):
         self.distribution = distribution
-        # store any kwargs forwarded to the ondil OnlineGamlss constructor
-        self._ondil_kwargs = ondil_kwargs
+        # explicit dict of kwargs forwarded to the ondil constructor.
+        self._ondil_kwargs = dict(ondil_init_params or {})
 
         super().__init__()
 
@@ -208,5 +208,5 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         # the package-level tests exercise different constructor paths.
         return [
             {"distribution": "Normal"},
-            {"distribution": "Normal", "verbose": 0},
+            {"distribution": "Normal", "ondil_init_params": {"verbose": 0}},
         ]
