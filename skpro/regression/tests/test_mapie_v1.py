@@ -6,8 +6,8 @@ from sklearn.linear_model import LinearRegression
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("mapie", severity="none"),
-    reason="mapie not installed",
+    not _check_soft_dependencies("mapie>=1.0", severity="none"),
+    reason="mapie>=1.0 not installed",
 )
 def test_mapie_v1_imports():
     from skpro.regression.mapie_v1 import (
@@ -24,8 +24,8 @@ def test_mapie_v1_imports():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("mapie", severity="none"),
-    reason="mapie not installed",
+    not _check_soft_dependencies("mapie>=1.0", severity="none"),
+    reason="mapie>=1.0 not installed",
 )
 @pytest.mark.parametrize(
     "estimator_class",

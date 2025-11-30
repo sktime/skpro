@@ -420,14 +420,17 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
         """
         from sklearn.ensemble import GradientBoostingRegressor
 
+        # Use lower confidence levels for testing with small datasets
+        # CQR requires 1/alpha calibration samples, so confidence_level=0.5
+        # requires only 2 samples minimum
         params1 = {
             "estimator": GradientBoostingRegressor(loss="quantile", alpha=0.5),
-            "confidence_level": 0.9,
+            "confidence_level": 0.5,
         }
         params2 = {
             "estimator": GradientBoostingRegressor(loss="quantile", alpha=0.5),
-            "confidence_level": 0.95,
-            "test_size": 0.3,
+            "confidence_level": 0.7,
+            "test_size": 0.4,
             "random_state": 42,
         }
         return [params1, params2]
