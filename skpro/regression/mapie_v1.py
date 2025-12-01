@@ -67,7 +67,6 @@ class MapieSplitConformalRegressor(BaseProbaRegressor):
         )
         from mapie.regression import SplitConformalRegressor
 
-        # Coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
         # Handle conformity score
@@ -86,7 +85,6 @@ class MapieSplitConformalRegressor(BaseProbaRegressor):
             prefit=False,
         )
 
-        # Split data
         X_train, X_cal, y_train, y_cal = train_test_split(
             X, y, test_size=self.test_size, random_state=self.random_state
         )
@@ -94,19 +92,16 @@ class MapieSplitConformalRegressor(BaseProbaRegressor):
         self.mapie_est_.fit(X_train, y_train)
         self.mapie_est_.conformalize(X_cal, y_cal)
 
-        # Store y columns for predict
         self._y_cols = y.columns if hasattr(y, "columns") else ["y"]
 
         return self
 
     def _predict(self, X):
-        # Coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
         y_pred_np = self.mapie_est_.predict(X)
         return pd.DataFrame(y_pred_np, index=X.index, columns=self._y_cols)
 
     def _predict_interval(self, X, coverage):
-        # Coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
         return _predict_interval_split_conformal(self, X, coverage)
 
@@ -127,9 +122,6 @@ class MapieSplitConformalRegressor(BaseProbaRegressor):
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.linear_model import LinearRegression, Ridge
 
-        # Use test_size=0.7 to ensure enough calibration samples for small test data
-        # MAPIE requires 1/alpha calibration samples, tests use alpha=0.05 (20 samples)
-        # With ~37 training samples and 0.7 split, we get ~26 calibration samples
         params1 = {
             "estimator": LinearRegression(),
             "test_size": 0.7,
@@ -199,7 +191,6 @@ class MapieCrossConformalRegressor(BaseProbaRegressor):
     def _fit(self, X, y):
         from mapie.regression import CrossConformalRegressor
 
-        # Coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
         self.mapie_est_ = CrossConformalRegressor(
@@ -325,7 +316,6 @@ class MapieJackknifeAfterBootstrapRegressor(BaseProbaRegressor):
     def _fit(self, X, y):
         from mapie.regression import JackknifeAfterBootstrapRegressor
 
-        # Coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
         self.mapie_est_ = JackknifeAfterBootstrapRegressor(
@@ -443,7 +433,6 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
     def _fit(self, X, y):
         from mapie.regression import ConformalizedQuantileRegressor
 
-        # Coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
         self.mapie_est_ = ConformalizedQuantileRegressor(
@@ -464,13 +453,11 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
         return self
 
     def _predict(self, X):
-        # Coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
         y_pred_np = self.mapie_est_.predict(X)
         return pd.DataFrame(y_pred_np, index=X.index, columns=self._y_cols)
 
     def _predict_interval(self, X, coverage):
-        # Coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
         return _predict_interval_cqr(self, X, coverage)
 
@@ -490,9 +477,6 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
         """
         from sklearn.ensemble import GradientBoostingRegressor
 
-        # Use low confidence levels for testing with small datasets
-        # CQR requires 1/alpha AND 1/(1-alpha) calibration samples
-        # confidence_level=0.5 (alpha=0.5) requires only 2 samples minimum
         params1 = {
             "estimator": GradientBoostingRegressor(loss="quantile", alpha=0.5),
             "confidence_level": 0.5,
@@ -519,7 +503,6 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
 def _predict_interval_split_conformal(self, X, coverage):
     """Predict intervals for SplitConformalRegressor."""
     results = {}
-    # SplitConformalRegressor stores alphas in _alphas list
     original_alphas = self.mapie_est_._alphas.copy()
 
     try:
@@ -553,23 +536,15 @@ def _predict_interval_split_conformal(self, X, coverage):
 def _predict_interval_mapie(self, X, coverage):
     """Predict intervals with dynamic coverage."""
     results = {}
-    # Store original alphas to restore later
     original_alphas = self.mapie_est_._alphas.copy()
 
     try:
         for cov in coverage:
-            # mapie stores alphas = 1 - confidence_level
-            # skpro coverage IS confidence_level (1-alpha)
             alpha = 1 - cov
-
-            # Set the internal _alphas attribute
             self.mapie_est_._alphas = [alpha]
 
-            # predict_interval returns (y_pred, intervals)
-            # intervals shape: (n_samples, 2, n_alpha) or (n_samples, 2)
             _, intervals = self.mapie_est_.predict_interval(X)
 
-            # Flatten the output - it may have extra dimensions
             intervals = np.squeeze(intervals)
             if intervals.ndim == 2:
                 lower = intervals[:, 0]
@@ -600,15 +575,11 @@ def _predict_interval_cqr(self, X, coverage):
     """
     results = {}
 
-    # CQR predict_interval doesn't take alpha - returns intervals for trained conf
     _, intervals = self.mapie_est_.predict_interval(X)
 
-    # intervals shape: (n_samples, 2, 1)
     lower = intervals[:, 0, 0]
     upper = intervals[:, 1, 0]
 
-    # Return the same intervals for all requested coverages
-    # Note: only truly valid for self.confidence_level
     for cov in coverage:
         results[(cov, "lower")] = lower
         results[(cov, "upper")] = upper
