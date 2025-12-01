@@ -50,6 +50,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
 
     def __init__(self, distribution="Normal", ondil_init_params=None):
         self.distribution = distribution
+        self.ondil_init_params = ondil_init_params
         # explicit dict of kwargs forwarded to the ondil constructor.
         self._ondil_kwargs = dict(ondil_init_params or {})
 
@@ -67,13 +68,13 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         module_str = "ondil.estimators.online_gamlss"
         ondil_mod = importlib.import_module(module_str)
         try:
-            OnlineGamlss = ondil_mod.OnlineGamlss
+            OnlineGamlss = ondil_mod.OnlineDistributionalRegression
         except AttributeError:
             try:
-                OnlineGamlss = ondil_mod.OnlineDistributionalRegression
+                OnlineGamlss = ondil_mod.OnlineGamlss
             except AttributeError as exc:
                 raise ImportError(
-                    "ondil.estimators.online_gamlss does not expose '"
+                    "ondil.estimators.online_gamlss does not expose '
                     "OnlineDistributionalRegression' or 'OnlineGamlss' - "
                     "please install a compatible ondil version"
                 ) from exc
