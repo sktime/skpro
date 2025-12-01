@@ -211,3 +211,4 @@ def test_mc_config_overrides_tags(monkeypatch):
     dist.set_config(approx_mean_spl=None)
     dist.mean()
     assert called_with[-1] == dist.get_tag("approx_mean_spl")
+    
