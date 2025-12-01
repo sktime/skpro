@@ -14,6 +14,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.sklearn import prep_skl_df
 
 
 class MapieSplitConformalRegressor(BaseProbaRegressor):
@@ -66,6 +67,9 @@ class MapieSplitConformalRegressor(BaseProbaRegressor):
         )
         from mapie.regression import SplitConformalRegressor
 
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
         # Handle conformity score
         if self.method == "absolute":
             conf_score = AbsoluteConformityScore()
@@ -96,10 +100,14 @@ class MapieSplitConformalRegressor(BaseProbaRegressor):
         return self
 
     def _predict(self, X):
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
         y_pred_np = self.mapie_est_.predict(X)
         return pd.DataFrame(y_pred_np, index=X.index, columns=self._y_cols)
 
     def _predict_interval(self, X, coverage):
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
         return _predict_interval_split_conformal(self, X, coverage)
 
     @classmethod
@@ -116,16 +124,29 @@ class MapieSplitConformalRegressor(BaseProbaRegressor):
         params : dict or list of dict
             Parameters to create testing instances of the class.
         """
-        from sklearn.linear_model import LinearRegression
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LinearRegression, Ridge
 
-        params1 = {}
-        params2 = {
+        # Use test_size=0.7 to ensure enough calibration samples for small test data
+        # MAPIE requires 1/alpha calibration samples, tests use alpha=0.05 (20 samples)
+        # With ~37 training samples and 0.7 split, we get ~26 calibration samples
+        params1 = {
             "estimator": LinearRegression(),
-            "test_size": 0.3,
+            "test_size": 0.7,
+        }
+        params2 = {
+            "estimator": Ridge(alpha=1.0),
+            "test_size": 0.7,
             "method": "absolute",
             "random_state": 42,
         }
-        return [params1, params2]
+        params3 = {
+            "estimator": RandomForestRegressor(n_estimators=5, random_state=0),
+            "test_size": 0.7,
+            "method": "absolute",
+            "random_state": 0,
+        }
+        return [params1, params2, params3]
 
 
 class MapieCrossConformalRegressor(BaseProbaRegressor):
@@ -178,6 +199,9 @@ class MapieCrossConformalRegressor(BaseProbaRegressor):
     def _fit(self, X, y):
         from mapie.regression import CrossConformalRegressor
 
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
         self.mapie_est_ = CrossConformalRegressor(
             estimator=self.estimator,
             cv=self.cv,
@@ -194,10 +218,14 @@ class MapieCrossConformalRegressor(BaseProbaRegressor):
         return self
 
     def _predict(self, X):
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
         y_pred_np = self.mapie_est_.predict(X)
         return pd.DataFrame(y_pred_np, index=X.index, columns=self._y_cols)
 
     def _predict_interval(self, X, coverage):
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
         return _predict_interval_mapie(self, X, coverage)
 
     @classmethod
@@ -214,16 +242,33 @@ class MapieCrossConformalRegressor(BaseProbaRegressor):
         params : dict or list of dict
             Parameters to create testing instances of the class.
         """
-        from sklearn.linear_model import LinearRegression
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LinearRegression, Ridge
+        from sklearn.tree import DecisionTreeRegressor
 
-        params1 = {}
-        params2 = {
+        params1 = {
             "estimator": LinearRegression(),
+        }
+        params2 = {
+            "estimator": Ridge(alpha=0.5),
             "cv": 3,
             "method": "plus",
             "random_state": 42,
         }
-        return [params1, params2]
+        params3 = {
+            "estimator": DecisionTreeRegressor(max_depth=3, random_state=0),
+            "cv": 2,
+            "method": "minmax",
+            "random_state": 0,
+        }
+        params4 = {
+            "estimator": RandomForestRegressor(n_estimators=5, random_state=0),
+            "cv": 3,
+            "method": "plus",
+            "n_jobs": 1,
+            "random_state": 0,
+        }
+        return [params1, params2, params3, params4]
 
 
 class MapieJackknifeAfterBootstrapRegressor(BaseProbaRegressor):
@@ -280,6 +325,9 @@ class MapieJackknifeAfterBootstrapRegressor(BaseProbaRegressor):
     def _fit(self, X, y):
         from mapie.regression import JackknifeAfterBootstrapRegressor
 
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
         self.mapie_est_ = JackknifeAfterBootstrapRegressor(
             estimator=self.estimator,
             resampling=self.cv,
@@ -297,10 +345,14 @@ class MapieJackknifeAfterBootstrapRegressor(BaseProbaRegressor):
         return self
 
     def _predict(self, X):
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
         y_pred_np = self.mapie_est_.predict(X)
         return pd.DataFrame(y_pred_np, index=X.index, columns=self._y_cols)
 
     def _predict_interval(self, X, coverage):
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
         return _predict_interval_mapie(self, X, coverage)
 
     @classmethod
@@ -317,17 +369,28 @@ class MapieJackknifeAfterBootstrapRegressor(BaseProbaRegressor):
         params : dict or list of dict
             Parameters to create testing instances of the class.
         """
-        from sklearn.linear_model import LinearRegression
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LinearRegression, Ridge
 
-        params1 = {}
-        params2 = {
+        params1 = {
             "estimator": LinearRegression(),
+        }
+        params2 = {
+            "estimator": Ridge(alpha=0.5),
             "cv": 10,
             "method": "plus",
             "agg_function": "median",
             "random_state": 42,
         }
-        return [params1, params2]
+        params3 = {
+            "estimator": RandomForestRegressor(n_estimators=5, random_state=0),
+            "cv": 15,
+            "method": "minmax",
+            "agg_function": "mean",
+            "n_jobs": 1,
+            "random_state": 0,
+        }
+        return [params1, params2, params3]
 
 
 class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
@@ -380,6 +443,9 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
     def _fit(self, X, y):
         from mapie.regression import ConformalizedQuantileRegressor
 
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
+
         self.mapie_est_ = ConformalizedQuantileRegressor(
             estimator=self.estimator,
             confidence_level=self.confidence_level,
@@ -398,10 +464,14 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
         return self
 
     def _predict(self, X):
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
         y_pred_np = self.mapie_est_.predict(X)
         return pd.DataFrame(y_pred_np, index=X.index, columns=self._y_cols)
 
     def _predict_interval(self, X, coverage):
+        # Coerce X to pandas DataFrame with string column names
+        X = prep_skl_df(X, copy_df=True)
         return _predict_interval_cqr(self, X, coverage)
 
     @classmethod
@@ -420,20 +490,30 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
         """
         from sklearn.ensemble import GradientBoostingRegressor
 
-        # Use lower confidence levels for testing with small datasets
-        # CQR requires 1/alpha calibration samples, so confidence_level=0.5
-        # requires only 2 samples minimum
+        # Use low confidence levels for testing with small datasets
+        # CQR requires 1/alpha AND 1/(1-alpha) calibration samples
+        # confidence_level=0.5 (alpha=0.5) requires only 2 samples minimum
         params1 = {
             "estimator": GradientBoostingRegressor(loss="quantile", alpha=0.5),
             "confidence_level": 0.5,
         }
         params2 = {
-            "estimator": GradientBoostingRegressor(loss="quantile", alpha=0.5),
-            "confidence_level": 0.7,
-            "test_size": 0.4,
+            "estimator": GradientBoostingRegressor(
+                loss="quantile", alpha=0.5, n_estimators=50, random_state=0
+            ),
+            "confidence_level": 0.5,
+            "test_size": 0.5,
             "random_state": 42,
         }
-        return [params1, params2]
+        params3 = {
+            "estimator": GradientBoostingRegressor(
+                loss="quantile", alpha=0.5, max_depth=3, random_state=0
+            ),
+            "confidence_level": 0.5,
+            "test_size": 0.4,
+            "random_state": 0,
+        }
+        return [params1, params2, params3]
 
 
 def _predict_interval_split_conformal(self, X, coverage):
