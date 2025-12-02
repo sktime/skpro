@@ -190,8 +190,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         # fallback: try to call distribution class with all columns as kwargs
         if hasattr(distr_mod, dist):
             Distr = getattr(distr_mod, dist)
-            # construct args dict using column names
-            vals = {c: df.loc[:, [c]].values for c in df.columns}
+            vals = {str(c): df.loc[:, [c]].values for c in df.columns}
             return Distr(**vals, index=X.index, columns=self._y_cols)
 
         raise NotImplementedError(
