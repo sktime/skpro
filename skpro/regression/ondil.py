@@ -74,8 +74,8 @@ class OndilOnlineGamlss(BaseProbaRegressor):
                 OnlineGamlss = ondil_mod.OnlineGamlss
             except AttributeError as exc:
                 raise ImportError(
-                    "ondil.estimators.online_gamlss does not expose '
-                    "OnlineDistributionalRegression' or 'OnlineGamlss' - "
+                    "ondil.estimators.online_gamlss does not expose "
+                    "'OnlineDistributionalRegression' or 'OnlineGamlss' - "
                     "please install a compatible ondil version"
                 ) from exc
 
