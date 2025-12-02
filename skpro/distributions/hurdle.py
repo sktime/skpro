@@ -1,7 +1,4 @@
 """Hurdle distribution implementation."""
-import functools
-from typing import Callable
-
 import numpy as np
 from numpy.typing import ArrayLike
 
@@ -10,17 +7,8 @@ from skpro.distributions.left_truncated import LeftTruncated
 from skpro.distributions.truncated import TruncatedDistribution
 
 
-def _set_to_constant_where_negative(const: float):
-    def outer(fun: Callable):
-        @functools.wraps(fun)
-        def inner(self, x):
-            result = fun(self, x)
-
-            return np.where(np.asarray(x) < 0, const, result)
-
-        return inner
-
-    return outer
+def _set_to_constant_where_negative(mask: np.ndarray, x: np.ndarray, const: float):
+    return np.where(mask, const, x)
 
 
 # TODO: how to handle index/columns in these transformed distributions? must they be
@@ -129,7 +117,6 @@ class Hurdle(BaseDistribution):
             columns=self.columns,
         )
 
-    @_set_to_constant_where_negative(const=-np.inf)
     def _log_pmf(self, x):
         log_prob_zero = np.log(1.0 - self.p)
         log_prob_hurdle = np.log(self.p)
@@ -139,9 +126,10 @@ class Hurdle(BaseDistribution):
         log_prob_positive = log_prob_hurdle + log_prob_positive_value
 
         is_zero = x == 0
-        return np.where(is_zero, log_prob_zero, log_prob_positive)
+        result = np.where(is_zero, log_prob_zero, log_prob_positive)
 
-    @_set_to_constant_where_negative(const=0.0)
+        return _set_to_constant_where_negative(x < 0.0, result, -np.inf)
+
     def _pmf(self, x):
         prob_zero = 1.0 - self.p
         prob_hurdle = self.p
@@ -151,9 +139,10 @@ class Hurdle(BaseDistribution):
         prob_positive = prob_hurdle * prob_positive_value
 
         is_zero = x == 0
-        return np.where(is_zero, prob_zero, prob_positive)
+        result = np.where(is_zero, prob_zero, prob_positive)
 
-    @_set_to_constant_where_negative(const=-np.inf)
+        return _set_to_constant_where_negative(x < 0.0, result, 0.0)
+
     def _log_pdf(self, x):
         log_prob_zero = np.log(1.0 - self.p)
         log_prob_hurdle = np.log(self.p)
@@ -163,9 +152,10 @@ class Hurdle(BaseDistribution):
         log_prob_positive = log_prob_hurdle + log_prob_positive_value
 
         is_zero = x == 0
-        return np.where(is_zero, log_prob_zero, log_prob_positive)
+        result = np.where(is_zero, log_prob_zero, log_prob_positive)
 
-    @_set_to_constant_where_negative(const=0.0)
+        return _set_to_constant_where_negative(x < 0.0, result, -np.inf)
+
     def _pdf(self, x):
         prob_zero = 1.0 - self.p
         prob_hurdle = self.p
@@ -175,7 +165,9 @@ class Hurdle(BaseDistribution):
         prob_positive = prob_hurdle * prob_positive_value
 
         is_zero = x == 0
-        return np.where(is_zero, prob_zero, prob_positive)
+        result = np.where(is_zero, prob_zero, prob_positive)
+
+        return _set_to_constant_where_negative(x < 0.0, result, 0.0)
 
     def _mean(self):
         return self.p * self._truncated_distribution.mean()
@@ -196,16 +188,17 @@ class Hurdle(BaseDistribution):
 
         return np.where(p <= prob_zero, 0.0, y_positive)
 
-    @_set_to_constant_where_negative(const=0.0)
     def _cdf(self, x):
         is_zero = x == 0.0
         prob_positive = self._truncated_distribution.cdf(x)
 
-        return np.where(
+        result = np.where(
             is_zero,
             1.0 - self.p,
             (1.0 - self.p) + self.p * prob_positive,
         )
+
+        return _set_to_constant_where_negative(x < 0.0, result, 0.0)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
