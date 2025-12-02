@@ -38,6 +38,10 @@ class TransformedDistribution(BaseDistribution):
     transform : callable, DifferentiableTransformer or Transformer
         function or Transformer that is applied to the distribution, must be
         applicable to array-likes of the same shape as ``self``.
+        NOTE: This is the transform applied to internal distribution to return the
+        original (external) distribution. This nomenclature is opposite to that of
+        sklearn-like transformers, where ``transform`` is applied to data to go
+        to the transformed space. This is maintained for backwards compatibility.
         NOTE: Avoid passing Transformer methods as functions, instead pass
         the full Transformer.
 
@@ -48,6 +52,10 @@ class TransformedDistribution(BaseDistribution):
     inverse_transform : callable, optional, default = None
         inverse function of ``transform``, must be applicable to array-likes of the
         same shape as ``self``.
+        NOTE: This is the inverse_transform applied to external distribution to return
+        the internal distribution (`self.distribution`). This nomenclature is opposite
+        to that of sklearn-like transformers, where ``transform`` is applied to data to
+        go to the transformed space. This is maintained for backwards compatibility.
         NOTE: Avoid passing Transformer methods as functions, instead pass
         the full Transformer to transform.
 
@@ -101,6 +109,7 @@ class TransformedDistribution(BaseDistribution):
         index=None,
         columns=None,
     ):
+        # TODO: explain nomenclature of transform vs sklearn transformers
         self.distribution = distribution
         self.transform = transform
         self.inverse_transform = inverse_transform
@@ -131,31 +140,34 @@ class TransformedDistribution(BaseDistribution):
             self.set_tags(**{"distr:measuretype": "discrete"})
 
         # Check inverse function availability
-        inverse_status = self.transformer_._get_transform_diff_capabilities()
-        has_transformer_inverse = inverse_status is not False
-        has_separate_inverse = self.inverse_transform is not None
+        inner_inverse_diff_status = self.transformer_._get_transform_diff_capabilities()
 
-        if has_transformer_inverse or has_separate_inverse:
+        self._has_inner_inverse = any(
+            [
+                hasattr(self.transformer_, "transform"),
+                self.inverse_transform is not None,
+            ]
+        )
+
+        # Set capabilities tags given the state of inner inverse and its derivative
+        if inner_inverse_diff_status or self._has_inner_inverse:
             exact_methods = []
             approx_methods = ["pdfnorm", "mean", "var", "energy"]
 
-            # ppf uses transformer_.transform, which is always available
-            # So ppf can be exact even without an inverse
+            # ppf can be exact when either monotonic or inner_inverse is available
             exact_methods.append("ppf")
 
-            # cdf uses self.inverse_transform parameter (not transformer inverse)
-            # So cdf can only be exact when separate inverse_transform provided
-            if has_separate_inverse:
+            # cdf can only be exact when separate inner_inverse is provided
+            if self._has_inner_inverse:
                 exact_methods.append("cdf")
             else:
-                # No separate inverse_transform, cdf will use sampling approximation
+                # No inner_inverse, cdf will use sampling approximation
                 approx_methods.append("cdf")
 
-            # pdf and log_pdf require the derivative of inverse transform
-            # Only exact if transformer has exact derivative (not numerical)
-            if inverse_status == "exact":
+            # pdf and log_pdf require an inner_inverse derivative
+            if inner_inverse_diff_status == "exact":
                 exact_methods.extend(["pdf", "log_pdf"])
-            elif inverse_status == "approx":
+            elif inner_inverse_diff_status == "approx":
                 approx_methods.extend(["pdf", "log_pdf"])
 
             self.set_tags(
@@ -168,10 +180,16 @@ class TransformedDistribution(BaseDistribution):
     def _pdf(self, x):
         r"""Probability density function.
 
-        This currently implements an approximation of the pdf, by using the
-        simplified assumption that the pdf of the transformed distribution is
-        descriptive the pdf on the original distribution. For positive monotonic
-        transformations, direction is preserved, but magnitude and scale may not be.
+        Provides exact "change-of-variables" pdf if either:
+          * the user passes a DifferentiableTransformer with transform_func_diff method
+            to the transform kwarg,
+          * the transformer is a scaler transformer (has `scaler_` attribute)
+
+        Provides approximate "change-of-variables" pdf via numerical differentiation if:
+          * the user passes a DifferentiableTransformer without transform_func_diff
+            method.
+          * the transformer is not a scaler transformer (lacks `scaler_` attribute)
+          * the user passes inverse_transform function
 
         Parameters
         ----------
@@ -205,7 +223,9 @@ class TransformedDistribution(BaseDistribution):
                 jacobian = np.abs(self.transformer_.transform_diff(x))
         else:
             raise ValueError(
-                "The TransformedDistribution must have a transform to compute the pdf.",
+                "The TransformedDistribution must have a transform to compute the pdf: "
+                "Either pass a DifferentiableTransformer, Transform as transform, "
+                "or provide an inverse_transform ufunc."
             )
 
         return pdf_out / jacobian
@@ -213,10 +233,18 @@ class TransformedDistribution(BaseDistribution):
     def _log_pdf(self, x):
         r"""Logarithmic probability density function.
 
-        This currently implements an approximation of the log-pdf, by using the
-        simplified assumption that the log-pdf of the transformed distribution is
-        descriptive the log-pdf on the original distribution. For positive monotonic
-        transformations, direction is preserved, but magnitude and scale may not be.
+        Provides exact "change-of-variables" log_pdf if either:
+          * the user passes a DifferentiableTransformer with transform_func_diff method
+            to the transform kwarg,
+          * the transformer is a scaler transformer (has `scaler_` attribute)
+
+        Provides approximate "change-of-variables" log_pdf via numerical
+        differentiation if:
+          * the user passes a DifferentiableTransformer without transform_func_diff
+            method.
+          * the transformer is not a scaler transformer (lacks `scaler_` attribute)
+          * the user passes inverse_transform function
+
 
         Parameters
         ----------
@@ -321,20 +349,22 @@ class TransformedDistribution(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             ppf values at the given points
         """
-        if not self.assume_monotonic and self.inverse_transform is None:
+        if not self.assume_monotonic and not self._has_inner_inverse:
             raise ValueError(
                 "if inverse_transform is not given, "
                 "ppf is implemented only for monotonic transforms, "
                 "set `assume_monotonic=True` to use this method"
             )
 
-        elif not self.assume_monotonic and self.inverse_transform is not None:
+        # inner_inverse exists
+        elif not self.assume_monotonic and self._has_inner_inverse:
             return super().ppf(p)
 
         if self.ndim != 0:
             p = pd.DataFrame(p, index=self.index, columns=self.columns)
 
-        trafo = self.transformer_.transform
+        # use inner_transform
+        trafo = self.transformer_.inverse_transform
         inner_ppf = self.distribution.ppf(p)
 
         if self.ndim == 0:
@@ -366,10 +396,12 @@ class TransformedDistribution(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             cdf values at the given points
         """
-        if self.inverse_transform is None:
+        # if no inner_inverse use sampling-based approximation
+        if self.transformer_.transform is None:
             return super()._cdf(x)
 
-        inv_trafo = self.inverse_transform
+        # use inner_inverse if exists
+        inv_trafo = self.transformer_.transform
 
         if self.ndim != 0:
             x = pd.DataFrame(x, index=self.index, columns=self.columns)
@@ -421,7 +453,8 @@ class TransformedDistribution(BaseDistribution):
         else:
             n = n_samples
 
-        trafo = self.transformer_.transform
+        # inner transform
+        trafo = self.transformer_.inverse_transform
 
         samples = []
 

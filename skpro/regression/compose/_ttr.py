@@ -313,10 +313,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         # We need to apply inverse_transform to get back to original space.
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
-            # sklearn-like tranformer.inverse_transform is the distribution.transform
-            transform=self.transformer_.inverse_transform,
-            # sklearn-like tranformer.transform is the inverse of distribution.transform
-            inverse_transform=self.transformer_.transform,
+            transform=self.transformer_,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"],

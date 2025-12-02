@@ -7,7 +7,6 @@ from scipy.special import expit, logit
 from sklearn.preprocessing import FunctionTransformer, MinMaxScaler
 
 from skpro.compose import DifferentiableTransformer
-from skpro.metrics import CRPS
 from skpro.regression.compose import TransformedTargetRegressor
 from skpro.regression.linear import ARDRegression
 
@@ -25,15 +24,8 @@ def sample_data():
     return X, y
 
 
-def test_ttr_matches_manual_jacobian_adjustment(sample_data):
-    """Test that TTR produces similar results to manual transformation with Jacobian.
-
-    This test verifies that TransformedTargetRegressor correctly applies the
-    change-of-variables formula by comparing it to a manual implementation where:
-    1. Targets are transformed
-    2. Model is fit on transformed targets
-    3. Metrics are adjusted by the Jacobian of the transformation
-    """
+def test_ttr_pdf_vs_linear_jacobian(sample_data):
+    """Compare the TTR PDF with manual transformation with Jacobian."""
     X, y = sample_data
     mms = MinMaxScaler(feature_range=(0.1, 0.9))
     mms_diff = DifferentiableTransformer(transformer=mms)
@@ -43,47 +35,38 @@ def test_ttr_matches_manual_jacobian_adjustment(sample_data):
     pipe = TransformedTargetRegressor(regressor=est, transformer=mms_diff)
     pipe.fit(X=X, y=y)
     pred_proba_ttr = pipe.predict_proba(X)
-    crps_ttr = CRPS()(y_true=y, y_pred=pred_proba_ttr)
+    pdf_ttr = pred_proba_ttr.pdf(y)
 
     # manual transformation
     y_transformed = mms.fit_transform(y)
     est.fit(X=X, y=y_transformed)
     pred_proba_expected = est.predict_proba(X)
 
-    # compute Jacobian and adjust metric
-    crps_raw = CRPS()._evaluate_by_index(y_transformed, pred_proba_expected)
+    # compute PDF and adjust by Jacobian
+    pdf_raw = pred_proba_expected.pdf(y_transformed)
     jacobian = np.ones_like(y) * mms.scale_
-    crps_expected = np.mean(crps_raw / jacobian.reshape(-1, 1))
+    pdf_expected = pdf_raw / jacobian
 
-    # use the log relative CRPS to compare results
-    # CRPS of the expected and TTR methods should be very similar in magnitude
-    y_mean = y.mean().target
-    log_rel_crps_raw = np.log((crps_raw / y_mean).mean())
-    log_rel_crps_expected = np.log(crps_expected / y_mean)
-    log_rel_crps_ttr = np.log(crps_ttr / y_mean)
+    # compare PDF values
+    pdf_ttr_values = pdf_ttr.values
+    pdf_expected_values = pdf_expected.values
+    pdf_raw_values = pdf_raw.values
 
-    assert np.isclose(log_rel_crps_ttr, log_rel_crps_expected, atol=1e-2)
-    assert not np.isclose(log_rel_crps_ttr, log_rel_crps_raw, atol=1e-2)
-    assert not np.isclose(log_rel_crps_expected, log_rel_crps_raw, atol=1e-2)
+    assert np.allclose(pdf_ttr_values, pdf_expected_values, rtol=1e-2)
+    assert not np.allclose(pdf_ttr_values, pdf_raw_values, rtol=1e-2)
 
 
-def test_ttr_matches_nonlinear_jacobian_adjustment(sample_data):
-    """Test that TTR produces similar results to manual transformation with Jacobian.
-
-    This test verifies that TransformedTargetRegressor correctly applies the
-    change-of-variables formula by comparing it to a manual implementation where:
-    1. Targets are transformed
-    2. Model is fit on transformed targets
-    3. Metrics are adjusted by the Jacobian of the transformation
-    """
+def test_ttr_pdf_vs_nonlinear_jacobian(sample_data):
+    """Compare TTR PDF with manual transformation with non-linear Jacobian."""
     X, y = sample_data
     mms = FunctionTransformer(func=expit, inverse_func=logit)
 
-    def inverse_func_diff(x):
-        return 1 / (x * (1 - x))
+    def transform_func_diff(x):
+        # Derivative of expit (sigmoid): d/dx expit(x) = expit(x) * (1 - expit(x))
+        return expit(x) * (1 - expit(x))
 
     mms_diff = DifferentiableTransformer(
-        transformer=mms, inverse_func_diff=inverse_func_diff
+        transformer=mms, transform_func_diff=transform_func_diff
     )
 
     est = ARDRegression()
@@ -92,27 +75,23 @@ def test_ttr_matches_nonlinear_jacobian_adjustment(sample_data):
     pipe = TransformedTargetRegressor(regressor=est, transformer=mms_diff)
     pipe.fit(X=X, y=y)
     pred_proba_ttr = pipe.predict_proba(X)
-    crps_ttr = CRPS()(y_true=y, y_pred=pred_proba_ttr)
+    pdf_ttr = pred_proba_ttr.pdf(y)
 
     # manual transformation
     y_transformed = mms.fit_transform(y)
     est.fit(X=X, y=y_transformed)
     pred_proba_expected = est.predict_proba(X)
 
-    # compute Jacobian and adjust metric
-    crps_raw = CRPS()._evaluate_by_index(y_transformed, pred_proba_expected)
-    # Jacobian of inverse transform (logit): d/dx logit(x) = 1/(x*(1-x))
-    jacobian = inverse_func_diff(y).abs().values
-    crps_expected = np.mean(crps_raw / jacobian)
-
-    # use the log relative CRPS to compare results
-    # CRPS of the expected and TTR methods should be very similar in magnitude
-    y_mean = y.mean().target
-    log_rel_crps_raw = np.log((crps_raw / y_mean).mean())
-    log_rel_crps_expected = np.log(crps_expected / y_mean)
-    log_rel_crps_ttr = np.log(crps_ttr / y_mean)
+    # compute PDF and adjust by Jacobian
+    pdf_raw = pred_proba_expected.pdf(y_transformed)
+    # Jacobian of forward transform (expit): d/dx expit(x) = expit(x) * (1 - expit(x))
+    jacobian = transform_func_diff(y).abs()
+    pdf_expected = pdf_raw / jacobian
 
     # nonlinear transformations deviate more so we relax the tolerance
-    assert np.isclose(log_rel_crps_ttr, log_rel_crps_expected, atol=0.5)
-    assert not np.isclose(log_rel_crps_ttr, log_rel_crps_raw, atol=0.5)
-    assert not np.isclose(log_rel_crps_expected, log_rel_crps_raw, atol=0.5)
+    pdf_ttr_values = pdf_ttr.values
+    pdf_expected_values = pdf_expected.values
+    pdf_raw_values = pdf_raw.values
+
+    assert np.allclose(pdf_ttr_values, pdf_expected_values, rtol=0.1)
+    assert not np.allclose(pdf_ttr_values, pdf_raw_values, rtol=0.1)
