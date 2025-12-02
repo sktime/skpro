@@ -521,7 +521,7 @@ class Pipeline(_Pipeline):
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
         coverage : guaranteed list of float of unique values
-           nominal coverage(s) of predictive interval(s)
+            nominal coverage(s) of predictive interval(s)
 
         Returns
         -------

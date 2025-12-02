@@ -167,7 +167,10 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        yt = self.transformer_(y)
+        if self.transformer_ is not None:
+            yt = self.transformer_.transform(y)
+        else:
+            yt = y
         self.regressor_.update(X=X, y=yt, C=C)
         return self
 
@@ -306,9 +309,14 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         y_pred = self.regressor_.predict_proba(X=X)
+        # The regressor outputs distributions in transformed space.
+        # We need to apply inverse_transform to get back to original space.
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
-            transform=self.transformer_,
+            # sklearn-like tranformer.inverse_transform is the distribution.transform
+            transform=self.transformer_.inverse_transform,
+            # sklearn-like tranformer.transform is the inverse of distribution.transform
+            inverse_transform=self.transformer_.transform,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"],
