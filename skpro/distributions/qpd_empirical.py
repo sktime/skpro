@@ -80,9 +80,10 @@ class QPD_Empirical(Empirical):
         "distr:measuretype": "discrete",
     }
 
-    def __init__(self, quantiles, time_indep=True, index=None, columns=None):
+    def __init__(self, quantiles, time_indep=True, row_indep=True, index=None, columns=None):
         self.quantiles = quantiles
         self.time_indep = time_indep
+        self.row_indep = row_indep
         self.index = index
         self.columns = columns
 
@@ -90,6 +91,7 @@ class QPD_Empirical(Empirical):
             spl=quantiles,
             weights=self._get_empirical_weighted_sample(quantiles),
             time_indep=time_indep,
+            row_indep=row_indep,
             index=index,
             columns=columns,
         )
@@ -138,6 +140,7 @@ class QPD_Empirical(Empirical):
         return QPD_Empirical(
             spl_subset,
             time_indep=self.time_indep,
+            row_indep=self.row_indep,
             index=subs_rowidx,
             columns=subs_colidx,
         )
@@ -157,6 +160,7 @@ class QPD_Empirical(Empirical):
         params1 = {
             "quantiles": spl,
             "time_indep": True,
+            "row_indep": True,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }
@@ -164,6 +168,7 @@ class QPD_Empirical(Empirical):
         params2 = {
             "quantiles": spl,
             "time_indep": False,
+            "row_indep": False,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }
