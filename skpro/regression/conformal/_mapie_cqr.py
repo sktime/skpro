@@ -39,7 +39,13 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
     """
 
     _tags = {
-        "authors": ["Omswastik-11", "vtaquet", "vincentblot28", "TMorzadec", "gmartinonQM"],
+        "authors": [
+            "Omswastik-11",
+            "vtaquet",
+            "vincentblot28",
+            "TMorzadec",
+            "gmartinonQM",
+        ],
         "maintainers": ["fkiraly", "Omswastik-11"],
         "python_dependencies": ["MAPIE>=1.0"],
         "capability:missing": True,
