@@ -10,7 +10,27 @@ from sklearn.linear_model import LinearRegression
     reason="mapie>=1.0 not installed",
 )
 def test_mapie_v1_imports():
-    from skpro.regression.mapie_v1 import (
+    """Test imports from the new conformal/jackknife modules."""
+    from skpro.regression.conformal import (
+        MapieConformalizedQuantileRegressor,
+        MapieCrossConformalRegressor,
+        MapieSplitConformalRegressor,
+    )
+    from skpro.regression.jackknife import MapieJackknifeAfterBootstrapRegressor
+
+    assert MapieSplitConformalRegressor is not None
+    assert MapieCrossConformalRegressor is not None
+    assert MapieJackknifeAfterBootstrapRegressor is not None
+    assert MapieConformalizedQuantileRegressor is not None
+
+
+@pytest.mark.skipif(
+    not _check_soft_dependencies("mapie>=1.0", severity="none"),
+    reason="mapie>=1.0 not installed",
+)
+def test_mapie_v1_imports_from_top_level():
+    """Test imports from top-level regression module."""
+    from skpro.regression import (
         MapieConformalizedQuantileRegressor,
         MapieCrossConformalRegressor,
         MapieJackknifeAfterBootstrapRegressor,
@@ -37,10 +57,10 @@ def test_mapie_v1_imports():
     ],
 )
 def test_mapie_v1_fit_predict(estimator_class):
-    import skpro.regression.mapie_v1 as mapie_v1
+    import skpro.regression as regression
 
     # Get class from module
-    cls = getattr(mapie_v1, estimator_class)
+    cls = getattr(regression, estimator_class)
 
     # Create dummy data - CQR needs more samples for calibration
     n_samples = 200 if estimator_class == "MapieConformalizedQuantileRegressor" else 100
