@@ -142,9 +142,17 @@ class TransformedDistribution(BaseDistribution):
         # Check inverse function availability
         inner_inverse_diff_status = self.transformer_._get_transform_diff_capabilities()
 
+        # Check if we have external->internal transform (inner inverse)
+        # After the swap in _coerce_to_diff_transformer, this is in transformer_.func
+        has_transform_func = (
+            hasattr(self.transformer_, "transformer_")
+            and hasattr(self.transformer_.transformer_, "func")
+            and self.transformer_.transformer_.func is not None
+        )
+
         self._has_inner_inverse = any(
             [
-                hasattr(self.transformer_, "transform"),
+                has_transform_func,
                 self.inverse_transform is not None,
             ]
         )
@@ -397,7 +405,7 @@ class TransformedDistribution(BaseDistribution):
             cdf values at the given points
         """
         # if no inner_inverse use sampling-based approximation
-        if self.transformer_.transform is None:
+        if not self._has_inner_inverse:
             return super()._cdf(x)
 
         # use inner_inverse if exists
@@ -606,7 +614,7 @@ def _coerce_to_diff_transformer(
             )
 
         ft = FunctionTransformer(
-            func=transform, inverse_func=inverse_transform, check_inverse=False
+            func=inverse_transform, inverse_func=transform, check_inverse=False
         )
 
         transformer = DifferentiableTransformer(transformer=ft)
