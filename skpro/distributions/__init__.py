@@ -14,6 +14,7 @@ __all__ = [
     "Exponential",
     "Fisk",
     "Gamma",
+    "LogGamma",
     "Geometric",
     "HalfCauchy",
     "HalfLogistic",
@@ -69,6 +70,7 @@ from skpro.distributions.inversegamma import InverseGamma
 from skpro.distributions.inversegaussian import InverseGaussian
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.left_truncated import LeftTruncated
+from skpro.distributions.loggamma import LogGamma
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal

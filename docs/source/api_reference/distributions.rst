@@ -59,6 +59,7 @@ Continuous support - non-negative reals
     Erlang
     Fisk
     Gamma
+    LogGamma
     HalfCauchy
     HalfLogistic
     HalfNormal
