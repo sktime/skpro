@@ -45,7 +45,7 @@ class XGBoostLSS(BaseProbaRegressor):
         Number of boosting iterations.
 
     nfold: int, optional, default=5
-        Number of folds in CV used for tuning.
+        Number of folds in CV used for tuning. Ignored if n_trials=0.
 
     early_stopping_rounds: int, optional, default=20
         Number of early stopping round interval.
@@ -53,6 +53,7 @@ class XGBoostLSS(BaseProbaRegressor):
         needs to improve at least once every **early_stopping_rounds**
         round(s) to continue training.
         The last entry in the evaluation history will represent the best iteration.
+        Ignored if n_trials=0.
 
     max_minutes: int, optional, default=10
         Time budget in minutes, i.e., stop study after the given number of minutes.
@@ -61,6 +62,11 @@ class XGBoostLSS(BaseProbaRegressor):
         The number of trials in tuning.
         If this argument is set to None, there is no limitation on the number of trials.
         If set to 0, no tuning is done, and default parameters of XGBoostLSS are used.
+
+    xgb_params: dict, optional, default=None
+        Dictionary of xgboost parameters to pass to the model.
+        Used only if n_trials=0 (i.e., no hyperparameter optimization).
+        See https://xgboost.readthedocs.io/en/stable/parameter.html for valid params.
     """
 
     _tags = {
@@ -94,6 +100,7 @@ class XGBoostLSS(BaseProbaRegressor):
         early_stopping_rounds=20,
         max_minutes=10,
         n_trials=30,
+        xgb_params=None,
     ):
         self.dist = dist
         self.stabilization = stabilization
@@ -105,6 +112,7 @@ class XGBoostLSS(BaseProbaRegressor):
         self.early_stopping_rounds = early_stopping_rounds
         self.max_minutes = max_minutes
         self.n_trials = n_trials
+        self.xgb_params = xgb_params
 
         super().__init__()
 
@@ -207,14 +215,14 @@ class XGBoostLSS(BaseProbaRegressor):
 
         xgblss = XGBoostLSS(
             xgblss_distr(
-                stabilization="None",
-                response_fn="exp",
-                loss_fn="nll",
+                stabilization=self.stabilization,
+                response_fn=self.response_fn,
+                loss_fn=self.loss_fn,
             )
         )
 
         if self.n_trials == 0:
-            opt_params = {}  # empty dict, use default parameters
+            opt_params = self.xgb_params or {}
             n_rounds = self.num_boost_round
         else:
             opt_params = self._hyper_opt(xgblss, dtrain)
@@ -350,4 +358,19 @@ class XGBoostLSS(BaseProbaRegressor):
         params5 = {"dist": "Laplace", "max_minutes": 1}
         params6 = {"n_trials": 0, "max_minutes": 1}
         params7 = {"dist": "Beta", "max_minutes": 1}
-        return [params0, params1, params2, params3, params4, params5, params6, params7]
+        params8 = {
+            "n_trials": 0,
+            "max_minutes": 1,
+            "xgb_params": {"eta": 0.1, "max_depth": 3},
+        }
+        return [
+            params0,
+            params1,
+            params2,
+            params3,
+            params4,
+            params5,
+            params6,
+            params7,
+            params8,
+        ]
