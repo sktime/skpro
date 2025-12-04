@@ -63,8 +63,8 @@ class XGBoostLSS(BaseProbaRegressor):
         If this argument is set to None, there is no limitation on the number of trials.
         If set to 0, no tuning is done, and default parameters of XGBoostLSS are used.
 
-    xgb_params: dict, optional, default=None
-        Dictionary of xgboost parameters to pass to the model.
+    **kwargs: optional
+        Keyword arguments of xgboost parameters to pass to the model.
         Used only if n_trials=0 (i.e., no hyperparameter optimization).
         See https://xgboost.readthedocs.io/en/stable/parameter.html for valid params.
     """
@@ -100,7 +100,7 @@ class XGBoostLSS(BaseProbaRegressor):
         early_stopping_rounds=20,
         max_minutes=10,
         n_trials=30,
-        xgb_params=None,
+        **kwargs,
     ):
         self.dist = dist
         self.stabilization = stabilization
@@ -112,7 +112,13 @@ class XGBoostLSS(BaseProbaRegressor):
         self.early_stopping_rounds = early_stopping_rounds
         self.max_minutes = max_minutes
         self.n_trials = n_trials
-        self.xgb_params = xgb_params
+
+        self.xgb_params = {}
+        # if not in known params add to xgb_params
+        for key, value in kwargs.items():
+            self.xgb_params[key] = value
+            # Also set as attribute so it appears in get_params()
+            setattr(self, key, value)
 
         super().__init__()
 
@@ -122,6 +128,41 @@ class XGBoostLSS(BaseProbaRegressor):
             self._n_cpu = multiprocessing.cpu_count()
         else:
             self._n_cpu = n_cpu
+
+    def get_params(self, deep=True):
+        """Get parameters for this estimator."""
+        params = super().get_params(deep=deep)
+        params.update(self.xgb_params)
+        return params
+
+    def set_params(self, **params):
+        """Set parameters for this estimator."""
+        # Known parameters that are explicitly defined in __init__
+        known_param_names = {
+            "dist",
+            "stabilization",
+            "response_fn",
+            "loss_fn",
+            "n_cpu",
+            "num_boost_round",
+            "nfold",
+            "early_stopping_rounds",
+            "max_minutes",
+            "n_trials",
+        }
+
+        known_params = {}
+        xgb_params = {}
+
+        for key, value in params.items():
+            if key in known_param_names:
+                known_params[key] = value
+            else:
+                xgb_params[key] = value
+                setattr(self, key, value)
+
+        self.xgb_params.update(xgb_params)
+        return super().set_params(**known_params)
 
     def _get_xgblss_distr(self, distr):
         """Get xgboostlss distribution object from string.
