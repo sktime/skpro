@@ -114,6 +114,24 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
 
     MapieRegressor
 
+.. currentmodule:: skpro.regression.conformal
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MapieSplitConformalRegressor
+    MapieCrossConformalRegressor
+    MapieConformalizedQuantileRegressor
+
+.. currentmodule:: skpro.regression.jackknife
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MapieJackknifeAfterBootstrapRegressor
+
 .. currentmodule:: skpro.regression.ensemble
 
 .. autosummary::
@@ -180,7 +198,19 @@ Linear regression
     ARDRegression
     BayesianRidge
     GLMRegressor
+    GlumRegressor
     PoissonRegressor
+
+Generalized Additive Models
+---------------------------
+
+.. currentmodule:: skpro.regression.gam
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    GAMRegressor
 
 Gaussian process and kernel regression
 --------------------------------------
