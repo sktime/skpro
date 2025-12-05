@@ -158,39 +158,6 @@ class TruncatedDistribution(BaseDistribution):
     def _log_pmf(self, x):
         return self._calculate_density(x, self.distribution.log_pmf, as_log=True)
 
-    def _iloc(self, rowidx=None, colidx=None):
-        distr = self.distribution.iloc[rowidx, colidx]
-
-        if rowidx is not None:
-            new_index = self.index[rowidx]
-        else:
-            new_index = self.index
-
-        if colidx is not None:
-            new_columns = self.columns[colidx]
-        else:
-            new_columns = self.columns
-
-        cls = type(self)
-        return cls(
-            distribution=distr,
-            lower=self.lower,
-            upper=self.upper,
-            index=new_index,
-            columns=new_columns,
-        )
-
-    def _iat(self, rowidx=None, colidx=None):
-        if rowidx is None or colidx is None:
-            raise ValueError("iat method requires both row and column index")
-        self_subset = self.iloc[[rowidx], [colidx]]
-
-        return type(self)(
-            distribution=self_subset.distribution.iat[0, 0],
-            lower=self.lower,
-            upper=self.upper,
-        )
-
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
         import pandas as pd

@@ -31,27 +31,6 @@ class LeftTruncated(TruncatedDistribution):
             distribution, lower=lower, upper=None, index=index, columns=columns
         )
 
-    def _iloc(self, rowidx=None, colidx=None):
-        distr = self.distribution.iloc[rowidx, colidx]
-
-        if rowidx is not None:
-            new_index = self.index[rowidx]
-        else:
-            new_index = self.index
-
-        if colidx is not None:
-            new_columns = self.columns[colidx]
-        else:
-            new_columns = self.columns
-
-        cls = type(self)
-        return cls(
-            distribution=distr,
-            lower=self.lower,
-            index=new_index,
-            columns=new_columns,
-        )
-
     @classmethod
     def get_test_params(cls, parameter_set="default"):  # noqa: D102
         import pandas as pd
