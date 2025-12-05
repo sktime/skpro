@@ -565,7 +565,7 @@ class GLMRegressor(BaseProbaRegressor):
             X = X.drop(columns_to_drop, axis=1)
 
         if self._add_constant:
-            X_ = add_constant(X)
+            X_ = add_constant(X, has_constant="add")
             if rtn_off_exp_arr:
                 return X_, offset_arr, exposure_arr
             return X_
