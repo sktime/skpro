@@ -79,7 +79,18 @@ class OndilOnlineGamlss(BaseProbaRegressor):
                     "please install a compatible ondil version"
                 ) from exc
 
-        # store y columns for later
+        # ensure DataFrame column names are strings to satisfy upstream
+        # validation that may require string feature names
+        import pandas as pd
+
+        if isinstance(X, pd.DataFrame):
+            X = X.copy()
+            X.columns = X.columns.astype(str)
+        if isinstance(y, pd.DataFrame):
+            y = y.copy()
+            y.columns = y.columns.astype(str)
+
+        # store y columns for later (stringified)
         self._y_cols = y.columns
 
         # instantiate upstream estimator
@@ -107,6 +118,16 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         if not hasattr(self, "_ondil"):
             raise RuntimeError("Estimator not fitted yet; call fit before update")
 
+        import pandas as pd
+
+        # sanitize column names before delegating to upstream methods
+        if isinstance(X, pd.DataFrame):
+            X = X.copy()
+            X.columns = X.columns.astype(str)
+        if isinstance(y, pd.DataFrame):
+            y = y.copy()
+            y.columns = y.columns.astype(str)
+
         if hasattr(self._ondil, "update"):
             self._ondil.update(X, y)
             return self
@@ -128,13 +149,18 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         columns should contain location and scale (names tolerated below).
         """
         import importlib
-
         import pandas as pd
 
         if not hasattr(self, "_ondil"):
             raise RuntimeError("Estimator not fitted yet; call fit before predict")
 
         # call predict on upstream estimator
+
+        # ensure feature names are strings for upstream validation
+        if isinstance(X, pd.DataFrame):
+            X = X.copy()
+            X.columns = X.columns.astype(str)
+
         if hasattr(self._ondil, "predict"):
             params = self._ondil.predict(X)
         elif hasattr(self._ondil, "predict_params"):
