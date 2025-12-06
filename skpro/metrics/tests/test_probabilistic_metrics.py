@@ -214,3 +214,36 @@ def test_evaluate_alpha_negative(Metric, y_pred, y_true):
         # 0.3 not in test quantile data so raise error.
         Loss = Metric.create_test_instance().set_params(alpha=0.3)
         res = Loss(y_true=y_true, y_pred=y_pred)  # noqa
+
+
+def test_sample_weight_pinball():
+    import numpy as np
+
+    y_true = pd.DataFrame({"y": [1, 2, 3]})
+    y_pred = pd.DataFrame({("y", 0.5): [1, 2, 3]})
+    # Perfect prediction, loss 0
+    metric = PinballLoss()
+    loss = metric(y_true, y_pred)
+    assert loss == 0.0
+
+    y_pred_bad = pd.DataFrame(
+        {
+            ("y", 0.5): [
+                2,
+                2,
+                3,
+            ]  # Error on first sample: |1-2| = 1. Pinball(0.5) = 0.5 * 1 = 0.5
+        }
+    )
+    # Errors: 0.5, 0, 0. Mean = 0.5/3 = 0.1666...
+    loss = metric(y_true, y_pred_bad)
+    assert np.isclose(loss, 0.5 / 3)
+
+    # With weights
+    weights = [0, 1, 1]  # Ignore first sample
+    loss_w = metric(y_true, y_pred_bad, sample_weight=weights)
+    assert loss_w == 0.0
+
+    weights2 = [1, 0, 0]  # Only first sample
+    loss_w2 = metric(y_true, y_pred_bad, sample_weight=weights2)
+    assert loss_w2 == 0.5
