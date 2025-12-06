@@ -56,7 +56,6 @@ all_extras = [
     "ngboost<0.6.0; python_version < '3.13'",
     "polars<1.36.0",
     "pymc; python_version < '3.13'",
-    "scikit-survival; python_version < '3.14'",
     "statsmodels>=0.12.1",
 ]
 
