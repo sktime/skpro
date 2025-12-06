@@ -78,7 +78,7 @@ class BaseProbaMetric(BaseObject):
         """
         return self.evaluate(y_true, y_pred, **kwargs)
 
-    def evaluate(self, y_true, y_pred, **kwargs):
+    def evaluate(self, y_true, y_pred, sample_weight=None, **kwargs):
         """Evaluate the metric on given inputs.
 
         Parameters
@@ -89,6 +89,9 @@ class BaseProbaMetric(BaseObject):
         y_pred : return object of probabilistic predictition method scitype:y_pred
             must have same index and columns as y_true
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights.
 
         Returns
         -------
@@ -105,8 +108,8 @@ class BaseProbaMetric(BaseObject):
               entries will be averaged over quantiles/interval column
         """
         # Input checks and conversions
-        y_true_inner, y_pred_inner, multioutput = self._check_ys(
-            y_true, y_pred, self.multioutput
+        y_true_inner, y_pred_inner, multioutput, sample_weight = self._check_ys(
+            y_true, y_pred, self.multioutput, sample_weight
         )
 
         # Don't want to include scores for 0 width intervals, makes no sense
@@ -118,7 +121,9 @@ class BaseProbaMetric(BaseObject):
             )
 
         # pass to inner function
-        out = self._evaluate(y_true_inner, y_pred_inner, **kwargs)
+        out = self._evaluate(
+            y_true_inner, y_pred_inner, sample_weight=sample_weight, **kwargs
+        )
 
         if isinstance(multioutput, str):
             if self.score_average and multioutput == "uniform_average":
@@ -141,7 +146,7 @@ class BaseProbaMetric(BaseObject):
 
         return out
 
-    def _evaluate(self, y_true, y_pred, **kwargs):
+    def _evaluate(self, y_true, y_pred, sample_weight=None, **kwargs):
         """Evaluate the metric on given inputs.
 
         Private _evaluate, called by public evaluate.
@@ -155,6 +160,9 @@ class BaseProbaMetric(BaseObject):
             must have same index and columns as y_true
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights.
+
         Returns
         -------
         loss : pd.DataFrame of shape (, n_outputs), calculated loss metric.
@@ -162,7 +170,12 @@ class BaseProbaMetric(BaseObject):
         # Default implementation relies on implementation of evaluate_by_index
         try:
             index_df = self._evaluate_by_index(y_true, y_pred)
-            out_df = pd.DataFrame(index_df.mean(axis=0)).T
+            if sample_weight is not None:
+                out_df = pd.DataFrame(
+                    np.average(index_df, axis=0, weights=sample_weight)
+                ).T
+            else:
+                out_df = pd.DataFrame(index_df.mean(axis=0)).T
             out_df.columns = index_df.columns
             return out_df
         except RecursionError as _err:
@@ -201,7 +214,7 @@ class BaseProbaMetric(BaseObject):
               entries will be averaged over quantiles/interval column
         """
         # Input checks and conversions
-        y_true_inner, y_pred_inner, multioutput = self._check_ys(
+        y_true_inner, y_pred_inner, multioutput, _ = self._check_ys(
             y_true, y_pred, self.multioutput
         )
 
@@ -268,8 +281,8 @@ class BaseProbaMetric(BaseObject):
                 "Must implement one of _evaluate or _evaluate_by_index"
             )
 
-    def _check_consistent_input(self, y_true, y_pred, multioutput):
-        check_consistent_length(y_true, y_pred)
+    def _check_consistent_input(self, y_true, y_pred, multioutput, sample_weight=None):
+        check_consistent_length(y_true, y_pred, sample_weight)
 
         y_true = check_array(y_true, ensure_2d=False)
 
@@ -303,9 +316,9 @@ class BaseProbaMetric(BaseObject):
                     % (len(multioutput), n_outputs)
                 )
 
-        return y_true, y_pred, multioutput
+        return y_true, y_pred, multioutput, sample_weight
 
-    def _check_ys(self, y_true, y_pred, multioutput):
+    def _check_ys(self, y_true, y_pred, multioutput, sample_weight=None):
         if multioutput is None:
             multioutput = self.multioutput
 
@@ -331,11 +344,11 @@ class BaseProbaMetric(BaseObject):
                 for var in y_pred_inner.columns.get_level_values(0):
                     y_pred_inner[var, 0.0, "upper"] = y_pred_inner[var, 0.0, "lower"]
 
-        y_true, y_pred, multioutput = self._check_consistent_input(
-            y_true, y_pred, multioutput
+        y_true, y_pred, multioutput, sample_weight = self._check_consistent_input(
+            y_true, y_pred, multioutput, sample_weight
         )
 
-        return y_true, y_pred_inner, multioutput
+        return y_true, y_pred_inner, multioutput, sample_weight
 
     def _get_alpha_from(self, y_pred):
         """Fetch the alphas present in y_pred."""
@@ -421,7 +434,7 @@ class BaseDistrMetric(BaseProbaMetric):
         "lower_is_better": True,
     }
 
-    def evaluate(self, y_true, y_pred, **kwargs):
+    def evaluate(self, y_true, y_pred, sample_weight=None, **kwargs):
         """Evaluate the  metric on given inputs.
 
         Parameters
@@ -433,28 +446,42 @@ class BaseDistrMetric(BaseProbaMetric):
             must have same index and columns as y_true
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights.
+
         Returns
         -------
-        loss : float or 1-column pd.DataFrame with calculated metric value(s)
+        loss : float or pd.Series with calculated metric value(s)
 
             float if multioutput = "uniform_average" or multivariate = True
 
-            1-column df if multioutput = "raw_values" and metric is not multivariate
+            pd.Series if multioutput = "raw_values" and metric is not multivariate
             metric is always averaged (arithmetic) over rows
         """
         multioutput = self.multioutput
         multivariate = self.multivariate
 
         index_df = self.evaluate_by_index(y_true, y_pred, **kwargs)
-        out_df = pd.DataFrame(index_df.mean(axis=0)).T
+
+        if sample_weight is not None:
+            out_df = pd.DataFrame(np.average(index_df, axis=0, weights=sample_weight)).T
+        else:
+            out_df = pd.DataFrame(index_df.mean(axis=0)).T
         out_df.columns = index_df.columns
 
-        if multioutput == "uniform_average" and not multivariate:
-            out_df = out_df.mean(axis=1)
-        if multioutput == "uniform_average" or multivariate:
-            out = _coerce_to_scalar(out_df)
+        if isinstance(multioutput, str):
+            if multioutput == "uniform_average" and not multivariate:
+                out_df = out_df.mean(axis=1)
+            if multioutput == "uniform_average" or multivariate:
+                out = _coerce_to_scalar(out_df)
+            else:
+                out = out_df.iloc[0]
         else:
-            out = _coerce_to_df(out_df)
+            if multivariate:
+                out = _coerce_to_scalar(out_df)
+            else:
+                out = np.average(out_df, weights=multioutput, axis=1)
+                out = _coerce_to_scalar(out)
         return out
 
     def _coerce_inner_df(self, obj):
