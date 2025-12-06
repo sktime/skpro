@@ -163,6 +163,14 @@ Distributional boosting
 
     XGBoostLSS
 
+.. currentmodule:: skpro.regression.lightgbmlss
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    LightGBMLSS
+
 Naive regressors and baselines
 ------------------------------
 
