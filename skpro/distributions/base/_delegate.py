@@ -23,7 +23,7 @@ class _DelegatedDistribution(BaseDistribution):
         To override delegation, override _delegate_name attribute in child class.
 
     Delegates the following methods:
-        _iloc, pdf, log_pdf, cdf, ppf, energy, mean, var, pdfnorm, sample
+        _iloc, pdf, log_pdf, cdf, ppf, energy, mean, var, pdfnorm, _sample
 
     Does NOT delegate get_params, set_params.
         get_params, set_params will hence use one additional nesting level by default.
@@ -187,7 +187,7 @@ class _DelegatedDistribution(BaseDistribution):
         delegate = self._get_delegate()
         return delegate.pdfnorm(a=a)
 
-    def sample(self, n_samples=None):
+    def _sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters
