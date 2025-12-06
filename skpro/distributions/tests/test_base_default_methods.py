@@ -150,18 +150,18 @@ class _DistrDefaultMethodTesterOnlySample(BaseDistribution):
         """
         if self.ndim == 0:
             if n_samples is None:
-                return np.random.normal(loc=self.mu, scale=self.sigma)
-            res = np.random.normal(loc=self.mu, scale=self.sigma, size=n_samples)
+                return self._rng.normal(loc=self.mu, scale=self.sigma)
+            res = self._rng.normal(loc=self.mu, scale=self.sigma, size=n_samples)
             return pd.DataFrame(res)
         # else: self.ndim is 2
         if n_samples is None:
             res_shape = self.shape
-            vals = np.random.normal(loc=self.mu, scale=self.sigma, size=res_shape)
+            vals = self._rng.normal(loc=self.mu, scale=self.sigma, size=res_shape)
             return pd.DataFrame(vals, index=self.index, columns=self.columns)
         # else: n_samples is given
         res_shape = (n_samples * self.shape[0], self.shape[1])
-        vals = np.random.normal(loc=self.mu, scale=self.sigma, size=res_shape)
-        multiindes = pd.MultiIndex.from_product(np.arange(n_samples), self.index)
+        vals = self._rng.normal(loc=self.mu, scale=self.sigma, size=res_shape)
+        multiindes = pd.MultiIndex.from_product([range(n_samples), self.index])
         return pd.DataFrame(vals, index=multiindes, columns=self.columns)
 
     @classmethod
