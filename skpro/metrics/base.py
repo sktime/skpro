@@ -451,11 +451,11 @@ class BaseDistrMetric(BaseProbaMetric):
 
         Returns
         -------
-        loss : float or 1-column pd.DataFrame with calculated metric value(s)
+        loss : float or pd.Series with calculated metric value(s)
 
             float if multioutput = "uniform_average" or multivariate = True
 
-            1-column df if multioutput = "raw_values" and metric is not multivariate
+            pd.Series if multioutput = "raw_values" and metric is not multivariate
             metric is always averaged (arithmetic) over rows
         """
         multioutput = self.multioutput
@@ -475,7 +475,7 @@ class BaseDistrMetric(BaseProbaMetric):
             if multioutput == "uniform_average" or multivariate:
                 out = _coerce_to_scalar(out_df)
             else:
-                out = _coerce_to_df(out_df)
+                out = out_df.iloc[0]
         else:
             if multivariate:
                 out = _coerce_to_scalar(out_df)

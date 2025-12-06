@@ -57,9 +57,9 @@ class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
 
         expect_df = not multivariate and multioutput == "raw_values"
         if expect_df:
-            assert isinstance(res, pd.DataFrame)
-            assert (res.columns == expected_cols).all()
-            assert res.shape == (1, len(expected_cols))
+            assert isinstance(res, pd.Series)
+            assert (res.index == expected_cols).all()
+            assert res.shape == (len(expected_cols),)
         else:
             assert isinstance(res, float)
 
@@ -70,8 +70,6 @@ def test_sample_weight_logloss():
     from skpro.metrics import LogLoss
 
     y_true = pd.DataFrame({"y": [0, 0, 0]})
-    # Normal(0, 1). log_pdf(0) = -0.5*log(2pi) - 0.5*0 = -0.9189
-    # Normal(10, 1). log_pdf(0) = -0.5*log(2pi) - 0.5*100 = -50.9189
 
     mu = np.array([[0], [10], [0]])
     sigma = np.array([[1], [1], [1]])
@@ -80,17 +78,11 @@ def test_sample_weight_logloss():
     metric = LogLoss()
     loss = metric(y_true, y_pred)
 
-    # Loss for sample 0 and 2 is L1. Loss for sample 1 is L2.
-    # L1 = -(-0.9189) = 0.9189
-    # L2 = -(-50.9189) = 50.9189
-    # Mean = (2*L1 + L2)/3
-
     L1 = -norm.logpdf(0, 0, 1)
     L2 = -norm.logpdf(0, 10, 1)
     expected_mean = (2 * L1 + L2) / 3
     assert np.isclose(loss, expected_mean)
 
-    # Weights to ignore the bad prediction (index 1)
     weights = [1, 0, 1]
     loss_w = metric(y_true, y_pred, sample_weight=weights)
     assert np.isclose(loss_w, L1)
@@ -102,8 +94,6 @@ def test_multioutput_weights_logloss():
     from skpro.metrics import LogLoss
 
     y_true = pd.DataFrame({"y1": [0], "y2": [0]})
-    # y1: Normal(0, 1) -> Loss L1
-    # y2: Normal(10, 1) -> Loss L2
 
     mu = np.array([[0, 10]])
     sigma = np.array([[1, 1]])
