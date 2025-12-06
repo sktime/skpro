@@ -1,6 +1,10 @@
 """Interface for xgboostlss probabilistic regressor."""
 
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils._distribution_alias import (
+    DISTRIBUTION_NOT_GIVEN,
+    resolve_distribution_kwarg,
+)
 
 
 class XGBoostLSS(BaseProbaRegressor):
@@ -10,8 +14,15 @@ class XGBoostLSS(BaseProbaRegressor):
 
     Parameters
     ----------
-    dist: str, optional, default="Normal"
+    distribution : str, optional, default="Normal"
         Form of predictive distribution, strings are same as in skpro.
+        This is the preferred keyword across the skpro API.
+    dist : str, optional, default=None
+        Deprecated alias for ``distribution`` kept for backwards compatibility.
+    dist_type : str, optional, default=None
+        Alias matching the CyclicBoosting API. If provided, must match ``distribution``.
+    distr_type : str, optional, default=None
+        Alias matching the ResidualDouble API. If provided, must match ``distribution``.
 
         Valid options are:
 
@@ -82,9 +93,42 @@ class XGBoostLSS(BaseProbaRegressor):
         "tests:vm": True,  # requires its own test VM to run
     }
 
+    @property
+    def distribution(self):
+        """Return the currently configured distribution."""
+        return getattr(self, "_distribution", None)
+
+    @distribution.setter
+    def distribution(self, value):
+        self._distribution = value
+
+    @property
+    def dist(self):
+        return self.distribution
+
+    @dist.setter
+    def dist(self, value):
+        self.distribution = value
+
+    @property
+    def dist_type(self):
+        return self.distribution
+
+    @dist_type.setter
+    def dist_type(self, value):
+        self.distribution = value
+
+    @property
+    def distr_type(self):
+        return self.distribution
+
+    @distr_type.setter
+    def distr_type(self, value):
+        self.distribution = value
+
     def __init__(
         self,
-        dist="Normal",
+        distribution=DISTRIBUTION_NOT_GIVEN,
         stabilization="None",
         response_fn="exp",
         loss_fn="nll",
@@ -94,8 +138,22 @@ class XGBoostLSS(BaseProbaRegressor):
         early_stopping_rounds=20,
         max_minutes=10,
         n_trials=30,
+        *,
+        dist=DISTRIBUTION_NOT_GIVEN,
+        dist_type=DISTRIBUTION_NOT_GIVEN,
+        distr_type=DISTRIBUTION_NOT_GIVEN,
     ):
-        self.dist = dist
+        resolved_dist = resolve_distribution_kwarg(
+            estimator_name=self.__class__.__name__,
+            default="Normal",
+            alias_values={
+                "distribution": distribution,
+                "dist": dist,
+                "dist_type": dist_type,
+                "distr_type": distr_type,
+            },
+        )
+        self.distribution = resolved_dist
         self.stabilization = stabilization
         self.response_fn = response_fn
         self.loss_fn = loss_fn
@@ -203,7 +261,7 @@ class XGBoostLSS(BaseProbaRegressor):
 
         dtrain = xgb.DMatrix(X, label=y, nthread=n_cpu, silent=True)
 
-        xgblss_distr = self._get_xgblss_distr(self.dist)
+        xgblss_distr = self._get_xgblss_distr(self.distribution)
 
         xgblss = XGBoostLSS(
             xgblss_distr(
@@ -313,8 +371,8 @@ class XGBoostLSS(BaseProbaRegressor):
 
         y_pred_xgblss = self.xgblss_.predict(dtest, pred_type="parameters")
 
-        skpro_distr = self._get_skpro_distr(self.dist)
-        skpro_distr_vals = self._get_skpro_val_dict(self.dist, y_pred_xgblss)
+        skpro_distr = self._get_skpro_distr(self.distribution)
+        skpro_distr_vals = self._get_skpro_val_dict(self.distribution, y_pred_xgblss)
 
         y_pred = skpro_distr(**skpro_distr_vals, index=index, columns=columns)
 
@@ -344,10 +402,10 @@ class XGBoostLSS(BaseProbaRegressor):
             "loss_fn": "crps",
             "max_minutes": 1,
         }
-        params2 = {"dist": "Gamma", "max_minutes": 1}
-        params3 = {"dist": "Weibull", "max_minutes": 1}
-        params4 = {"dist": "TDistribution", "max_minutes": 1}
-        params5 = {"dist": "Laplace", "max_minutes": 1}
+        params2 = {"distribution": "Gamma", "max_minutes": 1}
+        params3 = {"distribution": "Weibull", "max_minutes": 1}
+        params4 = {"distribution": "TDistribution", "max_minutes": 1}
+        params5 = {"distribution": "Laplace", "max_minutes": 1}
         params6 = {"n_trials": 0, "max_minutes": 1}
-        params7 = {"dist": "Beta", "max_minutes": 1}
+        params7 = {"distribution": "Beta", "max_minutes": 1}
         return [params0, params1, params2, params3, params4, params5, params6, params7]
