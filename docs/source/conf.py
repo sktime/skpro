@@ -299,3 +299,151 @@ intersphinx_mapping = {
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
     "sktime": ("https://www.sktime.net/en/stable/", None),
 }
+
+
+# -- Estimator Overview Setup ------------------------------------------------
+
+def generate_estimator_overview_data(app, config):
+    """Generate estimator data for the overview page during Sphinx build.
+
+    This function is called during the Sphinx config-inited event.
+    It collects data about all estimators in skpro and creates a JavaScript
+    file that is used by the estimator overview page.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        The Sphinx application object
+    config : sphinx.config.Config
+        The Sphinx config object
+    """
+    import json
+
+    try:
+        from skpro.registry import all_objects
+    except ImportError:
+        print("Warning: Could not import skpro for estimator overview", file=sys.stderr)
+        return
+
+    # Get all objects with tags
+    try:
+        df = all_objects(
+            as_dataframe=True,
+            return_tags=[
+                "object_type",
+                "estimator_type",
+                "capability:survival",
+                "handles_missing_data",
+                "requires_y",
+                "handles_multioutput",
+            ],
+            suppress_import_stdout=True,
+        )
+    except Exception as e:
+        print(
+            f"Warning: Could not retrieve estimator data for overview: {e}",
+            file=sys.stderr,
+        )
+        return
+
+    if df is None or df.empty:
+        print("Warning: No estimators found for overview", file=sys.stderr)
+        return
+
+    estimators = []
+
+    for idx, row in df.iterrows():
+        name = row.get("name", "Unknown")
+        obj = row.get("objects")
+        obj_type = row.get("object_type", "unknown")
+
+        # Get module path
+        if obj is not None:
+            module = obj.__module__ if hasattr(obj, "__module__") else "unknown"
+        else:
+            module = "unknown"
+
+        # Collect key tags
+        tags = []
+        if obj_type:
+            tags.append(f"object_type:{obj_type}")
+
+        # Add capability tags
+        if row.get("capability:survival"):
+            tags.append("capability:survival")
+
+        if row.get("handles_missing_data"):
+            tags.append("handles_missing_data")
+
+        if row.get("requires_y") is False:
+            tags.append("unsupervised")
+        elif row.get("requires_y"):
+            tags.append("supervised")
+
+        if row.get("handles_multioutput"):
+            tags.append("multioutput")
+
+        estimators.append(
+            {
+                "name": name,
+                "object_type": obj_type,
+                "module": module,
+                "tags": tags,
+            }
+        )
+
+    estimators = sorted(estimators, key=lambda x: x["name"])
+
+    # Create JavaScript file
+    js_content = f"""// Estimator data for the overview page
+// This file is auto-generated during Sphinx build
+
+window.estimatorData = {json.dumps(estimators, indent=2)};
+"""
+
+    # Write to static directory
+    static_dir = os.path.join(os.path.dirname(__file__), "_static")
+    os.makedirs(static_dir, exist_ok=True)
+
+    js_file = os.path.join(static_dir, "estimator_data.js")
+    with open(js_file, "w") as f:
+        f.write(js_content)
+
+    print(f"Generated estimator overview data: {len(estimators)} estimators")
+
+
+def inject_estimator_data(app, pagename, templatename, context, doctree):
+    """Inject estimator data script into the estimator overview page.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        The Sphinx application object
+    pagename : str
+        The name of the page being generated
+    templatename : str
+        The template being used
+    context : dict
+        The context dictionary
+    doctree : docutils.nodes.document
+        The doctree
+    """
+    if pagename == "estimator_overview":
+        # Add script tag to inject the estimator data
+        script_tag = '<script src="_static/estimator_data.js"></script>'
+        if "script_files" not in context:
+            context["script_files"] = []
+        # Note: This approach injects via template; the actual injection
+        # happens via the raw HTML block in the RST file itself
+
+
+# Register the setup function
+def setup(app):
+    """Setup Sphinx extension for estimator overview.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        The Sphinx application object
+    """
+    app.connect("config-inited", generate_estimator_overview_data)
