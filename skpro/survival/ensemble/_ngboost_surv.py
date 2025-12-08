@@ -113,6 +113,8 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
             should have same column name as y, same length as X and y
             should have entries 0 and 1 (float or int)
             0 = uncensored, 1 = (right) censored
+            Internally converted to ngboost convention:
+            E=1 (uncensored/event observed), E=0 (censored)
             if None, all observations are assumed to be uncensored
 
         Returns
@@ -125,11 +127,10 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
         from sklearn.base import clone
         from sklearn.tree import DecisionTreeRegressor
 
-        # skpro => 0 = uncensored, 1 = (right) censored
-        # ngboost => 1 = uncensored, else (right) censored
-        # If C is None then C is set as 1s (uncensored)
-        # else it is converted from skpro to ngboost format
-        # by doing C = 1-C
+        # Convert skpro censoring indicator to ngboost event convention
+        # skpro: C=0 (uncensored), C=1 (censored, right-censored)
+        # ngboost: E=1 (uncensored/event observed), E=0 (censored)
+        # Therefore: E_ngboost = 1 - C_skpro
         if C is None:
             C = pd.DataFrame(np.ones(len(y)), index=y.index, columns=y.columns)
         else:
