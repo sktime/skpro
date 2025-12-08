@@ -4,7 +4,9 @@
 Estimator Overview
 ===================
 
-Use the below search table to find estimators by property.
+Use the below search table to find estimators and distributions by property.
+
+**Features:**
 
 * type into the search box to subset rows by substring search
 * choose a type (regressor, distribution, …) in the dropdown
