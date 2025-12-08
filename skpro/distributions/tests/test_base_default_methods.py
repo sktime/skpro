@@ -188,7 +188,6 @@ def test_base_default_minimal_cdf():
     """Test default cdf method."""
     minimal_n = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
-
 def test_mc_config_overrides_tags(monkeypatch):
     """Configs override Monte Carlo defaults while preserving fallback."""
     dist = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
