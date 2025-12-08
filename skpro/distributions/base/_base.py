@@ -1634,7 +1634,6 @@ class BaseDistribution(BaseObject):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
-
         def gen_unif():
             np_unif = np.random.uniform(size=self.shape)
             if self.ndim > 0:
