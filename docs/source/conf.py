@@ -303,6 +303,7 @@ intersphinx_mapping = {
 
 # -- Estimator Overview Setup ------------------------------------------------
 
+
 def generate_estimator_overview_data(app, config):
     """Generate estimator data for the overview page during Sphinx build.
 
