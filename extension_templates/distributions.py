@@ -94,8 +94,8 @@ class ClassName(BaseDistribution):
         # and which are approximations, e.g., using Monte Carlo
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
-        # Monte Carlo default parameters (approx_mean_spl, approx_var_spl, 
-        # approx_energy_spl, approx_spl) can
+        # Monte Carlo default parameters (approx_mean_spl,
+        # approx_var_spl, approx_energy_spl, approx_spl) can
         # be overriden via e.g .set_config(approx_mean_spl=5), if needed.
         # leave the broadcast_init tag as-is, this tag exists for compatibility with
         # distributions deviating from assumptions on input parameters, e.g., Empirical
