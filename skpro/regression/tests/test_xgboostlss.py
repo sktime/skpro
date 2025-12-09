@@ -22,7 +22,7 @@ def test_xgboostlss_params_no_optuna():
     y = y.iloc[:200]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
-    reg_proba = XGBoostLSS(n_trials=0, xgb_params={"max_depth": 2})
+    reg_proba = XGBoostLSS(n_trials=0, max_depth=2)
     reg_proba.fit(X_train, y_train)
 
     y_pred = reg_proba.predict_proba(X_test)
