@@ -80,6 +80,7 @@ class XGBoostLSS(BaseProbaRegressor):
         # CI and test flags
         # -----------------
         "tests:vm": True,  # requires its own test VM to run
+        "tests:python_dependencies": ["optuna", "optuna-integration"],
     }
 
     def __init__(
