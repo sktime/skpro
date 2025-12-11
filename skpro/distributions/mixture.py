@@ -177,7 +177,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         """Cumulative distribution function."""
         return self._average("cdf", x)
 
-    def sample(self, n_samples=None):
+    def _sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters

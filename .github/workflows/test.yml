@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: repository checkout step
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: python environment step
         uses: actions/setup-python@v6
@@ -44,7 +44,7 @@ jobs:
         run: python3 -m pip install pre-commit
 
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -75,11 +75,11 @@ jobs:
     needs: code-quality
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: 3.9
+          python-version: 3.11
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -96,7 +96,7 @@ jobs:
       obj_list_length: ${{ steps.get-change-list.outputs.obj_list_length }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - run: git remote set-branches origin 'main'
 
@@ -141,7 +141,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - run: git remote set-branches origin 'main'
 
@@ -180,7 +180,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - run: git remote set-branches origin 'main'
 
@@ -225,7 +225,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7

@@ -18,6 +18,7 @@ __pycache__/*
 .pydevproject
 .settings
 .idea
+.vscode
 
 # Package files
 *.egg
@@ -45,3 +46,6 @@ MANIFEST
 
 # Virtual environments
 .venv/
+venv/
+env/
+ENV/

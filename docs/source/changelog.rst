@@ -29,7 +29,7 @@ Dependency changes
 * ``skpro`` is now compatible with ``python 3.14``.
 * ``skpro`` no longer supports ``python 3.9``.
 * ``scikit-learn`` bounds have been updated to ``>=0.24.0,<1.8.0``.
-* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.13.0``.
+* ``scikit-base`` bounds have been updated to ``>=0.6.1,<0.14.0``.
 
 Enhancements
 ~~~~~~~~~~~~
