@@ -126,7 +126,7 @@ OBJECT_TAG_REGISTER = [
         "object",
         ("list", "str"),
         "additional python dependencies needed in tests, str or list of str (PEP 440)",
-    )
+    ),
     # ------------------
     # BaseProbaRegressor
     # ------------------
