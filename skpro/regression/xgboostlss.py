@@ -343,16 +343,17 @@ class XGBoostLSS(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        params0 = {"max_minutes": 1}
+        params0 = {"max_minutes": 1, "n_trials": 2}
         params1 = {
             "stabilization": "L2",
             "loss_fn": "crps",
             "max_minutes": 1,
+            "n_trials": 2,
         }
-        params2 = {"dist": "Gamma", "max_minutes": 1}
-        params3 = {"dist": "Weibull", "max_minutes": 1}
-        params4 = {"dist": "TDistribution", "max_minutes": 1}
-        params5 = {"dist": "Laplace", "max_minutes": 1}
+        params2 = {"dist": "Gamma", "max_minutes": 1, "n_trials": 2}
+        params3 = {"dist": "Weibull", "max_minutes": 1, "n_trials": 2}
+        params4 = {"dist": "TDistribution", "max_minutes": 1, "n_trials": 2}
+        params5 = {"dist": "Laplace", "max_minutes": 1, "n_trials": 2}
         params6 = {"n_trials": 0, "max_minutes": 1}
-        params7 = {"dist": "Beta", "max_minutes": 1}
+        params7 = {"dist": "Beta", "max_minutes": 1, "n_trials": 2}
         return [params0, params1, params2, params3, params4, params5, params6, params7]
