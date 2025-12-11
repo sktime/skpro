@@ -86,6 +86,7 @@ class XGBoostLSS(BaseProbaRegressor):
         # CI and test flags
         # -----------------
         "tests:vm": True,  # requires its own test VM to run
+        "tests:python_dependencies": ["optuna", "optuna-integration"],
     }
 
     def __init__(
@@ -129,40 +130,9 @@ class XGBoostLSS(BaseProbaRegressor):
         else:
             self._n_cpu = n_cpu
 
-    def get_params(self, deep=True):
-        """Get parameters for this estimator."""
-        params = super().get_params(deep=deep)
-        params.update(self.xgb_params)
-        return params
-
-    def set_params(self, **params):
-        """Set parameters for this estimator."""
-        # Known parameters that are explicitly defined in __init__
-        known_param_names = {
-            "dist",
-            "stabilization",
-            "response_fn",
-            "loss_fn",
-            "n_cpu",
-            "num_boost_round",
-            "nfold",
-            "early_stopping_rounds",
-            "max_minutes",
-            "n_trials",
-        }
-
-        known_params = {}
-        xgb_params = {}
-
-        for key, value in params.items():
-            if key in known_param_names:
-                known_params[key] = value
-            else:
-                xgb_params[key] = value
-                setattr(self, key, value)
-
-        self.xgb_params.update(xgb_params)
-        return super().set_params(**known_params)
+        # If n_trials is not zero, optuna is required for hyperparameter optimization
+        if n_trials != 0:
+            self.set_tags(**{"python_dependencies": ["xgboostlss", "optuna"]})
 
     def _get_xgblss_distr(self, distr):
         """Get xgboostlss distribution object from string.
@@ -387,18 +357,19 @@ class XGBoostLSS(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        params0 = {"max_minutes": 1}
+        params0 = {"max_minutes": 1, "n_trials": 2}
         params1 = {
             "stabilization": "L2",
             "loss_fn": "crps",
             "max_minutes": 1,
+            "n_trials": 2,
         }
-        params2 = {"dist": "Gamma", "max_minutes": 1}
-        params3 = {"dist": "Weibull", "max_minutes": 1}
-        params4 = {"dist": "TDistribution", "max_minutes": 1}
-        params5 = {"dist": "Laplace", "max_minutes": 1}
+        params2 = {"dist": "Gamma", "max_minutes": 1, "n_trials": 2}
+        params3 = {"dist": "Weibull", "max_minutes": 1, "n_trials": 2}
+        params4 = {"dist": "TDistribution", "max_minutes": 1, "n_trials": 2}
+        params5 = {"dist": "Laplace", "max_minutes": 1, "n_trials": 2}
         params6 = {"n_trials": 0, "max_minutes": 1}
-        params7 = {"dist": "Beta", "max_minutes": 1}
+        params7 = {"dist": "Beta", "max_minutes": 1, "n_trials": 2}
         params8 = {
             "n_trials": 0,
             "max_minutes": 1,
