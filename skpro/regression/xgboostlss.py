@@ -66,6 +66,10 @@ class XGBoostLSS(BaseProbaRegressor):
         Dictionary of XGBoost parameters to use when n_trials == 0.
         If None and n_trials == 0, default XGBoost parameters are used.
         Allows external hyperparameter tuning without breaking time series dependencies.
+
+    initialize: bool, optional, default=True
+        Whether to initialize the distribution parameters.
+        If True, the distribution is initialized with starting values.
     """
 
     _tags = {
@@ -100,6 +104,7 @@ class XGBoostLSS(BaseProbaRegressor):
         max_minutes=10,
         n_trials=30,
         xgb_params=None,
+        initialize=True,
     ):
         self.dist = dist
         self.stabilization = stabilization
@@ -112,6 +117,7 @@ class XGBoostLSS(BaseProbaRegressor):
         self.max_minutes = max_minutes
         self.n_trials = n_trials
         self.xgb_params = xgb_params
+        self.initialize = initialize
 
         super().__init__()
 
@@ -217,6 +223,7 @@ class XGBoostLSS(BaseProbaRegressor):
                 stabilization=self.stabilization,
                 response_fn=self.response_fn,
                 loss_fn=self.loss_fn,
+                initialize=self.initialize
             )
         )
 
