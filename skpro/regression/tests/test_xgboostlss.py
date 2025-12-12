@@ -31,3 +31,40 @@ def test_xgboostlss_params_no_optuna():
     # All trees should have Node max <= 6 (for max_depth=2)
     assert (max_nodes_per_tree <= 6).all()
     assert y_pred.shape == y_test.shape
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(XGBoostLSS),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
+@pytest.mark.parametrize(
+    "params, expected_xgb_params, should_error",
+    [
+        ({"learning_rate": 0.1}, {"eta": 0.1}, False),
+        ({"eta": 0.2}, {"eta": 0.2}, False),
+        ({"n_estimators": 50}, {}, False),  # not an xgb_param
+        ({"learning_rate": 0.1, "eta": 0.2}, {}, True),
+        ({"n_estimators": 50, "num_boost_round": 200}, {}, True),
+    ],
+)
+def test_xgboostlss_param_handling(params, expected_xgb_params, should_error):
+    """Test parameter aliases and training params."""
+    from sklearn.datasets import load_diabetes
+
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
+    y = pd.DataFrame(y)
+    X = X.iloc[:50]  # smaller for speed
+    y = y.iloc[:50]
+
+    reg = XGBoostLSS(n_trials=0, **params)
+
+    if should_error:
+        with pytest.raises(ValueError):
+            reg.fit(X, y)
+    else:
+        reg.fit(X, y)
+        y_pred = reg.predict_proba(X)
+        assert y_pred.shape == y.shape
+
+    for key, value in expected_xgb_params.items():
+        assert reg.xgb_params.get(key) == value

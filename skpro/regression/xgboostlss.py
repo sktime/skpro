@@ -288,6 +288,8 @@ class XGBoostLSS(BaseProbaRegressor):
     def _get_skpro_val_dict(self, distr, df):
         """Convert xgboostlss parameters to skpro distribution.
 
+        `{"skpro_param": "xgboostlss_param"}`
+
         Parameters
         ----------
         distr : str
@@ -303,6 +305,7 @@ class XGBoostLSS(BaseProbaRegressor):
             "TDistribution": {"mu": "loc", "sigma": "scale", "df": "df"},
             "Weibull": {"scale": "scale", "k": "concentration"},
             "Beta": {"alpha": "concentration1", "beta": "concentration0"},
+            "Logisitic": {"mu": "loc", "scale": "scale"},
         }
 
         map = name_map.get(distr, {})
@@ -395,9 +398,7 @@ class XGBoostLSS(BaseProbaRegressor):
                     stacklevel=2,
                 )
 
-        xgblss = xgblss.train(
-            xgb_params, dtrain, num_boost_round=n_rounds, **train_kwargs
-        )
+        xgblss.train(xgb_params, dtrain, num_boost_round=n_rounds, **train_kwargs)
 
         self.xgblss_ = xgblss
         return self
