@@ -39,6 +39,10 @@ class XGBoostLSS(BaseProbaRegressor):
         Options are "nll" (negative log-likelihood)
         or "crps" (continuous ranked probability score).
 
+    initialize: bool, optional, default=True
+        Whether to initialize the distribution parameters.
+        If True, the distribution is initialized with starting values.
+
     n_jobs: int, optional, default=None
         Number of CPUs to use for parallel processing of data in ``xgboostlss``.
         If None, then the value of n_cpu is used.
@@ -56,6 +60,15 @@ class XGBoostLSS(BaseProbaRegressor):
     num_boost_round: int, optional, default=100
         Number of boosting iterations. Ignored if n_estimators is set. This is
         the XGBoost standard library parameter name.
+
+    learning_rate: float, optional, default=None
+        Step size shrinkage used in update to prevents overfitting.
+        Alternative to eta. This is the sklearn standard library parameter name.
+
+    eta: float, optional, default=None
+        Step size shrinkage used in update to prevents overfitting.
+        Ignored if learning_rate is set. This is the XGBoost standard library
+        parameter name.
 
     nfold: int, optional, default=5
         Number of folds in CV used for tuning. Ignored if n_trials=0.
@@ -76,7 +89,7 @@ class XGBoostLSS(BaseProbaRegressor):
         If this argument is set to None, there is no limitation on the number of trials.
         If set to 0, no tuning is done, and default parameters of XGBoostLSS are used.
 
-    **kwargs: optional
+    explicitly_named_kwargs
         Keyword arguments of xgboost parameters to pass to the model.
         Used only if n_trials=0 (i.e., no hyperparameter optimization).
         See https://xgboost.readthedocs.io/en/stable/parameter.html for valid params.
@@ -88,7 +101,9 @@ class XGBoostLSS(BaseProbaRegressor):
         "authors": ["StatMixedML", "EchoDel", "fkiraly"],
         # StatMixedML, EchoDel for the original xgboostlss package
         "maintainers": ["fkiraly"],
-        "python_dependencies": ["xgboostlss"],  # PEP 440 python dependencies specifier,
+        "python_dependencies": [
+            "xgboostlss>=0.6.1"
+        ],  # PEP 440 python dependencies specifier,
         #
         # estimator tags
         # --------------
@@ -143,6 +158,7 @@ class XGBoostLSS(BaseProbaRegressor):
         stabilization="None",
         response_fn="exp",
         loss_fn="nll",
+        initialize=True,
         n_cpu="auto",
         num_boost_round=100,
         nfold=5,
@@ -191,15 +207,16 @@ class XGBoostLSS(BaseProbaRegressor):
         self.dist = dist
         self.stabilization = stabilization
         self.response_fn = response_fn
+        self.initialize = initialize
         # paired parameters:
         # eta in XGBoost, learning_rate in sklearn
-        self.eta_ = eta
+        self.eta = eta
         self.learning_rate = learning_rate
         # nthreads in XGBoost, n_jobs in sklearn, n_cpu?
-        self.n_jobs_ = n_jobs
+        self.n_jobs = n_jobs
         self.n_cpu = n_cpu
         # num_boost_round and n_estimators handling
-        self.num_boost_round_ = num_boost_round
+        self.num_boost_round = num_boost_round
         self.n_estimators = n_estimators
         # xgboost training parameters:
         # loss_fn is set internally in XGBoostLSS
@@ -217,7 +234,6 @@ class XGBoostLSS(BaseProbaRegressor):
         self.verbosity = verbosity
         self.booster = booster
         self.tree_method = tree_method
-        self.n_jobs = n_jobs
         self.gamma = gamma
         self.min_child_weight = min_child_weight
         self.max_delta_step = max_delta_step
@@ -310,7 +326,7 @@ class XGBoostLSS(BaseProbaRegressor):
             "TDistribution": {"mu": "loc", "sigma": "scale", "df": "df"},
             "Weibull": {"scale": "scale", "k": "concentration"},
             "Beta": {"alpha": "concentration1", "beta": "concentration0"},
-            "Logisitic": {"mu": "loc", "scale": "scale"},
+            "Logistic": {"mu": "loc", "scale": "scale"},
         }
 
         map = name_map.get(distr, {})
@@ -338,10 +354,10 @@ class XGBoostLSS(BaseProbaRegressor):
         from xgboostlss.model import XGBoostLSS
 
         # Set _n_jobs
-        if self.n_jobs_ is not None:
+        if self.n_jobs is not None:
             if self.n_cpu != "auto":
                 raise ValueError("Cannot set both n_cpu and n_jobs")
-            self._n_jobs = self.n_jobs_
+            self._n_jobs = self.n_jobs
         else:
             if self.n_cpu == "auto":
                 import multiprocessing
@@ -351,15 +367,17 @@ class XGBoostLSS(BaseProbaRegressor):
                 self._n_jobs = self.n_cpu
 
         # Handle n_estimators and num_boost_round
-        if self.n_estimators is not None and self.num_boost_round_ != 100:
+        if self.n_estimators is not None and self.num_boost_round != 100:
             raise ValueError("Cannot set both n_estimators and num_boost_round")
-        else:
-            self.num_boost_round = self.n_estimators or self.num_boost_round_
 
-        if self.learning_rate is not None and self.eta_ is not None:
+        # Set num_boost_round_ (fitted parameter)
+        self.num_boost_round_ = self.n_estimators or self.num_boost_round
+
+        if self.learning_rate is not None and self.eta is not None:
             raise ValueError("Cannot set both learning_rate and eta")
-        else:
-            self.eta = self.learning_rate or self.eta_
+
+        # Set eta_ (fitted parameter) based on learning_rate or eta
+        self.eta_ = self.learning_rate or self.eta
 
         self._y_cols = y.columns
         dtrain = xgb.DMatrix(X, label=y, nthread=self._n_jobs, silent=True)
@@ -371,28 +389,33 @@ class XGBoostLSS(BaseProbaRegressor):
                 stabilization=self.stabilization,
                 response_fn=self.response_fn,
                 loss_fn=self.loss_fn,
+                initialize=self.initialize,
             )
         )
 
         # Collect XGBoost params
-        self.xgb_params = dict()
+        self.xgb_params_ = dict()
+
         for k in self._xgb_params:
-            attr = getattr(self, k)
+            # Use eta_ (fitted param) if eta is in the list
+            if k == "eta":
+                attr = self.eta_
+            else:
+                attr = getattr(self, k)
             if attr is not None:
-                self.xgb_params[k] = getattr(self, k)
+                self.xgb_params_[k] = attr
 
         if self.n_trials == 0:
             # use user-defined hyperparameters
-            xgb_params = self.xgb_params
-            n_rounds = self.num_boost_round
+            n_rounds = self.num_boost_round_
             train_kwargs = {}
 
             if self.callbacks is not None:
                 train_kwargs["callbacks"] = self.callbacks
         else:
             # get optimized hyperparameters
-            xgb_params = self._hyper_opt(xgblss, dtrain)
-            n_rounds = xgb_params.pop("num_boost_round", self.num_boost_round)
+            xgb_params_ = self._hyper_opt(xgblss, dtrain)
+            n_rounds = xgb_params_.pop("num_boost_round", self.num_boost_round_)
             train_kwargs = {}
 
             if self.callbacks is not None:
@@ -403,7 +426,9 @@ class XGBoostLSS(BaseProbaRegressor):
                     stacklevel=2,
                 )
 
-        xgblss.train(xgb_params, dtrain, num_boost_round=n_rounds, **train_kwargs)
+            self.xgb_params_ = xgb_params_
+
+        xgblss.train(self.xgb_params_, dtrain, num_boost_round=n_rounds, **train_kwargs)
 
         self.xgblss_ = xgblss
         return self
@@ -438,7 +463,7 @@ class XGBoostLSS(BaseProbaRegressor):
         opt_param = xgblss.hyper_opt(
             param_dict,
             dtrain,
-            num_boost_round=self.num_boost_round,
+            num_boost_round=self.num_boost_round_,
             # Number of boosting iterations.
             nfold=self.nfold,
             # Number of cv-folds.
@@ -528,13 +553,16 @@ class XGBoostLSS(BaseProbaRegressor):
         params3 = {"dist": "Weibull", "max_minutes": 1, "n_trials": 2}
         params4 = {"dist": "TDistribution", "max_minutes": 1, "n_trials": 2}
         params5 = {"dist": "Laplace", "max_minutes": 1, "n_trials": 2}
+        params5 = {"dist": "Logistic", "max_minutes": 1, "n_trials": 0}
         params6 = {"n_trials": 0, "max_minutes": 1}
         params7 = {"dist": "Beta", "max_minutes": 1, "n_trials": 2}
         params8 = {
             "n_trials": 0,
             "max_minutes": 1,
-            "xgb_params": {"eta": 0.1, "max_depth": 3},
+            "eta": 0.1,
+            "max_depth": 3,
         }
+
         return [
             params0,
             params1,

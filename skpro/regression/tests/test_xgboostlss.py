@@ -66,5 +66,5 @@ def test_xgboostlss_param_handling(params, expected_xgb_params, should_error):
         y_pred = reg.predict_proba(X)
         assert y_pred.shape == y.shape
 
-    for key, value in expected_xgb_params.items():
-        assert reg.xgb_params.get(key) == value
+        for key, value in expected_xgb_params.items():
+            assert reg.xgb_params_.get(key) == value
