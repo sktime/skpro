@@ -99,6 +99,7 @@ class XGBoostLSS(BaseProbaRegressor):
         # CI and test flags
         # -----------------
         "tests:vm": True,  # requires its own test VM to run
+        "tests:python_dependencies": ["optuna", "optuna-integration"],
     }
 
     _xgb_params = [
@@ -245,6 +246,10 @@ class XGBoostLSS(BaseProbaRegressor):
         self.callbacks = callbacks
 
         super().__init__()
+
+        # If n_trials is not zero, optuna is required for hyperparameter optimization
+        if n_trials != 0:
+            self.set_tags(**{"python_dependencies": ["xgboostlss", "optuna"]})
 
     def _get_xgblss_distr(self, distr):
         """Get xgboostlss distribution object from string.
@@ -512,18 +517,19 @@ class XGBoostLSS(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        params0 = {"max_minutes": 1}
+        params0 = {"max_minutes": 1, "n_trials": 2}
         params1 = {
             "stabilization": "L2",
             "loss_fn": "crps",
             "max_minutes": 1,
+            "n_trials": 2,
         }
-        params2 = {"dist": "Gamma", "max_minutes": 1}
-        params3 = {"dist": "Weibull", "max_minutes": 1}
-        params4 = {"dist": "TDistribution", "max_minutes": 1}
-        params5 = {"dist": "Laplace", "max_minutes": 1}
+        params2 = {"dist": "Gamma", "max_minutes": 1, "n_trials": 2}
+        params3 = {"dist": "Weibull", "max_minutes": 1, "n_trials": 2}
+        params4 = {"dist": "TDistribution", "max_minutes": 1, "n_trials": 2}
+        params5 = {"dist": "Laplace", "max_minutes": 1, "n_trials": 2}
         params6 = {"n_trials": 0, "max_minutes": 1}
-        params7 = {"dist": "Beta", "max_minutes": 1}
+        params7 = {"dist": "Beta", "max_minutes": 1, "n_trials": 2}
         params8 = {
             "n_trials": 0,
             "max_minutes": 1,
