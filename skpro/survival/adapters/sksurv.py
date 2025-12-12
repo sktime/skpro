@@ -92,12 +92,8 @@ class _SksurvAdapter:
         X = prep_skl_df(X)
         y_np = y.iloc[:, 0].values  # we know univariate due to tag
         C_np = C.iloc[:, 0].values
-        # Convert skpro censoring indicator to scikit-survival delta convention
-        # skpro: C=0 (uncensored), C=1 (censored, right-censored)
-        # sksurv: delta=True (uncensored), delta=False (censored)
-        # Therefore: delta = (C_skpro == 0)
-        C_np_bool = C_np == 0
-        # This is the opposite of skpro ("censoring" indicator), where 1 = censored
+        C_np_bool = C_np == 0  # sksurv uses "delta" indicator, 0 = censored
+        # this is the opposite of skpro ("censoring" indicator), where 1 = censored
 
         y_sksurv = list(zip(C_np_bool, y_np))
         y_sksurv = np.array(y_sksurv, dtype=[("delta", "?"), ("time", "<f8")])
