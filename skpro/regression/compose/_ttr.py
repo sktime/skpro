@@ -33,7 +33,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
     ``predict_proba(X)`` - first executes ``regressor.predict_proba(X)``,
         then returns a ``TransformedDistribution`` object with
         ``distribution=regressor.predict_proba(X)``, and
-        ``transform=transformer.inverse_transform``.
+        ``transform=transformer``.
 
     Parameters
     ----------
@@ -124,8 +124,12 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         if self.transformer_ is not None:
             t = self.transformer_
             yt = t.fit_transform(X=y)
+
             if not isinstance(yt, pd.DataFrame):
-                yt = pd.DataFrame(yt, index=y.index)
+                yt = pd.DataFrame(yt, index=y.index, columns=y.columns)
+            else:
+                yt.index = y.index
+                yt.columns = y.columns
         else:
             yt = y
 
@@ -163,7 +167,10 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        yt = self.transformer_(y)
+        if self.transformer_ is not None:
+            yt = self.transformer_.transform(y)
+        else:
+            yt = y
         self.regressor_.update(X=X, y=yt, C=C)
         return self
 
@@ -236,7 +243,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         X : pandas DataFrame, must have same columns as X in `fit`
             data to predict labels for
         coverage : guaranteed list of float of unique values
-           nominal coverage(s) of predictive interval(s)
+            nominal coverage(s) of predictive interval(s)
 
         Returns
         -------
@@ -302,10 +309,11 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         y_pred = self.regressor_.predict_proba(X=X)
+        # The regressor outputs distributions in transformed space.
+        # We need to apply inverse_transform to get back to original space.
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
-            transform=self.transformer_.inverse_transform,
-            inverse_transform=self.transformer_.transform,
+            transform=self.transformer_,
             assume_monotonic=True,
             index=X.index,
             columns=self._y_metadata["feature_names"],
