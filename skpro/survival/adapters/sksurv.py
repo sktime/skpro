@@ -28,6 +28,9 @@ class _SksurvAdapter:
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
         "capability:multioutput": False,
+        # CI and test flags
+        # -----------------
+        "tests:vm": True,  # requires its own test VM to run
     }
 
     # defines the name of the attribute containing the sksurv estimator
