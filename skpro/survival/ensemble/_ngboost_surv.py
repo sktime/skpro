@@ -131,7 +131,8 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
         # ngboost => 1 = uncensored, else (right) censored
         # If C is None then C is set as 1s (uncensored)
         # else it is converted from skpro to ngboost format
-        # by doing C = 1-C        if C is None:
+        # by doing C = 1-C        
+        if C is None:
             C = pd.DataFrame(np.ones(len(y)), index=y.index, columns=y.columns)
         else:
             C = 1 - C
