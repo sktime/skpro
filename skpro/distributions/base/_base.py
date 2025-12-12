@@ -695,7 +695,7 @@ class BaseDistribution(BaseObject):
                 res_cols = d.columns
             res = pd.DataFrame(res, index=d.index, columns=res_cols)
         # if numpy scalar, convert to python scalar, e.g., float
-        if isinstance(res, np.ndarray) and self.ndim == 0:
+        if isinstance(res, np.ndarray) and self.ndim == 0 and res.ndim == 0:
             res = res[()]
         return res
 
@@ -1500,8 +1500,12 @@ class BaseDistribution(BaseObject):
         """
         # scalar case
         if self.ndim == 0:
-            x = np.float64(x)
-            return x
+            x_arr = np.array(x)
+            if flatten and x_arr.ndim > 1:
+                x_arr = x_arr.reshape(1, -1)
+            if x_arr.ndim == 0:
+                return np.float64(x_arr)
+            return x_arr
 
         # array-like case
         x = np.array(x)
@@ -1534,6 +1538,10 @@ class BaseDistribution(BaseObject):
             If ``flatten`` is True, flattens ``x`` before broadcasting,
         """
         x = np.array(x)
+        if self.ndim == 0:
+            if flatten and x.ndim > 1:
+                x = x.reshape(1, -1)
+            return x
         if flatten:
             x = x.reshape(1, -1)
         df_shape = self.shape
