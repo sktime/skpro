@@ -6,7 +6,6 @@ and generates JavaScript data for the estimator overview page.
 
 import json
 import sys
-from pathlib import Path
 
 
 def generate_estimator_data():
@@ -20,7 +19,7 @@ def generate_estimator_data():
     try:
         from skpro.registry import all_objects
     except ImportError:
-        print("Warning: Could not import skpro.registry.all_objects", file=sys.stderr)
+        sys.stderr.write("Warning: Could not import skpro.registry.all_objects\n")
         return []
 
     # Get all objects with tags
@@ -37,17 +36,17 @@ def generate_estimator_data():
             ],
             suppress_import_stdout=True,
         )
-    except Exception as e:
-        print(f"Warning: Could not retrieve estimator data: {e}", file=sys.stderr)
+    except Exception as e:  # noqa: B902
+        sys.stderr.write(f"Warning: Could not retrieve estimator data: {e}\n")
         return []
 
     if df is None or df.empty:
-        print("Warning: No estimators found", file=sys.stderr)
+        sys.stderr.write("Warning: No estimators found\n")
         return []
 
     estimators = []
 
-    for idx, row in df.iterrows():
+    for _, row in df.iterrows():
         name = row.get("name", "Unknown")
         obj = row.get("objects")
         obj_type = row.get("object_type", "unknown")
@@ -111,16 +110,15 @@ window.estimatorData = {json_data};
 
 
 def main():
-    """Main entry point for the script."""
+    """Generate and output estimator data as JavaScript code."""
     estimators = generate_estimator_data()
 
     if not estimators:
-        print("Warning: No estimators could be generated", file=sys.stderr)
-        # Return empty data structure
-        return "window.estimatorData = [];"
+        sys.stderr.write("Warning: No estimators could be generated\n")
+        return
 
     js_code = generate_javascript_code(estimators)
-    print(js_code)
+    sys.stdout.write(js_code)
 
 
 if __name__ == "__main__":

@@ -132,7 +132,7 @@ def linkcode_resolve(domain, info):
         return None
     try:
         filename = "skpro/%s#L%d-L%d" % find_source()
-    except Exception:
+    except Exception:  # noqa: B902
         filename = info["module"].replace(".", "/") + ".py"
     if version_match == "latest":
         version = "main"
@@ -323,7 +323,7 @@ def generate_estimator_overview_data(app, config):
     try:
         from skpro.registry import all_objects
     except ImportError:
-        print("Warning: Could not import skpro for estimator overview", file=sys.stderr)
+        sys.stderr.write("Warning: Could not import skpro for estimator overview\n")
         return
 
     # Get all objects with tags
@@ -340,20 +340,19 @@ def generate_estimator_overview_data(app, config):
             ],
             suppress_import_stdout=True,
         )
-    except Exception as e:
-        print(
-            f"Warning: Could not retrieve estimator data for overview: {e}",
-            file=sys.stderr,
+    except Exception as e:  # noqa: B902
+        sys.stderr.write(
+            f"Warning: Could not retrieve estimator data for overview: {e}\n"
         )
         return
 
     if df is None or df.empty:
-        print("Warning: No estimators found for overview", file=sys.stderr)
+        sys.stderr.write("Warning: No estimators found for overview\n")
         return
 
     estimators = []
 
-    for idx, row in df.iterrows():
+    for _, row in df.iterrows():
         name = row.get("name", "Unknown")
         obj = row.get("objects")
         obj_type = row.get("object_type", "unknown")
@@ -410,8 +409,6 @@ window.estimatorData = {json.dumps(estimators, indent=2)};
     with open(js_file, "w") as f:
         f.write(js_content)
 
-    print(f"Generated estimator overview data: {len(estimators)} estimators")
-
 
 def inject_estimator_data(app, pagename, templatename, context, doctree):
     """Inject estimator data script into the estimator overview page.
@@ -429,18 +426,13 @@ def inject_estimator_data(app, pagename, templatename, context, doctree):
     doctree : docutils.nodes.document
         The doctree
     """
-    if pagename == "estimator_overview":
-        # Add script tag to inject the estimator data
-        script_tag = '<script src="_static/estimator_data.js"></script>'
-        if "script_files" not in context:
-            context["script_files"] = []
-        # Note: This approach injects via template; the actual injection
-        # happens via the raw HTML block in the RST file itself
+    # Note: Estimator data injection happens via raw HTML block in RST file
+    pass
 
 
 # Register the setup function
 def setup(app):
-    """Setup Sphinx extension for estimator overview.
+    """Configure Sphinx extension for estimator overview generation.
 
     Parameters
     ----------
