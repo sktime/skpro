@@ -49,6 +49,15 @@ class OndilOnlineGamlss(BaseProbaRegressor):
     }
 
     def __init__(self, distribution="Normal", ondil_init_params=None):
+        """Initialize OndilOnlineGamlss.
+
+        Parameters
+        ----------
+        distribution : str, default="Normal"
+            Name of distribution to expose via skpro.
+        ondil_init_params : dict, optional
+            Parameters to forward to ondil's OnlineGamlss constructor.
+        """
         self.distribution = distribution
         self.ondil_init_params = ondil_init_params
         # explicit dict of kwargs forwarded to the ondil constructor.
@@ -175,7 +184,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         else:
             try:
                 df = pd.DataFrame(params)
-            except Exception as e:
+            except Exception as e:  # noqa: B902
                 raise TypeError("Unrecognized predict output from ondil: %s" % e)
 
         # decide mapping based on requested distribution
@@ -198,18 +207,26 @@ class OndilOnlineGamlss(BaseProbaRegressor):
 
             loc_col = _find(col_candidates["loc"]) or df.columns[0]
 
-            if df.shape[1] > 1:
-                scale_col = _find(col_candidates["scale"]) or df.columns[1]
-            else:
-                scale_col = None
+            # Check if we have a scale column
+            scale_col = _find(col_candidates["scale"])
 
-            if scale_col is None:
-                raise ValueError(
-                    "Could not infer scale column from ondil predict output"
-                )
+            # If no explicit scale column found, check if we have multiple columns
+            if scale_col is None and df.shape[1] > 1:
+                # Use second column as scale
+                scale_col = df.columns[1]
 
             loc = df.loc[:, [loc_col]].values
-            scale = df.loc[:, [scale_col]].values
+
+            if scale_col is not None:
+                scale = df.loc[:, [scale_col]].values
+            else:
+                # If ondil only returns one column (location), use a default scale
+                # This is common with default GAMLSS configurations that only estimate
+                # the mean. We use a scale of 1.0 (constant for all predictions).
+                # Note: This may not be ideal and may underestimate uncertainty.
+                import numpy as np
+
+                scale = np.ones((len(df), 1))
 
             Normal = distr_mod.Normal
             return Normal(mu=loc, sigma=scale, index=X.index, columns=self._y_cols)
