@@ -73,6 +73,9 @@ class _SksurvAdapter:
             Training labels
         C: pd.Series, optional (default=None)
             Censoring information for survival analysis.
+            Convention: C=0 (uncensored), C=1 (censored).
+            Internally converted to scikit-survival convention:
+            delta=True (uncensored), delta=False (censored).
 
         Returns
         -------
