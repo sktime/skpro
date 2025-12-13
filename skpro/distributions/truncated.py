@@ -15,10 +15,10 @@ class TruncatedDistribution(BaseDistribution):
     Mathematically, it can be expressed as:
 
     .. math::
-        Y \sim f(y \vert a \lt y \leq b) = \frac{f(y)}{F(b) - F(a)},
+        Y \sim f(y \vert y \in I) = \frac{f(y)}{P(Y \in I)},
 
-    where :math:`a` and :math:`b` is the lower and upper bound respectively, and
-    :math:`f(y)` is the probability mass/density function.
+    where :math:`I` is the interval defined by the bounds and ``interval_type``
+    and :math:`P(Y \in I)` is the total probability mass within that interval.
 
     Parameters
     ----------
@@ -27,13 +27,18 @@ class TruncatedDistribution(BaseDistribution):
 
     lower : Union[float, int], optional
         The lower bound below which values are truncated.
-        By default, this bound is exclusive (see ``inclusive_lower``).
+        By default, this bound is exclusive (see ``interval_type``).
 
     upper : Union[float, int], optional
         The upper bound above which values are truncated.
+        By default, this bound is inclusive (see ``interval_type``).
 
-    inclusive_lower : bool, optional, default = False
-        If True, the lower bound is inclusive (x >= lower).
+    interval_type : str, default="(]"
+        Defines the inclusivity of the bounds. Must be one of:
+        - "[]" : Closed interval (inclusive lower, inclusive upper).
+        - "()" : Open interval (exclusive lower, exclusive upper).
+        - "[)" : Half-open (inclusive lower, exclusive upper).
+        - "(]" : Half-open (exclusive lower, inclusive upper).
 
     Examples
     --------
@@ -65,14 +70,21 @@ class TruncatedDistribution(BaseDistribution):
         *,
         lower: Union[float, int] = None,
         upper: Union[float, int] = None,
-        inclusive_lower: bool = False,
+        interval_type: str = "(]",
         index=None,
         columns=None,
     ):
         self.distribution = distribution
         self.lower = lower
         self.upper = upper
-        self.inclusive_lower = inclusive_lower
+        self.interval_type = interval_type
+        
+        valid_intervals = {"[]", "()", "[)", "(]"}
+        if interval_type not in valid_intervals:
+            raise ValueError(f"interval_type must be one of {valid_intervals}")
+
+        self._inclusive_lower = interval_type.startswith("[")
+        self._inclusive_upper = interval_type.endswith("]")
 
         super().__init__(
             index=index if index is not None else distribution.index,
@@ -104,22 +116,19 @@ class TruncatedDistribution(BaseDistribution):
             self.set_tags(**{"distr:paramtype": inner_paramtype})
 
     def _get_low_high_prob(self) -> Tuple[float, float]:
-        if self.lower is not None:
-            prob_at_lower = self.distribution.cdf(self.lower)
-            if self.inclusive_lower:
-                measure_type = self.get_tag("distr:measuretype")
-
-                # If continuous, P(X=lower) is 0, so CDF(lower) is already correct
-                # If discrete, then P(X < lower) = CDF(lower) - P(X=lower)
-                if measure_type == "discrete":
-                    prob_mass_at_lower = self.distribution.pmf(self.lower)
-                    prob_at_lower = prob_at_lower - prob_mass_at_lower
-        else:
-            prob_at_lower = 0.0
-
+        prob_at_lower = (
+            self.distribution.cdf(self.lower) if self.lower is not None else 0.0
+        )
         prob_at_upper = (
             self.distribution.cdf(self.upper) if self.upper is not None else 1.0
         )
+
+        if self.get_tag("distr:measuretype") == "discrete":    
+            if self.lower is not None and self._inclusive_lower:
+                prob_at_lower -= self.distribution.pmf(self.lower)
+
+            if self.upper is not None and not self._inclusive_upper:
+                prob_at_upper -= self.distribution.pmf(self.upper)
 
         return prob_at_lower, prob_at_upper
 
@@ -129,10 +138,17 @@ class TruncatedDistribution(BaseDistribution):
         lower_bound = self.lower if self.lower is not None else -inf
         upper_bound = self.upper if self.upper is not None else inf
 
-        if self.inclusive_lower:
-            is_valid = (x >= lower_bound) & (x <= upper_bound)
+        if self._inclusive_lower:
+            flag_lower = x >= lower_bound
         else:
-            is_valid = (x > lower_bound) & (x <= upper_bound)
+            flag_lower = x > lower_bound
+
+        if self._inclusive_upper:
+            flag_upper = x <= upper_bound
+        else:
+            flag_upper = x < upper_bound
+
+        is_valid = flag_lower & flag_upper
 
         prob_base = fun(x)
         cdf_lower, cdf_upper = self._get_low_high_prob()
@@ -198,7 +214,7 @@ class TruncatedDistribution(BaseDistribution):
             distribution=distr,
             lower=self.lower,
             upper=self.upper,
-            inclusive_lower=self.inclusive_lower,
+            interval_type=self.interval_type,
             index=new_index,
             columns=new_columns,
         )
@@ -212,7 +228,7 @@ class TruncatedDistribution(BaseDistribution):
             distribution=self_subset.distribution.iat[0, 0],
             lower=self.lower,
             upper=self.upper,
-            inclusive_lower=self.inclusive_lower,
+            interval_type=self.interval_type, 
         )
 
     @classmethod
@@ -260,7 +276,14 @@ class TruncatedDistribution(BaseDistribution):
             "index": idx,
             "columns": cols,
         }
-        # inclusive lower test parameter
-        params5 = {"distribution": dist, "lower": 0.0, "inclusive_lower": True}
+        
+        # inclusive lower and exclusive upper
+        dist = Normal(mu=1.0, sigma=1.0)
+        params5 = {
+            "distribution": dist,
+            "lower": 0,
+            "upper": 5,
+            "interval_type": "[)",
+        }
 
         return [params1, params2, params3, params4, params5]
