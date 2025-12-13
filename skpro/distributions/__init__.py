@@ -47,6 +47,7 @@ __all__ = [
     "TruncatedNormal",
     "Uniform",
     "Weibull",
+    "ZeroInflated",
 ]
 
 from skpro.distributions.alpha import Alpha
@@ -89,3 +90,4 @@ from skpro.distributions.truncated import TruncatedDistribution
 from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
+from skpro.distributions.zeroinflated import ZeroInflated
