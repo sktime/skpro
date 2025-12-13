@@ -114,11 +114,7 @@ class _LifelinesAdapter:
         to_concat = [X, y]
 
         if C is not None:
-            # Convert skpro censoring indicator to lifelines event_col convention
-            # skpro: C=0 (uncensored), C=1 (censored, right-censored)
-            # lifelines: event_col=1 (uncensored), event_col=0 (censored)
-            # Therefore: C_lifelines = 1 - C_skpro
-            C_col = 1 - C.copy()
+            C_col = 1 - C.copy()  # lifelines uses 1 for uncensored, 0 for censored
             C_col.columns = ["__C"]
             to_concat.append(C_col)
 
