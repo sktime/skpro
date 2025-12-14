@@ -78,7 +78,7 @@ class TruncatedDistribution(BaseDistribution):
         self.lower = lower
         self.upper = upper
         self.interval_type = interval_type
-        
+
         valid_intervals = {"[]", "()", "[)", "(]"}
         if interval_type not in valid_intervals:
             raise ValueError(f"interval_type must be one of {valid_intervals}")
@@ -123,7 +123,7 @@ class TruncatedDistribution(BaseDistribution):
             self.distribution.cdf(self.upper) if self.upper is not None else 1.0
         )
 
-        if self.get_tag("distr:measuretype") == "discrete":    
+        if self.get_tag("distr:measuretype") == "discrete":
             if self.lower is not None and self._inclusive_lower:
                 prob_at_lower -= self.distribution.pmf(self.lower)
 
@@ -228,7 +228,7 @@ class TruncatedDistribution(BaseDistribution):
             distribution=self_subset.distribution.iat[0, 0],
             lower=self.lower,
             upper=self.upper,
-            interval_type=self.interval_type, 
+            interval_type=self.interval_type,
         )
 
     @classmethod
@@ -276,7 +276,7 @@ class TruncatedDistribution(BaseDistribution):
             "index": idx,
             "columns": cols,
         }
-        
+
         # inclusive lower and exclusive upper
         dist = Normal(mu=1.0, sigma=1.0)
         params5 = {
