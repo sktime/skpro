@@ -122,8 +122,7 @@ class ClassName(BaseDistribution):
     # if not implemented, the base class will try to fill it in
     # from the other implemented methods
     # at least _ppf, or sample should be implemented for the distribution to be usable
-    # if _ppf is implemented, sample does not need to be implemented
-    # (uses ppf sampling)
+    # if _ppf is implemented, sample does not need to be implemented (uses ppf sampling)
 
     # todo: consider implementing
     # if not implemented, uses Monte Carlo estimate via sample
