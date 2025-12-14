@@ -35,6 +35,7 @@ class TruncatedDistribution(BaseDistribution):
 
     interval_type : str, default="(]"
         Defines the inclusivity of the bounds. Must be one of:
+
         - "[]" : Closed interval (inclusive lower, inclusive upper).
         - "()" : Open interval (exclusive lower, exclusive upper).
         - "[)" : Half-open (inclusive lower, exclusive upper).
@@ -123,7 +124,7 @@ class TruncatedDistribution(BaseDistribution):
             self.distribution.cdf(self.upper) if self.upper is not None else 1.0
         )
 
-        if self.get_tag("distr:measuretype") == "discrete":
+        if self.get_tag("distr:measuretype") != "continuous":
             if self.lower is not None and self._inclusive_lower:
                 prob_at_lower -= self.distribution.pmf(self.lower)
 
@@ -277,7 +278,7 @@ class TruncatedDistribution(BaseDistribution):
             "columns": cols,
         }
 
-        # inclusive lower and exclusive upper
+        # scalar and interval_type: [)
         dist = Normal(mu=1.0, sigma=1.0)
         params5 = {
             "distribution": dist,
@@ -286,4 +287,48 @@ class TruncatedDistribution(BaseDistribution):
             "interval_type": "[)",
         }
 
-        return [params1, params2, params3, params4, params5]
+        # array and interval_type: []
+        idx = pd.Index([1, 2])
+        cols = pd.Index(["a", "b"])
+        n_array = Poisson(mu=[[1, 2], [3, 4]], columns=cols, index=idx)
+        params6 = {
+            "distribution": n_array,
+            "lower": 0,
+            "upper": 5,
+            "interval_type": "[]",
+            "index": idx,
+            "columns": cols,
+        }
+
+        # array and interval_type: ()
+        idx = pd.Index([1, 2])
+        cols = pd.Index(["a", "b"])
+        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1.0, columns=cols, index=idx)
+        params7 = {
+            "distribution": n_array,
+            "lower": 0,
+            "upper": 5,
+            "interval_type": "()",
+            "index": idx,
+            "columns": cols,
+        }
+
+        # interval_type: (]
+        dist = Poisson(mu=1.0)
+        params8 = {
+            "distribution": dist,
+            "lower": 0,
+            "upper": 5,
+            "interval_type": "(]",
+        }
+
+        return [
+            params1,
+            params2,
+            params3,
+            params4,
+            params5,
+            params6,
+            params7,
+            params8,
+        ]
