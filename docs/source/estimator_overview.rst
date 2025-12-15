@@ -17,53 +17,147 @@ Use the below search table to find estimators and distributions by property.
 
     <script src="_static/estimator_data.js"></script>
 
+    <style>
+        .estimator-box {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .estimator-box:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            border-color: #0066cc;
+        }
+        .estimator-name {
+            font-weight: bold;
+            font-size: 1.05em;
+            color: #0066cc;
+            margin-bottom: 6px;
+        }
+        .estimator-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .estimator-module {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        .tag {
+            display: inline-block;
+            background-color: #e8f4f8;
+            border: 1px solid #b3dbe0;
+            padding: 3px 8px;
+            margin: 2px 4px 2px 0;
+            border-radius: 3px;
+            font-size: 0.85em;
+            color: #333;
+        }
+        .tag-label {
+            font-weight: 500;
+            color: #0066cc;
+        }
+        .tag-value {
+            color: #555;
+        }
+        .estimator-tags {
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+        .no-results {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            color: #666;
+        }
+        .filters-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .filter-group {
+            margin-bottom: 12px;
+        }
+        .filter-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        .filter-group input,
+        .filter-group select {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 0.95em;
+        }
+        .filter-group input[type="text"] {
+            width: 100%;
+            max-width: 400px;
+        }
+        .filter-group select[multiple] {
+            width: 100%;
+            max-width: 500px;
+            height: 120px;
+        }
+        .filter-hint {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 4px;
+        }
+        .estimator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+    </style>
+
     <div id="estimator-overview-container" style="margin-top: 20px;">
-        <div style="margin-bottom: 20px;">
-            <label for="estimator-type-select">
-                <strong>Filter by Estimator Type:</strong>
-            </label>
-            <select id="estimator-type-select" style="margin-left: 10px; padding: 5px;">
-                <option value="">All Types</option>
-                <option value="regressor_proba">Probabilistic Regressor</option>
-                <option value="distribution">Distribution</option>
-                <option value="metric">Metric</option>
-            </select>
+        <div class="filters-section">
+            <div class="filter-group">
+                <label for="estimator-type-select">
+                    Filter by Estimator Type:
+                </label>
+                <select id="estimator-type-select">
+                    <option value="">All Types</option>
+                    <option value="regressor_proba">Probabilistic Regressor</option>
+                    <option value="distribution">Distribution</option>
+                    <option value="metric">Metric</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="search-input">
+                    Search Estimators:
+                </label>
+                <input type="text" id="search-input" placeholder="Type to search by name or module...">
+                <div class="filter-hint">Searches estimator name and module path</div>
+            </div>
+
+            <div class="filter-group">
+                <label for="tags-select">
+                    Filter by Tags:
+                </label>
+                <select id="tags-select" multiple>
+                </select>
+                <div class="filter-hint">Hold Ctrl (Cmd on Mac) to select multiple tags</div>
+            </div>
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <label for="search-input">
-                <strong>Search Estimators:</strong>
-            </label>
-            <input type="text" id="search-input" placeholder="Type to search..." style="margin-left: 10px; padding: 5px; width: 300px;">
+        <div id="estimator-grid" class="estimator-grid">
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <label for="tags-select">
-                <strong>Filter by Tags:</strong>
-            </label>
-            <select id="tags-select" multiple style="margin-left: 10px; padding: 5px; width: 400px; height: 100px;">
-            </select>
-            <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
-                Hold Ctrl (Cmd on Mac) to select multiple tags
-            </p>
-        </div>
-
-        <div id="table-container" style="overflow-x: auto; margin-top: 20px;">
-            <table id="estimator-table" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ccc;">
-                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Name</th>
-                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Type</th>
-                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Module</th>
-                        <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Key Tags</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                </tbody>
-            </table>
-        </div>
-
-        <div id="no-results" style="margin-top: 20px; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd; display: none;">
+        <div id="no-results" class="no-results" style="display: none;">
             <p><strong>No estimators match the current filters.</strong></p>
         </div>
     </div>
@@ -71,11 +165,16 @@ Use the below search table to find estimators and distributions by property.
 .. raw:: html
 
     <script>
-        // Estimator data will be injected here by conf.py during build
         const estimatorData = window.estimatorData || [];
-        const tagsData = window.tagsData || {};
 
-        function renderTable() {
+        function formatTagValue(value) {
+            if (typeof value === 'boolean') {
+                return value ? 'True' : 'False';
+            }
+            return String(value);
+        }
+
+        function renderEstimators() {
             const typeFilter = document.getElementById('estimator-type-select').value;
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const selectedTags = Array.from(document.getElementById('tags-select').selectedOptions).map(o => o.value);
@@ -88,32 +187,47 @@ Use the below search table to find estimators and distributions by property.
                 if (searchTerm && !est.name.toLowerCase().includes(searchTerm) &&
                     !est.module.toLowerCase().includes(searchTerm)) return false;
 
-                // Tags filter
+                // Tags filter - match if any selected tag is present in estimator
                 if (selectedTags.length > 0) {
-                    return selectedTags.some(tag => est.tags.includes(tag));
+                    return selectedTags.some(tag => tag in est.tags);
                 }
 
                 return true;
             });
 
-            const tbody = document.getElementById('table-body');
+            const grid = document.getElementById('estimator-grid');
             const noResults = document.getElementById('no-results');
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '';
+                grid.innerHTML = '';
                 noResults.style.display = 'block';
             } else {
                 noResults.style.display = 'none';
-                tbody.innerHTML = filtered.map(est => `
-                    <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>${est.name}</strong></td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${est.object_type}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;"><code>${est.module}</code></td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">
-                            ${est.tags.map(tag => `<span style="background-color: #e8f4f8; padding: 2px 6px; margin: 2px; border-radius: 3px; display: inline-block; font-size: 0.85em;">${tag}</span>`).join('')}
-                        </td>
-                    </tr>
-                `).join('');
+                grid.innerHTML = filtered.map(est => {
+                    const tagsHtml = Object.entries(est.tags)
+                        .map(([key, value]) => `
+                            <span class="tag">
+                                <span class="tag-label">${key}:</span>
+                                <span class="tag-value">${formatTagValue(value)}</span>
+                            </span>
+                        `)
+                        .join('');
+
+                    return `
+                        <div class="estimator-box">
+                            <div class="estimator-name">${est.name}</div>
+                            <div class="estimator-info">
+                                <strong>Type:</strong> ${est.object_type}
+                            </div>
+                            <div class="estimator-info">
+                                <strong>Module:</strong> <span class="estimator-module">${est.module}</span>
+                            </div>
+                            <div class="estimator-tags">
+                                ${tagsHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             }
         }
 
@@ -122,7 +236,7 @@ Use the below search table to find estimators and distributions by property.
             const uniqueTags = new Set();
 
             estimatorData.forEach(est => {
-                est.tags.forEach(tag => uniqueTags.add(tag));
+                Object.keys(est.tags).forEach(tag => uniqueTags.add(tag));
             });
 
             Array.from(uniqueTags).sort().forEach(tag => {
@@ -134,15 +248,15 @@ Use the below search table to find estimators and distributions by property.
         }
 
         // Event listeners
-        document.getElementById('estimator-type-select').addEventListener('change', renderTable);
-        document.getElementById('search-input').addEventListener('input', renderTable);
-        document.getElementById('tags-select').addEventListener('change', renderTable);
+        document.getElementById('estimator-type-select').addEventListener('change', renderEstimators);
+        document.getElementById('search-input').addEventListener('input', renderEstimators);
+        document.getElementById('tags-select').addEventListener('change', renderEstimators);
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             if (estimatorData.length > 0) {
                 initializeTags();
-                renderTable();
+                renderEstimators();
             }
         });
     </script>

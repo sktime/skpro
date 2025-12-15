@@ -51,31 +51,29 @@ def generate_estimator_data():
         obj = row.get("objects")
         obj_type = row.get("object_type", "unknown")
 
-        # Get module path
-        if obj is not None:
-            module = obj.__module__ if hasattr(obj, "__module__") else "unknown"
+        # Get module path from the actual object class
+        if obj is not None and hasattr(obj, "__module__"):
+            module = obj.__module__
         else:
             module = "unknown"
 
-        # Collect key tags
-        tags = []
+        # Collect all tags with their values
+        tags = {}
         if obj_type:
-            tags.append(f"object_type:{obj_type}")
+            tags["object_type"] = obj_type
 
-        # Add capability tags
-        if row.get("capability:survival"):
-            tags.append("capability:survival")
+        # Add capability tags with their values
+        if "capability:survival" in row.index:
+            tags["capability:survival"] = row.get("capability:survival")
 
-        if row.get("handles_missing_data"):
-            tags.append("handles_missing_data")
+        if "handles_missing_data" in row.index:
+            tags["handles_missing_data"] = row.get("handles_missing_data")
 
-        if row.get("requires_y") is False:
-            tags.append("unsupervised")
-        elif row.get("requires_y"):
-            tags.append("supervised")
+        if "requires_y" in row.index:
+            tags["requires_y"] = row.get("requires_y")
 
-        if row.get("handles_multioutput"):
-            tags.append("multioutput")
+        if "handles_multioutput" in row.index:
+            tags["handles_multioutput"] = row.get("handles_multioutput")
 
         estimators.append(
             {
