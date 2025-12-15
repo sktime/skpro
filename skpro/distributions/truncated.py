@@ -17,8 +17,9 @@ class TruncatedDistribution(BaseDistribution):
     .. math::
         Y \sim f(y \vert y \in I) = \frac{f(y)}{P(Y \in I)},
 
-    where :math:`I` is the interval defined by the bounds and ``interval_type``
-    and :math:`P(Y \in I)` is the total probability mass within that interval.
+    where :math:`I` is the interval defined by the bounds and ``interval_type``,
+    :math:`P(Y \in I)` is the total probability mass within that interval and
+    :math:`f(y)` is the probability mass/density function.
 
     Parameters
     ----------
