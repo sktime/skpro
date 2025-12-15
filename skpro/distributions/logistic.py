@@ -5,6 +5,7 @@ __author__ = ["malikrafsan"]
 
 import numpy as np
 import pandas as pd
+from scipy.integrate import quad
 
 from skpro.distributions.base import BaseDistribution
 
@@ -37,8 +38,16 @@ class Logistic(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm", "energy"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": [
+            "mean",
+            "var",
+            "pdf",
+            "log_pdf",
+            "cdf",
+            "ppf",
+            "energy",
+        ],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -153,6 +162,49 @@ class Logistic(BaseDistribution):
 
         ppf_arr = mu + scale * np.log(p / (1 - p))
         return ppf_arr
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        Deterministic 1D quadrature: \mathbb{E}|X-Y| = 4 \int_0^\infty F(t)(1-F(t)) dt.
+        """
+
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["scale"]
+
+        def self_energy_cell(m, s):
+            cdf = lambda t: (1 + np.tanh((t - m) / (2 * s))) / 2
+            integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
+            return 4 * integral
+
+        vec_energy = np.vectorize(self_energy_cell)
+        energy_arr = vec_energy(mu, scale)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt, with empty integral if x<0.
+        """
+
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["scale"]
+
+        def energy_cell(m, s, xi):
+            if xi <= 0:
+                return m - xi  # mean is mu for logistic
+
+            cdf = lambda t: (1 + np.tanh((t - m) / (2 * s))) / 2
+            integral, _ = quad(cdf, 0, xi, limit=200)
+            return m - xi + 2 * integral
+
+        vec_energy = np.vectorize(energy_cell)
+        energy_arr = vec_energy(mu, scale, x)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

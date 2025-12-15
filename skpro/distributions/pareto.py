@@ -5,6 +5,7 @@ __author__ = ["sukjingitsit"]
 
 import numpy as np
 import pandas as pd
+from scipy.integrate import quad
 
 from skpro.distributions.base import BaseDistribution
 
@@ -38,8 +39,16 @@ class Pareto(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm", "energy"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": [
+            "mean",
+            "var",
+            "pdf",
+            "log_pdf",
+            "cdf",
+            "ppf",
+            "energy",
+        ],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -149,6 +158,48 @@ class Pareto(BaseDistribution):
         alpha = self._bc_params["alpha"]
         scale = self._bc_params["scale"]
         return scale / np.power(1 - p, 1 / alpha)
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        Deterministic quadrature: \mathbb{E}|X-Y| = 4 \int_0^\infty F(t)(1-F(t)) dt.
+        """
+        alpha = self._bc_params["alpha"]
+        scale = self._bc_params["scale"]
+
+        def self_energy_cell(a, s):
+            cdf = lambda t: 0 if t < s else 1 - np.power(s / t, a)
+            integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
+            return 4 * integral
+
+        vec_energy = np.vectorize(self_energy_cell)
+        energy_arr = vec_energy(alpha, scale)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt.
+        """
+        alpha = self._bc_params["alpha"]
+        scale = self._bc_params["scale"]
+        mean = np.where(alpha <= 1, np.inf, scale * alpha / (alpha - 1))
+
+        def energy_cell(a, s, m, xi):
+            if xi <= 0:
+                return m - xi
+
+            cdf = lambda t: 0 if t < s else 1 - np.power(s / t, a)
+            integral, _ = quad(cdf, 0, xi, limit=200)
+            return m - xi + 2 * integral
+
+        vec_energy = np.vectorize(energy_cell)
+        energy_arr = vec_energy(alpha, scale, mean, x)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

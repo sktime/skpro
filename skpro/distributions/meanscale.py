@@ -212,7 +212,7 @@ class MeanScale(BaseDistribution):
         icdf_arr = mu + scale * self.d.ppf(p)
         return icdf_arr
 
-        # def _energy_self(self):
+    def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
         :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
@@ -224,12 +224,20 @@ class MeanScale(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        # scale = self._bc_params["sigma"]
+        scale = self._bc_params["sigma"]
+        en_df = self.d.energy()
+        if hasattr(en_df, "values"):
+            en_vals = en_df.values[:, 0]
+        else:
+            en_vals = np.asarray(en_df)
 
-        # en_arr = scale * self.d.energy()
-        # return en_arr
+        if np.ndim(scale) == 0:
+            return en_vals * scale
+        # compute a row-wise scale factor (constant across columns cases align)
+        scale_row = np.mean(scale, axis=1)
+        return en_vals * scale_row
 
-        # def _energy_x(self, x):
+    def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
 
         :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
@@ -247,12 +255,20 @@ class MeanScale(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        # mu = self._bc_params["mu"]
-        # scale = self._bc_params["sigma"]
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["sigma"]
 
-        # x_offset = (x - mu) / scale
-        # en_arr = scale * self.d.energy(x_offset)
-        # return en_arr
+        x_offset = (x - mu) / scale
+        en_df = self.d.energy(x_offset)
+        if hasattr(en_df, "values"):
+            en_vals = en_df.values[:, 0]
+        else:
+            en_vals = np.asarray(en_df)
+
+        if np.ndim(scale) == 0:
+            return en_vals * scale
+        scale_row = np.mean(scale, axis=1)
+        return en_vals * scale_row
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
