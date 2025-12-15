@@ -107,10 +107,12 @@ class MeanScale(BaseDistribution):
                 colidx=colidx,
                 coerce_scalar=coerce_scalar,
             )
-        if coerce_scalar:
-            subset_param_dict["d"] = self.d.iat[rowidx, colidx]
-        else:
-            subset_param_dict["d"] = self.d.iloc[rowidx, colidx]
+        subset_param_dict["d"] = self._subset_param(
+            val=self.d,
+            rowidx=rowidx,
+            colidx=colidx,
+            coerce_scalar=coerce_scalar,
+        )
         return subset_param_dict
 
     def _mean(self):

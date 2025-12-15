@@ -7,6 +7,7 @@ Testing works via TestAllDistributions which discovers the classes in
 here, executes the public methods in interface conformance tests,
 which in turn triggers the fallback defaults.
 """
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
@@ -188,3 +189,198 @@ def test_base_default_minimal_cdf():
     """Test default cdf method."""
     minimal_n = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
+
+
+class _CompositeDistributionTester(BaseDistribution):
+    """Composite distribution for testing _subset_param with distribution parameters."""
+
+    _tags = {
+        "capabilities:approx": [],
+        "capabilities:exact": ["mean"],
+        "distr:measuretype": "continuous",
+        "distr:paramtype": "composite",
+        "broadcast_init": "on",
+    }
+
+    def __init__(self, distribution, scalar_param=1.0, index=None, columns=None):
+        """Initialize composite distribution.
+
+        Parameters
+        ----------
+        distribution : BaseDistribution
+            Inner distribution parameter.
+        scalar_param : float, default=1.0
+            A scalar parameter for testing.
+        index : pd.Index, optional
+            Index for the distribution.
+        columns : pd.Index, optional
+            Columns for the distribution.
+        """
+        self.distribution = distribution
+        self.scalar_param = scalar_param
+
+        super().__init__(
+            index=index if index is not None else distribution.index,
+            columns=columns if columns is not None else distribution.columns,
+        )
+
+    def _mean(self):
+        """Mean of the distribution - just delegates to inner distribution."""
+        return self.distribution.mean()
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings."""
+        from skpro.distributions import Normal
+
+        params1 = {
+            "distribution": Normal(mu=[[1, 2], [3, 4]], sigma=1),
+            "scalar_param": 2.0,
+        }
+        params2 = {
+            "distribution": Normal(mu=0, sigma=1),
+            "scalar_param": 1.0,
+        }
+        return [params1, params2]
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_subset_param_with_distribution_object():
+    """Test that _subset_param handles BaseDistribution objects correctly."""
+    from skpro.distributions import Normal
+
+    inner_dist = Normal(
+        mu=[[1, 2, 3], [4, 5, 6]],
+        sigma=1,
+        index=pd.Index([0, 1]),
+        columns=pd.Index(["a", "b", "c"]),
+    )
+    composite = _CompositeDistributionTester(distribution=inner_dist)
+    subset_iloc = composite._subset_param(
+        inner_dist, rowidx=[0], colidx=None, coerce_scalar=False
+    )
+
+    assert isinstance(subset_iloc, BaseDistribution)
+    assert subset_iloc.shape == (1, 3)
+
+    expected_means = np.array([[1, 2, 3]])
+    np.testing.assert_array_almost_equal(subset_iloc.mean().values, expected_means)
+    subset_iat = composite._subset_param(
+        inner_dist, rowidx=0, colidx=0, coerce_scalar=True
+    )
+
+    assert isinstance(subset_iat, BaseDistribution)
+    assert subset_iat.ndim == 0
+    assert subset_iat.mean() == 1
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_composite_distribution_iloc_iat():
+    """Test that composite distributions work with default iloc/iat."""
+    from skpro.distributions import Normal
+
+    inner_dist = Normal(
+        mu=[[1, 2], [3, 4], [5, 6]],
+        sigma=1,
+        index=pd.Index([0, 1, 2]),
+        columns=pd.Index(["x", "y"]),
+    )
+
+    composite = _CompositeDistributionTester(distribution=inner_dist, scalar_param=10)
+    subset = composite.iloc[[0, 1], :]
+
+    assert isinstance(subset, _CompositeDistributionTester)
+    assert subset.shape == (2, 2)
+    assert subset.scalar_param == 10  # Scalar param should be preserved
+    assert subset.distribution.shape == (2, 2)
+
+    expected_means = np.array([[1, 2], [3, 4]])
+    np.testing.assert_array_almost_equal(
+        subset.distribution.mean().values, expected_means
+    )
+    subset_col = composite.iloc[:, [0]]
+
+    assert subset_col.shape == (3, 1)
+    assert subset_col.distribution.shape == (3, 1)
+
+    scalar = composite.iat[1, 1]
+
+    assert isinstance(scalar, _CompositeDistributionTester)
+    assert scalar.ndim == 0
+    assert scalar.distribution.ndim == 0
+    assert scalar.distribution.mean() == 4
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_subset_param_with_none_indices():
+    """Test _subset_param with None indices (no subsetting)."""
+    from skpro.distributions import Normal
+
+    inner_dist = Normal(
+        mu=[[1, 2], [3, 4]],
+        sigma=1,
+        index=pd.Index([0, 1]),
+        columns=pd.Index(["a", "b"]),
+    )
+
+    composite = _CompositeDistributionTester(distribution=inner_dist)
+    result = composite._subset_param(
+        inner_dist, rowidx=None, colidx=None, coerce_scalar=False
+    )
+
+    assert isinstance(result, BaseDistribution)
+    assert result.shape == inner_dist.shape
+    np.testing.assert_array_equal(result.mean().values, inner_dist.mean().values)
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_subset_param_backward_compatibility():
+    """Test that _subset_param still works correctly with array-like parameters."""
+    from skpro.distributions import Normal
+
+    dist = Normal(mu=[[1, 2], [3, 4]], sigma=1)
+    mu_array = np.array([[1, 2], [3, 4]])
+    subset_mu = dist._subset_param(
+        mu_array, rowidx=[0], colidx=None, coerce_scalar=False
+    )
+
+    assert isinstance(subset_mu, np.ndarray)
+    np.testing.assert_array_equal(subset_mu, np.array([[1, 2]]))
+
+    scalar_mu = dist._subset_param(mu_array, rowidx=0, colidx=0, coerce_scalar=True)
+
+    assert isinstance(scalar_mu, (np.ndarray, float, int))
+    assert scalar_mu == 1
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_composite_distribution_with_scalar_inner():
+    """Test composite distribution with scalar inner distribution."""
+    from skpro.distributions import Normal
+
+    inner_dist = Normal(mu=5, sigma=2)
+    composite = _CompositeDistributionTester(distribution=inner_dist, scalar_param=3)
+
+    assert composite.ndim == 0
+    assert composite.distribution.ndim == 0
+
+    scalar_result = composite.iat[0, 0]
+
+    assert isinstance(scalar_result, _CompositeDistributionTester)
+    assert scalar_result.ndim == 0
+    assert scalar_result.distribution.mean() == 5
