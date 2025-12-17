@@ -93,6 +93,9 @@ class _LifelinesAdapter:
             Training labels
         C: pd.DataFrame, optional (default=None)
             Censoring information for survival analysis.
+            Convention: C=0 (uncensored), C=1 (censored).
+            Internally converted to lifelines convention:
+            event_col=1 (uncensored), event_col=0 (censored).
 
         Returns
         -------
