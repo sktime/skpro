@@ -110,7 +110,7 @@ class ZeroInflated(BaseDistribution):
         return TruncatedDistribution(
             self.distribution,
             lower=0.0,
-            interval_type = "[)",
+            interval_type="[)",
             index=self.index,
             columns=self.columns,
         )
