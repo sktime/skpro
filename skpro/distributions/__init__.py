@@ -14,12 +14,15 @@ __all__ = [
     "Exponential",
     "Fisk",
     "Gamma",
+    "LogGamma",
+    "Geometric",
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
     "Hurdle",
     "IID",
     "InverseGamma",
+    "InverseGaussian",
     "Histogram",
     "Laplace",
     "LeftTruncated",
@@ -58,14 +61,17 @@ from skpro.distributions.erlang import Erlang
 from skpro.distributions.exponential import Exponential
 from skpro.distributions.fisk import Fisk
 from skpro.distributions.gamma import Gamma
+from skpro.distributions.geometric import Geometric
 from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halflogistic import HalfLogistic
 from skpro.distributions.halfnormal import HalfNormal
 from skpro.distributions.histogram import Histogram
 from skpro.distributions.hurdle import Hurdle
 from skpro.distributions.inversegamma import InverseGamma
+from skpro.distributions.inversegaussian import InverseGaussian
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.left_truncated import LeftTruncated
+from skpro.distributions.loggamma import LogGamma
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal

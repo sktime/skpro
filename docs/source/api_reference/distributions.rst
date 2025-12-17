@@ -59,10 +59,12 @@ Continuous support - non-negative reals
     Erlang
     Fisk
     Gamma
+    LogGamma
     HalfCauchy
     HalfLogistic
     HalfNormal
     InverseGamma
+    InverseGaussian
     LogLaplace
     Pareto
     Weibull
@@ -78,6 +80,7 @@ Integer support
     :template: class.rst
 
     Binomial
+    Geometric
     Hurdle
     NegativeBinomial
     Poisson

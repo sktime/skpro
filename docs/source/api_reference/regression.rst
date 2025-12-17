@@ -58,6 +58,14 @@ Online learning
     OnlineRefitEveryN
     OnlineDontRefit
 
+.. currentmodule:: skpro.regression.ondil
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    OndilOnlineGamlss
+
 Reduction - adding ``predict_proba``
 ------------------------------------
 
@@ -105,6 +113,24 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
     :template: class.rst
 
     MapieRegressor
+
+.. currentmodule:: skpro.regression.conformal
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MapieSplitConformalRegressor
+    MapieCrossConformalRegressor
+    MapieConformalizedQuantileRegressor
+
+.. currentmodule:: skpro.regression.jackknife
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MapieJackknifeAfterBootstrapRegressor
 
 .. currentmodule:: skpro.regression.ensemble
 
