@@ -363,25 +363,27 @@ def generate_estimator_overview_data(app, config):
         else:
             module = "unknown"
 
-        # Collect key tags
-        tags = []
+        # Collect key tags as an object
+        tags = {}
         if obj_type:
-            tags.append(f"object_type:{obj_type}")
+            tags["object_type"] = obj_type
 
         # Add capability tags
-        if row.get("capability:survival"):
-            tags.append("capability:survival")
+        if "capability:survival" in row.index:
+            tags["capability:survival"] = row.get("capability:survival", False)
 
-        if row.get("handles_missing_data"):
-            tags.append("handles_missing_data")
+        if "handles_missing_data" in row.index:
+            tags["handles_missing_data"] = row.get("handles_missing_data", False)
 
-        if row.get("requires_y") is False:
-            tags.append("unsupervised")
-        elif row.get("requires_y"):
-            tags.append("supervised")
+        if "requires_y" in row.index:
+            requires_y = row.get("requires_y")
+            if requires_y is False:
+                tags["unsupervised"] = True
+            elif requires_y:
+                tags["supervised"] = True
 
-        if row.get("handles_multioutput"):
-            tags.append("multioutput")
+        if "handles_multioutput" in row.index:
+            tags["handles_multioutput"] = row.get("handles_multioutput", False)
 
         estimators.append(
             {

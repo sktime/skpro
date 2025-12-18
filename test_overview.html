@@ -1,22 +1,7 @@
-.. _estimator_overview:
-
-===================
-Estimator Overview
-===================
-
-Use the below search table to find estimators and distributions by property.
-
-**Features:**
-
-* type into the search box to subset rows by substring search
-* choose a type (regressor, distribution, …) in the dropdown
-* if type is selected, check object tags to display in table
-* for explanation of tags, see the :ref:`tags reference <tags_reference>`
-
-.. raw:: html
-
-    <script src="_static/estimator_data.js"></script>
-
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Estimator Overview Test</title>
     <style>
         .estimator-box {
             border: 1px solid #ddd;
@@ -121,7 +106,8 @@ Use the below search table to find estimators and distributions by property.
             margin-top: 20px;
         }
     </style>
-
+</head>
+<body>
     <div id="estimator-overview-container" style="margin-top: 20px;">
         <div class="filters-section">
             <div class="filter-group">
@@ -162,10 +148,48 @@ Use the below search table to find estimators and distributions by property.
         </div>
     </div>
 
-.. raw:: html
-
     <script>
-        const estimatorData = window.estimatorData || [];
+        // Mock data for testing
+        const estimatorData = [
+            {
+                "name": "AFTFrisk",
+                "object_type": "regressor_proba",
+                "module": "unknown",
+                "tags": {
+                    "object_type": "regressor_proba",
+                    "capability:survival": true
+                }
+            },
+            {
+                "name": "Ridge",
+                "object_type": "regressor_proba",
+                "module": "skpro.regression.linear",
+                "tags": {
+                    "object_type": "regressor_proba",
+                    "handles_missing_data": false,
+                    "unsupervised": false
+                }
+            },
+            {
+                "name": "Normal",
+                "object_type": "distribution",
+                "module": "skpro.distributions",
+                "tags": {
+                    "object_type": "distribution",
+                    "supervised": false
+                }
+            },
+            {
+                "name": "Lasso",
+                "object_type": "regressor_proba",
+                "module": "skpro.regression.linear",
+                "tags": {
+                    "object_type": "regressor_proba",
+                    "supervised": true,
+                    "handles_multioutput": true
+                }
+            }
+        ];
 
         function formatTagValue(value) {
             if (typeof value === 'boolean') {
@@ -261,13 +285,5 @@ Use the below search table to find estimators and distributions by property.
             }
         });
     </script>
-
-Estimator Reference
-===================
-
-For detailed documentation of each estimator, see the API reference:
-
-* :doc:`Probabilistic Regressors <api_reference/regression>`
-* :doc:`Distributions <api_reference/distributions>`
-* :doc:`Metrics <api_reference/metrics>`
-* :doc:`Survival Prediction <api_reference/survival>`
+</body>
+</html>
