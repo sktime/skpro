@@ -173,7 +173,7 @@ class Pareto(BaseDistribution):
         scale = self._bc_params["scale"]
 
         def self_energy_cell(a, s):
-            cdf = lambda t: 0 if t < s else 1 - np.power(s / t, a)
+            cdf = lambda t: 0 if t < s else 1 - np.power(s / t, a)  # noqa: E731
             integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
             return 4 * integral
 
@@ -196,7 +196,7 @@ class Pareto(BaseDistribution):
             if xi <= 0:
                 return m - xi
 
-            cdf = lambda t: 0 if t < s else 1 - np.power(s / t, a)
+            cdf = lambda t: 0 if t < s else 1 - np.power(s / t, a)  # noqa: E731
             integral, _ = quad(cdf, 0, xi, limit=200)
             return m - xi + 2 * integral
 

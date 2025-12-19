@@ -76,12 +76,11 @@ class Gamma(_ScipyAdapter):
         Uses deterministic 1D quadrature: \mathbb{E}|X-Y| = 4 \int_0^\infty F(t)(1-F(t)) dt,
         where F is the Gamma CDF.
         """
-
         alpha = self._bc_params["alpha"]
         beta = self._bc_params["beta"]
 
         def self_energy_cell(a, b):
-            cdf = lambda t: gamma.cdf(t, a=a, scale=1 / b)
+            cdf = lambda t: gamma.cdf(t, a=a, scale=1 / b)  # noqa: E731
             integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
             return 4 * integral
 
@@ -94,9 +93,9 @@ class Gamma(_ScipyAdapter):
     def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
 
-        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt (with empty integral if x<0).
+        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt
+        (with empty integral if x<0).
         """
-
         alpha = self._bc_params["alpha"]
         beta = self._bc_params["beta"]
 
@@ -104,7 +103,7 @@ class Gamma(_ScipyAdapter):
             if xi <= 0:
                 return a / b - xi
 
-            cdf = lambda t: gamma.cdf(t, a=a, scale=1 / b)
+            cdf = lambda t: gamma.cdf(t, a=a, scale=1 / b)  # noqa: E731
             integral, _ = quad(cdf, 0, xi, limit=200)
             return a / b - xi + 2 * integral
 

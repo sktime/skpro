@@ -72,7 +72,6 @@ class Exponential(_ScipyAdapter):
 
         For Exponential(rate=λ), \mathbb{E}|X-Y| = 2/λ.
         """
-
         rate = self._bc_params["rate"]
         energy_arr = 2 / rate
         if energy_arr.ndim > 0:
@@ -86,7 +85,6 @@ class Exponential(_ScipyAdapter):
         - if x < 0: 1/λ - x
         - if x >= 0: x - 1/λ + 2 e^{-λ x}/λ
         """
-
         rate = self._bc_params["rate"]
         # piecewise formula, vectorized
         energy_arr = (x >= 0) * (x - 1 / rate + 2 * np.exp(-rate * x) / rate)

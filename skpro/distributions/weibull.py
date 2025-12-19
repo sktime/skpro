@@ -39,7 +39,8 @@ class Weibull(BaseDistribution):
     Energy computations (exact, via deterministic numerical quadrature):
 
     >>> d_scalar = Weibull(scale=1, shape=2)
-    >>> d_scalar.energy()  # E|X-Y|"""
+    >>> d_scalar.energy()  # E|X-Y|
+    """
 
     _tags = {
         "capabilities:approx": ["pdfnorm"],
@@ -186,7 +187,9 @@ class Weibull(BaseDistribution):
         scale = self._bc_params["scale"]
 
         def self_energy_cell(kk, ss):
-            cdf = lambda t: (1 - np.exp(-((t / ss) ** kk))) if t >= 0 else 0
+            cdf = lambda t: (  # noqa: E731
+                (1 - np.exp(-((t / ss) ** kk))) if t >= 0 else 0
+            )
             integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
             return 4 * integral
 
@@ -209,7 +212,9 @@ class Weibull(BaseDistribution):
             if xi <= 0:
                 return mm - xi
 
-            cdf = lambda t: (1 - np.exp(-((t / ss) ** kk))) if t >= 0 else 0
+            cdf = lambda t: (  # noqa: E731
+                (1 - np.exp(-((t / ss) ** kk))) if t >= 0 else 0
+            )
             integral, _ = quad(cdf, 0, xi, limit=200)
             return mm - xi + 2 * integral
 
