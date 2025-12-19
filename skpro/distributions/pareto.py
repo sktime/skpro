@@ -40,7 +40,8 @@ class Pareto(BaseDistribution):
     Energy computations (exact, via deterministic numerical quadrature):
 
     >>> d_scalar = Pareto(scale=1, alpha=2)
-    >>> d_scalar.energy()  # E|X-Y|
+    >>> d_scalar.energy()  # doctest: +ELLIPSIS
+    np.float64(...)
     """
 
     _tags = {

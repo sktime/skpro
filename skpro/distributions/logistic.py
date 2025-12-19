@@ -35,10 +35,12 @@ class Logistic(BaseDistribution):
     >>> from skpro.distributions.logistic import Logistic
 
     >>> l = Logistic(mu=[[0, 1], [2, 3], [4, 5]], scale=1)
+
     Energy computations (exact, via deterministic numerical quadrature):
 
-    >>> d_scalar = Logistic(mu=0, s=1)
-    >>> d_scalar.energy()  # E|X-Y|
+    >>> d_scalar = Logistic(mu=0, scale=1)
+    >>> d_scalar.energy()  # doctest: +ELLIPSIS
+    np.float64(...)
     """
 
     _tags = {
@@ -189,18 +191,22 @@ class Logistic(BaseDistribution):
     def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
 
-        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt,
+        Uses \\mathbb{E}|X - x| = \\mathbb{E}[X] - x + 2 \\int_0^{x} F(t) dt,
         with empty integral if x<0.
         """
         mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
 
         def energy_cell(m, s, xi):
-            if xi <= 0:
-                return m - xi  # mean is mu for logistic
             cdf = lambda t: (1 + np.tanh((t - m) / (2 * s))) / 2  # noqa: E731
-            integral, _ = quad(cdf, 0, xi, limit=200)
-            return m - xi + 2 * integral
+            if xi <= m:
+                # For xi <= mean: integral from xi to infinity
+                integral, _ = quad(lambda t: 1 - cdf(t), xi, np.inf, limit=200)
+                return xi - m + 2 * integral
+            else:
+                # For xi > mean: integral from 0 to xi
+                integral, _ = quad(cdf, 0, xi, limit=200)
+                return m - xi + 2 * integral
 
         vec_energy = np.vectorize(energy_cell)
         energy_arr = vec_energy(mu, scale, x)

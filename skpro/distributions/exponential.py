@@ -37,7 +37,8 @@ class Exponential(_ScipyAdapter):
 
     Energy computations (exact, closed-form formulas):
 
-    >>> d.energy()  # self-energy: E|X-Y| = 2/lambda
+    >>> d.energy()  # doctest: +ELLIPSIS  # self-energy: E|X-Y| = 2/lambda
+    np.float64(...)
     """
 
     _tags = {
