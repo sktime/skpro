@@ -46,6 +46,12 @@ class MeanScale(BaseDistribution):
     >>>
     >>> n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=2)
     >>> d = MeanScale(d=n, mu=2, sigma=3)
+
+    Energy computations (exact, via delegation and scaling):
+
+    >>> n_scalar = Normal(mu=0, sigma=1)
+    >>> d_scalar = MeanScale(d=n_scalar, mu=1, sigma=2)
+    >>> d_scalar.energy()  # E|X-Y| = sigma * E|Y-Z| (where Y, Z ~ d)
     """
 
     _tags = {

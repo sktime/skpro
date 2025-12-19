@@ -35,7 +35,10 @@ class Logistic(BaseDistribution):
     >>> from skpro.distributions.logistic import Logistic
 
     >>> l = Logistic(mu=[[0, 1], [2, 3], [4, 5]], scale=1)
-    """
+    Energy computations (exact, via deterministic numerical quadrature):
+
+    >>> d_scalar = Logistic(mu=0, s=1)
+    >>> d_scalar.energy()  # E|X-Y|"""
 
     _tags = {
         "capabilities:approx": ["pdfnorm"],

@@ -29,6 +29,15 @@ class Exponential(_ScipyAdapter):
         rate = 1/scale
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
+
+    Examples
+    --------
+    >>> from skpro.distributions.exponential import Exponential
+    >>> d = Exponential(rate=2)
+
+    Energy computations (exact, closed-form formulas):
+
+    >>> d.energy()  # self-energy: E|X-Y| = 2/lambda
     """
 
     _tags = {

@@ -36,6 +36,11 @@ class Pareto(BaseDistribution):
     >>> from skpro.distributions.pareto import Pareto
 
     >>> n = Pareto(scale=[[1, 1.5], [2, 2.5], [3, 4]], alpha=3)
+
+    Energy computations (exact, via deterministic numerical quadrature):
+
+    >>> d_scalar = Pareto(scale=1, alpha=2)
+    >>> d_scalar.energy()  # E|X-Y|
     """
 
     _tags = {
