@@ -203,12 +203,8 @@ class Logistic(BaseDistribution):
             pdf = lambda t: 1 / (4 * s) / np.cosh((t - m) / (2 * s)) ** 2  # noqa: E731
 
             # Split integral at xi
-            lower, _ = quad(
-                lambda t: (xi - t) * pdf(t), m - 10 * s, xi, limit=200
-            )
-            upper, _ = quad(
-                lambda t: (t - xi) * pdf(t), xi, m + 10 * s, limit=200
-            )
+            lower, _ = quad(lambda t: (xi - t) * pdf(t), m - 10 * s, xi, limit=200)
+            upper, _ = quad(lambda t: (t - xi) * pdf(t), xi, m + 10 * s, limit=200)
             return lower + upper
 
         vec_energy = np.vectorize(energy_cell)
