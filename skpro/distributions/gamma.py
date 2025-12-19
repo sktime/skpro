@@ -73,7 +73,8 @@ class Gamma(_ScipyAdapter):
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
-        Uses deterministic 1D quadrature: \mathbb{E}|X-Y| = 4 \int_0^\infty F(t)(1-F(t)) dt,
+        Uses deterministic 1D quadrature:
+        \\mathbb{E}|X-Y| = 4 \\int_0^\\infty F(t)(1-F(t)) dt,
         where F is the Gamma CDF.
         """
         alpha = self._bc_params["alpha"]
