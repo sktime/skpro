@@ -43,7 +43,7 @@ class Gamma(_ScipyAdapter):
     Energy computations (exact, via deterministic numerical quadrature):
 
     >>> d_scalar = Gamma(alpha=2, beta=1)
-    >>> d_scalar.energy()  # doctest: +ELLIPSIS
+    >>> d_scalar.energy()  #doctest: +ELLIPSIS
     np.float64(...)
     """  # noqa: E501
 

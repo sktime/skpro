@@ -40,7 +40,7 @@ class Beta(_ScipyAdapter):
     Energy computations (exact, via deterministic numerical quadrature):
 
     >>> d_scalar = Beta(alpha=2, beta=3)
-    >>> d_scalar.energy()  # doctest: +ELLIPSIS
+    >>> d_scalar.energy()  #doctest: +ELLIPSIS
     np.float64(...)
     """
 

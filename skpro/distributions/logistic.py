@@ -39,7 +39,7 @@ class Logistic(BaseDistribution):
     Energy computations (exact, via deterministic numerical quadrature):
 
     >>> d_scalar = Logistic(mu=0, scale=1)
-    >>> d_scalar.energy()  # doctest: +ELLIPSIS
+    >>> d_scalar.energy()  #doctest: +ELLIPSIS
     np.float64(...)
     """
 
@@ -191,22 +191,20 @@ class Logistic(BaseDistribution):
     def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
 
-        Uses \\mathbb{E}|X - x| = \\mathbb{E}[X] - x + 2 \\int_0^{x} F(t) dt,
-        with empty integral if x<0.
+        Uses numerical integration: \\mathbb{E}|X - x| = \\int_{-\\infty}^{\\infty} |t - x| f(t) dt.
         """
         mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
 
         def energy_cell(m, s, xi):
-            cdf = lambda t: (1 + np.tanh((t - m) / (2 * s))) / 2  # noqa: E731
-            if xi <= m:
-                # For xi <= mean: integral from xi to infinity
-                integral, _ = quad(lambda t: 1 - cdf(t), xi, np.inf, limit=200)
-                return xi - m + 2 * integral
-            else:
-                # For xi > mean: integral from 0 to xi
-                integral, _ = quad(cdf, 0, xi, limit=200)
-                return m - xi + 2 * integral
+            # Compute E|X - xi| by integrating |t - xi| * f(t)
+            # Logistic PDF: f(t) = 1/(4*s) * sech^2((t-m)/(2*s))
+            pdf = lambda t: 1 / (4 * s) / np.cosh((t - m) / (2 * s)) ** 2  # noqa: E731
+
+            # Split integral at xi
+            lower, _ = quad(lambda t: (xi - t) * pdf(t), m - 10 * s, xi, limit=200)
+            upper, _ = quad(lambda t: (t - xi) * pdf(t), xi, m + 10 * s, limit=200)
+            return lower + upper
 
         vec_energy = np.vectorize(energy_cell)
         energy_arr = vec_energy(mu, scale, x)

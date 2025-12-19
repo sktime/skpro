@@ -51,7 +51,7 @@ class MeanScale(BaseDistribution):
 
     >>> n_scalar = Normal(mu=0, sigma=1)
     >>> d_scalar = MeanScale(d=n_scalar, mu=1, sigma=2)
-    >>> d_scalar.energy()  # doctest: +ELLIPSIS
+    >>> d_scalar.energy()  #doctest: +ELLIPSIS
     np.float64(...)
     """
 
