@@ -191,7 +191,8 @@ class Logistic(BaseDistribution):
     def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
 
-        Uses numerical integration: \\mathbb{E}|X - x| = \\int_{-\\infty}^{\\infty} |t - x| f(t) dt.
+        Uses numerical integration:
+        \\mathbb{E}|X - x| = \\int_{-\\infty}^{\\infty} |t - x| f(t) dt.
         """
         mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
@@ -202,8 +203,12 @@ class Logistic(BaseDistribution):
             pdf = lambda t: 1 / (4 * s) / np.cosh((t - m) / (2 * s)) ** 2  # noqa: E731
 
             # Split integral at xi
-            lower, _ = quad(lambda t: (xi - t) * pdf(t), m - 10 * s, xi, limit=200)
-            upper, _ = quad(lambda t: (t - xi) * pdf(t), xi, m + 10 * s, limit=200)
+            lower, _ = quad(
+                lambda t: (xi - t) * pdf(t), m - 10 * s, xi, limit=200
+            )
+            upper, _ = quad(
+                lambda t: (t - xi) * pdf(t), xi, m + 10 * s, limit=200
+            )
             return lower + upper
 
         vec_energy = np.vectorize(energy_cell)
