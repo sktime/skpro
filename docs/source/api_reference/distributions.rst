@@ -12,20 +12,6 @@ All distributions in ``skpro`` can be listed using the ``skpro.registry.all_obje
 using ``object_types="distribution"``, optionally filtered by tags.
 Valid tags can be listed using ``sktime.registry.all_tags``.
 
-Energy computations
---------------------
-
-Several distributions now support **exact energy computations** via closed-form formulas
-or deterministic numerical quadrature (``scipy.integrate.quad``), replacing approximate Monte Carlo methods:
-
-* **Exponential**: Closed-form energy with piecewise formulas for self-energy and cross-energy.
-* **Gamma, Beta, Weibull, Pareto, Logistic**: Deterministic quadrature-based energy.
-* **MeanScale**: Energy delegation and scaling from component distribution.
-
-These improvements provide accurate, reproducible energy distance computations for use
-in distribution-matching tasks, energy-based regression, and other applications.
-Refer to individual distribution docstrings for implementation details and usage examples.
-
 Base
 ----
 
