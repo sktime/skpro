@@ -168,7 +168,7 @@ class Pareto(BaseDistribution):
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
-        Deterministic quadrature: \mathbb{E}|X-Y| = 4 \int_0^\infty F(t)(1-F(t)) dt.
+        Deterministic quadrature: \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt.
         """
         alpha = self._bc_params["alpha"]
         scale = self._bc_params["scale"]
@@ -176,7 +176,7 @@ class Pareto(BaseDistribution):
         def self_energy_cell(a, s):
             cdf = lambda t: 0 if t < s else 1 - np.power(s / t, a)  # noqa: E731
             integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
-            return 4 * integral
+            return 2 * integral
 
         vec_energy = np.vectorize(self_energy_cell)
         energy_arr = vec_energy(alpha, scale)

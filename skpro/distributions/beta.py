@@ -78,7 +78,7 @@ class Beta(_ScipyAdapter):
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
-        Deterministic quadrature: \mathbb{E}|X-Y| = 4 \int_0^1 F(t)(1-F(t)) dt.
+        Deterministic quadrature: \mathbb{E}|X-Y| = 2 \int_0^1 F(t)(1-F(t)) dt.
         """
         alpha = self._bc_params["alpha"]
         beta_param = self._bc_params["beta"]
@@ -86,7 +86,7 @@ class Beta(_ScipyAdapter):
         def self_energy_cell(a, b):
             cdf = lambda t: beta.cdf(t, a=a, b=b)  # noqa: E731
             integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, 1, limit=200)
-            return 4 * integral
+            return 2 * integral
 
         vec_energy = np.vectorize(self_energy_cell)
         energy_arr = vec_energy(alpha, beta_param)

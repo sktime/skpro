@@ -183,7 +183,7 @@ class Weibull(BaseDistribution):
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
-        Deterministic quadrature: \mathbb{E}|X-Y| = 4 \int_0^\infty F(t)(1-F(t)) dt.
+        Deterministic quadrature: \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt.
         """
         k = self._bc_params["k"]
         scale = self._bc_params["scale"]
@@ -193,7 +193,7 @@ class Weibull(BaseDistribution):
                 (1 - np.exp(-((t / ss) ** kk))) if t >= 0 else 0
             )
             integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
-            return 4 * integral
+            return 2 * integral
 
         vec_energy = np.vectorize(self_energy_cell)
         energy_arr = vec_energy(k, scale)

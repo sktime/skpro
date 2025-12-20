@@ -75,7 +75,7 @@ class Gamma(_ScipyAdapter):
         r"""Energy of self, w.r.t. self.
 
         Uses deterministic 1D quadrature:
-        \\mathbb{E}|X-Y| = 4 \\int_0^\\infty F(t)(1-F(t)) dt,
+        \\mathbb{E}|X-Y| = 2 \\int_0^\\infty F(t)(1-F(t)) dt,
         where F is the Gamma CDF.
         """
         alpha = self._bc_params["alpha"]
@@ -84,7 +84,7 @@ class Gamma(_ScipyAdapter):
         def self_energy_cell(a, b):
             cdf = lambda t: gamma.cdf(t, a=a, scale=1 / b)  # noqa: E731
             integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
-            return 4 * integral
+            return 2 * integral
 
         vec_energy = np.vectorize(self_energy_cell)
         energy_arr = vec_energy(alpha, beta)

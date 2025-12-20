@@ -71,10 +71,10 @@ class Exponential(_ScipyAdapter):
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
-        For Exponential(rate=λ), \mathbb{E}|X-Y| = 2/λ.
+        For Exponential(rate=λ), \mathbb{E}|X-Y| = 1/λ.
         """
         rate = self._bc_params["rate"]
-        energy_arr = 2 / rate
+        energy_arr = 1 / rate
         if energy_arr.ndim > 0:
             energy_arr = energy_arr.sum(axis=1)
         return energy_arr
