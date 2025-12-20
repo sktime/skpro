@@ -211,9 +211,18 @@
                 if (searchTerm && !est.name.toLowerCase().includes(searchTerm) &&
                     !est.module.toLowerCase().includes(searchTerm)) return false;
 
-                // Tags filter - match if all selected tags are present and truthy in estimator
+                // Tags filter:
+                // - boolean tags: require est.tags[key] === true
+                // - string tags: allow key=value syntax and require equality
                 if (selectedTags.length > 0) {
-                    return selectedTags.every(tag => est.tags[tag] === true);
+                    return selectedTags.every(tagOpt => {
+                        if (tagOpt.includes('=')) {
+                            const [k, v] = tagOpt.split('=', 2);
+                            return (est.tags[k] || '') === v;
+                        } else {
+                            return est.tags[tagOpt] === true;
+                        }
+                    });
                 }
 
                 return true;
@@ -258,17 +267,37 @@
 
         function initializeTags() {
             const tagsSelect = document.getElementById('tags-select');
-            const uniqueTags = new Set();
+            const booleanTags = new Set();
+            const stringTagValues = new Map(); // key -> Set of values
 
             estimatorData.forEach(est => {
-                Object.keys(est.tags).forEach(tag => uniqueTags.add(tag));
+                Object.entries(est.tags).forEach(([key, value]) => {
+                    if (typeof value === 'boolean') {
+                        booleanTags.add(key);
+                    } else if (typeof value === 'string' && value) {
+                        if (!stringTagValues.has(key)) stringTagValues.set(key, new Set());
+                        stringTagValues.get(key).add(value);
+                    }
+                });
             });
 
-            Array.from(uniqueTags).sort().forEach(tag => {
+            // Add boolean tags (filter means tag is True)
+            Array.from(booleanTags).sort().forEach(tag => {
                 const option = document.createElement('option');
                 option.value = tag;
                 option.textContent = tag;
                 tagsSelect.appendChild(option);
+            });
+
+            // Add string-valued tag options as key=value pairs
+            Array.from(stringTagValues.keys()).sort().forEach(tag => {
+                const values = Array.from(stringTagValues.get(tag)).sort();
+                values.forEach(val => {
+                    const option = document.createElement('option');
+                    option.value = `${tag}=${val}`;
+                    option.textContent = `${tag}=${val}`;
+                    tagsSelect.appendChild(option);
+                });
             });
         }
 
