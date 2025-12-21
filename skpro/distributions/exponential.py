@@ -3,6 +3,7 @@
 
 __author__ = ["ShreeshaM07"]
 
+import numpy as np
 import pandas as pd
 from scipy.stats import expon, rv_continuous
 
@@ -28,11 +29,23 @@ class Exponential(_ScipyAdapter):
         rate = 1/scale
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
+
+    Examples
+    --------
+    >>> from skpro.distributions.exponential import Exponential
+    >>> d = Exponential(rate=2)
     """
 
     _tags = {
-        "capabilities:approx": ["ppf", "energy", "pdfnorm"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf"],
+        "capabilities:approx": ["ppf", "pdfnorm"],
+        "capabilities:exact": [
+            "mean",
+            "var",
+            "pdf",
+            "log_pdf",
+            "cdf",
+            "energy",
+        ],
         "distr:measuretype": "continuous",
         "broadcast_init": "on",
     }
@@ -49,6 +62,32 @@ class Exponential(_ScipyAdapter):
         rate = self._bc_params["rate"]
         scale = 1 / rate
         return [], {"scale": scale}
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        For Exponential(rate=λ), \mathbb{E}|X-Y| = 1/λ.
+        """
+        rate = self._bc_params["rate"]
+        energy_arr = 1 / rate
+        if energy_arr.ndim > 0:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        Closed form for \mathbb{E}|X - x| with X ~ Exp(rate=λ):
+        - if x < 0: 1/λ - x
+        - if x >= 0: x - 1/λ + 2 e^{-λ x}/λ
+        """
+        rate = self._bc_params["rate"]
+        # piecewise formula, vectorized
+        energy_arr = (x >= 0) * (x - 1 / rate + 2 * np.exp(-rate * x) / rate)
+        energy_arr += (x < 0) * (1 / rate - x)
+        if energy_arr.ndim > 0:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

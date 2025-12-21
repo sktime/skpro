@@ -3,7 +3,9 @@
 
 __author__ = ["malikrafsan"]
 
+import numpy as np
 import pandas as pd
+from scipy.integrate import quad
 from scipy.stats import beta, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -34,11 +36,20 @@ class Beta(_ScipyAdapter):
     >>> from skpro.distributions.beta import Beta
 
     >>> d = Beta(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
+
     """
 
     _tags = {
-        "capabilities:approx": ["energy", "pdfnorm"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": [
+            "mean",
+            "var",
+            "pdf",
+            "log_pdf",
+            "cdf",
+            "ppf",
+            "energy",
+        ],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -58,6 +69,53 @@ class Beta(_ScipyAdapter):
         beta = self._bc_params["beta"]
 
         return [], {"a": alpha, "b": beta}
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        Deterministic quadrature: \mathbb{E}|X-Y| = 2 \int_0^1 F(t)(1-F(t)) dt.
+        """
+        alpha = self._bc_params["alpha"]
+        beta_param = self._bc_params["beta"]
+
+        def self_energy_cell(a, b):
+            cdf = lambda t: beta.cdf(t, a=a, b=b)  # noqa: E731
+            integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, 1, limit=200)
+            return 2 * integral
+
+        vec_energy = np.vectorize(self_energy_cell)
+        energy_arr = vec_energy(alpha, beta_param)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt.
+        """
+        alpha = self._bc_params["alpha"]
+        beta_param = self._bc_params["beta"]
+        mean = alpha / (alpha + beta_param)
+
+        def energy_cell(a, b, m, xi):
+            if xi <= 0:
+                return m - xi
+            if xi >= 1:
+                # Use mean - xi + 2*(1 - 0) = mean - xi + 2
+                # since integral from 0 to 1 of CDF
+                cdf = lambda t: beta.cdf(t, a=a, b=b)  # noqa: E731
+                integral, _ = quad(cdf, 0, 1, limit=200)
+                return m - xi + 2 * integral
+            cdf = lambda t: beta.cdf(t, a=a, b=b)  # noqa: E731
+            integral, _ = quad(cdf, 0, xi, limit=200)
+            return m - xi + 2 * integral
+
+        vec_energy = np.vectorize(energy_cell)
+        energy_arr = vec_energy(alpha, beta_param, mean, x)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
