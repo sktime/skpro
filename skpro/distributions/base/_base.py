@@ -1634,6 +1634,12 @@ class BaseDistribution(BaseObject):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
+
+        return self._sample(n_samples=n_samples)
+
+    def _sample(self, n_samples=None):
+        """Private method, to be implemented by subclasses."""
+
         def gen_unif():
             np_unif = np.random.uniform(size=self.shape)
             if self.ndim > 0:
@@ -1941,7 +1947,7 @@ class _BaseTFDistribution(BaseDistribution):
             dist_at_x = self
             return dist_at_x.distr.cdf(x)
 
-    def sample(self, n_samples=None):
+    def _sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters

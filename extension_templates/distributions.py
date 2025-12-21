@@ -20,7 +20,7 @@ How to use this implementation template to implement a new distribution:
   https://www.sktime.net/en/stable/developer_guide/add_estimators.html
 
 Mandatory methods to implement: at least one, better both of
-    sampling        - sample(self, n_samples=None)
+    sampling        - _sample(self, n_samples=None)
     ppf             - _ppf(self, p)
 
 Optional methods to implement:
@@ -125,7 +125,7 @@ class ClassName(BaseDistribution):
     # if not implemented, the base class will try to fill it in
     # from the other implemented methods
     # at least _ppf, or sample should be implemented for the distribution to be usable
-    # if _ppf is implemented, sample does not need to be implemented (uses ppf sampling)
+    # if _ppf is implemented, _sample does not need to be implemented (uses ppf sampling)
 
     # todo: consider implementing
     # if not implemented, uses Monte Carlo estimate via sample
@@ -248,7 +248,7 @@ class ClassName(BaseDistribution):
         return res
 
     # todo: consider implementing
-    # at least one of _ppf and sample must be implemented
+    # at least one of _ppf and _sample must be implemented
     # if not implemented, uses Monte Carlo estimate based on sample
     def _cdf(self, x):
         """Cumulative distribution function.
@@ -270,7 +270,7 @@ class ClassName(BaseDistribution):
         return res
 
     # todo: consider implementing
-    # at least one of _ppf and sample must be implemented
+    # at least one of _ppf and _sample must be implemented
     # if not implemented, uses bisection method on cdf
     def _ppf(self, p):
         """Quantile function = percent point function = inverse cdf.
@@ -334,9 +334,9 @@ class ClassName(BaseDistribution):
         return res
 
     # todo: consider implementing
-    # at least one of _ppf and sample must be implemented
+    # at least one of _ppf and _sample must be implemented
     # if not implemented, uses _ppf for sampling (inverse cdf on uniform)
-    def sample(self, n_samples=None):
+    def _sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters
