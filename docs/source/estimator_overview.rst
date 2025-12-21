@@ -167,6 +167,17 @@ Use the below search table to find estimators and distributions by property.
     <script>
         const estimatorData = window.estimatorData || [];
 
+        // Tag curation: define which tags are valid per object_type
+        const TAG_CONFIG = {
+            "regressor_proba": ["handles_missing_data", "supervised", "capability:survival", "handles_multioutput"],
+            "distribution": [],
+            "metric": []
+        };
+
+        function getValidTagsForType(objectType) {
+            return TAG_CONFIG[objectType] || [];
+        }
+
         function formatTagValue(value) {
             if (typeof value === 'boolean') {
                 return value ? 'True' : 'False';
@@ -239,15 +250,69 @@ Use the below search table to find estimators and distributions by property.
                     `;
                 }).join('');
             }
+
+            // Save filter state to URL hash
+            saveFilterState();
+        }
+
+        function saveFilterState() {
+            const typeFilter = document.getElementById('estimator-type-select').value;
+            const searchTerm = document.getElementById('search-input').value;
+            const selectedTags = Array.from(document.getElementById('tags-select').selectedOptions).map(o => o.value);
+            
+            const state = {
+                type: typeFilter,
+                search: searchTerm,
+                tags: selectedTags
+            };
+            
+            window.location.hash = encodeURIComponent(JSON.stringify(state));
+        }
+
+        function restoreFilterState() {
+            try {
+                if (!window.location.hash) return;
+                
+                const state = JSON.parse(decodeURIComponent(window.location.hash.substring(1)));
+                
+                if (state.type) {
+                    document.getElementById('estimator-type-select').value = state.type;
+                }
+                if (state.search) {
+                    document.getElementById('search-input').value = state.search;
+                }
+                if (state.tags && state.tags.length > 0) {
+                    const tagsSelect = document.getElementById('tags-select');
+                    Array.from(tagsSelect.options).forEach(option => {
+                        option.selected = state.tags.includes(option.value);
+                    });
+                }
+            } catch (e) {
+                console.log('Could not restore filter state:', e);
+            }
         }
 
         function initializeTags() {
             const tagsSelect = document.getElementById('tags-select');
+            const typeFilter = document.getElementById('estimator-type-select').value;
+            
+            // Clear existing options
+            tagsSelect.innerHTML = '';
+            
+            // Get valid tags for current type
+            const validTags = typeFilter ? getValidTagsForType(typeFilter) : null;
+            
             const booleanTags = new Set();
             const stringTagValues = new Map(); // key -> Set of values
 
             estimatorData.forEach(est => {
+                // If type filter is set, only consider matching estimators
+                if (typeFilter && est.object_type !== typeFilter) return;
+                
                 Object.entries(est.tags).forEach(([key, value]) => {
+                    // If type filter is set, only show valid tags for that type
+                    if (validTags && !validTags.includes(key)) return;
+                    
                     if (typeof value === 'boolean') {
                         booleanTags.add(key);
                     } else if (typeof value === 'string' && value) {
@@ -278,13 +343,17 @@ Use the below search table to find estimators and distributions by property.
         }
 
         // Event listeners
-        document.getElementById('estimator-type-select').addEventListener('change', renderEstimators);
+        document.getElementById('estimator-type-select').addEventListener('change', function() {
+            initializeTags();  // Rebuild tags for new type
+            renderEstimators();
+        });
         document.getElementById('search-input').addEventListener('input', renderEstimators);
         document.getElementById('tags-select').addEventListener('change', renderEstimators);
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             if (estimatorData.length > 0) {
+                restoreFilterState();  // Restore from URL hash if present
                 initializeTags();
                 renderEstimators();
             }
