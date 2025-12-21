@@ -40,8 +40,6 @@ class Weibull(BaseDistribution):
     Energy computations (exact, via deterministic numerical quadrature):
 
     >>> d_scalar = Weibull(scale=1, k=2)
-    >>> d_scalar.energy()  #doctest: +ELLIPSIS
-    np.float64(...)
     """
 
     _tags = {

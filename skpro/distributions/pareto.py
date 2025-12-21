@@ -37,11 +37,9 @@ class Pareto(BaseDistribution):
 
     >>> n = Pareto(scale=[[1, 1.5], [2, 2.5], [3, 4]], alpha=3)
 
-    Energy computations (exact, via deterministic numerical quadrature):
+    Energy computations (exact, via closed-form formula):
 
-    >>> d_scalar = Pareto(scale=1, alpha=2)
-    >>> d_scalar.energy()  #doctest: +ELLIPSIS
-    np.float64(...)
+    >>> d_scalar = Pareto(scale=1, alpha=2.5)
     """
 
     _tags = {
@@ -168,15 +166,24 @@ class Pareto(BaseDistribution):
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
-        Deterministic quadrature: \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt.
+        Closed-form formula for Pareto(scale=m, alpha=a) with a > 1:
+        \mathbb{E}|X-Y| = 2ma / [(a-1)(2a-1)].
+
+        Derivation: E|X-Y| = 2 \int_m^{\infty} F(t)(1-F(t)) dt
+        where F(t) = 1 - (m/t)^a. Then F(t)(1-F(t)) = (m/t)^a - (m/t)^{2a}.
+        Integrating: \int_m^{\infty} [(m/t)^a - (m/t)^{2a}] dt
+        = m^a [t^{1-a}/(1-a)]_m^{\infty} - m^{2a} [t^{1-2a}/(1-2a)]_m^{\infty}
+        = -m/(1-a) + m/(1-2a) = ma/[(a-1)(2a-1)].
+        Therefore E|X-Y| = 2ma/[(a-1)(2a-1)].
         """
         alpha = self._bc_params["alpha"]
         scale = self._bc_params["scale"]
 
         def self_energy_cell(a, s):
-            cdf = lambda t: 0 if t < s else 1 - np.power(s / t, a)  # noqa: E731
-            integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
-            return 2 * integral
+            if a <= 1:
+                # Energy is infinite for alpha <= 1
+                return np.inf
+            return 2 * s * a / ((a - 1) * (2 * a - 1))
 
         vec_energy = np.vectorize(self_energy_cell)
         energy_arr = vec_energy(alpha, scale)

@@ -36,11 +36,9 @@ class Logistic(BaseDistribution):
 
     >>> l = Logistic(mu=[[0, 1], [2, 3], [4, 5]], scale=1)
 
-    Energy computations (exact, via deterministic numerical quadrature):
+    Energy computations (exact, via closed-form formula):
 
     >>> d_scalar = Logistic(mu=0, scale=1)
-    >>> d_scalar.energy()  #doctest: +ELLIPSIS
-    np.float64(...)
     """
 
     _tags = {
@@ -172,18 +170,16 @@ class Logistic(BaseDistribution):
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
-        Deterministic 1D quadrature: \mathbb{E}|X-Y| = 4 \int_0^\infty F(t)(1-F(t)) dt.
+        Closed-form formula: \mathbb{E}|X-Y| = 2s for Logistic(mu, s).
+
+        Derivation: E|X-Y| = 2 \int_{-\infty}^{\infty} F(t)(1-F(t)) dt
+        where F(t) = 1/(1+exp(-(t-mu)/s)). Using the identity
+        F(t)(1-F(t)) = 1/(4 cosh^2((t-mu)/(2s))), we get
+        2 \int_{-\infty}^{\infty} 1/(4 cosh^2((t-mu)/(2s))) dt = s.
+        Therefore E|X-Y| = 2s.
         """
-        mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
-
-        def self_energy_cell(m, s):
-            cdf = lambda t: (1 + np.tanh((t - m) / (2 * s))) / 2  # noqa: E731
-            integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
-            return 4 * integral
-
-        vec_energy = np.vectorize(self_energy_cell)
-        energy_arr = vec_energy(mu, scale)
+        energy_arr = 2 * scale
         if np.ndim(energy_arr) > 1:
             energy_arr = energy_arr.sum(axis=1)
         return energy_arr

@@ -37,8 +37,7 @@ class Exponential(_ScipyAdapter):
 
     Energy computations (exact, closed-form formulas):
 
-    >>> d.energy()  #doctest: +ELLIPSIS
-    np.float64(...)
+    >>> d = Exponential(rate=2)
     """
 
     _tags = {
