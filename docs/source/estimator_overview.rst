@@ -259,22 +259,22 @@ Use the below search table to find estimators and distributions by property.
             const typeFilter = document.getElementById('estimator-type-select').value;
             const searchTerm = document.getElementById('search-input').value;
             const selectedTags = Array.from(document.getElementById('tags-select').selectedOptions).map(o => o.value);
-            
+
             const state = {
                 type: typeFilter,
                 search: searchTerm,
                 tags: selectedTags
             };
-            
+
             window.location.hash = encodeURIComponent(JSON.stringify(state));
         }
 
         function restoreFilterState() {
             try {
                 if (!window.location.hash) return;
-                
+
                 const state = JSON.parse(decodeURIComponent(window.location.hash.substring(1)));
-                
+
                 if (state.type) {
                     document.getElementById('estimator-type-select').value = state.type;
                 }
@@ -295,24 +295,24 @@ Use the below search table to find estimators and distributions by property.
         function initializeTags() {
             const tagsSelect = document.getElementById('tags-select');
             const typeFilter = document.getElementById('estimator-type-select').value;
-            
+
             // Clear existing options
             tagsSelect.innerHTML = '';
-            
+
             // Get valid tags for current type
             const validTags = typeFilter ? getValidTagsForType(typeFilter) : null;
-            
+
             const booleanTags = new Set();
             const stringTagValues = new Map(); // key -> Set of values
 
             estimatorData.forEach(est => {
                 // If type filter is set, only consider matching estimators
                 if (typeFilter && est.object_type !== typeFilter) return;
-                
+
                 Object.entries(est.tags).forEach(([key, value]) => {
                     // If type filter is set, only show valid tags for that type
                     if (validTags && !validTags.includes(key)) return;
-                    
+
                     if (typeof value === 'boolean') {
                         booleanTags.add(key);
                     } else if (typeof value === 'string' && value) {
