@@ -40,9 +40,6 @@ class Gamma(_ScipyAdapter):
 
     >>> d = Gamma(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
 
-    Energy computations (exact, via deterministic numerical quadrature):
-
-    >>> d_scalar = Gamma(alpha=2, beta=1)
     """  # noqa: E501
 
     _tags = {

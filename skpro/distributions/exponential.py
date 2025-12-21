@@ -34,10 +34,6 @@ class Exponential(_ScipyAdapter):
     --------
     >>> from skpro.distributions.exponential import Exponential
     >>> d = Exponential(rate=2)
-
-    Energy computations (exact, closed-form formulas):
-
-    >>> d = Exponential(rate=2)
     """
 
     _tags = {

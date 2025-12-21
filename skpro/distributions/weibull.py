@@ -36,10 +36,6 @@ class Weibull(BaseDistribution):
     >>> from skpro.distributions.weibull import Weibull
 
     >>> w = Weibull(scale=[[1, 1], [2, 3], [4, 5]], k=1)
-
-    Energy computations (exact, via deterministic numerical quadrature):
-
-    >>> d_scalar = Weibull(scale=1, k=2)
     """
 
     _tags = {

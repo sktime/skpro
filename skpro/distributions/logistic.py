@@ -35,10 +35,6 @@ class Logistic(BaseDistribution):
     >>> from skpro.distributions.logistic import Logistic
 
     >>> l = Logistic(mu=[[0, 1], [2, 3], [4, 5]], scale=1)
-
-    Energy computations (exact, via closed-form formula):
-
-    >>> d_scalar = Logistic(mu=0, scale=1)
     """
 
     _tags = {

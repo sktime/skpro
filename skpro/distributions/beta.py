@@ -37,9 +37,6 @@ class Beta(_ScipyAdapter):
 
     >>> d = Beta(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
 
-    Energy computations (exact, via deterministic numerical quadrature):
-
-    >>> d_scalar = Beta(alpha=2, beta=3)
     """
 
     _tags = {
