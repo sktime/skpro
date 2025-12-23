@@ -76,6 +76,7 @@ Continuous support - non-negative reals
     TruncatedPareto
     Weibull
 
+
 Integer support
 ~~~~~~~~~~~~~~~
 
