@@ -7,7 +7,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class TruncatedDistribution(BaseDistribution):
-    r"""A truncated distribution _not_ including the lower bound.
+    r"""A truncated distribution.
 
     Given a univariate distribution, this distribution samples from the base
     distribution but truncates the values to lie between a specified lower and
@@ -15,9 +15,10 @@ class TruncatedDistribution(BaseDistribution):
     Mathematically, it can be expressed as:
 
     .. math::
-        Y \sim f(y \vert a \lt y \leq b) = \frac{f(y)}{F(b) - F(a)},
+        Y \sim f(y \vert y \in I) = \frac{f(y)}{P(Y \in I)},
 
-    where :math:`a` and :math:`b` is the lower and upper bound respectively, and
+    where :math:`I` is the interval defined by the bounds and ``interval_type``,
+    :math:`P(Y \in I)` is the total probability mass within that interval and
     :math:`f(y)` is the probability mass/density function.
 
     Parameters
@@ -26,10 +27,20 @@ class TruncatedDistribution(BaseDistribution):
         The distribution to truncate.
 
     lower : Union[float, int], optional
-        The lower bound below which values are truncated, _not_ including it.
+        The lower bound below which values are truncated.
+        By default, this bound is exclusive (see ``interval_type``).
 
     upper : Union[float, int], optional
         The upper bound above which values are truncated.
+        By default, this bound is inclusive (see ``interval_type``).
+
+    interval_type : str, default="(]"
+        Defines the inclusivity of the bounds. Must be one of:
+
+        - "[]" : Closed interval (inclusive lower, inclusive upper).
+        - "()" : Open interval (exclusive lower, exclusive upper).
+        - "[)" : Half-open (inclusive lower, exclusive upper).
+        - "(]" : Half-open (exclusive lower, inclusive upper).
 
     Examples
     --------
@@ -61,12 +72,21 @@ class TruncatedDistribution(BaseDistribution):
         *,
         lower: Union[float, int] = None,
         upper: Union[float, int] = None,
+        interval_type: str = "(]",
         index=None,
         columns=None,
     ):
         self.distribution = distribution
         self.lower = lower
         self.upper = upper
+        self.interval_type = interval_type
+
+        valid_intervals = {"[]", "()", "[)", "(]"}
+        if interval_type not in valid_intervals:
+            raise ValueError(f"interval_type must be one of {valid_intervals}")
+
+        self._inclusive_lower = interval_type.startswith("[")
+        self._inclusive_upper = interval_type.endswith("]")
 
         super().__init__(
             index=index if index is not None else distribution.index,
@@ -105,12 +125,32 @@ class TruncatedDistribution(BaseDistribution):
             self.distribution.cdf(self.upper) if self.upper is not None else 1.0
         )
 
+        if self.get_tag("distr:measuretype") != "continuous":
+            if self.lower is not None and self._inclusive_lower:
+                prob_at_lower -= self.distribution.pmf(self.lower)
+
+            if self.upper is not None and not self._inclusive_upper:
+                prob_at_upper -= self.distribution.pmf(self.upper)
+
         return prob_at_lower, prob_at_upper
 
     def _calculate_density(self, x: np.ndarray, fun, as_log: bool):
         inf = float("inf")
 
-        is_valid = (x > (self.lower or -inf)) & (x <= (self.upper or inf))
+        lower_bound = self.lower if self.lower is not None else -inf
+        upper_bound = self.upper if self.upper is not None else inf
+
+        if self._inclusive_lower:
+            flag_lower = x >= lower_bound
+        else:
+            flag_lower = x > lower_bound
+
+        if self._inclusive_upper:
+            flag_upper = x <= upper_bound
+        else:
+            flag_upper = x < upper_bound
+
+        is_valid = flag_lower & flag_upper
 
         prob_base = fun(x)
         cdf_lower, cdf_upper = self._get_low_high_prob()
@@ -176,6 +216,7 @@ class TruncatedDistribution(BaseDistribution):
             distribution=distr,
             lower=self.lower,
             upper=self.upper,
+            interval_type=self.interval_type,
             index=new_index,
             columns=new_columns,
         )
@@ -189,6 +230,7 @@ class TruncatedDistribution(BaseDistribution):
             distribution=self_subset.distribution.iat[0, 0],
             lower=self.lower,
             upper=self.upper,
+            interval_type=self.interval_type,
         )
 
     @classmethod
@@ -237,4 +279,57 @@ class TruncatedDistribution(BaseDistribution):
             "columns": cols,
         }
 
-        return [params1, params2, params3, params4]
+        # scalar and interval_type: [)
+        dist = Normal(mu=1.0, sigma=1.0)
+        params5 = {
+            "distribution": dist,
+            "lower": 0,
+            "upper": 5,
+            "interval_type": "[)",
+        }
+
+        # array and interval_type: []
+        idx = pd.Index([1, 2])
+        cols = pd.Index(["a", "b"])
+        n_array = Poisson(mu=[[1, 2], [3, 4]], columns=cols, index=idx)
+        params6 = {
+            "distribution": n_array,
+            "lower": 0,
+            "upper": 5,
+            "interval_type": "[]",
+            "index": idx,
+            "columns": cols,
+        }
+
+        # array and interval_type: ()
+        idx = pd.Index([1, 2])
+        cols = pd.Index(["a", "b"])
+        n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1.0, columns=cols, index=idx)
+        params7 = {
+            "distribution": n_array,
+            "lower": 0,
+            "upper": 5,
+            "interval_type": "()",
+            "index": idx,
+            "columns": cols,
+        }
+
+        # interval_type: (]
+        dist = Poisson(mu=1.0)
+        params8 = {
+            "distribution": dist,
+            "lower": 0,
+            "upper": 5,
+            "interval_type": "(]",
+        }
+
+        return [
+            params1,
+            params2,
+            params3,
+            params4,
+            params5,
+            params6,
+            params7,
+            params8,
+        ]

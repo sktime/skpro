@@ -31,6 +31,10 @@ class TransformedDistribution(BaseDistribution):
         whether to assume that the transform is monotonic, i.e., that
         the distribution is transformed in a way that preserves order of sample values.
 
+    inverse_transform : callable, optional, default = None
+        inverse function of ``transform``, if known.
+        Must be applicable to array-likes of the same shape as ``self``.
+
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
