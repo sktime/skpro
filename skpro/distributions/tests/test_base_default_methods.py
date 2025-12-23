@@ -194,7 +194,6 @@ def test_base_default_minimal_cdf():
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
 )
-
 def test_mc_config_overrides_tags(monkeypatch):
     """Configs override Monte Carlo defaults while preserving fallback."""
     dist = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
