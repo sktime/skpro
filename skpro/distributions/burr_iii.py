@@ -54,6 +54,7 @@ class BurrIII(BaseDistribution):
         v = burr12.var(c, 1, scale=scale)
         # If variance is nan, return np.inf to pass assert res >= 0
         import numpy as np
+
         return v if np.isfinite(v) and v >= 0 else np.inf
 
     @classmethod

@@ -69,12 +69,14 @@ class TruncatedPareto(BaseDistribution):
         # Mean of truncated Pareto is not directly available in scipy
         # Can be computed numerically if needed
         import numpy as np
+
         return np.nan
 
     def _var(self):
         # Variance of truncated Pareto is not directly available in scipy
         # Can be computed numerically if needed
         import numpy as np
+
         return np.inf
 
     @classmethod
