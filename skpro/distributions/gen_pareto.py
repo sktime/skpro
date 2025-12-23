@@ -36,18 +36,22 @@ class GeneralizedPareto(BaseDistribution):
 
     @property
     def loc(self):
+        """Get the location parameter."""
         return self._loc
 
     @loc.setter
     def loc(self, value):
+        """Set the location parameter."""
         self._loc = value
 
     @property
     def scale(self):
+        """Get the scale parameter."""
         return self._scale
 
     @scale.setter
     def scale(self, value):
+        """Set the scale parameter."""
         self._scale = value
 
     def _pdf(self, x):
@@ -79,6 +83,7 @@ class GeneralizedPareto(BaseDistribution):
         scale = self._bc_params["scale"]
         loc = self._bc_params["loc"]
         import numpy as np
+
         v = genpareto.var(c, loc=loc, scale=scale)
         return v if np.isfinite(v) and v >= 0 else np.inf
 
