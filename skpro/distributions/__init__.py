@@ -7,13 +7,18 @@ __all__ = [
     "Alpha",
     "Beta",
     "Binomial",
+    "BurrIII",
+    "BurrXII",
     "ChiSquared",
     "Delta",
     "Empirical",
     "Erlang",
     "Exponential",
+    "FDist",
+    "FatigueLife",
     "Fisk",
     "Gamma",
+    "GeneralizedPareto",
     "LogGamma",
     "Geometric",
     "HalfCauchy",
@@ -26,6 +31,7 @@ __all__ = [
     "Histogram",
     "Laplace",
     "LeftTruncated",
+    "Levy",
     "Logistic",
     "LogLaplace",
     "LogNormal",
@@ -40,11 +46,13 @@ __all__ = [
     "QPD_B",
     "QPD_U",
     "QPD_Johnson",
+    "Skellam",
     "SkewNormal",
     "TDistribution",
     "TransformedDistribution",
     "TruncatedDistribution",
     "TruncatedNormal",
+    "TruncatedPareto",
     "Uniform",
     "Weibull",
 ]
@@ -89,3 +97,11 @@ from skpro.distributions.truncated import TruncatedDistribution
 from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
+from skpro.distributions.burr_iii import BurrIII
+from skpro.distributions.burr_xii import BurrXII
+from skpro.distributions.f_dist import FDist
+from skpro.distributions.fatigue_life import FatigueLife
+from skpro.distributions.gen_pareto import GeneralizedPareto
+from skpro.distributions.levy import Levy
+from skpro.distributions.skellam import Skellam
+from skpro.distributions.truncated_pareto import TruncatedPareto

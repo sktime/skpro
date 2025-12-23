@@ -68,6 +68,13 @@ Continuous support - non-negative reals
     LogLaplace
     Pareto
     Weibull
+    BurrIII
+    BurrXII
+    FDist
+    FatigueLife
+    GeneralizedPareto
+    Levy
+    TruncatedPareto
 
 
 Integer support
@@ -84,6 +91,7 @@ Integer support
     Hurdle
     NegativeBinomial
     Poisson
+    Skellam
 
 Non-parametric and empirical distributions
 ------------------------------------------
