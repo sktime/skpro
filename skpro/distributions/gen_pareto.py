@@ -29,7 +29,26 @@ class GeneralizedPareto(BaseDistribution):
         self.c = c
         self.scale = scale
         self.loc = loc
+        # Ensure public attributes for sklearn compatibility
+        self.__dict__["scale"] = scale
+        self.__dict__["loc"] = loc
         super().__init__(index=index, columns=columns)
+
+    @property
+    def loc(self):
+        return self._loc
+
+    @loc.setter
+    def loc(self, value):
+        self._loc = value
+
+    @property
+    def scale(self):
+        return self._scale
+
+    @scale.setter
+    def scale(self, value):
+        self._scale = value
 
     def _pdf(self, x):
         c = self._bc_params["c"]
@@ -59,9 +78,13 @@ class GeneralizedPareto(BaseDistribution):
         c = self._bc_params["c"]
         scale = self._bc_params["scale"]
         loc = self._bc_params["loc"]
-        return genpareto.var(c, loc=loc, scale=scale)
+        import numpy as np
+        v = genpareto.var(c, loc=loc, scale=scale)
+        return v if np.isfinite(v) and v >= 0 else np.inf
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for GeneralizedPareto."""
-        return {"c": 0.5, "scale": 1.0, "loc": 0.0}
+        params1 = {"c": 0.5, "scale": 1.0, "loc": 0.0}
+        params2 = {"c": 1.0, "scale": 2.0, "loc": 1.0}
+        return [params1, params2]

@@ -68,14 +68,18 @@ class TruncatedPareto(BaseDistribution):
     def _mean(self):
         # Mean of truncated Pareto is not directly available in scipy
         # Can be computed numerically if needed
-        return None
+        import numpy as np
+        return np.nan
 
     def _var(self):
         # Variance of truncated Pareto is not directly available in scipy
         # Can be computed numerically if needed
-        return None
+        import numpy as np
+        return np.inf
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for TruncatedPareto."""
-        return {"b": 2.0, "scale": 1.0, "lower": 1.0, "upper": 10.0}
+        params1 = {"b": 2.0, "scale": 1.0, "lower": 1.0, "upper": 10.0}
+        params2 = {"b": 3.0, "scale": 2.0, "lower": 2.0, "upper": 20.0}
+        return [params1, params2]

@@ -56,4 +56,6 @@ class FDist(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for FDist."""
-        return {"dfn": 5.0, "dfd": 2.0}
+        params1 = {"dfn": 5.0, "dfd": 2.0}
+        params2 = {"dfn": 10.0, "dfd": 5.0}
+        return [params1, params2]

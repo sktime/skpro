@@ -64,4 +64,6 @@ class BurrXII(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for BurrXII."""
-        return {"c": 2.0, "d": 3.0, "scale": 1.0}
+        params1 = {"c": 2.0, "d": 3.0, "scale": 1.0}
+        params2 = {"c": 4.0, "d": 2.0, "scale": 2.0}
+        return [params1, params2]

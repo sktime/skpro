@@ -26,7 +26,26 @@ class Levy(BaseDistribution):
     def __init__(self, loc=0.0, scale=1.0, index=None, columns=None):
         self.loc = loc
         self.scale = scale
+        # Ensure public attributes for sklearn compatibility
+        self.__dict__["scale"] = scale
+        self.__dict__["loc"] = loc
         super().__init__(index=index, columns=columns)
+
+    @property
+    def loc(self):
+        return self._loc
+
+    @loc.setter
+    def loc(self, value):
+        self._loc = value
+
+    @property
+    def scale(self):
+        return self._scale
+
+    @scale.setter
+    def scale(self, value):
+        self._scale = value
 
     def _pdf(self, x):
         loc = self._bc_params["loc"]
@@ -56,4 +75,6 @@ class Levy(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for Levy."""
-        return {"loc": 0.0, "scale": 1.0}
+        params1 = {"loc": 0.0, "scale": 1.0}
+        params2 = {"loc": 1.0, "scale": 2.0}
+        return [params1, params2]

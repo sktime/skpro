@@ -56,4 +56,6 @@ class Skellam(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for Skellam."""
-        return {"mu1": 3.0, "mu2": 2.0}
+        params1 = {"mu1": 3.0, "mu2": 2.0}
+        params2 = {"mu1": 5.0, "mu2": 1.0}
+        return [params1, params2]

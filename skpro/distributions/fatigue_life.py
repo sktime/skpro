@@ -56,4 +56,6 @@ class FatigueLife(BaseDistribution):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for FatigueLife."""
-        return {"c": 2.0, "scale": 1.0}
+        params1 = {"c": 2.0, "scale": 1.0}
+        params2 = {"c": 1.5, "scale": 2.0}
+        return [params1, params2]
