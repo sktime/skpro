@@ -1,7 +1,8 @@
 """Fatigue-life (Birnbaum–Saunders) probability distribution for skpro."""
 
-from skpro.distributions.base import BaseDistribution
 from scipy.stats import fatiguelife
+
+from skpro.distributions.base import BaseDistribution
 
 
 class FatigueLife(BaseDistribution):

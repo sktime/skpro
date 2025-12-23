@@ -1,7 +1,8 @@
 """Burr XII probability distribution for skpro."""
 
-from skpro.distributions.base import BaseDistribution
 from scipy.stats import burr12
+
+from skpro.distributions.base import BaseDistribution
 
 
 class BurrXII(BaseDistribution):

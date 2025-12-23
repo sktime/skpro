@@ -1,7 +1,8 @@
 """Levy probability distribution for skpro."""
 
-from skpro.distributions.base import BaseDistribution
 from scipy.stats import levy
+
+from skpro.distributions.base import BaseDistribution
 
 
 class Levy(BaseDistribution):

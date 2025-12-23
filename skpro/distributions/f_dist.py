@@ -1,7 +1,8 @@
 """F probability distribution for skpro."""
 
-from skpro.distributions.base import BaseDistribution
 from scipy.stats import f
+
+from skpro.distributions.base import BaseDistribution
 
 
 class FDist(BaseDistribution):

@@ -1,7 +1,8 @@
 """Skellam probability distribution for skpro."""
 
-from skpro.distributions.base import BaseDistribution
 from scipy.stats import skellam
+
+from skpro.distributions.base import BaseDistribution
 
 
 class Skellam(BaseDistribution):

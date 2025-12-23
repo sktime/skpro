@@ -1,8 +1,9 @@
 """Truncated Pareto probability distribution for skpro."""
 
-from skpro.distributions.base import BaseDistribution
 import numpy as np
 from scipy.stats import pareto
+
+from skpro.distributions.base import BaseDistribution
 
 
 class TruncatedPareto(BaseDistribution):

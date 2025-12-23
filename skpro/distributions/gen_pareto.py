@@ -1,7 +1,8 @@
 """Generalized Pareto probability distribution for skpro."""
 
-from skpro.distributions.base import BaseDistribution
 from scipy.stats import genpareto
+
+from skpro.distributions.base import BaseDistribution
 
 
 class GeneralizedPareto(BaseDistribution):
