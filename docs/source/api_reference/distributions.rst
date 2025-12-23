@@ -54,11 +54,17 @@ Continuous support - non-negative reals
 
     Alpha
     Beta
+    BurrIII
+    BurrXII
     ChiSquared
     Exponential
     Erlang
+    FatigueLife
+    FDist
     Fisk
     Gamma
+    GeneralizedPareto
+    Levy
     LogGamma
     HalfCauchy
     HalfLogistic
@@ -67,15 +73,8 @@ Continuous support - non-negative reals
     InverseGaussian
     LogLaplace
     Pareto
-    Weibull
-    BurrIII
-    BurrXII
-    FDist
-    FatigueLife
-    GeneralizedPareto
-    Levy
     TruncatedPareto
-
+    Weibull
 
 Integer support
 ~~~~~~~~~~~~~~~
