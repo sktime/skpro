@@ -76,18 +76,12 @@ class LogGamma(_ScipyAdapter):
         )
         for cc, out in it:
 
-            def make_cdf(cc_val):
-                def cdf(x):
-                    return loggamma.cdf(x, cc_val)
-
-                return cdf
-
-            cdf = make_cdf(cc.item())
-
-            def integrand(x):
+            cc_val = cc.item()
+            def cdf(x, cc_val=cc_val):
+                return loggamma.cdf(x, cc_val)
+            def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
-
             val, _ = quad(integrand, -np.inf, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
@@ -116,13 +110,10 @@ class LogGamma(_ScipyAdapter):
         )
         for cc, x0, out in it:
 
-            def make_integrand(cc_val, x0_val):
-                def integrand(t):
-                    return np.abs(t - x0_val) * loggamma.pdf(t, cc_val)
-
-                return integrand
-
-            integrand = make_integrand(cc.item(), x0.item())
+            cc_val = cc.item()
+            x0_val = x0.item()
+            def integrand(t, cc_val=cc_val, x0_val=x0_val):
+                return np.abs(t - x0_val) * loggamma.pdf(t, cc_val)
             val, _ = quad(integrand, -np.inf, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility

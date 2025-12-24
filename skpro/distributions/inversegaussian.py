@@ -81,18 +81,13 @@ class InverseGaussian(_ScipyAdapter):
         )
         for m, s, out in it:
 
-            def make_cdf(m_val, s_val):
-                def cdf(x):
-                    return invgauss.cdf(x, mu=m_val, scale=s_val)
-
-                return cdf
-
-            cdf = make_cdf(m.item(), s.item())
-
-            def integrand(x):
+            m_val = m.item()
+            s_val = s.item()
+            def cdf(x, m_val=m_val, s_val=s_val):
+                return invgauss.cdf(x, mu=m_val, scale=s_val)
+            def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
-
             val, _ = quad(integrand, 0, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
@@ -122,13 +117,11 @@ class InverseGaussian(_ScipyAdapter):
         )
         for m, s, x0, out in it:
 
-            def make_integrand(m_val, s_val, x0_val):
-                def integrand(t):
-                    return np.abs(t - x0_val) * invgauss.pdf(t, mu=m_val, scale=s_val)
-
-                return integrand
-
-            integrand = make_integrand(m.item(), s.item(), x0.item())
+            m_val = m.item()
+            s_val = s.item()
+            x0_val = x0.item()
+            def integrand(t, m_val=m_val, s_val=s_val, x0_val=x0_val):
+                return np.abs(t - x0_val) * invgauss.pdf(t, mu=m_val, scale=s_val)
             val, _ = quad(integrand, 0, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility

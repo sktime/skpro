@@ -99,18 +99,15 @@ class TruncatedNormal(_ScipyAdapter):
             a = (l.item() - m.item()) / s.item()
             b = (r.item() - m.item()) / s.item()
 
-            def make_cdf(a_val, b_val, m_val, s_val):
-                def cdf(x):
-                    return truncnorm.cdf(x, a_val, b_val, loc=m_val, scale=s_val)
-
-                return cdf
-
-            cdf = make_cdf(a, b, m.item(), s.item())
-
-            def integrand(x):
+            a_val = a
+            b_val = b
+            m_val = m.item()
+            s_val = s.item()
+            def cdf(x, a_val=a_val, b_val=b_val, m_val=m_val, s_val=s_val):
+                return truncnorm.cdf(x, a_val, b_val, loc=m_val, scale=s_val)
+            def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
-
             val, _ = quad(integrand, l.item(), r.item(), limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
@@ -146,15 +143,15 @@ class TruncatedNormal(_ScipyAdapter):
             a = (l.item() - m.item()) / s.item()
             b = (r.item() - m.item()) / s.item()
 
-            def make_integrand(a_val, b_val, m_val, s_val, x0_val):
-                def integrand(t):
-                    return np.abs(t - x0_val) * truncnorm.pdf(
-                        t, a_val, b_val, loc=m_val, scale=s_val
-                    )
-
-                return integrand
-
-            integrand = make_integrand(a, b, m.item(), s.item(), x0.item())
+            a_val = a
+            b_val = b
+            m_val = m.item()
+            s_val = s.item()
+            x0_val = x0.item()
+            def integrand(t, a_val=a_val, b_val=b_val, m_val=m_val, s_val=s_val, x0_val=x0_val):
+                return np.abs(t - x0_val) * truncnorm.pdf(
+                    t, a_val, b_val, loc=m_val, scale=s_val
+                )
             val, _ = quad(integrand, l.item(), r.item(), limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
