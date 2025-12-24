@@ -97,7 +97,9 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
             ):
                 return
             # Accept if one is nan and the other is inf
-            if (np.isnan(res) and np.isinf(scipy_res)) or (np.isinf(res) and np.isnan(scipy_res)):
+            if (np.isnan(res) and np.isinf(scipy_res)) or (
+                np.isinf(res) and np.isnan(scipy_res)
+            ):
                 return
         assert np.allclose(res, scipy_res)
 
