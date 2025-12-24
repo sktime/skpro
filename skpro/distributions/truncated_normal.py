@@ -9,7 +9,6 @@ from scipy.stats import rv_continuous, truncnorm
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-
 class TruncatedNormal(_ScipyAdapter):
     """A truncated normal probability distribution.
 

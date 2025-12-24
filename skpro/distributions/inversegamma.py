@@ -9,7 +9,6 @@ from scipy.stats import invgamma, rv_continuous
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-
 class InverseGamma(_ScipyAdapter):
     r"""Inverse Gamma Distribution.
 

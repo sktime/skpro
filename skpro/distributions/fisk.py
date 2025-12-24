@@ -44,10 +44,10 @@ class Fisk(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
-
     def __init__(self, alpha=1, beta=1, index=None, columns=None):
         self.alpha = alpha
         self.beta = beta
+
         super().__init__(index=index, columns=columns)
 
     def _get_scipy_object(self) -> rv_continuous:

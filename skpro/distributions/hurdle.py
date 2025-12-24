@@ -14,8 +14,7 @@ def _set_to_constant_where_negative(mask: np.ndarray, x: np.ndarray, const: floa
 # TODO: how to handle index/columns in these transformed distributions? must they be
 #  the same as the original distribution?
 class Hurdle(BaseDistribution):
-    """
-    A Hurdle distribution.
+    r"""A Hurdle distribution.
 
     Combines a Bernoulli gate for zero vs. non-zero outcomes with a zero-truncated
     distribution for the positive outcomes. Mathematically this can be expressed as:
@@ -34,12 +33,14 @@ class Hurdle(BaseDistribution):
     ----------
     p : ArrayLike
         The probability of getting a non-zero value.
+
     distribution : BaseDistribution
         Arbitrary distribution.
 
     Examples
     --------
     >>> from skpro.distributions import Normal, Hurdle
+    >>>
     >>> base = Normal(mu=1.0, sigma=1.0)
     >>> hurdle = Hurdle(0.5, base)
     >>> samples = hurdle.sample(1000)
@@ -52,7 +53,6 @@ class Hurdle(BaseDistribution):
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
-
 
     def __init__(
         self,
@@ -67,12 +67,15 @@ class Hurdle(BaseDistribution):
             assert (
                 p.shape[0] == distribution.shape[0]
             ), "If p is a 2D array, it must match the shape of the distribution."
+
         self.p = p
         self.distribution = distribution
+
         super().__init__(
             index=index if index is not None else distribution.index,
             columns=columns if columns is not None else distribution.columns,
         )
+
         # the capabilities of this (self) distribution are exact
         # if and only if the capabilities of the inner distribution are exact
         self_exact_capas = self.get_tag("capabilities:exact", []).copy()
@@ -82,13 +85,16 @@ class Hurdle(BaseDistribution):
             if capa not in distr_exact_capas:
                 self_exact_capas.remove(capa)
                 self_approx_capas.append(capa)
+
         self.set_tags(**{"capabilities:exact": self_exact_capas})
         self.set_tags(**{"capabilities:approx": self_approx_capas})
+
         # the measuretype of this distribution is discrete if the inner distribution
         # is discrete, otherwise it is mixed
         inner_measuretype = distribution.get_tag("distr:measuretype", "mixed")
         if inner_measuretype == "discrete":
             self.set_tags(**{"distr:measuretype": "discrete"})
+
         inner_paramtype = distribution.get_tag("distr:paramtype", "parametric")
         if inner_paramtype != "parametric":
             self.set_tags(**{"distr:paramtype": inner_paramtype})

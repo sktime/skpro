@@ -9,7 +9,6 @@ from scipy.stats import invgauss, rv_continuous
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-
 class InverseGaussian(_ScipyAdapter):
     r"""Inverse Gaussian distribution, aka Wald distribution.
 

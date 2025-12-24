@@ -9,7 +9,6 @@ from scipy.stats import erlang
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-
 class Erlang(_ScipyAdapter):
     r"""Erlang Distribution.
 
@@ -44,10 +43,10 @@ class Erlang(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
-
     def __init__(self, rate, k=1, index=None, columns=None):
         self.rate = rate
         self.k = k
+
         super().__init__(index=index, columns=columns)
 
     def _get_scipy_object(self):
@@ -56,6 +55,7 @@ class Erlang(_ScipyAdapter):
     def _get_scipy_param(self):
         rate = self._bc_params["rate"]
         k = self._bc_params["k"]
+
         return [], {"scale": 1 / rate, "a": k}
 
     @classmethod

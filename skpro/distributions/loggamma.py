@@ -9,7 +9,6 @@ from scipy.stats import loggamma, rv_continuous
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-
 class LogGamma(_ScipyAdapter):
     r"""Log-Gamma Distribution.
 

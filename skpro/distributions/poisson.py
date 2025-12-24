@@ -9,7 +9,6 @@ from scipy.stats import poisson, rv_discrete
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-
 class Poisson(_ScipyAdapter):
     """Poisson distribution.
 
