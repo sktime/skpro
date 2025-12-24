@@ -9,6 +9,7 @@ from scipy.stats import loggamma, rv_continuous
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
+
 class LogGamma(_ScipyAdapter):
     r"""Log-Gamma Distribution.
 
@@ -51,7 +52,76 @@ class LogGamma(_ScipyAdapter):
 
     def __init__(self, c, index=None, columns=None):
         self.c = c
+        super().__init__(index=index, columns=columns)
 
+    def _get_scipy_object(self) -> rv_continuous:
+        return loggamma
+
+    def _get_scipy_param(self):
+        c = self._bc_params["c"]
+        return [c], {}
+
+    def _energy_self(self):
+        """Energy of self, w.r.t. self (expected |X-Y| for i.i.d. X,Y ~ LogGamma)."""
+        import numpy as np
+        from scipy.integrate import quad
+        from scipy.stats import loggamma
+        c = np.asarray(self._bc_params["c"])
+        c_b = np.broadcast_to(c, c.shape)
+        result = np.empty_like(c_b, dtype=float)
+        it = np.nditer([c_b, result], flags=["multi_index"], op_flags=[["readonly"], ["writeonly"]])
+        for cc, out in it:
+            def cdf(x):
+                return loggamma.cdf(x, cc.item())
+            def integrand(x):
+                F = cdf(x)
+                return 2 * F * (1 - F)
+            val, _ = quad(integrand, -np.inf, np.inf, limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
+
+    def _energy_x(self, x):
+        """Energy of self, w.r.t. a constant frame x (expected |X-x| for X ~ LogGamma)."""
+        import numpy as np
+        from scipy.stats import loggamma
+        from scipy.integrate import quad
+        c = np.asarray(self._bc_params["c"])
+        x = np.asarray(x)
+        c_b, x_b = np.broadcast_arrays(c, x)
+        result = np.empty_like(c_b, dtype=float)
+        it = np.nditer([c_b, x_b, result], flags=["multi_index"], op_flags=[["readonly"], ["readonly"], ["writeonly"]])
+        for cc, x0, out in it:
+            def integrand(t):
+                return np.abs(t - x0.item()) * loggamma.pdf(t, cc.item())
+            val, _ = quad(integrand, -np.inf, np.inf, limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
+
+    _tags = {
+        "capabilities:approx": ["energy", "pdfnorm"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "distr:measuretype": "continuous",
+        "distr:paramtype": "parametric",
+        "broadcast_init": "on",
+    }
+
+
+    def __init__(self, c, index=None, columns=None):
+        self.c = c
         super().__init__(index=index, columns=columns)
 
     def _get_scipy_object(self) -> rv_continuous:

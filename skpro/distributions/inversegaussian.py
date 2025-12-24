@@ -9,6 +9,7 @@ from scipy.stats import invgauss, rv_continuous
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
+
 class InverseGaussian(_ScipyAdapter):
     r"""Inverse Gaussian distribution, aka Wald distribution.
 
@@ -52,7 +53,82 @@ class InverseGaussian(_ScipyAdapter):
     def __init__(self, mu, scale, index=None, columns=None):
         self.mu = mu
         self.scale = scale
+        super().__init__(index=index, columns=columns)
 
+    def _get_scipy_object(self) -> rv_continuous:
+        return invgauss
+
+    def _get_scipy_param(self):
+        # Pass parameters directly to scipy.stats.invgauss.
+        # SciPy's invgauss accepts a shape parameter `mu` and a keyword  `scale`.
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["scale"]
+        return [mu], {"scale": scale}
+
+    def _energy_self(self):
+        """Energy of self, w.r.t. self (expected |X-Y| for i.i.d. X,Y ~ InverseGaussian)."""
+        import numpy as np
+        from scipy.integrate import quad
+        from scipy.stats import invgauss
+        mu = np.asarray(self._bc_params["mu"])
+        scale = np.asarray(self._bc_params["scale"])
+        mu_b, scale_b = np.broadcast_arrays(mu, scale)
+        result = np.empty_like(mu_b, dtype=float)
+        it = np.nditer([mu_b, scale_b, result], flags=["multi_index"], op_flags=[["readonly"], ["readonly"], ["writeonly"]])
+        for m, s, out in it:
+            def cdf(x):
+                return invgauss.cdf(x, mu=m.item(), scale=s.item())
+            def integrand(x):
+                F = cdf(x)
+                return 2 * F * (1 - F)
+            val, _ = quad(integrand, 0, np.inf, limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
+
+    def _energy_x(self, x):
+        """Energy of self, w.r.t. a constant frame x (expected |X-x| for X ~ InverseGaussian)."""
+        import numpy as np
+        from scipy.stats import invgauss
+        from scipy.integrate import quad
+        mu = np.asarray(self._bc_params["mu"])
+        scale = np.asarray(self._bc_params["scale"])
+        x = np.asarray(x)
+        mu_b, scale_b, x_b = np.broadcast_arrays(mu, scale, x)
+        result = np.empty_like(mu_b, dtype=float)
+        it = np.nditer([mu_b, scale_b, x_b, result], flags=["multi_index"], op_flags=[["readonly"], ["readonly"], ["readonly"], ["writeonly"]])
+        for m, s, x0, out in it:
+            def integrand(t):
+                return np.abs(t - x0.item()) * invgauss.pdf(t, mu=m.item(), scale=s.item())
+            val, _ = quad(integrand, 0, np.inf, limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
+
+    _tags = {
+        "capabilities:approx": ["energy", "pdfnorm"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "distr:measuretype": "continuous",
+        "distr:paramtype": "parametric",
+        "broadcast_init": "on",
+    }
+
+
+    def __init__(self, mu, scale, index=None, columns=None):
+        self.mu = mu
+        self.scale = scale
         super().__init__(index=index, columns=columns)
 
     def _get_scipy_object(self) -> rv_continuous:
