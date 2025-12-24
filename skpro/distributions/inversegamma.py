@@ -77,9 +77,12 @@ class InverseGamma(_ScipyAdapter):
         for a, b, out in it:
             a_val = a.item()
             b_val = b.item()
+
             def cdf(x, a_val=a_val, b_val=b_val):
                 from scipy.stats import invgamma
+
                 return invgamma.cdf(x, a=a_val, scale=b_val)
+
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
@@ -116,8 +119,10 @@ class InverseGamma(_ScipyAdapter):
             a_val = a.item()
             b_val = b.item()
             x0_val = x0.item()
+
             def integrand(t, a_val=a_val, b_val=b_val, x0_val=x0_val):
                 return np.abs(t - x0_val) * invgamma.pdf(t, a=a_val, scale=b_val)
+
             val, _ = quad(integrand, 0, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility

@@ -75,11 +75,14 @@ class LogGamma(_ScipyAdapter):
         )
         for cc, out in it:
             cc_val = cc.item()
+
             def cdf(x, cc_val=cc_val):
                 return loggamma.cdf(x, cc_val)
+
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
+
             val, _ = quad(integrand, -np.inf, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
@@ -92,8 +95,9 @@ class LogGamma(_ScipyAdapter):
         return result
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x
-        (expected |X-x| for X ~ LogGamma).
+        """Energy of self, w.r.t. a constant frame x.
+
+        Expected |X-x| for X ~ LogGamma.
         """
         import numpy as np
         from scipy.integrate import quad
@@ -111,8 +115,10 @@ class LogGamma(_ScipyAdapter):
         for cc, x0, out in it:
             cc_val = cc.item()
             x0_val = x0.item()
+
             def integrand(t, cc_val=cc_val, x0_val=x0_val):
                 return np.abs(t - x0_val) * loggamma.pdf(t, cc_val)
+
             val, _ = quad(integrand, -np.inf, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility

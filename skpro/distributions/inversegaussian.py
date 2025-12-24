@@ -64,8 +64,9 @@ class InverseGaussian(_ScipyAdapter):
         return [mu], {"scale": scale}
 
     def _energy_self(self):
-        """Energy of self, w.r.t. self
-        (expected |X-Y| for i.i.d. X,Y ~ InverseGaussian).
+        """Energy of self, w.r.t. self.
+
+        Expected |X-Y| for i.i.d. X,Y ~ InverseGaussian.
         """
         import numpy as np
         from scipy.integrate import quad
@@ -83,11 +84,14 @@ class InverseGaussian(_ScipyAdapter):
         for m, s, out in it:
             m_val = m.item()
             s_val = s.item()
+
             def cdf(x, m_val=m_val, s_val=s_val):
                 return invgauss.cdf(x, mu=m_val, scale=s_val)
+
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
+
             val, _ = quad(integrand, 0, np.inf, limit=200)
             out[...] = val
             val, _ = quad(integrand, 0, np.inf, limit=200)
@@ -102,8 +106,9 @@ class InverseGaussian(_ScipyAdapter):
         return result
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x
-        (expected |X-x| for X ~ InverseGaussian).
+        """Energy of self, w.r.t. a constant frame x.
+
+        Expected |X-x| for X ~ InverseGaussian.
         """
         import numpy as np
         from scipy.integrate import quad
@@ -123,8 +128,10 @@ class InverseGaussian(_ScipyAdapter):
             m_val = m.item()
             s_val = s.item()
             x0_val = x0.item()
+
             def integrand(t, m_val=m_val, s_val=s_val, x0_val=x0_val):
                 return np.abs(t - x0_val) * invgauss.pdf(t, mu=m_val, scale=s_val)
+
             val, _ = quad(integrand, 0, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility

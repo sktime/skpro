@@ -78,8 +78,9 @@ class TruncatedNormal(_ScipyAdapter):
         }
 
     def _energy_self(self):
-        """Energy of self, w.r.t. self
-        (expected |X-Y| for i.i.d. X,Y ~ TruncatedNormal).
+        """Energy of self, w.r.t. self.
+
+        Expected |X-Y| for i.i.d. X,Y ~ TruncatedNormal.
         """
         import numpy as np
         from scipy.integrate import quad
@@ -117,6 +118,7 @@ class TruncatedNormal(_ScipyAdapter):
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
+
             val, _ = quad(integrand, l.item(), r.item(), limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
@@ -129,8 +131,9 @@ class TruncatedNormal(_ScipyAdapter):
         return result
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x
-        (expected |X-x| for X ~ TruncatedNormal).
+        """Energy of self, w.r.t. a constant frame x.
+
+        Expected |X-x| for X ~ TruncatedNormal.
         """
         import numpy as np
         from scipy.integrate import quad
@@ -173,6 +176,7 @@ class TruncatedNormal(_ScipyAdapter):
                 return np.abs(t - x0_val) * truncnorm.pdf(
                     t, a_val, b_val, loc=m_val, scale=s_val
                 )
+
             val, _ = quad(integrand, l.item(), r.item(), limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility

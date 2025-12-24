@@ -72,8 +72,9 @@ class Poisson(_ScipyAdapter):
         return result
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x
-        (expected |X-x| for X ~ Poisson).
+        """Energy of self, w.r.t. a constant frame x.
+
+        Expected |X-x| for X ~ Poisson.
         """
         import numpy as np
         from scipy.stats import poisson
