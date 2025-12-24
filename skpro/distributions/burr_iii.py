@@ -1,4 +1,3 @@
-
 """Burr III probability distribution for skpro."""
 
 from scipy.stats import burr12, rv_continuous
