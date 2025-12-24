@@ -86,11 +86,15 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
         scipy_res = getattr(scipy_obj, scipy_method)(*params[0], **params[1])
 
         # Custom logic for BurrIII variance: allow np.inf or nan
-        from skpro.distributions.burr_iii import BurrIII
         import numpy as np
+
+        from skpro.distributions.burr_iii import BurrIII
+
         if isinstance(object_instance, BurrIII) and method == "var":
             # Accept if both are nan, or both are inf, or one is nan and the other is inf
-            if (np.isnan(res) and np.isnan(scipy_res)) or (np.isinf(res) and np.isinf(scipy_res)):
+            if (np.isnan(res) and np.isnan(scipy_res)) or (
+                np.isinf(res) and np.isinf(scipy_res)
+            ):
                 return
             # Accept if one is nan and the other is inf
             if (np.isnan(res) and np.isinf(scipy_res)) or (np.isinf(res) and np.isnan(scipy_res)):

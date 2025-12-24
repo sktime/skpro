@@ -49,7 +49,7 @@ class BurrIII(_ScipyAdapter):
         c = self._bc_params["c"]
         scale = self._bc_params["scale"]
         import numpy as np
-    
+
         v = burr12.var(c, 1, scale=scale)
         # Always return np.inf for nan/invalid/negative, else use scipy adapter value
         if np.isnan(v) or not np.isfinite(v) or v < 0:
