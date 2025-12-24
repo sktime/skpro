@@ -91,7 +91,7 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
         from skpro.distributions.burr_iii import BurrIII
 
         if isinstance(object_instance, BurrIII) and method == "var":
-            # Accept if both are nan, or both are inf, or one is nan and the other is inf
+            # Accept if both nan, or both inf, or one is nan and other inf
             if (np.isnan(res) and np.isnan(scipy_res)) or (
                 np.isinf(res) and np.isinf(scipy_res)
             ):
