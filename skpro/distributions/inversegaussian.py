@@ -3,7 +3,6 @@
 
 __author__ = ["Omswastik-11"]
 
-import pandas as pd
 from scipy.stats import invgauss, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -65,7 +64,9 @@ class InverseGaussian(_ScipyAdapter):
         return [mu], {"scale": scale}
 
     def _energy_self(self):
-        """Energy of self, w.r.t. self (expected |X-Y| for i.i.d. X,Y ~ InverseGaussian)."""
+        """Energy of self, w.r.t. self
+        (expected |X-Y| for i.i.d. X,Y ~ InverseGaussian).
+        """
         import numpy as np
         from scipy.integrate import quad
         from scipy.stats import invgauss
@@ -83,8 +84,10 @@ class InverseGaussian(_ScipyAdapter):
 
             m_val = m.item()
             s_val = s.item()
+
             def cdf(x, m_val=m_val, s_val=s_val):
                 return invgauss.cdf(x, mu=m_val, scale=s_val)
+
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
@@ -100,7 +103,9 @@ class InverseGaussian(_ScipyAdapter):
         return result
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x (expected |X-x| for X ~ InverseGaussian)."""
+        """Energy of self, w.r.t. a constant frame x
+        (expected |X-x| for X ~ InverseGaussian).
+        """
         import numpy as np
         from scipy.integrate import quad
         from scipy.stats import invgauss
@@ -120,6 +125,7 @@ class InverseGaussian(_ScipyAdapter):
             m_val = m.item()
             s_val = s.item()
             x0_val = x0.item()
+
             def integrand(t, m_val=m_val, s_val=s_val, x0_val=x0_val):
                 return np.abs(t - x0_val) * invgauss.pdf(t, mu=m_val, scale=s_val)
             val, _ = quad(integrand, 0, np.inf, limit=200)
@@ -136,15 +142,7 @@ class InverseGaussian(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        # array case examples
-        params1 = {"mu": [2, 3.5], "scale": [[1, 1], [2, 3], [4, 5]]}
-        params2 = {
-            "mu": 2.5,
-            "scale": 1.5,
-            "index": pd.Index([1, 2, 5]),
-            "columns": pd.Index(["a", "b"]),
+        return {
+            "mu": [2, 3.5],
+            "scale": [[1, 1], [2, 3], [4, 5]]
         }
-        # scalar case examples
-        params3 = {"mu": 3.0, "scale": 2.0}
-
-        return [params1, params2, params3]

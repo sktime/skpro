@@ -3,7 +3,6 @@
 
 __author__ = ["fkiraly", "malikrafsan"]
 
-import pandas as pd
 from scipy.stats import poisson, rv_discrete
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -75,7 +74,9 @@ class Poisson(_ScipyAdapter):
         return result
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x (expected |X-x| for X ~ Poisson)."""
+        """Energy of self, w.r.t. a constant frame x
+        (expected |X-x| for X ~ Poisson).
+        """
         import numpy as np
         from scipy.stats import poisson
 
@@ -108,7 +109,7 @@ class Poisson(_ScipyAdapter):
         params1 = {"mu": [[1, 1], [2, 3], [4, 5]]}
         params2 = {
             "mu": 0.1,
-            "index": pd.Index([1, 2, 5]),
-            "columns": pd.Index(["a", "b"]),
+            "index": [1, 2, 5],
+            "columns": ["a", "b"],
         }
         return [params1, params2]

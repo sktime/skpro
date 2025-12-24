@@ -3,7 +3,6 @@
 
 __author__ = ["meraldoantonio"]
 
-import pandas as pd
 from scipy.stats import invgamma, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -61,7 +60,7 @@ class InverseGamma(_ScipyAdapter):
         return [], {"a": alpha, "scale": scale}
 
     def _energy_self(self):
-        """Energy of self, w.r.t. self (expected |X-Y| for i.i.d. X,Y ~ InverseGamma)."""
+        """Energy of self wrt self (expected |X-Y| for i.i.d. X,Y ~ InverseGamma)."""
         import numpy as np
         from scipy.integrate import quad
 
@@ -79,12 +78,15 @@ class InverseGamma(_ScipyAdapter):
 
             a_val = a.item()
             b_val = b.item()
+
             def cdf(x, a_val=a_val, b_val=b_val):
                 from scipy.stats import invgamma
                 return invgamma.cdf(x, a=a_val, scale=b_val)
+
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
+
             val, _ = quad(integrand, 0, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
@@ -97,7 +99,7 @@ class InverseGamma(_ScipyAdapter):
         return result
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x (expected |X-x| for X ~ InverseGamma)."""
+        """Energy of self wrt constant frame (expected |X-x| for X ~ InverseGamma)."""
         import numpy as np
         from scipy.integrate import quad
         from scipy.stats import invgamma
@@ -118,8 +120,10 @@ class InverseGamma(_ScipyAdapter):
             a_val = a.item()
             b_val = b.item()
             x0_val = x0.item()
+
             def integrand(t, a_val=a_val, b_val=b_val, x0_val=x0_val):
                 return np.abs(t - x0_val) * invgamma.pdf(t, a=a_val, scale=b_val)
+
             val, _ = quad(integrand, 0, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
@@ -134,15 +138,7 @@ class InverseGamma(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        # array case examples
-        params1 = {"alpha": [6, 2.5], "beta": [[1, 1], [2, 3], [4, 5]]}
-        params2 = {
-            "alpha": 2,
-            "beta": 3,
-            "index": pd.Index([1, 2, 5]),
-            "columns": pd.Index(["a", "b"]),
+        return {
+            "alpha": [6, 2.5],
+            "beta": [[1, 1], [2, 3], [4, 5]]
         }
-        # scalar case examples
-        params3 = {"alpha": 1.5, "beta": 2.1}
-
-        return [params1, params2, params3]

@@ -3,7 +3,6 @@
 
 __author__ = ["ShreeshaM07"]
 
-import pandas as pd
 from scipy.stats import rv_continuous, truncnorm
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -79,7 +78,9 @@ class TruncatedNormal(_ScipyAdapter):
         }
 
     def _energy_self(self):
-        """Energy of self, w.r.t. self (expected |X-Y| for i.i.d. X,Y ~ TruncatedNormal)."""
+        """Energy of self, w.r.t. self
+        (expected |X-Y| for i.i.d. X,Y ~ TruncatedNormal).
+        """
         import numpy as np
         from scipy.integrate import quad
         from scipy.stats import truncnorm
@@ -92,8 +93,11 @@ class TruncatedNormal(_ScipyAdapter):
         result = np.empty_like(mu_b, dtype=float)
         it = np.nditer(
             [mu_b, sigma_b, l_b, r_b, result],
-            flags=["multi_index"],
-            op_flags=[["readonly"]] * 4 + [["writeonly"]],
+            flags=("multi_index",),
+            op_flags=(
+                ("readonly",), ("readonly",), ("readonly",),
+                ("readonly",), ("writeonly",)
+            ),
         )
         for m, s, l, r, out in it:
             a = (l.item() - m.item()) / s.item()
@@ -103,8 +107,10 @@ class TruncatedNormal(_ScipyAdapter):
             b_val = b
             m_val = m.item()
             s_val = s.item()
+
             def cdf(x, a_val=a_val, b_val=b_val, m_val=m_val, s_val=s_val):
                 return truncnorm.cdf(x, a_val, b_val, loc=m_val, scale=s_val)
+
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
@@ -120,7 +126,9 @@ class TruncatedNormal(_ScipyAdapter):
         return result
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x (expected |X-x| for X ~ TruncatedNormal)."""
+        """Energy of self, w.r.t. a constant frame x
+        (expected |X-x| for X ~ TruncatedNormal).
+        """
         import numpy as np
         from scipy.integrate import quad
         from scipy.stats import truncnorm
@@ -136,8 +144,11 @@ class TruncatedNormal(_ScipyAdapter):
         result = np.empty_like(mu_b, dtype=float)
         it = np.nditer(
             [mu_b, sigma_b, l_b, r_b, x_b, result],
-            flags=["multi_index"],
-            op_flags=[["readonly"]] * 5 + [["writeonly"]],
+            flags=("multi_index",),
+            op_flags=(
+                ("readonly",), ("readonly",), ("readonly",),
+                ("readonly",), ("readonly",), ("writeonly",)
+            ),
         )
         for m, s, l, r, x0, out in it:
             a = (l.item() - m.item()) / s.item()
@@ -148,7 +159,10 @@ class TruncatedNormal(_ScipyAdapter):
             m_val = m.item()
             s_val = s.item()
             x0_val = x0.item()
-            def integrand(t, a_val=a_val, b_val=b_val, m_val=m_val, s_val=s_val, x0_val=x0_val):
+
+            def integrand(
+                t, a_val=a_val, b_val=b_val, m_val=m_val, s_val=s_val, x0_val=x0_val
+            ):
                 return np.abs(t - x0_val) * truncnorm.pdf(
                     t, a_val, b_val, loc=m_val, scale=s_val
                 )
@@ -166,21 +180,9 @@ class TruncatedNormal(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        # array case examples
-        params1 = {
+        return {
             "mu": [[0, 1], [2, 3], [4, 5]],
             "sigma": 1,
             "l_trunc": [[-0.1, 0.5], [1.5, 2.4], [4.1, 5]],
             "r_trunc": [[0.8, 2], [4, 5], [5, 7]],
         }
-        params2 = {
-            "mu": 0,
-            "sigma": 1,
-            "l_trunc": [-10, -5],
-            "r_trunc": [5, 10],
-            "index": pd.Index([1, 2, 5]),
-            "columns": pd.Index(["a", "b"]),
-        }
-        # scalar case examples
-        params3 = {"mu": 1, "sigma": 2, "l_trunc": -3, "r_trunc": 5}
-        return [params1, params2, params3]

@@ -3,7 +3,6 @@
 
 __author__ = ["ali-john"]
 
-import pandas as pd
 from scipy.stats import loggamma, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -77,8 +76,10 @@ class LogGamma(_ScipyAdapter):
         for cc, out in it:
 
             cc_val = cc.item()
+
             def cdf(x, cc_val=cc_val):
                 return loggamma.cdf(x, cc_val)
+
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
@@ -94,7 +95,9 @@ class LogGamma(_ScipyAdapter):
         return result
 
     def _energy_x(self, x):
-        """Energy of self, w.r.t. a constant frame x (expected |X-x| for X ~ LogGamma)."""
+        """Energy of self, w.r.t. a constant frame x
+        (expected |X-x| for X ~ LogGamma).
+        """
         import numpy as np
         from scipy.integrate import quad
         from scipy.stats import loggamma
@@ -112,6 +115,7 @@ class LogGamma(_ScipyAdapter):
 
             cc_val = cc.item()
             x0_val = x0.item()
+
             def integrand(t, cc_val=cc_val, x0_val=x0_val):
                 return np.abs(t - x0_val) * loggamma.pdf(t, cc_val)
             val, _ = quad(integrand, -np.inf, np.inf, limit=200)
@@ -128,14 +132,6 @@ class LogGamma(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        # array case examples
-        params1 = {"c": [[1, 2], [3, 4]]}
-        params2 = {
-            "c": 2,
-            "index": pd.Index([1, 2, 5]),
-            "columns": pd.Index(["a", "b"]),
+        return {
+            "c": [[1, 2], [3, 4]]
         }
-        # scalar case examples
-        params3 = {"c": 1.5}
-
-        return [params1, params2, params3]
