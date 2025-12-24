@@ -1,7 +1,7 @@
-
 """Fatigue-life (Birnbaum–Saunders) probability distribution for skpro."""
 
 from scipy.stats import fatiguelife, rv_continuous
+
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
@@ -23,14 +23,12 @@ class FatigueLife(_ScipyAdapter):
         Scale parameter
     """
 
-
     _tags = {
         "authors": ["your-github-id"],
         "distr:measuretype": "continuous",
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "broadcast_init": "on",
     }
-
 
     def __init__(self, c, scale=1.0, index=None, columns=None):
         self.c = c

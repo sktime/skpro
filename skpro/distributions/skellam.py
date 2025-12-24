@@ -1,7 +1,7 @@
-
 """Skellam probability distribution for skpro."""
 
-from scipy.stats import skellam, rv_discrete
+from scipy.stats import rv_discrete, skellam
+
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
@@ -24,14 +24,12 @@ class Skellam(_ScipyAdapter):
         Mean of the second Poisson distribution
     """
 
-
     _tags = {
         "authors": ["your-github-id"],
         "distr:measuretype": "discrete",
         "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"],
         "broadcast_init": "on",
     }
-
 
     def __init__(self, mu1, mu2, index=None, columns=None):
         self.mu1 = mu1

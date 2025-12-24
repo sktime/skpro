@@ -2,6 +2,7 @@
 """Burr III probability distribution for skpro."""
 
 from scipy.stats import burr12, rv_continuous
+
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
@@ -22,7 +23,6 @@ class BurrIII(_ScipyAdapter):
         Scale parameter
     """
 
-
     _tags = {
         "authors": ["your-github-id"],
         "distr:measuretype": "continuous",
@@ -30,12 +30,10 @@ class BurrIII(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
-
     def __init__(self, c, scale=1.0, index=None, columns=None):
         self.c = c
         self.scale = scale
         super().__init__(index=index, columns=columns)
-
 
     def _get_scipy_object(self) -> rv_continuous:
         return burr12

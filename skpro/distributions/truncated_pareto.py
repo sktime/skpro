@@ -74,7 +74,6 @@ class TruncatedPareto(BaseDistribution):
         p_adj = p * norm + pareto.cdf(lower, b, scale=scale)
         return pareto.ppf(p_adj, b, scale=scale)
 
-
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for TruncatedPareto."""

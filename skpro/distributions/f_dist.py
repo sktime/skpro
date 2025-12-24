@@ -1,7 +1,7 @@
-
 """F probability distribution for skpro."""
 
 from scipy.stats import f, rv_continuous
+
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
@@ -25,14 +25,12 @@ class FDist(_ScipyAdapter):
         Degrees of freedom denominator
     """
 
-
     _tags = {
         "authors": ["your-github-id"],
         "distr:measuretype": "continuous",
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "broadcast_init": "on",
     }
-
 
     def __init__(self, dfn, dfd, index=None, columns=None):
         self.dfn = dfn
