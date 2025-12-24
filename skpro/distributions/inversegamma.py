@@ -3,6 +3,7 @@
 
 __author__ = ["meraldoantonio"]
 
+import pandas as pd
 from scipy.stats import invgamma, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -48,6 +49,7 @@ class InverseGamma(_ScipyAdapter):
     def __init__(self, alpha, beta, index=None, columns=None):
         self.alpha = alpha
         self.beta = beta
+
         super().__init__(index=index, columns=columns)
 
     def _get_scipy_object(self) -> rv_continuous:
@@ -57,6 +59,7 @@ class InverseGamma(_ScipyAdapter):
         alpha = self._bc_params["alpha"]
         beta = self._bc_params["beta"]
         scale = beta
+
         return [], {"a": alpha, "scale": scale}
 
     def _energy_self(self):
@@ -137,6 +140,15 @@ class InverseGamma(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"alpha": [6, 2.5], "beta": [[1, 1], [2, 3], [4, 5]]}
-        params2 = {"alpha": 2.0, "beta": 1.0}
-        return [params1, params2]
+        params2 = {
+            "alpha": 2,
+            "beta": 3,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
+        }
+        # scalar case examples
+        params3 = {"alpha": 1.5, "beta": 2.1}
+
+        return [params1, params2, params3]

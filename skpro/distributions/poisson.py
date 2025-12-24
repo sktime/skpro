@@ -3,6 +3,7 @@
 
 __author__ = ["fkiraly", "malikrafsan"]
 
+import pandas as pd
 from scipy.stats import poisson, rv_discrete
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -37,6 +38,7 @@ class Poisson(_ScipyAdapter):
 
     def __init__(self, mu, index=None, columns=None):
         self.mu = mu
+
         super().__init__(index=index, columns=columns)
 
     def _get_scipy_object(self) -> rv_discrete:
@@ -44,6 +46,7 @@ class Poisson(_ScipyAdapter):
 
     def _get_scipy_param(self) -> dict:
         mu = self._bc_params["mu"]
+
         return [mu], {}
 
     def _energy_self(self):
@@ -106,7 +109,7 @@ class Poisson(_ScipyAdapter):
         params1 = {"mu": [[1, 1], [2, 3], [4, 5]]}
         params2 = {
             "mu": 0.1,
-            "index": [1, 2, 5],
-            "columns": ["a", "b"],
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
         }
         return [params1, params2]

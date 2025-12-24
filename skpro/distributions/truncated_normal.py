@@ -3,6 +3,7 @@
 
 __author__ = ["ShreeshaM07"]
 
+import pandas as pd
 from scipy.stats import rv_continuous, truncnorm
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -57,6 +58,7 @@ class TruncatedNormal(_ScipyAdapter):
         self.sigma = sigma
         self.l_trunc = l_trunc
         self.r_trunc = r_trunc
+
         super().__init__(index=index, columns=columns)
 
     def _get_scipy_object(self) -> rv_continuous:
@@ -67,9 +69,11 @@ class TruncatedNormal(_ScipyAdapter):
         sigma = self._bc_params["sigma"]
         l_trunc = self._bc_params["l_trunc"]
         r_trunc = self._bc_params["r_trunc"]
+
         # shift it to be centred at mu and sigma
         a = (l_trunc - mu) / sigma
         b = (r_trunc - mu) / sigma
+
         return [], {
             "loc": mu,
             "scale": sigma,
@@ -191,11 +195,14 @@ class TruncatedNormal(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {
             "mu": [[0, 1], [2, 3], [4, 5]],
             "sigma": 1,
-            "l_trunc": [[-0.1, 0.5], [1.5, 2.4], [4.1, 5]],
-            "r_trunc": [[0.8, 2], [4, 5], [5, 7]],
+            "l_trunc": [-10, -5],
+            "r_trunc": [5, 10],
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
         }
         params2 = {
             "mu": 0,
@@ -203,4 +210,6 @@ class TruncatedNormal(_ScipyAdapter):
             "l_trunc": -10,
             "r_trunc": 10,
         }
-        return [params1, params2]
+        # scalar case examples
+        params3 = {"mu": 1, "sigma": 2, "l_trunc": -3, "r_trunc": 5}
+        return [params1, params2, params3]

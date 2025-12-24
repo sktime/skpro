@@ -3,6 +3,7 @@
 
 __author__ = ["ali-john"]
 
+import pandas as pd
 from scipy.stats import loggamma, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -50,6 +51,7 @@ class LogGamma(_ScipyAdapter):
 
     def __init__(self, c, index=None, columns=None):
         self.c = c
+
         super().__init__(index=index, columns=columns)
 
     def _get_scipy_object(self) -> rv_continuous:
@@ -57,6 +59,7 @@ class LogGamma(_ScipyAdapter):
 
     def _get_scipy_param(self):
         c = self._bc_params["c"]
+
         return [c], {}
 
     def _energy_self(self):
@@ -133,6 +136,14 @@ class LogGamma(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"c": [[1, 2], [3, 4]]}
-        params2 = {"c": 1.0}
-        return [params1, params2]
+params2 = {
+            "c": 2,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
+        }
+        # scalar case examples
+        params3 = {"c": 1.5}
+
+        return [params1, params2, params3]

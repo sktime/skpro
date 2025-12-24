@@ -3,6 +3,7 @@
 
 __author__ = ["Omswastik-11"]
 
+import pandas as pd
 from scipy.stats import invgauss, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -51,6 +52,7 @@ class InverseGaussian(_ScipyAdapter):
     def __init__(self, mu, scale, index=None, columns=None):
         self.mu = mu
         self.scale = scale
+
         super().__init__(index=index, columns=columns)
 
     def _get_scipy_object(self) -> rv_continuous:
@@ -61,6 +63,7 @@ class InverseGaussian(_ScipyAdapter):
         # SciPy's invgauss accepts a shape parameter `mu` and a keyword  `scale`.
         mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
+
         return [mu], {"scale": scale}
 
     def _energy_self(self):
@@ -146,6 +149,15 @@ class InverseGaussian(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
+        # array case examples
         params1 = {"mu": [2, 3.5], "scale": [[1, 1], [2, 3], [4, 5]]}
-        params2 = {"mu": 1.0, "scale": 1.0}
-        return [params1, params2]
+        params2 = {
+            "mu": 2.5,
+            "scale": 1.5,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
+        }
+        # scalar case examples
+        params3 = {"mu": 3.0, "scale": 2.0}
+
+        return [params1, params2, params3]
