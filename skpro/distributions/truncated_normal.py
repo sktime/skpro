@@ -199,16 +199,16 @@ class TruncatedNormal(_ScipyAdapter):
         params1 = {
             "mu": [[0, 1], [2, 3], [4, 5]],
             "sigma": 1,
-            "l_trunc": [-10, -5],
-            "r_trunc": [5, 10],
-            "index": pd.Index([1, 2, 5]),
-            "columns": pd.Index(["a", "b"]),
+            "l_trunc": [[-0.1, 0.5], [1.5, 2.4], [4.1, 5]],
+            "r_trunc": [[0.8, 2], [4, 5], [5, 7]],
         }
         params2 = {
             "mu": 0,
             "sigma": 1,
-            "l_trunc": -10,
-            "r_trunc": 10,
+            "l_trunc": [-10, -5],
+            "r_trunc": [5, 10],
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
         }
         # scalar case examples
         params3 = {"mu": 1, "sigma": 2, "l_trunc": -3, "r_trunc": 5}

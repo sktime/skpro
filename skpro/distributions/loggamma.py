@@ -138,7 +138,7 @@ class LogGamma(_ScipyAdapter):
         """Return testing parameter settings for the estimator."""
         # array case examples
         params1 = {"c": [[1, 2], [3, 4]]}
-params2 = {
+        params2 = {
             "c": 2,
             "index": pd.Index([1, 2, 5]),
             "columns": pd.Index(["a", "b"]),
