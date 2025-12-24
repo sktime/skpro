@@ -9,12 +9,14 @@ from skpro.distributions.base import BaseDistribution
 class TruncatedPareto(BaseDistribution):
     r"""Truncated Pareto probability distribution.
 
-    The truncated Pareto distribution is a continuous probability distribution that is a Pareto distribution restricted to the interval $[l, u]$.
-    It is parameterized by a shape parameter $b > 0$, scale parameter $s > 0$, lower bound $l$, and upper bound $u$.
-    Its probability density function (PDF) is:
+    The truncated Pareto distribution is a continuous probability distribution that
+    is a Pareto distribution restricted to the interval $[l, u]$. It is parameterized
+    by a shape parameter $b > 0$, scale parameter $s > 0$, lower bound $l$, and
+    upper bound $u$. Its probability density function (PDF) is:
 
     .. math::
-        f(x; b, s, l, u) = \frac{b s^b x^{-(b+1)}}{F(u) - F(l)}, \quad l \leq x \leq u
+        f(x; b, s, l, u) = \frac{b s^b x^{-(b+1)}}{F(u) - F(l)},
+        \quad l \leq x \leq u
 
     where $F(x)$ is the CDF of the standard Pareto distribution.
 

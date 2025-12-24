@@ -8,11 +8,13 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class BurrIII(_ScipyAdapter):
     r"""Burr III probability distribution.
 
-    The Burr III distribution is a continuous probability distribution with two parameters: shape parameter $c > 0$ and scale parameter $s > 0$.
+    The Burr III distribution is a continuous probability distribution with two
+    parameters: shape parameter $c > 0$ and scale parameter $s > 0$.
     Its probability density function (PDF) is:
 
     .. math::
-        f(x; c, s) = \frac{c}{s} \left(\frac{x}{s}\right)^{-c-1} \left[1 + \left(\frac{x}{s}\right)^{-c}\right]^{-2}, \quad x > 0
+        f(x; c, s) = \frac{c}{s} \left(\frac{x}{s}\right)^{-c-1}
+        \left[1 + \left(\frac{x}{s}\right)^{-c}\right]^{-2}, \quad x > 0
 
     Parameters
     ----------

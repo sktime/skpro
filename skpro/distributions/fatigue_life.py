@@ -8,12 +8,16 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class FatigueLife(_ScipyAdapter):
     r"""Fatigue-life (Birnbaum–Saunders) probability distribution.
 
-    The fatigue-life (Birnbaum–Saunders) distribution is a continuous probability distribution used to model failure times under cyclic stress.
-    It is parameterized by a shape parameter $c > 0$ and a scale parameter $s > 0$.
-    Its probability density function (PDF) is:
+    The fatigue-life (Birnbaum–Saunders) distribution is a continuous probability
+    distribution used to model failure times under cyclic stress. It is parameterized
+    by a shape parameter $c > 0$ and a scale parameter $s > 0$. Its probability
+    density function (PDF) is:
 
     .. math::
-        f(x; c, s) = \frac{1}{2 c s \sqrt{2 \pi}} \left( \frac{\sqrt{x/s} + \sqrt{s/x}}{x} \right) \exp\left( -\frac{(\sqrt{x/s} - \sqrt{s/x})^2}{2 c^2} \right), \quad x > 0
+        f(x; c, s) = \frac{1}{2 c s \sqrt{2 \pi}}
+        \left( \frac{\sqrt{x/s} + \sqrt{s/x}}{x} \right)
+        \exp\left( -\frac{(\sqrt{x/s} - \sqrt{s/x})^2}{2 c^2} \right),
+        \quad x > 0
 
     Parameters
     ----------

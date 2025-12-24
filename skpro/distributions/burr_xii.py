@@ -8,11 +8,13 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class BurrXII(_ScipyAdapter):
     r"""Burr XII probability distribution.
 
-    The Burr XII distribution is a continuous probability distribution with two shape parameters $c > 0$, $d > 0$ and a scale parameter $s > 0$.
+    The Burr XII distribution is a continuous probability distribution with two
+    shape parameters $c > 0$, $d > 0$ and a scale parameter $s > 0$.
     Its probability density function (PDF) is:
 
     .. math::
-        f(x; c, d, s) = \frac{c d}{s} \left(\frac{x}{s}\right)^{c-1} \left[1 + \left(\frac{x}{s}\right)^c\right]^{-d-1}, \quad x > 0
+        f(x; c, d, s) = \frac{c d}{s} \left(\frac{x}{s}\right)^{c-1}
+        \left[1 + \left(\frac{x}{s}\right)^c\right]^{-d-1}, \quad x > 0
 
     Parameters
     ----------

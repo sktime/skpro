@@ -8,12 +8,16 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class FDist(_ScipyAdapter):
     r"""F (Fisher-Snedecor) probability distribution.
 
-    The F-distribution (Fisher-Snedecor distribution) is a continuous probability distribution that arises frequently as the null distribution of a test statistic, especially in ANOVA.
-    It is parameterized by two degrees of freedom parameters $d_1 > 0$ (numerator) and $d_2 > 0$ (denominator).
-    Its probability density function (PDF) is:
+    The F-distribution (Fisher-Snedecor distribution) is a continuous probability
+    distribution that arises frequently as the null distribution of a test statistic,
+    especially in ANOVA. It is parameterized by two degrees of freedom parameters
+    $d_1 > 0$ (numerator) and $d_2 > 0$ (denominator). Its probability density
+    function (PDF) is:
 
     .. math::
-        f(x; d_1, d_2) = \frac{\sqrt{\frac{(d_1 x)^{d_1} d_2^{d_2}}{(d_1 x + d_2)^{d_1 + d_2}}}}{x \cdot B\left(\frac{d_1}{2}, \frac{d_2}{2}\right)}, \quad x > 0
+        f(x; d_1, d_2) =
+        \frac{\sqrt{\frac{(d_1 x)^{d_1} d_2^{d_2}}{(d_1 x + d_2)^{d_1 + d_2}}}}
+        {x \cdot B\left(\frac{d_1}{2}, \frac{d_2}{2}\right)}, \quad x > 0
 
     where $B$ is the beta function.
 

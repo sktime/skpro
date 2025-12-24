@@ -8,11 +8,13 @@ from skpro.distributions.adapters.scipy import _ScipyAdapter
 class Skellam(_ScipyAdapter):
     r"""Skellam probability distribution.
 
-    The Skellam distribution is a discrete probability distribution that describes the difference between two independent Poisson-distributed random variables with means $\mu_1$ and $\mu_2$.
-    Its probability mass function (PMF) is:
+    The Skellam distribution is a discrete probability distribution that describes
+    the difference between two independent Poisson-distributed random variables
+    with means $\mu_1$ and $\mu_2$. Its probability mass function (PMF) is:
 
     .. math::
-        P(k; \mu_1, \mu_2) = e^{-(\mu_1 + \mu_2)} \left( \frac{\mu_1}{\mu_2} \right)^{k/2} I_{|k|}(2 \sqrt{\mu_1 \mu_2})
+        P(k; \mu_1, \mu_2) = e^{-(\mu_1 + \mu_2)}
+        \left( \frac{\mu_1}{\mu_2} \right)^{k/2} I_{|k|}(2 \sqrt{\mu_1 \mu_2})
 
     where $I_{|k|}$ is the modified Bessel function of the first kind.
 
