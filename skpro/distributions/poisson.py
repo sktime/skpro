@@ -56,9 +56,7 @@ class Poisson(_ScipyAdapter):
         result = np.zeros(shape)
         for idx in np.ndindex(shape):
             m = mu[idx]
-            max_k = int(
-                np.ceil(poisson.ppf(0.999, m))
-            )
+            max_k = int(np.ceil(poisson.ppf(0.999, m)))
             pmf = poisson.pmf(np.arange(0, max_k + 1), m)
             energy = 0.0
             for i in range(max_k + 1):
@@ -87,9 +85,7 @@ class Poisson(_ScipyAdapter):
         for idx in np.ndindex(shape):
             m = np.broadcast_to(mu, shape)[idx]
             x0 = np.broadcast_to(x, shape)[idx]
-            max_k = int(
-                np.ceil(poisson.ppf(0.999, m))
-            )
+            max_k = int(np.ceil(poisson.ppf(0.999, m)))
             pmf = poisson.pmf(np.arange(0, max_k + 1), m)
             energy = 0.0
             for k in range(max_k + 1):

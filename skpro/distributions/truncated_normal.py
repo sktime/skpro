@@ -95,8 +95,11 @@ class TruncatedNormal(_ScipyAdapter):
             [mu_b, sigma_b, l_b, r_b, result],
             flags=("multi_index",),
             op_flags=(
-                ("readonly",), ("readonly",), ("readonly",),
-                ("readonly",), ("writeonly",)
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("writeonly",),
             ),
         )
         for m, s, l, r, out in it:
@@ -146,8 +149,12 @@ class TruncatedNormal(_ScipyAdapter):
             [mu_b, sigma_b, l_b, r_b, x_b, result],
             flags=("multi_index",),
             op_flags=(
-                ("readonly",), ("readonly",), ("readonly",),
-                ("readonly",), ("readonly",), ("writeonly",)
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("writeonly",),
             ),
         )
         for m, s, l, r, x0, out in it:

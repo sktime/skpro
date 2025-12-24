@@ -75,14 +75,11 @@ class InverseGamma(_ScipyAdapter):
             op_flags=[["readonly"], ["readonly"], ["writeonly"]],
         )
         for a, b, out in it:
-
             a_val = a.item()
             b_val = b.item()
-
             def cdf(x, a_val=a_val, b_val=b_val):
                 from scipy.stats import invgamma
                 return invgamma.cdf(x, a=a_val, scale=b_val)
-
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
@@ -116,14 +113,11 @@ class InverseGamma(_ScipyAdapter):
             op_flags=[["readonly"], ["readonly"], ["readonly"], ["writeonly"]],
         )
         for a, b, x0, out in it:
-
             a_val = a.item()
             b_val = b.item()
             x0_val = x0.item()
-
             def integrand(t, a_val=a_val, b_val=b_val, x0_val=x0_val):
                 return np.abs(t - x0_val) * invgamma.pdf(t, a=a_val, scale=b_val)
-
             val, _ = quad(integrand, 0, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
@@ -138,7 +132,4 @@ class InverseGamma(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        return {
-            "alpha": [6, 2.5],
-            "beta": [[1, 1], [2, 3], [4, 5]]
-        }
+        return {"alpha": [6, 2.5], "beta": [[1, 1], [2, 3], [4, 5]]}

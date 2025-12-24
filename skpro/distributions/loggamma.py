@@ -74,12 +74,9 @@ class LogGamma(_ScipyAdapter):
             op_flags=[["readonly"], ["writeonly"]],
         )
         for cc, out in it:
-
             cc_val = cc.item()
-
             def cdf(x, cc_val=cc_val):
                 return loggamma.cdf(x, cc_val)
-
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
@@ -112,10 +109,8 @@ class LogGamma(_ScipyAdapter):
             op_flags=[["readonly"], ["readonly"], ["writeonly"]],
         )
         for cc, x0, out in it:
-
             cc_val = cc.item()
             x0_val = x0.item()
-
             def integrand(t, cc_val=cc_val, x0_val=x0_val):
                 return np.abs(t - x0_val) * loggamma.pdf(t, cc_val)
             val, _ = quad(integrand, -np.inf, np.inf, limit=200)
@@ -132,6 +127,4 @@ class LogGamma(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        return {
-            "c": [[1, 2], [3, 4]]
-        }
+        return {"c": [[1, 2], [3, 4]]}

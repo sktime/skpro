@@ -81,16 +81,15 @@ class InverseGaussian(_ScipyAdapter):
             op_flags=[["readonly"], ["readonly"], ["writeonly"]],
         )
         for m, s, out in it:
-
             m_val = m.item()
             s_val = s.item()
-
             def cdf(x, m_val=m_val, s_val=s_val):
                 return invgauss.cdf(x, mu=m_val, scale=s_val)
-
             def integrand(x, cdf=cdf):
                 F = cdf(x)
                 return 2 * F * (1 - F)
+            val, _ = quad(integrand, 0, np.inf, limit=200)
+            out[...] = val
             val, _ = quad(integrand, 0, np.inf, limit=200)
             out[...] = val
         # Always flatten to 1D of length n_rows for DataFrame compatibility
@@ -121,11 +120,9 @@ class InverseGaussian(_ScipyAdapter):
             op_flags=[["readonly"], ["readonly"], ["readonly"], ["writeonly"]],
         )
         for m, s, x0, out in it:
-
             m_val = m.item()
             s_val = s.item()
             x0_val = x0.item()
-
             def integrand(t, m_val=m_val, s_val=s_val, x0_val=x0_val):
                 return np.abs(t - x0_val) * invgauss.pdf(t, mu=m_val, scale=s_val)
             val, _ = quad(integrand, 0, np.inf, limit=200)
@@ -142,7 +139,4 @@ class InverseGaussian(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        return {
-            "mu": [2, 3.5],
-            "scale": [[1, 1], [2, 3], [4, 5]]
-        }
+        return {"mu": [2, 3.5], "scale": [[1, 1], [2, 3], [4, 5]]}
