@@ -1,12 +1,19 @@
+
 """Fatigue-life (Birnbaum–Saunders) probability distribution for skpro."""
 
-from scipy.stats import fatiguelife
+from scipy.stats import fatiguelife, rv_continuous
+from skpro.distributions.adapters.scipy import _ScipyAdapter
 
-from skpro.distributions.base import BaseDistribution
 
+class FatigueLife(_ScipyAdapter):
+    r"""Fatigue-life (Birnbaum–Saunders) probability distribution.
 
-class FatigueLife(BaseDistribution):
-    """Fatigue-life (Birnbaum–Saunders) probability distribution.
+    The fatigue-life (Birnbaum–Saunders) distribution is a continuous probability distribution used to model failure times under cyclic stress.
+    It is parameterized by a shape parameter $c > 0$ and a scale parameter $s > 0$.
+    Its probability density function (PDF) is:
+
+    .. math::
+        f(x; c, s) = \frac{1}{2 c s \sqrt{2 \pi}} \left( \frac{\sqrt{x/s} + \sqrt{s/x}}{x} \right) \exp\left( -\frac{(\sqrt{x/s} - \sqrt{s/x})^2}{2 c^2} \right), \quad x > 0
 
     Parameters
     ----------
@@ -16,6 +23,7 @@ class FatigueLife(BaseDistribution):
         Scale parameter
     """
 
+
     _tags = {
         "authors": ["your-github-id"],
         "distr:measuretype": "continuous",
@@ -23,10 +31,19 @@ class FatigueLife(BaseDistribution):
         "broadcast_init": "on",
     }
 
+
     def __init__(self, c, scale=1.0, index=None, columns=None):
         self.c = c
         self.scale = scale
         super().__init__(index=index, columns=columns)
+
+    def _get_scipy_object(self) -> rv_continuous:
+        return fatiguelife
+
+    def _get_scipy_param(self):
+        c = self._bc_params["c"]
+        scale = self._bc_params["scale"]
+        return [c], {"scale": scale}
 
     def _pdf(self, x):
         c = self._bc_params["c"]

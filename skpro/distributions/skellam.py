@@ -1,12 +1,20 @@
+
 """Skellam probability distribution for skpro."""
 
-from scipy.stats import skellam
+from scipy.stats import skellam, rv_discrete
+from skpro.distributions.adapters.scipy import _ScipyAdapter
 
-from skpro.distributions.base import BaseDistribution
 
+class Skellam(_ScipyAdapter):
+    r"""Skellam probability distribution.
 
-class Skellam(BaseDistribution):
-    """Skellam probability distribution.
+    The Skellam distribution is a discrete probability distribution that describes the difference between two independent Poisson-distributed random variables with means $\mu_1$ and $\mu_2$.
+    Its probability mass function (PMF) is:
+
+    .. math::
+        P(k; \mu_1, \mu_2) = e^{-(\mu_1 + \mu_2)} \left( \frac{\mu_1}{\mu_2} \right)^{k/2} I_{|k|}(2 \sqrt{\mu_1 \mu_2})
+
+    where $I_{|k|}$ is the modified Bessel function of the first kind.
 
     Parameters
     ----------
@@ -16,6 +24,7 @@ class Skellam(BaseDistribution):
         Mean of the second Poisson distribution
     """
 
+
     _tags = {
         "authors": ["your-github-id"],
         "distr:measuretype": "discrete",
@@ -23,10 +32,19 @@ class Skellam(BaseDistribution):
         "broadcast_init": "on",
     }
 
+
     def __init__(self, mu1, mu2, index=None, columns=None):
         self.mu1 = mu1
         self.mu2 = mu2
         super().__init__(index=index, columns=columns)
+
+    def _get_scipy_object(self) -> rv_discrete:
+        return skellam
+
+    def _get_scipy_param(self):
+        mu1 = self._bc_params["mu1"]
+        mu2 = self._bc_params["mu2"]
+        return [mu1, mu2], {}
 
     def _pmf(self, x):
         mu1 = self._bc_params["mu1"]

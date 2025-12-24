@@ -1,12 +1,18 @@
+
 """Burr XII probability distribution for skpro."""
 
-from scipy.stats import burr12
+from scipy.stats import burr12, rv_continuous
+from skpro.distributions.adapters.scipy import _ScipyAdapter
 
-from skpro.distributions.base import BaseDistribution
 
+class BurrXII(_ScipyAdapter):
+    r"""Burr XII probability distribution.
 
-class BurrXII(BaseDistribution):
-    """Burr XII probability distribution.
+    The Burr XII distribution is a continuous probability distribution with two shape parameters $c > 0$, $d > 0$ and a scale parameter $s > 0$.
+    Its probability density function (PDF) is:
+
+    .. math::
+        f(x; c, d, s) = \frac{c d}{s} \left(\frac{x}{s}\right)^{c-1} \left[1 + \left(\frac{x}{s}\right)^c\right]^{-d-1}, \quad x > 0
 
     Parameters
     ----------
@@ -18,6 +24,7 @@ class BurrXII(BaseDistribution):
         Scale parameter
     """
 
+
     _tags = {
         "authors": ["your-github-id"],
         "distr:measuretype": "continuous",
@@ -25,11 +32,21 @@ class BurrXII(BaseDistribution):
         "broadcast_init": "on",
     }
 
+
     def __init__(self, c, d, scale=1.0, index=None, columns=None):
         self.c = c
         self.d = d
         self.scale = scale
         super().__init__(index=index, columns=columns)
+
+    def _get_scipy_object(self) -> rv_continuous:
+        return burr12
+
+    def _get_scipy_param(self):
+        c = self._bc_params["c"]
+        d = self._bc_params["d"]
+        scale = self._bc_params["scale"]
+        return [c, d], {"scale": scale}
 
     def _pdf(self, x):
         c = self._bc_params["c"]

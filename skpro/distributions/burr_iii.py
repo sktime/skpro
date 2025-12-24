@@ -1,12 +1,18 @@
+
 """Burr III probability distribution for skpro."""
 
-from scipy.stats import burr12
+from scipy.stats import burr12, rv_continuous
+from skpro.distributions.adapters.scipy import _ScipyAdapter
 
-from skpro.distributions.base import BaseDistribution
 
+class BurrIII(_ScipyAdapter):
+    r"""Burr III probability distribution.
 
-class BurrIII(BaseDistribution):
-    """Burr III probability distribution.
+    The Burr III distribution is a continuous probability distribution with two parameters: shape parameter $c > 0$ and scale parameter $s > 0$.
+    Its probability density function (PDF) is:
+
+    .. math::
+        f(x; c, s) = \frac{c}{s} \left(\frac{x}{s}\right)^{-c-1} \left[1 + \left(\frac{x}{s}\right)^{-c}\right]^{-2}, \quad x > 0
 
     Parameters
     ----------
@@ -16,6 +22,7 @@ class BurrIII(BaseDistribution):
         Scale parameter
     """
 
+
     _tags = {
         "authors": ["your-github-id"],
         "distr:measuretype": "continuous",
@@ -23,15 +30,21 @@ class BurrIII(BaseDistribution):
         "broadcast_init": "on",
     }
 
+
     def __init__(self, c, scale=1.0, index=None, columns=None):
         self.c = c
         self.scale = scale
         super().__init__(index=index, columns=columns)
 
-    def _pdf(self, x):
+
+    def _get_scipy_object(self) -> rv_continuous:
+        return burr12
+
+    def _get_scipy_param(self):
         c = self._bc_params["c"]
         scale = self._bc_params["scale"]
-        return burr12.pdf(x, c, 1, scale=scale)
+        # Burr III is Burr XII with d=1
+        return [c, 1], {"scale": scale}
 
     def _cdf(self, x):
         c = self._bc_params["c"]
