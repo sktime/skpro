@@ -146,4 +146,6 @@ class InverseGaussian(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        return {"mu": [2, 3.5], "scale": [[1, 1], [2, 3], [4, 5]]}
+        params1 = {"mu": [2, 3.5], "scale": [[1, 1], [2, 3], [4, 5]]}
+        params2 = {"mu": 1.0, "scale": 1.0}
+        return [params1, params2]

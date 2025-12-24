@@ -133,4 +133,6 @@ class LogGamma(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        return {"c": [[1, 2], [3, 4]]}
+        params1 = {"c": [[1, 2], [3, 4]]}
+        params2 = {"c": 1.0}
+        return [params1, params2]

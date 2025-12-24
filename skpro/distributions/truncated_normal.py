@@ -191,9 +191,16 @@ class TruncatedNormal(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        return {
+        params1 = {
             "mu": [[0, 1], [2, 3], [4, 5]],
             "sigma": 1,
             "l_trunc": [[-0.1, 0.5], [1.5, 2.4], [4.1, 5]],
             "r_trunc": [[0.8, 2], [4, 5], [5, 7]],
         }
+        params2 = {
+            "mu": 0,
+            "sigma": 1,
+            "l_trunc": -10,
+            "r_trunc": 10,
+        }
+        return [params1, params2]

@@ -137,4 +137,6 @@ class InverseGamma(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        return {"alpha": [6, 2.5], "beta": [[1, 1], [2, 3], [4, 5]]}
+        params1 = {"alpha": [6, 2.5], "beta": [[1, 1], [2, 3], [4, 5]]}
+        params2 = {"alpha": 2.0, "beta": 1.0}
+        return [params1, params2]
