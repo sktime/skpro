@@ -1,0 +1,178 @@
+<script>
+// --- skpro estimator overview table logic ---
+
+// Estimator types for skpro
+const SKPRO_TYPES = [
+    "distribution",
+    "regressor",
+    "survival",
+    "metric"
+];
+
+// Main logic from your original script, adapted for skpro
+
+let visibleTagsOfTypes = {};
+
+// Event listeners
+
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+    searchInput.addEventListener("keyup", function () {
+        let value = this.value.toLowerCase();
+        let table = document.getElementById("tableContainer")
+        let rows = table.getElementsByTagName("tr");
+        for (var i = 1; i < rows.length; i++) {
+            var rowText = rows[i].textContent.toLowerCase();
+            rows[i].style.display = rowText.indexOf(value) > -1 ? "" : "none";
+        }
+    });
+
+    const filterOptions = document.getElementById("filterOptions");
+    filterOptions.addEventListener("change", function(event) {
+        filterTable();
+    });
+
+    document.addEventListener("change", function(event) {
+        const filter = document.getElementById("filterOptions").value;
+        const target = event.target;
+        if (target.type === "checkbox") {
+            visibleTagsOfTypes[filter][target.id] = target.checked;
+            filterTable();
+        }
+    });
+
+    function initTableFromURL() {
+        const params = new URLSearchParams(window.location.hash.slice(1));
+        const filter = params.get('filter');
+        const tags = params.get('tags');
+        if (filter) {
+            document.getElementById("filterOptions").value = filter;
+        }
+        if (tags) {
+            visibleTagsOfTypes[filter] = JSON.parse(tags);
+        }
+    }
+    initTableFromURL();
+    filterTable();
+});
+
+function filterTable() {
+    const filter = document.getElementById("filterOptions").value;
+    const header = ["Class Name", "Estimator Type", "Dependencies", "Maintainers"];
+    if (filter != "all") {
+        const cachedData = sessionStorage.getItem("jsonData");
+        if (cachedData) {
+            let dynamicHeader = ["Class Name"];
+            const data = JSON.parse(cachedData);
+            const filteredData = data.filter(row => row["Estimator Type"] === filter);
+            const tags = visibleTagsOfTypes[filter];
+            if (tags) {
+                dynamicHeader.push(Object.keys(tags).filter(key => tags[key]));
+            } else if (filteredData.length > 0) {
+                visibleTagsOfTypes[filter] = {};
+                Object.keys(filteredData[0].Tags).forEach(tag => {
+                    visibleTagsOfTypes[filter][tag] = false;
+                });
+            }
+            renderTable(filteredData, dynamicHeader);
+        } else {
+            fetchJsonData();
+        }
+    } else {
+        visibleTagsOfTypes[filter] = {};
+        const table = document.getElementById("tableContainer");
+        const contentTableAll = sessionStorage.getItem("contentTableAll");
+        if (contentTableAll) {
+            table.innerHTML = contentTableAll;
+        } else {
+            fetchTableAll();
+        }
+    }
+    populateCheckboxes();
+    updateURL(filter, visibleTagsOfTypes[filter]);
+    function updateURL(filter, tags) {
+        const params = new URLSearchParams();
+        params.set('filter', filter);
+        if (tags) {
+            params.set('tags', JSON.stringify(tags));
+        }
+        window.location.hash = params.toString();
+    }
+}
+
+function fetchJsonData() {
+    return fetch("docs/_static/estimator_overview_db.json")
+        .then(response => response.json())
+        .then(data => {
+            sessionStorage.setItem("jsonData", JSON.stringify(data));
+            filterTable();
+        })
+        .catch(error => console.error("Error:", error));
+}
+
+function fetchTableAll() {
+    return fetch('docs/_static/table_all.html')
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            }
+            throw new Error('Failed to fetch the HTML content.');
+        })
+        .then(html => {
+            sessionStorage.setItem("contentTableAll", html);
+            filterTable();
+        });
+}
+
+function renderTable(data, header) {
+    const table = document.getElementById("tableContainer");
+    table.innerHTML = "";
+    let headerRow = "<tr>";
+    header.forEach((headerItem, index) => {
+        if (Array.isArray(headerItem)) {
+            headerItem.forEach(item => {
+                headerRow += `<th>${item.replace(/:/g, '<br>')}</th>`;
+            });
+        } else {
+            headerRow += `<th>${headerItem}</th>`;
+        }
+    });
+    headerRow += "</tr>";
+    table.innerHTML += headerRow;
+    data.forEach(rowData => {
+        let rowContent = "<tr>";
+        header.forEach(headerItem => {
+            if (Array.isArray(headerItem)) {
+                headerItem.forEach(item => {
+                    rowContent += `<td>${rowData.Tags[item]}</td>`;
+                });
+            } else {
+                rowContent += `<td>${rowData[headerItem]}</td>`;
+            }
+        });
+        rowContent += "</tr>";
+        table.innerHTML += rowContent;
+    });
+}
+
+function populateCheckboxes() {
+    const filter = document.getElementById("filterOptions").value;
+    const tags = Object.entries(visibleTagsOfTypes[filter] || {});
+    const checkboxContainer = document.getElementById("checkboxContainer");
+    checkboxContainer.innerHTML = "Check to Show Tags:";
+    for (const [key, value] of tags) {
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = key;
+        checkbox.name = key;
+        checkbox.checked = value;
+        const label = document.createElement("label");
+        label.htmlFor = key;
+        label.textContent = key;
+        const checkboxWrapper = document.createElement("div");
+        checkboxWrapper.appendChild(checkbox);
+        checkboxWrapper.appendChild(label);
+        checkboxContainer.appendChild(checkboxWrapper);
+    }
+}
+</script>
