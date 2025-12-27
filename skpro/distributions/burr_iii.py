@@ -47,45 +47,11 @@ class BurrIII(_ScipyAdapter):
         return [], {"c": c, "d": 1, "scale": scale}
 
     def _var(self):
-        c = self._bc_params["c"]
-        scale = self._bc_params["scale"]
-        import numpy as np
-        from scipy.stats import burr12
-
-        v = burr12.var(c, 1, scale=scale)
-        if np.isnan(v):
-            return np.inf
-        return v
-
-    @classmethod
-    def get_test_params(cls, parameter_set="default"):
-        """Return test parameters for BurrIII."""
-        params1 = {"c": 2.0, "scale": 1.0}
-        params2 = {"c": 3.0, "scale": 2.0}
-        return [params1, params2]
-
-    _tags = {
-        "authors": ["arnavk23"],
-        "distr:measuretype": "continuous",
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
-        "broadcast_init": "on",
-    }
-
-
-    def __init__(self, c, scale=1.0, index=None, columns=None):
-        self.c = c
-        self.scale = scale
-        super().__init__(index=index, columns=columns)
-
-
-    def _get_scipy_object(self) -> rv_continuous:
-        return burr12
-
-    def _get_scipy_param(self):
-        c = self._bc_params["c"]
-        scale = self._bc_params["scale"]
-        # Burr III is Burr XII with d=1
-        return [], {"c": c, "d": 1, "scale": scale}
+        """
+        Return the variance of the Burr III distribution.
+        """
+        # Use the default adapter behavior (SciPy's result)
+        return super()._var()
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
