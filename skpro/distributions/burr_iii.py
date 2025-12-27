@@ -46,9 +46,7 @@ class BurrIII(_ScipyAdapter):
         return [], {"c": c, "d": 1, "scale": scale}
 
     def _var(self):
-        """
-        Return the variance of the Burr III distribution.
-        """
+        """Return the variance of the Burr III distribution."""
         # Use the default adapter behavior (SciPy's result)
         return super()._var()
 
