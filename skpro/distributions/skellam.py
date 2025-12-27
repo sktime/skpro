@@ -27,7 +27,7 @@ class Skellam(_ScipyAdapter):
     """
 
     _tags = {
-        "authors": ["your-github-id"],
+        "authors": ["arnavk23"],
         "distr:measuretype": "discrete",
         "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"],
         "broadcast_init": "on",

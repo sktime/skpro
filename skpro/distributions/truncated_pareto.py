@@ -33,7 +33,7 @@ class TruncatedPareto(BaseDistribution):
     """
 
     _tags = {
-        "authors": ["your-github-id"],
+        "authors": ["arnavk23"],
         "distr:measuretype": "continuous",
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "broadcast_init": "on",
