@@ -39,7 +39,6 @@ class FatigueLife(_ScipyAdapter):
         self.scale = scale
         super().__init__(index=index, columns=columns)
 
-
     def _get_scipy_object(self) -> rv_continuous:
         return fatiguelife
 

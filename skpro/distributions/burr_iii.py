@@ -5,7 +5,6 @@ from scipy.stats import burr12, rv_continuous
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-
 class BurrIII(_ScipyAdapter):
     r"""Burr III probability distribution.
 

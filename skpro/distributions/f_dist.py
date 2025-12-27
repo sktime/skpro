@@ -41,7 +41,6 @@ class FDist(_ScipyAdapter):
         self.dfd = dfd
         super().__init__(index=index, columns=columns)
 
-
     def _get_scipy_object(self) -> rv_continuous:
         return f
 
