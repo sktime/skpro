@@ -41,13 +41,14 @@ class FDist(_ScipyAdapter):
         self.dfd = dfd
         super().__init__(index=index, columns=columns)
 
+
     def _get_scipy_object(self) -> rv_continuous:
         return f
 
     def _get_scipy_param(self):
         dfn = self._bc_params["dfn"]
         dfd = self._bc_params["dfd"]
-        return [dfn, dfd], {}
+        return [], {"dfn": dfn, "dfd": dfd}
 
     def _pdf(self, x):
         dfn = self._bc_params["dfn"]

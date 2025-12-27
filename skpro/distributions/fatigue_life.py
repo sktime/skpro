@@ -39,13 +39,14 @@ class FatigueLife(_ScipyAdapter):
         self.scale = scale
         super().__init__(index=index, columns=columns)
 
+
     def _get_scipy_object(self) -> rv_continuous:
         return fatiguelife
 
     def _get_scipy_param(self):
         c = self._bc_params["c"]
         scale = self._bc_params["scale"]
-        return [c], {"scale": scale}
+        return [], {"c": c, "scale": scale}
 
     def _pdf(self, x):
         c = self._bc_params["c"]

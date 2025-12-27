@@ -39,6 +39,7 @@ class BurrXII(_ScipyAdapter):
         self.scale = scale
         super().__init__(index=index, columns=columns)
 
+
     def _get_scipy_object(self) -> rv_continuous:
         return burr12
 
@@ -46,7 +47,7 @@ class BurrXII(_ScipyAdapter):
         c = self._bc_params["c"]
         d = self._bc_params["d"]
         scale = self._bc_params["scale"]
-        return [c, d], {"scale": scale}
+        return [], {"c": c, "d": d, "scale": scale}
 
     def _pdf(self, x):
         c = self._bc_params["c"]
