@@ -5,6 +5,7 @@ __author__ = ["malikrafsan"]
 
 import numpy as np
 import pandas as pd
+from scipy.integrate import quad
 
 from skpro.distributions.base import BaseDistribution
 
@@ -37,8 +38,16 @@ class Logistic(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm", "energy"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": [
+            "mean",
+            "var",
+            "pdf",
+            "log_pdf",
+            "cdf",
+            "ppf",
+            "energy",
+        ],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -153,6 +162,48 @@ class Logistic(BaseDistribution):
 
         ppf_arr = mu + scale * np.log(p / (1 - p))
         return ppf_arr
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        Closed-form formula: \mathbb{E}|X-Y| = 2s for Logistic(mu, s).
+
+        Derivation: E|X-Y| = 2 \int_{-\infty}^{\infty} F(t)(1-F(t)) dt
+        where F(t) = 1/(1+exp(-(t-mu)/s)). Using the identity
+        F(t)(1-F(t)) = 1/(4 cosh^2((t-mu)/(2s))), we get
+        2 \int_{-\infty}^{\infty} 1/(4 cosh^2((t-mu)/(2s))) dt = s.
+        Therefore E|X-Y| = 2s.
+        """
+        scale = self._bc_params["scale"]
+        energy_arr = 2 * scale
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        Uses numerical integration:
+        \\mathbb{E}|X - x| = \\int_{-\\infty}^{\\infty} |t - x| f(t) dt.
+        """
+        mu = self._bc_params["mu"]
+        scale = self._bc_params["scale"]
+
+        def energy_cell(m, s, xi):
+            # Compute E|X - xi| by integrating |t - xi| * f(t)
+            # Logistic PDF: f(t) = 1/(4*s) * sech^2((t-m)/(2*s))
+            pdf = lambda t: 1 / (4 * s) / np.cosh((t - m) / (2 * s)) ** 2  # noqa: E731
+
+            # Split integral at xi
+            lower, _ = quad(lambda t: (xi - t) * pdf(t), m - 10 * s, xi, limit=200)
+            upper, _ = quad(lambda t: (t - xi) * pdf(t), xi, m + 10 * s, limit=200)
+            return lower + upper
+
+        vec_energy = np.vectorize(energy_cell)
+        energy_arr = vec_energy(mu, scale, x)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
