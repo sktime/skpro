@@ -282,6 +282,9 @@ def _check_output_format(res, dist, method):
         assert np.isscalar(res)
         assert np.isreal(res)
         if method in METHODS_SCALAR_POS or method in METHODS_X_POS:
+            # allow nan for variance (e.g., BurrIII c=2)
+            if method == "var" and np.isnan(res):
+                return None
             assert res >= 0
         return None
 

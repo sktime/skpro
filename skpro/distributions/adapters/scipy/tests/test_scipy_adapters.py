@@ -85,6 +85,13 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
 
         scipy_res = getattr(scipy_obj, scipy_method)(*params[0], **params[1])
 
+        # Treat (nan, nan) and (inf, inf) as equal for scalar results
+        import numpy as np
+        if np.isscalar(res) and np.isscalar(scipy_res):
+            if np.isnan(res) and np.isnan(scipy_res):
+                return
+            if np.isinf(res) and np.isinf(scipy_res) and (res > 0) == (scipy_res > 0):
+                return
         assert np.allclose(res, scipy_res)
 
     @pytest.mark.parametrize("method,scipy_method", METHOD_TESTS["X_PARAMS"])
