@@ -51,6 +51,7 @@ class BurrIII(_ScipyAdapter):
         Variance is infinite if c < 2, nan if c == 2, else finite.
         """
         import numpy as np
+
         c = self.c if hasattr(self, "c") else self._bc_params["c"]
         if c < 2:
             return np.inf

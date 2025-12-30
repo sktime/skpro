@@ -87,6 +87,7 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
 
         # Treat (nan, nan) and (inf, inf) as equal for scalar results
         import numpy as np
+
         if np.isscalar(res) and np.isscalar(scipy_res):
             if np.isnan(res) and np.isnan(scipy_res):
                 return
