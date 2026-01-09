@@ -48,15 +48,14 @@ class BurrIII(_ScipyAdapter):
     def _var(self):
         """Return the variance of the Burr III distribution.
 
-        Variance is infinite if c < 2, nan if c == 2, else finite.
+        Variance is infinite if c <= 2, else finite.
+        The second moment exists only for c > 2.
         """
         import numpy as np
 
         c = self.c if hasattr(self, "c") else self._bc_params["c"]
-        if c < 2:
+        if c <= 2:
             return np.inf
-        if c == 2:
-            return np.nan
         return super()._var()
 
     @classmethod
