@@ -49,7 +49,7 @@ class BurrIII(_ScipyAdapter):
         """Return the variance of the Burr III distribution.
 
         Variance is infinite for c <= 2 (second moment diverges), else finite.
-        Note: Returns inf for c=2 (mathematically correct) even though scipy returns nan.
+        Note: Returns inf for c=2 (mathematically correct) when scipy returns nan.
         """
         import numpy as np
 
