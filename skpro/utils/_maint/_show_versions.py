@@ -12,7 +12,8 @@ __all__ = ["show_versions"]
 import importlib
 import platform
 import sys
-from importlib.metadata import PackageNotFoundError, version as metadata_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as metadata_version
 
 
 def _get_sys_info():
