@@ -261,7 +261,10 @@ class BaseDistribution(BaseObject):
         """
         # If keys is already a pd.Index, use get_indexer directly
         if isinstance(keys, pd.Index):
-            return index.get_indexer(keys)
+            if isinstance(index, pd.MultiIndex) and isinstance(keys, pd.MultiIndex):
+                return index.get_indexer(keys)
+            elif not isinstance(index, pd.MultiIndex):
+                return index.get_indexer(keys)
 
         # regular index, not multiindex
         if not isinstance(index, pd.MultiIndex):
