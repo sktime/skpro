@@ -85,16 +85,6 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
 
         scipy_res = getattr(scipy_obj, scipy_method)(*params[0], **params[1])
 
-        # Handle cases where scipy returns nan but we return inf (e.g., BurrIII c=2)
-        # Mathematically, variance is +inf when second moment diverges
-        import numpy as np
-
-        if np.isscalar(res) and np.isscalar(scipy_res):
-            if np.isinf(res) and res > 0 and np.isnan(scipy_res):
-                # Our inf is mathematically correct even if scipy returns nan
-                return
-            if np.isinf(res) and np.isinf(scipy_res) and (res > 0) == (scipy_res > 0):
-                return
         assert np.allclose(res, scipy_res)
 
     @pytest.mark.parametrize("method,scipy_method", METHOD_TESTS["X_PARAMS"])
