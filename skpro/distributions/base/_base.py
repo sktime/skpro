@@ -1621,7 +1621,6 @@ class BaseDistribution(BaseObject):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
-
         return self._sample(n_samples=n_samples)
 
     def _sample(self, n_samples=None):
