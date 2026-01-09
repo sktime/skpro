@@ -259,6 +259,13 @@ class BaseDistribution(BaseObject):
         -------
         np.ndarray of positions (integers)
         """
+        # If keys is already a pd.Index, use get_indexer directly
+        if isinstance(keys, pd.Index):
+            if isinstance(index, pd.MultiIndex) and isinstance(keys, pd.MultiIndex):
+                return index.get_indexer(keys)
+            elif not isinstance(index, pd.MultiIndex):
+                return index.get_indexer(keys)
+
         # regular index, not multiindex
         if not isinstance(index, pd.MultiIndex):
             return index.get_indexer_for(keys)
@@ -1617,7 +1624,6 @@ class BaseDistribution(BaseObject):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
-
         return self._sample(n_samples=n_samples)
 
     def _sample(self, n_samples=None):
@@ -1774,6 +1780,11 @@ class BaseDistribution(BaseObject):
         return ax
 
 
+def _is_index_like(obj):
+    """Check if an object is pandas Index-like (Index, MultiIndex, etc.)."""
+    return isinstance(obj, (pd.Index, pd.MultiIndex))
+
+
 class _Indexer:
     """Indexer for BaseDistribution, for pandas-like index in loc and iloc property."""
 
@@ -1807,8 +1818,10 @@ class _Indexer:
         # handle special case of multiindex in loc with single tuple key
         if isinstance(key, tuple) and not any(isinstance(k, tuple) for k in key):
             if isinstance(ref.index, pd.MultiIndex) and self.method == "_loc":
-                if type(ref).__name__ != "Empirical":
-                    return indexer(rowidx=key, colidx=None)
+                # Skip this special case if any element is Index-like
+                if not any(_is_index_like(k) for k in key):
+                    if type(ref).__name__ != "Empirical":
+                        return indexer(rowidx=key, colidx=None)
 
         # general case
         if isinstance(key, tuple):
