@@ -1,11 +1,6 @@
-# copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-"""Base classes for probability distribution objects."""
-
-__author__ = ["fkiraly"]
-
-__all__ = ["BaseDistribution"]
-
 from warnings import warn
+import types
+import textwrap
 
 import numpy as np
 import pandas as pd
@@ -13,9 +8,74 @@ from skbase.utils.dependencies import _check_estimator_deps, _check_soft_depende
 
 from skpro.base import BaseObject
 
+# mapping of public methods to formula doc hooks
+_DOC_METHODS = {
+    "pdf": "_pdf_formula_doc",
+    "cdf": "_cdf_formula_doc",
+    "log_pdf": "_log_pdf_formula_doc",
+    "pmf": "_pmf_formula_doc",
+}
+
+def _inject_formula_doc(method, formula_doc):
+    """Inject formula_doc into method.__doc__ at {formula_doc} placeholder."""
+    base_doc = method.__doc__ or ""
+    if "{formula_doc}" not in base_doc:
+        return base_doc
+    clean_formula = textwrap.dedent(formula_doc or "").strip()
+    return base_doc.replace("{formula_doc}", clean_formula)
+
+def _clone_method_with_doc(method, new_doc):
+    """Clone a function and replace its docstring (safe pattern)."""
+    new_method = types.FunctionType(
+        method.__code__,
+        method.__globals__,
+        name=method.__name__,
+        argdefs=method.__defaults__,
+        closure=method.__closure__,
+    )
+    new_method.__dict__.update(method.__dict__)
+    new_method.__doc__ = new_doc
+    return new_method
+
 
 class BaseDistribution(BaseObject):
     """Base probability distribution."""
+
+    # hooks for distribution-specific documentation
+    _pdf_formula_doc = None
+    _cdf_formula_doc = None
+    _log_pdf_formula_doc = None
+    _pmf_formula_doc = None
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        if cls is BaseDistribution:
+            return
+
+        # Skip adapter classes
+        if cls.__name__.startswith("_BaseTF"):
+            return
+
+        for method_name, hook_name in _DOC_METHODS.items():
+            if hook_name not in cls.__dict__:
+                continue
+
+            method = getattr(cls, method_name, None)
+            if method is None:
+                continue
+
+            base_doc = method.__doc__ or ""
+
+            if "{formula_doc}" not in base_doc:
+                continue
+
+            formula_doc = getattr(cls, hook_name)
+            new_doc = _inject_formula_doc(method, formula_doc)
+
+            new_method = _clone_method_with_doc(method, new_doc)
+            setattr(cls, method_name, new_method)
+
 
     # default tag values - these typically make the "safest" assumption
     _tags = {
@@ -702,6 +762,8 @@ class BaseDistribution(BaseObject):
     def pdf(self, x):
         r"""Probability density function.
 
+        {formula_doc}
+
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
@@ -768,6 +830,8 @@ class BaseDistribution(BaseObject):
 
     def log_pdf(self, x):
         r"""Logarithmic probability density function.
+
+        {formula_doc}
 
         Numerically more stable than calling pdf and then taking logartihms.
 
@@ -860,6 +924,8 @@ class BaseDistribution(BaseObject):
 
     def pmf(self, x):
         r"""Probability mass function.
+
+        {formula_doc}
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
@@ -972,6 +1038,8 @@ class BaseDistribution(BaseObject):
 
     def cdf(self, x):
         r"""Cumulative distribution function.
+
+        {formula_doc}
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
