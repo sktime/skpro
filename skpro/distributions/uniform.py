@@ -36,6 +36,32 @@ class Uniform(BaseDistribution):
     >>> u = Uniform(lower=0, upper=5)
     """
 
+    _pdf_formula_doc = r"""
+    For lower bound :math:`a` and upper bound :math:`b`, the pdf is
+
+    .. math::
+        f(x) = \frac{1}{b - a}, \quad a \le x \le b
+    """
+
+    _log_pdf_formula_doc = r"""
+    For lower bound :math:`a` and upper bound :math:`b`, the log-pdf is
+
+    .. math::
+        \log f(x) = -\log(b - a), \quad a \le x \le b
+    """
+
+    _cdf_formula_doc = r"""
+    For lower bound :math:`a` and upper bound :math:`b`, the cdf is
+
+    .. math::
+        F(x) =
+        \begin{cases}
+            0, & x < a \\
+            \frac{x - a}{b - a}, & a \le x \le b \\
+            1, & x > b
+        \end{cases}
+    """
+
     _tags = {
         "authors": ["an20805"],
         "capabilities:approx": ["pdfnorm"],
