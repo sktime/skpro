@@ -265,17 +265,43 @@ class BaseDistribution(BaseObject):
 
         # if isinstance(index, pd.MultiIndex):
 
+        # If keys is already a pd.Index (including MultiIndex), use get_indexer_for
+        # This handles the case where keys is passed as x.index from a DataFrame
+        if isinstance(keys, pd.Index):
+            return index.get_indexer_for(keys)
+
         if is_scalar_notnone(keys) or isinstance(keys, tuple):
             keys = [keys]
 
-        # Use get_locs for each key (full or partial)
+        n_levels = index.nlevels
+
+        # Check if keys are full keys (tuples with same length as number of levels)
+        # If so, use get_indexer_for which handles full tuple keys correctly
+        def _is_full_key(key):
+            return isinstance(key, tuple) and len(key) == n_levels
+
+        # If all keys are full keys (not slices), use get_indexer_for directly
+        # This handles MultiIndex keys correctly
+        if all(_is_full_key(k) for k in keys):
+            return index.get_indexer_for(keys)
+
+        # Use get_locs for each key (partial key or slice)
         ilocs = []
         for key in keys:
             if isinstance(key, slice):
                 ilocs.append(index.slice_indexer(key.start, key.stop, key.step))
+            elif _is_full_key(key):
+                # For full tuple keys, use get_loc to get the position
+                iloc = index.get_loc(key)
+                if isinstance(iloc, slice):
+                    iloc = np.arange(len(index))[iloc]
+                elif isinstance(iloc, int):
+                    iloc = np.array([iloc])
+                ilocs.append(iloc)
             else:
+                # For partial keys, use get_locs
                 if not isinstance(key, tuple):
-                    key = [key]
+                    key = (key,)
                 iloc = index.get_locs(key)
                 if isinstance(iloc, slice):
                     iloc = np.arange(len(index))[iloc]
@@ -1617,7 +1643,6 @@ class BaseDistribution(BaseObject):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
-
         return self._sample(n_samples=n_samples)
 
     def _sample(self, n_samples=None):
@@ -1805,10 +1830,18 @@ class _Indexer:
         indexer = getattr(ref, self.method)
 
         # handle special case of multiindex in loc with single tuple key
+        # This handles cases like dist.loc[('a', 'b')] where ('a', 'b') is a
+        # single row label in a MultiIndex. We should NOT trigger this when
+        # the key contains Index objects (e.g., dist.loc[x.index, x.columns]).
+        def _is_index_like(obj):
+            return isinstance(obj, (pd.Index, pd.MultiIndex, list, np.ndarray, slice))
+
         if isinstance(key, tuple) and not any(isinstance(k, tuple) for k in key):
-            if isinstance(ref.index, pd.MultiIndex) and self.method == "_loc":
-                if type(ref).__name__ != "Empirical":
-                    return indexer(rowidx=key, colidx=None)
+            # Only treat as single row key if no element is Index-like
+            if not any(_is_index_like(k) for k in key):
+                if isinstance(ref.index, pd.MultiIndex) and self.method == "_loc":
+                    if type(ref).__name__ != "Empirical":
+                        return indexer(rowidx=key, colidx=None)
 
         # general case
         if isinstance(key, tuple):
