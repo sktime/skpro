@@ -246,26 +246,18 @@ def test_multiindex_loc_indexing():
     """Test that loc indexing works with MultiIndex and Index objects - issue #678."""
     from skpro.distributions.normal import Normal
 
-    # Create a distribution with MultiIndex
     index = pd.MultiIndex.from_tuples([("a", 1), ("a", 2), ("b", 1)])
     columns = pd.Index(["x", "y"])
 
     dist = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, index=index, columns=columns)
 
-    # Create a DataFrame with matching MultiIndex
     x = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]], index=index, columns=columns)
 
-    # This was failing with KeyError before the fix in issue #678
-    # The problem was that dist.loc[x.index, x.columns] was incorrectly
-    # treating (pd.MultiIndex, pd.Index) as a single row key
     subset = dist.loc[x.index, x.columns]
 
-    # Check that the result has the correct shape and index
     assert subset.shape == dist.shape
     assert subset.index.equals(dist.index)
     assert subset.columns.equals(dist.columns)
 
-    # Also verify that quantile method works (which uses loc internally)
-    # Note: quantile with a full matching DataFrame should work
     result = dist.quantile(0.5)
     assert result.shape == dist.shape
