@@ -228,7 +228,7 @@ class XGBoostLSS(BaseProbaRegressor):
                 stabilization=self.stabilization,
                 response_fn=self.response_fn,
                 loss_fn=self.loss_fn,
-                initialize=self.initialize
+                initialize=self.initialize,
             )
         )
 
