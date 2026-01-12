@@ -61,6 +61,15 @@ class XGBoostLSS(BaseProbaRegressor):
         The number of trials in tuning.
         If this argument is set to None, there is no limitation on the number of trials.
         If set to 0, no tuning is done, and default parameters of XGBoostLSS are used.
+
+    xgb_params: dict, optional, default=None
+        Dictionary of XGBoost parameters to use when n_trials == 0.
+        If None and n_trials == 0, default XGBoost parameters are used.
+        Allows external hyperparameter tuning without breaking time series dependencies.
+
+    initialize: bool, optional, default=True
+        Whether to initialize the distribution parameters.
+        If True, the distribution is initialized with starting values.
     """
 
     _tags = {
@@ -95,6 +104,8 @@ class XGBoostLSS(BaseProbaRegressor):
         early_stopping_rounds=20,
         max_minutes=10,
         n_trials=30,
+        xgb_params=None,
+        initialize=True,
     ):
         self.dist = dist
         self.stabilization = stabilization
@@ -106,6 +117,8 @@ class XGBoostLSS(BaseProbaRegressor):
         self.early_stopping_rounds = early_stopping_rounds
         self.max_minutes = max_minutes
         self.n_trials = n_trials
+        self.xgb_params = xgb_params
+        self.initialize = initialize
 
         super().__init__()
 
@@ -212,14 +225,15 @@ class XGBoostLSS(BaseProbaRegressor):
 
         xgblss = XGBoostLSS(
             xgblss_distr(
-                stabilization="None",
-                response_fn="exp",
-                loss_fn="nll",
+                stabilization=self.stabilization,
+                response_fn=self.response_fn,
+                loss_fn=self.loss_fn,
+                initialize=self.initialize,
             )
         )
 
         if self.n_trials == 0:
-            opt_params = {}  # empty dict, use default parameters
+            opt_params = self.xgb_params if self.xgb_params is not None else {}
             n_rounds = self.num_boost_round
         else:
             opt_params = self._hyper_opt(xgblss, dtrain)
