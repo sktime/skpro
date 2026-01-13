@@ -100,7 +100,7 @@ class XGBoostLSS(BaseProbaRegressor):
     _tags = {
         # packaging info
         # --------------
-        "authors": ["StatMixedML", "EchoDel", "fkiraly"],
+        "authors": ["StatMixedML", "EchoDel", "fkiraly", "joshdunnlime"],
         # StatMixedML, EchoDel for the original xgboostlss package
         "maintainers": ["fkiraly"],
         "python_dependencies": ["xgboostlss"],  # PEP 440 python dependencies specifier
