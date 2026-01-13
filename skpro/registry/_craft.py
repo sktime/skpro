@@ -58,10 +58,11 @@ def craft(spec):
     spec : str, skpro/skbase compatible object specification
         i.e., a string that executes to construct an object if all imports were present
         imports inferred are of any classes in the scope of ``all_objects``
-        option 1: a string that evaluates to an estimator
-        option 2: a sequence of assignments in valid python code,
-            with the object to be defined preceded by a "return"
-            assignments can use names of classes as if all imports were present
+
+        * option 1: a string that evaluates to an estimator
+        * option 2: a sequence of assignments in valid python code,
+          with the object to be defined preceded by a "return".
+          assignments can use names of classes as if all imports were present
 
     Returns
     -------
@@ -170,10 +171,11 @@ def imports(spec):
     spec : str, skpro/skbase compatible object specification
         i.e., a string that executes to construct an object if all imports were present
         imports inferred are of any classes in the scope of ``all_objects``
-        option 1: a string that evaluates to an estimator
-        option 2: a sequence of assignments in valid python code,
-            with the object to be defined preceded by a "return"
-            assignments can use names of classes as if all imports were present
+
+        * option 1: a string that evaluates to an estimator
+        * option 2: a sequence of assignments in valid python code,
+          with the object to be defined preceded by a "return".
+          assignments can use names of classes as if all imports were present
 
     Returns
     -------
