@@ -558,7 +558,12 @@ class XGBoostLSS(BaseProbaRegressor):
         params3 = {"dist": "Weibull", "max_minutes": 1, "n_trials": 2}
         params4 = {"dist": "TDistribution", "max_minutes": 1, "n_trials": 2}
         params5 = {"dist": "Laplace", "max_minutes": 1, "n_trials": 2}
-        params5 = {"dist": "Logistic", "max_minutes": 1, "n_trials": 0}
+
+        # Logistic was introduced after xgboostlss v0.6.1
+        if _check_soft_dependencies("xgboostlss>=0.6.1", severity="none"):
+            params5 = {"dist": "Logistic", "max_minutes": 1, "n_trials": 0}
+        else:
+            params5 = {"dist": "Gamma", "max_minutes": 1, "n_trials": 0}
         params6 = {"n_trials": 0, "max_minutes": 1}
         params7 = {"dist": "Beta", "max_minutes": 1, "n_trials": 2}
         params8 = {
