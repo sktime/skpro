@@ -1,6 +1,6 @@
 [project]
 name = "skpro"
-version = "2.10.0"
+version = "2.11.0"
 description = "A unified framework for tabular probabilistic regression, time-to-event prediction, and probability distributions in python"
 authors = [
     {name = "skpro developers", email = "info@sktime.net"},
@@ -39,7 +39,7 @@ classifiers = [
 ]
 requires-python = ">=3.9,<3.15"
 dependencies = [
-    "numpy>=1.21.0,<2.4",
+    "numpy>=1.21.0,<2.5",
     "pandas>=1.1.0,<2.4.0",
     "packaging",
     "scikit-base>=0.6.1,<0.14.0",
@@ -81,10 +81,10 @@ docs = [
     "nbsphinx>=0.8.6",
     "numpydoc",
     "pydata-sphinx-theme",
-    "sphinx!=7.2.0,<9.0.0",
+    "sphinx!=7.2.0,<10.0.0",
     "sphinx-design<0.7.0",
     "sphinx-issues<6.0.0",
-    "sphinx-gallery<0.20.0",
+    "sphinx-gallery<0.21.0",
     "sphinx-panels",
     "tabulate",
 ]
