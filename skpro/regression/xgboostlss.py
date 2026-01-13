@@ -392,7 +392,7 @@ class XGBoostLSS(BaseProbaRegressor):
         }
 
         # initialize parameter was introduced in xgboostlss v0.6.1
-        if _check_soft_dependencies("xgboostlss<0.6.1"):
+        if _check_soft_dependencies("xgboostlss<0.6.1", severity="none"):
             distr_params.pop("initialize")
 
         xgblss = XGBoostLSS(xgblss_distr(**distr_params))
