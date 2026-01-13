@@ -2,6 +2,8 @@
 
 import warnings
 
+from skbase.utils.dependencies import _check_soft_dependencies
+
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -101,9 +103,7 @@ class XGBoostLSS(BaseProbaRegressor):
         "authors": ["StatMixedML", "EchoDel", "fkiraly"],
         # StatMixedML, EchoDel for the original xgboostlss package
         "maintainers": ["fkiraly"],
-        "python_dependencies": [
-            "xgboostlss>=0.6.1"
-        ],  # PEP 440 python dependencies specifier,
+        "python_dependencies": ["xgboostlss"],  # PEP 440 python dependencies specifier
         #
         # estimator tags
         # --------------
@@ -116,41 +116,6 @@ class XGBoostLSS(BaseProbaRegressor):
         "tests:vm": True,  # requires its own test VM to run
         "tests:python_dependencies": ["optuna", "optuna-integration"],
     }
-
-    _xgb_params = [
-        "max_depth",
-        "max_leaves",
-        "max_bin",
-        "grow_policy",
-        "eta",
-        "verbosity",
-        "booster",
-        "tree_method",
-        "gamma",
-        "min_child_weight",
-        "max_delta_step",
-        "subsample",
-        "sampling_method",
-        "colsample_bytree",
-        "colsample_bylevel",
-        "colsample_bynode",
-        "reg_alpha",
-        "reg_lambda",
-        "scale_pos_weight",
-        "random_state",
-        "num_parallel_tree",
-        "monotone_constraints",
-        "interaction_constraints",
-        "importance_type",
-        "device",
-        "validate_parameters",
-        "feature_types",
-        "feature_weights",
-        "max_cat_to_onehot",
-        "max_cat_threshold",
-        "multi_strategy",
-        "eval_metric",
-    ]
 
     def __init__(
         self,
@@ -266,6 +231,41 @@ class XGBoostLSS(BaseProbaRegressor):
         # If n_trials is not zero, optuna is required for hyperparameter optimization
         if n_trials != 0:
             self.set_tags(**{"python_dependencies": ["xgboostlss", "optuna"]})
+
+        self._xgb_params = [
+            "max_depth",
+            "max_leaves",
+            "max_bin",
+            "grow_policy",
+            "eta",
+            "verbosity",
+            "booster",
+            "tree_method",
+            "gamma",
+            "min_child_weight",
+            "max_delta_step",
+            "subsample",
+            "sampling_method",
+            "colsample_bytree",
+            "colsample_bylevel",
+            "colsample_bynode",
+            "reg_alpha",
+            "reg_lambda",
+            "scale_pos_weight",
+            "random_state",
+            "num_parallel_tree",
+            "monotone_constraints",
+            "interaction_constraints",
+            "importance_type",
+            "device",
+            "validate_parameters",
+            "feature_types",
+            "feature_weights",
+            "max_cat_to_onehot",
+            "max_cat_threshold",
+            "multi_strategy",
+            "eval_metric",
+        ]
 
     def _get_xgblss_distr(self, distr):
         """Get xgboostlss distribution object from string.
@@ -384,14 +384,18 @@ class XGBoostLSS(BaseProbaRegressor):
 
         xgblss_distr = self._get_xgblss_distr(self.dist)
 
-        xgblss = XGBoostLSS(
-            xgblss_distr(
-                stabilization=self.stabilization,
-                response_fn=self.response_fn,
-                loss_fn=self.loss_fn,
-                initialize=self.initialize,
-            )
-        )
+        distr_params = {
+            "stabilization": self.stabilization,
+            "response_fn": self.response_fn,
+            "loss_fn": self.loss_fn,
+            "initialize": self.initialize,
+        }
+
+        # initialize parameter was introduced in xgboostlss v0.6.1
+        if _check_soft_dependencies("xgboostlss<0.6.1"):
+            distr_params.pop("initialize")
+
+        xgblss = XGBoostLSS(xgblss_distr(**distr_params))
 
         # Collect XGBoost params
         self.xgb_params_ = dict()
@@ -420,6 +424,7 @@ class XGBoostLSS(BaseProbaRegressor):
 
             if self.callbacks is not None:
                 warnings.warn(
+                    "Warning in XGBoostLSS: "
                     "Callbacks are not supported in hyperparameter optimization. "
                     "Ignoring callbacks.",
                     UserWarning,
