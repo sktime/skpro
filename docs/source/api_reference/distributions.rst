@@ -54,11 +54,17 @@ Continuous support - non-negative reals
 
     Alpha
     Beta
+    BurrIII
+    BurrXII
     ChiSquared
     Exponential
     Erlang
+    FatigueLife
+    FDist
     Fisk
     Gamma
+    GeneralizedPareto
+    Levy
     LogGamma
     HalfCauchy
     HalfLogistic
@@ -67,6 +73,7 @@ Continuous support - non-negative reals
     InverseGaussian
     LogLaplace
     Pareto
+    TruncatedPareto
     Weibull
 
 
@@ -84,6 +91,7 @@ Integer support
     Hurdle
     NegativeBinomial
     Poisson
+    Skellam
 
 Non-parametric and empirical distributions
 ------------------------------------------
