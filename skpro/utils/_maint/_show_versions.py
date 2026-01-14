@@ -12,8 +12,6 @@ __all__ = ["show_versions"]
 import importlib
 import platform
 import sys
-from importlib.metadata import PackageNotFoundError
-from importlib.metadata import version as metadata_version
 
 
 def _get_sys_info():
@@ -88,21 +86,9 @@ def _get_deps_info(deps=None):
             else:
                 mod = importlib.import_module(modname)
         except ImportError:
-            # If import fails (e.g., dependency version mismatch), fall back
-            # to package metadata to report the installed version if present.
-            try:
-                deps_info[modname] = metadata_version(modname)
-            except PackageNotFoundError:
-                deps_info[modname] = None
+            deps_info[modname] = None
         else:
             ver = get_version(mod)
-            if ver is None:
-                # Some packages may import but not expose __version__;
-                # fall back to metadata if available.
-                try:
-                    ver = metadata_version(modname)
-                except PackageNotFoundError:
-                    ver = None
             deps_info[modname] = ver
 
     return deps_info
