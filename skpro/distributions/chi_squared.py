@@ -159,7 +159,9 @@ class ChiSquared(BaseDistribution):
         dof = self._bc_params["dof"]
 
         def self_energy_cell(k):
-            integral, _ = quad(lambda t: chi2.cdf(t, k) * (1 - chi2.cdf(t, k)), 0, np.inf, limit=200)
+            integral, _ = quad(
+                lambda t: chi2.cdf(t, k) * (1 - chi2.cdf(t, k)), 0, np.inf, limit=200
+            )
             return 2 * integral
 
         vec_energy = np.vectorize(self_energy_cell)
@@ -177,7 +179,7 @@ class ChiSquared(BaseDistribution):
         where k = degrees of freedom.
         """
         dof = self._bc_params["dof"]
-        
+
         def energy_cell(k, xi):
             if xi <= 0:
                 return k + abs(xi)

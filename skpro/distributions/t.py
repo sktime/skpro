@@ -224,8 +224,10 @@ class TDistribution(BaseDistribution):
                 # Transform to standard t-distribution
                 z = (t - m) / s
                 return student_t.cdf(z, d)
-            
-            integral, _ = quad(lambda t: cdf_func(t) * (1 - cdf_func(t)), -np.inf, np.inf, limit=200)
+
+            integral, _ = quad(
+                lambda t: cdf_func(t) * (1 - cdf_func(t)), -np.inf, np.inf, limit=200
+            )
             return 2 * integral
 
         vec_energy = np.vectorize(self_energy_cell)
@@ -252,12 +254,14 @@ class TDistribution(BaseDistribution):
             else:
                 # For df <= 1, the distribution is heavy-tailed, mean doesn't exist
                 # But we can still compute E|X - x| using the CDF
-                mean_val = 0  # This is a placeholder; the actual formula doesn't need the mean
-            
+                mean_val = (
+                    0  # This is a placeholder; the actual formula doesn't need the mean
+                )
+
             def cdf_func(t):
                 z = (t - m) / s
                 return student_t.cdf(z, d)
-            
+
             integral, _ = quad(cdf_func, -np.inf, xi, limit=200)
             return mean_val - xi + 2 * integral
 

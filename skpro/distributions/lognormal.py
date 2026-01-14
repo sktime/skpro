@@ -210,8 +210,10 @@ class LogNormal(BaseDistribution):
                 if t <= 0:
                     return 0.0
                 return 0.5 * (1 + erf((np.log(t) - m) / (s * np.sqrt(2))))
-            
-            integral, _ = quad(lambda t: cdf_func(t) * (1 - cdf_func(t)), 0, np.inf, limit=200)
+
+            integral, _ = quad(
+                lambda t: cdf_func(t) * (1 - cdf_func(t)), 0, np.inf, limit=200
+            )
             return 2 * integral
 
         vec_energy = np.vectorize(self_energy_cell)
@@ -238,7 +240,7 @@ class LogNormal(BaseDistribution):
                 if t <= 0:
                     return 0.0
                 return 0.5 * (1 + erf((np.log(t) - m) / (s * np.sqrt(2))))
-            
+
             integral, _ = quad(cdf_func, 0, xi, limit=200)
             return mean_val - xi + 2 * integral
 
