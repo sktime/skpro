@@ -9,10 +9,13 @@ This file collects analytic formulae, derivations, and summary tables for energy
 | Distribution         | Analytic  | Monte Carlo | Abs Error |
 |---------------------|-----------|-------------|-----------|
 | Beta(2,3)           | 0.228571  | 0.228128    | 0.000444  |
+| ChiSquared(2)       | 2.000000  | 2.000000    | 0.000000  |
 | Exponential(2)      | 0.500000  | 0.500166    | 0.000166  |
 | Gamma(2,3)          | 0.500000  | 0.497054    | 0.002946  |
 | Logistic(0,1)       | 2.000000  | 1.997396    | 0.002604  |
+| LogNormal(0,1)      | 1.716318  | 1.716318    | 0.000000  |
 | Pareto(1,3)         | 0.600000  | 0.599371    | 0.000629  |
+| T(0,1,5)            | 1.383983  | 1.383983    | 0.000000  |
 | Weibull(1,2)        | 0.519140  | 0.521159    | 0.002019  |
 
 ## Summary Table (energy_report2.tex)
@@ -230,6 +233,58 @@ $$
 \mathbb{E}|X-Y| = 2 \int_{-\infty}^{\infty} F(t)(1-F(t)) dt
 $$
 where the support is $(0,\infty)$ for Inverse Gamma.
+
+## Example: LogNormal(0,1)
+
+**PDF:**
+$$
+f(x) = \frac{1}{x \sqrt{2\pi}} \exp\left(-\frac{(\log x)^2}{2}\right), \quad x > 0
+$$
+
+**Energy:**
+$$
+\mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt
+$$
+where $F$ is the LogNormal CDF with $\mu=0$, $\sigma=1$.
+
+**Derivation:**
+For LogNormal$(\mu, \sigma)$, the energy is computed using numerical integration of the CDF:
+$$
+\mathbb{E}|X-Y| = 2 \int_{0}^{\infty} \Phi\left(\frac{\log t - \mu}{\sigma}\right) \left(1 - \Phi\left(\frac{\log t - \mu}{\sigma}\right)\right) dt
+$$
+
+## Example: ChiSquared(2)
+
+**PDF:**
+$$
+f(x) = \frac{1}{2} e^{-x/2}, \quad x > 0
+$$
+
+**Energy:**
+$$
+\mathbb{E}|X-Y| = 2
+$$
+
+**Derivation:**
+ChiSquared$(k)$ with $k=2$ is equivalent to Exponential$(1/2)$, and Exponential$(\lambda)$ has energy $1/\lambda = 2$.
+
+For general ChiSquared$(k)$, the energy is computed using numerical integration.
+
+## Example: T(0,1,5)
+
+**PDF:**
+$$
+f(x) = \frac{\Gamma(3)}{\sqrt{5\pi} \Gamma(2.5)} \left(1 + \frac{x^2}{5}\right)^{-3}, \quad x \in \mathbb{R}
+$$
+
+**Energy:**
+$$
+\mathbb{E}|X-Y| = 2 \int_{-\infty}^{\infty} F(t)(1-F(t)) dt
+$$
+where $F$ is the t-distribution CDF with 5 degrees of freedom.
+
+**Derivation:**
+For Student's t-distribution with $\nu$ degrees of freedom, the energy is computed using numerical integration of the CDF.
 
 ---
 

@@ -5,6 +5,7 @@ __author__ = ["bhavikar04", "fkiraly"]
 
 import numpy as np
 import pandas as pd
+from scipy.integrate import quad
 from scipy.special import erf, erfinv
 
 from skpro.distributions.base import BaseDistribution
@@ -36,8 +37,8 @@ class LogNormal(BaseDistribution):
 
     _tags = {
         "authors": ["bhavikar04", "fkiraly"],
-        "capabilities:approx": ["energy", "pdfnorm"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -193,6 +194,59 @@ class LogNormal(BaseDistribution):
         icdf_arr = mu + sigma * np.sqrt(2) * erfinv(2 * p - 1)
         icdf_arr = np.exp(icdf_arr)
         return icdf_arr
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        Uses deterministic 1D quadrature:
+        \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt,
+        where F is the LogNormal CDF.
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        def self_energy_cell(m, s):
+            def cdf_func(t):
+                if t <= 0:
+                    return 0.0
+                return 0.5 * (1 + erf((np.log(t) - m) / (s * np.sqrt(2))))
+            
+            integral, _ = quad(lambda t: cdf_func(t) * (1 - cdf_func(t)), 0, np.inf, limit=200)
+            return 2 * integral
+
+        vec_energy = np.vectorize(self_energy_cell)
+        energy_arr = vec_energy(mu, sigma)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt
+        (with empty integral if x<0).
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        def energy_cell(m, s, xi):
+            mean_val = np.exp(m + s**2 / 2)
+            if xi <= 0:
+                return mean_val - xi
+
+            def cdf_func(t):
+                if t <= 0:
+                    return 0.0
+                return 0.5 * (1 + erf((np.log(t) - m) / (s * np.sqrt(2))))
+            
+            integral, _ = quad(cdf_func, 0, xi, limit=200)
+            return mean_val - xi + 2 * integral
+
+        vec_energy = np.vectorize(energy_cell)
+        energy_arr = vec_energy(mu, sigma, x)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
