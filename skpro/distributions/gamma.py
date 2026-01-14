@@ -3,7 +3,9 @@
 
 __author__ = ["ShreeshaM07"]
 
+import numpy as np
 import pandas as pd
+from scipy.integrate import quad
 from scipy.stats import gamma, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -37,11 +39,12 @@ class Gamma(_ScipyAdapter):
     >>> from skpro.distributions.gamma import Gamma
 
     >>> d = Gamma(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
+
     """  # noqa: E501
 
     _tags = {
-        "capabilities:approx": ["energy", "pdfnorm"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf", "energy"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -62,6 +65,50 @@ class Gamma(_ScipyAdapter):
         scale = 1 / beta
 
         return [], {"a": alpha, "scale": scale}
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        Uses deterministic 1D quadrature:
+        \\mathbb{E}|X-Y| = 2 \\int_0^\\infty F(t)(1-F(t)) dt,
+        where F is the Gamma CDF.
+        """
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
+
+        def self_energy_cell(a, b):
+            cdf = lambda t: gamma.cdf(t, a=a, scale=1 / b)  # noqa: E731
+            integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
+            return 2 * integral
+
+        vec_energy = np.vectorize(self_energy_cell)
+        energy_arr = vec_energy(alpha, beta)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt
+        (with empty integral if x<0).
+        """
+        alpha = self._bc_params["alpha"]
+        beta = self._bc_params["beta"]
+
+        def energy_cell(a, b, xi):
+            if xi <= 0:
+                return a / b - xi
+
+            cdf = lambda t: gamma.cdf(t, a=a, scale=1 / b)  # noqa: E731
+            integral, _ = quad(cdf, 0, xi, limit=200)
+            return a / b - xi + 2 * integral
+
+        vec_energy = np.vectorize(energy_cell)
+        energy_arr = vec_energy(alpha, beta, x)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
