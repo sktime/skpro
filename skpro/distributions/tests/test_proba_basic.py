@@ -243,7 +243,7 @@ def test_head_tail():
     reason="run only if skpro.distributions has been changed",
 )
 def test_multiindex_loc_indexing():
-    """Test that loc indexing works with MultiIndex and Index objects - issue #678."""
+    """Test that loc indexing works with MultiIndex and Index objects."""
     from skpro.distributions.normal import Normal
 
     index = pd.MultiIndex.from_tuples([("a", 1), ("a", 2), ("b", 1)])
