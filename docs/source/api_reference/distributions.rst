@@ -41,6 +41,7 @@ Continuous support - full reals
     SkewNormal
     TDistribution
     TruncatedNormal
+    Uniform
 
 
 Continuous support - non-negative reals
