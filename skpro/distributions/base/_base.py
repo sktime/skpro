@@ -261,8 +261,9 @@ class BaseDistribution(BaseObject):
         """
         # If keys is already a pd.Index, use get_indexer directly
         if isinstance(keys, pd.Index):
-            is_multi_mismatch = (isinstance(index, pd.MultiIndex)
-                                 and not isinstance(keys, pd.MultiIndex))
+           is_multi_mismatch = isinstance(index, pd.MultiIndex) and not isinstance(
+                keys, pd.MultiIndex
+            )
             if not is_multi_mismatch:
                 return index.get_indexer(keys)
 
