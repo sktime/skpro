@@ -634,29 +634,43 @@ class _FastEmpiricalEnbpi(Empirical):
         var_vals = np.var(all_values, axis=0, ddof=1)
         return pd.DataFrame(var_vals, index=self.index, columns=self.columns)
 
-    def quantile(self, alpha):
-        """Return quantiles of the distribution.
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Optimized implementation using numpy quantile on raw arrays.
 
         Parameters
         ----------
-        alpha : float or list of float
-            Quantile(s) to compute, values in [0, 1]
+        p : float or np.ndarray
+            Probability value(s) at which to compute quantiles, in [0, 1]
 
         Returns
         -------
-        pd.DataFrame
-            quantiles of the distribution
+        pd.DataFrame with same rows, columns as `self`
+            Quantile values at probability p
         """
-        # Compute quantiles over training samples dimension
+        # Compute all values: shape (n_train, n_test, n_cols)
         all_values = self._y_preds_agg + np.expand_dims(self._errs, axis=1)
-        quantiles = np.quantile(all_values, alpha, axis=0)
 
-        if np.isscalar(alpha):
+        # Handle scalar p
+        if np.isscalar(p):
+            # Compute quantile over axis 0 (training samples)
+            quantiles = np.quantile(all_values, p, axis=0)
             return pd.DataFrame(quantiles, index=self.index, columns=self.columns)
+
+        # Handle array-like p (typically a DataFrame from parent class)
+        if hasattr(p, "values"):
+            p_arr = p.values
         else:
-            # Multiple quantiles: return with MultiIndex
-            result_dfs = []
-            for i, _ in enumerate(alpha):
-                df = pd.DataFrame(quantiles[i], index=self.index, columns=self.columns)
-                result_dfs.append(df)
-            return pd.concat(result_dfs, keys=alpha, names=["quantile"])
+            p_arr = np.asarray(p)
+
+        # For element-wise quantile computation
+        # all_values shape: (n_train, n_test, n_cols)
+        # p_arr shape: (n_test, n_cols)
+        result = np.zeros_like(p_arr, dtype=float)
+
+        for i in range(self._n_test):
+            for j in range(self._n_cols):
+                result[i, j] = np.quantile(all_values[:, i, j], p_arr[i, j])
+
+        return pd.DataFrame(result, index=self.index, columns=self.columns)
