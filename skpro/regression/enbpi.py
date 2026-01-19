@@ -366,13 +366,9 @@ class FastEnbpiRegressor(EnbpiRegressor):
     aggregation and sampling, returning an optimized ``Empirical`` subclass
     that skips expensive sorting operations during initialization.
 
-    Inherits all parameters from ``EnbpiRegressor``.
-
-    Performance: ~150x faster than standard ``EnbpiRegressor`` for large batches.
-
     Examples
     --------
-    >>> from fast_enbpi import FastEnbpiRegressor
+    >>> from skpro.regression.enbpi import FastEnbpiRegressor
     >>> from sklearn.linear_model import LinearRegression
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.model_selection import train_test_split
@@ -382,6 +378,7 @@ class FastEnbpiRegressor(EnbpiRegressor):
     >>>
     >>> reg_proba = FastEnbpiRegressor(LinearRegression())
     >>> reg_proba.fit(X_train, y_train)
+    FastEnbpiRegressor(...)
     >>> y_pred = reg_proba.predict_proba(X_test)
     """
 
