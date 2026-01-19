@@ -576,7 +576,7 @@ class _FastEmpiricalEnbpi(Empirical):
         )
 
         # Efficient gathering using advanced indexing
-        # For each (n_sample, test_point) pair, get the corresponding prediction and error
+        # For each (n_sample, test_point) pair, get the corresponding prediction & error
         # Create expanded indices for numpy indexing
         test_indices = np.arange(self._n_test)[np.newaxis, :].repeat(n_samples, axis=0)
 
@@ -659,7 +659,7 @@ class _FastEmpiricalEnbpi(Empirical):
         else:
             # Multiple quantiles: return with MultiIndex
             result_dfs = []
-            for i, q in enumerate(alpha):
+            for i, _ in enumerate(alpha):
                 df = pd.DataFrame(quantiles[i], index=self.index, columns=self.columns)
                 result_dfs.append(df)
             return pd.concat(result_dfs, keys=alpha, names=["quantile"])
