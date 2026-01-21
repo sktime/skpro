@@ -4,6 +4,8 @@
 
 __author__ = ["fkiraly", "Alex-JG3"]
 
+import inspect
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -273,6 +275,42 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             assert np.allclose(x.values, x_approx.values)
         else:
             assert np.allclose(x, x_approx)
+
+    def test_index_columns_last_args(self, object_class):
+        """Test that index and columns are the last arguments in __init__."""
+        sig = inspect.signature(object_class.__init__)
+        params = list(sig.parameters.keys())
+
+        if "self" in params:
+            params.remove("self")
+
+        has_index = "index" in params
+        has_columns = "columns" in params
+
+        if not has_index and not has_columns:
+            return
+
+        if has_index and has_columns:
+            assert params[-2:] == ["index", "columns"] or params[-2:] == [
+                "columns",
+                "index",
+            ], (
+                f"For {object_class.__name__}, 'index' and 'columns' must be "
+                f"the last two arguments in __init__. "
+                f"Current order: {params}"
+            )
+        elif has_index:
+            assert params[-1] == "index", (
+                f"For {object_class.__name__}, 'index' must be "
+                f"the last argument in __init__. "
+                f"Current order: {params}"
+            )
+        elif has_columns:
+            assert params[-1] == "columns", (
+                f"For {object_class.__name__}, 'columns' must be "
+                f"the last argument in __init__. "
+                f"Current order: {params}"
+            )
 
 
 def _check_output_format(res, dist, method):
