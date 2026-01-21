@@ -39,11 +39,11 @@ class Empirical(BaseDistribution):
     time_indep : bool, optional, default=True
         if True, ``sample`` will sample individual instance indices independently
         if False, ``sample`` will sample entire instances from ``spl``
-    index : pd.Index, optional, default = RangeIndex
-    columns : pd.Index, optional, default = RangeIndex
     skip_init_sorted : bool, optional, default=False
         if True, skips sorting of empirical samples on init and instead builds
         sorted caches lazily when cdf/ppf/energy are first called
+    index : pd.Index, optional, default = RangeIndex
+    columns : pd.Index, optional, default = RangeIndex
 
     Examples
     --------
@@ -79,9 +79,9 @@ class Empirical(BaseDistribution):
         spl,
         weights=None,
         time_indep=True,
+        skip_init_sorted=False,
         index=None,
         columns=None,
-        skip_init_sorted=False,
     ):
         self.spl = spl
         self.weights = weights
