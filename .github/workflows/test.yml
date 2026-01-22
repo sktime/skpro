@@ -162,7 +162,7 @@ jobs:
 
       - name: Install skpro and dependencies
         shell: bash
-        run: uv pip install pip install .[dev] --no-cache-dir
+        run: uv pip install .[dev] --no-cache-dir
         env:
           UV_SYSTEM_PYTHON: 1
 
@@ -208,7 +208,7 @@ jobs:
 
       - name: Install skpro and dependencies
         shell: bash
-        run: uv pip install pip install .[dev] --no-cache-dir
+        run: uv pip install .[dev] --no-cache-dir
         env:
           UV_SYSTEM_PYTHON: 1
 
