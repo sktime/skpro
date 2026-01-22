@@ -30,6 +30,8 @@ class Mixture(BaseMetaObject, BaseDistribution):
         Relevant only in ``sample`` method and non-marginal outputs.
     index : pd.Index, optional, default = inferred from component distributions
     columns : pd.Index, optional, default = inferred from component distributions
+    random_state : None, int, RandomState, or np.random.Generator, optional
+        Seed or generator to control sampling randomness.
 
     Examples
     --------
@@ -58,6 +60,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         indep_cols=True,
         index=None,
         columns=None,
+        random_state=None,
     ):
         self.distributions = distributions
         self.weights = weights
@@ -78,7 +81,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
         if columns is None:
             columns = self._distributions[0][1].columns
 
-        super().__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns, random_state=random_state)
 
     def _iloc(self, rowidx=None, colidx=None):
         dists = self._distributions
@@ -224,7 +227,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
             rd_size[1] = 1
 
         n_dist = len(self._distributions)
-        selector = np.random.choice(n_dist, size=rd_size, p=self._weights)
+        selector = self._rng.choice(n_dist, size=rd_size, p=self._weights)
         indicators = [selector == i for i in range(n_dist)]
         indicators = [np.broadcast_to(ind, full_size) for ind in indicators]
 
@@ -251,8 +254,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         n_dist = len(self._distributions)
 
-        selector = np.random.choice(n_dist, size=N, p=self._weights)
-
+        selector = self._rng.choice(n_dist, size=N, p=self._weights)
         samples = [self._distributions[i][1].sample() for i in selector]
 
         if n_samples is None:

@@ -48,9 +48,10 @@ class BaseDistribution(BaseObject):
         # if "scalar", assumes scalar, and broadcasts in boilerplate
     }
 
-    def __init__(self, index=None, columns=None):
+    def __init__(self, index=None, columns=None, random_state=None):
         self.index = _coerce_to_pd_index_or_none(index)
         self.columns = _coerce_to_pd_index_or_none(columns)
+        self._set_random_state(random_state)
 
         super().__init__()
         _check_estimator_deps(self)
@@ -1548,6 +1549,13 @@ class BaseDistribution(BaseObject):
         x = np.broadcast_to(x, df_shape)
         return x
 
+    def set_params(self, **params):
+        """Set the parameters of this estimator."""
+        res = super().set_params(**params)
+        if "random_state" in params:
+            self._set_random_state(params["random_state"])
+        return res
+
     def quantile(self, alpha):
         """Return entry-wise quantiles, in Proba/pred_quantiles mtype format.
 
@@ -1602,6 +1610,34 @@ class BaseDistribution(BaseObject):
         quantiles = qres.loc[:, cols]
         return quantiles
 
+    def _set_random_state(self, random_state):
+        """Initialize internal random number generator from spec."""
+        self.random_state = random_state
+        self._rng = self._coerce_random_state(random_state)
+
+    @staticmethod
+    def _coerce_random_state(random_state):
+        """Return numpy Generator for given random_state specification."""
+        if isinstance(random_state, np.random.Generator):
+            return random_state
+        if isinstance(random_state, np.random.RandomState):
+            seed = random_state.randint(0, np.iinfo(np.uint32).max)
+            return np.random.default_rng(seed)
+        if random_state is None:
+            return np.random.default_rng()
+        return np.random.default_rng(random_state)
+
+    def _spawn_rngs(self, n_children, rng=None):
+        """Spawn `n_children` Generators derived from `rng`."""
+        if n_children <= 0:
+            return []
+        if rng is None:
+            rng = self._rng
+        max_uint32 = np.iinfo(np.uint32).max
+        seeds = rng.integers(0, max_uint32, size=n_children, dtype=np.uint32)
+        seeds = np.atleast_1d(seeds)
+        return [np.random.default_rng(int(seed)) for seed in seeds]
+
     def sample(self, n_samples=None):
         """Sample from the distribution.
 
@@ -1631,7 +1667,7 @@ class BaseDistribution(BaseObject):
         """Private method, to be implemented by subclasses."""
 
         def gen_unif():
-            np_unif = np.random.uniform(size=self.shape)
+            np_unif = self._rng.uniform(size=self.shape)
             if self.ndim > 0:
                 return pd.DataFrame(np_unif, index=self.index, columns=self.columns)
             return np_unif
@@ -1854,10 +1890,10 @@ class _BaseTFDistribution(BaseDistribution):
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
     }
 
-    def __init__(self, index=None, columns=None, distr=None):
+    def __init__(self, index=None, columns=None, distr=None, random_state=None):
         self.distr = distr
 
-        super().__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns, random_state=random_state)
 
     def __str__(self):
         return self.to_str()
@@ -1951,6 +1987,8 @@ class _BaseTFDistribution(BaseDistribution):
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : None, int, np.random.RandomState, np.random.Generator
+            Controls the randomness of sampling.
 
         Returns
         -------
@@ -1967,11 +2005,15 @@ class _BaseTFDistribution(BaseDistribution):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
+        sample_kwargs = {}
+        seed = int(self._rng.integers(0, np.iinfo(np.uint32).max))
+        sample_kwargs["seed"] = seed
+
         if n_samples is None:
-            np_spl = self.distr.sample().numpy()
+            np_spl = self.distr.sample(**sample_kwargs).numpy()
             return pd.DataFrame(np_spl, index=self.index, columns=self.columns)
         else:
-            np_spl = self.distr.sample(n_samples).numpy()
+            np_spl = self.distr.sample(n_samples, **sample_kwargs).numpy()
             np_spl = np_spl.reshape(-1, np_spl.shape[-1])
             mi = _prod_multiindex(range(n_samples), self.index)
             df_spl = pd.DataFrame(np_spl, index=mi, columns=self.columns)

@@ -28,6 +28,8 @@ class IID(BaseDistribution):
 
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
+    random_state : None, int, RandomState, or np.random.Generator, optional
+        Seed or generator controlling sampling randomness.
 
     Examples
     --------
@@ -47,7 +49,7 @@ class IID(BaseDistribution):
         "distr:paramtype": "composite",
     }
 
-    def __init__(self, distribution, index=None, columns=None):
+    def __init__(self, distribution, index=None, columns=None, random_state=None):
         self.distribution = distribution
 
         dist_scalar = distribution.ndim == 0
@@ -79,7 +81,7 @@ class IID(BaseDistribution):
             if not len(dist_cols) == 1 and columns is not None:
                 assert len(dist_cols) == len(columns)
 
-        super().__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns, random_state=random_state)
 
         tags_to_clone = [
             "distr:measuretype",
@@ -332,10 +334,16 @@ class IID(BaseDistribution):
 
         if self._bc_cols:
             for i, j in np.ndindex(target_shape):
-                samples[i, j] = self.distribution.sample()
+                draw = self.distribution.sample()
+                if isinstance(draw, pd.DataFrame):
+                    draw = draw.values
+                samples[i, j] = np.asarray(draw).reshape(-1)[0]
         else:
             for i in range(target_shape[0]):
-                samples[i] = self.distribution.sample()
+                draw = self.distribution.sample()
+                if isinstance(draw, pd.DataFrame):
+                    draw = draw.values
+                samples[i] = np.asarray(draw).reshape(-1)
 
         if n_samples is None:
             res_index = self.index

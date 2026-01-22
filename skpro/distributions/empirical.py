@@ -41,6 +41,8 @@ class Empirical(BaseDistribution):
         if False, ``sample`` will sample entire instances from ``spl``
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
+    random_state : None, int, RandomState, or np.random.Generator, optional
+        Seed or generator controlling sampling randomness.
 
     Examples
     --------
@@ -71,14 +73,22 @@ class Empirical(BaseDistribution):
         "distr:paramtype": "nonparametric",
     }
 
-    def __init__(self, spl, weights=None, time_indep=True, index=None, columns=None):
+    def __init__(
+        self,
+        spl,
+        weights=None,
+        time_indep=True,
+        index=None,
+        columns=None,
+        random_state=None,
+    ):
         self.spl = spl
         self.weights = weights
         self.time_indep = time_indep
 
         index, columns = self._init_index(index, columns)
 
-        super().__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns, random_state=random_state)
 
         # initialized sorted samples
         self._init_sorted()

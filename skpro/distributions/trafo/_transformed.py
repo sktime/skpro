@@ -37,6 +37,8 @@ class TransformedDistribution(BaseDistribution):
 
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
+    random_state : None, int, RandomState, or np.random.Generator, optional
+        Seed or generator controlling sampling randomness.
 
     Examples
     --------
@@ -78,6 +80,7 @@ class TransformedDistribution(BaseDistribution):
         inverse_transform=None,
         index=None,
         columns=None,
+        random_state=None,
     ):
         self.distribution = distribution
         self.transform = transform
@@ -97,7 +100,7 @@ class TransformedDistribution(BaseDistribution):
                 if columns is None:
                     columns = pd.RangeIndex(n_cols)
 
-        super().__init__(index=index, columns=columns)
+        super().__init__(index=index, columns=columns, random_state=random_state)
 
         # transformed discret distributions are always discrete
         # (otherwise we only know that they are mixed)
