@@ -34,14 +34,7 @@ def test_empirical_iat_index():
     reason="run only if skpro.distributions has been changed",
 )
 def test_empirical_skip_init_sorted():
-    """Test that skip_init_sorted parameter works correctly.
-
-    The skip_init_sorted parameter delays sorting until needed for cdf/ppf/energy.
-    This test verifies:
-    1. Results are identical regardless of skip_init_sorted value
-    2. The lazy initialization is triggered correctly
-    3. All methods produce consistent outputs
-    """
+    """Test that skip_init_sorted parameter works correctly."""
     spl_idx = pd.MultiIndex.from_product(
         [[0, 1, 2], [0, 1, 2]], names=["sample", "time"]
     )
