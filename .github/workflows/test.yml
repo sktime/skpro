@@ -263,7 +263,7 @@ jobs:
         run: python -c "from skpro.tests._test_vm import run_test_vm; run_test_vm('${{ matrix.flag }}')"
 
   test-deps-2024:
-    needs: test-nosoftdeps
+    needs: run-tests-no-extras
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
