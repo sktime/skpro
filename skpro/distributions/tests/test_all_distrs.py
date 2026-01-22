@@ -287,30 +287,16 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         has_index = "index" in params
         has_columns = "columns" in params
 
-        if not has_index and not has_columns:
-            return
+        assert has_index and has_columns, (
+            f"For {object_class.__name__}, both 'index' and 'columns' must be "
+            f"present in __init__. Current params: {params}"
+        )
 
-        if has_index and has_columns:
-            assert params[-2:] == ["index", "columns"] or params[-2:] == [
-                "columns",
-                "index",
-            ], (
-                f"For {object_class.__name__}, 'index' and 'columns' must be "
-                f"the last two arguments in __init__. "
-                f"Current order: {params}"
-            )
-        elif has_index:
-            assert params[-1] == "index", (
-                f"For {object_class.__name__}, 'index' must be "
-                f"the last argument in __init__. "
-                f"Current order: {params}"
-            )
-        elif has_columns:
-            assert params[-1] == "columns", (
-                f"For {object_class.__name__}, 'columns' must be "
-                f"the last argument in __init__. "
-                f"Current order: {params}"
-            )
+        assert params[-2:] == ["index", "columns"], (
+            f"For {object_class.__name__}, 'index' and 'columns' must be "
+            f"the last two arguments in __init__ in this order. "
+            f"Current order: {params}"
+        )
 
 
 def _check_output_format(res, dist, method):
