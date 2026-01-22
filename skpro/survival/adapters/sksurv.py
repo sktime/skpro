@@ -1,5 +1,5 @@
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
-"""Implements adapter for scikit-survival models."""
+"""Adapter for scikit-survival models."""
 
 __all__ = ["_SksurvAdapter"]
 __author__ = ["fkiraly"]
