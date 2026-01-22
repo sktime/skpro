@@ -244,6 +244,80 @@ class EnbpiRegressor(BaseProbaRegressor):
                 spl[:, j] = colj
         return spl
 
+    def _agg_preds_loo(self, y_preds, bs_vs_ix):
+        """Aggregate bootstrap predictions leaving out each training instance.
+
+        Parameters
+        ----------
+        y_preds : np.ndarray, shape (n_bootstrap_samples, n_samples, n_targets)
+            predictions of bootstrap samples
+        bs_vs_ix : np.ndarray, shape (n_train_samples, n_bootstrap_samples)
+            indicator matrix for whether a training sample is in a bootstrap sample
+
+        Returns
+        -------
+        y_preds_agg : np.ndarray, shape (n_train_samples, n_samples, n_targets)
+            aggregated predictions for each leave-one-out split
+        """
+        n_est, n, n_cols = y_preds.shape
+        n_train = bs_vs_ix.shape[0]
+        agg_fun = self._agg_fun
+
+        if agg_fun is np.nanmean or agg_fun is np.mean:
+            y_preds_flat = y_preds.reshape(n_est, -1)
+
+            if agg_fun is np.nanmean:
+                nan_mask = np.isnan(y_preds_flat)
+                if nan_mask.any():
+                    y_preds_flat = np.nan_to_num(y_preds_flat, nan=0.0)
+                    valid_flat = (~nan_mask).astype(float)
+                    total_sum = y_preds_flat.sum(axis=0)
+                    total_count = valid_flat.sum(axis=0)
+                    sum_in = bs_vs_ix @ y_preds_flat
+                    count_in = bs_vs_ix @ valid_flat
+                    sum_out = total_sum - sum_in
+                    count_out = total_count - count_in
+                    y_preds_agg_flat = np.divide(
+                        sum_out,
+                        count_out,
+                        out=np.full_like(sum_out, np.nan),
+                        where=count_out != 0,
+                    )
+                else:
+                    total_sum = y_preds_flat.sum(axis=0)
+                    sum_in = bs_vs_ix @ y_preds_flat
+                    sum_out = total_sum - sum_in
+                    count_out = n_est - bs_vs_ix.sum(axis=1)
+                    y_preds_agg_flat = np.divide(
+                        sum_out,
+                        count_out[:, None],
+                        out=np.full_like(sum_out, np.nan),
+                        where=count_out[:, None] != 0,
+                    )
+            else:
+                total_sum = y_preds_flat.sum(axis=0)
+                sum_in = bs_vs_ix @ y_preds_flat
+                sum_out = total_sum - sum_in
+                count_out = n_est - bs_vs_ix.sum(axis=1)
+                y_preds_agg_flat = np.divide(
+                    sum_out,
+                    count_out[:, None],
+                    out=np.full_like(sum_out, np.nan),
+                    where=count_out[:, None] != 0,
+                )
+
+            y_preds_agg = y_preds_agg_flat.reshape(n_train, n, n_cols)
+            nans = np.isnan(y_preds_agg)
+            if nans.any():
+                col_agg = agg_fun(y_preds_agg, axis=1)
+                y_preds_agg = np.where(nans, col_agg[:, None, :], y_preds_agg)
+            return y_preds_agg
+
+        y_preds_agg = np.zeros((n_train, n, n_cols))
+        for i in range(n_train):
+            y_preds_agg[[i], :, :] = self._pred_phi_sans_i(y_preds, i, bs_vs_ix)
+        return y_preds_agg
+
     def _predict_proba(self, X) -> np.ndarray:
         """Predict distribution over labels for data from features.
 
@@ -266,7 +340,6 @@ class EnbpiRegressor(BaseProbaRegressor):
         cols = self._cols
         n_cols = len(cols)  # number of targets
         n_est = self.n_bootstrap_samples
-        n_train = self._n_train
         estimators_ = self.estimators_
         bs_vs_ix = self._bs_vs_ix
         _errs = self._errs
@@ -278,41 +351,10 @@ class EnbpiRegressor(BaseProbaRegressor):
         y_preds = np.zeros((n_est, n, n_cols))
 
         for i, est in enumerate(estimators_):
-            pred = est.predict(X)
-            if pred.ndim == 1:
-                pred = pred.reshape(-1, 1)
-            y_preds[i] = pred
+            y_preds[i] = _coerce_numpy2d(est.predict(X))
 
-        # Vectorized aggregation with chunking for memory efficiency
-        # Process in chunks to avoid creating massive intermediate arrays
-        chunk_size = min(100, n)
-        y_preds_agg = np.zeros((n_train, n, n_cols))
-        bs_wo_ix = bs_vs_ix == 0  # Shape: (n_train, n_bootstrap)
-        bs_wo_ix_expanded = bs_wo_ix[:, :, np.newaxis, np.newaxis]
-
-        for start_idx in range(0, n, chunk_size):
-            end_idx = min(start_idx + chunk_size, n)
-            y_preds_chunk = y_preds[:, start_idx:end_idx, :]
-
-            masked_preds = np.where(
-                bs_wo_ix_expanded, y_preds_chunk[np.newaxis, :, :, :], np.nan
-            )
-
-            y_preds_agg[:, start_idx:end_idx, :] = self._agg_fun(masked_preds, axis=1)
-
-        # Handle any NaN values in aggregated predictions, per training sample
-        nans = np.isnan(y_preds_agg)
-        if nans.any():
-            for i in range(n_train):
-                for j in range(n_cols):
-                    col_slice = y_preds_agg[i, :, j]
-                    if np.isnan(col_slice).any():
-                        valid = col_slice[~np.isnan(col_slice)]
-                        if valid.size == 0:
-                            continue
-                        col_agg = self._agg_fun(valid)
-                        col_slice[np.isnan(col_slice)] = col_agg
-                        y_preds_agg[i, :, j] = col_slice
+        # y_preds_agg - (n_train, n, len(cols))
+        y_preds_agg = self._agg_preds_loo(y_preds, bs_vs_ix)
 
         if self.symmetrize:
             errs = np.concatenate([_errs, -_errs], axis=0)
