@@ -263,20 +263,41 @@ class EnbpiRegressor(BaseProbaRegressor):
         n_train = bs_vs_ix.shape[0]
         agg_fun = self._agg_fun
 
+        # Check if we can use the vectorized mean/nanmean path
+        # Vectorized path depends on the identity: LOO_SUM = TOTAL_SUM - IN_BAG_SUM
+        # This identity holds if values are finite. If NaNs are present, it fails for
+        # standard sum/mean (because NaN propagates). It works for nanmean if we
+        # replace NaNs with 0 and track counts separately.
+        #
+        # Conditions for vectorized optimization:
+        # 1. agg_fun is "mean" (np.mean) AND no NaNs in input.
+        # 2. agg_fun is "mean" (np.nanmean) AND (no NaNs OR NaNs handled specially).
+
         if agg_fun is np.nanmean or agg_fun is np.mean:
             y_preds_flat = y_preds.reshape(n_est, -1)
+            nan_mask = np.isnan(y_preds_flat)
+            has_nans = nan_mask.any()
 
-            if agg_fun is np.nanmean:
-                nan_mask = np.isnan(y_preds_flat)
-                if nan_mask.any():
-                    y_preds_flat = np.nan_to_num(y_preds_flat, nan=0.0)
-                    valid_flat = (~nan_mask).astype(float)
-                    total_sum = y_preds_flat.sum(axis=0)
-                    total_count = valid_flat.sum(axis=0)
-                    sum_in = bs_vs_ix @ y_preds_flat
-                    count_in = bs_vs_ix @ valid_flat
+            if agg_fun is np.mean and has_nans:
+                # Fallback to loop because "Total Sum" would be NaN, spoiling the subtraction
+                # for rows where the NaN should have been excluded.
+                pass
+            else:
+                # We can proceed with vectorization
+                if has_nans:
+                    # Must be np.nanmean here due to check above
+                    y_safe = np.nan_to_num(y_preds_flat, nan=0.0)
+                    valid = (~nan_mask).astype(float)
+
+                    total_sum = y_safe.sum(axis=0)
+                    total_count = valid.sum(axis=0)
+
+                    sum_in = bs_vs_ix @ y_safe
+                    count_in = bs_vs_ix @ valid
+
                     sum_out = total_sum - sum_in
                     count_out = total_count - count_in
+
                     y_preds_agg_flat = np.divide(
                         sum_out,
                         count_out,
@@ -284,35 +305,37 @@ class EnbpiRegressor(BaseProbaRegressor):
                         where=count_out != 0,
                     )
                 else:
+                    # No NaNs: Simple path for both mean and nanmean
                     total_sum = y_preds_flat.sum(axis=0)
                     sum_in = bs_vs_ix @ y_preds_flat
+
                     sum_out = total_sum - sum_in
+                    # For simple path, count_out is deterministic per row (n_est - n_in_bag)
+                    # We broadcast this scalar count across all columns
                     count_out = n_est - bs_vs_ix.sum(axis=1)
+
                     y_preds_agg_flat = np.divide(
                         sum_out,
                         count_out[:, None],
                         out=np.full_like(sum_out, np.nan),
                         where=count_out[:, None] != 0,
                     )
-            else:
-                total_sum = y_preds_flat.sum(axis=0)
-                sum_in = bs_vs_ix @ y_preds_flat
-                sum_out = total_sum - sum_in
-                count_out = n_est - bs_vs_ix.sum(axis=1)
-                y_preds_agg_flat = np.divide(
-                    sum_out,
-                    count_out[:, None],
-                    out=np.full_like(sum_out, np.nan),
-                    where=count_out[:, None] != 0,
-                )
 
-            y_preds_agg = y_preds_agg_flat.reshape(n_train, n, n_cols)
-            nans = np.isnan(y_preds_agg)
-            if nans.any():
-                col_agg = agg_fun(y_preds_agg, axis=1)
-                y_preds_agg = np.where(nans, col_agg[:, None, :], y_preds_agg)
-            return y_preds_agg
+                y_preds_agg = y_preds_agg_flat.reshape(n_train, n, n_cols)
 
+                # If the resulting aggregation produced NaNs (e.g. 0 count),
+                # we might want to fill them? Original logic did this:
+                nans = np.isnan(y_preds_agg)
+                if nans.any():
+                    # If we have NaNs in the output, it means some split had 0 valid predictors.
+                    # fallback to column aggregation (mean of the column)
+                    # Note: agg_fun here is safe (mean/nanmean)
+                    col_agg = agg_fun(y_preds_agg, axis=1)
+                    y_preds_agg = np.where(nans, col_agg[:, None, :], y_preds_agg)
+
+                return y_preds_agg
+
+        # Fallback loop
         y_preds_agg = np.zeros((n_train, n, n_cols))
         for i in range(n_train):
             y_preds_agg[[i], :, :] = self._pred_phi_sans_i(y_preds, i, bs_vs_ix)
