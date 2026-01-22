@@ -10,6 +10,8 @@ __all__ = [
     "BurrIII",
     "BurrXII",
     "ChiSquared",
+    "concat",
+    "ConcatDistr",
     "Delta",
     "Empirical",
     "Erlang",
@@ -63,7 +65,8 @@ from skpro.distributions.binomial import Binomial
 from skpro.distributions.burr_iii import BurrIII
 from skpro.distributions.burr_xii import BurrXII
 from skpro.distributions.chi_squared import ChiSquared
-from skpro.distributions.compose import IID
+from skpro.distributions.compose import IID, ConcatDistr
+from skpro.distributions.concat import concat
 from skpro.distributions.delta import Delta
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.erlang import Erlang
