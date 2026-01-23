@@ -41,7 +41,8 @@ class Empirical(BaseDistribution):
         if False, ``sample`` will sample entire instances from ``spl``
     skip_init_sorted : bool, optional, default=False
         if True, skips sorting of empirical samples on init and instead builds
-        sorted caches lazily when cdf/ppf/energy are first called
+        sorted caches lazily when cdf/ppf/energy are first called.
+        Performance flag only, does not change statistical behavior.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
