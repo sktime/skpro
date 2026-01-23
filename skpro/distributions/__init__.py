@@ -55,6 +55,7 @@ __all__ = [
     "TruncatedPareto",
     "Uniform",
     "Weibull",
+    "MultivariateNormal",
 ]
 
 from skpro.distributions.alpha import Alpha
@@ -90,6 +91,7 @@ from skpro.distributions.loglaplace import LogLaplace
 from skpro.distributions.lognormal import LogNormal
 from skpro.distributions.meanscale import MeanScale
 from skpro.distributions.mixture import Mixture
+from skpro.distributions.multivariate_normal import MultivariateNormal
 from skpro.distributions.negative_binomial import NegativeBinomial
 from skpro.distributions.normal import Normal
 from skpro.distributions.pareto import Pareto
