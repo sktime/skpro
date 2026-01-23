@@ -3,7 +3,9 @@
 
 __author__ = ["sukjingitsit"]
 
+import numpy as np
 import pandas as pd
+from scipy.integrate import quad
 from scipy.stats.distributions import chi2
 
 from skpro.distributions.base import BaseDistribution
@@ -31,7 +33,7 @@ class ChiSquared(BaseDistribution):
         "authors": "sukjingitsit",
         # estimator tags
         # --------------
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -146,6 +148,51 @@ class ChiSquared(BaseDistribution):
         dof = self._bc_params["dof"]
         icdf_arr = chi2.ppf(p, dof)
         return icdf_arr
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        Uses deterministic 1D quadrature:
+        \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt,
+        where F is the ChiSquared CDF.
+        """
+        dof = self._bc_params["dof"]
+
+        def self_energy_cell(k):
+            integral, _ = quad(
+                lambda t: chi2.cdf(t, k) * (1 - chi2.cdf(t, k)), 0, np.inf, limit=200
+            )
+            return 2 * integral
+
+        vec_energy = np.vectorize(self_energy_cell)
+        energy_arr = vec_energy(dof)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        Closed form implementation based on the formula:
+        For x <= 0: energy(x) = k + |x|
+        For x > 0: energy(x) = x*(2*CDF(k,x)-1) + k - 2*k*CDF(k+1,x)
+        where k = degrees of freedom.
+        """
+        dof = self._bc_params["dof"]
+
+        def energy_cell(k, xi):
+            if xi <= 0:
+                return k + abs(xi)
+            else:
+                cdf_k = chi2.cdf(xi, k)
+                cdf_k1 = chi2.cdf(xi, k + 1)
+                return xi * (2 * cdf_k - 1) + k - 2 * k * cdf_k1
+
+        vec_energy = np.vectorize(energy_cell)
+        energy_arr = vec_energy(dof, x)
+        if np.ndim(energy_arr) > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
