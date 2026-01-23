@@ -4,8 +4,6 @@
 
 __author__ = ["fkiraly", "Alex-JG3"]
 
-import inspect
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -278,11 +276,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
 
     def test_index_columns_last_args(self, object_class):
         """Test that index and columns are the last arguments in __init__."""
-        sig = inspect.signature(object_class.__init__)
-        params = list(sig.parameters.keys())
-
-        if "self" in params:
-            params.remove("self")
+        params = object_class.get_param_names(sort=False)
 
         has_index = "index" in params
         has_columns = "columns" in params
