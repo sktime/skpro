@@ -95,7 +95,7 @@ docs = [
 # August 2024 (briefly after numpy2 release)
 dependencies_2024 = [
     "numpy==2.1.0",
-    "pandas==2.3.2",
+    "pandas==2.3.3",
     "scikit-learn==1.5.1",
     "scipy==1.14.1",
 ]
