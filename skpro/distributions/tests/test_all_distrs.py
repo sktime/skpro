@@ -48,8 +48,8 @@ def _has_capability(distr, method):
     return method in approx_methods or method in exact_methods
 
 
-METHODS_SCALAR = ["mean", "var", "energy"]
-METHODS_SCALAR_POS = ["var", "energy"]  # result always non-negative?
+METHODS_SCALAR = ["mean", "var", "energy", "pdfnorm"]
+METHODS_SCALAR_POS = ["var", "energy", "pdfnorm"]  # result always non-negative?
 METHODS_X = ["energy", "pdf", "log_pdf", "pmf", "log_pmf", "cdf"]
 METHODS_X_POS = ["energy", "pdf", "pmf", "cdf", "surv", "haz"]  # result non-negative?
 METHODS_P = ["ppf"]
