@@ -1765,25 +1765,27 @@ class BaseDistribution(BaseObject):
             # For discrete PMF, get support and evaluate at integer points
             try:
                 # Try to get support from scipy distribution
-                if hasattr(self, '_dist') and hasattr(self._dist, 'support'):
+                if hasattr(self, "_dist") and hasattr(self._dist, "support"):
                     args, kwds = self._get_scipy_param()
                     support_min, support_max = self._dist.support(*args, **kwds)
-                    
+
                     # Handle infinite upper bounds
                     if np.isinf(support_max):
                         support_max = min(upper, 100)  # Reasonable upper limit
                     if np.isinf(support_min):
                         support_min = max(lower, -100)  # Reasonable lower limit
-                    
+
                     # Create integer array within support bounds
-                    x_arr = np.arange(max(0, int(np.floor(support_min))),
-                                    min(int(np.ceil(support_max)) + 1, 1000))
+                    x_arr = np.arange(
+                        max(0, int(np.floor(support_min))),
+                        min(int(np.ceil(support_max)) + 1, 1000),
+                    )
                 else:
                     # Fallback to linspace if support not available
                     x_arr = np.linspace(lower, upper, 1000)
                     x_arr = np.round(x_arr).astype(int)
                     x_arr = np.unique(x_arr)  # Remove duplicates
-            except Exception:
+            except (AttributeError, ValueError, TypeError):
                 # Fallback to original behavior if support fails
                 x_arr = np.linspace(lower, upper, 1000)
         else:

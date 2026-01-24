@@ -1,4 +1,5 @@
 """Non-suite tests for probability distribution objects."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
@@ -137,12 +138,13 @@ def test_proba_plotting(fun):
     assert all([isinstance(a, Axes) for a in ax.flatten()])
     assert all([a.get_figure() == fig for a in ax.flatten()])
 
+
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip if matplotlib is not available",
 )
 def test_discrete_pmf_plotting():
-    """Test that discrete PMF plotting uses stem plots and evaluates at correct points."""
+    """Test that discrete PMF plotting uses stem plots."""
     from matplotlib.axes import Axes
 
     from skpro.distributions.binomial import Binomial
@@ -151,16 +153,18 @@ def test_discrete_pmf_plotting():
     n = Binomial(n=10, p=0.5)
     ax = n.plot(fun="pmf")
     assert isinstance(ax, Axes)
-    
+
     # Check that stem plot was used (should have containers)
     assert len(ax.containers) > 0, "Stem plot should be used for discrete PMF"
-    
+
     # For small distributions, check that all support points are plotted
     # Binomial(n=10) has support [0,1,2,...,10] = 11 points
     # The stem plot should have evaluated at these points
-    if hasattr(ax.containers[0], 'get_children'):
+    if hasattr(ax.containers[0], "get_children"):
         # This is a rough check - the stem plot should have multiple elements
-        assert len(ax.containers[0].get_children()) > 5, "Should plot at multiple support points"
+        assert (
+            len(ax.containers[0].get_children()) > 5
+        ), "Should plot at multiple support points"
     """Tests coercion to DataFrame via get_params_df and to_df."""
     from skpro.distributions.normal import Normal
 
