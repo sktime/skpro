@@ -39,6 +39,10 @@ class Empirical(BaseDistribution):
     time_indep : bool, optional, default=True
         if True, ``sample`` will sample individual instance indices independently
         if False, ``sample`` will sample entire instances from ``spl``
+    skip_init_sorted : bool, optional, default=False
+        if True, skips sorting of empirical samples on init and instead builds
+        sorted caches lazily when cdf/ppf/energy are first called.
+        Performance flag only, does not change statistical behavior.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -71,17 +75,31 @@ class Empirical(BaseDistribution):
         "distr:paramtype": "nonparametric",
     }
 
-    def __init__(self, spl, weights=None, time_indep=True, index=None, columns=None):
+    def __init__(
+        self,
+        spl,
+        weights=None,
+        time_indep=True,
+        skip_init_sorted=False,
+        index=None,
+        columns=None,
+    ):
         self.spl = spl
         self.weights = weights
         self.time_indep = time_indep
+        self.skip_init_sorted = skip_init_sorted
 
         index, columns = self._init_index(index, columns)
 
         super().__init__(index=index, columns=columns)
 
+        self._sorted_initialized = False
+        self._spl_array = None
+        self._weights_array = None
+
         # initialized sorted samples
-        self._init_sorted()
+        if not skip_init_sorted:
+            self._init_sorted()
 
     def _init_index(self, index, columns):
         """Initialize index and columns.
@@ -133,6 +151,7 @@ class Empirical(BaseDistribution):
                 weights_sorted = np.ones_like(spl)
             self._sorted = spl_sorted
             self._weights = weights_sorted
+            self._sorted_initialized = True
             return None
 
         times = self._instances
@@ -159,14 +178,53 @@ class Empirical(BaseDistribution):
 
         self._sorted = sorted
         self._weights = weights
+        self._sorted_initialized = True
+
+    def _ensure_sorted(self):
+        """Ensure sorted samples are initialized."""
+        if not getattr(self, "_sorted_initialized", False):
+            self._init_sorted()
 
     def _coerce_tuple(self, x):
         if not isinstance(x, tuple):
             x = (x,)
         return x
 
+    def _get_spl_array(self):
+        """Return cached sample array of shape (n_samples, n_instances, n_cols)."""
+        if self.ndim == 0:
+            return None
+        if self._spl_array is not None:
+            return self._spl_array
+
+        spl_values = []
+        for spl_ix in self._spl_indices:
+            spl_i = self.spl.loc[spl_ix]
+            spl_i = spl_i.loc[self.index]
+            spl_values.append(spl_i.to_numpy())
+
+        self._spl_array = np.stack(spl_values, axis=0)
+        return self._spl_array
+
+    def _get_weights_array(self):
+        """Return cached weights array of shape (n_samples, n_instances)."""
+        if self.weights is None or self.ndim == 0:
+            return None
+        if self._weights_array is not None:
+            return self._weights_array
+
+        weights_values = []
+        for spl_ix in self._spl_indices:
+            weights_i = self.weights.loc[spl_ix]
+            weights_i = weights_i.loc[self.index]
+            weights_values.append(np.asarray(weights_i))
+
+        self._weights_array = np.stack(weights_values, axis=0)
+        return self._weights_array
+
     def _apply_per_ix(self, func, params, x=None):
         """Apply function per index."""
+        self._ensure_sorted()
         sorted = self._sorted
         weights = self._weights
 
@@ -268,6 +326,7 @@ class Empirical(BaseDistribution):
             time_indep=self.time_indep,
             index=subs_rowidx,
             columns=subs_colidx,
+            skip_init_sorted=self.skip_init_sorted,
         )
 
     def _loc(self, rowidx=None, colidx=None):
@@ -299,7 +358,11 @@ class Empirical(BaseDistribution):
         else:
             wts_subset = None
 
-        subset_params = {"spl": spl_subset, "weights": wts_subset}
+        subset_params = {
+            "spl": spl_subset,
+            "weights": wts_subset,
+            "skip_init_sorted": self.skip_init_sorted,
+        }
         return type(self)(**subset_params)
 
     def _energy_default(self, x=None):
@@ -438,41 +501,88 @@ class Empirical(BaseDistribution):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
-        # for now, always defaulting to the standard logic
-        # todo: address issue #283
-        if self.ndim >= 0:
-            return super()._sample(n_samples=n_samples)
-
-        spl = self.spl
-        timestamps = self._instances
-        weights = self.weights
-
         if n_samples is None:
             n_samples = 1
             n_samples_was_none = True
         else:
             n_samples_was_none = False
-        smpls = []
 
-        for _ in range(n_samples):
-            smpls_i = []
-            for t in timestamps:
-                spl_from = spl.loc[(slice(None), t), :]
-                if weights is not None:
-                    spl_weights = weights.loc[(slice(None), t)].values
+        rng = np.random.default_rng()
+
+        # scalar case
+        if self.ndim == 0:
+            spl_vals = self.spl.values.flatten()
+            if self.weights is not None:
+                weights = np.nan_to_num(self.weights.values.flatten(), nan=0.0)
+                w_sum = np.sum(weights)
+                if w_sum == 0:
+                    weights = None
                 else:
-                    spl_weights = None
-                spl_time = spl_from.sample(n=1, replace=True, weights=spl_weights)
-                spl_time = spl_time.droplevel(0)
-                smpls_i.append(spl_time)
-            spl_i = pd.concat(smpls_i, axis=0)
-            smpls.append(spl_i)
+                    weights = weights / w_sum
+            else:
+                weights = None
+            draws = rng.choice(spl_vals, size=n_samples, replace=True, p=weights)
+            if n_samples_was_none:
+                return draws[0]
+            return pd.DataFrame(draws)
 
-        spl = pd.concat(smpls, axis=0, keys=range(n_samples))
+        spl_values = self._get_spl_array()
+        n_spl, n_instances, n_cols = spl_values.shape
+
+        if self.time_indep:
+            if self.weights is None:
+                sample_indices = rng.integers(0, n_spl, size=(n_samples, n_instances))
+            else:
+                weights_arr = self._get_weights_array()
+                sample_indices = np.zeros((n_samples, n_instances), dtype=int)
+                for j in range(n_instances):
+                    w = np.nan_to_num(weights_arr[:, j], nan=0.0)
+                    w_sum = np.sum(w)
+                    if w_sum == 0:
+                        w = None
+                    else:
+                        w = w / w_sum
+                    sample_indices[:, j] = rng.choice(
+                        n_spl, size=n_samples, replace=True, p=w
+                    )
+
+            instance_indices = np.arange(n_instances)[np.newaxis, :].repeat(
+                n_samples, axis=0
+            )
+            samples = spl_values[sample_indices, instance_indices, :]
+        else:
+            if self.weights is None:
+                sample_indices = rng.integers(0, n_spl, size=n_samples)
+            else:
+                weights_arr = self._get_weights_array()
+                sample_weights = np.nanmean(weights_arr, axis=1)
+                sample_weights = np.nan_to_num(sample_weights, nan=0.0)
+                w_sum = np.sum(sample_weights)
+                if w_sum == 0:
+                    sample_indices = rng.integers(0, n_spl, size=n_samples)
+                else:
+                    sample_weights = sample_weights / w_sum
+                    sample_indices = rng.choice(
+                        n_spl, size=n_samples, replace=True, p=sample_weights
+                    )
+            samples = spl_values[sample_indices, :, :]
+
         if n_samples_was_none:
-            spl = spl.droplevel(0)
+            return pd.DataFrame(samples[0], index=self.index, columns=self.columns)
 
-        return spl
+        if isinstance(self.index, pd.MultiIndex):
+            frames = [
+                pd.DataFrame(samples[i], index=self.index, columns=self.columns)
+                for i in range(n_samples)
+            ]
+            return pd.concat(frames, keys=range(n_samples))
+
+        sample_idx = np.repeat(np.arange(n_samples), n_instances)
+        inst_idx = np.tile(self.index, n_samples)
+        multi_idx = pd.MultiIndex.from_arrays([sample_idx, inst_idx])
+        return pd.DataFrame(
+            samples.reshape(-1, n_cols), index=multi_idx, columns=self.columns
+        )
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

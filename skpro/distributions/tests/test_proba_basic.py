@@ -257,3 +257,28 @@ def test_head_tail():
 
     nt = n.tail(42)
     assert nt.ndim == 0
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_multiindex_loc_indexing():
+    """Test that loc indexing works with MultiIndex and Index objects."""
+    from skpro.distributions.normal import Normal
+
+    index = pd.MultiIndex.from_tuples([("a", 1), ("a", 2), ("b", 1)])
+    columns = pd.Index(["x", "y"])
+
+    dist = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, index=index, columns=columns)
+
+    x = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]], index=index, columns=columns)
+
+    subset = dist.loc[x.index, x.columns]
+
+    assert subset.shape == dist.shape
+    assert subset.index.equals(dist.index)
+    assert subset.columns.equals(dist.columns)
+
+    result = dist.quantile(0.5)
+    assert result.shape == dist.shape
