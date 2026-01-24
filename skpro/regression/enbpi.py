@@ -302,7 +302,7 @@ class EnbpiRegressor(BaseProbaRegressor):
         emp_ix = pd.MultiIndex.from_product([range(n_emp_spl), X.index])
 
         spl_df = pd.DataFrame(emp_df_vals, index=emp_ix, columns=cols)
-        y_proba = Empirical(spl_df)
+        y_proba = Empirical(spl_df, skip_init_sorted=True)
         return y_proba
 
     @classmethod
