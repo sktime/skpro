@@ -48,6 +48,33 @@ class Normal(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    # documentation hooks for formula injection
+    _pdf_formula_doc = r"""
+    **Closed form**
+
+    .. math::
+        f(x) = \frac{1}{\sigma \sqrt{2\pi}}
+        \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)
+    """
+
+    _log_pdf_formula_doc = r"""
+    **Closed form**
+
+    .. math::
+        \log f(x) = -\frac{(x - \mu)^2}{2\sigma^2}
+        - \log(\sigma \sqrt{2\pi})
+    """
+
+    _cdf_formula_doc = r"""
+    **Closed form**
+
+    .. math::
+        F(x) = \frac{1}{2}
+        \left[1 + \operatorname{erf}\!\left(
+        \frac{x - \mu}{\sigma\sqrt{2}}
+        \right)\right]
+    """
+
     def __init__(self, mu, sigma, index=None, columns=None):
         self.mu = mu
         self.sigma = sigma
