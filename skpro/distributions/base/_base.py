@@ -1750,7 +1750,7 @@ class BaseDistribution(BaseObject):
         return ax
 
     def _plot_single(self, ax=None, **kwargs):
-        """Plot the pdf/pmf of the distribution."""
+        """Plot the pdf of the distribution."""
         import matplotlib.pyplot as plt
 
         fun = kwargs.pop("fun")
@@ -1766,7 +1766,6 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
-        # Handle discrete distributions differently for PMF plotting
         is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
         if is_discrete and fun == "pmf":
             # For discrete PMF, get support and evaluate at integer points
