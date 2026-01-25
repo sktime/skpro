@@ -163,7 +163,9 @@ def test_discrete_pmf_plotting():
     if hasattr(ax.containers[0], "markerline"):
         # Check the number of x data points in the stem plot
         x_data = ax.containers[0].markerline.get_xdata()
-        assert len(x_data) > 5, f"Should plot at multiple support points, got {len(x_data)}"
+        assert (
+            len(x_data) > 5
+        ), f"Should plot at multiple support points, got {len(x_data)}"
     """Tests coercion to DataFrame via get_params_df and to_df."""
     from skpro.distributions.normal import Normal
 
