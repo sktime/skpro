@@ -160,11 +160,10 @@ def test_discrete_pmf_plotting():
     # For small distributions, check that all support points are plotted
     # Binomial(n=10) has support [0,1,2,...,10] = 11 points
     # The stem plot should have evaluated at these points
-    if hasattr(ax.containers[0], "get_children"):
-        # This is a rough check - the stem plot should have multiple elements
-        assert (
-            len(ax.containers[0].get_children()) > 5
-        ), "Should plot at multiple support points"
+    if hasattr(ax.containers[0], "markerline"):
+        # Check the number of x data points in the stem plot
+        x_data = ax.containers[0].markerline.get_xdata()
+        assert len(x_data) > 5, f"Should plot at multiple support points, got {len(x_data)}"
     """Tests coercion to DataFrame via get_params_df and to_df."""
     from skpro.distributions.normal import Normal
 

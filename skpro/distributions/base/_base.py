@@ -1768,32 +1768,10 @@ class BaseDistribution(BaseObject):
 
         is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
         if is_discrete and fun == "pmf":
-            # For discrete PMF, get support and evaluate at integer points
-            try:
-                # Try to get support from scipy distribution
-                if hasattr(self, "_dist") and hasattr(self._dist, "support"):
-                    args, kwds = self._get_scipy_param()
-                    support_min, support_max = self._dist.support(*args, **kwds)
-
-                    # Handle infinite upper bounds
-                    if np.isinf(support_max):
-                        support_max = min(upper, 100)  # Reasonable upper limit
-                    if np.isinf(support_min):
-                        support_min = max(lower, -100)  # Reasonable lower limit
-
-                    # Create integer array within support bounds
-                    x_arr = np.arange(
-                        max(0, int(np.floor(support_min))),
-                        min(int(np.ceil(support_max)) + 1, 1000),
-                    )
-                else:
-                    # Fallback to linspace if support not available
-                    x_arr = np.linspace(lower, upper, 1000)
-                    x_arr = np.round(x_arr).astype(int)
-                    x_arr = np.unique(x_arr)  # Remove duplicates
-            except (AttributeError, ValueError, TypeError):
-                # Fallback to original behavior if support fails
-                x_arr = np.linspace(lower, upper, 1000)
+            # For discrete PMF, use integer points within bounds
+            lower_int = max(0, int(np.floor(lower)))
+            upper_int = min(int(np.ceil(upper)) + 1, 100)  # Reasonable upper limit
+            x_arr = np.arange(lower_int, upper_int)
         else:
             x_arr = np.linspace(lower, upper, 1000)
 
