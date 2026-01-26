@@ -2,6 +2,7 @@
 
 import warnings
 
+import numpy as np
 from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.regression.base import BaseProbaRegressor
