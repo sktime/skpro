@@ -20,8 +20,8 @@ EXCLUDE_ESTIMATORS = [
 EXCLUDED_TESTS = {
     # Zero-inflated distributions extend _ScipyAdapter but have different
     # statistical properties than the underlying scipy distributions that they wrap.
-    # The scipy adapter tests compare against the base scipy distribution
-    # which is incorrect for zero-inflated mixtures.
+    # Because the scipy adapter tests compare against the base scipy distribution,
+    # these tests should be skipped as it is incorrect for zero-inflated mixtures.
     "ZIPoisson": [
         "test_method_no_params",  # mean/var differ due to zero-inflation
         "test_method_with_x_params",  # cdf/ppf differ due to zero-inflation
