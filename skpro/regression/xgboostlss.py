@@ -26,6 +26,8 @@ class XGBoostLSS(BaseProbaRegressor):
         * "TDistribution": Student's T distribution.
         * "Weibull": Weibull distribution.
         * "Beta": Beta distribution.
+        * "ZINB": Zero-Inflated Negative Binomial distribution.
+        * "ZIPoisson": Zero-Inflated Poisson distribution.
 
     stabilization: str, optional, default="None"
         Stabilization method for the Gradient and Hessian.
@@ -280,6 +282,8 @@ class XGBoostLSS(BaseProbaRegressor):
         SKPRO_TO_XGBLSS = {
             "Normal": "Gaussian",
             "TDistribution": "StudentT",
+            "ZINB": "ZINB",
+            "ZIPoisson": "ZIPoisson",
         }
 
         distr = SKPRO_TO_XGBLSS.get(distr, distr)
@@ -327,7 +331,29 @@ class XGBoostLSS(BaseProbaRegressor):
             "Weibull": {"scale": "scale", "k": "concentration"},
             "Beta": {"alpha": "concentration1", "beta": "concentration0"},
             "Logistic": {"mu": "loc", "scale": "scale"},
+            "ZIPoisson": {"mu": "rate", "pi": "gate"},
         }
+
+        # Special handling for ZINB which requires parameter transformation
+        # xgboostlss uses (total_count, probs, gate) parametrization
+        # skpro ZINB uses (mu, alpha, pi) where:
+        #   alpha = total_count (dispersion)
+        #   mu = total_count * (1 - probs) / probs (mean)
+        #   pi = gate (zero-inflation probability)
+        if distr == "ZINB":
+            total_count = df.loc[:, ["total_count"]].values
+            probs = df.loc[:, ["probs"]].values
+            gate = df.loc[:, ["gate"]].values
+
+            # Clip probs to avoid numerical instability (div by 0 or inf)
+            eps = 1e-8
+            probs = np.clip(probs, eps, 1 - eps)
+
+            alpha = total_count
+            mu = total_count * (1 - probs) / probs
+            pi = gate
+
+            return {"mu": mu, "alpha": alpha, "pi": pi}
 
         map = name_map.get(distr, {})
         vals = {k: df.loc[:, [v]].values for k, v in map.items()}
