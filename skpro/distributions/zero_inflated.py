@@ -247,6 +247,12 @@ class ZeroInflated(BaseDistribution):
         q_rescaled = (p - pi) / (1 - pi)
         q_rescaled = np.clip(q_rescaled, 0.0, 1.0)
 
+        # Subtract tiny epsilon to avoid floating-point precision issues where
+        # q_rescaled ends up slightly larger than CDF(k) due to arithmetic,
+        # which would cause ppf to return k+1 instead of k for discrete distributions
+        eps = np.finfo(float).eps * 10
+        q_rescaled = np.maximum(q_rescaled - eps, 0.0)
+
         y_positive = self.distribution.ppf(q_rescaled)
 
         return np.where(p <= prob_zero, 0.0, y_positive)

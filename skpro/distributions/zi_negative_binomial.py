@@ -49,6 +49,7 @@ class ZINB(_ScipyAdapter):
 
     >>> distr = ZINB(mu=2.0, alpha=1.0, pi=0.3)
     >>> distr.mean()
+    np.float64(1.4)
     """
 
     _tags = {
@@ -151,9 +152,10 @@ class ZINB(_ScipyAdapter):
         pi = self._bc_params["pi"]
         args, kwds = self._get_scipy_param()
 
-        # Total probability at 0
-        nb_pmf_at_0 = nbinom.pmf(0, *args, **kwds)
-        prob_zero = pi + (1 - pi) * nb_pmf_at_0
+        # Total probability at 0 - use cdf(0) for consistency with _cdf method
+        # This avoids floating-point precision differences between pmf(0) and cdf(0)
+        nb_cdf_at_0 = nbinom.cdf(0, *args, **kwds)
+        prob_zero = pi + (1 - pi) * nb_cdf_at_0
 
         # For p <= prob_zero, return 0
         # For p > prob_zero, invert the NB CDF
@@ -161,6 +163,12 @@ class ZINB(_ScipyAdapter):
         # => F_NB(x) = (p - pi) / (1 - pi)
         q_rescaled = (p - pi) / (1 - pi)
         q_rescaled = np.clip(q_rescaled, 0.0, 1.0)
+
+        # Subtract tiny epsilon to avoid floating-point precision issues where
+        # q_rescaled ends up slightly larger than CDF(k) due to arithmetic,
+        # which would cause ppf to return k+1 instead of k
+        eps = np.finfo(float).eps * 10
+        q_rescaled = np.maximum(q_rescaled - eps, 0.0)
 
         y_positive = nbinom.ppf(q_rescaled, *args, **kwds)
 
