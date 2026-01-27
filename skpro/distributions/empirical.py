@@ -185,6 +185,47 @@ class Empirical(BaseDistribution):
         if not getattr(self, "_sorted_initialized", False):
             self._init_sorted()
 
+    def _support(self, lower, upper, max_points=100):
+        """Get support points for empirical distribution.
+
+        Parameters
+        ----------
+        lower : float
+            Lower bound for support points
+        upper : float
+            Upper bound for support points
+        max_points : int, optional, default=100
+            Maximum number of support points to return
+
+        Returns
+        -------
+        np.ndarray
+            Array of support points within [lower, upper]
+        """
+        self._ensure_sorted()
+        
+        if self.ndim == 0:
+            # Scalar case: filter sorted support points within bounds
+            support_points = self._sorted
+            mask = (support_points >= lower) & (support_points <= upper)
+            filtered_points = support_points[mask]
+            # Limit to max_points and return unique values
+            unique_points = np.unique(filtered_points)
+            return unique_points[:max_points]
+        else:
+            # Array case: for simplicity, return union of all support points
+            # across instances and columns within bounds
+            all_points = []
+            for t in self._instances:
+                for col in self.columns:
+                    points = self._sorted[t][col]
+                    mask = (points >= lower) & (points <= upper)
+                    filtered = points[mask]
+                    all_points.extend(filtered)
+            
+            unique_points = np.unique(np.array(all_points))
+            return unique_points[:max_points]
+
     def _coerce_tuple(self, x):
         if not isinstance(x, tuple):
             x = (x,)

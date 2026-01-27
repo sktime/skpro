@@ -1749,6 +1749,28 @@ class BaseDistribution(BaseObject):
         ax = getattr(self, plot_fun_name)(ax=ax, fun=fun, **kwargs)
         return ax
 
+    def _support(self, lower, upper, max_points=100):
+        """Get support points for discrete distributions.
+
+        Parameters
+        ----------
+        lower : float
+            Lower bound for support points
+        upper : float
+            Upper bound for support points
+        max_points : int, optional, default=100
+            Maximum number of support points to return
+
+        Returns
+        -------
+        np.ndarray
+            Array of support points within [lower, upper]
+        """
+        # Default implementation assumes integer support
+        lower_int = max(0, int(np.floor(lower)))
+        upper_int = min(int(np.ceil(upper)) + 1, lower_int + max_points)
+        return np.arange(lower_int, upper_int)
+
     def _plot_single(self, ax=None, **kwargs):
         """Plot the pdf of the distribution."""
         import matplotlib.pyplot as plt
@@ -1768,10 +1790,8 @@ class BaseDistribution(BaseObject):
 
         is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
         if is_discrete and fun == "pmf":
-            # For discrete PMF, use integer points within bounds
-            lower_int = max(0, int(np.floor(lower)))
-            upper_int = min(int(np.ceil(upper)) + 1, 100)  # Reasonable upper limit
-            x_arr = np.arange(lower_int, upper_int)
+            # For discrete PMF, get support points within bounds
+            x_arr = self._support(lower, upper)
         else:
             x_arr = np.linspace(lower, upper, 1000)
 
