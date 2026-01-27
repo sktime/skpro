@@ -1480,9 +1480,8 @@ class BaseDistribution(BaseObject):
         spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
         if self.ndim == 0:
             return np.mean(spl)
-        else:
-            spl_df = pd.concat(spl, keys=range(approx_spl_size))
-            return spl_df.groupby(level=1, sort=False).mean()
+        spl_df = pd.concat(spl, keys=range(approx_spl_size))
+        return spl_df.groupby(level=1, sort=False).mean()
 
     def _coerce_to_self_index_df(self, x, flatten=True):
         """Coerce input to type similar to self.
