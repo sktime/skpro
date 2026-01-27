@@ -608,6 +608,8 @@ class XGBoostLSS(BaseProbaRegressor):
             "eta": 0.1,
             "max_depth": 3,
         }
+        params9 = {"dist": "ZIPoisson", "max_minutes": 1, "n_trials": 0}
+        params10 = {"dist": "ZINB", "max_minutes": 1, "n_trials": 0}
 
         return [
             params0,
@@ -619,4 +621,6 @@ class XGBoostLSS(BaseProbaRegressor):
             params6,
             params7,
             params8,
+            params9,
+            params10,
         ]
