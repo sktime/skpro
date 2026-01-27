@@ -9,7 +9,7 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class XGBoostLSS(BaseProbaRegressor):
-    """Interface to xgboostlss regerssor from the xgboostlss package.
+    """Interface to xgboostlss regressor from the xgboostlss package.
 
     Direct interface to ``XGBoostLSS`` from ``xgboostlss`` package by ``StatMixedML``.
 
@@ -417,6 +417,15 @@ class XGBoostLSS(BaseProbaRegressor):
             "loss_fn": self.loss_fn,
             "initialize": self.initialize,
         }
+
+        # xgboostlss.ZINB expects separate response functions for total_count
+        # and probs instead of a single ``response_fn`` argument.
+        # Use "relu" as default for total_count (xgboostlss ZINB default) since
+        # "exp" can cause numerical instability and training hangs with ZINB.
+        if self.dist == "ZINB":
+            distr_params.pop("response_fn", None)
+            distr_params["response_fn_total_count"] = "relu"
+            distr_params["response_fn_probs"] = "sigmoid"
 
         # initialize parameter was introduced in xgboostlss v0.6.1
         if _check_soft_dependencies("xgboostlss<0.6.1", severity="none"):
