@@ -203,7 +203,7 @@ class Empirical(BaseDistribution):
             Array of support points within [lower, upper]
         """
         self._ensure_sorted()
-        
+
         if self.ndim == 0:
             # Scalar case: filter sorted support points within bounds
             support_points = self._sorted
@@ -222,7 +222,7 @@ class Empirical(BaseDistribution):
                     mask = (points >= lower) & (points <= upper)
                     filtered = points[mask]
                     all_points.extend(filtered)
-            
+
             unique_points = np.unique(np.array(all_points))
             return unique_points[:max_points]
 

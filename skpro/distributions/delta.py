@@ -138,7 +138,7 @@ class Delta(BaseDistribution):
             Array of support points within [lower, upper]
         """
         c = self._bc_params["c"]
-        
+
         if self.ndim == 0:
             # Scalar case: single point
             if lower <= c <= upper:
@@ -153,7 +153,7 @@ class Delta(BaseDistribution):
                     val = c[i, j]
                     if lower <= val <= upper:
                         support_points.append(val)
-            
+
             unique_points = np.unique(np.array(support_points))
             return unique_points[:max_points]
 
