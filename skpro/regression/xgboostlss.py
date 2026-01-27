@@ -336,11 +336,18 @@ class XGBoostLSS(BaseProbaRegressor):
         }
 
         # Special handling for ZINB which requires parameter transformation
-        # xgboostlss uses (total_count, probs, gate) parametrization
+        # xgboostlss uses PyTorch convention (total_count, probs, gate) where:
+        #   total_count = number of failures until we stop (r)
+        #   probs = probability of SUCCESS per trial (p)
+        #   gate = zero-inflation probability
+        #
+        # PyTorch NegativeBinomial mean = total_count * probs / (1 - probs)
+        #   (counts successes before total_count failures)
+        #
         # skpro ZINB uses (mu, alpha, pi) where:
-        #   alpha = total_count (dispersion)
-        #   mu = total_count * (1 - probs) / probs (mean)
-        #   pi = gate (zero-inflation probability)
+        #   mu = mean of the NB component
+        #   alpha = dispersion parameter (same as total_count)
+        #   pi = zero-inflation probability (same as gate)
         if distr == "ZINB":
             total_count = df.loc[:, ["total_count"]].values
             probs = df.loc[:, ["probs"]].values
@@ -351,7 +358,8 @@ class XGBoostLSS(BaseProbaRegressor):
             probs = np.clip(probs, eps, 1 - eps)
 
             alpha = total_count
-            mu = total_count * (1 - probs) / probs
+            # PyTorch NB mean formula: total_count * probs / (1 - probs)
+            mu = total_count * probs / (1 - probs)
             pi = gate
 
             return {"mu": mu, "alpha": alpha, "pi": pi}
