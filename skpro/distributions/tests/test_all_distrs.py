@@ -124,10 +124,6 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         if not _has_capability(object_instance, method):
             return None
 
-        # pdfnorm requires pdf capability to work
-        if method == "pdfnorm" and not _has_capability(object_instance, "pdf"):
-            return None
-
         d = object_instance
         if shuffled:
             d = _shuffle_distr(d)
