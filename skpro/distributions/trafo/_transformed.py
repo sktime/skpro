@@ -293,8 +293,16 @@ class TransformedDistribution(BaseDistribution):
             x_plus = x_orig + h
             x_minus = x_orig - h
 
-        inv_x_plus = inv_trafo(x_plus if self.ndim == 0 else pd.DataFrame(x_plus, index=self.index, columns=self.columns))
-        inv_x_minus = inv_trafo(x_minus if self.ndim == 0 else pd.DataFrame(x_minus, index=self.index, columns=self.columns))
+        inv_x_plus = inv_trafo(
+            x_plus 
+            if self.ndim == 0 
+            else pd.DataFrame(x_plus, index=self.index, columns=self.columns)
+        )
+        inv_x_minus = inv_trafo(
+            x_minus 
+            if self.ndim == 0 
+            else pd.DataFrame(x_minus, index=self.index, columns=self.columns)
+        )
 
         if self.ndim == 0:
             inv_x_plus = _coerce_to_scalar(inv_x_plus)
