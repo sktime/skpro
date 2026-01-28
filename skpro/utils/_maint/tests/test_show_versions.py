@@ -1,4 +1,5 @@
 """Tests for the show_versions utility."""
+import importlib
 import pathlib
 import uuid
 
@@ -29,9 +30,17 @@ def test_deps_info():
 
     KEY_ALIAS = {"sklearn": "scikit-learn", "skbase": "scikit-base"}
 
+    def _is_available(pkg_name):
+        """Check if package is available by trying to import it."""
+        try:
+            importlib.import_module(pkg_name)
+            return True
+        except ImportError:
+            return False
+
     for key in DEFAULT_DEPS_TO_SHOW:
         pkg_name = KEY_ALIAS.get(key, key)
-        key_is_available = _check_soft_dependencies(pkg_name, severity="none")
+        key_is_available = _is_available(key)  # use key for import, not pkg_name
         assert (deps_info_default[key] is None) != key_is_available
         if key_is_available:
             assert _check_soft_dependencies(f"{pkg_name}=={deps_info_default[key]}")
