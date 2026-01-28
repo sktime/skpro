@@ -120,43 +120,6 @@ class Delta(BaseDistribution):
         # variance of a constant is always 0
         return self._coerce_to_self_index_np(0)
 
-    def _support(self, lower, upper, max_points=100):
-        """Get support points for delta distribution.
-
-        Parameters
-        ----------
-        lower : float
-            Lower bound for support points
-        upper : float
-            Upper bound for support points
-        max_points : int, optional, default=100
-            Maximum number of support points to return
-
-        Returns
-        -------
-        np.ndarray
-            Array of support points within [lower, upper]
-        """
-        c = self._bc_params["c"]
-
-        if self.ndim == 0:
-            # Scalar case: single point
-            if lower <= c <= upper:
-                return np.array([c])
-            else:
-                return np.array([])
-        else:
-            # Array case: collect all c values within bounds
-            support_points = []
-            for i in range(c.shape[0]):
-                for j in range(c.shape[1]):
-                    val = c[i, j]
-                    if lower <= val <= upper:
-                        support_points.append(val)
-
-            unique_points = np.unique(np.array(support_points))
-            return unique_points[:max_points]
-
     def _pmf(self, x):
         """Probability mass function.
 

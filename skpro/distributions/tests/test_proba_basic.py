@@ -270,10 +270,10 @@ def test_multiindex_loc_indexing():
 )
 def test_support_method():
     """Test the _support method for different distribution types."""
-    from skpro.distributions.normal import Normal
     from skpro.distributions.binomial import Binomial
-    from skpro.distributions.empirical import Empirical
     from skpro.distributions.delta import Delta
+    from skpro.distributions.empirical import Empirical
+    from skpro.distributions.normal import Normal
 
     # Test continuous distribution (Normal) - should return empty array
     normal = Normal(mu=0, sigma=1)
