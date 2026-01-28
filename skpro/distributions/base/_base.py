@@ -1788,24 +1788,14 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
-        is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
-        if is_discrete and fun == "pmf":
-            # For discrete PMF, get support points within bounds
-            x_arr = self._support(lower, upper)
-        else:
-            x_arr = np.linspace(lower, upper, 1000)
-
+        x_arr = np.linspace(lower, upper, 1000)
         y_arr = [getattr(self, fun)(x) for x in x_arr]
         y_arr = np.array(y_arr)
 
         if ax is None:
             ax = plt.gca()
 
-        # Use stem plot for discrete PMF, line plot otherwise
-        if is_discrete and fun == "pmf":
-            ax.stem(x_arr, y_arr, basefmt=" ", **kwargs)
-        else:
-            ax.plot(x_arr, y_arr, **kwargs)
+        ax.plot(x_arr, y_arr, **kwargs)
 
         if print_labels == "on":
             ax.set_xlabel(f"{x_argname}")
