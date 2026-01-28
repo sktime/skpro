@@ -354,7 +354,10 @@ class TransformedDistribution(BaseDistribution):
             f"{approx_spl_size} samples"
         )
         import warnings
-        warnings.warn(self._method_error_msg("pdfnorm", fill_in=approx_method))
+
+        warnings.warn(
+            self._method_error_msg("pdfnorm", fill_in=approx_method), stacklevel=2
+        )
 
         # uses formula int p(x)^a dx = E[p(X)^{a-1}], and MC approximates the RHS
         spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
@@ -362,6 +365,8 @@ class TransformedDistribution(BaseDistribution):
             return np.mean(spl)
         spl_df = pd.concat(spl, keys=range(approx_spl_size))
         return spl_df.groupby(level=1, sort=False).mean()
+
+    def _sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters
