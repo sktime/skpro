@@ -294,13 +294,13 @@ class TransformedDistribution(BaseDistribution):
             x_minus = x_orig - h
 
         inv_x_plus = inv_trafo(
-            x_plus 
-            if self.ndim == 0 
+            x_plus
+            if self.ndim == 0
             else pd.DataFrame(x_plus, index=self.index, columns=self.columns)
         )
         inv_x_minus = inv_trafo(
-            x_minus 
-            if self.ndim == 0 
+            x_minus
+            if self.ndim == 0
             else pd.DataFrame(x_minus, index=self.index, columns=self.columns)
         )
 
