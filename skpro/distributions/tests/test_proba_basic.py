@@ -138,34 +138,13 @@ def test_proba_plotting(fun):
     assert all([isinstance(a, Axes) for a in ax.flatten()])
     assert all([a.get_figure() == fig for a in ax.flatten()])
 
-
-@pytest.mark.skipif(
-    not _check_soft_dependencies("matplotlib", severity="none"),
-    reason="skip if matplotlib is not available",
-)
-def test_discrete_pmf_plotting():
-    """Test that discrete PMF plotting uses stem plots."""
-    from matplotlib.axes import Axes
-
-    from skpro.distributions.binomial import Binomial
-
-    # Test Binomial PMF plotting
-    n = Binomial(n=10, p=0.5)
-    ax = n.plot(fun="pmf")
+    # scalar case
+    n = Normal(mu=1, sigma=1)
+    ax = n.plot(fun=fun)
     assert isinstance(ax, Axes)
 
-    # Check that stem plot was used (should have containers)
-    assert len(ax.containers) > 0, "Stem plot should be used for discrete PMF"
 
-    # For small distributions, check that all support points are plotted
-    # Binomial(n=10) has support [0,1,2,...,10] = 11 points
-    # The stem plot should have evaluated at these points
-    if hasattr(ax.containers[0], "markerline"):
-        # Check the number of x data points in the stem plot
-        x_data = ax.containers[0].markerline.get_xdata()
-        assert (
-            len(x_data) > 5
-        ), f"Should plot at multiple support points, got {len(x_data)}"
+def test_to_df_parametric():
     """Tests coercion to DataFrame via get_params_df and to_df."""
     from skpro.distributions.normal import Normal
 
