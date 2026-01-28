@@ -1815,6 +1815,32 @@ class BaseDistribution(BaseObject):
             ax.set_ylabel(f"{fun}({x_argname})")
         return ax
 
+    def _support(self, lower, upper, max_points=100):
+        """Get support points for discrete distributions.
+
+        Parameters
+        ----------
+        lower : float
+            Lower bound for support points
+        upper : float
+            Upper bound for support points
+        max_points : int, optional, default=100
+            Maximum number of support points to return
+
+        Returns
+        -------
+        np.ndarray
+            Array of support points within [lower, upper]
+        """
+        # For continuous distributions, return empty array
+        if self.get_tag("distr:measuretype", "mixed") == "continuous":
+            return np.array([])
+        
+        # Default implementation assumes non-negative integer support
+        lower_int = max(0, int(np.floor(lower)))
+        upper_int = min(int(np.ceil(upper)) + 1, lower_int + max_points)
+        return np.arange(lower_int, upper_int)
+
 
 def _is_index_like(obj):
     """Check if an object is pandas Index-like (Index, MultiIndex, etc.)."""

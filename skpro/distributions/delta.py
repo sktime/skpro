@@ -189,6 +189,40 @@ class Delta(BaseDistribution):
         icdf_arr = c
         return icdf_arr
 
+    def _support(self, lower, upper, max_points=100):
+        """Get support points for delta distribution.
+
+        Parameters
+        ----------
+        lower : float
+            Lower bound for support points
+        upper : float
+            Upper bound for support points
+        max_points : int, optional, default=100
+            Maximum number of support points to return
+
+        Returns
+        -------
+        np.ndarray
+            Array of support points within [lower, upper]
+        """
+        c = self._bc_params["c"]
+        if self.ndim == 0:
+            c_val = c[()]
+            if lower <= c_val <= upper:
+                return np.array([c_val])
+            else:
+                return np.array([])
+        else:
+            # For array case, collect all c values within bounds
+            support_points = []
+            for i in range(c.shape[0]):
+                for j in range(c.shape[1]):
+                    c_val = c[i, j]
+                    if lower <= c_val <= upper:
+                        support_points.append(c_val)
+            return np.unique(np.array(support_points))[:max_points]
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
