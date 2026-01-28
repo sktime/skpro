@@ -138,6 +138,11 @@ def test_proba_plotting(fun):
     assert all([isinstance(a, Axes) for a in ax.flatten()])
     assert all([a.get_figure() == fig for a in ax.flatten()])
 
+    # scalar case
+    n = Normal(mu=1, sigma=1)
+    ax = n.plot(fun=fun)
+    assert isinstance(ax, Axes)
+
 
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
