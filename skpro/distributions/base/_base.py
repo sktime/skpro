@@ -1750,7 +1750,7 @@ class BaseDistribution(BaseObject):
         return ax
 
     def _plot_single(self, ax=None, **kwargs):
-        """Plot the pdf/pmf of the distribution."""
+        """Plot the pdf of the distribution."""
         import matplotlib.pyplot as plt
 
         fun = kwargs.pop("fun")
