@@ -1783,6 +1783,10 @@ class BaseDistribution(BaseObject):
     def _support(self, lower, upper, max_points=100):
         """Get support points for discrete distributions.
 
+        Returns the support points of the probability mass function (PMF)
+        within the given bounds. 
+        Only applies to scalar (0-dimensional) distributions.
+
         Parameters
         ----------
         lower : float
