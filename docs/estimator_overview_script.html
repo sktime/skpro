@@ -36,7 +36,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const filter = document.getElementById("filterOptions").value;
         const target = event.target;
         if (target.type === "checkbox") {
-            visibleTagsOfTypes[filter][target.id] = target.checked;
+            // Convert safe ID back to original tag key
+            const originalKey = target.id.replace(/_/g, ':');
+            visibleTagsOfTypes[filter][originalKey] = target.checked;
             filterTable();
         }
     });
@@ -58,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function filterTable() {
     const filter = document.getElementById("filterOptions").value;
-    const header = ["Class Name", "Estimator Type", "Dependencies", "Maintainers"];
+    const header = ["Class Name", "Estimator Type", "Module", "Dependencies", "Maintainers"];
     if (filter != "all") {
         const cachedData = sessionStorage.getItem("jsonData");
         if (cachedData) {
@@ -161,13 +163,14 @@ function populateCheckboxes() {
     const checkboxContainer = document.getElementById("checkboxContainer");
     checkboxContainer.innerHTML = "Check to Show Tags:";
     for (const [key, value] of tags) {
+        const safeId = key.replace(/:/g, '_').replace(/\s/g, '_');
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        checkbox.id = key;
-        checkbox.name = key;
+        checkbox.id = safeId;
+        checkbox.name = safeId;
         checkbox.checked = value;
         const label = document.createElement("label");
-        label.htmlFor = key;
+        label.htmlFor = safeId;
         label.textContent = key;
         const checkboxWrapper = document.createElement("div");
         checkboxWrapper.appendChild(checkbox);

@@ -2,30 +2,41 @@
   <tr>
     <th>Class Name</th>
     <th>Estimator Type</th>
+    <th>Module</th>
     <th>Dependencies</th>
     <th>Maintainers</th>
   </tr>
-  <tr><td>DummyProbaRegressor</td><td>regressor</td><td>numpy, pandas</td><td>julian-fong</td></tr>
-  <tr><td>Normal</td><td>distribution</td><td>numpy, pandas, scipy</td><td>fkiraly</td></tr>
-  <tr><td>Empirical</td><td>distribution</td><td>numpy, pandas</td><td>fkiraly</td></tr>
-  <tr><td>Binomial</td><td>distribution</td><td>scipy, pandas</td><td>meraldoantonio</td></tr>
-  <tr><td>Weibull</td><td>distribution</td><td>numpy, pandas, scipy</td><td>malikrafsan</td></tr>
-  <tr><td>Poisson</td><td>distribution</td><td>scipy, pandas</td><td>fkiraly, malikrafsan</td></tr>
-  <tr><td>LogNormal</td><td>distribution</td><td>numpy, pandas, scipy</td><td>bhavikar04, fkiraly</td></tr>
-  <tr><td>Exponential</td><td>distribution</td><td>scipy, pandas</td><td>ShreeshaM07</td></tr>
-  <tr><td>Gamma</td><td>distribution</td><td>scipy, pandas</td><td>ShreeshaM07</td></tr>
-  <tr><td>TDistribution</td><td>distribution</td><td>numpy, pandas, scipy</td><td>Alex-JG3, ivarzap</td></tr>
-  <tr><td>SkewNormal</td><td>distribution</td><td>scipy</td><td>Spinachboul</td></tr>
-  <tr><td>HalfNormal</td><td>distribution</td><td>scipy, pandas</td><td>SaiRevanth25</td></tr>
-  <tr><td>HalfCauchy</td><td>distribution</td><td>scipy, pandas</td><td>SaiRevanth25</td></tr>
-  <tr><td>Erlang</td><td>distribution</td><td>scipy, pandas</td><td>RUPESH-KUMAR01</td></tr>
-  <tr><td>Alpha</td><td>distribution</td><td>scipy, pandas</td><td>SaiReavanth25</td></tr>
-  <tr><td>Delta</td><td>distribution</td><td>numpy, pandas</td><td>fkiraly</td></tr>
-  <tr><td>Histogram</td><td>distribution</td><td>numpy, pandas</td><td>ShreeshaM07</td></tr>
-  <tr><td>MeanScale</td><td>distribution</td><td>numpy</td><td>fkiraly</td></tr>
-  <tr><td>Fisk</td><td>distribution</td><td>scipy, pandas</td><td>fkiraly, malikrafsan</td></tr>
-  <tr><td>Logistic</td><td>distribution</td><td>numpy, pandas</td><td>malikrafsan</td></tr>
-  <tr><td>QPD_Johnson</td><td>distribution</td><td>numpy, pandas, scipy</td><td>setoguchi-naoki, felix-wick, fkiraly</td></tr>
-  <tr><td>NGBoostSurvival</td><td>survival</td><td>ngboost, numpy</td><td>ShreeshaM07</td></tr>
-  <tr><td>ConcordanceHarrell</td><td>metric</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>DummyProbaRegressor</td><td>regressor</td><td>skpro.regression.dummy</td><td>numpy, pandas</td><td>julian-fong</td></tr>
+  <tr><td>Normal</td><td>distribution</td><td>skpro.distributions.normal</td><td>numpy, pandas, scipy</td><td>fkiraly</td></tr>
+  <tr><td>Empirical</td><td>distribution</td><td>skpro.distributions.empirical</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>Binomial</td><td>distribution</td><td>skpro.distributions.binomial</td><td>scipy, pandas</td><td>meraldoantonio</td></tr>
+  <tr><td>Weibull</td><td>distribution</td><td>skpro.distributions.weibull</td><td>numpy, pandas, scipy</td><td>malikrafsan</td></tr>
+  <tr><td>Poisson</td><td>distribution</td><td>skpro.distributions.poisson</td><td>scipy, pandas</td><td>fkiraly, malikrafsan</td></tr>
+  <tr><td>LogNormal</td><td>distribution</td><td>skpro.distributions.lognormal</td><td>numpy, pandas, scipy</td><td>bhavikar04, fkiraly</td></tr>
+  <tr><td>Exponential</td><td>distribution</td><td>skpro.distributions.exponential</td><td>scipy, pandas</td><td>ShreeshaM07</td></tr>
+  <tr><td>Gamma</td><td>distribution</td><td>skpro.distributions.gamma</td><td>scipy, pandas</td><td>ShreeshaM07</td></tr>
+  <tr><td>TDistribution</td><td>distribution</td><td>skpro.distributions.t</td><td>numpy, pandas, scipy</td><td>Alex-JG3, ivarzap</td></tr>
+  <tr><td>SkewNormal</td><td>distribution</td><td>skpro.distributions.skewnormal</td><td>scipy</td><td>Spinachboul</td></tr>
+  <tr><td>HalfNormal</td><td>distribution</td><td>skpro.distributions.halfnormal</td><td>scipy, pandas</td><td>SaiRevanth25</td></tr>
+  <tr><td>HalfCauchy</td><td>distribution</td><td>skpro.distributions.halfcauchy</td><td>scipy, pandas</td><td>SaiRevanth25</td></tr>
+  <tr><td>Erlang</td><td>distribution</td><td>skpro.distributions.erlang</td><td>scipy, pandas</td><td>RUPESH-KUMAR01</td></tr>
+  <tr><td>Alpha</td><td>distribution</td><td>skpro.distributions.alpha</td><td>scipy, pandas</td><td>SaiReavanth25</td></tr>
+  <tr><td>Delta</td><td>distribution</td><td>skpro.distributions.delta</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>Histogram</td><td>distribution</td><td>skpro.distributions.histogram</td><td>numpy, pandas</td><td>ShreeshaM07</td></tr>
+  <tr><td>MeanScale</td><td>distribution</td><td>skpro.distributions.meanscale</td><td>numpy</td><td>fkiraly</td></tr>
+  <tr><td>Fisk</td><td>distribution</td><td>skpro.distributions.fisk</td><td>scipy, pandas</td><td>fkiraly, malikrafsan</td></tr>
+  <tr><td>Logistic</td><td>distribution</td><td>skpro.distributions.logistic</td><td>numpy, pandas</td><td>malikrafsan</td></tr>
+  <tr><td>QPD_Johnson</td><td>distribution</td><td>skpro.distributions.qpd_johnson</td><td>numpy, pandas, scipy</td><td>setoguchi-naoki, felix-wick, fkiraly</td></tr>
+  <tr><td>NGBoostSurvival</td><td>survival</td><td>skpro.survival.ngboost</td><td>ngboost, numpy</td><td>ShreeshaM07</td></tr>
+  <tr><td>CRPS</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>AUCalibration</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>ConstraintViolation</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>EmpiricalCoverage</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>IntervalWidth</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>LogLoss</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>LinearizedLogLoss</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>PinballLoss</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>SquaredDistrLoss</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>ConcordanceHarrell</td><td>metric</td><td>skpro.metrics.survival</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>SPLL</td><td>metric</td><td>skpro.metrics.survival</td><td>numpy, pandas</td><td>fkiraly</td></tr>
 </table>

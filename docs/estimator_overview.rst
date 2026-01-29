@@ -19,10 +19,11 @@ Use the below search table to find estimators by property.
     #dropdownContainer { flex: 1; }
     #checkboxContainer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; box-sizing: border-box; }
     #checkboxContainer input[type="checkbox"] { margin-right: 5px; }
-    #checkboxContainer label { white-space: nowrap; }
+    #checkboxContainer label { white-space: nowrap; color: black; text-decoration: none; cursor: default; }
     .table-container { width: 100%; overflow-x: auto; }
     #tableContainer { float: left; table-layout: fixed; border-collapse: collapse; overflow-x: auto; }
-    #tableContainer th, #tableContainer td { border: 2px solid #888; text-align: center; word-break: break-word; width: 15vw; }
+    #tableContainer th, #tableContainer td { border: 2px solid #888; text-align: center; word-break: break-word; width: 15vw; color: black; text-decoration: none; }
+    #tableContainer td:hover { background-color: #f5f5f5; }
     </style>
 
     <div class="top-container">
@@ -43,8 +44,3 @@ Use the below search table to find estimators by property.
     <div class="table-container">
         <table id="tableContainer"></table>
     </div>
-
-    <script src="_static/estimator_overview_script.html"></script>
-
-    <!-- Optionally include a static HTML table for "ALL" estimators -->
-    <!-- .. include:: _static/table_all.html -->
