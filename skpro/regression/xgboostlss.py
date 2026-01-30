@@ -357,7 +357,9 @@ class XGBoostLSS(BaseProbaRegressor):
             eps = 1e-8
             probs = np.clip(probs, eps, 1 - eps)
 
-            alpha = total_count
+            # Clip total_count (alpha) to avoid poor distributions.
+            alpha_min = 0.5
+            alpha = np.maximum(total_count, alpha_min)
             # PyTorch NB mean formula: total_count * probs / (1 - probs)
             mu = total_count * probs / (1 - probs)
             pi = gate
@@ -428,11 +430,12 @@ class XGBoostLSS(BaseProbaRegressor):
 
         # xgboostlss.ZINB expects separate response functions for total_count
         # and probs instead of a single ``response_fn`` argument.
-        # Use "relu" as default for total_count (xgboostlss ZINB default) since
-        # "exp" can cause numerical instability and training hangs with ZINB.
+        # Use "softplus" for total_count to avoid poor distributions.
+        # "relu" can produce very small values leading to severe under-coverage,
+        # while "exp" can cause numerical instability and training hangs.
         if self.dist == "ZINB":
             distr_params.pop("response_fn", None)
-            distr_params["response_fn_total_count"] = "relu"
+            distr_params["response_fn_total_count"] = "softplus"
             distr_params["response_fn_probs"] = "sigmoid"
 
         # initialize parameter was introduced in xgboostlss v0.6.1
