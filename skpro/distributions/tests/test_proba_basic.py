@@ -277,13 +277,13 @@ def test_pmf_support_method():
 
     # Test continuous distribution (Normal) - should return empty array
     normal = Normal(mu=0, sigma=1)
-    support = normal._support(-1, 1)
+    support = normal._pmf_support(-1, 1)
     assert isinstance(support, np.ndarray)
     assert len(support) == 0
 
     # Test discrete distribution with default integer support (Binomial)
     binomial = Binomial(n=5, p=0.5)
-    support = binomial._support(0, 5)
+    support = binomial._pmf_support(0, 5)
     assert isinstance(support, np.ndarray)
     assert len(support) > 0
     assert all(isinstance(x, (int, np.integer)) for x in support)
@@ -292,19 +292,19 @@ def test_pmf_support_method():
     # Test Empirical distribution
     spl = pd.Series([1.5, 2.5, 3.5])
     empirical = Empirical(spl)
-    support = empirical._support(1, 4)
+    support = empirical._pmf_support(1, 4)
     assert isinstance(support, np.ndarray)
     assert len(support) > 0
     assert 1.5 in support or 2.5 in support or 3.5 in support
 
     # Test Delta distribution
     delta = Delta(c=2.0)
-    support = delta._support(1, 3)
+    support = delta._pmf_support(1, 3)
     assert isinstance(support, np.ndarray)
     assert len(support) == 1
     assert support[0] == 2.0
 
     # Test Delta outside bounds
-    support = delta._support(3, 4)
+    support = delta._pmf_support(3, 4)
     assert isinstance(support, np.ndarray)
     assert len(support) == 0
