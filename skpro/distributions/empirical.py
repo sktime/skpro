@@ -478,7 +478,7 @@ class Empirical(BaseDistribution):
         ppf_val = self._apply_per_ix(_ppf_np, {"assume_sorted": True}, x=p)
         return ppf_val
 
-    def _support(self, lower, upper, max_points=100):
+    def _pmf_support(self, lower, upper, max_points=100):
         """Get support points for empirical distribution.
 
         Parameters
