@@ -269,7 +269,7 @@ def test_multiindex_loc_indexing():
     reason="run only if skpro.distributions has been changed",
 )
 def test_pmf_support_method():
-    """Test the _support method for different distribution types."""
+    """Test the _pmf_support method for different distribution types."""
     from skpro.distributions.binomial import Binomial
     from skpro.distributions.delta import Delta
     from skpro.distributions.empirical import Empirical
