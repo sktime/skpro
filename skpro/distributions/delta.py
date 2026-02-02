@@ -189,7 +189,7 @@ class Delta(BaseDistribution):
         icdf_arr = c
         return icdf_arr
 
-    def _support(self, lower, upper, max_points=100):
+    def _pmf_support(self, lower, upper, max_points=100):
         """Get support points for delta distribution.
 
         Parameters
