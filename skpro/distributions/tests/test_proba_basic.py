@@ -268,7 +268,7 @@ def test_multiindex_loc_indexing():
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
 )
-def test_support_method():
+def test_pmf_support_method():
     """Test the _support method for different distribution types."""
     from skpro.distributions.binomial import Binomial
     from skpro.distributions.delta import Delta
