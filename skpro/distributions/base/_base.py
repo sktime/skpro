@@ -1780,7 +1780,7 @@ class BaseDistribution(BaseObject):
             ax.set_ylabel(f"{fun}({x_argname})")
         return ax
 
-    def _support(self, lower, upper, max_points=100):
+    def _pmf_support(self, lower, upper, max_points=100):
         """Get support points for discrete distributions.
 
         Returns the support points of the probability mass function (PMF)
