@@ -206,22 +206,17 @@ class Delta(BaseDistribution):
         np.ndarray
             Array of support points within [lower, upper]
         """
+        if self.ndim > 0:
+            raise NotImplementedError(
+                "_pmf_support only applies to scalar (0-dimensional) distributions."
+            )
+
         c = self._bc_params["c"]
-        if self.ndim == 0:
-            c_val = c[()]
-            if lower <= c_val <= upper:
-                return np.array([c_val])
-            else:
-                return np.array([])
+        c_val = c[()]
+        if lower <= c_val <= upper:
+            return np.array([c_val])
         else:
-            # For array case, collect all c values within bounds
-            support_points = []
-            for i in range(c.shape[0]):
-                for j in range(c.shape[1]):
-                    c_val = c[i, j]
-                    if lower <= c_val <= upper:
-                        support_points.append(c_val)
-            return np.unique(np.array(support_points))[:max_points]
+            return np.array([])
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

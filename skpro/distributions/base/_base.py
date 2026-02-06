@@ -1801,6 +1801,11 @@ class BaseDistribution(BaseObject):
         np.ndarray
             Array of support points within [lower, upper]
         """
+        if self.ndim > 0:
+            raise NotImplementedError(
+                "_pmf_support only applies to scalar (0-dimensional) distributions."
+            )
+
         # For continuous distributions, return empty array
         if self.get_tag("distr:measuretype", "mixed") == "continuous":
             return np.array([])
