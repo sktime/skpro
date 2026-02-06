@@ -19,11 +19,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
     searchInput.addEventListener("keyup", function () {
         let value = this.value.toLowerCase();
-        let table = document.getElementById("tableContainer")
-        let rows = table.getElementsByTagName("tr");
-        for (var i = 1; i < rows.length; i++) {
-            var rowText = rows[i].textContent.toLowerCase();
-            rows[i].style.display = rowText.indexOf(value) > -1 ? "" : "none";
+        let container = document.getElementById("cardContainer");
+        let cards = container.getElementsByClassName("card");
+        for (var i = 0; i < cards.length; i++) {
+            var cardText = cards[i].textContent.toLowerCase();
+            cards[i].style.display = cardText.indexOf(value) > -1 ? "" : "none";
         }
     });
 
@@ -82,12 +82,12 @@ function filterTable() {
         }
     } else {
         visibleTagsOfTypes[filter] = {};
-        const table = document.getElementById("tableContainer");
-        const contentTableAll = sessionStorage.getItem("contentTableAll");
-        if (contentTableAll) {
-            table.innerHTML = contentTableAll;
+        const cachedData = sessionStorage.getItem("jsonData");
+        if (cachedData) {
+            const data = JSON.parse(cachedData);
+            renderTable(data, ["Class Name", "Estimator Type", "Module", "Dependencies", "Maintainers"]);
         } else {
-            fetchTableAll();
+            fetchJsonData();
         }
     }
     populateCheckboxes();
@@ -112,48 +112,34 @@ function fetchJsonData() {
         .catch(error => console.error("Error:", error));
 }
 
-function fetchTableAll() {
-    return fetch('docs/_static/table_all.html')
-        .then(response => {
-            if (response.ok) {
-                return response.text();
-            }
-            throw new Error('Failed to fetch the HTML content.');
-        })
-        .then(html => {
-            sessionStorage.setItem("contentTableAll", html);
-            filterTable();
-        });
-}
+
 
 function renderTable(data, header) {
-    const table = document.getElementById("tableContainer");
-    table.innerHTML = "";
-    let headerRow = "<tr>";
-    header.forEach((headerItem, index) => {
-        if (Array.isArray(headerItem)) {
-            headerItem.forEach(item => {
-                headerRow += `<th>${item.replace(/:/g, '<br>')}</th>`;
-            });
-        } else {
-            headerRow += `<th>${headerItem}</th>`;
-        }
-    });
-    headerRow += "</tr>";
-    table.innerHTML += headerRow;
+    const container = document.getElementById("cardContainer");
+    container.innerHTML = "";
     data.forEach(rowData => {
-        let rowContent = "<tr>";
-        header.forEach(headerItem => {
-            if (Array.isArray(headerItem)) {
-                headerItem.forEach(item => {
-                    rowContent += `<td>${rowData.Tags[item]}</td>`;
-                });
-            } else {
-                rowContent += `<td>${rowData[headerItem]}</td>`;
+        let card = document.createElement("div");
+        card.className = "card";
+        let html = `<h3>${rowData["Class Name"]}</h3>`;
+        header.forEach(item => {
+            if (item === "Class Name") return;
+            if (rowData[item] !== undefined) {
+                html += `<p><strong>${item}:</strong> ${rowData[item]}</p>`;
+            } else if (rowData.Tags && rowData.Tags[item]) {
+                html += `<p><strong>${item}:</strong> ${rowData.Tags[item]}</p>`;
             }
         });
-        rowContent += "</tr>";
-        table.innerHTML += rowContent;
+        if (rowData.Tags) {
+            html += `<div class="tags">`;
+            Object.entries(rowData.Tags).forEach(([key, val]) => {
+                if (val && header.includes(key)) {
+                    html += `<span class="tag">${key}: ${val}</span>`;
+                }
+            });
+            html += `</div>`;
+        }
+        card.innerHTML = html;
+        container.appendChild(card);
     });
 }
 

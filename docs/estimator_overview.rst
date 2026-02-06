@@ -3,11 +3,11 @@
 Estimator Overview
 ==================
 
-Use the below search table to find estimators by property.
+Use the below search grid to find estimators by property.
 
-* type into the search box to subset rows by substring search
+* type into the search box to subset cards by substring search
 * choose a type (distribution, regressor, survival, metric, ...) in the dropdown
-* if type is selected, check object tags to display in table
+* if type is selected, check object tags to display in cards
 * for explanation of tags, see the :ref:`tags reference <tags_reference>`
 
 .. raw:: html
@@ -20,14 +20,18 @@ Use the below search table to find estimators by property.
     #checkboxContainer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; box-sizing: border-box; }
     #checkboxContainer input[type="checkbox"] { margin-right: 5px; }
     #checkboxContainer label { white-space: nowrap; color: black; text-decoration: none; cursor: default; }
-    .table-container { width: 100%; overflow-x: auto; }
-    #tableContainer { float: left; table-layout: fixed; border-collapse: collapse; overflow-x: auto; }
-    #tableContainer th, #tableContainer td { border: 2px solid #888; text-align: center; word-break: break-word; width: 15vw; color: black; text-decoration: none; }
-    #tableContainer td:hover { background-color: #f5f5f5; }
+    .grid-container { width: 100%; }
+    #cardContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .card { border: 1px solid #ccc; padding: 15px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card:hover { background-color: #e9e9e9; transform: translateY(-2px); transition: all 0.2s; }
+    .card h3 { margin: 0 0 10px 0; font-size: 1.2em; color: #333; }
+    .card p { margin: 5px 0; font-size: 0.9em; }
+    .card .tags { margin-top: 10px; }
+    .card .tag { display: inline-block; background-color: #e0e0e0; padding: 2px 6px; margin: 2px; border-radius: 4px; font-size: 0.8em; }
     </style>
 
     <div class="top-container">
-        <input type="text" id="searchInput" placeholder="Search the table ..." />
+        <input type="text" id="searchInput" placeholder="Search the cards ..." />
         <div id="dropdownContainer">
             <select id="filterOptions">
                 <option value="all" selected>ALL</option>
@@ -41,6 +45,6 @@ Use the below search table to find estimators by property.
 
     <div id="checkboxContainer"></div>
 
-    <div class="table-container">
-        <table id="tableContainer"></table>
+    <div class="grid-container">
+        <div id="cardContainer"></div>
     </div>
