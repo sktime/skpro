@@ -59,7 +59,6 @@ class TransformedDistribution(BaseDistribution):
 
     _tags = {
         "capabilities:approx": [
-            "pdf",
             "pdfnorm",
             "mean",
             "var",
@@ -111,7 +110,7 @@ class TransformedDistribution(BaseDistribution):
             self.set_tags(
                 **{
                     "capabilities:exact": ["ppf", "cdf"],
-                    "capabilities:approx": ["pdf", "pdfnorm", "mean", "var", "energy"],
+                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
                 }
             )
 
@@ -248,123 +247,6 @@ class TransformedDistribution(BaseDistribution):
             cdf_res = pd.DataFrame(cdf_res, index=self.index, columns=self.columns)
 
         return cdf_res
-
-    def _pdf(self, x):
-        """Probability density function.
-
-        Parameters
-        ----------
-        x : 2D np.ndarray, same shape as ``self``
-            values to evaluate the pdf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            pdf values at the given points
-        """
-        if self.inverse_transform is None:
-            # Without inverse, use cdf differentiation approximation
-            x_coerced = self._coerce_to_self_index_df(x, flatten=False)
-            res = self._approx_derivative(x=x_coerced, fun=self.cdf)
-            res = np.abs(res)  # ensure non-negative
-            return res
-
-        inv_trafo = self.inverse_transform
-
-        x_orig = x  # keep original for derivative
-        if self.ndim != 0:
-            x = pd.DataFrame(x, index=self.index, columns=self.columns)
-        else:
-            x = pd.DataFrame([[float(x)]])
-
-        inv_x = inv_trafo(x)
-        if self.ndim != 0:
-            # Adjust index and columns to match the inner distribution
-            inv_x.index = self.distribution.index
-            inv_x.columns = self.distribution.columns
-        if self.ndim == 0:
-            inv_x = _coerce_to_scalar(inv_x)
-
-        # compute pdf of the inner distribution
-        inner_pdf = self.distribution.pdf(inv_x)
-
-        # compute the derivative of the inverse transform
-        # using numerical differentiation
-        h = 1e-8
-        if self.ndim == 0:
-            x_plus = pd.DataFrame([[x_orig + h]])
-            x_minus = pd.DataFrame([[x_orig - h]])
-        else:
-            x_plus = x_orig + h
-            x_minus = x_orig - h
-
-        inv_x_plus = inv_trafo(
-            x_plus
-            if self.ndim == 0
-            else pd.DataFrame(x_plus, index=self.index, columns=self.columns)
-        )
-        if self.ndim != 0:
-            inv_x_plus.index = self.distribution.index
-            inv_x_plus.columns = self.distribution.columns
-        if self.ndim == 0:
-            inv_x_plus = _coerce_to_scalar(inv_x_plus)
-
-        inv_x_minus = inv_trafo(
-            x_minus
-            if self.ndim == 0
-            else pd.DataFrame(x_minus, index=self.index, columns=self.columns)
-        )
-        if self.ndim != 0:
-            inv_x_minus.index = self.distribution.index
-            inv_x_minus.columns = self.distribution.columns
-        if self.ndim == 0:
-            inv_x_minus = _coerce_to_scalar(inv_x_minus)
-        if self.ndim != 0:
-            inv_x_minus.index = self.distribution.index
-            inv_x_minus.columns = self.distribution.columns
-        if self.ndim == 0:
-            inv_x_minus = _coerce_to_scalar(inv_x_minus)
-
-        if self.ndim == 0:
-            inv_x_plus = _coerce_to_scalar(inv_x_plus)
-            inv_x_minus = _coerce_to_scalar(inv_x_minus)
-            derivative = (inv_x_plus - inv_x_minus) / (2 * h)
-        else:
-            derivative = (inv_x_plus - inv_x_minus) / (2 * h)
-            if isinstance(derivative, pd.DataFrame):
-                derivative.index = self.distribution.index
-                derivative.columns = self.distribution.columns
-        # pdf = inner_pdf / |derivative|
-        pdf_res = inner_pdf / np.abs(derivative)
-
-        if isinstance(pdf_res, pd.DataFrame):
-            pdf_res.index = self.index
-            pdf_res.columns = self.columns
-        elif not self._is_scalar_dist:
-            pdf_res = pd.DataFrame(pdf_res, index=self.index, columns=self.columns)
-
-        return pdf_res
-
-    def pdfnorm(self, a=2):
-        """a-norm of pdf, with reduced sample size for efficiency."""
-        # Use very small sample size for TransformedDistribution to avoid timeout
-        approx_spl_size = 10  # instead of default ~1000
-        approx_method = (
-            f"by approximating the {a}-norm of the pdf by the arithmetic mean of "
-            f"{approx_spl_size} samples"
-        )
-        import warnings
-
-        warnings.warn(
-            self._method_error_msg("pdfnorm", fill_in=approx_method), stacklevel=2
-        )
-
-        # uses formula int p(x)^a dx = E[p(X)^{a-1}], and MC approximates the RHS
-        spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
-        if self.ndim == 0:
-            return np.mean(spl)
-        spl_df = pd.concat(spl, keys=range(approx_spl_size))
-        return spl_df.groupby(level=1, sort=False).mean()
 
     def _sample(self, n_samples=None):
         """Sample from the distribution.
