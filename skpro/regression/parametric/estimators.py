@@ -1,4 +1,4 @@
-"""Parametric regression estimators."""
+# -*- coding: utf-8 -*-
 
 import numpy as np
 from sklearn.base import BaseEstimator
@@ -7,7 +7,7 @@ from skpro.utils.utils import to_percent
 
 
 class Minimum(BaseEstimator):
-    """Minimum estimator.
+    """Minimum estimator
 
     Wrapping estimator that replaces predictions of the wrapped
     estimator that fall below a specified minimum threshold
@@ -44,20 +44,6 @@ class Minimum(BaseEstimator):
         self.relative = relative
 
     def fit(self, X, y):
-        """Fit the estimator.
-
-        Parameters
-        ----------
-        X : array-like
-            Training data.
-        y : array-like
-            Target values.
-
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
         # Forward fitting to wrapped estimator
         if getattr(self, "estimator", False):
             self.base_estimator.estimator = self.estimator
@@ -70,18 +56,6 @@ class Minimum(BaseEstimator):
         return self
 
     def predict(self, X):
-        """Predict using the fitted estimator.
-
-        Parameters
-        ----------
-        X : array-like
-            Test data.
-
-        Returns
-        -------
-        array-like
-            Predicted values.
-        """
         # Apply cut-off
         prediction = self.base_estimator.predict(X)
         prediction[prediction < self.minimum] = self.minimum
@@ -89,20 +63,18 @@ class Minimum(BaseEstimator):
         return prediction
 
     def __str__(self, describer=str):
-        """Return string representation of the estimator."""
         return (
             "Min(" + describer(self.base_estimator) + ", min=" + str(self.minimum) + ")"
         )
 
     def __repr__(self):
-        """Return detailed string representation of the estimator."""
         return self.__str__(repr)
 
 
 class Constant(BaseEstimator):
-    """Constant estimator.
+    """Constant estimator
 
-    Predicts predefined constant.
+    Predicts predefinied constant
 
     Parameters
     ----------
@@ -120,20 +92,6 @@ class Constant(BaseEstimator):
         self.name = name
 
     def fit(self, X, y):
-        """Fit the estimator.
-
-        Parameters
-        ----------
-        X : array-like
-            Training data.
-        y : array-like
-            Target values.
-
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
         # evaluate callables
         if callable(self.constant):
             self.constant = self.constant(X, y)
@@ -155,27 +113,14 @@ class Constant(BaseEstimator):
         return self
 
     def predict(self, X):
-        """Predict using the fitted estimator.
-
-        Parameters
-        ----------
-        X : array-like
-            Test data.
-
-        Returns
-        -------
-        array-like
-            Predicted values (constant).
-        """
         return np.ones((X.shape[0],)) * self.constant
 
     def __str__(self):
-        """Return string representation of the estimator."""
         return self.__repr__()
 
     def __repr__(self):
-        """Return detailed string representation of the estimator."""
         if self.name is None:
             return "C(" + str(self.constant) + ")"
         else:
             return "C(" + self.name + ")"
+            
