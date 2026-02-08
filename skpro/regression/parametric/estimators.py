@@ -122,4 +122,4 @@ class Constant(BaseEstimator):
         if self.name is None:
             return "C(" + str(self.constant) + ")"
         else:
-            return "C(" + self.name + ")"      
+            return "C(" + self.name + ")"
