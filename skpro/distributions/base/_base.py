@@ -1474,7 +1474,7 @@ class BaseDistribution(BaseObject):
             "capabilities:approx", []
         ):
             raise NotImplementedError(
-                "pdfnorm requires either an exact or approximate PDF or CDF to be implemented."
+                "pdfnorm requires either a PDF or CDF to be implemented."
             )
 
         approx_spl_size = self.get_tag("approx_spl")
