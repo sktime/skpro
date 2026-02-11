@@ -1470,7 +1470,9 @@ class BaseDistribution(BaseObject):
             return pd.DataFrame(1.0, index=self.index, columns=self.columns)
 
         # Check if exact or approximate PDF or CDF is available
-        if not self.get_tag("capabilities:exact", []) and not self.get_tag("capabilities:approx", []):
+        if not self.get_tag("capabilities:exact", []) and not self.get_tag(
+            "capabilities:approx", []
+        ):
             raise NotImplementedError(
                 "pdfnorm requires either an exact or approximate PDF or CDF to be implemented."
             )
