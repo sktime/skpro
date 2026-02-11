@@ -1469,6 +1469,12 @@ class BaseDistribution(BaseObject):
                 return 1.0
             return pd.DataFrame(1.0, index=self.index, columns=self.columns)
 
+        # Check if exact or approximate PDF or CDF is available
+        if not self.get_tag("capabilities:exact", []) and not self.get_tag("capabilities:approx", []):
+            raise NotImplementedError(
+                "pdfnorm requires either an exact or approximate PDF or CDF to be implemented."
+            )
+
         approx_spl_size = self.get_tag("approx_spl")
         approx_method = (
             f"by approximating the {a}-norm of the pdf by the arithmetic mean of "

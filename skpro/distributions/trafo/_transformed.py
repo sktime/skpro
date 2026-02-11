@@ -59,7 +59,6 @@ class TransformedDistribution(BaseDistribution):
 
     _tags = {
         "capabilities:approx": [
-            "pdfnorm",
             "mean",
             "var",
             "energy",
@@ -110,7 +109,7 @@ class TransformedDistribution(BaseDistribution):
             self.set_tags(
                 **{
                     "capabilities:exact": ["ppf", "cdf"],
-                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
+                    "capabilities:approx": ["mean", "var", "energy"],
                 }
             )
 
