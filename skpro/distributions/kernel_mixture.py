@@ -133,6 +133,54 @@ class KernelMixture(BaseDistribution):
         pdf_flat = np.sum(weights[None, :] * K, axis=1) / h
         return pdf_flat.reshape(x.shape)
 
+    def _kernel_sample(self, size):
+        """Sample from the kernel distribution."""
+        rng = np.random.default_rng()
+        return rng.standard_normal(size)
+
+    def _sample(self, n_samples=None):
+        """Sample from the distribution."""
+        rng = np.random.default_rng()
+        h = self._bandwidth
+        support = self._support
+        weights = self._weights
+
+        if n_samples is None:
+            n_draw = 1
+        else:
+            n_draw = n_samples
+
+        if self.ndim == 0:
+            idx = rng.choice(len(support), size=n_draw, p=weights)
+            centers = support[idx]
+            noise = self._kernel_sample(n_draw)
+            samples = centers + h * noise
+
+            if n_samples is None:
+                return float(samples[0])
+            return pd.DataFrame(samples, columns=self.columns)
+
+        n_rows, n_cols = self.shape
+        total = n_draw * n_rows * n_cols
+
+        idx = rng.choice(len(support), size=total, p=weights)
+        centers = support[idx]
+        noise = self._kernel_sample(total)
+        samples_flat = centers + h * noise
+        samples = samples_flat.reshape(n_draw, n_rows, n_cols)
+
+        if n_samples is None:
+            return pd.DataFrame(
+                samples[0], index=self.index, columns=self.columns
+            )
+
+        spl_index = pd.MultiIndex.from_product([range(n_draw), self.index])
+        return pd.DataFrame(
+            samples.reshape(n_draw * n_rows, n_cols),
+            index=spl_index,
+            columns=self.columns,
+        )
+
     def _iloc(self, rowidx=None, colidx=None):
         """Subset distribution by integer row/column indices."""
         from skpro.distributions.base._base import is_scalar_notnone
