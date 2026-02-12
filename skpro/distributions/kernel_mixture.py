@@ -45,7 +45,7 @@ class KernelMixture(BaseDistribution):
 
     _tags = {
         "capabilities:approx": ["energy", "ppf", "pdfnorm"],
-        "capabilities:exact": [],
+        "capabilities:exact": ['pdf'],
         "distr:measuretype": "continuous",
         "distr:paramtype": "nonparametric",
         "broadcast_init": "off",
@@ -105,6 +105,33 @@ class KernelMixture(BaseDistribution):
             n_rows = len(index) if index is not None else 1
             n_cols = len(columns) if columns is not None else 1
             self._shape = (n_rows, n_cols)
+
+    # --- Kernel evaluation helpers ---
+
+    def _kernel_pdf(self, u):
+        """Evaluate kernel pdf K(u), vectorized."""
+        kernel = self.kernel
+        if kernel == "gaussian":
+            return np.exp(-0.5 * u**2) / np.sqrt(2 * np.pi)
+
+    # --- BaseDistribution interface ---
+
+    def _pdf(self, x):
+        """Probability density function."""
+        h = self._bandwidth
+        support = self._support
+        weights = self._weights
+
+        if self.ndim == 0:
+            x_val = float(x)
+            u = (x_val - support) / h
+            return np.sum(weights * self._kernel_pdf(u)) / h
+
+        x_flat = x.ravel()
+        u = (x_flat[:, None] - support[None, :]) / h
+        K = self._kernel_pdf(u)
+        pdf_flat = np.sum(weights[None, :] * K, axis=1) / h
+        return pdf_flat.reshape(x.shape)
 
     def _iloc(self, rowidx=None, colidx=None):
         """Subset distribution by integer row/column indices."""
