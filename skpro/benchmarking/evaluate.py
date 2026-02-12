@@ -194,8 +194,11 @@ def evaluate(
             "but dask is not present in the python environment"
         )
 
-    # todo: input checks and coercions
-    # cv = check_cv(cv, enforce_start_with_window=True)
+    if len(X) != len(y):
+        raise ValueError(
+            f"X and y must have the same number of rows, "
+            f"but found len(X)={len(X)} and len(y)={len(y)}"
+        )
 
     scoring = _check_scores(scoring)
 
@@ -408,8 +411,8 @@ def _check_scores(metrics):
     ----------
     metrics : skpro accepted metrics object or a list of them or None
 
-    Return
-    ------
+    Returns
+    -------
     metrics_type : Dict
         The key is metric types and its value is a list of its corresponding metrics.
     """
