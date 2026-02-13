@@ -15,6 +15,8 @@ from skpro.distributions.base import BaseDistribution
 # used in _var to compute Var[X] = h^2 * Var[K] + Var_w(support)
 _KERNEL_VARIANCE = {
     "gaussian": 1.0,
+    "epanechnikov": 1.0 / 5.0,
+    "tophat": 1.0 / 3.0,
 }
 
 
@@ -60,7 +62,7 @@ class KernelMixture(BaseDistribution):
         "broadcast_init": "off",
     }
 
-    _VALID_KERNELS = {"gaussian"}
+    _VALID_KERNELS = {"gaussian", "epanechnikov", "tophat"}
 
     def __init__(
         self,
@@ -122,12 +124,45 @@ class KernelMixture(BaseDistribution):
         kernel = self.kernel
         if kernel == "gaussian":
             return np.exp(-0.5 * u**2) / np.sqrt(2 * np.pi)
+        elif kernel == "epanechnikov":
+            return np.where(np.abs(u) <= 1, 0.75 * (1 - u**2), 0.0)
+        elif kernel == "tophat":
+            return np.where(np.abs(u) <= 1, 0.5, 0.0)
 
     def _kernel_cdf(self, u):
         """Evaluate kernel cdf, vectorized."""
         kernel = self.kernel
         if kernel == "gaussian":
             return 0.5 * (1 + erf(u / np.sqrt(2)))
+        elif kernel == "epanechnikov":
+            cdf_inner = 0.5 + 0.75 * u - 0.25 * u**3
+            return np.where(u < -1, 0.0, np.where(u > 1, 1.0, cdf_inner))
+        elif kernel == "tophat":
+            cdf_inner = 0.5 * (1 + u)
+            return np.where(u < -1, 0.0, np.where(u > 1, 1.0, cdf_inner))
+
+    def _kernel_sample(self, size):
+        """Sample from the kernel distribution."""
+        rng = np.random.default_rng()
+        kernel = self.kernel
+
+        if kernel == "gaussian":
+            return rng.standard_normal(size)
+        elif kernel == "tophat":
+            return rng.uniform(-1, 1, size)
+        elif kernel == "epanechnikov":
+            samples = np.empty(size)
+            n_total = int(np.prod(size)) if isinstance(size, tuple) else size
+            count = 0
+            while count < n_total:
+                proposal = rng.uniform(-1, 1, n_total - count)
+                accept_prob = 1 - proposal**2
+                accepted = proposal[rng.random(n_total - count) < accept_prob]
+                n_accept = min(len(accepted), n_total - count)
+                samples_flat = samples.ravel()
+                samples_flat[count : count + n_accept] = accepted[:n_accept]
+                count += n_accept
+            return samples.reshape(size) if isinstance(size, tuple) else samples
 
     def _mean(self):
         r"""Return expected value of the distribution.
@@ -199,11 +234,6 @@ class KernelMixture(BaseDistribution):
         K_cdf = self._kernel_cdf(u)
         cdf_flat = np.sum(weights[None, :] * K_cdf, axis=1)
         return cdf_flat.reshape(x.shape)
-
-    def _kernel_sample(self, size):
-        """Sample from the kernel distribution."""
-        rng = np.random.default_rng()
-        return rng.standard_normal(size)
 
     def _sample(self, n_samples=None):
         """Sample from the distribution."""
@@ -305,5 +335,11 @@ class KernelMixture(BaseDistribution):
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2]
+        params3 = {
+            "support": [-1.0, 0.0, 1.0, 2.0],
+            "bandwidth": 0.8,
+            "kernel": "epanechnikov",
+            "weights": [0.1, 0.4, 0.4, 0.1],
+        }
+        return [params1, params2, params3]
 
