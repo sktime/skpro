@@ -11,6 +11,14 @@ from skpro.distributions.base import BaseDistribution
 
 
 
+# Kernel variance lookup: Var[K] for each built-in kernel
+# used in _var to compute Var[X] = h^2 * Var[K] + Var_w(support)
+_KERNEL_VARIANCE = {
+    "gaussian": 1.0,
+}
+
+
+
 class KernelMixture(BaseDistribution):
     r"""Kernel mixture distribution, a.k.a. kernel density estimate.
 
@@ -46,7 +54,7 @@ class KernelMixture(BaseDistribution):
 
     _tags = {
         "capabilities:approx": ["energy", "ppf", "pdfnorm"],
-        "capabilities:exact": ['pdf', 'cdf'],
+        "capabilities:exact": ['mean', 'var', 'pdf', 'cdf'],
         "distr:measuretype": "continuous",
         "distr:paramtype": "nonparametric",
         "broadcast_init": "off",
@@ -120,6 +128,32 @@ class KernelMixture(BaseDistribution):
         kernel = self.kernel
         if kernel == "gaussian":
             return 0.5 * (1 + erf(u / np.sqrt(2)))
+
+    def _mean(self):
+        r"""Return expected value of the distribution.
+
+        For a kernel mixture:
+        :math:`\mathbb{E}[X] = \sum_i w_i x_i`
+        """
+        mean_val = np.sum(self._weights * self._support)
+        if self.ndim > 0:
+            return np.full(self.shape, mean_val)
+        return mean_val
+
+    def _var(self):
+        r"""Return element/entry-wise variance of the distribution.
+
+        For a kernel mixture, by the law of total variance:
+        :math:`\mathrm{Var}[X] = h^2 \mathrm{Var}[K] + \sum_i w_i (x_i - \mu)^2`
+        """
+        h = self._bandwidth
+        mean_val = np.sum(self._weights * self._support)
+        weighted_var = np.sum(self._weights * (self._support - mean_val) ** 2)
+        kernel_var = _KERNEL_VARIANCE.get(self.kernel, 1.0)
+        var_val = h**2 * kernel_var + weighted_var
+        if self.ndim > 0:
+            return np.full(self.shape, var_val)
+        return var_val
 
     # --- BaseDistribution interface ---
 
