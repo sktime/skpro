@@ -54,7 +54,7 @@ class KernelMixture(BaseDistribution):
 
     _tags = {
         "capabilities:approx": ["energy", "ppf", "pdfnorm"],
-        "capabilities:exact": ['mean', 'var', 'pdf', 'cdf'],
+        "capabilities:exact": ['mean', 'var', 'pdf', 'log_pdf', 'cdf'],
         "distr:measuretype": "continuous",
         "distr:paramtype": "nonparametric",
         "broadcast_init": "off",
@@ -173,6 +173,15 @@ class KernelMixture(BaseDistribution):
         K = self._kernel_pdf(u)
         pdf_flat = np.sum(weights[None, :] * K, axis=1) / h
         return pdf_flat.reshape(x.shape)
+
+    def _log_pdf(self, x):
+        """Logarithmic probability density function."""
+        pdf_val = self._pdf(x)
+        if np.isscalar(pdf_val):
+            pdf_val = max(pdf_val, 1e-300)
+        else:
+            pdf_val = np.clip(pdf_val, 1e-300, None)
+        return np.log(pdf_val)
 
     def _cdf(self, x):
         """Cumulative distribution function."""
