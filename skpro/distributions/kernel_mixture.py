@@ -5,6 +5,7 @@ __author__ = ["amaydixit11"]
 
 import numpy as np
 import pandas as pd
+from scipy.special import erf
 
 from skpro.distributions.base import BaseDistribution
 
@@ -45,7 +46,7 @@ class KernelMixture(BaseDistribution):
 
     _tags = {
         "capabilities:approx": ["energy", "ppf", "pdfnorm"],
-        "capabilities:exact": ['pdf'],
+        "capabilities:exact": ['pdf', 'cdf'],
         "distr:measuretype": "continuous",
         "distr:paramtype": "nonparametric",
         "broadcast_init": "off",
@@ -114,6 +115,12 @@ class KernelMixture(BaseDistribution):
         if kernel == "gaussian":
             return np.exp(-0.5 * u**2) / np.sqrt(2 * np.pi)
 
+    def _kernel_cdf(self, u):
+        """Evaluate kernel cdf, vectorized."""
+        kernel = self.kernel
+        if kernel == "gaussian":
+            return 0.5 * (1 + erf(u / np.sqrt(2)))
+
     # --- BaseDistribution interface ---
 
     def _pdf(self, x):
@@ -132,6 +139,23 @@ class KernelMixture(BaseDistribution):
         K = self._kernel_pdf(u)
         pdf_flat = np.sum(weights[None, :] * K, axis=1) / h
         return pdf_flat.reshape(x.shape)
+
+    def _cdf(self, x):
+        """Cumulative distribution function."""
+        h = self._bandwidth
+        support = self._support
+        weights = self._weights
+
+        if self.ndim == 0:
+            x_val = float(x)
+            u = (x_val - support) / h
+            return np.sum(weights * self._kernel_cdf(u))
+
+        x_flat = x.ravel()
+        u = (x_flat[:, None] - support[None, :]) / h
+        K_cdf = self._kernel_cdf(u)
+        cdf_flat = np.sum(weights[None, :] * K_cdf, axis=1)
+        return cdf_flat.reshape(x.shape)
 
     def _kernel_sample(self, size):
         """Sample from the kernel distribution."""
