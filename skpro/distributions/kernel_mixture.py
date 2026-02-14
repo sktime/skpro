@@ -41,12 +41,20 @@ class KernelMixture(BaseDistribution):
     ----------
     support : array-like, 1D
         Support points (data) on which the kernel density is centered.
-    bandwidth : float, default=1.0
+    bandwidth : float, or str ``"scott"`` or ``"silverman"``, default=1.0
         Bandwidth of the kernel.
+        If float, used directly as the bandwidth parameter ``h``.
+        If ``"scott"``, bandwidth is computed as
+        ``n**(-1/5) * std(support)``.
+        If ``"silverman"``, bandwidth is computed as
+        ``(4/(3*n))**(1/5) * std(support)``.
     kernel : str, default="gaussian"
-        The kernel function to use.
+        The kernel function to use. Must be one of:
+        ``"gaussian"``, ``"epanechnikov"``, ``"tophat"``,
+        ``"cosine"``, ``"linear"``.
     weights : array-like or None, default=None
         Weights for each support point. If None, uniform weights are used.
+        Weights are normalized to sum to 1.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -91,7 +99,22 @@ class KernelMixture(BaseDistribution):
         self._support = np.asarray(support, dtype=float).ravel()
         n = len(self._support)
 
-        self._bandwidth = float(bandwidth)
+        # resolve bandwidth
+        if isinstance(bandwidth, str):
+            std = np.std(self._support)
+            if std == 0:
+                std = 1.0
+            if bandwidth == "scott":
+                self._bandwidth = n ** (-1.0 / 5.0) * std
+            elif bandwidth == "silverman":
+                self._bandwidth = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
+            else:
+                raise ValueError(
+                    f"Unknown bandwidth rule '{bandwidth}'. "
+                    "Must be a float, 'scott', or 'silverman'."
+                )
+        else:
+            self._bandwidth = float(bandwidth)
 
         # normalize weights
         if weights is None:
@@ -374,6 +397,11 @@ class KernelMixture(BaseDistribution):
             "kernel": "epanechnikov",
             "weights": [0.1, 0.4, 0.4, 0.1],
         }
+        params4 = {
+            "support": np.linspace(-2, 2, 20),
+            "bandwidth": "scott",
+            "kernel": "tophat",
+        }
         params5 = {
             "support": [0.0, 1.0, 2.0],
             "bandwidth": 0.5,
@@ -381,5 +409,5 @@ class KernelMixture(BaseDistribution):
             "index": pd.RangeIndex(2),
             "columns": pd.Index(["x"]),
         }
-        return [params1, params2, params3, params5]
+        return [params1, params2, params3, params4, params5]
 
