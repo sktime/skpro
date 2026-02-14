@@ -37,6 +37,11 @@ class KernelMixture(BaseDistribution):
     :math:`x_i` are the support points, and :math:`w_i` are the weights
     (summing to 1).
 
+    This is a vectorized special case of ``Mixture`` where all components
+    share a common kernel type and bandwidth. Unlike ``Mixture``, it does
+    not create per-component distribution objects, making it efficient
+    for large numbers of support points (e.g., kernel density estimation).
+
     Parameters
     ----------
     support : array-like, 1D
@@ -48,15 +53,41 @@ class KernelMixture(BaseDistribution):
         ``n**(-1/5) * std(support)``.
         If ``"silverman"``, bandwidth is computed as
         ``(4/(3*n))**(1/5) * std(support)``.
-    kernel : str, default="gaussian"
-        The kernel function to use. Must be one of:
+    kernel : str or ``BaseDistribution``, default="gaussian"
+        The kernel function to use.
+        If str, must be one of the built-in kernels:
         ``"gaussian"``, ``"epanechnikov"``, ``"tophat"``,
         ``"cosine"``, ``"linear"``.
+        If a ``BaseDistribution`` instance, it is used as a zero-centered,
+        unit-scale kernel. The distribution must be scalar (0D).
+        This is an experimental feature for custom kernels.
     weights : array-like or None, default=None
         Weights for each support point. If None, uniform weights are used.
         Weights are normalized to sum to 1.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
+
+    Examples
+    --------
+    >>> from skpro.distributions.kernel_mixture import KernelMixture
+    >>> import numpy as np
+
+    Scalar distribution with built-in Gaussian kernel:
+
+    >>> support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+    >>> km = KernelMixture(support=support, bandwidth=0.5, kernel="gaussian")
+    >>> km.mean()
+    2.0
+    >>> pdf_val = km.pdf(1.5)
+
+    Using a distribution object as a custom kernel (experimental):
+
+    >>> from skpro.distributions.normal import Normal
+    >>> km_custom = KernelMixture(
+    ...     support=[0.0, 1.0, 2.0],
+    ...     bandwidth=0.5,
+    ...     kernel=Normal(mu=0, sigma=1),
+    ... )
 
     See Also
     --------
@@ -88,11 +119,20 @@ class KernelMixture(BaseDistribution):
         self.kernel = kernel
         self.weights = weights
 
-        # validate kernel
-        if kernel not in self._VALID_KERNELS:
-            raise ValueError(
-                f"Unknown kernel '{kernel}'. "
-                f"Must be one of {sorted(self._VALID_KERNELS)}."
+        # determine kernel mode: "builtin" string or "distribution" object
+        if isinstance(kernel, str):
+            if kernel not in self._VALID_KERNELS:
+                raise ValueError(
+                    f"Unknown kernel '{kernel}'. "
+                    f"Must be one of {sorted(self._VALID_KERNELS)}."
+                )
+            self._kernel_mode = "builtin"
+        elif isinstance(kernel, BaseDistribution):
+            self._kernel_mode = "distribution"
+        else:
+            raise TypeError(
+                f"kernel must be a string or a BaseDistribution instance, "
+                f"got {type(kernel).__name__}."
             )
 
         # coerce support to 1D numpy array
@@ -146,6 +186,17 @@ class KernelMixture(BaseDistribution):
 
     def _kernel_pdf(self, u):
         """Evaluate kernel pdf K(u), vectorized."""
+        if self._kernel_mode == "distribution":
+            kernel_dist = self.kernel
+            u_arr = np.asarray(u)
+            original_shape = u_arr.shape
+            u_flat = u_arr.ravel()
+            pdf_vals = np.array(
+                [kernel_dist._pdf(np.atleast_2d(v)) for v in u_flat],
+                dtype=float,
+            ).ravel()
+            return pdf_vals.reshape(original_shape)
+
         kernel = self.kernel
         if kernel == "gaussian":
             return np.exp(-0.5 * u**2) / np.sqrt(2 * np.pi)
@@ -164,6 +215,17 @@ class KernelMixture(BaseDistribution):
 
     def _kernel_cdf(self, u):
         """Evaluate kernel cdf, vectorized."""
+        if self._kernel_mode == "distribution":
+            kernel_dist = self.kernel
+            u_arr = np.asarray(u)
+            original_shape = u_arr.shape
+            u_flat = u_arr.ravel()
+            cdf_vals = np.array(
+                [kernel_dist._cdf(np.atleast_2d(v)) for v in u_flat],
+                dtype=float,
+            ).ravel()
+            return cdf_vals.reshape(original_shape)
+
         kernel = self.kernel
         if kernel == "gaussian":
             return 0.5 * (1 + erf(u / np.sqrt(2)))
@@ -184,6 +246,15 @@ class KernelMixture(BaseDistribution):
 
     def _kernel_sample(self, size):
         """Sample from the kernel distribution."""
+        if self._kernel_mode == "distribution":
+            kernel_dist = self.kernel
+            n_total = int(np.prod(size)) if isinstance(size, tuple) else size
+            samples_df = kernel_dist.sample(n_total)
+            samples = samples_df.values.ravel()
+            if isinstance(size, tuple):
+                return samples.reshape(size)
+            return samples
+
         rng = np.random.default_rng()
         kernel = self.kernel
 
@@ -220,6 +291,17 @@ class KernelMixture(BaseDistribution):
         elif kernel == "linear":
             return rng.triangular(-1, 0, 1, size)
 
+    def _kernel_variance(self):
+        """Return the variance of the kernel function."""
+        if self._kernel_mode == "distribution":
+            kernel_dist = self.kernel
+            var_val = kernel_dist.var()
+            if hasattr(var_val, "values"):
+                return float(var_val.values.ravel()[0])
+            return float(var_val)
+
+        return _KERNEL_VARIANCE.get(self.kernel, 1.0)
+
     def _mean(self):
         r"""Return expected value of the distribution.
 
@@ -240,7 +322,7 @@ class KernelMixture(BaseDistribution):
         h = self._bandwidth
         mean_val = np.sum(self._weights * self._support)
         weighted_var = np.sum(self._weights * (self._support - mean_val) ** 2)
-        kernel_var = _KERNEL_VARIANCE.get(self.kernel, 1.0)
+        kernel_var = self._kernel_variance()
         var_val = h**2 * kernel_var + weighted_var
         if self.ndim > 0:
             return np.full(self.shape, var_val)
