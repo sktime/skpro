@@ -17,6 +17,8 @@ _KERNEL_VARIANCE = {
     "gaussian": 1.0,
     "epanechnikov": 1.0 / 5.0,
     "tophat": 1.0 / 3.0,
+    "cosine": 1.0 - 8.0 / (np.pi**2),
+    "linear": 1.0 / 6.0,
 }
 
 
@@ -62,7 +64,7 @@ class KernelMixture(BaseDistribution):
         "broadcast_init": "off",
     }
 
-    _VALID_KERNELS = {"gaussian", "epanechnikov", "tophat"}
+    _VALID_KERNELS = {"gaussian", "epanechnikov", "tophat", "cosine", "linear"}
 
     def __init__(
         self,
@@ -128,6 +130,14 @@ class KernelMixture(BaseDistribution):
             return np.where(np.abs(u) <= 1, 0.75 * (1 - u**2), 0.0)
         elif kernel == "tophat":
             return np.where(np.abs(u) <= 1, 0.5, 0.0)
+        elif kernel == "cosine":
+            return np.where(
+                np.abs(u) <= 1,
+                (np.pi / 4) * np.cos(np.pi * u / 2),
+                0.0,
+            )
+        elif kernel == "linear":
+            return np.where(np.abs(u) <= 1, 1 - np.abs(u), 0.0)
 
     def _kernel_cdf(self, u):
         """Evaluate kernel cdf, vectorized."""
@@ -139,6 +149,14 @@ class KernelMixture(BaseDistribution):
             return np.where(u < -1, 0.0, np.where(u > 1, 1.0, cdf_inner))
         elif kernel == "tophat":
             cdf_inner = 0.5 * (1 + u)
+            return np.where(u < -1, 0.0, np.where(u > 1, 1.0, cdf_inner))
+        elif kernel == "cosine":
+            cdf_inner = 0.5 + 0.5 * np.sin(np.pi * u / 2)
+            return np.where(u < -1, 0.0, np.where(u > 1, 1.0, cdf_inner))
+        elif kernel == "linear":
+            cdf_low = 0.5 * (1 + u) ** 2
+            cdf_high = 1 - 0.5 * (1 - u) ** 2
+            cdf_inner = np.where(u <= 0, cdf_low, cdf_high)
             return np.where(u < -1, 0.0, np.where(u > 1, 1.0, cdf_inner))
 
     def _kernel_sample(self, size):
@@ -163,6 +181,21 @@ class KernelMixture(BaseDistribution):
                 samples_flat[count : count + n_accept] = accepted[:n_accept]
                 count += n_accept
             return samples.reshape(size) if isinstance(size, tuple) else samples
+        elif kernel == "cosine":
+            samples = np.empty(size)
+            n_total = int(np.prod(size)) if isinstance(size, tuple) else size
+            count = 0
+            while count < n_total:
+                proposal = rng.uniform(-1, 1, n_total - count)
+                accept_prob = np.cos(np.pi * proposal / 2)
+                accepted = proposal[rng.random(n_total - count) < accept_prob]
+                n_accept = min(len(accepted), n_total - count)
+                samples_flat = samples.ravel()
+                samples_flat[count : count + n_accept] = accepted[:n_accept]
+                count += n_accept
+            return samples.reshape(size) if isinstance(size, tuple) else samples
+        elif kernel == "linear":
+            return rng.triangular(-1, 0, 1, size)
 
     def _mean(self):
         r"""Return expected value of the distribution.
@@ -341,5 +374,12 @@ class KernelMixture(BaseDistribution):
             "kernel": "epanechnikov",
             "weights": [0.1, 0.4, 0.4, 0.1],
         }
-        return [params1, params2, params3]
+        params5 = {
+            "support": [0.0, 1.0, 2.0],
+            "bandwidth": 0.5,
+            "kernel": "cosine",
+            "index": pd.RangeIndex(2),
+            "columns": pd.Index(["x"]),
+        }
+        return [params1, params2, params3, params5]
 
