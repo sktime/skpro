@@ -22,8 +22,8 @@ class Exponential(_ScipyAdapter):
 
     The rate :math:`\lambda` is represented by the parameter ``rate``,
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     rate : float or array of float (1D or 2D)
         rate of the distribution
         rate = 1/scale
