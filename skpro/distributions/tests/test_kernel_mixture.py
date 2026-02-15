@@ -178,6 +178,13 @@ class TestKernelMixture:
         sub_scalar = km.iloc[0, 0]
         assert sub_scalar.shape == ()
 
+    @pytest.mark.parametrize("rule", ["scott", "silverman"])
+    def test_auto_bandwidth_single_element(self, rule):
+        """Test that string bandwidth with single-element support doesn't produce nan."""
+        km = KernelMixture(support=[5.0], bandwidth=rule, kernel="gaussian")
+        assert np.isfinite(km._bandwidth)
+        assert km._bandwidth > 0
+
     def test_invalid_kernel_type_raises(self):
         """Test that non-string non-distribution kernel raises TypeError."""
         with pytest.raises(TypeError, match="kernel must be a string"):

@@ -68,7 +68,14 @@ class KernelMixture(BaseDistribution):
         Controls randomness for reproducible sampling.
         If int, used as seed for ``np.random.default_rng``.
         If ``np.random.Generator``, used directly.
-        If None, a fresh unseeded ``default_rng()`` is used each call.
+        If None, a fresh unseeded ``default_rng()`` is created at init.
+
+        .. note::
+
+            When ``kernel`` is a ``BaseDistribution`` instance, the kernel's
+            own RNG is used for noise generation and is **not** controlled
+            by ``random_state``.  Only the support-point selection is
+            reproducible in that case.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -126,6 +133,14 @@ class KernelMixture(BaseDistribution):
         self.weights = weights
         self.random_state = random_state
 
+        # resolve RNG once so repeated sample() calls produce independent draws
+        if isinstance(random_state, np.random.Generator):
+            self._rng = random_state
+        elif random_state is not None:
+            self._rng = np.random.default_rng(random_state)
+        else:
+            self._rng = np.random.default_rng()
+
         # determine kernel mode: "builtin" string or "distribution" object
         if isinstance(kernel, str):
             if kernel not in self._VALID_KERNELS:
@@ -148,8 +163,11 @@ class KernelMixture(BaseDistribution):
 
         # resolve bandwidth
         if isinstance(bandwidth, str):
-            std = np.std(self._support, ddof=1)
-            if std < 1e-15:
+            import warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)
+                std = np.std(self._support, ddof=1)
+            if np.isnan(std) or std < 1e-15:
                 std = 1.0
             if bandwidth == "scott":
                 self._bandwidth = n ** (-1.0 / 5.0) * std
@@ -383,13 +401,7 @@ class KernelMixture(BaseDistribution):
 
     def _sample(self, n_samples=None):
         """Sample from the distribution."""
-        rs = self.random_state
-        if isinstance(rs, np.random.Generator):
-            rng = rs
-        elif rs is not None:
-            rng = np.random.default_rng(rs)
-        else:
-            rng = np.random.default_rng()
+        rng = self._rng
         h = self._bandwidth
         support = self._support
         weights = self._weights
