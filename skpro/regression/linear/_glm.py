@@ -464,10 +464,12 @@ class GLMRegressor(BaseProbaRegressor):
         elif skp_dist == Gamma:
             y_mean = y_predictions_df["mean"]
             scale = self.scale_
-            
+
             y_alpha = pd.Series(1 / scale, index=y_mean.index, name="alpha").to_frame()
-            y_beta = pd.Series(1 / (scale * y_mean), index=y_mean.index, name="beta").to_frame()
-            
+            y_beta = pd.Series(
+                1 / (scale * y_mean), index=y_mean.index, name="beta"
+            ).to_frame()
+
             params["alpha"] = y_alpha
             params["beta"] = y_beta
 
