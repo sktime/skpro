@@ -50,9 +50,9 @@ class KernelMixture(BaseDistribution):
         Bandwidth of the kernel.
         If float, used directly as the bandwidth parameter ``h``.
         If ``"scott"``, bandwidth is computed as
-        ``n**(-1/5) * std(support)``.
+        ``n**(-1/5) * std(support, ddof=1)``.
         If ``"silverman"``, bandwidth is computed as
-        ``(4/(3*n))**(1/5) * std(support)``.
+        ``(4/(3*n))**(1/5) * std(support, ddof=1)``.
     kernel : str or ``BaseDistribution``, default="gaussian"
         The kernel function to use.
         If str, must be one of the built-in kernels:
@@ -64,6 +64,11 @@ class KernelMixture(BaseDistribution):
     weights : array-like or None, default=None
         Weights for each support point. If None, uniform weights are used.
         Weights are normalized to sum to 1.
+    random_state : int, np.random.Generator, or None, default=None
+        Controls randomness for reproducible sampling.
+        If int, used as seed for ``np.random.default_rng``.
+        If ``np.random.Generator``, used directly.
+        If None, a fresh unseeded ``default_rng()`` is used each call.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -111,6 +116,7 @@ class KernelMixture(BaseDistribution):
         bandwidth=1.0,
         kernel="gaussian",
         weights=None,
+        random_state=None,
         index=None,
         columns=None,
     ):
@@ -118,6 +124,7 @@ class KernelMixture(BaseDistribution):
         self.bandwidth = bandwidth
         self.kernel = kernel
         self.weights = weights
+        self.random_state = random_state
 
         # determine kernel mode: "builtin" string or "distribution" object
         if isinstance(kernel, str):
@@ -141,7 +148,7 @@ class KernelMixture(BaseDistribution):
 
         # resolve bandwidth
         if isinstance(bandwidth, str):
-            std = np.std(self._support)
+            std = np.std(self._support, ddof=1)
             if std < 1e-15:
                 std = 1.0
             if bandwidth == "scott":
@@ -248,7 +255,7 @@ class KernelMixture(BaseDistribution):
         else:
             raise ValueError(f"Unsupported kernel '{kernel}'.")
 
-    def _kernel_sample(self, size):
+    def _kernel_sample(self, size, rng):
         """Sample from the kernel distribution."""
         if self._kernel_mode == "distribution":
             kernel_dist = self.kernel
@@ -258,8 +265,6 @@ class KernelMixture(BaseDistribution):
             if isinstance(size, tuple):
                 return samples.reshape(size)
             return samples
-
-        rng = np.random.default_rng()
         kernel = self.kernel
 
         if kernel == "gaussian":
@@ -378,7 +383,13 @@ class KernelMixture(BaseDistribution):
 
     def _sample(self, n_samples=None):
         """Sample from the distribution."""
-        rng = np.random.default_rng()
+        rs = self.random_state
+        if isinstance(rs, np.random.Generator):
+            rng = rs
+        elif rs is not None:
+            rng = np.random.default_rng(rs)
+        else:
+            rng = np.random.default_rng()
         h = self._bandwidth
         support = self._support
         weights = self._weights
@@ -391,7 +402,7 @@ class KernelMixture(BaseDistribution):
         if self.ndim == 0:
             idx = rng.choice(len(support), size=n_draw, p=weights)
             centers = support[idx]
-            noise = self._kernel_sample(n_draw)
+            noise = self._kernel_sample(n_draw, rng)
             samples = centers + h * noise
 
             if n_samples is None:
@@ -403,7 +414,7 @@ class KernelMixture(BaseDistribution):
 
         idx = rng.choice(len(support), size=total, p=weights)
         centers = support[idx]
-        noise = self._kernel_sample(total)
+        noise = self._kernel_sample(total, rng)
         samples_flat = centers + h * noise
         samples = samples_flat.reshape(n_draw, n_rows, n_cols)
 
@@ -448,6 +459,7 @@ class KernelMixture(BaseDistribution):
             bandwidth=self.bandwidth,
             kernel=self.kernel,
             weights=self.weights,
+            random_state=self.random_state,
             index=index_subset,
             columns=columns_subset,
         )
@@ -459,6 +471,7 @@ class KernelMixture(BaseDistribution):
             bandwidth=self.bandwidth,
             kernel=self.kernel,
             weights=self.weights,
+            random_state=self.random_state,
         )
 
     @classmethod

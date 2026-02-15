@@ -140,18 +140,31 @@ class TestKernelMixture:
         sample_mean = samples.values.mean()
         assert abs(sample_mean - simple_km.mean()) < 0.1
 
+    def test_random_state_reproducibility(self):
+        """Test that random_state produces reproducible samples."""
+        support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+        km1 = KernelMixture(
+            support=support, bandwidth=0.5, kernel="gaussian", random_state=42
+        )
+        km2 = KernelMixture(
+            support=support, bandwidth=0.5, kernel="gaussian", random_state=42
+        )
+        s1 = km1.sample(100)
+        s2 = km2.sample(100)
+        np.testing.assert_array_equal(s1.values, s2.values)
+
     def test_auto_bandwidth_scott(self):
         """Test Scott bandwidth rule."""
         support = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
         km = KernelMixture(support=support, bandwidth="scott", kernel="gaussian")
-        expected = len(support) ** (-1.0 / 5.0) * np.std(support)
+        expected = len(support) ** (-1.0 / 5.0) * np.std(support, ddof=1)
         assert abs(km._bandwidth - expected) < 1e-10
 
     def test_auto_bandwidth_silverman(self):
         """Test Silverman bandwidth rule."""
         support = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
         km = KernelMixture(support=support, bandwidth="silverman", kernel="gaussian")
-        expected = (4.0 / (3.0 * 5)) ** (1.0 / 5.0) * np.std(support)
+        expected = (4.0 / (3.0 * 5)) ** (1.0 / 5.0) * np.std(support, ddof=1)
         assert abs(km._bandwidth - expected) < 1e-10
 
     def test_subsetting_2d(self):
