@@ -219,14 +219,10 @@ class KernelMixture(BaseDistribution):
         """Evaluate kernel pdf K(u), vectorized."""
         if self._kernel_mode == "distribution":
             kernel_dist = self.kernel
-            u_arr = np.asarray(u)
-            original_shape = u_arr.shape
-            u_flat = u_arr.ravel()
-            pdf_vals = np.array(
-                [kernel_dist._pdf(np.atleast_2d(v)) for v in u_flat],
-                dtype=float,
-            ).ravel()
-            return pdf_vals.reshape(original_shape)
+            u_arr = np.asarray(u, dtype=float)
+            return np.asarray(
+                kernel_dist._pdf(u_arr), dtype=float
+            ).reshape(u_arr.shape)
 
         kernel = self.kernel
         if kernel == "gaussian":
@@ -250,14 +246,10 @@ class KernelMixture(BaseDistribution):
         """Evaluate kernel cdf, vectorized."""
         if self._kernel_mode == "distribution":
             kernel_dist = self.kernel
-            u_arr = np.asarray(u)
-            original_shape = u_arr.shape
-            u_flat = u_arr.ravel()
-            cdf_vals = np.array(
-                [kernel_dist._cdf(np.atleast_2d(v)) for v in u_flat],
-                dtype=float,
-            ).ravel()
-            return cdf_vals.reshape(original_shape)
+            u_arr = np.asarray(u, dtype=float)
+            return np.asarray(
+                kernel_dist._cdf(u_arr), dtype=float
+            ).reshape(u_arr.shape)
 
         kernel = self.kernel
         if kernel == "gaussian":
@@ -282,6 +274,16 @@ class KernelMixture(BaseDistribution):
     def _kernel_sample(self, size, rng):
         """Sample from the kernel distribution."""
         if self._kernel_mode == "distribution":
+            if self.random_state is not None:
+                import warnings
+
+                warnings.warn(
+                    "random_state does not control reproducibility when "
+                    "kernel is a BaseDistribution instance. The kernel's "
+                    "own RNG is used for noise generation.",
+                    UserWarning,
+                    stacklevel=3,
+                )
             kernel_dist = self.kernel
             n_total = int(np.prod(size)) if isinstance(size, tuple) else size
             samples_df = kernel_dist.sample(n_total)
