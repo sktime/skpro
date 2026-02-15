@@ -6,6 +6,7 @@ __author__ = ["amaydixit11"]
 import numpy as np
 import pandas as pd
 import pytest
+from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.distributions.kernel_mixture import KernelMixture
 from skpro.tests.test_switch import run_test_module_changed
@@ -116,3 +117,115 @@ class TestKernelMixture:
         assert km.pdf(1.0) > 0
         assert 0 <= km.cdf(1.0) <= 1
         assert np.isfinite(km.sample())
+
+    def test_cdf_pdf_consistency(self, simple_km):
+        """Test that numerical derivative of CDF ~ PDF."""
+        xs = np.linspace(-2, 6, 50)
+        eps = 1e-5
+        for x in xs:
+            pdf_val = simple_km.pdf(x)
+            cdf_deriv = (simple_km.cdf(x + eps) - simple_km.cdf(x - eps)) / (2 * eps)
+            assert abs(pdf_val - cdf_deriv) < 1e-3
+
+    def test_sample_mean_convergence(self, simple_km):
+        """Test that sample mean converges to analytical mean."""
+        np.random.seed(42)
+        samples = simple_km.sample(10000)
+        sample_mean = samples.values.mean()
+        assert abs(sample_mean - simple_km.mean()) < 0.1
+
+    def test_auto_bandwidth_scott(self):
+        """Test Scott bandwidth rule."""
+        support = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+        km = KernelMixture(support=support, bandwidth="scott", kernel="gaussian")
+        expected = len(support) ** (-1.0 / 5.0) * np.std(support)
+        assert abs(km._bandwidth - expected) < 1e-10
+
+    def test_auto_bandwidth_silverman(self):
+        """Test Silverman bandwidth rule."""
+        support = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+        km = KernelMixture(support=support, bandwidth="silverman", kernel="gaussian")
+        expected = (4.0 / (3.0 * 5)) ** (1.0 / 5.0) * np.std(support)
+        assert abs(km._bandwidth - expected) < 1e-10
+
+    def test_subsetting_2d(self):
+        """Test that iloc subsetting works correctly."""
+        km = KernelMixture(
+            support=[0.0, 1.0, 2.0], bandwidth=0.5, kernel="gaussian",
+            index=pd.RangeIndex(3), columns=pd.Index(["a", "b"]),
+        )
+        sub = km.iloc[[0, 1], [0]]
+        assert sub.shape == (2, 1)
+        sub_scalar = km.iloc[0, 0]
+        assert sub_scalar.shape == ()
+
+    def test_invalid_kernel_type_raises(self):
+        """Test that non-string non-distribution kernel raises TypeError."""
+        with pytest.raises(TypeError, match="kernel must be a string"):
+            KernelMixture(support=[0, 1], bandwidth=1.0, kernel=42)
+
+    def test_distribution_kernel_pdf(self):
+        """Test that Normal(0,1) kernel gives same result as gaussian."""
+        from skpro.distributions.normal import Normal
+        support = np.array([0.0, 1.0, 2.0])
+        bw = 0.5
+        km_str = KernelMixture(support=support, bandwidth=bw, kernel="gaussian")
+        km_dist = KernelMixture(
+            support=support, bandwidth=bw, kernel=Normal(mu=0, sigma=1)
+        )
+        for x in [0.0, 0.5, 1.0, 1.5, 2.0, 2.5]:
+            assert abs(km_str.pdf(x) - km_dist.pdf(x)) < 1e-6
+
+    def test_distribution_kernel_cdf(self):
+        """Test that Normal(0,1) kernel CDF matches gaussian CDF."""
+        from skpro.distributions.normal import Normal
+        support = np.array([0.0, 1.0, 2.0])
+        bw = 0.5
+        km_str = KernelMixture(support=support, bandwidth=bw, kernel="gaussian")
+        km_dist = KernelMixture(
+            support=support, bandwidth=bw, kernel=Normal(mu=0, sigma=1)
+        )
+        for x in [-1.0, 0.0, 1.0, 2.0, 3.0]:
+            assert abs(km_str.cdf(x) - km_dist.cdf(x)) < 1e-6
+
+    def test_distribution_kernel_mean_var(self):
+        """Test that Normal(0,1) kernel gives same mean/var as gaussian."""
+        from skpro.distributions.normal import Normal
+        support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+        bw = 0.5
+        km_str = KernelMixture(support=support, bandwidth=bw, kernel="gaussian")
+        km_dist = KernelMixture(
+            support=support, bandwidth=bw, kernel=Normal(mu=0, sigma=1)
+        )
+        assert abs(km_str.mean() - km_dist.mean()) < 1e-10
+        assert abs(km_str.var() - km_dist.var()) < 1e-10
+
+    def test_distribution_kernel_sample(self):
+        """Test that sampling with a distribution kernel works."""
+        from skpro.distributions.normal import Normal
+        km = KernelMixture(
+            support=[0.0, 1.0, 2.0], bandwidth=0.5,
+            kernel=Normal(mu=0, sigma=1),
+        )
+        assert np.isfinite(km.sample())
+        s_multi = km.sample(10)
+        assert isinstance(s_multi, pd.DataFrame)
+        assert s_multi.shape[0] == 10
+
+    @pytest.mark.skipif(
+        not _check_soft_dependencies("sklearn", severity="none"),
+        reason="sklearn not available",
+    )
+    def test_sklearn_parity(self):
+        """Test parity with sklearn KernelDensity for Gaussian kernel."""
+        from sklearn.neighbors import KernelDensity
+        support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+        bw = 0.5
+        km = KernelMixture(support=support, bandwidth=bw, kernel="gaussian")
+        kde = KernelDensity(bandwidth=bw, kernel="gaussian")
+        kde.fit(support.reshape(-1, 1))
+        xs = np.linspace(-2, 6, 50)
+        for x in xs:
+            skpro_pdf = km.pdf(x)
+            sklearn_pdf = np.exp(kde.score_samples(np.array([[x]]))[0])
+            assert abs(skpro_pdf - sklearn_pdf) < 1e-6
