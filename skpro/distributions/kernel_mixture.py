@@ -142,7 +142,7 @@ class KernelMixture(BaseDistribution):
         # resolve bandwidth
         if isinstance(bandwidth, str):
             std = np.std(self._support)
-            if std == 0:
+            if std < 1e-15:
                 std = 1.0
             if bandwidth == "scott":
                 self._bandwidth = n ** (-1.0 / 5.0) * std
@@ -212,6 +212,8 @@ class KernelMixture(BaseDistribution):
             )
         elif kernel == "linear":
             return np.where(np.abs(u) <= 1, 1 - np.abs(u), 0.0)
+        else:
+            raise ValueError(f"Unsupported kernel '{kernel}'.")
 
     def _kernel_cdf(self, u):
         """Evaluate kernel cdf, vectorized."""
@@ -243,6 +245,8 @@ class KernelMixture(BaseDistribution):
             cdf_high = 1 - 0.5 * (1 - u) ** 2
             cdf_inner = np.where(u <= 0, cdf_low, cdf_high)
             return np.where(u < -1, 0.0, np.where(u > 1, 1.0, cdf_inner))
+        else:
+            raise ValueError(f"Unsupported kernel '{kernel}'.")
 
     def _kernel_sample(self, size):
         """Sample from the kernel distribution."""
@@ -263,33 +267,32 @@ class KernelMixture(BaseDistribution):
         elif kernel == "tophat":
             return rng.uniform(-1, 1, size)
         elif kernel == "epanechnikov":
-            samples = np.empty(size)
-            n_total = int(np.prod(size)) if isinstance(size, tuple) else size
-            count = 0
-            while count < n_total:
-                proposal = rng.uniform(-1, 1, n_total - count)
-                accept_prob = 1 - proposal**2
-                accepted = proposal[rng.random(n_total - count) < accept_prob]
-                n_accept = min(len(accepted), n_total - count)
-                samples_flat = samples.ravel()
-                samples_flat[count : count + n_accept] = accepted[:n_accept]
-                count += n_accept
-            return samples.reshape(size) if isinstance(size, tuple) else samples
+            return self._rejection_sample(
+                size, lambda u: 1 - u**2, rng
+            )
         elif kernel == "cosine":
-            samples = np.empty(size)
-            n_total = int(np.prod(size)) if isinstance(size, tuple) else size
-            count = 0
-            while count < n_total:
-                proposal = rng.uniform(-1, 1, n_total - count)
-                accept_prob = np.cos(np.pi * proposal / 2)
-                accepted = proposal[rng.random(n_total - count) < accept_prob]
-                n_accept = min(len(accepted), n_total - count)
-                samples_flat = samples.ravel()
-                samples_flat[count : count + n_accept] = accepted[:n_accept]
-                count += n_accept
-            return samples.reshape(size) if isinstance(size, tuple) else samples
+            return self._rejection_sample(
+                size, lambda u: np.cos(np.pi * u / 2), rng
+            )
         elif kernel == "linear":
             return rng.triangular(-1, 0, 1, size)
+        else:
+            raise ValueError(f"Unsupported kernel '{kernel}'.")
+
+    @staticmethod
+    def _rejection_sample(size, accept_fn, rng):
+        """Rejection-sample from uniform(-1,1) with given acceptance function."""
+        n_total = int(np.prod(size)) if isinstance(size, tuple) else size
+        samples = np.empty(n_total)
+        count = 0
+        while count < n_total:
+            proposal = rng.uniform(-1, 1, n_total - count)
+            accept_prob = accept_fn(proposal)
+            accepted = proposal[rng.random(n_total - count) < accept_prob]
+            n_accept = min(len(accepted), n_total - count)
+            samples[count : count + n_accept] = accepted[:n_accept]
+            count += n_accept
+        return samples.reshape(size) if isinstance(size, tuple) else samples
 
     def _kernel_variance(self):
         """Return the variance of the kernel function."""
@@ -300,7 +303,7 @@ class KernelMixture(BaseDistribution):
                 return float(var_val.values.ravel()[0])
             return float(var_val)
 
-        return _KERNEL_VARIANCE.get(self.kernel, 1.0)
+        return _KERNEL_VARIANCE[self.kernel]
 
     def _mean(self):
         r"""Return expected value of the distribution.

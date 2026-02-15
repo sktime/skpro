@@ -81,8 +81,8 @@ from skpro.distributions.halfnormal import HalfNormal
 from skpro.distributions.histogram import Histogram
 from skpro.distributions.hurdle import Hurdle
 from skpro.distributions.inversegamma import InverseGamma
-from skpro.distributions.kernel_mixture import KernelMixture
 from skpro.distributions.inversegaussian import InverseGaussian
+from skpro.distributions.kernel_mixture import KernelMixture
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.left_truncated import LeftTruncated
 from skpro.distributions.levy import Levy

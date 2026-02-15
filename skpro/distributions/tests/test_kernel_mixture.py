@@ -6,6 +6,12 @@ __author__ = ["amaydixit11"]
 import numpy as np
 import pandas as pd
 import pytest
+
+# np.trapezoid was added in NumPy 2.0; np.trapz removed in NumPy 2.4
+try:
+    _trapezoid = np.trapezoid
+except AttributeError:
+    _trapezoid = np.trapz
 from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.distributions.kernel_mixture import KernelMixture
@@ -43,7 +49,7 @@ class TestKernelMixture:
         km = KernelMixture(support=support, bandwidth=0.5, kernel=kernel)
         xs = np.linspace(-5, 8, 10000)
         pdfs = np.array([km.pdf(x) for x in xs])
-        integral = np.trapezoid(pdfs, xs)
+        integral = _trapezoid(pdfs, xs)
         assert abs(integral - 1.0) < 0.01
 
     def test_mean_correctness(self, simple_km):
@@ -129,7 +135,7 @@ class TestKernelMixture:
 
     def test_sample_mean_convergence(self, simple_km):
         """Test that sample mean converges to analytical mean."""
-        np.random.seed(42)
+
         samples = simple_km.sample(10000)
         sample_mean = samples.values.mean()
         assert abs(sample_mean - simple_km.mean()) < 0.1
