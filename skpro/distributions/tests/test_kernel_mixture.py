@@ -107,6 +107,18 @@ class TestKernelMixture:
         with pytest.raises(ValueError, match="weights length"):
             KernelMixture(support=[0, 1, 2], bandwidth=1.0, weights=[0.5, 0.5])
 
+    def test_non_positive_bandwidth_raises(self):
+        """Test that non-positive bandwidth raises ValueError."""
+        with pytest.raises(ValueError, match="bandwidth must be positive"):
+            KernelMixture(support=[0, 1, 2], bandwidth=0.0)
+        with pytest.raises(ValueError, match="bandwidth must be positive"):
+            KernelMixture(support=[0, 1, 2], bandwidth=-1.0)
+
+    def test_negative_weights_raises(self):
+        """Test that negative weights raise ValueError."""
+        with pytest.raises(ValueError, match="non-negative"):
+            KernelMixture(support=[0, 1, 2], bandwidth=1.0, weights=[1.0, -0.5, 0.5])
+
     def test_log_pdf_consistency(self, simple_km):
         """Test that log_pdf == log(pdf)."""
         for x in [0.0, 1.0, 2.0, 3.0]:

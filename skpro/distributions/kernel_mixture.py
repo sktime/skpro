@@ -180,6 +180,10 @@ class KernelMixture(BaseDistribution):
                 )
         else:
             self._bandwidth = float(bandwidth)
+            if self._bandwidth <= 0:
+                raise ValueError(
+                    f"bandwidth must be positive, got {self._bandwidth}."
+                )
 
         # normalize weights
         if weights is None:
@@ -194,6 +198,8 @@ class KernelMixture(BaseDistribution):
             w_sum = np.sum(w)
             if w_sum <= 0:
                 raise ValueError("weights must have positive sum.")
+            if np.any(w < 0):
+                raise ValueError("All weights must be non-negative.")
             self._weights = w / w_sum
 
         super().__init__(index=index, columns=columns)
