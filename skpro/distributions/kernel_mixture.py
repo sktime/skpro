@@ -105,6 +105,11 @@ class KernelMixture(BaseDistribution):
     --------
     Mixture : Mixture of arbitrary distribution objects.
     Empirical : Empirical distribution (weighted sum of deltas).
+
+    Notes
+    -----
+    Evaluation cost is ``O(len(support) * len(x))`` for ``pdf`` and ``cdf``.
+    Very large support arrays (e.g. >10 000 points) may be slow.
     """
 
     _tags = {
@@ -150,6 +155,24 @@ class KernelMixture(BaseDistribution):
                 )
             self._kernel_mode = "builtin"
         elif isinstance(kernel, BaseDistribution):
+            if kernel.ndim != 0:
+                raise ValueError(
+                    "kernel distribution must be scalar (0D), "
+                    f"got ndim={kernel.ndim}."
+                )
+            kernel_mean = float(
+                np.ravel(np.asarray(kernel.mean()))[0]
+            )
+            if abs(kernel_mean) > 1e-6:
+                import warnings
+
+                warnings.warn(
+                    f"kernel distribution has non-zero mean ({kernel_mean}). "
+                    "KernelMixture assumes a zero-centered kernel; "
+                    "mean() and var() may be incorrect.",
+                    UserWarning,
+                    stacklevel=2,
+                )
             self._kernel_mode = "distribution"
         else:
             raise TypeError(
@@ -220,6 +243,8 @@ class KernelMixture(BaseDistribution):
         if self._kernel_mode == "distribution":
             kernel_dist = self.kernel
             u_arr = np.asarray(u, dtype=float)
+            # Call _pdf directly to avoid the public pdf() wrapper which
+            # coerces inputs to DataFrame with self.index/columns shape.
             return np.asarray(
                 kernel_dist._pdf(u_arr), dtype=float
             ).reshape(u_arr.shape)
@@ -247,6 +272,7 @@ class KernelMixture(BaseDistribution):
         if self._kernel_mode == "distribution":
             kernel_dist = self.kernel
             u_arr = np.asarray(u, dtype=float)
+            # Call _cdf directly to avoid shape coercion in public wrapper.
             return np.asarray(
                 kernel_dist._cdf(u_arr), dtype=float
             ).reshape(u_arr.shape)

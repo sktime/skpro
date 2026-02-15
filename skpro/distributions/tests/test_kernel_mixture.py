@@ -202,6 +202,34 @@ class TestKernelMixture:
         with pytest.raises(TypeError, match="kernel must be a string"):
             KernelMixture(support=[0, 1], bandwidth=1.0, kernel=42)
 
+    def test_non_scalar_kernel_raises(self):
+        """Test that non-scalar distribution kernel raises ValueError."""
+        from skpro.distributions.normal import Normal
+        kernel_2d = Normal(
+            mu=[[0, 0]], sigma=[[1, 1]],
+            index=pd.RangeIndex(1), columns=pd.Index(["a", "b"]),
+        )
+        with pytest.raises(ValueError, match="scalar"):
+            KernelMixture(support=[0, 1], bandwidth=1.0, kernel=kernel_2d)
+
+    def test_nonzero_mean_kernel_warns(self):
+        """Test that a kernel with non-zero mean emits a warning."""
+        from skpro.distributions.normal import Normal
+        with pytest.warns(UserWarning, match="non-zero mean"):
+            KernelMixture(
+                support=[0, 1, 2], bandwidth=0.5, kernel=Normal(mu=5, sigma=1)
+            )
+
+    def test_distribution_kernel_rng_warns(self):
+        """Test that random_state + distribution kernel emits a warning."""
+        from skpro.distributions.normal import Normal
+        km = KernelMixture(
+            support=[0, 1, 2], bandwidth=0.5,
+            kernel=Normal(mu=0, sigma=1), random_state=42,
+        )
+        with pytest.warns(UserWarning, match="random_state"):
+            km.sample(10)
+
     def test_distribution_kernel_pdf(self):
         """Test that Normal(0,1) kernel gives same result as gaussian."""
         from skpro.distributions.normal import Normal
