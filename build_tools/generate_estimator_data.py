@@ -48,7 +48,8 @@ def generate_estimator_data():
 
     for _, row in df.iterrows():
         name = row.get("name", "Unknown")
-        obj = row.get("objects")
+        # all_objects uses "object" column; keep fallback for older naming
+        obj = row.get("object") if "object" in row.index else row.get("objects")
         obj_type = row.get("object_type", "unknown")
 
         # Get module path from the actual object class

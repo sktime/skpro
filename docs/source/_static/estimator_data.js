@@ -5,7 +5,7 @@ window.estimatorData = [
   {
     "name": "AFTFisk",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.aft._aft_lifelines_fisk",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -16,7 +16,7 @@ window.estimatorData = [
   {
     "name": "AFTLogNormal",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.aft._aft_lifelines_lognormal",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -27,7 +27,7 @@ window.estimatorData = [
   {
     "name": "AFTWeibull",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.aft._aft_lifelines_weibull",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -38,7 +38,7 @@ window.estimatorData = [
   {
     "name": "ARDRegression",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.linear._sklearn",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -52,7 +52,7 @@ window.estimatorData = [
       "metric",
       "metric_distr"
     ],
-    "module": "unknown",
+    "module": "skpro.metrics._classes",
     "tags": {
       "object_type": [
         "metric",
@@ -66,7 +66,7 @@ window.estimatorData = [
   {
     "name": "AalenAdditive",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.additive._aalen_lifelines",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -77,7 +77,7 @@ window.estimatorData = [
   {
     "name": "Alpha",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.alpha",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -88,7 +88,7 @@ window.estimatorData = [
   {
     "name": "BaggingRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.ensemble._bagging",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -99,7 +99,7 @@ window.estimatorData = [
   {
     "name": "BayesianConjugateLinearRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.bayesian._linear_conjugate",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -110,7 +110,7 @@ window.estimatorData = [
   {
     "name": "BayesianLinearRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.bayesian._linear_mcmc",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -121,7 +121,7 @@ window.estimatorData = [
   {
     "name": "BayesianRidge",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.linear._sklearn",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -132,7 +132,7 @@ window.estimatorData = [
   {
     "name": "Beta",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.beta",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -143,7 +143,7 @@ window.estimatorData = [
   {
     "name": "Binomial",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.binomial",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -154,7 +154,7 @@ window.estimatorData = [
   {
     "name": "BootstrapRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.bootstrap",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -165,7 +165,7 @@ window.estimatorData = [
   {
     "name": "BurrIII",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.burr_iii",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -176,7 +176,7 @@ window.estimatorData = [
   {
     "name": "BurrXII",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.burr_xii",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -190,7 +190,7 @@ window.estimatorData = [
       "metric",
       "metric_distr"
     ],
-    "module": "unknown",
+    "module": "skpro.metrics._classes",
     "tags": {
       "object_type": [
         "metric",
@@ -204,7 +204,7 @@ window.estimatorData = [
   {
     "name": "ChiSquared",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.chi_squared",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -218,7 +218,7 @@ window.estimatorData = [
       "metric",
       "metric_distr"
     ],
-    "module": "unknown",
+    "module": "skpro.metrics.survival._c_harrell",
     "tags": {
       "object_type": [
         "metric",
@@ -232,7 +232,7 @@ window.estimatorData = [
   {
     "name": "ConditionUncensored",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.compose._reduce_cond_unc",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -243,7 +243,7 @@ window.estimatorData = [
   {
     "name": "ConstraintViolation",
     "object_type": "metric",
-    "module": "unknown",
+    "module": "skpro.metrics._classes",
     "tags": {
       "object_type": "metric",
       "capability:survival": null,
@@ -254,7 +254,7 @@ window.estimatorData = [
   {
     "name": "CoxNet",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.coxph._coxnet_sksurv",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -265,7 +265,7 @@ window.estimatorData = [
   {
     "name": "CoxPH",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.coxph._coxph_statsmodels",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -276,7 +276,7 @@ window.estimatorData = [
   {
     "name": "CoxPHSkSurv",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.coxph._coxph_sksurv",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -287,7 +287,7 @@ window.estimatorData = [
   {
     "name": "CoxPHlifelines",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.coxph._coxph_lifelines",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -298,7 +298,7 @@ window.estimatorData = [
   {
     "name": "CyclicBoosting",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.cyclic_boosting",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -309,7 +309,7 @@ window.estimatorData = [
   {
     "name": "Delta",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.delta",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -320,7 +320,7 @@ window.estimatorData = [
   {
     "name": "DeltaPointRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.delta",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -331,7 +331,7 @@ window.estimatorData = [
   {
     "name": "DummyProbaRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.dummy",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -342,7 +342,7 @@ window.estimatorData = [
   {
     "name": "Empirical",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.empirical",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -353,7 +353,7 @@ window.estimatorData = [
   {
     "name": "EmpiricalCoverage",
     "object_type": "metric",
-    "module": "unknown",
+    "module": "skpro.metrics._classes",
     "tags": {
       "object_type": "metric",
       "capability:survival": null,
@@ -364,7 +364,7 @@ window.estimatorData = [
   {
     "name": "EnbpiRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.enbpi",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -375,7 +375,7 @@ window.estimatorData = [
   {
     "name": "Erlang",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.erlang",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -386,7 +386,7 @@ window.estimatorData = [
   {
     "name": "Exponential",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.exponential",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -397,7 +397,7 @@ window.estimatorData = [
   {
     "name": "FDist",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.f_dist",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -408,7 +408,7 @@ window.estimatorData = [
   {
     "name": "FatigueLife",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.fatigue_life",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -419,7 +419,7 @@ window.estimatorData = [
   {
     "name": "Fisk",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.fisk",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -430,7 +430,7 @@ window.estimatorData = [
   {
     "name": "FitUncensored",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.compose._reduce_uncensored",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -441,7 +441,7 @@ window.estimatorData = [
   {
     "name": "GAMRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.gam._gam",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -452,7 +452,7 @@ window.estimatorData = [
   {
     "name": "GLMRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.linear._glm",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -463,7 +463,7 @@ window.estimatorData = [
   {
     "name": "Gamma",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.gamma",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -474,7 +474,7 @@ window.estimatorData = [
   {
     "name": "GaussianProcess",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.gp._sklearn",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -485,7 +485,7 @@ window.estimatorData = [
   {
     "name": "GeneralizedPareto",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.gen_pareto",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -496,7 +496,7 @@ window.estimatorData = [
   {
     "name": "Geometric",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.geometric",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -507,7 +507,7 @@ window.estimatorData = [
   {
     "name": "GlumRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.linear._glum",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -518,7 +518,7 @@ window.estimatorData = [
   {
     "name": "GridSearchCV",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.model_selection._tuning",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -529,7 +529,7 @@ window.estimatorData = [
   {
     "name": "HalfCauchy",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.halfcauchy",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -540,7 +540,7 @@ window.estimatorData = [
   {
     "name": "HalfLogistic",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.halflogistic",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -551,7 +551,7 @@ window.estimatorData = [
   {
     "name": "HalfNormal",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.halfnormal",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -562,7 +562,7 @@ window.estimatorData = [
   {
     "name": "HistBinnedProbaRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.binned._sklearn_bin_regressor",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -573,7 +573,7 @@ window.estimatorData = [
   {
     "name": "Histogram",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.histogram",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -584,7 +584,7 @@ window.estimatorData = [
   {
     "name": "Hurdle",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.hurdle",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -595,7 +595,7 @@ window.estimatorData = [
   {
     "name": "IID",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.compose._iid",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -606,7 +606,7 @@ window.estimatorData = [
   {
     "name": "IntervalWidth",
     "object_type": "metric",
-    "module": "unknown",
+    "module": "skpro.metrics._classes",
     "tags": {
       "object_type": "metric",
       "capability:survival": null,
@@ -617,7 +617,7 @@ window.estimatorData = [
   {
     "name": "InverseGamma",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.inversegamma",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -628,7 +628,7 @@ window.estimatorData = [
   {
     "name": "InverseGaussian",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.inversegaussian",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -639,7 +639,7 @@ window.estimatorData = [
   {
     "name": "Laplace",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.laplace",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -650,7 +650,7 @@ window.estimatorData = [
   {
     "name": "LeftTruncated",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.left_truncated",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -661,7 +661,7 @@ window.estimatorData = [
   {
     "name": "Levy",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.levy",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -675,7 +675,7 @@ window.estimatorData = [
       "metric",
       "metric_distr"
     ],
-    "module": "unknown",
+    "module": "skpro.metrics._classes",
     "tags": {
       "object_type": [
         "metric",
@@ -689,7 +689,7 @@ window.estimatorData = [
   {
     "name": "LogGamma",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.loggamma",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -700,7 +700,7 @@ window.estimatorData = [
   {
     "name": "LogLaplace",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.loglaplace",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -714,7 +714,7 @@ window.estimatorData = [
       "metric",
       "metric_distr"
     ],
-    "module": "unknown",
+    "module": "skpro.metrics._classes",
     "tags": {
       "object_type": [
         "metric",
@@ -728,7 +728,7 @@ window.estimatorData = [
   {
     "name": "LogNormal",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.lognormal",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -739,7 +739,7 @@ window.estimatorData = [
   {
     "name": "Logistic",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.logistic",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -750,7 +750,7 @@ window.estimatorData = [
   {
     "name": "MapieConformalizedQuantileRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.conformal._mapie_cqr",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -761,7 +761,7 @@ window.estimatorData = [
   {
     "name": "MapieCrossConformalRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.conformal._mapie_cross_conformal",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -772,7 +772,7 @@ window.estimatorData = [
   {
     "name": "MapieJackknifeAfterBootstrapRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.jackknife._mapie_jackknife",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -783,7 +783,7 @@ window.estimatorData = [
   {
     "name": "MapieRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.mapie",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -794,7 +794,7 @@ window.estimatorData = [
   {
     "name": "MapieSplitConformalRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.conformal._mapie_split_conformal",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -805,7 +805,7 @@ window.estimatorData = [
   {
     "name": "MeanScale",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.meanscale",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -816,7 +816,7 @@ window.estimatorData = [
   {
     "name": "Mixture",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.mixture",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -827,7 +827,7 @@ window.estimatorData = [
   {
     "name": "MultipleQuantileRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.multiquantile",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -838,7 +838,7 @@ window.estimatorData = [
   {
     "name": "NGBoostRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.ensemble._ngboost",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -849,7 +849,7 @@ window.estimatorData = [
   {
     "name": "NGBoostSurvival",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.ensemble._ngboost_surv",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -860,7 +860,7 @@ window.estimatorData = [
   {
     "name": "NegativeBinomial",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.negative_binomial",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -871,7 +871,7 @@ window.estimatorData = [
   {
     "name": "Normal",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.normal",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -882,7 +882,7 @@ window.estimatorData = [
   {
     "name": "OndilOnlineGamlss",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.ondil",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -893,7 +893,7 @@ window.estimatorData = [
   {
     "name": "OnlineDontRefit",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.online._dont_refit",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -904,7 +904,7 @@ window.estimatorData = [
   {
     "name": "OnlineRefit",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.online._refit",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -915,7 +915,7 @@ window.estimatorData = [
   {
     "name": "OnlineRefitEveryN",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.online._refit_every",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -926,7 +926,7 @@ window.estimatorData = [
   {
     "name": "Pareto",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.pareto",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -937,7 +937,7 @@ window.estimatorData = [
   {
     "name": "PinballLoss",
     "object_type": "metric",
-    "module": "unknown",
+    "module": "skpro.metrics._classes",
     "tags": {
       "object_type": "metric",
       "capability:survival": null,
@@ -948,7 +948,7 @@ window.estimatorData = [
   {
     "name": "Pipeline",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.compose._pipeline",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -959,7 +959,7 @@ window.estimatorData = [
   {
     "name": "Poisson",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.poisson",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -970,7 +970,7 @@ window.estimatorData = [
   {
     "name": "PoissonRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.linear._sklearn_poisson",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -981,7 +981,7 @@ window.estimatorData = [
   {
     "name": "QPD_B",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.qpd",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -992,7 +992,7 @@ window.estimatorData = [
   {
     "name": "QPD_Empirical",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.qpd_empirical",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1003,7 +1003,7 @@ window.estimatorData = [
   {
     "name": "QPD_Johnson",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.qpd",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1014,7 +1014,7 @@ window.estimatorData = [
   {
     "name": "QPD_S",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.qpd",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1025,7 +1025,7 @@ window.estimatorData = [
   {
     "name": "QPD_U",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.qpd",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1036,7 +1036,7 @@ window.estimatorData = [
   {
     "name": "RandomizedSearchCV",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.model_selection._tuning",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -1047,7 +1047,7 @@ window.estimatorData = [
   {
     "name": "ResidualDouble",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.residual",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -1061,7 +1061,7 @@ window.estimatorData = [
       "metric",
       "metric_distr"
     ],
-    "module": "unknown",
+    "module": "skpro.metrics.survival._spll",
     "tags": {
       "object_type": [
         "metric",
@@ -1075,7 +1075,7 @@ window.estimatorData = [
   {
     "name": "Skellam",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.skellam",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1086,7 +1086,7 @@ window.estimatorData = [
   {
     "name": "SkewNormal",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.skew_normal",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1097,7 +1097,7 @@ window.estimatorData = [
   {
     "name": "SklearnProbaReg",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.adapters.sklearn._sklearn_proba",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -1111,7 +1111,7 @@ window.estimatorData = [
       "metric",
       "metric_distr"
     ],
-    "module": "unknown",
+    "module": "skpro.metrics._classes",
     "tags": {
       "object_type": [
         "metric",
@@ -1125,7 +1125,7 @@ window.estimatorData = [
   {
     "name": "SurvGradBoostCompSkSurv",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.ensemble._grad_boost_sksurv",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -1136,7 +1136,7 @@ window.estimatorData = [
   {
     "name": "SurvGradBoostSkSurv",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.ensemble._grad_boost_sksurv",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -1147,7 +1147,7 @@ window.estimatorData = [
   {
     "name": "SurvivalForestSkSurv",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.ensemble._survforest_sksurv",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -1158,7 +1158,7 @@ window.estimatorData = [
   {
     "name": "SurvivalForestXtraSkSurv",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.ensemble._survforest_sksurv",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -1169,7 +1169,7 @@ window.estimatorData = [
   {
     "name": "SurvivalTree",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.survival.tree._tree_sksurv",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": true,
@@ -1180,7 +1180,7 @@ window.estimatorData = [
   {
     "name": "TDistribution",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.t",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1191,7 +1191,7 @@ window.estimatorData = [
   {
     "name": "TransformedDistribution",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.trafo._transformed",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1202,7 +1202,7 @@ window.estimatorData = [
   {
     "name": "TransformedTargetRegressor",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.compose._ttr",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,
@@ -1213,7 +1213,7 @@ window.estimatorData = [
   {
     "name": "TruncatedDistribution",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.truncated",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1224,7 +1224,7 @@ window.estimatorData = [
   {
     "name": "TruncatedNormal",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.truncated_normal",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1235,7 +1235,7 @@ window.estimatorData = [
   {
     "name": "TruncatedPareto",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.truncated_pareto",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1246,7 +1246,7 @@ window.estimatorData = [
   {
     "name": "Uniform",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.uniform",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1257,7 +1257,7 @@ window.estimatorData = [
   {
     "name": "Weibull",
     "object_type": "distribution",
-    "module": "unknown",
+    "module": "skpro.distributions.weibull",
     "tags": {
       "object_type": "distribution",
       "capability:survival": null,
@@ -1268,7 +1268,7 @@ window.estimatorData = [
   {
     "name": "XGBoostLSS",
     "object_type": "regressor_proba",
-    "module": "unknown",
+    "module": "skpro.regression.xgboostlss",
     "tags": {
       "object_type": "regressor_proba",
       "capability:survival": false,

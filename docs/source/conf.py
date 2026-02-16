@@ -12,8 +12,6 @@ import inspect
 import os
 import sys
 
-import skpro
-
 # -- Path setup --------------------------------------------------------------
 
 # When we build the docs on readthedocs, we build the package and want to
@@ -23,6 +21,8 @@ env_rtd = os.environ.get("READTHEDOCS")
 # Check if on Read the docs
 if not env_rtd == "True":
     sys.path.insert(0, os.path.abspath("../.."))
+
+import skpro
 
 # -- Project information -----------------------------------------------------
 
@@ -354,7 +354,8 @@ def generate_estimator_overview_data(app, config):
 
     for _, row in df.iterrows():
         name = row.get("name", "Unknown")
-        obj = row.get("objects")
+        # all_objects uses "object" column; keep fallback for older naming
+        obj = row.get("object") if "object" in row.index else row.get("objects")
         obj_type = row.get("object_type", "unknown")
 
         # Get module path
