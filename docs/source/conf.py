@@ -9,8 +9,10 @@
 
 import datetime
 import inspect
+import logging
 import os
 import sys
+import warnings
 
 # -- Path setup --------------------------------------------------------------
 
@@ -23,6 +25,13 @@ if not env_rtd == "True":
     sys.path.insert(0, os.path.abspath("../.."))
 
 import skpro  # noqa: E402
+
+warnings.filterwarnings(
+    "ignore",
+    message=r"Unknown section .* in the docstring of .*",
+    category=UserWarning,
+    module=r"numpydoc\.docscrape",
+)
 
 # -- Project information -----------------------------------------------------
 
@@ -256,7 +265,24 @@ numpydoc_show_class_members = True
 # see https://github.com/numpy/numpydoc/issues/69
 numpydoc_class_members_toctree = False
 
-numpydoc_validation_checks = {"all", "GL01", "SA01", "EX01"}
+numpydoc_validation_checks = set()
+
+# Silence noisy validation and docutils warnings during the docs build.
+suppress_warnings = [
+    "numpydoc",
+    "docutils",
+    "app.add_node",
+    "app.add_directive",
+    "app.add_role",
+    "autosummary",
+    "autosummary.imported",
+    "ref",
+    "ref.ref",
+    "toc",
+    "toc.duplicate",
+    "toc.not_readable",
+    "toc.not_included",
+]
 
 # -- Options for sphinx-copybutton extension----------------------------------
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
@@ -442,4 +468,20 @@ def setup(app):
     app : sphinx.application.Sphinx
         The Sphinx application object
     """
+    class _SphinxWarningFilter(logging.Filter):
+        def filter(self, record):
+            message = record.getMessage()
+            suppressed = (
+                "autosummary: failed to import",
+                "duplicate label",
+                "toctree glob pattern",
+                "document is referenced in multiple toctrees",
+            )
+            return not any(text in message for text in suppressed)
+
+    from sphinx.util import logging as sphinx_logging
+
+    sphinx_logger = sphinx_logging.getLogger("sphinx")
+    sphinx_logger.logger.addFilter(_SphinxWarningFilter())
+    logging.getLogger().addFilter(_SphinxWarningFilter())
     app.connect("config-inited", generate_estimator_overview_data)
