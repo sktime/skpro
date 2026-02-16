@@ -14,6 +14,7 @@ except AttributeError:
     _trapezoid = np.trapz
 
 from skbase.utils.dependencies import _check_soft_dependencies
+
 from skpro.distributions.kernel_mixture import KernelMixture
 from skpro.tests.test_switch import run_test_module_changed
 

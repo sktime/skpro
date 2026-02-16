@@ -41,6 +41,8 @@ class KernelMixture(BaseDistribution):
     ----------
     support : array-like, 1D
         Support points (data) on which the kernel density is centered.
+        Currently, this must be a 1D array shared across all marginals.
+        Future versions may support 2D arrays for varying support per marginal.
     bandwidth : float, or str ``"scott"`` or ``"silverman"``, default=1.0
         Bandwidth of the kernel.
         If float, used directly as the bandwidth parameter ``h``.
@@ -82,7 +84,7 @@ class KernelMixture(BaseDistribution):
 
     >>> support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
     >>> km = KernelMixture(support=support, bandwidth=0.5, kernel="gaussian")
-    >>> km.mean()
+    >>> float(km.mean())
     2.0
     >>> pdf_val = km.pdf(1.5)
 
@@ -95,6 +97,15 @@ class KernelMixture(BaseDistribution):
     ...     kernel=Normal(mu=0, sigma=1),
     ... )
 
+    Using weighted support points:
+
+    >>> km_weighted = KernelMixture(
+    ...     support=[0.0, 1.0, 2.0],
+    ...     bandwidth=0.5,
+    ...     weights=[0.1, 0.3, 0.6],
+    ... )
+    >>> pdf_val = km_weighted.pdf(1.0)
+
     See Also
     --------
     Mixture : Mixture of arbitrary distribution objects.
@@ -104,6 +115,11 @@ class KernelMixture(BaseDistribution):
     -----
     Evaluation cost is ``O(len(support) * len(x))`` for ``pdf`` and ``cdf``.
     Very large support arrays (e.g. >10 000 points) may be slow.
+
+    In the current implementation, if ``index``/``columns`` imply a multivariate
+    distribution (or batch of distributions), the ``support`` points and ``weights``
+    are shared across all marginals. Varying support or weights per marginal is
+    not yet supported (but planning to be supported in future versions).
     """
 
     _tags = {
