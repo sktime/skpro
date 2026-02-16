@@ -1815,8 +1815,12 @@ class BaseDistribution(BaseObject):
             ax.set_ylabel(f"{fun}({x_argname})")
         return ax
 
-    def _support(self, lower, upper, max_points=100):
+    def _pmf_support(self, lower, upper, max_points=100):
         """Get support points for discrete distributions.
+
+        Returns the support points of the probability mass function (PMF)
+        within the given bounds.
+        Only applies to scalar (0-dimensional) distributions.
 
         Parameters
         ----------
@@ -1832,10 +1836,15 @@ class BaseDistribution(BaseObject):
         np.ndarray
             Array of support points within [lower, upper]
         """
+        if self.ndim > 0:
+            raise NotImplementedError(
+                "_pmf_support only applies to scalar (0-dimensional) distributions."
+            )
+
         # For continuous distributions, return empty array
         if self.get_tag("distr:measuretype", "mixed") == "continuous":
             return np.array([])
-        
+
         # Default implementation assumes non-negative integer support
         lower_int = max(0, int(np.floor(lower)))
         upper_int = min(int(np.ceil(upper)) + 1, lower_int + max_points)

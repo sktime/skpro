@@ -62,6 +62,81 @@ class InverseGamma(_ScipyAdapter):
 
         return [], {"a": alpha, "scale": scale}
 
+    def _energy_self(self):
+        """Energy of self wrt self (expected |X-Y| for i.i.d. X,Y ~ InverseGamma)."""
+        import numpy as np
+        from scipy.integrate import quad
+
+        alpha = np.asarray(self._bc_params["alpha"])
+        beta = np.asarray(self._bc_params["beta"])
+        # Broadcast alpha and beta to the same shape
+        alpha_b, beta_b = np.broadcast_arrays(alpha, beta)
+        result = np.empty_like(alpha_b, dtype=float)
+        it = np.nditer(
+            [alpha_b, beta_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["readonly"], ["writeonly"]],
+        )
+        for a, b, out in it:
+            a_val = a.item()
+            b_val = b.item()
+
+            def cdf(x, a_val=a_val, b_val=b_val):
+                from scipy.stats import invgamma
+
+                return invgamma.cdf(x, a=a_val, scale=b_val)
+
+            def integrand(x, cdf=cdf):
+                F = cdf(x)
+                return 2 * F * (1 - F)
+
+            val, _ = quad(integrand, 0, np.inf, limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
+
+    def _energy_x(self, x):
+        """Energy of self wrt constant frame (expected |X-x| for X ~ InverseGamma)."""
+        import numpy as np
+        from scipy.integrate import quad
+        from scipy.stats import invgamma
+
+        alpha = np.asarray(self._bc_params["alpha"])
+        beta = np.asarray(self._bc_params["beta"])
+        x = np.asarray(x)
+        # Broadcast all to the same shape
+        alpha_b, beta_b, x_b = np.broadcast_arrays(alpha, beta, x)
+        result = np.empty_like(alpha_b, dtype=float)
+        it = np.nditer(
+            [alpha_b, beta_b, x_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["readonly"], ["readonly"], ["writeonly"]],
+        )
+        for a, b, x0, out in it:
+            a_val = a.item()
+            b_val = b.item()
+            x0_val = x0.item()
+
+            def integrand(t, a_val=a_val, b_val=b_val, x0_val=x0_val):
+                return np.abs(t - x0_val) * invgamma.pdf(t, a=a_val, scale=b_val)
+
+            val, _ = quad(integrand, 0, np.inf, limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
