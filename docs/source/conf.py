@@ -22,7 +22,7 @@ env_rtd = os.environ.get("READTHEDOCS")
 if not env_rtd == "True":
     sys.path.insert(0, os.path.abspath("../.."))
 
-import skpro
+import skpro  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
