@@ -55,6 +55,9 @@ __all__ = [
     "TruncatedPareto",
     "Uniform",
     "Weibull",
+    "ZeroInflated",
+    "ZINB",
+    "ZIPoisson",
 ]
 
 from skpro.distributions.alpha import Alpha
@@ -105,3 +108,6 @@ from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.truncated_pareto import TruncatedPareto
 from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
+from skpro.distributions.zero_inflated import ZeroInflated
+from skpro.distributions.zi_negative_binomial import ZINB
+from skpro.distributions.zi_poisson import ZIPoisson
