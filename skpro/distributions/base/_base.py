@@ -1769,16 +1769,19 @@ class BaseDistribution(BaseObject):
         # Handle discrete distributions differently for PMF plotting
         is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
         if is_discrete and fun == "pmf":
-            try:
+            # Define fallback array construction (used when _pmf_support not available)
+            def _get_fallback_arr():
+                arr = np.linspace(lower, upper, 1000)
+                arr = np.round(arr).astype(int)
+                return np.unique(arr)
+
+            # Use _pmf_support if the method exists and is callable
+            if hasattr(self, "_pmf_support") and callable(getattr(self, "_pmf_support")):
                 x_arr = self._pmf_support(lower, upper, max_points=1000)
                 if x_arr.size == 0:
-                    x_arr = np.linspace(lower, upper, 1000)
-                    x_arr = np.round(x_arr).astype(int)
-                    x_arr = np.unique(x_arr)
-            except (AttributeError, NotImplementedError, TypeError, ValueError):
-                x_arr = np.linspace(lower, upper, 1000)
-                x_arr = np.round(x_arr).astype(int)
-                x_arr = np.unique(x_arr)
+                    x_arr = _get_fallback_arr()
+            else:
+                x_arr = _get_fallback_arr()
         else:
             x_arr = np.linspace(lower, upper, 1000)
 
