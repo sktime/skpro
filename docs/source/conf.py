@@ -468,6 +468,7 @@ def setup(app):
     app : sphinx.application.Sphinx
         The Sphinx application object
     """
+
     class _SphinxWarningFilter(logging.Filter):
         def filter(self, record):
             message = record.getMessage()
