@@ -1776,7 +1776,9 @@ class BaseDistribution(BaseObject):
                 return np.unique(arr)
 
             # Use _pmf_support if the method exists and is callable
-            if hasattr(self, "_pmf_support") and callable(getattr(self, "_pmf_support")):
+            if hasattr(self, "_pmf_support") and callable(
+                getattr(self, "_pmf_support")
+            ):
                 x_arr = self._pmf_support(lower, upper, max_points=1000)
                 if x_arr.size == 0:
                     x_arr = _get_fallback_arr()
