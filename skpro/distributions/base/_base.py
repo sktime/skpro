@@ -1465,7 +1465,17 @@ class BaseDistribution(BaseObject):
         """
         # special case: if a == 1, this is just the integral of the pdf, which is 1
         if a == 1:
+            if self.ndim == 0:
+                return 1.0
             return pd.DataFrame(1.0, index=self.index, columns=self.columns)
+
+        # Check if exact or approximate PDF or CDF is available
+        if not self.get_tag("capabilities:exact", []) and not self.get_tag(
+            "capabilities:approx", []
+        ):
+            raise NotImplementedError(
+                "pdfnorm requires either a PDF or CDF to be implemented."
+            )
 
         approx_spl_size = self.get_tag("approx_spl")
         approx_method = (
@@ -1476,6 +1486,8 @@ class BaseDistribution(BaseObject):
 
         # uses formula int p(x)^a dx = E[p(X)^{a-1}], and MC approximates the RHS
         spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
+        if self.ndim == 0:
+            return np.mean(spl)
         spl_df = pd.concat(spl, keys=range(approx_spl_size))
         return spl_df.groupby(level=1, sort=False).mean()
 
