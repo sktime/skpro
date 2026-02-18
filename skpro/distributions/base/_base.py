@@ -1766,14 +1766,36 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
-        x_arr = np.linspace(lower, upper, 1000)
+        # Handle discrete distributions differently for PMF plotting
+        is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
+        if is_discrete and fun == "pmf":
+            # Define fallback array construction (used when _pmf_support not available)
+            def _get_fallback_arr():
+                arr = np.linspace(lower, upper, 1000)
+                arr = np.round(arr).astype(int)
+                return np.unique(arr)
+
+            # Use _pmf_support if the method exists and is callable
+            if hasattr(self, "_pmf_support") and callable(self._pmf_support):
+                x_arr = self._pmf_support(lower, upper, max_points=1000)
+                if x_arr.size == 0:
+                    x_arr = _get_fallback_arr()
+            else:
+                x_arr = _get_fallback_arr()
+        else:
+            x_arr = np.linspace(lower, upper, 1000)
+
         y_arr = [getattr(self, fun)(x) for x in x_arr]
         y_arr = np.array(y_arr)
 
         if ax is None:
             ax = plt.gca()
 
-        ax.plot(x_arr, y_arr, **kwargs)
+        # Use stem plot for discrete PMF, line plot otherwise
+        if is_discrete and fun == "pmf":
+            ax.stem(x_arr, y_arr, basefmt=" ", **kwargs)
+        else:
+            ax.plot(x_arr, y_arr, **kwargs)
 
         if print_labels == "on":
             ax.set_xlabel(f"{x_argname}")
