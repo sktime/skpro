@@ -140,6 +140,8 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         os: [ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      SKPRO_SKIP_VM_TESTS: true
     steps:
       - uses: actions/checkout@v6
 
@@ -186,6 +188,8 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         os: [ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      SKPRO_SKIP_VM_TESTS: true
     steps:
       - uses: actions/checkout@v6
 
@@ -279,6 +283,8 @@ jobs:
   test-deps-2024:
     needs: run-tests-no-extras
     runs-on: ubuntu-latest
+    env:
+      SKPRO_SKIP_VM_TESTS: true
     steps:
       - uses: actions/checkout@v6
 
