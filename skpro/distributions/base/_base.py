@@ -2,16 +2,51 @@
 """Base classes for probability distribution objects."""
 
 __author__ = ["fkiraly"]
-
 __all__ = ["BaseDistribution"]
 
 from warnings import warn
-
 import numpy as np
 import pandas as pd
-from skbase.utils.dependencies import _check_estimator_deps, _check_soft_dependencies
 
+from skbase.utils.dependencies import _check_estimator_deps, _check_soft_dependencies
 from skpro.base import BaseObject
+
+
+def _get_fast_index_np(index):
+    """Convert index to numpy array, handling slow types.
+
+    Parameters
+    ----------
+    index : pd.Index
+        The index to convert.
+
+    Returns
+    -------
+    np.ndarray
+        The converted numpy array.
+    """
+    if index is None:
+        return None
+
+    is_tz_aware = isinstance(index, pd.DatetimeIndex) and index.tz is not None
+    is_period = isinstance(index, pd.PeriodIndex)
+    is_interval = isinstance(index, pd.IntervalIndex)
+
+    if is_tz_aware or is_period or is_interval:
+        warn(
+            f"The index type {type(index)} is known to be slow with to_numpy(). "
+            "For optimal performance, please cast to a native numpy-compatible "
+            "constant, e.g., via .tz_localize(None) for DatetimeIndex.",
+            UserWarning,
+            stacklevel=2,
+        )
+
+        if is_tz_aware:
+            return index.tz_localize(None).to_numpy()
+
+        return index.astype(object).to_numpy()
+
+    return index.to_numpy()
 
 
 class BaseDistribution(BaseObject):
@@ -73,6 +108,16 @@ class BaseDistribution(BaseObject):
             else:
                 self._shape = (len(index), len(columns))
             return None
+
+        if self.index is not None:
+            self._index_np = _get_fast_index_np(self.index).reshape(-1, 1)
+        else:
+            self._index_np = None
+
+        if self.columns is not None:
+            self._columns_np = _get_fast_index_np(self.columns)
+        else:
+            self._columns_np = None
 
         # if broadcast_init os on or other, run this auto-init
         bc_params, shape, is_scalar = self._get_bc_params_dict(return_shape=True)
@@ -558,9 +603,14 @@ class BaseDistribution(BaseObject):
         if oned_as == "col":
             args_as_np = [row_to_col(arg) for arg in args_as_np]
 
-        if hasattr(self, "index") and self.index is not None:
+        if hasattr(self, "_index_np") and self._index_np is not None:
+            args_as_np += (self._index_np,)
+        elif hasattr(self, "index") and self.index is not None:
             args_as_np += (self.index.to_numpy().reshape(-1, 1),)
-        if hasattr(self, "columns") and self.columns is not None:
+
+        if hasattr(self, "_columns_np") and self._columns_np is not None:
+            args_as_np += (self._columns_np,)
+        elif hasattr(self, "columns") and self.columns is not None:
             args_as_np += (self.columns.to_numpy(),)
         bc = np.broadcast_arrays(*args_as_np)
         if dtype is not None:
@@ -618,9 +668,16 @@ class BaseDistribution(BaseObject):
 
         kwargs_as_np = {k: row_to_col(np.array(v)) for k, v in kwargs.items()}
 
-        if hasattr(self, "index") and self.index is not None:
+        if hasattr(self, "_index_np") and self._index_np is not None:
+            kwargs_as_np["index"] = self._index_np
+        elif hasattr(self, "index") and self.index is not None:
+            # Fallback for when _init_shape_bc wasn't called or overridden
+            # without setting _index_np
             kwargs_as_np["index"] = self.index.to_numpy().reshape(-1, 1)
-        if hasattr(self, "columns") and self.columns is not None:
+
+        if hasattr(self, "_columns_np") and self._columns_np is not None:
+            kwargs_as_np["columns"] = self._columns_np
+        elif hasattr(self, "columns") and self.columns is not None:
             kwargs_as_np["columns"] = self.columns.to_numpy()
 
         bc_params = self.get_tags()["broadcast_params"]
