@@ -2,21 +2,13 @@
 """Base classes for probability distribution objects."""
 
 __author__ = ["fkiraly"]
-
 __all__ = ["BaseDistribution"]
 
 from warnings import warn
-
 import numpy as np
 import pandas as pd
 
-try:
-    from pandas.errors import PerformanceWarning
-except ImportError:
-    PerformanceWarning = UserWarning
-
 from skbase.utils.dependencies import _check_estimator_deps, _check_soft_dependencies
-
 from skpro.base import BaseObject
 
 
@@ -45,7 +37,7 @@ def _get_fast_index_np(index):
             f"The index type {type(index)} is known to be slow with to_numpy(). "
             "For optimal performance, please cast to a native numpy-compatible "
             "constant, e.g., via .tz_localize(None) for DatetimeIndex.",
-            PerformanceWarning,
+            UserWarning,
             stacklevel=2,
         )
 
