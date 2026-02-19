@@ -81,6 +81,117 @@ class TruncatedNormal(_ScipyAdapter):
             "b": b,
         }
 
+    def _energy_self(self):
+        """Energy of self, w.r.t. self.
+
+        Expected |X-Y| for i.i.d. X,Y ~ TruncatedNormal.
+        """
+        import numpy as np
+        from scipy.integrate import quad
+        from scipy.stats import truncnorm
+
+        mu = np.asarray(self._bc_params["mu"])
+        sigma = np.asarray(self._bc_params["sigma"])
+        l_trunc = np.asarray(self._bc_params["l_trunc"])
+        r_trunc = np.asarray(self._bc_params["r_trunc"])
+        mu_b, sigma_b, l_b, r_b = np.broadcast_arrays(mu, sigma, l_trunc, r_trunc)
+        result = np.empty_like(mu_b, dtype=float)
+        it = np.nditer(
+            [mu_b, sigma_b, l_b, r_b, result],
+            flags=("multi_index",),
+            op_flags=(
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("writeonly",),
+            ),
+        )
+        for m, s, l, r, out in it:
+            a = (l.item() - m.item()) / s.item()
+            b = (r.item() - m.item()) / s.item()
+
+            a_val = a
+            b_val = b
+            m_val = m.item()
+            s_val = s.item()
+
+            def cdf(x, a_val=a_val, b_val=b_val, m_val=m_val, s_val=s_val):
+                return truncnorm.cdf(x, a_val, b_val, loc=m_val, scale=s_val)
+
+            def integrand(x, cdf=cdf):
+                F = cdf(x)
+                return 2 * F * (1 - F)
+
+            val, _ = quad(integrand, l.item(), r.item(), limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
+
+    def _energy_x(self, x):
+        """Energy of self, w.r.t. a constant frame x.
+
+        Expected |X-x| for X ~ TruncatedNormal.
+        """
+        import numpy as np
+        from scipy.integrate import quad
+        from scipy.stats import truncnorm
+
+        mu = np.asarray(self._bc_params["mu"])
+        sigma = np.asarray(self._bc_params["sigma"])
+        l_trunc = np.asarray(self._bc_params["l_trunc"])
+        r_trunc = np.asarray(self._bc_params["r_trunc"])
+        x = np.asarray(x)
+        mu_b, sigma_b, l_b, r_b, x_b = np.broadcast_arrays(
+            mu, sigma, l_trunc, r_trunc, x
+        )
+        result = np.empty_like(mu_b, dtype=float)
+        it = np.nditer(
+            [mu_b, sigma_b, l_b, r_b, x_b, result],
+            flags=("multi_index",),
+            op_flags=(
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("readonly",),
+                ("writeonly",),
+            ),
+        )
+        for m, s, l, r, x0, out in it:
+            a = (l.item() - m.item()) / s.item()
+            b = (r.item() - m.item()) / s.item()
+
+            a_val = a
+            b_val = b
+            m_val = m.item()
+            s_val = s.item()
+            x0_val = x0.item()
+
+            def integrand(
+                t, a_val=a_val, b_val=b_val, m_val=m_val, s_val=s_val, x0_val=x0_val
+            ):
+                return np.abs(t - x0_val) * truncnorm.pdf(
+                    t, a_val, b_val, loc=m_val, scale=s_val
+                )
+
+            val, _ = quad(integrand, l.item(), r.item(), limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
