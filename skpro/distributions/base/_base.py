@@ -619,9 +619,12 @@ class BaseDistribution(BaseObject):
         kwargs_as_np = {k: row_to_col(np.array(v)) for k, v in kwargs.items()}
 
         if hasattr(self, "index") and self.index is not None:
-            kwargs_as_np["index"] = self.index.to_numpy().reshape(-1, 1)
+            # Use .values instead of .to_numpy() to avoid 4-100x slowdown for
+            # non-native numpy index types (tz-aware DatetimeIndex, PeriodIndex,
+            # IntervalIndex, etc.). See skpro issue #597.
+            kwargs_as_np["index"] = np.array(self.index).reshape(-1, 1)
         if hasattr(self, "columns") and self.columns is not None:
-            kwargs_as_np["columns"] = self.columns.to_numpy()
+            kwargs_as_np["columns"] = np.array(self.columns)
 
         bc_params = self.get_tags()["broadcast_params"]
         if bc_params is None:
