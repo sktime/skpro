@@ -21,6 +21,15 @@ class GumbelL(_ScipyAdapter):
         Location parameter
     sigma : float
         Scale parameter
+    
+    Example
+    -------
+    >>> from skpro.distributions import GumbelL
+    >>> gumbel_l_dist = GumbelL(mu=0.0, sigma=1.0)
+    >>> gumbel_l_dist.mean()
+    np.float64(-0.5772156649015329)
+    >>> gumbel_l_dist.var()
+    np.float64(1.6449340668482264)
     """
 
     _tags = {
