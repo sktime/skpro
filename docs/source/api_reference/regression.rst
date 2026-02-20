@@ -212,6 +212,17 @@ Generalized Additive Models
 
     GAMRegressor
 
+Nonparametric regression
+------------------------
+
+.. currentmodule:: skpro.regression.nonparametric
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    HistogramCDERegressor
+
 Gaussian process and kernel regression
 --------------------------------------
 
