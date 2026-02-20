@@ -233,7 +233,7 @@ class BaseProbaRegressor(BaseEstimator):
             from_type=self.get_tag("y_inner_mtype"),
             to_type=self._y_metadata["mtype"],
             as_scitype="Table",
-            store=self._X_converter_store,
+            store=self._y_converter_store,
         )
 
         return y_pred
@@ -852,14 +852,14 @@ class BaseProbaRegressor(BaseEstimator):
         if not valid:
             check_is_error_msg(msg, var_name="C", raise_exception=True)
 
-        # convert y to y_inner_mtype
+        # convert C to C_inner_mtype
         C_inner_mtype = self.get_tag("C_inner_mtype")
         C_inner = convert(
             obj=C,
             from_type=metadata["mtype"],
             to_type=C_inner_mtype,
             as_scitype="Table",
-            store=self._y_converter_store,
+            store=self._C_converter_store,
         )
 
         return C_inner, metadata
