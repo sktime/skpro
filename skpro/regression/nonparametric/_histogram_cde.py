@@ -24,6 +24,18 @@ class HistogramCDERegressor(BaseProbaRegressor):
         Strategy used to define the widths of the bins.
         "uniform": all bins in each dimension have identical widths.
         "quantile": all bins in each dimension have the same number of points.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from skpro.regression.nonparametric import HistogramCDERegressor
+    >>> X_train = pd.DataFrame({"x": [1, 2, 3, 4, 5]})
+    >>> y_train = pd.DataFrame({"y": [1, 2, 2, 3, 3]})
+    >>> reg = HistogramCDERegressor(n_bins_x=2, n_bins_y=3)
+    >>> reg.fit(X_train, y_train)
+    HistogramCDERegressor(...)
+    >>> X_test = pd.DataFrame({"x": [2.5]})
+    >>> y_pred = reg.predict_proba(X_test)
     """
 
     _tags = {
