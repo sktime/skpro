@@ -31,6 +31,12 @@ def pytest_addoption(parser):
         default=False,
         help="test only estimators from modules that have changed compared to main",
     )
+    parser.addoption(
+        "--skip_vm_tests",
+        action="store_true",
+        default=False,
+        help="skip estimators tagged with 'tests:vm': True",
+    )
 
 
 def pytest_configure(config):
@@ -39,3 +45,10 @@ def pytest_configure(config):
 
     if config.getoption("--only_changed_modules") in [True, "True"]:
         _config.ONLY_CHANGED_MODULES = True
+
+    skip_vm = config.getoption("--skip_vm_tests")
+    if not skip_vm:
+        skip_vm = os.environ.get("SKPRO_SKIP_VM_TESTS", "false").lower() == "true"
+
+    if skip_vm:
+        _config.SKIP_VM_TESTS = True
