@@ -3,6 +3,7 @@
 
 __author__ = ["amaydixit11"]
 
+import numbers
 import numpy as np
 import pandas as pd
 from skpro.distributions import Histogram
@@ -43,6 +44,10 @@ class HistogramCDERegressor(BaseProbaRegressor):
     }
 
     def __init__(self, n_neighbors=10, n_bins_y=10):
+        if not isinstance(n_neighbors, numbers.Integral) or n_neighbors < 1:
+            raise ValueError(f"n_neighbors must be a positive integer, got {n_neighbors!r}")
+        if not isinstance(n_bins_y, numbers.Integral) or n_bins_y < 1:
+            raise ValueError(f"n_bins_y must be a positive integer, got {n_bins_y!r}")
         self.n_neighbors = n_neighbors
         self.n_bins_y = n_bins_y
         super().__init__()
@@ -63,23 +68,15 @@ class HistogramCDERegressor(BaseProbaRegressor):
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features."""
-        self.check_is_fitted()
-        
         # 1. Define bins for y
         y_min = self._y_train.min().min()
         y_max = self._y_train.max().max()
         
         # Add small additive buffer to prevent degenerate bins
-        eps = max(0.01 * abs(y_max), np.finfo(float).eps * 10)
-        if eps == 0:
-            eps = 1e-8
-            
-        y_min -= eps
-        y_max += eps
-        
-        if y_min == y_max:
-            y_min -= 1e-8
-            y_max += 1e-8
+        # Small buffer proportional to range; fallback handles degenerate (all-equal) case
+        buf = max(0.01 * (y_max - y_min), 1e-8)
+        y_min -= buf
+        y_max += buf
         
         y_bins = np.linspace(y_min, y_max, self.n_bins_y + 1)
         
@@ -106,6 +103,6 @@ class HistogramCDERegressor(BaseProbaRegressor):
         )
 
     @classmethod
-    def get_test_params(cls, parameter_set="default"):
+    def get_test_params(cls, parameter_set="default"):  # noqa: ARG003
         """Return testing parameter settings for the estimator."""
         return [{"n_neighbors": 5, "n_bins_y": 10}, {"n_neighbors": 10, "n_bins_y": 5}]
