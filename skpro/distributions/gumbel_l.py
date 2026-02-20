@@ -17,10 +17,12 @@ class GumbelL(_ScipyAdapter):
 
     Parameters
     ----------
-    mu : float
+    mu : float or array of float (1D or 2D)
         Location parameter
-    sigma : float
+    sigma : float or array of float (1D or 2D), must be positive
         Scale parameter
+    index : pd.Index, optional, default = RangeIndex
+    columns : pd.Index, optional, default = RangeIndex
     
     Example
     -------
