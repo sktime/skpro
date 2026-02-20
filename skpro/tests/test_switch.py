@@ -261,8 +261,11 @@ def _run_test_for_class(
         return False, "False_required_deps_missing"
     # otherwise, continue
 
+    from skpro.tests._config import SKIP_VM_TESTS
+
     # if only_vm_required=False, and the class requires a test vm, skip
-    if not only_vm_required and _requires_vm(cls):
+    # only skip if SKIP_VM_TESTS is True, otherwise run by default
+    if not only_vm_required and _requires_vm(cls) and SKIP_VM_TESTS:
         return False, "False_requires_vm"
     # if only_vm_required=True, and the class does not require a test vm, skip
     if only_vm_required and not _requires_vm(cls):

@@ -143,3 +143,56 @@ def test_run_test_for_class():
         assert reason == "False_no_change"
         assert reason_wdep == "False_no_change"
         assert reason_nodep == "False_no_change"
+
+
+def test_run_test_for_class_vm():
+    """Test that run_test_for_class handles VM-tagged estimators correctly."""
+    from skpro.tests._config import SKIP_VM_TESTS
+    from skpro.tests.test_switch import _run_test_for_class
+
+    class DummyVM:
+        @classmethod
+        def get_class_tag(cls, tag_name, default=None):
+            return {"tests:vm": True}.get(tag_name, default)
+
+        @classmethod
+        def get_class_tags(cls):
+            return {"tests:vm": True}
+
+    # clear cache to ensure it reads the updated SKIP_VM_TESTS
+    _run_test_for_class.cache_clear()
+
+    # if SKIP_VM_TESTS is False (default), VM tests should run
+    # (subject to other conditions like ONLY_CHANGED_MODULES)
+    run, reason = _run_test_for_class(
+        DummyVM, ignore_deps=True, only_changed_modules=False
+    )
+    if not SKIP_VM_TESTS:
+        assert run
+        assert reason == "True_run_always"
+
+    # if SKIP_VM_TESTS is True, VM tests should be skipped
+    import skpro.tests._config as _config
+
+    orig_skip_vm = _config.SKIP_VM_TESTS
+    try:
+        _config.SKIP_VM_TESTS = True
+        _run_test_for_class.cache_clear()
+        run, reason = _run_test_for_class(
+            DummyVM, ignore_deps=True, only_changed_modules=False
+        )
+        assert not run
+        assert reason == "False_requires_vm"
+
+        # if only_vm_required=True, it should NOT skip even if SKIP_VM_TESTS is True
+        run, reason = _run_test_for_class(
+            DummyVM,
+            ignore_deps=True,
+            only_changed_modules=False,
+            only_vm_required=True,
+        )
+        assert run
+        assert reason == "True_run_always"
+    finally:
+        _config.SKIP_VM_TESTS = orig_skip_vm
+        _run_test_for_class.cache_clear()
