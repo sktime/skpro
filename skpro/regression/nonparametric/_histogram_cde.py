@@ -16,14 +16,10 @@ class HistogramCDERegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    n_bins_x : int, optional (default=10)
-        Number of bins for each feature in X.
+    n_neighbors : int, optional (default=10)
+        Number of nearest neighbors to use for defining the local neighborhood in X.
     n_bins_y : int, optional (default=10)
         Number of bins for the target variable y.
-    strategy : str, optional (default="uniform")
-        Strategy used to define the widths of the bins.
-        "uniform": all bins in each dimension have identical widths.
-        "quantile": all bins in each dimension have the same number of points.
 
     Examples
     --------
@@ -31,7 +27,7 @@ class HistogramCDERegressor(BaseProbaRegressor):
     >>> from skpro.regression.nonparametric import HistogramCDERegressor
     >>> X_train = pd.DataFrame({"x": [1, 2, 3, 4, 5]})
     >>> y_train = pd.DataFrame({"y": [1, 2, 2, 3, 3]})
-    >>> reg = HistogramCDERegressor(n_bins_x=2, n_bins_y=3)
+    >>> reg = HistogramCDERegressor(n_neighbors=2, n_bins_y=3)
     >>> reg.fit(X_train, y_train)
     HistogramCDERegressor(...)
     >>> X_test = pd.DataFrame({"x": [2.5]})
@@ -41,45 +37,54 @@ class HistogramCDERegressor(BaseProbaRegressor):
     _tags = {
         "authors": ["amaydixit11"],
         "capability:multioutput": False,
-        "capability:missing": True,
+        "capability:missing": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, n_bins_x=10, n_bins_y=10, strategy="uniform"):
-        self.n_bins_x = n_bins_x
+    def __init__(self, n_neighbors=10, n_bins_y=10):
+        self.n_neighbors = n_neighbors
         self.n_bins_y = n_bins_y
-        self.strategy = strategy
         super().__init__()
 
     def _fit(self, X, y):
         """Fit regressor to training data."""
+        from sklearn.neighbors import NearestNeighbors
+        
         self._X_train = X
         self._y_train = y
+        
+        n_samples_train = len(self._X_train)
+        k = min(n_samples_train, max(1, getattr(self, "n_neighbors", 10)))
+        self._knn = NearestNeighbors(n_neighbors=k)
+        self._knn.fit(self._X_train.to_numpy())
+        
         return self
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features."""
-        from sklearn.neighbors import NearestNeighbors
-        
         self.check_is_fitted()
         
         # 1. Define bins for y
         y_min = self._y_train.min().min()
         y_max = self._y_train.max().max()
-        # Add small buffer
-        y_min -= 0.01 * abs(y_min)
-        y_max += 0.01 * abs(y_max)
+        
+        # Add small additive buffer to prevent degenerate bins
+        eps = max(0.01 * abs(y_max), np.finfo(float).eps * 10)
+        if eps == 0:
+            eps = 1e-8
+            
+        y_min -= eps
+        y_max += eps
+        
+        if y_min == y_max:
+            y_min -= 1e-8
+            y_max += 1e-8
         
         y_bins = np.linspace(y_min, y_max, self.n_bins_y + 1)
         
-        # 2. For each query point, find "nearby" points in X using KNN
-        n_samples_train = len(self._X_train)
-        k = min(n_samples_train, max(1, n_samples_train // self.n_bins_x))
-        knn = NearestNeighbors(n_neighbors=k)
-        knn.fit(self._X_train)
-        
-        distances, indices = knn.kneighbors(X)
+        # 2. For each query point, find "nearby" points in X using pre-fitted KNN
+        _distances, indices = self._knn.kneighbors(X.to_numpy())
         
         bin_masses = []
         for idx in indices:
@@ -103,4 +108,4 @@ class HistogramCDERegressor(BaseProbaRegressor):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        return [{"n_bins_x": 5, "n_bins_y": 10}, {"n_bins_x": 10, "n_bins_y": 5}]
+        return [{"n_neighbors": 5, "n_bins_y": 10}, {"n_neighbors": 10, "n_bins_y": 5}]
