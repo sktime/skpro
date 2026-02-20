@@ -69,9 +69,9 @@ class Laplace(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        energy_arr = self._bc_params["scale"]
+        energy_arr = self._bc_params["scale"] * 1.5
         if energy_arr.ndim > 0:
-            energy_arr = np.sum(energy_arr, axis=1) * 1.5
+            energy_arr = np.sum(energy_arr, axis=1)
         return energy_arr
 
     def _energy_x(self, x):
