@@ -65,6 +65,8 @@ Continuous support - non-negative reals
     Fisk
     Gamma
     GeneralizedPareto
+    GumbelL
+    GumbelR
     Levy
     LogGamma
     HalfCauchy
