@@ -8,6 +8,23 @@ from skpro.distributions.empirical import Empirical
 from skpro.tests.test_switch import run_test_module_changed
 
 
+def test_empirical_negative_weights():
+    """Negative weights should not be allowed in a probability distribution."""
+    spl_idx = pd.MultiIndex.from_product([[0, 1], [0, 1]], names=["sample", "time"])
+    spl = pd.DataFrame(
+        [[0], [100], [1], [200]],
+        index=spl_idx,
+        columns=["x"],
+    )
+
+    weights = pd.Series([0.5, -0.2, 0.5, 0.2], index=spl_idx)
+
+    dist = Empirical(spl, weights=weights)
+
+    with pytest.raises(ValueError, match="Weights cannot be negative."):
+        dist._get_weights_array()
+
+
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",

@@ -215,9 +215,11 @@ class Empirical(BaseDistribution):
 
         weights_values = []
         for spl_ix in self._spl_indices:
-            weights_i = self.weights.loc[spl_ix]
-            weights_i = weights_i.loc[self.index]
-            weights_values.append(np.asarray(weights_i))
+            weights_i = self.weights.loc[spl_ix].loc[self.index]
+            arr = np.asarray(weights_i)
+            if np.any(arr < 0):
+                raise ValueError("Weights cannot be negative.")
+            weights_values.append(arr)
 
         self._weights_array = np.stack(weights_values, axis=0)
         return self._weights_array
