@@ -70,7 +70,7 @@ class Pareto(BaseDistribution):
         """
         alpha = self._bc_params["alpha"]
         scale = self._bc_params["scale"]
-        mean = np.where(alpha <= 1, np.inf, scale**alpha / (alpha - 1))
+        mean = np.where(alpha <= 1, np.inf, alpha * scale / (alpha - 1))
         return mean
 
     def _var(self):
