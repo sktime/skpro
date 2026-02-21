@@ -7,6 +7,23 @@ import pytest
 from skpro.distributions.empirical import Empirical
 from skpro.tests.test_switch import run_test_module_changed
 
+def test_empirical_negative_weights():
+    """
+    Negative weights should not be allowed in a probability distribution.
+    """
+    spl_idx = pd.MultiIndex.from_product([[0, 1], [0, 1]], names=["sample", "time"])
+    spl = pd.DataFrame(
+        [[0], [100], [1], [200]],
+        index=spl_idx,
+        columns=["x"],
+    )
+
+    weights = pd.Series([0.5, -0.2, 0.5, 0.2], index=spl_idx)
+    
+    # Negative weights violate probability semantics.
+    with pytest.raises(ValueError):
+        Empirical(spl, weights=weights)
+
 
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.distributions"),

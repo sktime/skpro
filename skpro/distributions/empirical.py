@@ -89,6 +89,11 @@ class Empirical(BaseDistribution):
         self.time_indep = time_indep
         self.skip_init_sorted = skip_init_sorted
 
+        if self.weights is not None:
+            weights_arr = np.asarray(self.weights)
+            if np.any(weights_arr < 0):
+                raise ValueError("Weights must be non-negative.")
+
         index, columns = self._init_index(index, columns)
 
         super().__init__(index=index, columns=columns)
