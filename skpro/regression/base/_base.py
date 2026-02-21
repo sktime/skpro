@@ -95,6 +95,19 @@ class BaseProbaRegressor(BaseEstimator):
         """
         capa_surv = self.get_tag("capability:survival")
 
+        # Reset feature name tracking and converter stores so that repeated
+        # fit() calls behave correctly (sklearn contract: re-fit is always valid).
+        # Without this reset, _check_X() would run predict-time column validation
+        # during fit, blocking re-fit with different features or freezing stale
+        # converter metadata into subsequent predict() calls.
+        if hasattr(self, "feature_names_in_"):
+            del self.feature_names_in_
+        if hasattr(self, "n_features_in_"):
+            del self.n_features_in_
+        self._X_converter_store = {}
+        self._y_converter_store = {}
+        self._C_converter_store = {}
+
         check_ret = self._check_X_y(X, y, C, return_metadata=True)
 
         # get inner X, y, C
