@@ -19,9 +19,7 @@ def test_empirical_negative_weights():
     )
 
     weights = pd.Series([0.5, -0.2, 0.5, 0.2], index=spl_idx)
-
-    # Probability weights must satisfy:
-    #   w_i >= 0 and sum_i w_i = 1
+    
     # Negative weights violate probability semantics.
     with pytest.raises(ValueError):
         Empirical(spl, weights=weights)
