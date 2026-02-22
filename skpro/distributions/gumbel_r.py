@@ -72,3 +72,4 @@ class GumbelR(_ScipyAdapter):
         params3 = {"mu": 0.0, "sigma": 1.0}
 
         return [params1, params2, params3]
+    
