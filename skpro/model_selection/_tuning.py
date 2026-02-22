@@ -216,8 +216,6 @@ class BaseGridSearch(_DelegatedProbaRegressor):
             estimator = self.estimator.clone().set_params(**params)
             # Refit model with best parameters.
             if self.refit:
-                # Pass C so survival estimators receive censoring data, matching
-                # the best_estimator_ refit above (line 202).
                 estimator.fit(X, y, C=C)
             self.n_best_estimators_.append((rank, estimator))
             # Save score
