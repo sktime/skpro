@@ -80,7 +80,7 @@ class Empirical(BaseDistribution):
         spl,
         weights=None,
         time_indep=True,
-        skip_init_sorted=False,
+        skip_init_sorted=True,
         index=None,
         columns=None,
     ):
@@ -96,6 +96,8 @@ class Empirical(BaseDistribution):
         self._sorted_initialized = False
         self._spl_array = None
         self._weights_array = None
+        self._sorted_array = None
+        self._sorted_weights_array = None
 
         # initialized sorted samples
         if not skip_init_sorted:
@@ -149,40 +151,39 @@ class Empirical(BaseDistribution):
                 weights_sorted = self.weights.values.flatten()[sorter]
             else:
                 weights_sorted = np.ones_like(spl)
-            self._sorted = spl_sorted
-            self._weights = weights_sorted
+            self._sorted_array = spl_sorted
+            self._sorted_weights_array = weights_sorted
             self._sorted_initialized = True
             return None
 
-        times = self._instances
-        cols = self.columns
+        # (n_samples, n_instances, n_cols)
+        spl_values = self._get_spl_array()
 
-        sorted = {}
-        weights = {}
-        for t in times:
-            sorted[t] = {}
-            weights[t] = {}
-            for col in cols:
-                sl = (slice(None),) + self._coerce_tuple(t)
-                spl_t = self.spl.loc[sl, col].values
-                sorter = np.argsort(spl_t)
-                spl_t_sorted = spl_t[sorter]
-                sorted[t][col] = spl_t_sorted
-                if self.weights is not None:
-                    weights_t = self.weights.loc[sl].values
-                    weights_t_sorted = weights_t[sorter]
-                    weights[t][col] = weights_t_sorted
-                else:
-                    ones = np.ones(len(spl_t_sorted))
-                    weights[t][col] = ones
+        if self.weights is None:
+            # Vectorized sort along n_samples axis (0)
+            self._sorted_array = np.sort(spl_values, axis=0)
+            self._sorted_weights_array = None
+        else:
+            # (n_samples, n_instances)
+            weights_arr = self._get_weights_array()
+            # need to align weights with sorted samples
+            # argsort along axis 0
+            sorter = np.argsort(spl_values, axis=0)
 
-        self._sorted = sorted
-        self._weights = weights
+            # spl_values is (S, I, C), sorter is (S, I, C)
+            self._sorted_array = np.take_along_axis(spl_values, sorter, axis=0)
+
+            # weights_arr is (S, I), expand to (S, I, 1) and sort per column
+            weights_expanded = np.expand_dims(weights_arr, axis=-1)
+            self._sorted_weights_array = np.take_along_axis(
+                weights_expanded, sorter, axis=0
+            )
+
         self._sorted_initialized = True
 
     def _ensure_sorted(self):
         """Ensure sorted samples are initialized."""
-        if not getattr(self, "_sorted_initialized", False):
+        if not getattr(self, "_sorted_initialized", False) or self._sorted_array is None:
             self._init_sorted()
 
     def _coerce_tuple(self, x):
@@ -225,11 +226,11 @@ class Empirical(BaseDistribution):
     def _apply_per_ix(self, func, params, x=None):
         """Apply function per index."""
         self._ensure_sorted()
-        sorted = self._sorted
-        weights = self._weights
+        sorted_arr = self._sorted_array
+        weights_arr = self._sorted_weights_array
 
         if self.ndim == 0:
-            return func(spl=sorted, weights=weights, x=x, **params)
+            return func(spl=sorted_arr, weights=weights_arr, x=x, **params)
 
         index = self.index
         cols = self.columns
@@ -237,8 +238,12 @@ class Empirical(BaseDistribution):
         res = pd.DataFrame(index=index, columns=cols)
         for i, ix in enumerate(index):
             for j, col in enumerate(cols):
-                spl_t = sorted[ix][col]
-                weights_t = weights[ix][col]
+                spl_t = sorted_arr[:, i, j]
+                if weights_arr is not None:
+                    weights_t = weights_arr[:, i, j]
+                else:
+                    weights_t = None
+
                 if x is None:
                     x_t = None
                 elif hasattr(x, "loc"):
@@ -366,117 +371,173 @@ class Empirical(BaseDistribution):
         return type(self)(**subset_params)
 
     def _energy_default(self, x=None):
-        r"""Energy of self, w.r.t. self or a constant frame x.
+        """Compute energy."""
+        self._ensure_sorted()
+        sorted_samples = self._sorted_array
+        weights_arr = self._sorted_weights_array
 
-        Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
+        # cross-energy case, not yet fully vectorized
+        if x is not None:
+            energy_arr = self._apply_per_ix(_energy_np, {"assume_sorted": True}, x=x)
+            if energy_arr.ndim > 0:
+                energy_arr = np.sum(energy_arr, axis=1)
+            return energy_arr
 
-        If `x` is `None`, returns :math:`\mathbb{E}[|X-Y|]` (per row), "self-energy".
-        If `x` is passed, returns :math:`\mathbb{E}[|X-x|]` (per row), "energy wrt x".
+        # self-energy case, vectorized
+        if self.ndim == 0:
+            if weights_arr is None:
+                n_samples = len(sorted_samples)
+                weights = np.ones(n_samples) / n_samples
+            else:
+                w_sum = np.sum(weights_arr)
+                weights = weights_arr / (w_sum if w_sum != 0 else 1.0)
 
-        Parameters
-        ----------
-        x : None or pd.DataFrame, optional, default=None
-            if pd.DataFrame, must have same rows and columns as `self`
+            spl_diff = np.diff(sorted_samples)
+            cum_fwd = np.cumsum(weights[:-1])
+            cum_back = np.cumsum(weights[1:][::-1])[::-1]
+            return 2 * np.sum(cum_fwd * cum_back * spl_diff)
 
-        Returns
-        -------
-        pd.DataFrame with same rows as `self`, single column `"energy"`
-        each row contains one float, self-energy/energy as described above.
-        """
-        energy_arr = self._apply_per_ix(_energy_np, {"assume_sorted": True}, x=x)
-        if energy_arr.ndim > 0:
-            energy_arr = np.sum(energy_arr, axis=1)
-        return energy_arr
+        # Vectorized self-energy for multi-dimensional case
+        spl_diff = np.diff(sorted_samples, axis=0)
+        n_samples = sorted_samples.shape[0]
+
+        if weights_arr is None:
+            weights = np.ones(sorted_samples.shape) / n_samples
+        else:
+            weight_sums = np.sum(weights_arr, axis=0, keepdims=True)
+            weight_sums_safe = np.where(weight_sums == 0, 1.0, weight_sums)
+            weights = weights_arr / weight_sums_safe
+
+        cum_fwd = np.cumsum(weights[:-1, :, :], axis=0)
+        cum_back = np.cumsum(weights[1:, :, :][::-1, :, :], axis=0)[::-1, :, :]
+        # sum across samples for per-entry energy
+        energy_per_entry = 2 * np.sum(cum_fwd * cum_back * spl_diff, axis=0)
+        # sum across columns for per-instance total energy
+        # as expected by BaseDistribution for energy()
+        return np.sum(energy_per_entry, axis=1)
 
     def _mean(self):
-        r"""Return expected value of the distribution.
+        """Expected value."""
+        self._ensure_sorted()
+        spl_values = self._get_spl_array()
+        weights_arr = self._weights_array
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns the expectation :math:`\mathbb{E}[X]`
-
-        Returns
-        -------
-        pd.DataFrame with same rows, columns as `self`
-        expected value of distribution (entry-wise)
-        """
-        spl = self.spl
-
-        # scalar case
         if self.ndim == 0:
-            spl = spl.values.flatten()
+            spl = self.spl.values.flatten()
             if self.weights is None:
                 return np.mean(spl)
             else:
-                return np.average(spl, weights=self.weights)
+                return np.average(spl, weights=self.weights.values.flatten())
 
-        # dataframe case
-        groupby_levels = list(range(1, spl.index.nlevels))
         if self.weights is None:
-            mean_df = spl.groupby(level=groupby_levels, sort=False).mean()
+            mean_vals = np.mean(spl_values, axis=0)
         else:
-            mean_df = spl.groupby(level=groupby_levels, sort=False).apply(
-                lambda x: np.average(x, weights=self.weights.loc[x.index], axis=0)
-            )
-            mean_df = pd.DataFrame(mean_df.tolist(), index=mean_df.index)
-            mean_df.columns = spl.columns
+            w_sum = np.sum(weights_arr, axis=0, keepdims=True)
+            w_sum_safe = np.where(w_sum == 0, 1.0, w_sum)
+            w_exp = np.expand_dims(weights_arr, axis=-1)
+            mean_vals = np.sum(spl_values * w_exp, axis=0) / w_sum_safe
 
-        mean_df = mean_df.loc[self.index]  # ensure consistent sorting
-        return mean_df
+        return pd.DataFrame(mean_vals, index=self.index, columns=self.columns)
 
     def _var(self):
-        r"""Return element/entry-wise variance of the distribution.
+        """Variance."""
+        self._ensure_sorted()
+        spl_values = self._get_spl_array()
+        weights_arr = self._weights_array
 
-        Let :math:`X` be a random variable with the distribution of `self`.
-        Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`
-
-        Returns
-        -------
-        pd.DataFrame with same rows, columns as `self`
-        variance of distribution (entry-wise)
-        """
-        spl = self.spl
-        N = self._N
-
-        # scalar case
         if self.ndim == 0:
-            spl = spl.values.flatten()
+            spl = self.spl.values.flatten()
             if self.weights is None:
-                return np.var(spl, ddof=0)
+                return np.var(spl)
             else:
-                mean = self.mean()
-                var = np.average((spl - mean) ** 2, weights=self.weights)
-                return var
+                m = np.average(spl, weights=self.weights.values.flatten())
+                return np.average((spl - m) ** 2, weights=self.weights.values.flatten())
 
-        # dataframe case
-        groupby_levels = list(range(1, spl.index.nlevels))
+        m = self._mean().values
+        m_exp = np.expand_dims(m, axis=0)
+
         if self.weights is None:
-            var_df = spl.groupby(level=groupby_levels, sort=False).var(ddof=0)
+            var_vals = np.mean((spl_values - m_exp) ** 2, axis=0)
         else:
-            mean = self.mean()
-            means = pd.concat([mean] * N, axis=0, keys=self._spl_indices)
-            var_df = spl.groupby(level=groupby_levels, sort=False).apply(
-                lambda x: np.average(
-                    (x - means.loc[x.index]) ** 2,
-                    weights=self.weights.loc[x.index],
-                    axis=0,
-                )
-            )
-            var_df = pd.DataFrame(
-                var_df.tolist(), index=var_df.index, columns=spl.columns
-            )
+            w_sum = np.sum(weights_arr, axis=0, keepdims=True)
+            w_sum_safe = np.where(w_sum == 0, 1.0, w_sum)
+            w_exp = np.expand_dims(weights_arr, axis=-1)
+            var_vals = np.sum(w_exp * (spl_values - m_exp) ** 2, axis=0) / w_sum_safe
 
-        var_df = var_df.loc[self.index]  # ensure consistent sorting
-        return var_df
+        return pd.DataFrame(var_vals, index=self.index, columns=self.columns)
 
     def _cdf(self, x):
         """Cumulative distribution function."""
-        cdf_val = self._apply_per_ix(_cdf_np, {"assume_sorted": True}, x=x)
-        return cdf_val
+        self._ensure_sorted()
+        sorted_samples = self._sorted_array
+        weights_arr = self._sorted_weights_array
+
+        if self.ndim == 0:
+            mask = sorted_samples <= x
+            if weights_arr is None:
+                return np.mean(mask)
+            else:
+                w_sum = np.sum(weights_arr)
+                if w_sum == 0:
+                    return np.mean(mask)
+                return np.sum(weights_arr * mask) / w_sum
+
+        # Broadcasted x has shape (n_instances, n_cols)
+        # sorted_samples has shape (n_samples, n_instances, n_cols)
+        x_exp = np.expand_dims(x, axis=0)
+        mask = sorted_samples <= x_exp
+
+        if weights_arr is None:
+            cdf_vals = np.mean(mask, axis=0)
+        else:
+            # weights_arr has shape (n_samples, n_instances, n_cols)
+            weight_sums = np.sum(weights_arr, axis=0)
+            # handle cases where all weights are zero to avoid division by zero
+            weight_sums_safe = np.where(weight_sums == 0, 1.0, weight_sums)
+            cdf_vals = np.sum(weights_arr * mask, axis=0) / weight_sums_safe
+
+        return cdf_vals
 
     def _ppf(self, p):
         """Quantile function = percent point function = inverse cdf."""
-        ppf_val = self._apply_per_ix(_ppf_np, {"assume_sorted": True}, x=p)
-        return ppf_val
+        self._ensure_sorted()
+        sorted_samples = self._sorted_array
+        weights_arr = self._sorted_weights_array
+
+        if self.ndim == 0:
+            if weights_arr is None:
+                n_samples = len(sorted_samples)
+                idx = np.sum(np.arange(1, n_samples + 1) / n_samples < p)
+            else:
+                w_sum = np.sum(weights_arr)
+                w_sum_safe = w_sum if w_sum != 0 else 1.0
+                cum_weights = np.cumsum(weights_arr) / w_sum_safe
+                idx = np.sum(cum_weights < p)
+            
+            idx = np.minimum(idx, len(sorted_samples) - 1)
+            return sorted_samples[idx]
+
+        # p has shape (n_instances, n_cols)
+        p_exp = np.expand_dims(p, axis=0)
+
+        if weights_arr is None:
+            n_samples = sorted_samples.shape[0]
+            # (n_samples, 1, 1) broadcasted across (1, n_instances, n_cols)
+            ranks = (
+                np.arange(1, n_samples + 1).reshape(-1, 1, 1) / n_samples
+            )
+            idx = np.sum(ranks < p_exp, axis=0)
+        else:
+            weight_sums = np.sum(weights_arr, axis=0, keepdims=True)
+            weight_sums_safe = np.where(weight_sums == 0, 1.0, weight_sums)
+            cum_weights = np.cumsum(weights_arr, axis=0) / weight_sums_safe
+            idx = np.sum(cum_weights < p_exp, axis=0)
+
+        idx = np.minimum(idx, sorted_samples.shape[0] - 1)
+        ppf_vals = np.take_along_axis(
+            sorted_samples, np.expand_dims(idx, axis=0), axis=0
+        )
+        return ppf_vals.squeeze(0)
 
     def _pmf_support(self, lower, upper, max_points=100):
         """Get support points for empirical distribution.
@@ -503,7 +564,7 @@ class Empirical(BaseDistribution):
         self._ensure_sorted()
 
         # Scalar case: filter sorted support points within bounds
-        support_points = self._sorted
+        support_points = self._sorted_array
         mask = (support_points >= lower) & (support_points <= upper)
         filtered_points = support_points[mask]
         # Limit to max_points and return unique values
