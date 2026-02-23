@@ -1,10 +1,12 @@
 """Automated tests based on the skbase test suite template."""
+import numpy as np
 import pandas as pd
 import pytest
 from skbase.testing import QuickTester
 
 from skpro.datatypes import check_is_mtype, check_raise
 from skpro.distributions.base import BaseDistribution
+from skpro.regression.dummy import DummyProbaRegressor
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
 TEST_ALPHAS = [0.05, [0.1], [0.25, 0.75], [0.3, 0.1, 0.9]]
@@ -206,3 +208,23 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         assert isinstance(y_pred_test, pd.DataFrame)
         assert (y_pred_test.index == X_test.index).all()
         assert (y_pred_test.columns == y_fit.columns).all()
+
+
+def test_dummy_predict_var():
+    """Test Roadmap Point 1: Verify variance is sigma^2, not sigma."""
+
+    y_train = pd.DataFrame({"target": [10.0, 30.0]})
+    X_train = pd.DataFrame({"feat": [0, 0]})
+
+    model = DummyProbaRegressor(strategy="normal")
+    model.fit(X_train, y_train)
+
+    pred_var_df = model.predict_var(X_train)
+    actual_val = pred_var_df.iloc[0, 0]
+
+    expected_variance = 100.0
+
+    assert np.isclose(actual_val, expected_variance), (
+        f"Variance math error! Expected {expected_variance}, but got {actual_val}. "
+        "This usually means the model is returning sigma instead of sigma^2."
+    )

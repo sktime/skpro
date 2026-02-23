@@ -126,7 +126,7 @@ class DummyProbaRegressor(BaseProbaRegressor):
         X_ind = X.index
         X_n_rows = X.shape[0]
         y_pred = pd.DataFrame(
-            np.ones(X_n_rows) * self._sigma, index=X_ind, columns=self._y_columns
+            np.ones(X_n_rows) * (self._sigma**2), index=X_ind, columns=self._y_columns
         )
         return y_pred
 
