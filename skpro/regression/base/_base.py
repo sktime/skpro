@@ -139,35 +139,37 @@ class BaseProbaRegressor(BaseEstimator):
     def update(self, X, y, C=None):
         """Update regressor with a new batch of training data.
 
-        Only estimators with the ``capability:update`` tag (value ``True``)
-        provide this method, otherwise the method ignores the call and
-        discards the data passed.
-
-        State required:
-            Requires state to be "fitted".
-
-        Writes to self:
-            Updates fitted model attributes ending in "_".
+        Only estimators with the ``capability:update`` tag (value ``True``) 
+        provide this method. Otherwise, it dispatches to ``fit``.
 
         Parameters
         ----------
-        X : pandas DataFrame
-            feature instances to fit regressor to
-        y : pd.DataFrame, must be same length as X
-            labels to fit regressor to
-        C : ignored, optional (default=None)
-            censoring information for survival analysis
-            All probabilistic regressors assume data to be uncensored
+        X : pd.DataFrame
+            New feature instances.
+        y : pd.DataFrame
+            New labels.
+        C : pd.DataFrame, optional
+            Censoring information (for survival analysis).
 
         Returns
         -------
         self : reference to self
         """
-        capa_online = self.get_tag("capability:update")
-        capa_surv = self.get_tag("capability:survival")
+        # 1. Check if the model is already fitted
+        self.check_is_fitted()
+        
+        # 2. Check for the capability tag
+        if not self.get_tag("capability:update", False):
+             # Fallback: refit if update is not implemented
+             return self.fit(X, y, C=C)
 
-        if not capa_online:
-            return self
+        # 3. Input conversion
+        X, y = self._check_X_y(X, y)
+        
+        # 4. Dispatch to the private method implemented in your regressor
+        self._update(X, y)
+        
+        return self
 
         check_ret = self._check_X_y(X, y, C, return_metadata=True)
 

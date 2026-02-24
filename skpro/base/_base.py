@@ -14,6 +14,7 @@ class _CommonTags:
         "estimator_type": "estimator",
         "authors": "skpro developers",
         "maintainers": "skpro developers",
+        "capability:update": False,  # Added to track update support
     }
 
     @property
@@ -31,6 +32,34 @@ class BaseObject(_CommonTags, _BaseObject):
 
 class BaseEstimator(_CommonTags, _BaseEstimator):
     """Base class for fittable objects."""
+
+    def update(self, X, y=None):
+        """Update estimator with new data.
+
+        Parameters
+        ----------
+        X : pd.DataFrame or 2D np.ndarray
+            New training instances to update the model.
+        y : pd.Series or 1D np.ndarray, default=None
+            New training labels for the update.
+
+        Returns
+        -------
+        self : Reference to self.
+        """
+        if not self.is_fitted:
+            return self.fit(X, y)
+
+        self._update(X, y)
+        return self
+
+    def _update(self, X, y=None):
+        """Default strategy for update. 
+        
+        To be overridden by Bayesian estimators that support incremental updates.
+        """
+        # Default behavior: re-fit if no specialized update is implemented
+        return self.fit(X, y)
 
 
 class BaseMetaEstimator(_CommonTags, _BaseMetaEstimator):

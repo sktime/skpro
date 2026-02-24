@@ -38,6 +38,7 @@ class BaseDistribution(BaseObject):
         "bisect_iter": 1000,  # max iters for bisection method in ppf
         # which methods are approximate (not numerically exact) should be listed here
         "capabilities:approx": ["energy", "mean", "var", "pdfnorm"],
+        "capabilities:update": False,
         # broadcasting and parameter settings
         # -----------------------------------
         # used to control broadcasting of parameters
@@ -58,15 +59,15 @@ class BaseDistribution(BaseObject):
         self._init_shape_bc(index=index, columns=columns)
 
     def _init_shape_bc(self, index=None, columns=None):
-        """Initialize shape and broadcasting of distribution parameters.
+        def update(self, data):
+         return self._update(data)
 
-        Subclasses may choose to override this, if
-        default broadcasting and pre-initialization is not desired or applicable,
-        e.g., distribution parameters are not array-like.
-
-        If overridden, must set ``self._shape``: this should be an empty tuple
-        if the distribution is scalar, or a pair of integers otherwise.
-        """
+    def _update(self, data):
+ 
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not support Bayesian updates yet."
+        )
+        
         if self.get_tags()["broadcast_init"] == "off":
             if index is None and columns is None:
                 self._shape = ()

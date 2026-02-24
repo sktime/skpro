@@ -32,6 +32,7 @@ Optional methods to implement:
     log_pmf         - _log_pmf(self, x)
     cdf             - _cdf(self, x)
     ppf             - _ppf(self, p)
+    update          - _update(self, data)
     energy_self     - _energy_self(self)
     energy_x        - _energy_x(self, x)
 
@@ -94,6 +95,7 @@ class ClassName(BaseDistribution):
         # and which are approximations, e.g., using Monte Carlo
         "capabilities:approx": ["pdfnorm", "energy"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:update": False,
         # leave the broadcast_init tag as-is, this tag exists for compatibility with
         # distributions deviating from assumptions on input parameters, e.g., Empirical
         "broadcast_init": "on",
@@ -104,6 +106,25 @@ class ClassName(BaseDistribution):
     # super call must not be removed, change class name
     # parameter checks can go after super call
     def __init__(self, param1, param2="param2default", index=None, columns=None):
+        # todo: consider implementing for Bayesian updates
+     def _update(self, data):
+        """Update distribution parameters based on new data (Bayesian update).
+
+        Private method, called by the public update method.
+
+        Parameters
+        ----------
+        data : pd.Series, pd.DataFrame, or np.ndarray
+            New observations to update the prior distribution.
+
+        Returns
+        -------
+        self : reference to self
+            Updated distribution object (the posterior).
+        """
+        # replace with Bayesian conjugate update logic
+        # e.g., self.param1 = updated_value
+        return self
         # all distributions must have index and columns arg with None defaults
         # this is to ensure pandas-like behaviour
 

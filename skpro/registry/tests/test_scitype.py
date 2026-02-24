@@ -9,6 +9,8 @@ from skpro.registry._scitype import scitype
 def test_scitype(coerce_to_list):
     """Test that the scitype function recovers the correct scitype(s)."""
     from skpro.distributions.laplace import Laplace
+    from skpro.distributions.normal import Normal
+    from skpro.regression.bayesian import BayesianConjugateLinearRegressor
     from skpro.regression.mapie import MapieRegressor
     from skpro.regression.residual import ResidualDouble
 
@@ -20,6 +22,14 @@ def test_scitype(coerce_to_list):
     else:
         assert "regressor_proba" == result_mapie
 
+    # test that scitype works for Bayesian regressor
+    result_bayesian = scitype(BayesianConjugateLinearRegressor, coerce_to_list=coerce_to_list)
+    if coerce_to_list:
+        assert isinstance(result_bayesian, list)
+        assert "regressor_proba" == result_bayesian[0]
+    else:
+        assert "regressor_proba" == result_bayesian
+
     # test that scitype works for instances
     inst = ResidualDouble.create_test_instance()
     result_naive = scitype(inst, coerce_to_list=coerce_to_list)
@@ -30,9 +40,17 @@ def test_scitype(coerce_to_list):
         assert "regressor_proba" == result_naive
 
     # test distribution object
-    result_transformer = scitype(Laplace, coerce_to_list=coerce_to_list)
+    result_laplace = scitype(Laplace, coerce_to_list=coerce_to_list)
     if coerce_to_list:
-        assert isinstance(result_transformer, list)
-        assert "distribution" == result_transformer[0]
+        assert isinstance(result_laplace, list)
+        assert "distribution" == result_laplace[0]
     else:
-        assert "distribution" == result_transformer
+        assert "distribution" == result_laplace
+
+    # test Normal distribution object (part of Bayesian API)
+    result_normal = scitype(Normal, coerce_to_list=coerce_to_list)
+    if coerce_to_list:
+        assert isinstance(result_normal, list)
+        assert "distribution" == result_normal[0]
+    else:
+        assert "distribution" == result_normal

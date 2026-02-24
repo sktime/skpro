@@ -187,6 +187,14 @@ OBJECT_TAG_REGISTER = [
         ("list", "str"),
         "methods of distr that are numerically exact",
     ),
+    {
+        "capability:update": {
+            "type": "bool",
+            "values": [True, False],
+            "default": False,
+            "description": "Whether the estimator can be updated with new data batches.",
+        },
+    }
     (
         "distr:measuretype",
         "distribution",

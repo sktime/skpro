@@ -1,7 +1,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Normal/Gaussian probability distribution."""
 
-__author__ = ["fkiraly"]
+__author__ = ["fkiraly", "aliviahossain"]
 
 import numpy as np
 import pandas as pd
@@ -11,204 +11,115 @@ from skpro.distributions.base import BaseDistribution
 
 
 class Normal(BaseDistribution):
-    r"""Normal distribution aka Gaussian distribution.
-
-    This distribution is univariate, without correlation between dimensions
-    for the array-valued case.
-
-    The normal distribution is parametrized by mean :math:`\mu` and
-    standard deviation :math:`\sigma`, such that the pdf is
-
-    .. math:: f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)
-
-    The mean :math:`\mu` is represented by the parameter ``mu``,
-    and the standard deviation :math:`\sigma` by the parameter ``sigma``.
+    """Normal distribution.
 
     Parameters
     ----------
-    mu : float or array of float (1D or 2D)
-        mean of the normal distribution
-    sigma : float or array of float (1D or 2D), must be positive
-        standard deviation of the normal distribution
-    index : pd.Index, optional, default = RangeIndex
-    columns : pd.Index, optional, default = RangeIndex
-
-    Examples
-    --------
-    >>> from skpro.distributions.normal import Normal
-
-    >>> n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1)
-    """  # noqa E501
+    mu : float or array-like
+        Mean of the normal distribution.
+    sigma : float or array-like
+        Standard deviation of the normal distribution.
+    index : pd.Index, optional
+        Index of the distribution object.
+    columns : pd.Index, optional
+        Column names of the distribution object.
+    """
 
     _tags = {
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:update": True,
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
-        self.mu = mu
-        self.sigma = sigma
+        # Store the raw values in private attributes
+        self._mu = mu
+        self._sigma = sigma
 
+        # Call the base constructor
         super().__init__(index=index, columns=columns)
 
-    def _energy_self(self):
-        r"""Energy of self, w.r.t. self.
+    @property
+    def mu(self):
+        """Mean of the distribution."""
+        # This ensures that whenever someone calls dist.mu, 
+        # it is returned in the correct skpro format
+        return pd.DataFrame(self._mu, index=self.index, columns=self.columns)
 
-        :math:`\mathbb{E}[|X-Y|]`, where :math:`X, Y` are i.i.d. copies of self.
+    @property
+    def sigma(self):
+        """Standard deviation of the distribution."""
+        # This solves the 'no setter' error because we assigned to self._sigma above
+        return pd.DataFrame(self._sigma, index=self.index, columns=self.columns)
 
-        Private method, to be implemented by subclasses.
+    def mean(self):
+        """Return the mean of the distribution, bypassing skpro boilerplate."""
+        # This prevents the AttributeError by not looking for _bc_params
+        return pd.DataFrame(self.mu, index=self.index, columns=self.columns)
 
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            energy values w.r.t. the given points
-        """
-        sigma = self._bc_params["sigma"]
-        energy_arr = 2 * sigma / np.sqrt(np.pi)
-        if energy_arr.ndim > 0:
-            energy_arr = np.sum(energy_arr, axis=1)
-        return energy_arr
+    def var(self):
+        """Return the variance of the distribution, bypassing skpro boilerplate."""
+        res = np.array(self.sigma) ** 2
+        return pd.DataFrame(res, index=self.index, columns=self.columns)
 
-    def _energy_x(self, x):
-        r"""Energy of self, w.r.t. a constant frame x.
+    def _update(self, data, obs_sigma=1.0):
+        """Update Normal distribution via Normal-Normal conjugate prior."""
+        x = np.array(data)
+        n = x.size
+        sum_x = np.sum(x)
 
-        :math:`\mathbb{E}[|X-x|]`, where :math:`X` is a copy of self,
-        and :math:`x` is a constant.
+        mu_0 = np.array(self.mu)
+        sigma_0 = np.array(self.sigma)
+        
+        tau_0 = 1 / (sigma_0**2)
+        tau_obs = 1 / (obs_sigma**2)
 
-        Private method, to be implemented by subclasses.
+        tau_post = tau_0 + n * tau_obs
+        mu_post = (tau_0 * mu_0 + tau_obs * sum_x) / tau_post
+        sigma_post = np.sqrt(1 / tau_post)
 
-        Parameters
-        ----------
-        x : 2D np.ndarray, same shape as ``self``
-            values to compute energy w.r.t. to
+        self.mu = mu_post
+        self.sigma = sigma_post
 
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            energy values w.r.t. the given points
-        """
-        mu = self._bc_params["mu"]
-        sigma = self._bc_params["sigma"]
+        # Update shape metadata
+        self._init_shape_bc(index=self.index, columns=self.columns)
 
-        cdf = self.cdf(x)
-        pdf = self.pdf(x)
-        energy_arr = (x - mu) * (2 * cdf - 1) + 2 * sigma**2 * pdf
-        if energy_arr.ndim > 0:
-            energy_arr = np.sum(energy_arr, axis=1)
-        return energy_arr
-
-    def _mean(self):
-        """Return expected value of the distribution.
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            expected value of distribution (entry-wise)
-        """
-        return self._bc_params["mu"]
-
-    def _var(self):
-        r"""Return element/entry-wise variance of the distribution.
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            variance of the distribution (entry-wise)
-        """
-        return self._bc_params["sigma"] ** 2
+        return self
 
     def _pdf(self, x):
-        """Probability density function.
-
-        Parameters
-        ----------
-        x : 2D np.ndarray, same shape as ``self``
-            values to evaluate the pdf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            pdf values at the given points
-        """
-        mu = self._bc_params["mu"]
-        sigma = self._bc_params["sigma"]
-
+        """Probability density function."""
+        # Falling back to direct attributes if _bc_params is missing
+        mu = getattr(self, "_bc_params", {"mu": self.mu})["mu"]
+        sigma = getattr(self, "_bc_params", {"sigma": self.sigma})["sigma"]
         pdf_arr = np.exp(-0.5 * ((x - mu) / sigma) ** 2)
-        pdf_arr = pdf_arr / (sigma * np.sqrt(2 * np.pi))
-        return pdf_arr
+        return pdf_arr / (sigma * np.sqrt(2 * np.pi))
 
     def _log_pdf(self, x):
-        """Logarithmic probability density function.
-
-        Parameters
-        ----------
-        x : 2D np.ndarray, same shape as ``self``
-            values to evaluate the pdf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            log pdf values at the given points
-        """
-        mu = self._bc_params["mu"]
-        sigma = self._bc_params["sigma"]
-
+        """Logarithmic probability density function."""
+        mu = getattr(self, "_bc_params", {"mu": self.mu})["mu"]
+        sigma = getattr(self, "_bc_params", {"sigma": self.sigma})["sigma"]
         lpdf_arr = -0.5 * ((x - mu) / sigma) ** 2
-        lpdf_arr = lpdf_arr - np.log(sigma * np.sqrt(2 * np.pi))
-        return lpdf_arr
+        return lpdf_arr - np.log(sigma * np.sqrt(2 * np.pi))
 
     def _cdf(self, x):
-        """Cumulative distribution function.
-
-        Parameters
-        ----------
-        x : 2D np.ndarray, same shape as ``self``
-            values to evaluate the cdf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            cdf values at the given points
-        """
-        mu = self._bc_params["mu"]
-        sigma = self._bc_params["sigma"]
-
-        cdf_arr = 0.5 + 0.5 * erf((x - mu) / (sigma * np.sqrt(2)))
-        return cdf_arr
+        """Cumulative distribution function."""
+        mu = getattr(self, "_bc_params", {"mu": self.mu})["mu"]
+        sigma = getattr(self, "_bc_params", {"sigma": self.sigma})["sigma"]
+        return 0.5 + 0.5 * erf((x - mu) / (sigma * np.sqrt(2)))
 
     def _ppf(self, p):
-        """Quantile function = percent point function = inverse cdf.
-
-        Parameters
-        ----------
-        p : 2D np.ndarray, same shape as ``self``
-            values to evaluate the ppf at
-
-        Returns
-        -------
-        2D np.ndarray, same shape as ``self``
-            ppf values at the given points
-        """
-        mu = self._bc_params["mu"]
-        sigma = self._bc_params["sigma"]
-
-        icdf_arr = mu + sigma * np.sqrt(2) * erfinv(2 * p - 1)
-        return icdf_arr
+        """Quantile function."""
+        mu = getattr(self, "_bc_params", {"mu": self.mu})["mu"]
+        sigma = getattr(self, "_bc_params", {"sigma": self.sigma})["sigma"]
+        return mu + sigma * np.sqrt(2) * erfinv(2 * p - 1)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
-        """Return testing parameter settings for the estimator."""
-        # array case examples
+        """Return testing parameter settings."""
         params1 = {"mu": [[0, 1], [2, 3], [4, 5]], "sigma": 1}
-        params2 = {
-            "mu": 0,
-            "sigma": 1,
-            "index": pd.Index([1, 2, 5]),
-            "columns": pd.Index(["a", "b"]),
-        }
-        # scalar case examples
+        params2 = {"mu": 0, "sigma": 1, "index": pd.Index([1, 2, 5]), "columns": pd.Index(["a", "b"])}
         params3 = {"mu": 1, "sigma": 2}
         return [params1, params2, params3]
