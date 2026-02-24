@@ -5,6 +5,7 @@ from scipy.stats import gumbel_r, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
 
+
 class GumbelR(_ScipyAdapter):
     r"""Gumbel Right probability distribution.
 
@@ -13,7 +14,12 @@ class GumbelR(_ScipyAdapter):
     Its probability density function (PDF) is:
 
     .. math::
-        f(x; \mu, \sigma) = \frac{1}{\sigma} \exp\left(-\frac{x - \mu}{\sigma} - \exp\left(-\frac{x - \mu}{\sigma}\right)\right)
+        f(x; \mu, \sigma) =
+            \frac{1}{\sigma}
+            \exp\left(
+                -\frac{x - \mu}{\sigma}
+                - \exp\left(-\frac{x - \mu}{\sigma}\right)
+            \right)
 
     Parameters
     ----------
@@ -23,7 +29,7 @@ class GumbelR(_ScipyAdapter):
         Scale parameter
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
-    
+
     Example
     -------
     >>> from skpro.distributions import GumbelR
@@ -53,7 +59,7 @@ class GumbelR(_ScipyAdapter):
         mu = self._bc_params["mu"]
         sigma = self._bc_params["sigma"]
         return [], {"loc": mu, "scale": sigma}
-    
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
@@ -72,4 +78,3 @@ class GumbelR(_ScipyAdapter):
         params3 = {"mu": 0.0, "sigma": 1.0}
 
         return [params1, params2, params3]
-    
