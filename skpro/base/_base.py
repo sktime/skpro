@@ -14,7 +14,7 @@ class _CommonTags:
         "estimator_type": "estimator",
         "authors": "skpro developers",
         "maintainers": "skpro developers",
-        "capability:update": False,  # Added to track update support
+        "capabilities:update": False,
     }
 
     @property
@@ -58,9 +58,11 @@ class BaseEstimator(_CommonTags, _BaseEstimator):
         
         To be overridden by Bayesian estimators that support incremental updates.
         """
-        # Default behavior: re-fit if no specialized update is implemented
         return self.fit(X, y)
 
 
 class BaseMetaEstimator(_CommonTags, _BaseMetaEstimator):
     """Base class for fittable composite meta-objects."""
+    
+    def __init__(self):
+        super().__init__()

@@ -26,94 +26,87 @@ class Normal(BaseDistribution):
     """
 
     _tags = {
-        "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
-        "capabilities:update": True,
+        "capability:approx": ["pdfnorm"],
+        "capability:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        "capability:update": True,
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
-        # Store the raw values in private attributes
         self._mu = mu
         self._sigma = sigma
 
-        # Call the base constructor
         super().__init__(index=index, columns=columns)
 
     @property
     def mu(self):
         """Mean of the distribution."""
-        # This ensures that whenever someone calls dist.mu, 
-        # it is returned in the correct skpro format
         return pd.DataFrame(self._mu, index=self.index, columns=self.columns)
 
     @property
     def sigma(self):
         """Standard deviation of the distribution."""
-        # This solves the 'no setter' error because we assigned to self._sigma above
         return pd.DataFrame(self._sigma, index=self.index, columns=self.columns)
 
     def mean(self):
-        """Return the mean of the distribution, bypassing skpro boilerplate."""
-        # This prevents the AttributeError by not looking for _bc_params
-        return pd.DataFrame(self.mu, index=self.index, columns=self.columns)
+        """Return the mean of the distribution."""
+        return self.mu
 
     def var(self):
-        """Return the variance of the distribution, bypassing skpro boilerplate."""
-        res = np.array(self.sigma) ** 2
+        """Return the variance of the distribution."""
+        res = np.array(self._sigma) ** 2
         return pd.DataFrame(res, index=self.index, columns=self.columns)
 
     def _update(self, data, obs_sigma=1.0):
         """Update Normal distribution via Normal-Normal conjugate prior."""
+        # Convert inputs to numpy for stable math
         x = np.array(data)
-        n = x.size
-        sum_x = np.sum(x)
-
-        mu_0 = np.array(self.mu)
-        sigma_0 = np.array(self.sigma)
+        mu_0 = np.array(self._mu)
+        sigma_0 = np.array(self._sigma)
         
+        # Precision math
         tau_0 = 1 / (sigma_0**2)
         tau_obs = 1 / (obs_sigma**2)
-
+        n = x.size
+        
+        # Posterior updates
         tau_post = tau_0 + n * tau_obs
-        mu_post = (tau_0 * mu_0 + tau_obs * sum_x) / tau_post
-        sigma_post = np.sqrt(1 / tau_post)
+        # We use _mu and _sigma directly to bypass the property setter error
+        self._mu = (tau_0 * mu_0 + tau_obs * np.sum(x)) / tau_post
+        self._sigma = np.sqrt(1 / tau_post)
 
-        self.mu = mu_post
-        self.sigma = sigma_post
-
-        # Update shape metadata
-        self._init_shape_bc(index=self.index, columns=self.columns)
+        # Trigger skpro's internal metadata refresh if necessary
+        if hasattr(self, "_init_shape_bc"):
+            self._init_shape_bc(index=self.index, columns=self.columns)
 
         return self
 
     def _pdf(self, x):
         """Probability density function."""
-        # Falling back to direct attributes if _bc_params is missing
-        mu = getattr(self, "_bc_params", {"mu": self.mu})["mu"]
-        sigma = getattr(self, "_bc_params", {"sigma": self.sigma})["sigma"]
+        mu = np.array(self._mu)
+        sigma = np.array(self._sigma)
         pdf_arr = np.exp(-0.5 * ((x - mu) / sigma) ** 2)
         return pdf_arr / (sigma * np.sqrt(2 * np.pi))
 
     def _log_pdf(self, x):
         """Logarithmic probability density function."""
-        mu = getattr(self, "_bc_params", {"mu": self.mu})["mu"]
-        sigma = getattr(self, "_bc_params", {"sigma": self.sigma})["sigma"]
+        mu = np.array(self._mu)
+        sigma = np.array(self._sigma)
         lpdf_arr = -0.5 * ((x - mu) / sigma) ** 2
         return lpdf_arr - np.log(sigma * np.sqrt(2 * np.pi))
 
     def _cdf(self, x):
         """Cumulative distribution function."""
-        mu = getattr(self, "_bc_params", {"mu": self.mu})["mu"]
-        sigma = getattr(self, "_bc_params", {"sigma": self.sigma})["sigma"]
+        mu = np.array(self._mu)
+        sigma = np.array(self._sigma)
         return 0.5 + 0.5 * erf((x - mu) / (sigma * np.sqrt(2)))
 
     def _ppf(self, p):
         """Quantile function."""
-        mu = getattr(self, "_bc_params", {"mu": self.mu})["mu"]
-        sigma = getattr(self, "_bc_params", {"sigma": self.sigma})["sigma"]
+        mu = np.array(self._mu)
+        sigma = np.array(self._sigma)
         return mu + sigma * np.sqrt(2) * erfinv(2 * p - 1)
 
     @classmethod
