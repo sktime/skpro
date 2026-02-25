@@ -559,7 +559,7 @@ class BaseProbaRegressor(BaseEstimator):
             num_var = len(pred_int.columns.get_level_values(0).unique())
             col_selector_bool = np.tile(col_selector_bool, num_var)
 
-            pred_int = pred_int.iloc[:, col_selector_bool]
+            pred_int = pred_int.iloc[:, col_selector_bool].sort_index(axis=1)
             # change the column labels (multiindex) to the format for intervals
             # idx returned by _predict_interval is
             #   3-level MultiIndex with variable names, coverage, lower/upper
