@@ -459,7 +459,8 @@ def _check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
     if not np.all([isinstance(x, dict) for x in obj]):
         msg = (
             f"{var_name} must be a list of dict, but elements at following "
-            f"indices are not dict: {np.where([not isinstance(x, dict) for x in obj])[0]}"
+            f"indices are not dict: "
+            f"{np.where([not isinstance(x, dict) for x in obj])[0]}"
         )
         return _ret(False, msg, None, return_metadata)
 
