@@ -471,6 +471,8 @@ def _check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
                     "all entries must be of primitive type (str, int, float), but "
                     f"found {type(d[key])} at index {i}, key {key}"
                 )
+                # THIS IS THE FIX:
+                return _ret(False, msg, None, return_metadata)
 
     # we now know obj is a list of dict
     # check whether there any nans; compute only if requested
