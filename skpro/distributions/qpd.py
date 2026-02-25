@@ -168,6 +168,42 @@ class QPD_Johnson(_DelegatedDistribution):
         }
         return [params1, params2, params3, params4]
 
+    def sample(self, n_samples=None):
+        """Sample from the distribution.
+
+        Parameters
+        ----------
+        n_samples : int, optional (default=None)
+            number of samples to generate
+
+        Returns
+        -------
+        samples : pd.DataFrame
+            samples from the distribution
+        """
+        if n_samples is not None:
+            return super().sample(n_samples=n_samples)
+
+        # handle scalar case
+        if self.index is None or self.columns is None:
+            return super().sample(n_samples=n_samples)
+
+        # array case: sample via inverse transform
+        n_rows = len(self.index)
+        n_cols = len(self.columns)
+
+        random_state = getattr(self, "_random_state", None)
+        if random_state is None:
+            random_state = np.random.RandomState()
+
+        uniform_samples = pd.DataFrame(
+            random_state.uniform(size=(n_rows, n_cols)),
+            index=self.index,
+            columns=self.columns,
+        )
+
+        return self.ppf(uniform_samples)
+
 
 class QPD_S(BaseDistribution):
     """Johnson Quantile-Parameterized Distributions with semi-bounded mode.
@@ -776,7 +812,9 @@ def _prep_qpd_vars(
         theta = np.where(LH2B > 0, qll, qhl)
         theta = np.where(LH2B == 0, qml, theta)
     if mode == "U":
-        theta = np.where(LH2B > 0, BL / HL, HB / HL)
+        theta_raw = np.where(LH2B > 0, BL / HL, HB / HL)
+        theta_raw = np.where(LH2B == 0, 0.25, theta_raw)
+        theta = np.clip(theta_raw, 1e-6, 0.5 - 1e-6)
 
     if mode in ["B", "S"]:
         in_arccosh = HL / (2 * HBL)
@@ -785,15 +823,27 @@ def _prep_qpd_vars(
             delta_unn = np.sinh(delta_unn)
         delta = delta_unn / c
     elif mode == "U":
-        delta = 1.0 / np.arccosh(1 / (2.0 * theta))
-        delta = np.where(LH2B == 0, 1, delta)
+        with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+            arg = 1.0 / (2.0 * theta)
+            arg = np.where(np.isfinite(arg), arg, 1e8)
+            arg = np.maximum(arg, 1.0 + 1e-8)
+            ac = np.arccosh(arg)
+
+        # prevent division by zero
+        ac = np.where(ac == 0.0, 1e-8, ac)
+        delta = 1.0 / ac
+        delta = np.where(LH2B == 0, 1.0, delta)
 
     if mode == "B":
         kappa = HL / np.sinh(2 * delta * c)
     elif mode == "S":
         kappa = HBL / (delta * c)
     elif mode == "U":
-        kappa = HL / np.sinh(2.0 / delta)
+        # numerically stable kappa for unbounded mode
+        with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+            s = np.sinh(2.0 / delta)
+        s = np.where(s == 0.0, 1e-8, s)
+        kappa = HL / s
         kappa = np.where(LH2B == 0, HB, kappa)
 
     params = {
