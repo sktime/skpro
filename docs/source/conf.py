@@ -468,7 +468,9 @@ def generate_estimator_overview_data(app, config):
                 "name": name,
                 "object_type": obj_type,
                 "module": module,
-                "doc_url": _resolve_doc_url(module=module, name=name, object_type=obj_type),
+                "doc_url": _resolve_doc_url(
+                    module=module, name=name, object_type=obj_type
+                ),
                 "tags": tags,
             }
         )

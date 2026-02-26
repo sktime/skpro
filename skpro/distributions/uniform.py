@@ -16,7 +16,7 @@ class Uniform(BaseDistribution):
     :math:`a` and :math:`b`, such that the pdf is
 
     .. math:: f(x) = \frac{1}{b - a} \text{ for } a \leq x \leq b,
-              	ext{ and } 0 \text{ otherwise}
+                ext{ and } 0 \text{ otherwise}
 
     The lower bound :math:`a` is represented by the parameter ``lower``,
     and the upper bound :math:`b` by the parameter ``upper``.
