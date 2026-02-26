@@ -16,23 +16,35 @@ They are used for:
 Common Tags
 ===========
 
+.. _tag_object_type:
+
 **object_type**
     Type of object, e.g., "regressor_proba", "distribution", "metric"
 
+.. _tag_estimator_type:
+
 **estimator_type**
     Type of estimator, e.g., "regressor", "transformer", "distribution"
+
+.. _tag_capability_survival:
 
 **capability:survival**
     Whether the estimator supports survival/time-to-event prediction with censoring.
     Value: ``True`` or ``False``
 
+.. _tag_handles_missing_data:
+
 **handles_missing_data**
     Whether the estimator can handle missing values in input features.
     Value: ``True`` or ``False``
 
+.. _tag_requires_y:
+
 **requires_y**
     Whether the estimator requires a target variable for fitting.
     Value: ``True`` or ``False``
+
+.. _tag_handles_multioutput:
 
 **handles_multioutput**
     Whether the estimator can handle multiple target variables (multioutput regression).

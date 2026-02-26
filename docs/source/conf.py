@@ -345,6 +345,7 @@ def generate_estimator_overview_data(app, config):
         The Sphinx config object
     """
     import json
+    from pathlib import Path
 
     try:
         from skpro.registry import all_objects
@@ -375,6 +376,56 @@ def generate_estimator_overview_data(app, config):
     if df is None or df.empty:
         sys.stderr.write("Warning: No estimators found for overview\n")
         return
+
+    auto_generated_dir = Path(__file__).parent / "api_reference" / "auto_generated"
+    available_doc_pages = {
+        p.stem for p in auto_generated_dir.glob("*.rst") if p.is_file()
+    }
+
+    def _candidate_doc_pages(module, name):
+        candidates = [f"{module}.{name}"]
+
+        module_parts = module.split(".")
+
+        # candidate without private module segments, e.g., ._foo
+        public_parts = [part for part in module_parts if not part.startswith("_")]
+        if public_parts:
+            candidates.append(f"{'.'.join(public_parts)}.{name}")
+
+        # parent-module candidates, from most specific to broader
+        for i in range(len(module_parts) - 1, 1, -1):
+            parent_module = ".".join(module_parts[:i])
+            candidates.append(f"{parent_module}.{name}")
+
+        # de-duplicate while preserving order
+        deduped = []
+        seen = set()
+        for cand in candidates:
+            if cand not in seen:
+                seen.add(cand)
+                deduped.append(cand)
+
+        return deduped
+
+    def _resolve_doc_url(module, name, object_type):
+        candidates = _candidate_doc_pages(module=module, name=name)
+        for page in candidates:
+            if page in available_doc_pages:
+                return f"api_reference/auto_generated/{page}.html"
+
+        if isinstance(object_type, (list, tuple)):
+            object_type_values = set(object_type)
+        else:
+            object_type_values = {object_type}
+
+        if "distribution" in object_type_values:
+            return "api_reference/distributions.html"
+        if "regressor_proba" in object_type_values:
+            return "api_reference/regression.html"
+        if "metric" in object_type_values or "metric_distr" in object_type_values:
+            return "api_reference/metrics.html"
+
+        return "api_reference.html"
 
     estimators = []
 
@@ -417,6 +468,7 @@ def generate_estimator_overview_data(app, config):
                 "name": name,
                 "object_type": obj_type,
                 "module": module,
+                "doc_url": _resolve_doc_url(module=module, name=name, object_type=obj_type),
                 "tags": tags,
             }
         )

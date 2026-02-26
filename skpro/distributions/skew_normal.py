@@ -13,16 +13,16 @@ class SkewNormal(_ScipyAdapter):
     r"""Skew-Normal Probability Distribution.
 
     The skew-normal distribution generalizes the normal distribution by introducing
-    a shape parameter :math:`\\alpha` to control skewness. It is parameterized by
+    a shape parameter :math:`\alpha` to control skewness. It is parameterized by
     ``mu``, ``sigma``, and ``alpha``:
 
-    .. math:: f(x; \alpha, \\mu, \\sigma) = \frac{2}{\\sigma}
-          \\phi\\left(\frac{x - \\mu}{\\sigma}\right)
-          \\Phi\\left(\alpha \frac{x - \\mu}{\\sigma}\right)
+    .. math:: f(x; \alpha, \mu, \sigma) = \frac{2}{\sigma}
+              \phi\left(\frac{x - \mu}{\sigma}\right)
+              \Phi\left(\alpha \frac{x - \mu}{\sigma}\right)
 
-    where :math:`\\phi` and :math:`\\Phi` are the pdf and cdf of the standard normal
-    distribution, respectively, :math:`\\mu` is the location parameter,
-    :math:`\\sigma` is the scale parameter (must be positive), and
+    where :math:`\phi` and :math:`\Phi` are the pdf and cdf of the standard normal
+    distribution, respectively, :math:`\mu` is the location parameter,
+    :math:`\sigma` is the scale parameter (must be positive), and
     :math:`\alpha` is the shape parameter controlling skewness.
 
     Parameters

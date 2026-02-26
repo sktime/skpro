@@ -37,6 +37,13 @@ Use the below search table to find estimators and distributions by property.
             color: #0066cc;
             margin-bottom: 6px;
         }
+        .estimator-name a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .estimator-name a:hover {
+            text-decoration: underline;
+        }
         .estimator-info {
             font-size: 0.9em;
             color: #666;
@@ -61,6 +68,13 @@ Use the below search table to find estimators and distributions by property.
         .tag-label {
             font-weight: 500;
             color: #0066cc;
+        }
+        .tag-label a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .tag-label a:hover {
+            text-decoration: underline;
         }
         .tag-value {
             color: #555;
@@ -185,6 +199,21 @@ Use the below search table to find estimators and distributions by property.
             return String(value);
         }
 
+        function getEstimatorDocUrl(est) {
+            if (est.doc_url) {
+                return est.doc_url;
+            }
+            return `api_reference/auto_generated/${est.module}.${est.name}.html`;
+        }
+
+        function getTagDocUrl(tagKey) {
+            const anchor = tagKey
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '_')
+                .replace(/^_+|_+$/g, '');
+            return `tags_reference.html#tag_${anchor}`;
+        }
+
         function renderEstimators() {
             const typeFilter = document.getElementById('estimator-type-select').value;
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
@@ -225,10 +254,11 @@ Use the below search table to find estimators and distributions by property.
                 noResults.style.display = 'none';
                 grid.innerHTML = filtered.map(est => {
                     const tagsHtml = Object.entries(est.tags)
+                        .filter(([key]) => key !== 'object_type')
                         .filter(([key, value]) => value === true || (typeof value === 'string' && value))
                         .map(([key, value]) => `
                             <span class="tag">
-                                <span class="tag-label">${key}:</span>
+                                <span class="tag-label"><a href="${getTagDocUrl(key)}">${key}</a>:</span>
                                 <span class="tag-value">${formatTagValue(value)}</span>
                             </span>
                         `)
@@ -236,7 +266,7 @@ Use the below search table to find estimators and distributions by property.
 
                     return `
                         <div class="estimator-box">
-                            <div class="estimator-name">${est.name}</div>
+                            <div class="estimator-name"><a href="${getEstimatorDocUrl(est)}">${est.name}</a></div>
                             <div class="estimator-info">
                                 <strong>Type:</strong> ${est.object_type}
                             </div>
@@ -310,6 +340,8 @@ Use the below search table to find estimators and distributions by property.
                 if (typeFilter && est.object_type !== typeFilter) return;
 
                 Object.entries(est.tags).forEach(([key, value]) => {
+                    if (key === 'object_type') return;
+
                     // If type filter is set, only show valid tags for that type
                     if (validTags && !validTags.includes(key)) return;
 
