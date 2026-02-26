@@ -1,4 +1,3 @@
-import pytest
 from skpro.datatypes._table._check import _check_list_of_dict_table
 
 def test_check_list_of_dict_table_detects_invalid_types():
