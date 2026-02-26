@@ -1417,7 +1417,7 @@ class BaseDistribution(BaseObject):
         approx_spl_size = self.get_tag("approx_var_spl")
         if self._has_implementation_of("_ppf"):
             approx_method = (
-                "by approximating the variancee integrals of the ppf, "
+                "by approximating the variance integrals of the ppf, "
                 "integral of ppf-squared minus square of integral of ppf, "
                 f"each with {approx_spl_size} equidistant nodes"
             )
