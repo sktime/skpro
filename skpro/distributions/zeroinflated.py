@@ -1,6 +1,4 @@
-"""Zero-Inflated distribution implementation."""
-
-__author__ = ["khushmagrawal"]
+"""Zero-Inflated distribution."""
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -9,7 +7,7 @@ from skpro.distributions.base import BaseDistribution
 
 
 class ZeroInflated(BaseDistribution):
-    r"""A Zero-Inflated distribution.
+    r"""A Zero-Inflated distribution, adding a Bernoulli gate to any distribution.
 
     Combines a Bernoulli gate for structural zeros with a with a base distribution
     defined on non-negative values, allowing zeros to arise from both components.
@@ -43,6 +41,11 @@ class ZeroInflated(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["khushmagrawal"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy"],
         "capabilities:exact": ["ppf", "mean", "var", "log_pmf", "pmf", "cdf"],
         "distr:measuretype": "mixed",
