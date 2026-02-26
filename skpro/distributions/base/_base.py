@@ -760,9 +760,10 @@ class BaseDistribution(BaseObject):
                 res = res.values
             return np.exp(res)
 
-        self_has_exact_cdf = "cdf" in self.get_tag("capabilities:exact")
+        self_has_cdf = "cdf" in self.get_tag("capabilities:exact")
+        self_has_cdf = self_has_cdf or "cdf" in self.get_tag("capabilities:approx")
 
-        if self_has_exact_cdf:
+        if self_has_cdf:
             approx_method = (
                 "by numerically differentiating the output returned by the cdf method, "
                 "using sixth-degree central differences at an epsilon of 1e-7."
