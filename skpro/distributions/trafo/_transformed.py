@@ -59,6 +59,8 @@ class TransformedDistribution(BaseDistribution):
 
     _tags = {
         "capabilities:approx": [
+            "pdf",
+            "pdfnorm",
             "mean",
             "var",
             "energy",
