@@ -6,6 +6,8 @@ __author__ = ["fkiraly"]
 __all__ = ["BaseDistribution"]
 
 from warnings import warn
+import types
+import textwrap
 
 import numpy as np
 import pandas as pd
@@ -13,9 +15,96 @@ from skbase.utils.dependencies import _check_estimator_deps, _check_soft_depende
 
 from skpro.base import BaseObject
 
+# mapping of public methods to formula doc hooks
+_DOC_METHODS = {
+    "pdf": "_pdf_formula_doc",
+    "cdf": "_cdf_formula_doc",
+    "log_pdf": "_log_pdf_formula_doc",
+    "pmf": "_pmf_formula_doc",
+    "log_pmf": "_log_pmf_formula_doc",
+    "ppf": "_ppf_formula_doc",
+    "surv": "_surv_formula_doc",
+    "haz": "_haz_formula_doc",
+    "mean": "_mean_formula_doc",
+    "var": "_var_formula_doc",
+    "energy": "_energy_formula_doc",
+    "pdfnorm": "_pdfnorm_formula_doc",
+}
+
+def _inject_formula_doc(method, formula_doc):
+    """Inject formula_doc into method.__doc__ at {formula_doc} placeholder."""
+    base_doc = method.__doc__ or ""
+    if "{formula_doc}" not in base_doc:
+        return base_doc
+
+    if formula_doc is None:
+        # Remove placeholder and surrounding empty lines cleanly
+        return (
+            base_doc
+            .replace("{formula_doc}\n\n", "")
+            .replace("\n\n{formula_doc}", "")
+            .replace("{formula_doc}", "")
+        )
+
+    clean_formula = textwrap.dedent(formula_doc).strip()
+    return base_doc.replace("{formula_doc}", clean_formula)
+
+def _clone_method_with_doc(method, new_doc):
+    """Clone a function and replace its docstring (safe pattern)."""
+    new_method = types.FunctionType(
+        method.__code__,
+        method.__globals__,
+        name=method.__name__,
+        argdefs=method.__defaults__,
+        closure=method.__closure__,
+    )
+    new_method.__dict__.update(method.__dict__)
+    new_method.__doc__ = new_doc
+    return new_method
+
 
 class BaseDistribution(BaseObject):
     """Base probability distribution."""
+
+    # hooks for distribution-specific documentation
+    _pdf_formula_doc = None
+    _cdf_formula_doc = None
+    _log_pdf_formula_doc = None
+    _pmf_formula_doc = None
+    _log_pmf_formula_doc = None
+    _ppf_formula_doc = None
+    _surv_formula_doc = None
+    _haz_formula_doc = None
+    _mean_formula_doc = None
+    _var_formula_doc = None
+    _energy_formula_doc = None
+    _pdfnorm_formula_doc = None
+
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        if cls is BaseDistribution:
+            return
+
+        # Skip adapter classes
+        if cls.__name__.startswith("_BaseTF"):
+            return
+
+        for method_name, hook_name in _DOC_METHODS.items():
+            method = getattr(cls, method_name, None)
+            if method is None:
+                continue
+
+            base_doc = method.__doc__ or ""
+            if "{formula_doc}" not in base_doc:
+                continue
+
+            formula_doc = getattr(cls, hook_name, None)
+            new_doc = _inject_formula_doc(method, formula_doc)
+
+            new_method = _clone_method_with_doc(method, new_doc)
+            setattr(cls, method_name, new_method)
 
     # default tag values - these typically make the "safest" assumption
     _tags = {
@@ -710,6 +799,8 @@ class BaseDistribution(BaseObject):
     def pdf(self, x):
         r"""Probability density function.
 
+        {formula_doc}
+
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
@@ -776,6 +867,8 @@ class BaseDistribution(BaseObject):
 
     def log_pdf(self, x):
         r"""Logarithmic probability density function.
+
+        {formula_doc}
 
         Numerically more stable than calling pdf and then taking logartihms.
 
@@ -869,6 +962,8 @@ class BaseDistribution(BaseObject):
     def pmf(self, x):
         r"""Probability mass function.
 
+        {formula_doc}
+
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
@@ -924,6 +1019,8 @@ class BaseDistribution(BaseObject):
 
     def log_pmf(self, x):
         r"""Logarithmic probability mass function.
+
+        {formula_doc}
 
         Numerically more stable than calling pmf and then taking logartihms.
 
@@ -981,6 +1078,8 @@ class BaseDistribution(BaseObject):
     def cdf(self, x):
         r"""Cumulative distribution function.
 
+        {formula_doc}
+
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
@@ -1024,6 +1123,8 @@ class BaseDistribution(BaseObject):
     def surv(self, x):
         r"""Survival function.
 
+        {formula_doc}        
+
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
         Let :math:`x\in \mathbb{R}^{N\times n}`.
@@ -1057,6 +1158,8 @@ class BaseDistribution(BaseObject):
 
     def haz(self, x):
         r"""Hazard function.
+
+        {formula_doc}
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
@@ -1093,6 +1196,8 @@ class BaseDistribution(BaseObject):
 
     def ppf(self, p):
         r"""Quantile function = percent point function = inverse cdf.
+
+        {formula_doc}
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
@@ -1186,6 +1291,8 @@ class BaseDistribution(BaseObject):
 
     def energy(self, x=None):
         r"""Energy of self, w.r.t. self or a constant frame x.
+
+        {formula_doc}
 
         Let :math:`X, Y` be i.i.d. random variables with the distribution of ``self``.
 
@@ -1356,6 +1463,8 @@ class BaseDistribution(BaseObject):
     def mean(self):
         r"""Return expected value of the distribution.
 
+        {formula_doc}
+
         Let :math:`X` be a random variable with the distribution of ``self``.
         Returns the expectation :math:`\mathbb{E}[X]`
 
@@ -1397,6 +1506,8 @@ class BaseDistribution(BaseObject):
 
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
+
+        {formula_doc}
 
         Let :math:`X` be a random variable with the distribution of ``self``.
         Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`,
@@ -1448,6 +1559,8 @@ class BaseDistribution(BaseObject):
 
     def pdfnorm(self, a=2):
         r"""a-norm of pdf, defaults to 2-norm.
+
+        {formula_doc}        
 
         computes a-norm of the entry marginal pdf, i.e.,
         :math:`\mathbb{E}[p_X(X)^{a-1}] = \int p(x)^a dx`,
