@@ -175,6 +175,18 @@ metric(y_test, y_pred_proba)
 >>> 32.19
 ```
 
+### Installation
+
+```bash
+# Basic installation
+pip install skpro
+
+# Installation with all dependencies
+pip install skpro[all_extras]
+```
+
+For detailed installation instructions, see the :ref:`installation guide <full_install>`.
+
 ## :wave: How to get involved
 
 There are many ways to get involved with development of `skpro`, which is
