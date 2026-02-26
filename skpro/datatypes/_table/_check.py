@@ -452,8 +452,8 @@ class TableListOfDict(BaseTable):
 def _check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
     metadata = dict()
 
-    if not isinstance(obj, list):
-        msg = f"{var_name} must be a list of dict, found {type(obj)}"
+    if not isinstance(obj, (int, float, str, bool)):
+        msg = f"element at index {i} and key {key} is not a primitive type"
         return _ret(False, msg, None, return_metadata)
 
     if not np.all([isinstance(x, dict) for x in obj]):
