@@ -1,4 +1,5 @@
 """Non-suite tests for probability distribution objects."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
@@ -236,3 +237,74 @@ def test_head_tail():
 
     nt = n.tail(42)
     assert nt.ndim == 0
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_multiindex_loc_indexing():
+    """Test that loc indexing works with MultiIndex and Index objects."""
+    from skpro.distributions.normal import Normal
+
+    index = pd.MultiIndex.from_tuples([("a", 1), ("a", 2), ("b", 1)])
+    columns = pd.Index(["x", "y"])
+
+    dist = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, index=index, columns=columns)
+
+    x = pd.DataFrame([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]], index=index, columns=columns)
+
+    subset = dist.loc[x.index, x.columns]
+
+    assert subset.shape == dist.shape
+    assert subset.index.equals(dist.index)
+    assert subset.columns.equals(dist.columns)
+
+    result = dist.quantile(0.5)
+    assert result.shape == dist.shape
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_pmf_support_method():
+    """Test the _pmf_support method for different distribution types."""
+    from skpro.distributions.binomial import Binomial
+    from skpro.distributions.delta import Delta
+    from skpro.distributions.empirical import Empirical
+    from skpro.distributions.normal import Normal
+
+    # Test continuous distribution (Normal) - should return empty array
+    normal = Normal(mu=0, sigma=1)
+    support = normal._pmf_support(-1, 1)
+    assert isinstance(support, np.ndarray)
+    assert len(support) == 0
+
+    # Test discrete distribution with default integer support (Binomial)
+    binomial = Binomial(n=5, p=0.5)
+    support = binomial._pmf_support(0, 5)
+    assert isinstance(support, np.ndarray)
+    assert len(support) > 0
+    assert all(isinstance(x, (int, np.integer)) for x in support)
+    assert all(x >= 0 for x in support)
+
+    # Test Empirical distribution
+    spl = pd.Series([1.5, 2.5, 3.5])
+    empirical = Empirical(spl)
+    support = empirical._pmf_support(1, 4)
+    assert isinstance(support, np.ndarray)
+    assert len(support) > 0
+    assert 1.5 in support or 2.5 in support or 3.5 in support
+
+    # Test Delta distribution
+    delta = Delta(c=2.0)
+    support = delta._pmf_support(1, 3)
+    assert isinstance(support, np.ndarray)
+    assert len(support) == 1
+    assert support[0] == 2.0
+
+    # Test Delta outside bounds
+    support = delta._pmf_support(3, 4)
+    assert isinstance(support, np.ndarray)
+    assert len(support) == 0

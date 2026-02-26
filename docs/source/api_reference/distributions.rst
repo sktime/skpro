@@ -41,6 +41,7 @@ Continuous support - full reals
     SkewNormal
     TDistribution
     TruncatedNormal
+    Uniform
 
 
 Continuous support - non-negative reals
@@ -54,11 +55,17 @@ Continuous support - non-negative reals
 
     Alpha
     Beta
+    BurrIII
+    BurrXII
     ChiSquared
     Exponential
     Erlang
+    FatigueLife
+    FDist
     Fisk
     Gamma
+    GeneralizedPareto
+    Levy
     LogGamma
     HalfCauchy
     HalfLogistic
@@ -67,6 +74,7 @@ Continuous support - non-negative reals
     InverseGaussian
     LogLaplace
     Pareto
+    TruncatedPareto
     Weibull
 
 
@@ -85,6 +93,7 @@ Integer support
     NegativeBinomial
     Poisson
     ZeroInflated
+    Skellam
 
 Non-parametric and empirical distributions
 ------------------------------------------
