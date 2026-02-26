@@ -454,7 +454,8 @@ class GLMRegressor(BaseProbaRegressor):
 
         if skp_dist == Normal:
             y_mu = y_predictions_df["mean"].rename("mu").to_frame()
-            y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
+            sigma_val = np.sqrt(self.scale_)
+            y_sigma = pd.Series(sigma_val, index=y_mu.index, name="sigma").to_frame()
             params["mu"] = y_mu
             params["sigma"] = y_sigma
         elif skp_dist == Poisson:
@@ -462,10 +463,13 @@ class GLMRegressor(BaseProbaRegressor):
             params["mu"] = y_mu
         elif skp_dist == Gamma:
             y_mean = y_predictions_df["mean"]
-            y_sd = y_predictions_df["mean_se"]
-            y_alpha = (y_mean / y_sd) ** 2
-            y_beta = (y_mean / (y_sd**2)).rename("beta").to_frame()
-            y_alpha = y_alpha.rename("alpha").to_frame()
+            scale = self.scale_
+
+            y_alpha = pd.Series(1 / scale, index=y_mean.index, name="alpha").to_frame()
+            y_beta = pd.Series(
+                1 / (scale * y_mean), index=y_mean.index, name="beta"
+            ).to_frame()
+
             params["alpha"] = y_alpha
             params["beta"] = y_beta
 

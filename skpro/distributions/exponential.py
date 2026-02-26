@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Exponential probability distribution."""
 
-__author__ = ["ShreeshaM07"]
-
 import numpy as np
 import pandas as pd
 from scipy.stats import expon, rv_continuous
@@ -22,8 +20,8 @@ class Exponential(_ScipyAdapter):
 
     The rate :math:`\lambda` is represented by the parameter ``rate``,
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     rate : float or array of float (1D or 2D)
         rate of the distribution
         rate = 1/scale
@@ -37,6 +35,11 @@ class Exponential(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["ShreeshaM07"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["ppf", "pdfnorm"],
         "capabilities:exact": [
             "mean",

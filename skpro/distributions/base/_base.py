@@ -1417,7 +1417,7 @@ class BaseDistribution(BaseObject):
         approx_spl_size = self.get_tag("approx_var_spl")
         if self._has_implementation_of("_ppf"):
             approx_method = (
-                "by approximating the variancee integrals of the ppf, "
+                "by approximating the variance integrals of the ppf, "
                 "integral of ppf-squared minus square of integral of ppf, "
                 f"each with {approx_spl_size} equidistant nodes"
             )
@@ -1779,6 +1779,41 @@ class BaseDistribution(BaseObject):
             ax.set_xlabel(f"{x_argname}")
             ax.set_ylabel(f"{fun}({x_argname})")
         return ax
+
+    def _pmf_support(self, lower, upper, max_points=100):
+        """Get support points for discrete distributions.
+
+        Returns the support points of the probability mass function (PMF)
+        within the given bounds.
+        Only applies to scalar (0-dimensional) distributions.
+
+        Parameters
+        ----------
+        lower : float
+            Lower bound for support points
+        upper : float
+            Upper bound for support points
+        max_points : int, optional, default=100
+            Maximum number of support points to return
+
+        Returns
+        -------
+        np.ndarray
+            Array of support points within [lower, upper]
+        """
+        if self.ndim > 0:
+            raise NotImplementedError(
+                "_pmf_support only applies to scalar (0-dimensional) distributions."
+            )
+
+        # For continuous distributions, return empty array
+        if self.get_tag("distr:measuretype", "mixed") == "continuous":
+            return np.array([])
+
+        # Default implementation assumes non-negative integer support
+        lower_int = max(0, int(np.floor(lower)))
+        upper_int = min(int(np.ceil(upper)) + 1, lower_int + max_points)
+        return np.arange(lower_int, upper_int)
 
 
 def _is_index_like(obj):
