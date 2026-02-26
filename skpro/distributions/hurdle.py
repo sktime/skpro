@@ -47,6 +47,11 @@ class Hurdle(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["tingiskhan"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy"],
         "capabilities:exact": ["ppf", "mean", "var", "log_pmf", "pmf", "cdf"],
         "distr:measuretype": "mixed",

@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Log-Gamma probability distribution."""
 
-__author__ = ["ali-john"]
-
 import pandas as pd
 from scipy.stats import loggamma, rv_continuous
 
@@ -42,6 +40,11 @@ class LogGamma(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["ali-john"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",

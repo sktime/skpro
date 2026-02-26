@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Inverse Gamma probability distribution."""
 
-__author__ = ["meraldoantonio"]
-
 import pandas as pd
 from scipy.stats import invgamma, rv_continuous
 
@@ -39,6 +37,11 @@ class InverseGamma(_ScipyAdapter):
     """  # noqa: E501
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["meraldoantonio"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
