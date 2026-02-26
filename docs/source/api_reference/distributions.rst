@@ -92,6 +92,7 @@ Integer support
     Hurdle
     NegativeBinomial
     Poisson
+    ZeroInflated
     Skellam
 
 Non-parametric and empirical distributions
