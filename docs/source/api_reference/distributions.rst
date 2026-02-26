@@ -91,6 +91,7 @@ Integer support
     Geometric
     NegativeBinomial
     Poisson
+    ZeroInflated
     Skellam
 
 Non-parametric and empirical distributions
