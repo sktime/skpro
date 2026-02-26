@@ -37,6 +37,7 @@ OBJECT_TAG_LIST - list of string
 
 check_tag_is_valid(tag_name, tag_value) - checks whether tag_value is valid for tag_name
 """
+
 import inspect
 import sys
 
@@ -348,8 +349,7 @@ class capability__survival(_BaseTag):
         "parent_type": "regressor_proba",
         "tag_type": "bool",
         "short_descr": (
-            "whether estimator can use censoring information, "
-            "for survival analysis"
+            "whether estimator can use censoring information, " "for survival analysis"
         ),
         "user_facing": True,
     }
@@ -422,8 +422,7 @@ class X_inner_mtype(_BaseTag):
         "parent_type": "regressor_proba",
         "tag_type": ("list", "str"),
         "short_descr": (
-            "which machine type(s) is the internal _fit/_predict "
-            "able to deal with?"
+            "which machine type(s) is the internal _fit/_predict " "able to deal with?"
         ),
         "user_facing": False,
     }
@@ -442,8 +441,7 @@ class y_inner_mtype(_BaseTag):
         "parent_type": "regressor_proba",
         "tag_type": ("list", "str"),
         "short_descr": (
-            "which machine type(s) is the internal _fit/_predict "
-            "able to deal with?"
+            "which machine type(s) is the internal _fit/_predict " "able to deal with?"
         ),
         "user_facing": False,
     }
@@ -462,8 +460,7 @@ class C_inner_mtype(_BaseTag):
         "parent_type": "regressor_proba",
         "tag_type": ("list", "str"),
         "short_descr": (
-            "which machine type(s) is the internal _fit/_predict "
-            "able to deal with?"
+            "which machine type(s) is the internal _fit/_predict " "able to deal with?"
         ),
         "user_facing": False,
     }
@@ -644,8 +641,7 @@ class broadcast_params(_BaseTag):
         "parent_type": "distribution",
         "tag_type": ("list", "str"),
         "short_descr": (
-            "distribution parameters to broadcast, "
-            "complement is not broadcast"
+            "distribution parameters to broadcast, " "complement is not broadcast"
         ),
         "user_facing": False,
     }
@@ -664,8 +660,7 @@ class broadcast_init(_BaseTag):
         "parent_type": "distribution",
         "tag_type": ("str", ["on", "off"]),
         "short_descr": (
-            "whether to initialize broadcast parameters in __init__, "
-            "'on' or 'off'"
+            "whether to initialize broadcast parameters in __init__, " "'on' or 'off'"
         ),
         "user_facing": False,
     }
@@ -683,9 +678,7 @@ class broadcast_inner(_BaseTag):
         "tag_name": "broadcast_inner",
         "parent_type": "distribution",
         "tag_type": ("str", ["array", "scalar"]),
-        "short_descr": (
-            "if inner logic is vectorized ('array') or scalar ('scalar')"
-        ),
+        "short_descr": ("if inner logic is vectorized ('array') or scalar ('scalar')"),
         "user_facing": False,
     }
 
@@ -743,8 +736,7 @@ class capability__survival_metric(_BaseTag):
         "parent_type": "metric",
         "tag_type": "bool",
         "short_descr": (
-            "whether metric uses censoring information, "
-            "for survival analysis"
+            "whether metric uses censoring information, " "for survival analysis"
         ),
         "user_facing": True,
     }
@@ -782,9 +774,7 @@ class fitted_named_object_parameters(_BaseTag):
         "tag_name": "fitted_named_object_parameters",
         "parent_type": "estimator",
         "tag_type": "str",
-        "short_descr": (
-            "name of fitted component list attribute for meta-objects"
-        ),
+        "short_descr": ("name of fitted component list attribute for meta-objects"),
         "user_facing": False,
     }
 

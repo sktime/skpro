@@ -1,7 +1,6 @@
 """Tests for tag register and tag functionality."""
 
 import inspect
-import sys
 
 from skpro.registry._tags import OBJECT_TAG_REGISTER, _BaseTag
 
