@@ -6,7 +6,6 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 from skpro.distributions.base import BaseDistribution
-from skpro.distributions.truncated import TruncatedDistribution
 
 
 class ZeroInflated(BaseDistribution):
@@ -49,6 +48,7 @@ class ZeroInflated(BaseDistribution):
         "distr:measuretype": "mixed",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
+        "broadcast_params": ["p"],
     }
 
     def __init__(
@@ -58,13 +58,6 @@ class ZeroInflated(BaseDistribution):
         index=None,
         columns=None,
     ):
-        if isinstance(p, np.ndarray) and p.ndim == 1:
-            raise ValueError("p must be a scalar or a 2D array.")
-        elif isinstance(p, np.ndarray) and p.ndim == 2:
-            assert (
-                p.shape[0] == distribution.shape[0]
-            ), "If p is a 2D array, it must match the shape of the distribution."
-
         self.p = p
         self.distribution = distribution
 
@@ -96,36 +89,18 @@ class ZeroInflated(BaseDistribution):
         if inner_paramtype != "parametric":
             self.set_tags(**{"distr:paramtype": inner_paramtype})
 
-    @property
-    def _truncated_distribution(self) -> TruncatedDistribution:
-        # TODO: return self.distribution if it is naturally non-negative.
-        # requires support tag (check #244)
-        if (
-            isinstance(self.distribution, TruncatedDistribution)
-            and self.distribution.lower == 0
-            and self.distribution.inclusive_lower
-        ):
-            return self.distribution
-
-        return TruncatedDistribution(
-            self.distribution,
-            lower=0.0,
-            interval_type="[)",
-            index=self.index,
-            columns=self.columns,
-        )
-
     def _log_pmf(self, x):
-        log_prob_base_zero = self._truncated_distribution.log_pmf(np.zeros_like(x))
+        p = self._bc_params["p"]
+        log_prob_base_zero = self.distribution.log_pmf(np.zeros_like(x))
         prob_base_at_zero = np.exp(log_prob_base_zero)
 
         # P(X=0) = (1 - p) + p * f(0)
-        prob_zero_total = (1.0 - self.p) + (self.p * prob_base_at_zero)
+        prob_zero_total = (1.0 - p) + (p * prob_base_at_zero)
         log_prob_total_zero = np.log(prob_zero_total)
 
         # P(X=x) = p * f(x)
-        log_prob_active = np.log(self.p)
-        log_prob_base = self._truncated_distribution.log_pmf(x)
+        log_prob_active = np.log(p)
+        log_prob_base = self.distribution.log_pmf(x)
         log_prob_non_zero = log_prob_active + log_prob_base
 
         is_zero = x == 0
@@ -133,8 +108,9 @@ class ZeroInflated(BaseDistribution):
         return np.where(x < 0, -np.inf, log_prob_res)
 
     def _pmf(self, x):
-        prob_weighted_base = self.p * self._truncated_distribution.pmf(x)
-        prob_structural_zero = 1.0 - self.p
+        p = self._bc_params["p"]
+        prob_weighted_base = p * self.distribution.pmf(x)
+        prob_structural_zero = 1.0 - p
 
         prob_res = np.where(
             x == 0, prob_weighted_base + prob_structural_zero, prob_weighted_base
@@ -144,10 +120,11 @@ class ZeroInflated(BaseDistribution):
         return np.where(x < 0, 0.0, prob_res)
 
     def _log_pdf(self, x):
-        log_prob_structural_zero = np.log(1.0 - self.p)
+        p = self._bc_params["p"]
+        log_prob_structural_zero = np.log(1.0 - p)
 
-        log_prob_active = np.log(self.p)
-        log_prob_base = self._truncated_distribution.log_pdf(x)
+        log_prob_active = np.log(p)
+        log_prob_base = self.distribution.log_pdf(x)
         log_prob_non_zero = log_prob_active + log_prob_base
 
         is_zero = x == 0
@@ -155,47 +132,50 @@ class ZeroInflated(BaseDistribution):
         return np.where(x < 0, -np.inf, log_prob_res)
 
     def _pdf(self, x):
-        prob_structural_zero = 1.0 - self.p
-        prob_active = self.p
-        prob_non_zero = prob_active * self._truncated_distribution.pdf(x)
+        p = self._bc_params["p"]
+        prob_structural_zero = 1.0 - p
+        prob_active = p
+        prob_non_zero = prob_active * self.distribution.pdf(x)
 
         is_zero = x == 0
         prob_res = np.where(is_zero, prob_structural_zero, prob_non_zero)
         return np.where(x < 0, 0.0, prob_res)
 
     def _mean(self):
-        return self.p * self._truncated_distribution.mean()
+        p = self._bc_params["p"]
+        return p * self.distribution.mean()
 
     def _var(self):
-        mean_base = self._truncated_distribution.mean()
-        var_base = self._truncated_distribution.var()
+        p = self._bc_params["p"]
+        mean_base = self.distribution.mean()
+        var_base = self.distribution.var()
 
         expected_sq_base = var_base + mean_base**2
 
-        expected_sq_total = self.p * expected_sq_base
-        mean_total_sq = (self.p * mean_base) ** 2
+        expected_sq_total = p * expected_sq_base
+        mean_total_sq = (p * mean_base) ** 2
 
         return expected_sq_total - mean_total_sq
 
     def _ppf(self, p):
-        prob_structural_zero = 1.0 - self.p
+        p_zi = self._bc_params["p"]
+        prob_structural_zero = 1.0 - p_zi
 
-        q_rescaled = (p - prob_structural_zero) / self.p
+        q_rescaled = (p - prob_structural_zero) / p_zi
 
         eps = np.finfo(q_rescaled.dtype).eps
         q_rescaled = np.clip(q_rescaled - eps, 0.0, 1.0)
 
-        y_base = self._truncated_distribution.ppf(q_rescaled)
+        y_base = self.distribution.ppf(q_rescaled)
 
         return np.where(p <= prob_structural_zero, 0.0, y_base)
 
     def _cdf(self, x):
+        p = self._bc_params["p"]
         is_non_negative = x >= 0.0
-        prob_non_negative = self._truncated_distribution.cdf(x)
+        prob_non_negative = self.distribution.cdf(x)
 
-        return np.where(
-            is_non_negative, (1.0 - self.p) + self.p * prob_non_negative, 0.0
-        )
+        return np.where(is_non_negative, (1.0 - p) + p * prob_non_negative, 0.0)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -236,16 +216,16 @@ class ZeroInflated(BaseDistribution):
         params = [params_1, params_2, params_3]
 
         # continous
-        from skpro.distributions import Normal
+        from skpro.distributions import LogNormal
 
         params_continuous_1 = {
             "p": 0.3,
-            "distribution": Normal(mu=1.0, sigma=1.0),
+            "distribution": LogNormal(mu=1.0, sigma=1.0),
         }
 
         params_continuous_2 = {
             "p": 0.3,
-            "distribution": Normal(mu=mu, sigma=1.0, columns=cols, index=idx),
+            "distribution": LogNormal(mu=mu, sigma=1.0, columns=cols, index=idx),
             "index": idx,
             "columns": cols,
         }
