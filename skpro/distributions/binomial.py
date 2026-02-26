@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Binomial probability distribution."""
 
-__author__ = ["meraldoantonio"]
-
 import pandas as pd
 from scipy.stats import binom, rv_discrete
 
@@ -34,6 +32,11 @@ class Binomial(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["meraldoantonio"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pmf"],
         "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"],
         "distr:measuretype": "discrete",

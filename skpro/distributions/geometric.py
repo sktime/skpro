@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Geometric probability distribution."""
 
-__author__ = ["aryabhatta-dey"]
-
 import pandas as pd
 from scipy.stats import geom, rv_discrete
 
@@ -33,6 +31,11 @@ class Geometric(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["aryabhatta-dey"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pmf"],
         "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"],
         "distr:measuretype": "discrete",

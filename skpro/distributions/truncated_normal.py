@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Truncated Normal probability distribution."""
 
-__author__ = ["ShreeshaM07"]
-
 import pandas as pd
 from scipy.stats import rv_continuous, truncnorm
 
@@ -46,6 +44,11 @@ class TruncatedNormal(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["ShreeshaM07"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
