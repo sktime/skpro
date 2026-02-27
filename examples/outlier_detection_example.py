@@ -22,10 +22,7 @@ from skpro.outlier import (
 )
 from skpro.regression.residual import ResidualDouble
 
-# %%
-# Create synthetic dataset with outliers
-# ---------------------------------------
-# We'll create a simple regression dataset and inject some outliers
+# Create a simple regression dataset and inject some outliers
 
 np.random.seed(42)
 n_samples = 200
@@ -51,7 +48,6 @@ y_series = pd.Series(y, name="y")
 print(f"Dataset created: {n_samples} samples with {n_outliers} outliers")
 print(f"True outlier indices: {sorted(outlier_indices)[:10]}...")
 
-# %%
 # Example 1: Quantile-based Outlier Detection
 # --------------------------------------------
 # Detects outliers based on whether observations fall outside predicted quantile ranges
@@ -77,7 +73,6 @@ precision = true_positives / detected_outliers if detected_outliers > 0 else 0
 recall = true_positives / n_outliers
 print(f"  Precision: {precision:.2%}, Recall: {recall:.2%}")
 
-# %%
 # Example 2: Density-based Outlier Detection
 # -------------------------------------------
 # Detects outliers based on low probability density (high negative log-likelihood)
@@ -103,7 +98,6 @@ precision2 = true_positives2 / detected_outliers2 if detected_outliers2 > 0 else
 recall2 = true_positives2 / n_outliers
 print(f"  Precision: {precision2:.2%}, Recall: {recall2:.2%}")
 
-# %%
 # Example 3: Loss-based Outlier Detection
 # ----------------------------------------
 # Detects outliers based on predictive loss (e.g., log-loss, CRPS, interval score)
@@ -136,7 +130,6 @@ for loss_fn in loss_functions:
     recall3 = true_positives3 / n_outliers
     print(f"  Precision: {precision3:.2%}, Recall: {recall3:.2%}")
 
-# %%
 # Example 4: Custom Loss Function
 # --------------------------------
 # You can also define your own loss function
@@ -172,7 +165,6 @@ precision4 = true_positives4 / detected_outliers4 if detected_outliers4 > 0 else
 recall4 = true_positives4 / n_outliers
 print(f"  Precision: {precision4:.2%}, Recall: {recall4:.2%}")
 
-# %%
 # Visualization (optional - requires matplotlib)
 # -----------------------------------------------
 try:
@@ -264,4 +256,3 @@ except ImportError:
 
 print("\n" + "=" * 70)
 print("Example completed successfully!")
-print("=" * 70)

@@ -34,7 +34,10 @@ def simple_regression_data():
     return X_df, y_series, outlier_indices
 
 
-@run_test_for_class(QuantileOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(QuantileOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_quantile_outlier_detector_fit(simple_regression_data):
     """Test fitting QuantileOutlierDetector."""
     from sklearn.linear_model import LinearRegression
@@ -50,7 +53,10 @@ def test_quantile_outlier_detector_fit(simple_regression_data):
     assert len(detector.decision_scores_) == len(X_df)
 
 
-@run_test_for_class(QuantileOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(QuantileOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_quantile_outlier_detector_predict(simple_regression_data):
     """Test prediction with QuantileOutlierDetector."""
     from sklearn.linear_model import LinearRegression
@@ -69,7 +75,10 @@ def test_quantile_outlier_detector_predict(simple_regression_data):
     assert 5 <= np.sum(predictions) <= 15  # 10% +/- 5%
 
 
-@run_test_for_class(QuantileOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(QuantileOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_quantile_outlier_detector_decision_function(simple_regression_data):
     """Test decision function of QuantileOutlierDetector."""
     from sklearn.linear_model import LinearRegression
@@ -86,7 +95,10 @@ def test_quantile_outlier_detector_decision_function(simple_regression_data):
     assert np.all(scores >= 0)  # Scores should be non-negative
 
 
-@run_test_for_class(DensityOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(DensityOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_density_outlier_detector_fit(simple_regression_data):
     """Test fitting DensityOutlierDetector."""
     from sklearn.linear_model import LinearRegression
@@ -102,7 +114,10 @@ def test_density_outlier_detector_fit(simple_regression_data):
     assert len(detector.decision_scores_) == len(X_df)
 
 
-@run_test_for_class(DensityOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(DensityOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_density_outlier_detector_predict(simple_regression_data):
     """Test prediction with DensityOutlierDetector."""
     from sklearn.linear_model import LinearRegression
@@ -121,7 +136,10 @@ def test_density_outlier_detector_predict(simple_regression_data):
     assert 5 <= np.sum(predictions) <= 15  # 10% +/- 5%
 
 
-@run_test_for_class(DensityOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(DensityOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_density_outlier_detector_use_log_false(simple_regression_data):
     """Test DensityOutlierDetector with use_log=False."""
     from sklearn.linear_model import LinearRegression
@@ -138,7 +156,10 @@ def test_density_outlier_detector_use_log_false(simple_regression_data):
     assert set(predictions).issubset({0, 1})
 
 
-@run_test_for_class(LossOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(LossOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_loss_outlier_detector_fit(simple_regression_data):
     """Test fitting LossOutlierDetector."""
     from sklearn.linear_model import LinearRegression
@@ -154,7 +175,10 @@ def test_loss_outlier_detector_fit(simple_regression_data):
     assert len(detector.decision_scores_) == len(X_df)
 
 
-@run_test_for_class(LossOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(LossOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_loss_outlier_detector_predict(simple_regression_data):
     """Test prediction with LossOutlierDetector."""
     from sklearn.linear_model import LinearRegression
@@ -173,7 +197,10 @@ def test_loss_outlier_detector_predict(simple_regression_data):
     assert 5 <= np.sum(predictions) <= 15  # 10% +/- 5%
 
 
-@run_test_for_class(LossOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(LossOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_loss_outlier_detector_crps(simple_regression_data):
     """Test LossOutlierDetector with CRPS loss."""
     from sklearn.linear_model import LinearRegression
@@ -190,7 +217,10 @@ def test_loss_outlier_detector_crps(simple_regression_data):
     assert set(predictions).issubset({0, 1})
 
 
-@run_test_for_class(LossOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(LossOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_loss_outlier_detector_interval_score(simple_regression_data):
     """Test LossOutlierDetector with interval score loss."""
     from sklearn.linear_model import LinearRegression
@@ -207,7 +237,10 @@ def test_loss_outlier_detector_interval_score(simple_regression_data):
     assert set(predictions).issubset({0, 1})
 
 
-@run_test_for_class(LossOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(LossOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_loss_outlier_detector_custom_loss(simple_regression_data):
     """Test LossOutlierDetector with custom loss function."""
     from sklearn.linear_model import LinearRegression
@@ -233,7 +266,10 @@ def test_loss_outlier_detector_custom_loss(simple_regression_data):
     assert set(predictions).issubset({0, 1})
 
 
-@run_test_for_class(QuantileOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(QuantileOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_quantile_outlier_detector_no_y_error(simple_regression_data):
     """Test that QuantileOutlierDetector raises error without y."""
     from sklearn.linear_model import LinearRegression
@@ -248,7 +284,10 @@ def test_quantile_outlier_detector_no_y_error(simple_regression_data):
         detector.fit(X_df)
 
 
-@run_test_for_class(DensityOutlierDetector)
+@pytest.mark.skipif(
+    not run_test_for_class(DensityOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_density_outlier_detector_no_y_error(simple_regression_data):
     """Test that DensityOutlierDetector raises error without y in decision_function."""
     from sklearn.linear_model import LinearRegression
