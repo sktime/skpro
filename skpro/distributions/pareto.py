@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Pareto probability distribution."""
 
-__author__ = ["sukjingitsit"]
-
 import numpy as np
 import pandas as pd
 from scipy.integrate import quad
@@ -39,6 +37,11 @@ class Pareto(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["sukjingitsit"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": [
             "mean",
@@ -70,7 +73,7 @@ class Pareto(BaseDistribution):
         """
         alpha = self._bc_params["alpha"]
         scale = self._bc_params["scale"]
-        mean = np.where(alpha <= 1, np.inf, scale**alpha / (alpha - 1))
+        mean = np.where(alpha <= 1, np.inf, alpha * scale / (alpha - 1))
         return mean
 
     def _var(self):

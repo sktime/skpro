@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Composition for mean/scale family of distributions."""
 
-__author__ = ["fkiraly"]
-
 import numpy as np
 
 from skpro.distributions.base import BaseDistribution
@@ -49,6 +47,11 @@ class MeanScale(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",

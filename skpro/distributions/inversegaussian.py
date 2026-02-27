@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Inverse Gaussian probability distribution."""
 
-__author__ = ["Omswastik-11"]
-
 import pandas as pd
 from scipy.stats import invgauss, rv_continuous
 
@@ -42,6 +40,11 @@ class InverseGaussian(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["Omswastik-11"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",

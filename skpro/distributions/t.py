@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Student's t-distribution."""
 
-__author__ = ["Alex-JG3", "ivarzap"]
-
 import numpy as np
 import pandas as pd
 from scipy.integrate import quad
@@ -36,7 +34,7 @@ class TDistribution(BaseDistribution):
     """
 
     _tags = {
-        "authors": ["Alex-JG3"],
+        "authors": ["Alex-JG3", "ivarzap"],
         "maintainers": ["Alex-JG3"],
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
