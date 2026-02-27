@@ -170,7 +170,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         self._coefs_prior_cov = self.coefs_prior_cov
         self._coefs_prior_precision = np.linalg.inv(self._coefs_prior_cov)
 
-        X_arr, y_arr = self._coerce_numeric_inputs(X=X, y=y)
+        X_arr = X.to_numpy(dtype=float)
+        y_arr = y.to_numpy(dtype=float)
 
         # Perform Bayesian inference
         (
@@ -198,8 +199,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Predicted Normal distribution for outputs.
         """
         idx = X.index
-        if isinstance(X, pd.DataFrame):
-            X = X.values
+        X = X.to_numpy(dtype=float)
 
         # Predictive mean: X * posterior_mu
         pred_mu = X @ self._coefs_posterior_mu
@@ -231,39 +231,6 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             index=idx,
         )
         return self._y_pred
-
-    def _coerce_numeric_inputs(self, X, y):
-        """Coerce X and y to numeric 2D arrays for stable linear algebra."""
-        if isinstance(X, pd.DataFrame):
-            X = X.apply(pd.to_numeric, errors="coerce").to_numpy(dtype=float)
-        else:
-            X = np.asarray(X, dtype=float)
-
-        if isinstance(y, pd.Series):
-            y = y.to_frame()
-        if isinstance(y, pd.DataFrame):
-            y = y.apply(pd.to_numeric, errors="coerce").to_numpy(dtype=float)
-        else:
-            y = np.asarray(y, dtype=float)
-
-        if X.ndim != 2:
-            X = np.atleast_2d(X)
-        if y.ndim == 1:
-            y = y.reshape(-1, 1)
-        elif y.ndim != 2:
-            y = np.atleast_2d(y)
-
-        if X.shape[0] != y.shape[0]:
-            raise ValueError(
-                "X and y must have the same number of rows after numeric coercion."
-            )
-
-        if np.isnan(X).any() or np.isnan(y).any():
-            raise ValueError(
-                "X and y must contain only numeric finite values after coercion."
-            )
-
-        return X, y
 
     def _perform_bayesian_inference(self, X, y, coefs_prior_mu, coefs_prior_precision):
         """Perform Bayesian inference for linear regression.
@@ -317,7 +284,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        X_arr, y_arr = self._coerce_numeric_inputs(X=X, y=y)
+        X_arr = X.to_numpy(dtype=float)
+        y_arr = y.to_numpy(dtype=float)
         coefs_prior_precision = np.linalg.inv(self._coefs_posterior_cov)
 
         (
