@@ -5,7 +5,6 @@ __author__ = ["fkiraly"]
 
 import numpy as np
 import pandas as pd
-from warnings import warn
 
 from skpro.distributions.base import BaseDistribution
 
@@ -60,15 +59,12 @@ class TransformedDistribution(BaseDistribution):
 
     _tags = {
         "capabilities:approx": [
-            "pdf",
-            "pdfnorm",
             "mean",
             "var",
             "energy",
             "cdf",
         ],
         "capabilities:exact": ["ppf"],
-        "approx_spl": 100,
         "distr:measuretype": "mixed",
         "distr:paramtype": "composite",
     }
@@ -252,29 +248,6 @@ class TransformedDistribution(BaseDistribution):
             cdf_res = pd.DataFrame(cdf_res, index=self.index, columns=self.columns)
 
         return cdf_res
-
-    def _pdf(self, x):
-        """Probability density function.
-
-        If ``inverse_transform`` is provided, falls back to the base implementation,
-        which can numerically differentiate exact ``cdf``.
-        Otherwise, uses numerical differentiation of this class' ``cdf``
-        implementation as an approximation.
-        """
-        if self.inverse_transform is not None:
-            return super()._pdf(x)
-
-        approx_method = (
-            "by numerically differentiating the output returned by the cdf method, "
-            "using sixth-degree central differences at an epsilon of 1e-7"
-        )
-        warn(self._method_error_msg("pdf", fill_in=approx_method))
-
-        x = self._coerce_to_self_index_df(x, flatten=False)
-        res = self._approx_derivative(x=x, fun=self.cdf)
-        if isinstance(res, pd.DataFrame):
-            return res.clip(lower=0)
-        return np.clip(res, a_min=0, a_max=None)
 
     def _sample(self, n_samples=None):
         """Sample from the distribution.
