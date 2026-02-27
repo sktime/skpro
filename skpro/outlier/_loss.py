@@ -52,7 +52,7 @@ class LossOutlierDetector(BaseOutlierDetector):
     >>> detector.fit(X, y)
     LossOutlierDetector(...)
     >>> outliers = detector.predict(X, y)
-    >>> outliers.sum()  # number of detected outliers
+    >>> int(outliers.sum())  # number of detected outliers
     10
     """
 
@@ -134,6 +134,40 @@ class LossOutlierDetector(BaseOutlierDetector):
         scores = np.nan_to_num(scores, nan=np.inf, posinf=np.inf, neginf=0.0)
 
         return scores
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator.
+
+        Parameters
+        ----------
+        parameter_set : str, default="default"
+            Name of the set of test parameters to return, for use in tests. If no
+            special parameters are defined for a value, will return `"default"` set.
+
+        Returns
+        -------
+        params : dict or list of dict, default = {}
+            Parameters to create testing instances of the class
+            Each dict are parameters to construct an "interesting" test instance, i.e.,
+            `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
+            `create_test_instance` uses the first (or only) dictionary in `params`
+        """
+        from skpro.regression.residual import ResidualDouble
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LinearRegression
+
+        params1 = {"regressor": ResidualDouble(RandomForestRegressor(n_estimators=2))}
+        params2 = {
+            "regressor": ResidualDouble(LinearRegression()),
+            "contamination": 0.05,
+            "loss": "log_loss",
+        }
+        params3 = {
+            "regressor": ResidualDouble(RandomForestRegressor(n_estimators=2)),
+            "loss": "crps",
+        }
+        return [params1, params2, params3]
 
     def _compute_crps(self, y_true, y_pred_dist):
         """Compute Continuous Ranked Probability Score.

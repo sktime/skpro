@@ -47,7 +47,7 @@ class QuantileOutlierDetector(BaseOutlierDetector):
     >>> detector.fit(X, y)
     QuantileOutlierDetector(...)
     >>> outliers = detector.predict(X, y)
-    >>> outliers.sum()  # number of detected outliers
+    >>> int(outliers.sum())  # number of detected outliers
     10
     """
 
@@ -58,7 +58,7 @@ class QuantileOutlierDetector(BaseOutlierDetector):
     }
 
     def __init__(self, regressor, contamination=0.1, alpha=None):
-        self.alpha = alpha if alpha is not None else [0.05, 0.95]
+        self.alpha = alpha
         super().__init__(regressor=regressor, contamination=contamination)
 
     def _compute_decision_scores(self, X, y=None):
@@ -94,7 +94,7 @@ class QuantileOutlierDetector(BaseOutlierDetector):
             y_arr = np.array(y).reshape(-1, 1)
 
         # Get quantile predictions
-        quantiles = sorted(self.alpha)
+        quantiles = sorted(self.alpha if self.alpha is not None else [0.05, 0.95])
         q_pred = self.regressor.predict_quantiles(X, alpha=quantiles)
 
         # Convert to numpy array
@@ -150,3 +150,32 @@ class QuantileOutlierDetector(BaseOutlierDetector):
                 scores[i] = np.max(distance_from_median[i] / q_range[i])
 
         return scores
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator.
+
+        Parameters
+        ----------
+        parameter_set : str, default="default"
+            Name of the set of test parameters to return, for use in tests. If no
+            special parameters are defined for a value, will return `"default"` set.
+
+        Returns
+        -------
+        params : dict or list of dict, default = {}
+            Parameters to create testing instances of the class
+            Each dict are parameters to construct an "interesting" test instance, i.e.,
+            `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
+            `create_test_instance` uses the first (or only) dictionary in `params`
+        """
+        from skpro.regression.residual import ResidualDouble
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LinearRegression
+
+        params1 = {"regressor": ResidualDouble(RandomForestRegressor(n_estimators=2))}
+        params2 = {
+            "regressor": ResidualDouble(LinearRegression()),
+            "contamination": 0.05,
+        }
+        return [params1, params2]
