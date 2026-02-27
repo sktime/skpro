@@ -137,9 +137,10 @@ class DensityOutlierDetector(BaseOutlierDetector):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from skpro.regression.residual import ResidualDouble
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.linear_model import LinearRegression
+
+        from skpro.regression.residual import ResidualDouble
 
         params1 = {"regressor": ResidualDouble(RandomForestRegressor(n_estimators=2))}
         params2 = {
