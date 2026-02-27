@@ -7,6 +7,7 @@ This example shows how to use the three types of outlier detectors:
 
 All three implement a pyod-compatible interface.
 """
+# flake8: noqa: T201
 
 import matplotlib.pyplot as plt
 import numpy as np
