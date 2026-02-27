@@ -69,7 +69,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: wheels
           path: wheelhouse
@@ -99,7 +99,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: wheels
           path: wheelhouse
