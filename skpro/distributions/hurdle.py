@@ -69,9 +69,11 @@ class Hurdle(BaseDistribution):
         if isinstance(p, np.ndarray) and p.ndim == 1:
             raise ValueError("p must be a scalar or a 2D array.")
         elif isinstance(p, np.ndarray) and p.ndim == 2:
-            assert (
-                p.shape[0] == distribution.shape[0]
-            ), "If p is a 2D array, it must match the shape of the distribution."
+            if p.shape[0] != distribution.shape[0]:
+                raise ValueError(
+                    "If p is a 2D array, it must match the shape of the distribution. "
+                    f"Got p.shape={p.shape} but distribution.shape={distribution.shape}"
+                )
 
         self.p = p
         self.distribution = distribution
