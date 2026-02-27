@@ -3,7 +3,6 @@
 __author__ = ["meraldoantonio"]
 
 import numpy as np
-import pandas as pd
 
 from skpro.distributions import Normal
 from skpro.regression.base import BaseProbaRegressor
