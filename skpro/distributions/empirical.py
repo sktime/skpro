@@ -173,17 +173,21 @@ class Empirical(BaseDistribution):
             # spl_values is (S, I, C), sorter is (S, I, C)
             self._sorted_array = np.take_along_axis(spl_values, sorter, axis=0)
 
-            # weights_arr is (S, I), expand to (S, I, 1) and sort per column
+            # weights_arr is (S, I), expand to (S, I, 1) and broadcast to (S, I, C)
             weights_expanded = np.expand_dims(weights_arr, axis=-1)
+            weights_broadcast = np.broadcast_to(weights_expanded, sorter.shape)
             self._sorted_weights_array = np.take_along_axis(
-                weights_expanded, sorter, axis=0
+                weights_broadcast, sorter, axis=0
             )
 
         self._sorted_initialized = True
 
     def _ensure_sorted(self):
         """Ensure sorted samples are initialized."""
-        if not getattr(self, "_sorted_initialized", False) or self._sorted_array is None:
+        if (
+            not getattr(self, "_sorted_initialized", False)
+            or self._sorted_array is None
+        ):
             self._init_sorted()
 
     def _coerce_tuple(self, x):
@@ -417,10 +421,9 @@ class Empirical(BaseDistribution):
         return np.sum(energy_per_entry, axis=1)
 
     def _mean(self):
-        """Expected value."""
-        self._ensure_sorted()
+        """Get expected value."""
         spl_values = self._get_spl_array()
-        weights_arr = self._weights_array
+        weights_arr = self._get_weights_array()
 
         if self.ndim == 0:
             spl = self.spl.values.flatten()
@@ -432,8 +435,8 @@ class Empirical(BaseDistribution):
         if self.weights is None:
             mean_vals = np.mean(spl_values, axis=0)
         else:
-            w_sum = np.sum(weights_arr, axis=0, keepdims=True)
-            w_sum_safe = np.where(w_sum == 0, 1.0, w_sum)
+            w_sum = np.sum(weights_arr, axis=0)
+            w_sum_safe = np.expand_dims(np.where(w_sum == 0, 1.0, w_sum), axis=-1)
             w_exp = np.expand_dims(weights_arr, axis=-1)
             mean_vals = np.sum(spl_values * w_exp, axis=0) / w_sum_safe
 
@@ -441,9 +444,8 @@ class Empirical(BaseDistribution):
 
     def _var(self):
         """Variance."""
-        self._ensure_sorted()
         spl_values = self._get_spl_array()
-        weights_arr = self._weights_array
+        weights_arr = self._get_weights_array()
 
         if self.ndim == 0:
             spl = self.spl.values.flatten()
@@ -459,8 +461,8 @@ class Empirical(BaseDistribution):
         if self.weights is None:
             var_vals = np.mean((spl_values - m_exp) ** 2, axis=0)
         else:
-            w_sum = np.sum(weights_arr, axis=0, keepdims=True)
-            w_sum_safe = np.where(w_sum == 0, 1.0, w_sum)
+            w_sum = np.sum(weights_arr, axis=0)
+            w_sum_safe = np.expand_dims(np.where(w_sum == 0, 1.0, w_sum), axis=-1)
             w_exp = np.expand_dims(weights_arr, axis=-1)
             var_vals = np.sum(w_exp * (spl_values - m_exp) ** 2, axis=0) / w_sum_safe
 
@@ -510,10 +512,13 @@ class Empirical(BaseDistribution):
                 idx = np.sum(np.arange(1, n_samples + 1) / n_samples < p)
             else:
                 w_sum = np.sum(weights_arr)
-                w_sum_safe = w_sum if w_sum != 0 else 1.0
-                cum_weights = np.cumsum(weights_arr) / w_sum_safe
-                idx = np.sum(cum_weights < p)
-            
+                if w_sum == 0:
+                    n_samples = len(sorted_samples)
+                    idx = np.sum(np.arange(1, n_samples + 1) / n_samples < p)
+                else:
+                    cum_weights = np.cumsum(weights_arr) / w_sum
+                    idx = np.sum(cum_weights < p)
+
             idx = np.minimum(idx, len(sorted_samples) - 1)
             return sorted_samples[idx]
 
@@ -523,15 +528,19 @@ class Empirical(BaseDistribution):
         if weights_arr is None:
             n_samples = sorted_samples.shape[0]
             # (n_samples, 1, 1) broadcasted across (1, n_instances, n_cols)
-            ranks = (
-                np.arange(1, n_samples + 1).reshape(-1, 1, 1) / n_samples
-            )
+            ranks = np.arange(1, n_samples + 1).reshape(-1, 1, 1) / n_samples
             idx = np.sum(ranks < p_exp, axis=0)
         else:
             weight_sums = np.sum(weights_arr, axis=0, keepdims=True)
             weight_sums_safe = np.where(weight_sums == 0, 1.0, weight_sums)
             cum_weights = np.cumsum(weights_arr, axis=0) / weight_sums_safe
-            idx = np.sum(cum_weights < p_exp, axis=0)
+            idx_weighted = np.sum(cum_weights < p_exp, axis=0)
+
+            n_samples = sorted_samples.shape[0]
+            ranks = np.arange(1, n_samples + 1).reshape(-1, 1, 1) / n_samples
+            idx_unweighted = np.sum(ranks < p_exp, axis=0)
+
+            idx = np.where(weight_sums.squeeze(0) == 0, idx_unweighted, idx_weighted)
 
         idx = np.minimum(idx, sorted_samples.shape[0] - 1)
         ppf_vals = np.take_along_axis(
