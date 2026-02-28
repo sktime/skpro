@@ -9,6 +9,7 @@ __all__ = [
     "Binomial",
     "BurrIII",
     "BurrXII",
+    "Cauchy",
     "ChiSquared",
     "Delta",
     "Empirical",
