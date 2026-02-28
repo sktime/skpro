@@ -52,6 +52,11 @@ class TruncatedDistribution(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["tingiskhan"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy", "mean", "var"],
         "capabilities:exact": [
             "ppf",
