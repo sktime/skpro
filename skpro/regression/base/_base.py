@@ -93,6 +93,15 @@ class BaseProbaRegressor(BaseEstimator):
         -------
         self : reference to self
         """
+        # Reset to a clean post-init state before fitting (scikit-base idiom).
+        # This ensures re-fit with different features/data is always valid:
+        # - clears feature_names_in_ / n_features_in_ so _check_X starts fresh
+        #   instead of raising a column-mismatch error on re-fit
+        # - resets converter stores so no stale mtype metadata leaks into predict
+        # - clears any other private state from a previous fit
+        # Hyper-parameters (constructor arguments) are preserved by reset().
+        self.reset()
+
         capa_surv = self.get_tag("capability:survival")
 
         check_ret = self._check_X_y(X, y, C, return_metadata=True)
