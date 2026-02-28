@@ -427,7 +427,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         from skpro.survival.compose import ConditionUncensored
 
         params1 = {
-            "regressor": DummyProbaRegressor(),
+            "regressor": DummyProbaRegressor(strategy="normal"),
             "transformer": StandardScaler(),
         }
         params2 = {
