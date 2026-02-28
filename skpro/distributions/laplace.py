@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Laplace probability distribution."""
 
-__author__ = ["fkiraly"]
-
 import numpy as np
 import pandas as pd
 
@@ -44,6 +42,11 @@ class Laplace(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
