@@ -105,8 +105,6 @@ class TransformedDistribution(BaseDistribution):
 
         # if inverse_transform is given, we can do exact cdf
         # due to the formula F_g(x)(y) = F_X(g^-1(x))
-        # and approximate pdf via numerical differentiation of cdf
-        # which enables pdfnorm computation
         if self.inverse_transform is not None:
             self.set_tags(
                 **{
