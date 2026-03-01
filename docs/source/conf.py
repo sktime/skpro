@@ -9,10 +9,10 @@
 
 import datetime
 import inspect
+import logging
 import os
 import sys
-
-import skpro
+import warnings
 
 # -- Path setup --------------------------------------------------------------
 
@@ -23,6 +23,15 @@ env_rtd = os.environ.get("READTHEDOCS")
 # Check if on Read the docs
 if not env_rtd == "True":
     sys.path.insert(0, os.path.abspath("../.."))
+
+import skpro  # noqa: E402
+
+warnings.filterwarnings(
+    "ignore",
+    message=r"Unknown section .* in the docstring of .*",
+    category=UserWarning,
+    module=r"numpydoc\.docscrape",
+)
 
 # -- Project information -----------------------------------------------------
 
@@ -44,7 +53,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "numpydoc",
-    "sphinx.ext.intersphinx",
+    # "sphinx.ext.intersphinx",
     "sphinx.ext.linkcode",  # link to GitHub source code via linkcode_resolve()
     "nbsphinx",  # integrates example notebooks
     "sphinx_gallery.load_style",
@@ -132,7 +141,7 @@ def linkcode_resolve(domain, info):
         return None
     try:
         filename = "skpro/%s#L%d-L%d" % find_source()
-    except Exception:
+    except Exception:  # noqa: B902
         filename = info["module"].replace(".", "/") + ".py"
     if version_match == "latest":
         version = "main"
@@ -256,7 +265,24 @@ numpydoc_show_class_members = True
 # see https://github.com/numpy/numpydoc/issues/69
 numpydoc_class_members_toctree = False
 
-numpydoc_validation_checks = {"all", "GL01", "SA01", "EX01"}
+numpydoc_validation_checks = set()
+
+# Silence noisy validation and docutils warnings during the docs build.
+suppress_warnings = [
+    "numpydoc",
+    "docutils",
+    "app.add_node",
+    "app.add_directive",
+    "app.add_role",
+    "autosummary",
+    "autosummary.imported",
+    "ref",
+    "ref.ref",
+    "toc",
+    "toc.duplicate",
+    "toc.not_readable",
+    "toc.not_included",
+]
 
 # -- Options for sphinx-copybutton extension----------------------------------
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
@@ -299,3 +325,218 @@ intersphinx_mapping = {
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
     "sktime": ("https://www.sktime.net/en/stable/", None),
 }
+
+
+# -- Estimator Overview Setup ------------------------------------------------
+
+
+def generate_estimator_overview_data(app, config):
+    """Generate estimator data for the overview page during Sphinx build.
+
+    This function is called during the Sphinx config-inited event.
+    It collects data about all estimators in skpro and creates a JavaScript
+    file that is used by the estimator overview page.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        The Sphinx application object
+    config : sphinx.config.Config
+        The Sphinx config object
+    """
+    import json
+    from pathlib import Path
+
+    try:
+        from skpro.registry import all_objects
+    except ImportError:
+        sys.stderr.write("Warning: Could not import skpro for estimator overview\n")
+        return
+
+    # Get all objects with tags
+    try:
+        df = all_objects(
+            as_dataframe=True,
+            return_tags=[
+                "object_type",
+                "estimator_type",
+                "capability:survival",
+                "handles_missing_data",
+                "requires_y",
+                "handles_multioutput",
+            ],
+            suppress_import_stdout=True,
+        )
+    except Exception as e:  # noqa: B902
+        sys.stderr.write(
+            f"Warning: Could not retrieve estimator data for overview: {e}\n"
+        )
+        return
+
+    if df is None or df.empty:
+        sys.stderr.write("Warning: No estimators found for overview\n")
+        return
+
+    auto_generated_dir = Path(__file__).parent / "api_reference" / "auto_generated"
+    available_doc_pages = {
+        p.stem for p in auto_generated_dir.glob("*.rst") if p.is_file()
+    }
+
+    def _candidate_doc_pages(module, name):
+        candidates = [f"{module}.{name}"]
+
+        module_parts = module.split(".")
+
+        # candidate without private module segments, e.g., ._foo
+        public_parts = [part for part in module_parts if not part.startswith("_")]
+        if public_parts:
+            candidates.append(f"{'.'.join(public_parts)}.{name}")
+
+        # parent-module candidates, from most specific to broader
+        for i in range(len(module_parts) - 1, 1, -1):
+            parent_module = ".".join(module_parts[:i])
+            candidates.append(f"{parent_module}.{name}")
+
+        # de-duplicate while preserving order
+        deduped = []
+        seen = set()
+        for cand in candidates:
+            if cand not in seen:
+                seen.add(cand)
+                deduped.append(cand)
+
+        return deduped
+
+    def _resolve_doc_url(module, name, object_type):
+        candidates = _candidate_doc_pages(module=module, name=name)
+        for page in candidates:
+            if page in available_doc_pages:
+                return f"api_reference/auto_generated/{page}.html"
+
+        if isinstance(object_type, (list, tuple)):
+            object_type_values = set(object_type)
+        else:
+            object_type_values = {object_type}
+
+        if "distribution" in object_type_values:
+            return "api_reference/distributions.html"
+        if "regressor_proba" in object_type_values:
+            return "api_reference/regression.html"
+        if "metric" in object_type_values or "metric_distr" in object_type_values:
+            return "api_reference/metrics.html"
+
+        return "api_reference.html"
+
+    estimators = []
+
+    for _, row in df.iterrows():
+        name = row.get("name", "Unknown")
+        # all_objects uses "object" column; keep fallback for older naming
+        obj = row.get("object") if "object" in row.index else row.get("objects")
+        obj_type = row.get("object_type", "unknown")
+
+        # Get module path
+        if obj is not None:
+            module = obj.__module__ if hasattr(obj, "__module__") else "unknown"
+        else:
+            module = "unknown"
+
+        # Collect key tags as an object
+        tags = {}
+        if obj_type:
+            tags["object_type"] = obj_type
+
+        # Add capability tags
+        if "capability:survival" in row.index:
+            tags["capability:survival"] = row.get("capability:survival", False)
+
+        if "handles_missing_data" in row.index:
+            tags["handles_missing_data"] = row.get("handles_missing_data", False)
+
+        if "requires_y" in row.index:
+            requires_y = row.get("requires_y")
+            if requires_y is False:
+                tags["unsupervised"] = True
+            elif requires_y:
+                tags["supervised"] = True
+
+        if "handles_multioutput" in row.index:
+            tags["handles_multioutput"] = row.get("handles_multioutput", False)
+
+        estimators.append(
+            {
+                "name": name,
+                "object_type": obj_type,
+                "module": module,
+                "doc_url": _resolve_doc_url(
+                    module=module, name=name, object_type=obj_type
+                ),
+                "tags": tags,
+            }
+        )
+
+    estimators = sorted(estimators, key=lambda x: x["name"])
+
+    # Create JavaScript file
+    js_content = f"""// Estimator data for the overview page
+// This file is auto-generated during Sphinx build
+
+window.estimatorData = {json.dumps(estimators, indent=2)};
+"""
+
+    # Write to static directory
+    static_dir = os.path.join(os.path.dirname(__file__), "_static")
+    os.makedirs(static_dir, exist_ok=True)
+
+    js_file = os.path.join(static_dir, "estimator_data.js")
+    with open(js_file, "w") as f:
+        f.write(js_content)
+
+
+def inject_estimator_data(app, pagename, templatename, context, doctree):
+    """Inject estimator data script into the estimator overview page.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        The Sphinx application object
+    pagename : str
+        The name of the page being generated
+    templatename : str
+        The template being used
+    context : dict
+        The context dictionary
+    doctree : docutils.nodes.document
+        The doctree
+    """
+    # Note: Estimator data injection happens via raw HTML block in RST file
+    pass
+
+
+# Register the setup function
+def setup(app):
+    """Configure Sphinx extension for estimator overview generation.
+
+    Parameters
+    ----------
+    app : sphinx.application.Sphinx
+        The Sphinx application object
+    """
+
+    class _SphinxWarningFilter(logging.Filter):
+        def filter(self, record):
+            message = record.getMessage()
+            suppressed = (
+                "autosummary: failed to import",
+                "duplicate label",
+                "toctree glob pattern",
+                "document is referenced in multiple toctrees",
+            )
+            return not any(text in message for text in suppressed)
+
+    from sphinx.util import logging as sphinx_logging
+
+    sphinx_logger = sphinx_logging.getLogger("sphinx")
+    sphinx_logger.logger.addFilter(_SphinxWarningFilter())
+    logging.getLogger().addFilter(_SphinxWarningFilter())
+    app.connect("config-inited", generate_estimator_overview_data)

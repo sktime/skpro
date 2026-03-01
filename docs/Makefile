@@ -4,7 +4,12 @@
 # You can set these variables from the command line, and also
 # from the environment for the first two.
 SPHINXOPTS    ?=
+VENV_SPHINXBUILD := ../.venv/bin/sphinx-build
+ifeq ($(wildcard $(VENV_SPHINXBUILD)),)
 SPHINXBUILD   ?= sphinx-build
+else
+SPHINXBUILD   ?= $(VENV_SPHINXBUILD)
+endif
 SOURCEDIR     = source
 BUILDDIR      = _build
 

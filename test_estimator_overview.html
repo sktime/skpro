@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKPRO Estimator Overview</title>
+    <style>
+        .bd-article-container { max-width: 100em !important; }
+        .bd-sidebar-secondary { display: none; }
+        .top-container { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; box-sizing: border-box; }
+        #dropdownContainer { flex: 1; }
+        #checkboxContainer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; box-sizing: border-box; }
+        #checkboxContainer input[type="checkbox"] { margin-right: 5px; }
+        #checkboxContainer label { white-space: nowrap; color: black; text-decoration: none; cursor: default; }
+        .table-container { width: 100%; overflow-x: auto; }
+        #tableContainer { float: left; table-layout: fixed; border-collapse: collapse; overflow-x: auto; }
+        #tableContainer th, #tableContainer td { border: 2px solid #888; text-align: center; word-break: break-word; width: 15vw; color: black; text-decoration: none; }
+        #tableContainer td:hover { background-color: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>SKPRO Estimator Overview</h1>
+
+    <p>Use the below search table to find estimators by property.</p>
+    <ul>
+        <li>type into the search box to subset rows by substring search</li>
+        <li>choose a type (distribution, regressor, survival, metric, ...) in the dropdown</li>
+        <li>if type is selected, check object tags to display in table</li>
+    </ul>
+
+    <div class="top-container">
+        <input type="text" id="searchInput" placeholder="Search the table ..." />
+        <div id="dropdownContainer">
+            <select id="filterOptions">
+                <option value="all" selected>ALL</option>
+                <option value="distribution">Distribution</option>
+                <option value="regressor">Regressor</option>
+                <option value="survival">Survival</option>
+                <option value="metric">Metric</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="checkboxContainer"></div>
+
+    <div class="table-container">
+        <table id="tableContainer"></table>
+    </div>
+
+    <script>
+// --- skpro estimator overview table logic ---
+
+// Estimator types for skpro
+const SKPRO_TYPES = [
+    "distribution",
+    "regressor",
+    "survival",
+    "metric"
+];
+
+// Main logic from your original script, adapted for skpro
+
+let visibleTagsOfTypes = {};
+
+// Event listeners
+
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+    searchInput.addEventListener("keyup", function () {
+        let value = this.value.toLowerCase();
+        let table = document.getElementById("tableContainer")
+        let rows = table.getElementsByTagName("tr");
+        for (var i = 1; i < rows.length; i++) {
+            var rowText = rows[i].textContent.toLowerCase();
+            rows[i].style.display = rowText.indexOf(value) > -1 ? "" : "none";
+        }
+    });
+
+    const filterOptions = document.getElementById("filterOptions");
+    filterOptions.addEventListener("change", function(event) {
+        filterTable();
+    });
+
+    document.addEventListener("change", function(event) {
+        const filter = document.getElementById("filterOptions").value;
+        const target = event.target;
+        if (target.type === "checkbox") {
+            // Convert safe ID back to original tag key
+            const originalKey = target.id.replace(/_/g, ':');
+            visibleTagsOfTypes[filter][originalKey] = target.checked;
+            filterTable();
+        }
+    });
+
+    function initTableFromURL() {
+        const params = new URLSearchParams(window.location.hash.slice(1));
+        const filter = params.get('filter');
+        const tags = params.get('tags');
+        if (filter) {
+            document.getElementById("filterOptions").value = filter;
+        }
+        if (tags) {
+            visibleTagsOfTypes[filter] = JSON.parse(tags);
+        }
+    }
+    initTableFromURL();
+    filterTable();
+});
+
+function filterTable() {
+    const filter = document.getElementById("filterOptions").value;
+    const header = ["Class Name", "Estimator Type", "Module", "Dependencies", "Maintainers"];
+    if (filter != "all") {
+        // Use the JSON data directly for filtered views
+        fetchJsonData();
+    } else {
+        visibleTagsOfTypes[filter] = {};
+        const table = document.getElementById("tableContainer");
+        fetchTableAll();
+    }
+    populateCheckboxes();
+    updateURL(filter, visibleTagsOfTypes[filter]);
+    function updateURL(filter, tags) {
+        const params = new URLSearchParams();
+        params.set('filter', filter);
+        if (tags) {
+            params.set('tags', JSON.stringify(tags));
+        }
+        window.location.hash = params.toString();
+    }
+}
+
+function fetchJsonData() {
+    // Use the local JSON data
+    const data = [
+  {"Class Name": "DummyProbaRegressor", "Estimator Type": "regressor", "Module": "skpro.regression.dummy", "Dependencies": "numpy, pandas", "Maintainers": "julian-fong", "Tags": {"capability:multioutput": false, "capability:missing": true, "X_inner_mtype": "pd_DataFrame_Table", "y_inner_mtype": "pd_DataFrame_Table"}},
+  {"Class Name": "Normal", "Estimator Type": "distribution", "Module": "skpro.distributions.normal", "Dependencies": "numpy, pandas, scipy", "Maintainers": "fkiraly", "Tags": {"capabilities:approx": ["pdfnorm"], "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"], "distr:measuretype": "continuous", "distr:paramtype": "parametric"}},
+  {"Class Name": "Empirical", "Estimator Type": "distribution", "Module": "skpro.distributions.empirical", "Dependencies": "numpy, pandas", "Maintainers": "fkiraly", "Tags": {"capabilities:approx": [], "capabilities:exact": ["mean", "var", "energy", "cdf", "ppf"], "distr:measuretype": "discrete", "distr:paramtype": "nonparametric"}},
+  {"Class Name": "Binomial", "Estimator Type": "distribution", "Module": "skpro.distributions.binomial", "Dependencies": "scipy, pandas", "Maintainers": "meraldoantonio", "Tags": {"capabilities:approx": ["pmf"], "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"], "distr:measuretype": "discrete", "distr:paramtype": "parametric"}},
+  {"Class Name": "CRPS", "Estimator Type": "metric", "Module": "skpro.metrics", "Dependencies": "numpy, pandas", "Maintainers": "fkiraly", "Tags": {"scitype:y_pred": "pred_proba", "lower_is_better": true}}
+];
+    sessionStorage.setItem("jsonData", JSON.stringify(data));
+    const filter = document.getElementById("filterOptions").value;
+    const filteredData = data.filter(row => row["Estimator Type"] === filter);
+    const tags = visibleTagsOfTypes[filter];
+    if (tags) {
+        const dynamicHeader = ["Class Name"];
+        dynamicHeader.push(Object.keys(tags).filter(key => tags[key]));
+        renderTable(filteredData, dynamicHeader);
+    } else if (filteredData.length > 0) {
+        visibleTagsOfTypes[filter] = {};
+        Object.keys(filteredData[0].Tags).forEach(tag => {
+            visibleTagsOfTypes[filter][tag] = false;
+        });
+        renderTable(filteredData, ["Class Name"]);
+    }
+}
+
+function fetchTableAll() {
+    // Use the local HTML table
+    const html = `<table>
+  <tr>
+    <th>Class Name</th>
+    <th>Estimator Type</th>
+    <th>Module</th>
+    <th>Dependencies</th>
+    <th>Maintainers</th>
+  </tr>
+  <tr><td>DummyProbaRegressor</td><td>regressor</td><td>skpro.regression.dummy</td><td>numpy, pandas</td><td>julian-fong</td></tr>
+  <tr><td>Normal</td><td>distribution</td><td>skpro.distributions.normal</td><td>numpy, pandas, scipy</td><td>fkiraly</td></tr>
+  <tr><td>Empirical</td><td>distribution</td><td>skpro.distributions.empirical</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+  <tr><td>Binomial</td><td>distribution</td><td>skpro.distributions.binomial</td><td>scipy, pandas</td><td>meraldoantonio</td></tr>
+  <tr><td>CRPS</td><td>metric</td><td>skpro.metrics</td><td>numpy, pandas</td><td>fkiraly</td></tr>
+</table>`;
+    sessionStorage.setItem("contentTableAll", html);
+    const table = document.getElementById("tableContainer");
+    table.innerHTML = html;
+}
+
+function renderTable(data, header) {
+    const table = document.getElementById("tableContainer");
+    table.innerHTML = "";
+    let headerRow = "<tr>";
+    header.forEach((headerItem, index) => {
+        if (Array.isArray(headerItem)) {
+            headerItem.forEach(item => {
+                headerRow += `<th>${item.replace(/:/g, '<br>')}</th>`;
+            });
+        } else {
+            headerRow += `<th>${headerItem}</th>`;
+        }
+    });
+    headerRow += "</tr>";
+    table.innerHTML += headerRow;
+    data.forEach(rowData => {
+        let rowContent = "<tr>";
+        header.forEach(headerItem => {
+            if (Array.isArray(headerItem)) {
+                headerItem.forEach(item => {
+                    rowContent += `<td>${rowData.Tags[item]}</td>`;
+                });
+            } else {
+                rowContent += `<td>${rowData[headerItem]}</td>`;
+            }
+        });
+        rowContent += "</tr>";
+        table.innerHTML += rowContent;
+    });
+}
+
+function populateCheckboxes() {
+    const filter = document.getElementById("filterOptions").value;
+    const tags = Object.entries(visibleTagsOfTypes[filter] || {});
+    const checkboxContainer = document.getElementById("checkboxContainer");
+    checkboxContainer.innerHTML = "Check to Show Tags:";
+    for (const [key, value] of tags) {
+        const safeId = key.replace(/:/g, '_').replace(/\s/g, '_');
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = safeId;
+        checkbox.name = safeId;
+        checkbox.checked = value;
+        const label = document.createElement("label");
+        label.htmlFor = safeId;
+        label.textContent = key;
+        const checkboxWrapper = document.createElement("div");
+        checkboxWrapper.appendChild(checkbox);
+        checkboxWrapper.appendChild(label);
+        checkboxContainer.appendChild(checkboxWrapper);
+    }
+}
+    </script>
+</body>
+</html>

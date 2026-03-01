@@ -1,0 +1,167 @@
+<script>
+// --- skpro estimator overview table logic ---
+
+// Estimator types for skpro
+const SKPRO_TYPES = [
+    "distribution",
+    "regressor",
+    "survival",
+    "metric"
+];
+
+// Main logic from your original script, adapted for skpro
+
+let visibleTagsOfTypes = {};
+
+// Event listeners
+
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+    searchInput.addEventListener("keyup", function () {
+        let value = this.value.toLowerCase();
+        let container = document.getElementById("cardContainer");
+        let cards = container.getElementsByClassName("card");
+        for (var i = 0; i < cards.length; i++) {
+            var cardText = cards[i].textContent.toLowerCase();
+            cards[i].style.display = cardText.indexOf(value) > -1 ? "" : "none";
+        }
+    });
+
+    const filterOptions = document.getElementById("filterOptions");
+    filterOptions.addEventListener("change", function(event) {
+        filterTable();
+    });
+
+    document.addEventListener("change", function(event) {
+        const filter = document.getElementById("filterOptions").value;
+        const target = event.target;
+        if (target.type === "checkbox") {
+            // Convert safe ID back to original tag key
+            const originalKey = target.id.replace(/_/g, ':');
+            visibleTagsOfTypes[filter][originalKey] = target.checked;
+            filterTable();
+        }
+    });
+
+    function initTableFromURL() {
+        const params = new URLSearchParams(window.location.hash.slice(1));
+        const filter = params.get('filter');
+        const tags = params.get('tags');
+        if (filter) {
+            document.getElementById("filterOptions").value = filter;
+        }
+        if (tags) {
+            visibleTagsOfTypes[filter] = JSON.parse(tags);
+        }
+    }
+    initTableFromURL();
+    filterTable();
+});
+
+function filterTable() {
+    const filter = document.getElementById("filterOptions").value;
+    const header = ["Class Name", "Estimator Type", "Module", "Dependencies", "Maintainers"];
+    if (filter != "all") {
+        const cachedData = sessionStorage.getItem("jsonData");
+        if (cachedData) {
+            let dynamicHeader = ["Class Name"];
+            const data = JSON.parse(cachedData);
+            const filteredData = data.filter(row => row["Estimator Type"] === filter);
+            const tags = visibleTagsOfTypes[filter];
+            if (tags) {
+                dynamicHeader.push(Object.keys(tags).filter(key => tags[key]));
+            } else if (filteredData.length > 0) {
+                visibleTagsOfTypes[filter] = {};
+                Object.keys(filteredData[0].Tags).forEach(tag => {
+                    visibleTagsOfTypes[filter][tag] = false;
+                });
+            }
+            renderTable(filteredData, dynamicHeader);
+        } else {
+            fetchJsonData();
+        }
+    } else {
+        visibleTagsOfTypes[filter] = {};
+        const cachedData = sessionStorage.getItem("jsonData");
+        if (cachedData) {
+            const data = JSON.parse(cachedData);
+            renderTable(data, ["Class Name", "Estimator Type", "Module", "Dependencies", "Maintainers"]);
+        } else {
+            fetchJsonData();
+        }
+    }
+    populateCheckboxes();
+    updateURL(filter, visibleTagsOfTypes[filter]);
+    function updateURL(filter, tags) {
+        const params = new URLSearchParams();
+        params.set('filter', filter);
+        if (tags) {
+            params.set('tags', JSON.stringify(tags));
+        }
+        window.location.hash = params.toString();
+    }
+}
+
+function fetchJsonData() {
+    return fetch("docs/_static/estimator_overview_db.json")
+        .then(response => response.json())
+        .then(data => {
+            sessionStorage.setItem("jsonData", JSON.stringify(data));
+            filterTable();
+        })
+        .catch(error => console.error("Error:", error));
+}
+
+
+
+function renderTable(data, header) {
+    const container = document.getElementById("cardContainer");
+    container.innerHTML = "";
+    data.forEach(rowData => {
+        let card = document.createElement("div");
+        card.className = "card";
+        let html = `<h3>${rowData["Class Name"]}</h3>`;
+        header.forEach(item => {
+            if (item === "Class Name") return;
+            if (rowData[item] !== undefined) {
+                html += `<p><strong>${item}:</strong> ${rowData[item]}</p>`;
+            } else if (rowData.Tags && rowData.Tags[item]) {
+                html += `<p><strong>${item}:</strong> ${rowData.Tags[item]}</p>`;
+            }
+        });
+        if (rowData.Tags) {
+            html += `<div class="tags">`;
+            Object.entries(rowData.Tags).forEach(([key, val]) => {
+                if (val && header.includes(key)) {
+                    html += `<span class="tag">${key}: ${val}</span>`;
+                }
+            });
+            html += `</div>`;
+        }
+        card.innerHTML = html;
+        container.appendChild(card);
+    });
+}
+
+function populateCheckboxes() {
+    const filter = document.getElementById("filterOptions").value;
+    const tags = Object.entries(visibleTagsOfTypes[filter] || {});
+    const checkboxContainer = document.getElementById("checkboxContainer");
+    checkboxContainer.innerHTML = "Check to Show Tags:";
+    for (const [key, value] of tags) {
+        const safeId = key.replace(/:/g, '_').replace(/\s/g, '_');
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = safeId;
+        checkbox.name = safeId;
+        checkbox.checked = value;
+        const label = document.createElement("label");
+        label.htmlFor = safeId;
+        label.textContent = key;
+        const checkboxWrapper = document.createElement("div");
+        checkboxWrapper.appendChild(checkbox);
+        checkboxWrapper.appendChild(label);
+        checkboxContainer.appendChild(checkboxWrapper);
+    }
+}
+</script>
