@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Chi-Squared probability distribution."""
 
-__author__ = ["sukjingitsit"]
-
 import numpy as np
 import pandas as pd
 from scipy.integrate import quad

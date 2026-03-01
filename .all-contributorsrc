@@ -233,6 +233,14 @@
       ]
     },
     {
+      "login": "Khushmagrawal",
+      "name": "Khush Agrawal",
+      "profile": "https://github.com/Khushmagrawal",
+      "contributions": [
+        "code",
+      ]
+    },
+    {
       "login": "amaydixit11",
       "name": "Amay Dixit",
       "profile": "https://github.com/amaydixit11",
@@ -240,5 +248,6 @@
         "code",
         "bug"
       ]
-    }
+    },
+  ]
 }
