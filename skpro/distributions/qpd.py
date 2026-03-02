@@ -287,10 +287,10 @@ class QPD_S(BaseDistribution):
 
         # Initialize result array with zeros
         pdf_arr = np.zeros_like(x, dtype=float)
-        
+
         # Only compute pdf for x > lower (support of semi-bounded distribution)
         valid_mask = x > lower
-        
+
         if not np.any(valid_mask):
             return pdf_arr
 
