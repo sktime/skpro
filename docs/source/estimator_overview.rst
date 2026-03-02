@@ -391,4 +391,3 @@ For detailed documentation of each estimator, see the API reference:
 * :doc:`Distributions <api_reference/distributions>`
 * :doc:`Metrics <api_reference/metrics>`
 * :doc:`Survival Prediction <api_reference/survival>`
-

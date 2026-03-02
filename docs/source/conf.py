@@ -303,6 +303,7 @@ intersphinx_mapping = {
 
 # -- Generate estimator data for dynamic estimator overview page -----------
 
+
 def generate_estimator_data_hook(app, env, docnames=None):
     """Generate estimator data before reading docs.
 
@@ -310,14 +311,19 @@ def generate_estimator_data_hook(app, env, docnames=None):
     the JavaScript data file needed for the interactive estimator overview page.
     The generated file is not committed to the repository.
     """
-    import os
     import importlib.util
+    import os
 
     # Load the generate_estimator_data module
     spec = importlib.util.spec_from_file_location(
         "generate_estimator_data",
-        os.path.join(os.path.dirname(__file__), "..", "..", "build_tools",
-                     "generate_estimator_data.py"),
+        os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "..",
+            "build_tools",
+            "generate_estimator_data.py",
+        ),
     )
     if spec and spec.loader:
         gen_module = importlib.util.module_from_spec(spec)
