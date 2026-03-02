@@ -12,7 +12,6 @@ import inspect
 import logging
 import os
 import sys
-import warnings
 
 # -- Path setup --------------------------------------------------------------
 
@@ -25,13 +24,6 @@ if not env_rtd == "True":
     sys.path.insert(0, os.path.abspath("../.."))
 
 import skpro  # noqa: E402
-
-warnings.filterwarnings(
-    "ignore",
-    message=r"Unknown section .* in the docstring of .*",
-    category=UserWarning,
-    module=r"numpydoc\.docscrape",
-)
 
 # -- Project information -----------------------------------------------------
 
