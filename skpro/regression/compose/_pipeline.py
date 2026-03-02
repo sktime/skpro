@@ -597,7 +597,7 @@ class Pipeline(_Pipeline):
                 Xt = transformer.transform(X=Xt)
             if not isinstance(Xt, pd.DataFrame):
                 Xt = pd.DataFrame(Xt, index=X.index)
-            
+
         return Xt
 
     def _has_y_arg(self, method):
