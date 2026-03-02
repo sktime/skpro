@@ -1,4 +1,4 @@
-.. _survival_ref:
+.. _regression_ref:
 
 Time-to-event prediction and survival prediction
 ================================================

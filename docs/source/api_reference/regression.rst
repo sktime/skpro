@@ -183,13 +183,6 @@ This section lists simple regressors which can be used as baselines.
     :template: class.rst
 
     DeltaPointRegressor
-
-.. currentmodule:: skpro.regression.dummy
-
-.. autosummary::
-    :toctree: auto_generated/
-    :template: class.rst
-
     DummyProbaRegressor
 
 
