@@ -163,18 +163,11 @@ Use the below search table to find estimators and distributions by property.
 
         // Helper function to get estimator documentation URL
         function getEstimatorDocUrl(est) {
-            // Map object types to API reference sections
-            const typeMap = {
-                'regressor_proba': 'regression',
-                'distribution': 'distributions',
-                'metric': 'metrics',
-                'survival': 'survival'
-            };
-
-            const section = typeMap[est.object_type] || 'auto_generated';
-            const modulePath = est.module.replace(/\./g, '/');
-
-            return `api_reference/${section}/${modulePath}.html`;
+            if (est.doc_url) {
+                return est.doc_url;
+            }
+            const docPath = est.doc_path || `${est.module || 'skpro'}.${est.name || ''}`;
+            return `api_reference/auto_generated/${docPath}.html`;
         }
 
         // Helper function to get tag documentation URL

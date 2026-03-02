@@ -21,6 +21,11 @@ from skpro.registry import all_objects  # noqa: E402
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+AUTO_GENERATED_DIR = os.path.join(
+    REPO_ROOT, "docs", "source", "api_reference", "auto_generated"
+)
+
 
 def _serialize_value(value):
     """Convert a value to JSON-serializable format.
@@ -46,6 +51,103 @@ def _serialize_value(value):
         return {k: _serialize_value(v) for k, v in value.items()}
     # For non-serializable types (classes, etc.), convert to string
     return str(value)
+
+
+def _infer_object_type(tags_dict, module):
+    """Infer object type from tags and module path.
+
+    Parameters
+    ----------
+    tags_dict : dict
+        Class tag dictionary.
+    module : str
+        Python module path of the object.
+
+    Returns
+    -------
+    str
+        Inferred object type.
+    """
+    obj_type_val = tags_dict.get("object_type")
+    if obj_type_val:
+        if isinstance(obj_type_val, list):
+            return str(obj_type_val[0])
+        return str(obj_type_val)
+
+    estimator_type_val = tags_dict.get("estimator_type")
+    if estimator_type_val:
+        return str(estimator_type_val)
+
+    if module.startswith("skpro.distributions"):
+        return "distribution"
+    if module.startswith("skpro.metrics"):
+        return "metric"
+    if module.startswith("skpro.survival"):
+        return "survival"
+    if module.startswith("skpro.regression"):
+        return "regressor_proba"
+
+    return "unknown"
+
+
+def _infer_doc_path(module, name):
+    """Infer autosummary doc path used in api_reference/auto_generated.
+
+    Parameters
+    ----------
+    module : str
+        Python module path of the object.
+    name : str
+        Class name.
+
+    Returns
+    -------
+    str
+        Dotted doc path without ``.html`` suffix.
+    """
+    candidates = []
+
+    if module:
+        candidates.append(f"{module}.{name}")
+
+        parts = module.split(".")
+        if parts and parts[-1].startswith("_"):
+            candidates.append(".".join(parts[:-1] + [name]))
+
+    if module.startswith("skpro.distributions"):
+        candidates.append(f"skpro.distributions.{name}")
+
+    if module.startswith("skpro.metrics"):
+        candidates.append(f"skpro.metrics.{name}")
+
+    seen = set()
+    unique_candidates = []
+    for candidate in candidates:
+        if candidate not in seen:
+            seen.add(candidate)
+            unique_candidates.append(candidate)
+
+    for candidate in unique_candidates:
+        rst_path = os.path.join(AUTO_GENERATED_DIR, f"{candidate}.rst")
+        if os.path.exists(rst_path):
+            return candidate
+
+    if unique_candidates:
+        return unique_candidates[0]
+
+    return f"skpro.{name}"
+
+
+def _fallback_api_url(object_type):
+    """Fallback API URL if no auto-generated detail page is available."""
+    type_map = {
+        "regressor_proba": "regression",
+        "distribution": "distributions",
+        "metric": "metrics",
+        "survival": "survival",
+    }
+    section = type_map.get(object_type, "api_reference")
+    return f"api_reference/{section}.html"
 
 
 def generate_estimator_data(output_file):
@@ -78,7 +180,7 @@ def generate_estimator_data(output_file):
                     else "unknown"
                 )
 
-                # Initialize with object_type from _tags
+                # Initialize with object_type inferred from tags/module
                 object_type = "unknown"
                 tags = {}
 
@@ -86,14 +188,7 @@ def generate_estimator_data(output_file):
                 if hasattr(estimator_class, "_tags"):
                     tags_dict = estimator_class._tags or {}
 
-                    # Get object_type - might be list or string
-                    obj_type_val = tags_dict.get("object_type")
-                    if obj_type_val:
-                        # Convert to string if it's a list
-                        if isinstance(obj_type_val, list):
-                            object_type = obj_type_val[0]  # Use first type
-                        else:
-                            object_type = str(obj_type_val)
+                    object_type = _infer_object_type(tags_dict=tags_dict, module=module)
 
                     # Extract all tags that are meaningful
                     for tag_name, tag_value in tags_dict.items():
@@ -111,13 +206,26 @@ def generate_estimator_data(output_file):
 
                         # Serialize the value
                         tags[tag_name] = _serialize_value(tag_value)
+                else:
+                    object_type = _infer_object_type(tags_dict={}, module=module)
 
                 est_info = {
                     "name": name,
                     "object_type": object_type,
                     "module": module,
+                    "doc_path": _infer_doc_path(module=module, name=name),
                     "tags": tags,
                 }
+
+                rst_path = os.path.join(
+                    AUTO_GENERATED_DIR, f"{est_info['doc_path']}.rst"
+                )
+                if os.path.exists(rst_path):
+                    est_info[
+                        "doc_url"
+                    ] = f"api_reference/auto_generated/{est_info['doc_path']}.html"
+                else:
+                    est_info["doc_url"] = _fallback_api_url(object_type)
 
                 estimators_data.append(est_info)
 
