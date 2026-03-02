@@ -8,13 +8,18 @@ each build to ensure estimator registry changes are always reflected.
 """
 
 import json
+import logging
 import os
 import sys
 
 # Add parent directory to path to import skpro
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from skpro.registry import all_objects
+from skpro.registry import all_objects  # noqa: E402
+
+# Set up logging for build output
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def _serialize_value(value):
@@ -56,13 +61,13 @@ def generate_estimator_data(output_file):
         estimators_df = all_objects(as_dataframe=True)
 
         if estimators_df.empty:
-            print("Warning: No estimators found in registry")
+            logger.warning("No estimators found in registry")
             estimators_data = []
         else:
             estimators_data = []
 
             # Convert dataframe to list of dicts with necessary fields
-            for idx, row in estimators_df.iterrows():
+            for _idx, row in estimators_df.iterrows():
                 name = row.get("name", "Unknown")
                 estimator_class = row.get("object")
 
@@ -117,11 +122,16 @@ def generate_estimator_data(output_file):
                 estimators_data.append(est_info)
 
         # Generate JavaScript file
-        js_content = f"""// Auto-generated estimator data for the dynamic estimator overview page.
-// This file is regenerated during each documentation build.
-
-var estimatorData = {json.dumps(estimators_data, indent=2)};
-"""
+        estimator_json = json.dumps(estimators_data, indent=2)
+        comment_line = (
+            "// Auto-generated estimator data for the dynamic estimator overview page."
+        )
+        js_content = (
+            f"{comment_line}\n"
+            "// This file is regenerated during each documentation build.\n"
+            "\n"
+            f"var estimatorData = {estimator_json};\n"
+        )
 
         # Ensure output directory exists
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -130,15 +140,16 @@ var estimatorData = {json.dumps(estimators_data, indent=2)};
         with open(output_file, "w") as f:
             f.write(js_content)
 
-        print(f"Generated estimator data: {output_file}")
-        print(f"Total estimators: {len(estimators_data)}")
+        logger.info(f"Generated estimator data: {output_file}")
+        logger.info(f"Total estimators: {len(estimators_data)}")
 
         return True
 
-    except Exception as e:
-        print(f"Error generating estimator data: {e}", file=sys.stderr)
-        print("The estimator overview page may not function properly.", file=sys.stderr)
+    except Exception as e:  # noqa: B902
+        logger.error(f"Error generating estimator data: {e}")
+        logger.error("The estimator overview page may not function properly.")
         import traceback
+
         traceback.print_exc()
         # Don't fail the build - just warn
         return False
