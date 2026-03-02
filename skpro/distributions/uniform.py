@@ -1,8 +1,6 @@
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Uniform probability distribution."""
 
-__author__ = ["an20805"]
-
 import numpy as np
 import pandas as pd
 
