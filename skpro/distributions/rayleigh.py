@@ -126,6 +126,37 @@ class Rayleigh(BaseDistribution):
             energy_arr = energy_arr.sum(axis=1)
         return energy_arr
 
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        Analytical solution for Rayleigh(sigma):
+        If x <= 0: :math:`\sigma \sqrt{\pi/2} - x`
+        If x > 0: :math:`\sigma \sqrt{\pi/2} + x
+         - \sigma \sqrt{2\pi} \text{erf}(x / (\sigma \sqrt{2}))`
+        """
+        from scipy.special import erf
+
+        scale = self._bc_params["scale"]
+
+        # E[X] = sigma * sqrt(pi / 2)
+        mean = scale * np.sqrt(np.pi / 2)
+
+        # Energy for positive x
+        energy_pos = (
+            mean + x - scale * np.sqrt(2 * np.pi) * erf(x / (scale * np.sqrt(2)))
+        )
+
+        # Energy for negative or zero x
+        energy_neg = mean - x
+
+        # Combine using np.where to handle arrays properly
+        energy_arr = np.where(x > 0, energy_pos, energy_neg)
+
+        # Sum across rows if multidimensional
+        if hasattr(energy_arr, "ndim") and energy_arr.ndim > 1:
+            energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
