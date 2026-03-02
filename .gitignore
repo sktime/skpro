@@ -41,8 +41,13 @@ dist/*
 sdist/*
 docs/api/*
 docs/_build/*
+docs/source/api_reference/auto_generated/*
+docs/_static/*.json
+docs/_static/*.html
+docs/source/_static/*.js
 cover/*
 MANIFEST
+test_*.html
 
 # Virtual environments
 .venv/
