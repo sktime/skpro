@@ -44,6 +44,11 @@ docs/_build/*
 cover/*
 MANIFEST
 
+# Auto-generated files (not committed to repo, generated during build)
+docs/_build/estimator_data.js
+docs/_static/estimator_data.js
+docs/source/api_reference/auto_generated/*
+
 # Virtual environments
 .venv/
 venv/
