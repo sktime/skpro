@@ -591,12 +591,12 @@ class Pipeline(_Pipeline):
 
         for _, _, transformer in self._iter_transformers():
             if self._has_y_arg(transformer.transform):
-                Xt = transformer.transform(X=X, y=y)
+                X = transformer.transform(X=X, y=y)
             else:
-                Xt = transformer.transform(X=X)
-            if not isinstance(Xt, pd.DataFrame):
-                Xt = pd.DataFrame(Xt, index=X.index)
-        return Xt
+                X = transformer.transform(X=X)
+            if not isinstance(X, pd.DataFrame):
+                X = pd.DataFrame(X, index=X.index)
+        return X
 
     def _has_y_arg(self, method):
         """Check if method has y argument."""
