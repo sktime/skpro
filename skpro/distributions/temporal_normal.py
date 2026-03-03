@@ -29,6 +29,11 @@ class TemporalNormal(Normal):
     * Modeling data with temporal trends in mean and variance
     * Representing non-stationary processes
 
+    Note
+    ----
+    This implementation models time-varying marginal normals only.
+    It does not model temporal covariance/correlation between time points.
+
     Parameters
     ----------
     mu : float, array of float (1D or 2D), pd.Series, or pd.DataFrame
@@ -90,7 +95,7 @@ class TemporalNormal(Normal):
             mu = mu.to_frame()
         if isinstance(sigma, pd.Series):
             sigma = sigma.to_frame()
-        
+
         # Handle pandas DataFrame inputs with time index
         if isinstance(mu, pd.DataFrame) and index is None:
             index = mu.index
@@ -116,16 +121,16 @@ class TemporalNormal(Normal):
         """
         if self.ndim == 0:
             return self.mu
-        
+
         # Get the broadcasted parameters
         mu_bc = self._bc_params.get("mu", self.mu)
-        
-        if isinstance(self.index, pd.DatetimeIndex) or hasattr(self.index, 'get_loc'):
+
+        if isinstance(self.index, pd.DatetimeIndex) or hasattr(self.index, "get_loc"):
             try:
                 loc = self.index.get_loc(t)
                 if isinstance(mu_bc, np.ndarray) and mu_bc.ndim >= 2:
                     return mu_bc[loc, :]
-                elif hasattr(mu_bc, '__getitem__'):
+                elif hasattr(mu_bc, "__getitem__"):
                     return mu_bc[loc]
                 else:
                     return mu_bc
@@ -135,7 +140,7 @@ class TemporalNormal(Normal):
             if isinstance(t, int) and 0 <= t < len(self.index):
                 if isinstance(mu_bc, np.ndarray) and mu_bc.ndim >= 2:
                     return mu_bc[t, :]
-                elif hasattr(mu_bc, '__getitem__'):
+                elif hasattr(mu_bc, "__getitem__"):
                     return mu_bc[t]
                 else:
                     return mu_bc
@@ -156,32 +161,32 @@ class TemporalNormal(Normal):
             Variance value(s) at time t
         """
         if self.ndim == 0:
-            return self.sigma ** 2
-        
+            return self.sigma**2
+
         # Get the broadcasted parameters
         sigma_bc = self._bc_params.get("sigma", self.sigma)
-        
-        if isinstance(self.index, pd.DatetimeIndex) or hasattr(self.index, 'get_loc'):
+
+        if isinstance(self.index, pd.DatetimeIndex) or hasattr(self.index, "get_loc"):
             try:
                 loc = self.index.get_loc(t)
                 if isinstance(sigma_bc, np.ndarray) and sigma_bc.ndim >= 2:
                     sigma_t = sigma_bc[loc, :]
-                elif hasattr(sigma_bc, '__getitem__'):
+                elif hasattr(sigma_bc, "__getitem__"):
                     sigma_t = sigma_bc[loc]
                 else:
                     sigma_t = sigma_bc
-                return sigma_t ** 2
+                return sigma_t**2
             except (KeyError, TypeError):
                 raise ValueError(f"Time point {t} not found in distribution index")
         else:
             if isinstance(t, int) and 0 <= t < len(self.index):
                 if isinstance(sigma_bc, np.ndarray) and sigma_bc.ndim >= 2:
                     sigma_t = sigma_bc[t, :]
-                elif hasattr(sigma_bc, '__getitem__'):
+                elif hasattr(sigma_bc, "__getitem__"):
                     sigma_t = sigma_bc[t]
                 else:
                     sigma_t = sigma_bc
-                return sigma_t ** 2
+                return sigma_t**2
             else:
                 raise ValueError(f"Time index {t} out of range")
 
@@ -200,16 +205,16 @@ class TemporalNormal(Normal):
         """
         if self.ndim == 0:
             return self.sigma
-        
+
         # Get the broadcasted parameters
         sigma_bc = self._bc_params.get("sigma", self.sigma)
-        
-        if isinstance(self.index, pd.DatetimeIndex) or hasattr(self.index, 'get_loc'):
+
+        if isinstance(self.index, pd.DatetimeIndex) or hasattr(self.index, "get_loc"):
             try:
                 loc = self.index.get_loc(t)
                 if isinstance(sigma_bc, np.ndarray) and sigma_bc.ndim >= 2:
                     return sigma_bc[loc, :]
-                elif hasattr(sigma_bc, '__getitem__'):
+                elif hasattr(sigma_bc, "__getitem__"):
                     return sigma_bc[loc]
                 else:
                     return sigma_bc
@@ -219,7 +224,7 @@ class TemporalNormal(Normal):
             if isinstance(t, int) and 0 <= t < len(self.index):
                 if isinstance(sigma_bc, np.ndarray) and sigma_bc.ndim >= 2:
                     return sigma_bc[t, :]
-                elif hasattr(sigma_bc, '__getitem__'):
+                elif hasattr(sigma_bc, "__getitem__"):
                     return sigma_bc[t]
                 else:
                     return sigma_bc
@@ -234,17 +239,19 @@ class TemporalNormal(Normal):
             "mu": pd.Series([0, 1, 2, 3, 4]),
             "sigma": pd.Series([0.5, 0.7, 1.0, 1.2, 1.5]),
         }
-        
+
         # Array case with explicit time index
         params2 = {
             "mu": [[0, 1], [2, 3], [4, 5]],
             "sigma": [[0.5, 0.6], [0.7, 0.8], [0.9, 1.0]],
         }
-        
+
         # Scalar variance with time-varying mean
         params3 = {
-            "mu": pd.Series([0, 2, 4, 6], index=pd.date_range('2024-01-01', periods=4, freq='D')),
+            "mu": pd.Series(
+                [0, 2, 4, 6], index=pd.date_range("2024-01-01", periods=4, freq="D")
+            ),
             "sigma": 1.0,
         }
-        
+
         return [params1, params2, params3]

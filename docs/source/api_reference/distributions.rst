@@ -38,6 +38,7 @@ Continuous support - full reals
     Laplace
     Logistic
     Normal
+    TemporalNormal
     SkewNormal
     TDistribution
     TruncatedNormal
