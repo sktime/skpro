@@ -25,13 +25,25 @@ class DummyProbaRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    strategy : one of ["empirical", "normal"] default="empirical"
+    strategy : one of ["empirical", "normal", "kernel"] default="empirical"
         Strategy to use to generate predictions.
 
         * "empirical": always predicts the empirical unweighted distribution
             of the training labels
         * "normal": always predicts a normal distribution, with mean and variance
             equal to the mean and variance of the training labels
+        * "kernel": always predicts a kernel density estimate based on the
+            training labels, using Gaussian kernels
+
+    bandwidth : float or str, optional, default="scott"
+        Bandwidth parameter for kernel density estimation, only used when
+        ``strategy="kernel"``. Can be a float for fixed bandwidth, or one of:
+        "scott", "silverman" for automatic bandwidth selection.
+        See ``scipy.stats.gaussian_kde`` for details.
+
+    n_kde_samples : int, default=1000
+        Number of samples to draw from the kernel density estimate for
+        empirical distribution approximation, only used when ``strategy="kernel"``.
 
     Attributes
     ----------
@@ -44,7 +56,8 @@ class DummyProbaRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["julian-fong"],
-        "maintainers": ["julian-fong"],
+        "maintainers": ["julian-fong", "arnavk23"],
+
         # estimator tags
         # --------------
         "capability:multioutput": False,
@@ -53,8 +66,10 @@ class DummyProbaRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, strategy="empirical"):
+    def __init__(self, strategy="empirical", bandwidth="scott", n_kde_samples=1000):
         self.strategy = strategy
+        self.bandwidth = bandwidth
+        self.n_kde_samples = n_kde_samples
         super().__init__()
 
     def _fit(self, X, y):
@@ -78,10 +93,31 @@ class DummyProbaRegressor(BaseProbaRegressor):
         self._y_columns = y.columns
         self._mu = np.mean(y.values)
         self._sigma = np.std(y.values)
+        
         if self.strategy == "empirical":
             self.distribution_ = Empirical(y)
-        if self.strategy == "normal":
+        elif self.strategy == "normal":
             self.distribution_ = Normal(self._mu, self._sigma)
+        elif self.strategy == "kernel":
+            from scipy.stats import gaussian_kde
+            
+            # Fit KDE to the training data
+            y_values = y.values.flatten()
+            self._kde = gaussian_kde(y_values, bw_method=self.bandwidth)
+            
+            # Sample from KDE to create empirical distribution
+            np.random.seed(42)  # For reproducibility
+            kde_samples = self._kde.resample(self.n_kde_samples).T
+            kde_df = pd.DataFrame(
+                kde_samples, 
+                columns=self._y_columns
+            )
+            self.distribution_ = Empirical(kde_df)
+        else:
+            raise ValueError(
+                f"Unknown strategy: {self.strategy}. "
+                f"Must be one of ['empirical', 'normal', 'kernel']"
+            )
 
         return self
 
@@ -144,6 +180,7 @@ class DummyProbaRegressor(BaseProbaRegressor):
         """
         X_ind = X.index
         X_n_rows = X.shape[0]
+        
         if self.strategy == "normal":
             # broadcast the mu and sigma from fit to the length of X
             mu = np.reshape((np.ones(X_n_rows) * self._mu), (-1, 1))
@@ -151,10 +188,30 @@ class DummyProbaRegressor(BaseProbaRegressor):
             pred_dist = Normal(mu=mu, sigma=sigma, index=X_ind, columns=self._y_columns)
             return pred_dist
 
-        if self.strategy == "empirical":
+        elif self.strategy == "empirical":
             empr_df = pd.concat([self._y] * X_n_rows, keys=X_ind).swaplevel()
             pred_dist = Empirical(empr_df, index=X_ind, columns=self._y_columns)
-
+            return pred_dist
+            
+        elif self.strategy == "kernel":
+            # Sample from KDE for each prediction instance
+            kde_samples_list = []
+            for _ in range(X_n_rows):
+                samples = self._kde.resample(self.n_kde_samples).T
+                kde_samples_list.append(samples)
+            
+            # Stack samples and create empirical distribution
+            all_samples = np.vstack(kde_samples_list)
+            sample_index = pd.MultiIndex.from_product(
+                [range(self.n_kde_samples), X_ind],
+                names=["sample", "instance"]
+            ).swaplevel()
+            kde_df = pd.DataFrame(
+                all_samples,
+                index=sample_index,
+                columns=self._y_columns
+            )
+            pred_dist = Empirical(kde_df, index=X_ind, columns=self._y_columns)
             return pred_dist
 
     @classmethod
@@ -177,5 +234,6 @@ class DummyProbaRegressor(BaseProbaRegressor):
         """
         params1 = {}
         params2 = {"strategy": "normal"}
+        params3 = {"strategy": "kernel", "n_kde_samples": 100}
 
-        return [params1, params2]
+        return [params1, params2, params3]
