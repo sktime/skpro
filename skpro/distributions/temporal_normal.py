@@ -88,23 +88,38 @@ class TemporalNormal(Normal):
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
+        self.mu = mu
+        self.sigma = sigma
+
         # Convert pandas Series to DataFrame for proper time-series orientation
         # Series are typically treated as row vectors (1, n) but for time series
         # we want column vectors (n, 1) where n is the number of time points
+        mu_inner = mu
+        sigma_inner = sigma
         if isinstance(mu, pd.Series):
-            mu = mu.to_frame()
+            mu_inner = mu.to_frame()
         if isinstance(sigma, pd.Series):
-            sigma = sigma.to_frame()
+            sigma_inner = sigma.to_frame()
+
+        self._mu_inner = mu_inner
+        self._sigma_inner = sigma_inner
 
         # Handle pandas DataFrame inputs with time index
-        if isinstance(mu, pd.DataFrame) and index is None:
-            index = mu.index
-        if isinstance(sigma, pd.DataFrame) and index is None:
-            index = sigma.index
+        if isinstance(mu_inner, pd.DataFrame) and index is None:
+            index = mu_inner.index
+        if isinstance(sigma_inner, pd.DataFrame) and index is None:
+            index = sigma_inner.index
 
         # Call parent Normal class __init__
         # This will handle all the broadcasting and parameter setup
-        super().__init__(mu=mu, sigma=sigma, index=index, columns=columns)
+        super().__init__(mu=mu_inner, sigma=sigma_inner, index=index, columns=columns)
+
+        self.mu = mu
+        self.sigma = sigma
+
+    def _get_dist_params(self):
+        """Return internal broadcast-ready distribution parameters."""
+        return {"mu": self._mu_inner, "sigma": self._sigma_inner}
 
     def mean_at_time(self, t):
         """Return the mean at a specific time point.
