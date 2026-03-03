@@ -142,11 +142,11 @@ class BoundingRegressor(BaseProbaRegressor):
 
         if self.method == "truncate":
             # Use truncation to bound the distribution
-            from skpro.distributions.truncated import Truncated
+            from skpro.distributions.truncated import TruncatedDistribution
 
             # Apply truncation if bounds are specified
             if self.lower is not None or self.upper is not None:
-                y_dist_bounded = Truncated(
+                y_dist_bounded = TruncatedDistribution(
                     y_dist,
                     lower=self.lower,
                     upper=self.upper,
@@ -175,9 +175,11 @@ class BoundingRegressor(BaseProbaRegressor):
                 return Normal(mu=mean, sigma=std, index=X.index, columns=self._y_cols)
             except Exception:
                 # Fallback: return truncated version
-                from skpro.distributions.truncated import Truncated
+                from skpro.distributions.truncated import TruncatedDistribution
 
-                return Truncated(y_dist, lower=self.lower, upper=self.upper)
+                return TruncatedDistribution(
+                    y_dist, lower=self.lower, upper=self.upper
+                )
 
         elif self.method == "delta":
             # Replace out-of-bounds predictions with delta distributions

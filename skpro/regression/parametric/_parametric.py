@@ -81,7 +81,7 @@ class ParametricRegressor(BaseProbaRegressor):
         self.estimator = estimator
         self.distr = distr
         self.scale = scale
-        self.distr_params = distr_params if distr_params is not None else {}
+        self.distr_params = distr_params
         super().__init__()
 
     def _get_distribution_class(self):
@@ -230,7 +230,8 @@ class ParametricRegressor(BaseProbaRegressor):
         y_pred = self.estimator_.predict(X).reshape(-1, 1)
 
         # Build distribution parameters
-        params = dict(self.distr_params)
+        distr_params = self.distr_params if self.distr_params is not None else {}
+        params = dict(distr_params)
         params["index"] = X.index
         params["columns"] = self._y_cols
 
