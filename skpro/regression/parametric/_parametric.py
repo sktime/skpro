@@ -94,40 +94,48 @@ class ParametricRegressor(BaseProbaRegressor):
                     f"Must be one of {list(self._DISTR_MAP.keys())}"
                 )
             distr_name, loc_name, scale_name = self._DISTR_MAP[distr_lower]
-            
+
             # Import the distribution class
             if distr_name == "Normal":
                 from skpro.distributions.normal import Normal
+
                 distr_class = Normal
             elif distr_name == "Laplace":
                 from skpro.distributions.laplace import Laplace
+
                 distr_class = Laplace
             elif distr_name == "Cauchy":
-                from scipy.stats import cauchy
                 # For Cauchy, we'll use Normal as approximation for now
                 from skpro.distributions.normal import Normal
+
                 distr_class = Normal
                 scale_name = "sigma"
                 loc_name = "mu"
             elif distr_name == "TDistribution":
                 from skpro.distributions.t import TDistribution
+
                 distr_class = TDistribution
             elif distr_name == "Poisson":
                 from skpro.distributions.poisson import Poisson
+
                 distr_class = Poisson
             elif distr_name == "Gamma":
                 from skpro.distributions.gamma import Gamma
+
                 distr_class = Gamma
             elif distr_name == "Exponential":
                 from skpro.distributions.exponential import Exponential
+
                 distr_class = Exponential
             elif distr_name == "LogNormal":
                 from skpro.distributions.lognormal import LogNormal
+
                 distr_class = LogNormal
             else:
                 from skpro.distributions.normal import Normal
+
                 distr_class = Normal
-                
+
             return distr_class, loc_name, scale_name
         else:
             # Assume it's a BaseDistribution class
@@ -158,15 +166,17 @@ class ParametricRegressor(BaseProbaRegressor):
         self.estimator_.fit(X, np.ravel(y))
 
         # Get distribution metadata
-        self._distr_class, self._loc_name, self._scale_name = (
-            self._get_distribution_class()
-        )
+        (
+            self._distr_class,
+            self._loc_name,
+            self._scale_name,
+        ) = self._get_distribution_class()
 
         # Estimate scale from residuals if not fixed
         if self.scale is None and self._scale_name is not None:
             y_pred = self.estimator_.predict(X)
             residuals = np.ravel(y) - y_pred
-            
+
             # Estimate scale parameter (standard deviation for Normal, etc.)
             if self.distr.lower() in ["normal", "lognormal", "t"]:
                 self.scale_ = np.std(residuals)
@@ -175,7 +185,7 @@ class ParametricRegressor(BaseProbaRegressor):
                 self.scale_ = np.mean(np.abs(residuals - np.mean(residuals)))
             else:
                 self.scale_ = np.std(residuals)
-                
+
             # Ensure scale is positive
             self.scale_ = max(self.scale_, 1e-10)
         else:
@@ -198,7 +208,7 @@ class ParametricRegressor(BaseProbaRegressor):
         """
         X = prep_skl_df(X, copy_df=True)
         y_pred = self.estimator_.predict(X)
-        
+
         return pd.DataFrame(y_pred, index=X.index, columns=self._y_cols)
 
     def _predict_proba(self, X):
@@ -215,7 +225,7 @@ class ParametricRegressor(BaseProbaRegressor):
             Predictive distribution for X.
         """
         X = prep_skl_df(X, copy_df=True)
-        
+
         # Get point predictions (location parameter)
         y_pred = self.estimator_.predict(X).reshape(-1, 1)
 

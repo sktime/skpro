@@ -57,7 +57,6 @@ class DummyProbaRegressor(BaseProbaRegressor):
         # --------------
         "authors": ["julian-fong"],
         "maintainers": ["julian-fong", "arnavk23"],
-
         # estimator tags
         # --------------
         "capability:multioutput": False,
@@ -93,25 +92,22 @@ class DummyProbaRegressor(BaseProbaRegressor):
         self._y_columns = y.columns
         self._mu = np.mean(y.values)
         self._sigma = np.std(y.values)
-        
+
         if self.strategy == "empirical":
             self.distribution_ = Empirical(y)
         elif self.strategy == "normal":
             self.distribution_ = Normal(self._mu, self._sigma)
         elif self.strategy == "kernel":
             from scipy.stats import gaussian_kde
-            
+
             # Fit KDE to the training data
             y_values = y.values.flatten()
             self._kde = gaussian_kde(y_values, bw_method=self.bandwidth)
-            
+
             # Sample from KDE to create empirical distribution
             np.random.seed(42)  # For reproducibility
             kde_samples = self._kde.resample(self.n_kde_samples).T
-            kde_df = pd.DataFrame(
-                kde_samples, 
-                columns=self._y_columns
-            )
+            kde_df = pd.DataFrame(kde_samples, columns=self._y_columns)
             self.distribution_ = Empirical(kde_df)
         else:
             raise ValueError(
@@ -180,7 +176,7 @@ class DummyProbaRegressor(BaseProbaRegressor):
         """
         X_ind = X.index
         X_n_rows = X.shape[0]
-        
+
         if self.strategy == "normal":
             # broadcast the mu and sigma from fit to the length of X
             mu = np.reshape((np.ones(X_n_rows) * self._mu), (-1, 1))
@@ -192,24 +188,21 @@ class DummyProbaRegressor(BaseProbaRegressor):
             empr_df = pd.concat([self._y] * X_n_rows, keys=X_ind).swaplevel()
             pred_dist = Empirical(empr_df, index=X_ind, columns=self._y_columns)
             return pred_dist
-            
+
         elif self.strategy == "kernel":
             # Sample from KDE for each prediction instance
             kde_samples_list = []
             for _ in range(X_n_rows):
                 samples = self._kde.resample(self.n_kde_samples).T
                 kde_samples_list.append(samples)
-            
+
             # Stack samples and create empirical distribution
             all_samples = np.vstack(kde_samples_list)
             sample_index = pd.MultiIndex.from_product(
-                [range(self.n_kde_samples), X_ind],
-                names=["sample", "instance"]
+                [range(self.n_kde_samples), X_ind], names=["sample", "instance"]
             ).swaplevel()
             kde_df = pd.DataFrame(
-                all_samples,
-                index=sample_index,
-                columns=self._y_columns
+                all_samples, index=sample_index, columns=self._y_columns
             )
             pred_dist = Empirical(kde_df, index=X_ind, columns=self._y_columns)
             return pred_dist

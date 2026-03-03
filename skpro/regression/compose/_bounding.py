@@ -4,12 +4,9 @@
 __author__ = ["arnavk23"]
 __all__ = ["BoundingRegressor"]
 
-import numpy as np
-import pandas as pd
 from sklearn import clone
 
 from skpro.regression.base import BaseProbaRegressor
-from skpro.utils.sklearn import prep_skl_df
 
 
 class BoundingRegressor(BaseProbaRegressor):
@@ -31,7 +28,7 @@ class BoundingRegressor(BaseProbaRegressor):
         Upper bound for predictions. If None, no upper bound is applied.
     method : str, default="truncate"
         Method to apply bounding to distributions:
-        
+
         * "truncate": uses truncated distributions (recommended)
         * "clip_mean": clips the mean only, keeps original variance
         * "delta": replaces with delta distributions at the bounds (conservative)
@@ -54,7 +51,7 @@ class BoundingRegressor(BaseProbaRegressor):
     >>>
     >>> # Create a probabilistic regressor
     >>> reg = ParametricRegressor(LinearRegression(), distr="Normal")
-    >>> 
+    >>>
     >>> # Wrap it with bounds (e.g., for positive predictions)
     >>> bounded_reg = BoundingRegressor(reg, lower=0.0)
     >>> bounded_reg.fit(X_train, y_train)
@@ -161,7 +158,7 @@ class BoundingRegressor(BaseProbaRegressor):
         elif self.method == "clip_mean":
             # Get the mean and clip it, but keep the distribution type
             mean = y_dist.mean()
-            
+
             # Clip the mean
             if self.lower is not None:
                 mean = mean.clip(lower=self.lower)
@@ -173,27 +170,29 @@ class BoundingRegressor(BaseProbaRegressor):
             # more sophisticated handling per distribution type
             try:
                 from skpro.distributions.normal import Normal
+
                 std = y_dist.std()
                 return Normal(mu=mean, sigma=std, index=X.index, columns=self._y_cols)
             except Exception:
                 # Fallback: return truncated version
                 from skpro.distributions.truncated import Truncated
+
                 return Truncated(y_dist, lower=self.lower, upper=self.upper)
 
         elif self.method == "delta":
             # Replace out-of-bounds predictions with delta distributions
             from skpro.distributions.delta import Delta
-            
+
             mean = y_dist.mean()
-            
+
             # Clip the mean
             if self.lower is not None:
                 mean = mean.clip(lower=self.lower)
             if self.upper is not None:
                 mean = mean.clip(upper=self.upper)
-            
+
             return Delta(c=mean, index=X.index, columns=self._y_cols)
-        
+
         else:
             raise ValueError(
                 f"Unknown bounding method: {self.method}. "
@@ -222,7 +221,7 @@ class BoundingRegressor(BaseProbaRegressor):
             # Clip lower bounds of intervals
             lower_cols = [col for col in pred_int.columns if "lower" in str(col)]
             pred_int[lower_cols] = pred_int[lower_cols].clip(lower=self.lower)
-            
+
             # Also clip upper bounds
             upper_cols = [col for col in pred_int.columns if "upper" in str(col)]
             pred_int[upper_cols] = pred_int[upper_cols].clip(lower=self.lower)
@@ -231,7 +230,7 @@ class BoundingRegressor(BaseProbaRegressor):
             # Clip upper bounds of intervals
             upper_cols = [col for col in pred_int.columns if "upper" in str(col)]
             pred_int[upper_cols] = pred_int[upper_cols].clip(upper=self.upper)
-            
+
             # Also clip lower bounds
             lower_cols = [col for col in pred_int.columns if "lower" in str(col)]
             pred_int[lower_cols] = pred_int[lower_cols].clip(upper=self.upper)
@@ -278,6 +277,7 @@ class BoundingRegressor(BaseProbaRegressor):
             Parameters to create testing instances of the class.
         """
         from sklearn.linear_model import LinearRegression
+
         from skpro.regression.parametric import ParametricRegressor
 
         base_est = ParametricRegressor(LinearRegression(), distr="Normal")
