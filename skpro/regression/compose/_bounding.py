@@ -1,4 +1,5 @@
 """Bounding wrapper for probabilistic regressors."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["arnavk23"]
@@ -177,9 +178,7 @@ class BoundingRegressor(BaseProbaRegressor):
                 # Fallback: return truncated version
                 from skpro.distributions.truncated import TruncatedDistribution
 
-                return TruncatedDistribution(
-                    y_dist, lower=self.lower, upper=self.upper
-                )
+                return TruncatedDistribution(y_dist, lower=self.lower, upper=self.upper)
 
         elif self.method == "delta":
             # Replace out-of-bounds predictions with delta distributions
