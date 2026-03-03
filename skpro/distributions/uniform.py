@@ -86,6 +86,34 @@ class Uniform(BaseDistribution):
         in_bounds = np.logical_and(x >= lower, x <= upper)
         pdf_arr = in_bounds / (upper - lower)
         return pdf_arr
+    
+    def _log_pdf(self, x):
+        """Logarithmic probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self.loc``
+            Values to evaluate the log-pdf at.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self.loc``
+            Log-probabilities of x.
+        """
+        import numpy as np
+
+        # Retrieve parameters (skpro typically broadcast these to match x's shape)
+        lower = self.lower
+        upper = self.upper
+
+        in_bounds = (x >= lower) & (x <= upper)
+
+        # Calculate exact log pdf and handle out-of-bounds without RuntimeWarning
+        return np.where(
+            in_bounds,
+            -np.log(upper - lower),
+            -np.inf
+        )
 
     def _cdf(self, x):
         """Cumulative distribution function.
