@@ -17,8 +17,13 @@ ALLOWED_MTYPES = [
     "numpy2D",
 ]
 # include polars eager table if the soft dependency is installed
-if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
+try:
+    import polars  # noqa: F401
+    import pyarrow  # noqa: F401
+
     ALLOWED_MTYPES.append("polars_eager_table")
+except ImportError:
+    pass  # polars and pyarrow not available
 
 
 class BaseProbaRegressor(BaseEstimator):
