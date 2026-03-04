@@ -1,11 +1,10 @@
 import numpy as np
 import pandas as pd
-
+from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import FunctionTransformer
 
 from skpro.regression.compose import Pipeline
 from skpro.regression.residual import ResidualDouble
-from sklearn.linear_model import LinearRegression
 
 
 def test_transformer_chaining_in_predict():
@@ -16,11 +15,13 @@ def test_transformer_chaining_in_predict():
 
     exp = FunctionTransformer(np.exp)
 
-    pipe = Pipeline([
-    ("exp1", exp),
-    ("exp2", exp),
-    ("reg", ResidualDouble(LinearRegression())),
-])
+    pipe = Pipeline(
+        [
+            ("exp1", exp),
+            ("exp2", exp),
+            ("reg", ResidualDouble(LinearRegression())),
+        ]
+    )
 
     pipe.fit(X, y)
 
@@ -33,3 +34,4 @@ def test_transformer_chaining_in_predict():
 
     assert np.allclose(Xt.values, expected.values)
     assert len(y_pred) == len(y)
+    
