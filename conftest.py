@@ -14,14 +14,14 @@ __author__ = ["fkiraly"]
 
 import os
 
-from skbase.utils.dependencies import _check_soft_dependencies
-
 # used to prevent tkinter related errors in CI
-if _check_soft_dependencies("matplotlib", severity="none"):
-    if os.environ.get("GITHUB_ACTIONS") == "true":
+if os.environ.get("GITHUB_ACTIONS") == "true":
+    try:
         import matplotlib
 
         matplotlib.use("Agg")
+    except ImportError:
+        pass
 
 
 def pytest_addoption(parser):

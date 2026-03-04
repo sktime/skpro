@@ -292,8 +292,9 @@ _extend_conversions(
 )
 
 
-if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
-    import polars as pl
+try:
+    import polars as pl  # noqa: F401
+    import pyarrow  # noqa: F401
 
     from skpro.datatypes._adapter.polars import (
         convert_pandas_to_polars_with_index,
@@ -361,3 +362,5 @@ if _check_soft_dependencies(["polars", "pyarrow"], severity="none"):
     _extend_conversions(
         "polars_lazy_table", "pd_DataFrame_Table", convert_dict, MTYPE_LIST_TABLE
     )
+except ImportError:
+    pass  # polars and pyarrow not available
