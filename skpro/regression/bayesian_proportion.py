@@ -20,8 +20,6 @@ class BayesianProportionEstimator(BaseProbaRegressor):
         # --------------
         "authors": ["meraldoantonio"],
         "python_dependencies": ["scipy", "matplotlib"],
-        "capability:multioutput": False,
-        "capability:missing": True,
         # estimator tags
         # --------------
         "capability:multioutput": False,  # can the estimator handle multi-output data?
