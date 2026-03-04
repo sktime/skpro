@@ -35,6 +35,7 @@ Continuous support - full reals
     :toctree: auto_generated/
     :template: class.rst
 
+    Cauchy
     Laplace
     Logistic
     Normal
