@@ -61,15 +61,6 @@ class Hurdle(BaseDistribution):
         index=None,
         columns=None,
     ):
-        if isinstance(p, np.ndarray) and p.ndim == 1:
-            raise ValueError("p must be a scalar or a 2D array.")
-        elif isinstance(p, np.ndarray) and p.ndim == 2:
-            if p.shape[0] != distribution.shape[0]:
-                raise ValueError(
-                    "If p is a 2D array, it must match the shape of the distribution. "
-                    f"Got p.shape={p.shape} but distribution.shape={distribution.shape}"
-                )
-
         self.p = p
         self.distribution = distribution
 
@@ -100,6 +91,15 @@ class Hurdle(BaseDistribution):
         inner_paramtype = distribution.get_tag("distr:paramtype", "parametric")
         if inner_paramtype != "parametric":
             self.set_tags(**{"distr:paramtype": inner_paramtype})
+
+        if isinstance(p, np.ndarray) and p.ndim == 1:
+            raise ValueError("p must be a scalar or a 2D array.")
+        elif isinstance(p, np.ndarray) and p.ndim == 2:
+            if p.shape[0] != distribution.shape[0]:
+                raise ValueError(
+                    "If p is a 2D array, it must match the shape of the distribution. "
+                    f"Got p.shape={p.shape} but distribution.shape={distribution.shape}"
+                )
 
     # NB: not sure how much we need to conform with sklearn, but according to their
     # docs we shouldn't modify the input variables:
