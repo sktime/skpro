@@ -34,4 +34,3 @@ def test_transformer_chaining_in_predict():
 
     assert np.allclose(Xt.values, expected.values)
     assert len(y_pred) == len(y)
-    
