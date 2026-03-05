@@ -44,7 +44,7 @@ class KernelMixture(BaseDistribution):
         Currently, this must be a 1D array shared across all marginals.
         Future versions may support 2D arrays of shape ``(n_instances, n_support)``
         for varying support per marginal.
-    bandwidth : float, or str ``"scott"`` or ``"silverman"``, default=1.0
+    h : float, or str ``"scott"`` or ``"silverman"``, default=1.0
         Bandwidth of the kernel.
         If float, used directly as the bandwidth parameter ``h``.
         If ``"scott"``, bandwidth is computed as
@@ -84,7 +84,7 @@ class KernelMixture(BaseDistribution):
     Scalar distribution with built-in Gaussian kernel:
 
     >>> support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
-    >>> km = KernelMixture(support=support, bandwidth=0.5, kernel="gaussian")
+    >>> km = KernelMixture(support=support, h=0.5, kernel="gaussian")
     >>> float(km.mean())
     2.0
     >>> pdf_val = km.pdf(1.5)
@@ -94,7 +94,7 @@ class KernelMixture(BaseDistribution):
     >>> from skpro.distributions.normal import Normal
     >>> km_custom = KernelMixture(
     ...     support=[0.0, 1.0, 2.0],
-    ...     bandwidth=0.5,
+    ...     h=0.5,
     ...     kernel=Normal(mu=0, sigma=1),
     ... )
 
@@ -102,7 +102,7 @@ class KernelMixture(BaseDistribution):
 
     >>> km_weighted = KernelMixture(
     ...     support=[0.0, 1.0, 2.0],
-    ...     bandwidth=0.5,
+    ...     h=0.5,
     ...     weights=[0.1, 0.3, 0.6],
     ... )
     >>> pdf_val = km_weighted.pdf(1.0)
@@ -136,7 +136,7 @@ class KernelMixture(BaseDistribution):
     def __init__(
         self,
         support,
-        bandwidth=1.0,
+        h=1.0,
         kernel="gaussian",
         weights=None,
         random_state=None,
@@ -144,7 +144,7 @@ class KernelMixture(BaseDistribution):
         columns=None,
     ):
         self.support = support
-        self.bandwidth = bandwidth
+        self.h = h
         self.kernel = kernel
         self.weights = weights
         self.random_state = random_state
@@ -190,7 +190,7 @@ class KernelMixture(BaseDistribution):
         self._support = np.asarray(support, dtype=float).ravel()
         n = len(self._support)
 
-        if isinstance(bandwidth, str):
+        if isinstance(h, str):
             import warnings
 
             with warnings.catch_warnings():
@@ -198,19 +198,19 @@ class KernelMixture(BaseDistribution):
                 std = np.std(self._support, ddof=1)
             if np.isnan(std) or std < 1e-15:
                 std = 1.0
-            if bandwidth == "scott":
-                self._bandwidth = n ** (-1.0 / 5.0) * std
-            elif bandwidth == "silverman":
-                self._bandwidth = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
+            if h == "scott":
+                self._h = n ** (-1.0 / 5.0) * std
+            elif h == "silverman":
+                self._h = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
             else:
                 raise ValueError(
-                    f"Unknown bandwidth rule '{bandwidth}'. "
+                    f"Unknown h rule '{h}'. "
                     "Must be a float, 'scott', or 'silverman'."
                 )
         else:
-            self._bandwidth = float(bandwidth)
-            if self._bandwidth <= 0:
-                raise ValueError(f"bandwidth must be positive, got {self._bandwidth}.")
+            self._h = float(h)
+            if self._h <= 0:
+                raise ValueError(f"h must be positive, got {self._h}.")
 
         if weights is None:
             self._weights = np.ones(n) / n
@@ -359,7 +359,7 @@ class KernelMixture(BaseDistribution):
         For a kernel mixture, by the law of total variance:
         :math:`\mathrm{Var}[X] = h^2 \mathrm{Var}[K] + \sum_i w_i (x_i - \mu)^2`
         """
-        h = self._bandwidth
+        h = self._h
         mean_val = np.sum(self._weights * self._support)
         weighted_var = np.sum(self._weights * (self._support - mean_val) ** 2)
         kernel_var = self._kernel_variance()
@@ -370,7 +370,7 @@ class KernelMixture(BaseDistribution):
 
     def _pdf(self, x):
         """Probability density function."""
-        h = self._bandwidth
+        h = self._h
         support = self._support
         weights = self._weights
 
@@ -396,7 +396,7 @@ class KernelMixture(BaseDistribution):
 
     def _cdf(self, x):
         """Cumulative distribution function."""
-        h = self._bandwidth
+        h = self._h
         support = self._support
         weights = self._weights
 
@@ -414,7 +414,7 @@ class KernelMixture(BaseDistribution):
     def _sample(self, n_samples=None):
         """Sample from the distribution."""
         rng = self._rng
-        h = self._bandwidth
+        h = self._h
         support = self._support
         weights = self._weights
 
@@ -478,7 +478,7 @@ class KernelMixture(BaseDistribution):
 
         return KernelMixture(
             support=self.support,
-            bandwidth=self.bandwidth,
+            h=self.h,
             kernel=self.kernel,
             weights=self.weights,
             random_state=self.random_state,
@@ -490,7 +490,7 @@ class KernelMixture(BaseDistribution):
         """Subset distribution to a single scalar element."""
         return KernelMixture(
             support=self.support,
-            bandwidth=self.bandwidth,
+            h=self.h,
             kernel=self.kernel,
             weights=self.weights,
             random_state=self.random_state,
@@ -501,30 +501,30 @@ class KernelMixture(BaseDistribution):
         """Return testing parameter settings for the estimator."""
         params1 = {
             "support": [0.0, 1.0, 2.0, 3.0, 4.0],
-            "bandwidth": 0.5,
+            "h": 0.5,
             "kernel": "gaussian",
         }
         params2 = {
             "support": [0.0, 1.0, 2.0, 3.0, 4.0],
-            "bandwidth": 1.0,
+            "h": 1.0,
             "kernel": "gaussian",
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }
         params3 = {
             "support": [-1.0, 0.0, 1.0, 2.0],
-            "bandwidth": 0.8,
+            "h": 0.8,
             "kernel": "epanechnikov",
             "weights": [0.1, 0.4, 0.4, 0.1],
         }
         params4 = {
             "support": np.linspace(-2, 2, 20),
-            "bandwidth": "scott",
+            "h": "scott",
             "kernel": "tophat",
         }
         params5 = {
             "support": [0.0, 1.0, 2.0],
-            "bandwidth": 0.5,
+            "h": 0.5,
             "kernel": "cosine",
             "index": pd.RangeIndex(2),
             "columns": pd.Index(["x"]),
