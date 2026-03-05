@@ -73,6 +73,7 @@ class KernelMixture(BaseDistribution):
             own RNG is used for noise generation and is **not** controlled
             by ``random_state``.  Only the support-point selection is
             reproducible in that case.
+
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
