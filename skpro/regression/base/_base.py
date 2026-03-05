@@ -933,8 +933,8 @@ class BaseProbaRegressor(BaseEstimator):
         Primarily used as helper for probabilistic predict-like methods.
         Assumes that _check_X_y has been called, and self._y_metadata set.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         method : str, optional (default="predict")
             method for which to return column names
             one of "predict", "predict_interval", "predict_quantiles", "predict_var"

@@ -41,6 +41,7 @@ Continuous support - full reals
     SkewNormal
     TDistribution
     TruncatedNormal
+    Uniform
 
 
 Continuous support - non-negative reals
@@ -54,17 +55,26 @@ Continuous support - non-negative reals
 
     Alpha
     Beta
+    BurrIII
+    BurrXII
     ChiSquared
     Exponential
     Erlang
+    FatigueLife
+    FDist
     Fisk
     Gamma
+    GeneralizedPareto
+    Levy
+    LogGamma
     HalfCauchy
     HalfLogistic
     HalfNormal
     InverseGamma
+    InverseGaussian
     LogLaplace
     Pareto
+    TruncatedPareto
     Weibull
 
 
@@ -78,9 +88,11 @@ Integer support
     :template: class.rst
 
     Binomial
-    Hurdle
+    Geometric
     NegativeBinomial
     Poisson
+    ZeroInflated
+    Skellam
 
 Non-parametric and empirical distributions
 ------------------------------------------
@@ -104,8 +116,8 @@ Non-parametric and empirical distributions
 Composite distributions
 -----------------------
 
-Parametric families
-~~~~~~~~~~~~~~~~~~~
+Transformation composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -114,8 +126,21 @@ Parametric families
     :template: class.rst
 
     MeanScale
-    TruncatedDistribution
+    TransformedDistribution
+
+Truncated and inflated distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    Hurdle
     LeftTruncated
+    TruncatedDistribution
+    ZeroInflated
 
 Mixture composition
 ~~~~~~~~~~~~~~~~~~~
@@ -127,17 +152,6 @@ Mixture composition
     :template: class.rst
 
     Mixture
-
-Transformation composition
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. currentmodule:: skpro.distributions
-
-.. autosummary::
-    :toctree: auto_generated/
-    :template: class.rst
-
-    TransformedDistribution
 
 Sampling and multivariate composition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
