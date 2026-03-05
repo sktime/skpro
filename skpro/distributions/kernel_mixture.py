@@ -58,6 +58,8 @@ class KernelMixture(BaseDistribution):
         unit-scale kernel. The distribution must be scalar (0D).
     weights : array-like or None, default=None
         Weights for each support point. If None, uniform weights are used.
+        Must be same length as ``support``.
+        All weights must be non-negative and sum to a positive value.
         Internally, weights are normalized to sum to 1 if they do not.
     random_state : int, np.random.Generator, or None, default=None
         Controls randomness for reproducible sampling.
