@@ -197,7 +197,7 @@ class MDNRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["joshdunnlime"],
-        "python_dependencies": ["torch>=2.0.0", "pytorch-optimizer>=3.2.0"],
+        "python_dependencies": ["torch>=2.0.0", "pytorch_optimizer>=3.2.0"],
         # estimator tags
         # --------------
         "capability:multioutput": True,
