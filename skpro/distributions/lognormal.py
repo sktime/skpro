@@ -1,8 +1,6 @@
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Log-Normal probability distribution."""
 
-__author__ = ["bhavikar04", "fkiraly"]
-
 import numpy as np
 import pandas as pd
 from scipy.integrate import quad

@@ -216,7 +216,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
             estimator = self.estimator.clone().set_params(**params)
             # Refit model with best parameters.
             if self.refit:
-                estimator.fit(X, y)
+                estimator.fit(X, y, C=C)
             self.n_best_estimators_.append((rank, estimator))
             # Save score
             score = results[f"mean_{scoring_name}"].iloc[i]
