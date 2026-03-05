@@ -152,6 +152,7 @@ Mixture composition
     :toctree: auto_generated/
     :template: class.rst
 
+    KernelMixture
     Mixture
 
 Sampling and multivariate composition
