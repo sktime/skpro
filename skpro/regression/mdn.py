@@ -1,7 +1,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Mixture Density Network probabilistic regressor."""
 
-__author__ = ["koaning", "jdunn9516"]
+__author__ = ["joshdunnlime"]
 
 from skpro.distributions.normal_mixture import NormalMixture
 from skpro.regression.base import BaseProbaRegressor
@@ -322,9 +322,11 @@ class MDNRegressor(BaseProbaRegressor):
         model = model.to(device)  # type: ignore[attr-defined]
 
         optimizer_cls = self._get_optimizer_cls()
+
         optimizer_kwargs = (
             {} if self.optimizer_kwargs is None else dict(self.optimizer_kwargs)
         )
+
         optimiser = optimizer_cls(
             model.parameters(),
             lr=self.lr,
@@ -449,6 +451,7 @@ class MDNRegressor(BaseProbaRegressor):
             "epochs": 5,
             "random_state": 42,
         }
+
         params1 = {
             "n_gaussians": 2,
             "hidden_dims": [4, 4],
@@ -456,6 +459,7 @@ class MDNRegressor(BaseProbaRegressor):
             "batch_size": 10,
             "random_state": 42,
         }
+
         params2 = {
             "n_gaussians": 2,
             "hidden_dims": [8],
@@ -463,6 +467,7 @@ class MDNRegressor(BaseProbaRegressor):
             "activation": "softplus",
             "random_state": 42,
         }
+
         params3 = {
             "n_gaussians": 2,
             "hidden_dims": [8],
@@ -470,6 +475,7 @@ class MDNRegressor(BaseProbaRegressor):
             "input_noise_std": 0.05,
             "random_state": 42,
         }
+
         params4 = {
             "n_gaussians": 2,
             "hidden_dims": [8],
@@ -479,6 +485,7 @@ class MDNRegressor(BaseProbaRegressor):
             "noise_schedule": "rule_of_thumb",
             "random_state": 42,
         }
+
         params5 = {
             "n_gaussians": 2,
             "hidden_dims": [8],
