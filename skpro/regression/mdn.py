@@ -6,6 +6,7 @@ __author__ = ["joshdunnlime"]
 import numpy as np
 
 from skpro.distributions.normal_mixture import NormalMixture
+from skpro.regression._bandwidth import bw_isj_1d, bw_silverman_1d
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -22,16 +23,72 @@ def _noise_schedule_scale(n_samples, total_dim, schedule="silverman"):
             "Unknown method "
             f"'{schedule}'. Valid options are ['constant', 'scott', 'silverman']."
         )
+
     if n_samples <= 0:
         raise ValueError("n_samples must be positive.")
+
     if total_dim < 0:
         raise ValueError("total_dim must be non-negative.")
 
     if schedule == "constant":
         return 1.0
+
     if schedule == "scott":
         return float(n_samples ** (-1.0 / (total_dim + 4.0)))
+
     return float((n_samples * (total_dim + 2.0) / 4.0) ** (-1.0 / (total_dim + 4.0)))
+
+
+def _noise_schedule_scale_isj(X, y=None):
+    """Return ISJ-derived data-driven noise scale for MDN."""
+
+    def _to_2d_float(arr, name):
+        out = np.asarray(arr, dtype=float)
+
+        if out.ndim == 1:
+            out = out.reshape(-1, 1)
+
+        if out.ndim != 2:
+            raise ValueError(f"{name} must be 1D or 2D array-like.")
+
+        if not np.all(np.isfinite(out)):
+            raise ValueError(f"{name} must contain only finite values.")
+
+        return out
+
+    X_arr = _to_2d_float(X, "X")
+    arrays = [X_arr]
+
+    if y is not None:
+        arrays.append(_to_2d_float(y, "y"))
+
+    scales = []
+
+    for arr in arrays:
+        for j in range(arr.shape[1]):
+            col = arr[:, j]
+
+            if col.size <= 1:
+                continue
+
+            sigma = np.std(col, ddof=1)
+
+            if not np.isfinite(sigma) or sigma <= 0:
+                continue
+
+            col_std = (col - np.mean(col)) / sigma
+            h = bw_isj_1d(col_std, fallback="silverman")
+
+            if not np.isfinite(h) or h <= 0:
+                h = bw_silverman_1d(col_std)
+
+            if np.isfinite(h) and h > 0:
+                scales.append(float(h))
+
+    if len(scales) == 0:
+        return 1.0
+
+    return float(np.median(scales))
 
 
 class MDNRegressor(BaseProbaRegressor):
@@ -101,6 +158,8 @@ class MDNRegressor(BaseProbaRegressor):
         * ``"constant"``: no scaling, uses ``h_x`` and ``h_y`` directly
         * ``"silverman"``: scales by Silverman multivariate factor
         * ``"scott"``: scales by Scott factor :math:`n^{-1/(4+d)}`
+        * ``"isj"``: data-driven scaling via Improved Sheather-Jones bandwidth
+            over standardized feature and target marginals.
 
     batch_size : int or None, optional, default=None
         Mini-batch size for training. If None, full-batch training is used
@@ -138,8 +197,7 @@ class MDNRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["joshdunnlime"],
-        "python_dependencies": ["torch", "pytorch_optimizer"],
-        #
+        "python_dependencies": ["torch>=2.0.0", "pytorch-optimizer>=3.2.0"],
         # estimator tags
         # --------------
         "capability:multioutput": True,
@@ -191,6 +249,15 @@ class MDNRegressor(BaseProbaRegressor):
         Noise Regularization for Conditional Density Estimation by Rothfuss
         et al - https://arxiv.org/pdf/1907.08982
         """
+        if str(self.noise_schedule).lower() == "isj":
+            if X is None or y is None:
+                raise ValueError(
+                    "noise_schedule='isj' requires X and y to compute data-driven "
+                    "scale."
+                )
+
+            return _noise_schedule_scale_isj(X=X, y=y)
+
         return _noise_schedule_scale(
             n_samples=n_samples, total_dim=total_dim, schedule=self.noise_schedule
         )
@@ -378,14 +445,12 @@ class MDNRegressor(BaseProbaRegressor):
         y_arr = y.values.astype("float32")
         n_samples = len(X)
         total_dim = self._input_dim + self._output_dim
-
         noise_scale = self._noise_scale(
             n_samples=n_samples,
             total_dim=total_dim,
             X=X_arr,
             y=y_arr,
         )
-
         input_noise_std *= noise_scale
         target_noise_std *= noise_scale
 
