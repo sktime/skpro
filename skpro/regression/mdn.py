@@ -3,8 +3,35 @@
 
 __author__ = ["joshdunnlime"]
 
+import numpy as np
+
 from skpro.distributions.normal_mixture import NormalMixture
 from skpro.regression.base import BaseProbaRegressor
+
+
+def _noise_schedule_scale(n_samples, total_dim, schedule="silverman"):
+    """Return sample-size based noise scaling factor."""
+    if not isinstance(schedule, str):
+        raise TypeError("noise_schedule must be a string.")
+    schedule = schedule.lower()
+    n_samples = int(n_samples)
+    total_dim = int(total_dim)
+
+    if schedule not in {"constant", "scott", "silverman"}:
+        raise ValueError(
+            "Unknown method "
+            f"'{schedule}'. Valid options are ['constant', 'scott', 'silverman']."
+        )
+    if n_samples <= 0:
+        raise ValueError("n_samples must be positive.")
+    if total_dim < 0:
+        raise ValueError("total_dim must be non-negative.")
+
+    if schedule == "constant":
+        return 1.0
+    if schedule == "scott":
+        return float(n_samples ** (-1.0 / (total_dim + 4.0)))
+    return float((n_samples * (total_dim + 2.0) / 4.0) ** (-1.0 / (total_dim + 4.0)))
 
 
 class MDNRegressor(BaseProbaRegressor):
@@ -45,13 +72,17 @@ class MDNRegressor(BaseProbaRegressor):
     weight_decay : float, optional, default=0.0
         L2 regularisation coefficient (weight decay) for the optimiser.
 
-    optimizer : str or class, optional, default="SOAP"
+    optimizer : str or class, optional, default="ADAM"
         Optimizer used for training.
 
-        * ``"SOAP"``: `SOAP` from ``pytorch_optimizer``
         * ``"ADAM"``: ``torch.optim.Adam``
+        * ``"SOAP"``: `SOAP` from ``pytorch_optimizer``
 
         Alternatively, users can pass a ``torch.optim.Optimizer`` class directly.
+
+        Note: SOAP is incompatible with Apple MPS device. If ``device="auto"``
+        selects MPS and ``optimizer="SOAP"``, MPS CPU fallback will be enabled
+        automatically with a warning.
 
     optimizer_kwargs : dict or None, optional, default=None
         Additional keyword arguments forwarded to the optimizer constructor.
@@ -65,12 +96,11 @@ class MDNRegressor(BaseProbaRegressor):
         training only. Set to ``0.0`` to disable input noise regularization on ``y``.
 
     noise_schedule : str, optional, default="constant"
-        Schedule for scaling noise intensity as a function of sample size ``n`` and
-        total dimensionality ``d = d_x + d_y``.
+        Schedule for scaling noise intensity.
 
         * ``"constant"``: no scaling, uses ``h_x`` and ``h_y`` directly
-        * ``"rule_of_thumb"``: scales by :math:`n^{-1/(4+d)}`
-        * ``"sqrt_decay"``: scales by :math:`n^{-1/(1+d)}`
+        * ``"silverman"``: scales by Silverman multivariate factor
+        * ``"scott"``: scales by Scott factor :math:`n^{-1/(4+d)}`
 
     batch_size : int or None, optional, default=None
         Mini-batch size for training. If None, full-batch training is used
@@ -129,7 +159,7 @@ class MDNRegressor(BaseProbaRegressor):
         epochs=1000,
         lr=0.01,
         weight_decay=0.0,
-        optimizer="SOAP",
+        optimizer="ADAM",
         optimizer_kwargs=None,
         input_noise_std=0.0,
         target_noise_std=0.0,
@@ -155,23 +185,14 @@ class MDNRegressor(BaseProbaRegressor):
 
         super().__init__()
 
-    def _noise_scale(self, n_samples, total_dim):
+    def _noise_scale(self, n_samples, total_dim, X=None, y=None):
         """Return schedule-based multiplier for noise regularization.
 
         Noise Regularization for Conditional Density Estimation by Rothfuss
         et al - https://arxiv.org/pdf/1907.08982
         """
-        schedule = self.noise_schedule
-
-        if schedule == "constant":
-            return 1.0
-        if schedule == "rule_of_thumb":
-            return n_samples ** (-1.0 / (4.0 + total_dim))
-        if schedule == "sqrt_decay":
-            return n_samples ** (-1.0 / (1.0 + total_dim))
-        raise ValueError(
-            "Unknown noise_schedule "
-            f"'{schedule}'. Valid options: ['constant', 'rule_of_thumb', 'sqrt_decay']"
+        return _noise_schedule_scale(
+            n_samples=n_samples, total_dim=total_dim, schedule=self.noise_schedule
         )
 
     def _resolve_device(self):
@@ -185,6 +206,7 @@ class MDNRegressor(BaseProbaRegressor):
         import torch
 
         device = self.device
+
         if device == "auto":
             if torch.cuda.is_available():
                 return torch.device("cuda")
@@ -259,7 +281,7 @@ class MDNRegressor(BaseProbaRegressor):
 
             if opt_name == "SOAP":
                 try:
-                    from pytorch_optimizer import SOAP
+                    from pytorch_optimizer.optimizer.soap import SOAP
                 except ModuleNotFoundError as exc:
                     raise ModuleNotFoundError(
                         "optimizer='SOAP' requires package 'pytorch_optimizer'."
@@ -280,6 +302,37 @@ class MDNRegressor(BaseProbaRegressor):
             "torch.optim.Optimizer class."
         )
 
+    def _handle_mps_soap_compatibility(self, device):
+        """Handle MPS + SOAP compatibility issue.
+
+        SOAP optimizer uses operations not supported on Apple's MPS device.
+        This method checks if we're using MPS with SOAP and enables CPU fallback.
+
+        Parameters
+        ----------
+        device : torch.device
+            The device being used for training.
+        """
+        import os
+        import warnings
+
+        optimizer = self.optimizer
+        is_soap = isinstance(optimizer, str) and optimizer.upper() == "SOAP"
+
+        if device.type == "mps" and is_soap:
+            # Set MPS fallback environment variable
+            os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
+            warnings.warn(
+                "SOAP optimizer is incompatible with Apple MPS device. "
+                "The SOAP optimizer uses torch.linalg.eigh which is not implemented "
+                "for MPS. Enabling CPU fallback (PYTORCH_ENABLE_MPS_FALLBACK=1) for "
+                "unsupported operations. This may be slower per epoch than using "
+                "device='msp' though convergence may be faster with SOAP than ADAM.",
+                UserWarning,
+                stacklevel=3,
+            )
+
     def _fit(self, X, y, C=None):
         """Fit regressor to training data.
 
@@ -297,7 +350,6 @@ class MDNRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        import numpy as np
         import torch
 
         self._y_cols = y.columns
@@ -322,17 +374,27 @@ class MDNRegressor(BaseProbaRegressor):
                 f"but found {self.target_noise_std}"
             )
 
+        X_arr = X.values.astype("float32")
+        y_arr = y.values.astype("float32")
         n_samples = len(X)
         total_dim = self._input_dim + self._output_dim
-        noise_scale = self._noise_scale(n_samples=n_samples, total_dim=total_dim)
+
+        noise_scale = self._noise_scale(
+            n_samples=n_samples,
+            total_dim=total_dim,
+            X=X_arr,
+            y=y_arr,
+        )
+
         input_noise_std *= noise_scale
         target_noise_std *= noise_scale
 
         device = self._resolve_device()
 
+        # Handle MPS + SOAP compatibility
+        self._handle_mps_soap_compatibility(device)
+
         # convert to tensors
-        X_arr = X.values.astype("float32")
-        y_arr = y.values.astype("float32")
         X_t = torch.tensor(X_arr, dtype=torch.float32, device=device)
         y_t = torch.tensor(y_arr, dtype=torch.float32, device=device)
 
@@ -510,7 +572,7 @@ class MDNRegressor(BaseProbaRegressor):
             "epochs": 5,
             "input_noise_std": 0.05,
             "target_noise_std": 0.02,
-            "noise_schedule": "rule_of_thumb",
+            "noise_schedule": "silverman",
             "random_state": 42,
         }
 

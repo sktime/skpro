@@ -152,6 +152,7 @@ Mixture composition
     :template: class.rst
 
     Mixture
+    NormalMixture
 
 Sampling and multivariate composition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
