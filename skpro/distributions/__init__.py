@@ -30,6 +30,7 @@ __all__ = [
     "Mixture",
     "NegativeBinomial",
     "Normal",
+    "NormalMixture",
     "Pareto",
     "Poisson",
     "QPD_Empirical",
@@ -72,6 +73,7 @@ from skpro.distributions.meanscale import MeanScale
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.negative_binomial import NegativeBinomial
 from skpro.distributions.normal import Normal
+from skpro.distributions.normal_mixture import NormalMixture
 from skpro.distributions.pareto import Pareto
 from skpro.distributions.poisson import Poisson
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
