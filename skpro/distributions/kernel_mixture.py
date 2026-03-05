@@ -41,9 +41,7 @@ class KernelMixture(BaseDistribution):
     ----------
     support : array-like, 1D
         Support points (data) on which the kernel density is centered.
-        Currently, this must be a 1D array shared across all marginals.
-        Future versions may support 2D arrays of shape ``(n_instances, n_support)``
-        for varying support per marginal.
+        A 1D array, support points are shared across all marginals.
     h : float, or str ``"scott"`` or ``"silverman"``, default=1.0
         Bandwidth of the kernel.
         If float, used directly as the bandwidth parameter ``h``.
