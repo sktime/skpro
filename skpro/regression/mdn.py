@@ -29,9 +29,12 @@ class MDNRegressor(BaseProbaRegressor):
         Sizes of hidden layers in the backbone network. If None, defaults
         to ``[64, 32]``. Each entry creates one fully-connected hidden layer.
 
-    activation : str, optional, default="relu"
+    activation : str, class, instance, or callable, optional, default="relu"
         Activation function for hidden layers.
-        Options: ``"relu"``, ``"softplus"``, ``"tanh"``.
+        String options: ``"relu"``, ``"elu"``, ``"softplus"``, ``"tanh"``.
+        Users may also pass:
+        a ``torch.nn.Module`` class, a ``torch.nn.Module`` instance,
+        or a zero-argument callable returning a ``torch.nn.Module``.
 
     epochs : int, optional, default=1000
         Number of training epochs.
@@ -105,7 +108,7 @@ class MDNRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["joshdunnlime"],
-        "python_dependencies": ["torch", "pytorch-optimizer"],
+        "python_dependencies": ["torch", "pytorch_optimizer"],
         #
         # estimator tags
         # --------------
@@ -191,31 +194,56 @@ class MDNRegressor(BaseProbaRegressor):
                 return torch.device("cpu")
         return torch.device(device)
 
-    def _get_activation_cls(self):
-        """Return the PyTorch activation class for the configured activation.
+    def _get_activation_factory(self):
+        """Return a zero-argument activation factory for hidden layers.
 
         Returns
         -------
-        type
-            Activation module class.
+        callable
+            Zero-argument callable returning a ``torch.nn.Module`` instance.
         """
+        from copy import deepcopy
+        from inspect import isclass
+
         import torch.nn as nn
 
         activations = {
             "relu": nn.ReLU,
+            "elu": nn.ELU,
             "softplus": nn.Softplus,
             "tanh": nn.Tanh,
         }
 
-        act_name = self.activation
+        activation = self.activation
 
-        if act_name not in activations:
-            raise ValueError(
-                f"Unknown activation '{act_name}'. "
-                f"Valid options: {list(activations.keys())}"
-            )
+        if isinstance(activation, str):
+            act_name = activation.lower()
+            if act_name not in activations:
+                raise ValueError(
+                    f"Unknown activation '{activation}'. "
+                    f"Valid string options: {list(activations.keys())}"
+                )
+            return activations[act_name]
 
-        return activations[act_name]
+        if isclass(activation) and issubclass(activation, nn.Module):
+            return activation
+
+        if isinstance(activation, nn.Module):
+            return lambda: deepcopy(activation)
+
+        if callable(activation):
+            probe = activation()
+            if not isinstance(probe, nn.Module):
+                raise TypeError(
+                    "activation callable must return a torch.nn.Module instance."
+                )
+            return activation
+
+        raise TypeError(
+            "activation must be a string, torch.nn.Module class, "
+            "torch.nn.Module instance, or zero-argument callable returning "
+            "torch.nn.Module."
+        )
 
     def _get_optimizer_cls(self):
         """Resolve optimizer class from string alias or user-provided class."""
@@ -316,7 +344,7 @@ class MDNRegressor(BaseProbaRegressor):
             hidden_dims=hidden_dims,
             output_dim=self._output_dim,
             n_gaussians=self.n_gaussians,
-            activation_cls=self._get_activation_cls(),
+            activation_factory=self._get_activation_factory(),
         )
 
         model = model.to(device)  # type: ignore[attr-defined]
@@ -496,7 +524,9 @@ class MDNRegressor(BaseProbaRegressor):
         return [params0, params1, params2, params3, params4, params5]
 
 
-def _build_mdn_model(input_dim, hidden_dims, output_dim, n_gaussians, activation_cls):
+def _build_mdn_model(
+    input_dim, hidden_dims, output_dim, n_gaussians, activation_factory
+):
     """Build a Mixture Density Network PyTorch module.
 
     Parameters
@@ -509,8 +539,8 @@ def _build_mdn_model(input_dim, hidden_dims, output_dim, n_gaussians, activation
         Number of output dimensions.
     n_gaussians : int
         Number of Gaussian mixture components.
-    activation_cls : type
-        Activation function class (subclass of ``torch.nn.Module``).
+    activation_factory : callable
+        Zero-argument callable returning a ``torch.nn.Module``.
 
     Returns
     -------
@@ -526,7 +556,7 @@ def _build_mdn_model(input_dim, hidden_dims, output_dim, n_gaussians, activation
     prev_dim = input_dim
     for h_dim in hidden_dims:
         layers.append(nn.Linear(prev_dim, h_dim))
-        layers.append(activation_cls())
+        layers.append(activation_factory())
         prev_dim = h_dim
 
     backbone = nn.Sequential(*layers)

@@ -184,6 +184,12 @@ class NormalMixture(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             pdf values at the given points
         """
+        x = np.asarray(x, dtype=float)
+        if x.ndim == 0:
+            x = x.reshape(1, 1)
+        elif x.ndim == 1:
+            x = x[np.newaxis, :]
+
         pi = self._pi[:, :, np.newaxis]
         mu = self._mu
         sigma = self._sigma
@@ -197,6 +203,8 @@ class NormalMixture(BaseDistribution):
 
         # Weight and sum over components
         pdf_arr = np.sum(pi * comp_pdf, axis=1)
+        if self.ndim == 0:
+            return float(pdf_arr[0, 0])
         return pdf_arr
 
     def _log_pdf(self, x):
@@ -212,6 +220,12 @@ class NormalMixture(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             log pdf values at the given points
         """
+        x = np.asarray(x, dtype=float)
+        if x.ndim == 0:
+            x = x.reshape(1, 1)
+        elif x.ndim == 1:
+            x = x[np.newaxis, :]
+
         pi = self._pi[:, :, np.newaxis]
         mu = self._mu
         sigma = self._sigma
@@ -227,6 +241,8 @@ class NormalMixture(BaseDistribution):
         log_weighted = log_pi + log_comp_pdf
 
         lpdf_arr = logsumexp(log_weighted, axis=1, keepdims=False)
+        if self.ndim == 0:
+            return float(lpdf_arr[0, 0])
         return lpdf_arr
 
     def _cdf(self, x):
@@ -242,6 +258,12 @@ class NormalMixture(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             cdf values at the given points
         """
+        x = np.asarray(x, dtype=float)
+        if x.ndim == 0:
+            x = x.reshape(1, 1)
+        elif x.ndim == 1:
+            x = x[np.newaxis, :]
+
         pi = self._pi[:, :, np.newaxis]
         mu = self._mu
         sigma = self._sigma
@@ -253,6 +275,8 @@ class NormalMixture(BaseDistribution):
 
         # Weight and sum
         cdf_arr = np.sum(pi * comp_cdf, axis=1)
+        if self.ndim == 0:
+            return float(cdf_arr[0, 0])
         return cdf_arr
 
     def _ppf(self, p):
@@ -272,6 +296,14 @@ class NormalMixture(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             approximate quantiles
         """
+        p = np.asarray(p, dtype=float)
+
+        if p.ndim == 0:
+            p = p.reshape(1, 1)
+        elif p.ndim == 1:
+            # row-vector convention for 1D inputs
+            p = p[np.newaxis, :]
+
         pi = self._pi[:, :, np.newaxis]  # (n_samples, n_components, 1)
         mu = self._mu  # (n_samples, n_components, n_outputs)
         sigma = self._sigma  # (n_samples, n_components, n_outputs)
@@ -332,6 +364,9 @@ class NormalMixture(BaseDistribution):
 
         # Put results back into output array
         out[interior] = q[interior]
+
+        if self.ndim == 0:
+            return float(out[0, 0])
         return out
 
     def _energy_self(self):
@@ -375,6 +410,12 @@ class NormalMixture(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
+        x = np.asarray(x, dtype=float)
+        if x.ndim == 0:
+            x = x.reshape(1, 1)
+        elif x.ndim == 1:
+            x = x[np.newaxis, :]
+
         pi = self._pi[:, :, np.newaxis]
         mu = self._mu
         sigma = self._sigma
@@ -409,44 +450,50 @@ class NormalMixture(BaseDistribution):
             samples from the distribution
         """
         if n_samples is None:
-            n_samples = 1
+            N = 1
+        else:
+            N = n_samples
 
         n_rows = self._pi.shape[0]
         n_outputs = self._mu.shape[2]
         n_components = self._pi.shape[1]
 
         # Sample component indices according to pi
-        component_indices = np.zeros((n_samples, n_rows), dtype=int)
+        component_indices = np.zeros((N, n_rows), dtype=int)
 
         for i in range(n_rows):
             component_indices[:, i] = np.random.choice(
-                n_components, size=n_samples, p=self._pi[i]
+                n_components, size=N, p=self._pi[i]
             )
 
         # Sample from selected components
-        sample_arr = np.zeros((n_samples, n_rows, n_outputs))
+        sample_arr = np.zeros((N, n_rows, n_outputs))
 
         for i in range(n_rows):
             for j in range(n_outputs):
-                for s in range(n_samples):
+                for s in range(N):
                     k = component_indices[s, i]
                     sample_arr[s, i, j] = np.random.normal(
                         self._mu[i, k, j], self._sigma[i, k, j]
                     )
 
-        # Reshape to (n_samples * n_rows, n_outputs)
-        sample_arr = sample_arr.reshape(n_samples * n_rows, n_outputs)
+        # Reshape to (N * n_rows, n_outputs)
+        sample_arr = sample_arr.reshape(N * n_rows, n_outputs)
+
+        if self.ndim == 0:
+            if n_samples is None:
+                return float(sample_arr[0, 0])
+            return pd.DataFrame(
+                sample_arr.reshape(N, 1),
+                index=pd.RangeIndex(N),
+                columns=pd.RangeIndex(1),
+            )
 
         # Create index
-        if n_samples == 1:
+        if n_samples is None:
             spl_index = self.index
         else:
-            if self.index is None:
-                idx = np.arange(n_samples).repeat(n_rows)
-            else:
-                idx = self.index
-
-            spl_index = pd.MultiIndex.from_product([pd.RangeIndex(n_samples), idx])
+            spl_index = pd.MultiIndex.from_product([pd.RangeIndex(N), self.index])
 
         return pd.DataFrame(sample_arr, index=spl_index, columns=self.columns)
 
