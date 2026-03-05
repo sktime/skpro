@@ -145,6 +145,17 @@ Distributional boosting
 
     XGBoostLSS
 
+Neural conditional density estimation
+-------------------------------------
+
+.. currentmodule:: skpro.regression.mdn
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MDNRegressor
+
 Naive regressors and baselines
 ------------------------------
 

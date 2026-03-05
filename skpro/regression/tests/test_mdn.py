@@ -2,12 +2,14 @@
 
 import pandas as pd
 import pytest
-from skbase.utils.dependencies import _check_soft_dependencies
+
+from skpro.regression.mdn import MDNRegressor
+from skpro.tests.test_switch import run_test_for_class
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["torch", "pytorch_optimizer"], severity="none"),
-    reason="skip test if torch/pytorch-optimizer soft dependencies are not available",
+    not run_test_for_class(MDNRegressor),
+    reason="run test only if softdeps are present and incrementally (if requested)",
 )
 def test_mdn_custom_activation_and_optimizer_class():
     """Test MDN supports custom hidden activation and optimizer class."""
@@ -15,8 +17,6 @@ def test_mdn_custom_activation_and_optimizer_class():
     from pytorch_optimizer import AdamP
     from sklearn.datasets import make_regression
     from sklearn.model_selection import train_test_split
-
-    from skpro.regression.mdn import MDNRegressor
 
     X_arr, y_arr = make_regression(
         n_samples=60,

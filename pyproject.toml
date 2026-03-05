@@ -55,8 +55,10 @@ all_extras = [
     "matplotlib>=3.3.2",
     "ngboost<0.6.0; python_version < '3.13'",
     "polars<1.36.0",
+    "pytorch-optimizer>=3.2.0; python_version < '3.14'",
     "pymc; python_version < '3.13'",
     "statsmodels>=0.12.1",
+    "torch>=2.0.0; python_version < '3.14'",
 ]
 
 dev = [
