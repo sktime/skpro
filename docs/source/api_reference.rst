@@ -14,6 +14,7 @@ It describes the classes and functions included in ``skpro``.
 .. toctree::
     :maxdepth: 1
 
+    api_reference/tags
     api_reference/regression
     api_reference/survival
     api_reference/distributions
