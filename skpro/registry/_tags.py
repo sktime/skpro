@@ -188,6 +188,12 @@ OBJECT_TAG_REGISTER = [
         "methods of distr that are numerically exact",
     ),
     (
+        "capabilities:undefined",
+        "distribution",
+        ("list", "str"),
+        "methods of distr that are mathematically undefined",
+    ),
+    (
         "distr:measuretype",
         "distribution",
         ("str", ["continuous", "discrete", "mixed"]),

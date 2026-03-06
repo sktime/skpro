@@ -184,7 +184,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
             Dist=dist_ngboost,
             Score=score,
             Base=self.estimator_,
-            natural_gradient=True,
+            natural_gradient=self.natural_gradient,
             n_estimators=self.n_estimators,
             learning_rate=self.learning_rate,
             minibatch_frac=self.minibatch_frac,
