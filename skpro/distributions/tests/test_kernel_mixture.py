@@ -8,19 +8,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-try:
-    _trapezoid = np.trapezoid
-except AttributeError:
-    _trapezoid = np.trapz
-
 from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.distributions.kernel_mixture import KernelMixture
-from skpro.tests.test_switch import run_test_module_changed
+from skpro.tests.test_switch import run_test_for_class
 
 
 @pytest.mark.skipif(
-    not run_test_module_changed("skpro.distributions"),
+    not run_test_for_class(KernelMixture),
     reason="run only if skpro.distributions has been changed",
 )
 class TestKernelMixture:
@@ -53,6 +48,12 @@ class TestKernelMixture:
         km = KernelMixture(support=support, h=0.5, kernel=kernel)
         xs = np.linspace(-5, 8, 10000)
         pdfs = np.array([km.pdf(x) for x in xs])
+
+        if _check_soft_dependencies("numpy>=2.0.0", severity="none"):
+            _trapezoid = np.trapezoid
+        else:
+            _trapezoid = np.trapz
+
         integral = _trapezoid(pdfs, xs)
         assert abs(integral - 1.0) < 0.01
 
