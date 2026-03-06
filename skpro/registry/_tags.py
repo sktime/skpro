@@ -117,9 +117,15 @@ OBJECT_TAG_REGISTER = [
     ),
     (
         "tests:skip_by_name",
-        "estimator",
+        "object",
         ("list", "str"),
         "list of test names to skip when running estimator checks on CI",
+    ),
+    (
+        "tests:python_dependencies",
+        "object",
+        ("list", "str"),
+        "additional python dependencies needed in tests, str or list of str (PEP 440)",
     ),
     # ------------------
     # BaseProbaRegressor
@@ -180,6 +186,12 @@ OBJECT_TAG_REGISTER = [
         "distribution",
         ("list", "str"),
         "methods of distr that are numerically exact",
+    ),
+    (
+        "capabilities:undefined",
+        "distribution",
+        ("list", "str"),
+        "methods of distr that are mathematically undefined",
     ),
     (
         "distr:measuretype",

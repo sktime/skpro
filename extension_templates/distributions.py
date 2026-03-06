@@ -43,9 +43,6 @@ Testing - required for test framework and check_estimator usage:
 #       estimators contributed to skpro should have the copyright notice at the top
 #       estimators of your own do not need to have permissive or BSD-3 copyright
 
-# todo: uncomment the following line, enter authors' GitHub IDs
-# __author__ = [authorGitHubID, anotherAuthorGitHubID]
-
 from skpro.distributions.base import BaseDistribution
 
 # todo: add any necessary imports here - no soft dependency imports
@@ -122,7 +119,7 @@ class ClassName(BaseDistribution):
     # if not implemented, the base class will try to fill it in
     # from the other implemented methods
     # at least _ppf, or sample should be implemented for the distribution to be usable
-    # if _ppf is implemented, _sample does not need to be implemented (uses ppf sampling)
+    # if _ppf is implemented, _sample does not need to be (uses ppf sampling)
 
     # todo: consider implementing
     # if not implemented, uses Monte Carlo estimate via sample

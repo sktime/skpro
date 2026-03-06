@@ -16,6 +16,87 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.11.0] - 2025-12-17
+=====================
+
+Highlights
+~~~~~~~~~~
+
+* ``pygam`` GAM regressor interface (:pr:`636`, :pr:`638`) :user:`ravjot07`, :user:`Omswastik-11`
+* ``glum`` Generalized Linear Models (GlumRegressor) (:pr:`646`) :user:`Omswastik-11`
+* ``ondil`` online GAMLSS (:pr:`637`) :user:`arnavk23`
+* ``mapie>=1.0`` estimators (:pr:`665`) :user:`Omswastik-11`
+* new distributions: Geometric, Inverse Gaussian, Log-Gamma (:pr:`635`, :pr:`663`, :pr:`669`) :user:`ali-john`, :user:`aryabhatta-dey`,  :user:`Omswastik-11`
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] estimator dependency management and individual CI (:pr:`626`) :user:`fkiraly`
+* [ENH] ``pygam`` regressor interface (:pr:`636`, :pr:`638`) :user:`ravjot07`, :user:`Omswastik-11`
+* [ENH] ``glum`` Generalized Linear Models (GlumRegressor) (:pr:`646`) :user:`Omswastik-11`
+* [ENH] Geometric Distribution (:pr:`663`) :user:`aryabhatta-dey`
+* [ENH] Inverse Gaussian distribution (:pr:`635`) :user:`Omswastik-11`
+* [ENH] ``mapie>1.0`` interface (:pr:`665`) :user:`Omswastik-11`
+* [ENH] moved ``BaseDistribution.sample`` method to boilerplate layered design (:pr:`650`) :user:`smilingprogrammer`
+* [ENH] ``ondil`` online GAMLSS (:pr:`637`) :user:`arnavk23`
+* [ENH] move ``scikit-survival`` estimators to VM based testing (:pr:`664`) :user:`Omswastik-11`
+* [ENH] Add ``interval_type`` for configurable bounds in ``TruncatedDistribution`` (:pr:`667`) :user:`Khushmagrawal`
+* [ENH] Log-Gamma Distribution (:pr:`669`) :user:`ali-john`
+* [ENH] estimator tag for extra testing dependencies (:pr:`681`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] add GC.OS sponsoring badge to README (:pr:`620`) :user:`fkiraly`
+* [DOC] minor improvements to distributions documentation and changelog (:pr:`641`) :user:`fkiraly`
+* [DOC] add missing API reference entry for ``GAMRegressor`` (:pr:`658`) :user:`neha222222`
+* [ENH] censoring indicator conventions (:pr:`677`) :user:`arnavk23`
+* [DOC] add missing parameter doc for ``TransformedDistribution`` (:pr:`686`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.34.0`` to ``<1.35.0`` (:pr:`607`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.35.0`` to ``<1.36.0`` (:pr:`627`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/upload-artifact from ``4`` to ``5`` (:pr:`624`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/download-artifact from ``5`` to ``6`` (:pr:`623`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/checkout from ``5`` to ``6`` (:pr:`640`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/checkout from ``5`` to ``6`` (:pr:`649`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update polars requirement from ``<1.36.0`` to ``<1.37.0`` (:pr:`679`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/upload-artifact from ``5`` to ``6`` (:pr:`684`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/download-artifact from ``6`` to ``7`` (:pr:`685`) :user:`dependabot[bot]`
+* [MNT] remove conflicting dependencies from ``all_extras`` (:pr:`625`) :user:`fkiraly`
+* [MNT] remove dead legacy module ``workflow`` (:pr:`629`) :user:`fkiraly`
+* [MNT] update notebook CI test python version to 3.11 (:pr:`642`) :user:`fkiraly`
+* [MNT] Added allcontributors workflow (:pr:`632`) :user:`ParamThakkar123`
+* [MNT] simplify release wheel test CI job (:pr:`680`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] fix sporadic ``GLMRegressor`` failures (:pr:`628`) :user:`SimonBlanke`
+* [BUG] Fix ``GLMRegressor`` class  (:pr:`655`) :user:`Omswastik-11`
+* [BUG] Handle ``Hurdle`` values less than zero properly (:pr:`652`) :user:`tingiskhan`
+* [BUG] ``XGBoostLSS`` dynamic dependencies: add optuna to ``python_dependencies`` when ``n_trials != 0`` (:pr:`643`) :user:`ravjot07`
+* [BUG] Ensure gamma/poission always get positive ``y`` in doctest (:pr:`660`) :user:`Omswastik-11`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`ali-john`,
+:user:`arnavk23`,
+:user:`aryabhatta-dey`,
+:user:`fkiraly`,
+:user:`Khushmagrawal`,
+:user:`neha222222`,
+:user:`Omswastik-11`,
+:user:`ParamThakkar123`,
+:user:`ravjot07`,
+:user:`SimonBlanke`,
+:user:`smilingprogrammer`,
+:user:`tingiskhan`
+
+
 [2.10.0] - 2025-10-09
 =====================
 
