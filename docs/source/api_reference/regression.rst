@@ -22,6 +22,7 @@ Composition
     :toctree: auto_generated/
     :template: class.rst
 
+    BoundingRegressor
     Pipeline
     TransformedTargetRegressor
 
@@ -89,6 +90,14 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
     :template: class.rst
 
     ResidualDouble
+
+.. currentmodule:: skpro.regression.parametric
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    ParametricRegressor
 
 .. currentmodule:: skpro.regression.multiquantile
 
