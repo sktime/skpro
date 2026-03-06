@@ -240,5 +240,14 @@
         "code",
       ]
     },
+    {
+      "login": "amaydixit11",
+      "name": "Amay Dixit",
+      "profile": "https://github.com/amaydixit11",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
   ]
 }
