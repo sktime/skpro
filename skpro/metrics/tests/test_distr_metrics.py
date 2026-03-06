@@ -2,9 +2,9 @@
 import numpy as np
 import pandas as pd
 import pytest
+from skbase.testing import QuickTester
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
-from skbase.testing import QuickTester
 
 from skpro.distributions import Normal
 from skpro.regression.residual import ResidualDouble
