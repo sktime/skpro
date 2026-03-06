@@ -162,12 +162,8 @@ class TestKernelMixture:
     def test_random_state_reproducibility(self):
         """Test random_state reproducibility."""
         support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
-        km1 = KernelMixture(
-            support=support, h=0.5, kernel="gaussian", random_state=42
-        )
-        km2 = KernelMixture(
-            support=support, h=0.5, kernel="gaussian", random_state=42
-        )
+        km1 = KernelMixture(support=support, h=0.5, kernel="gaussian", random_state=42)
+        km2 = KernelMixture(support=support, h=0.5, kernel="gaussian", random_state=42)
         s1 = km1.sample(100)
         s2 = km2.sample(100)
         np.testing.assert_array_equal(s1.values, s2.values)
@@ -230,9 +226,7 @@ class TestKernelMixture:
         from skpro.distributions.normal import Normal
 
         with pytest.warns(UserWarning, match="non-zero mean"):
-            KernelMixture(
-                support=[0, 1, 2], h=0.5, kernel=Normal(mu=5, sigma=1)
-            )
+            KernelMixture(support=[0, 1, 2], h=0.5, kernel=Normal(mu=5, sigma=1))
 
     def test_distribution_kernel_rng_warns(self):
         """Test distribution kernel RNG warning."""
@@ -254,9 +248,7 @@ class TestKernelMixture:
         support = np.array([0.0, 1.0, 2.0])
         bw = 0.5
         km_str = KernelMixture(support=support, h=bw, kernel="gaussian")
-        km_dist = KernelMixture(
-            support=support, h=bw, kernel=Normal(mu=0, sigma=1)
-        )
+        km_dist = KernelMixture(support=support, h=bw, kernel=Normal(mu=0, sigma=1))
         for x in [0.0, 0.5, 1.0, 1.5, 2.0, 2.5]:
             assert abs(km_str.pdf(x) - km_dist.pdf(x)) < 1e-6
 
@@ -267,9 +259,7 @@ class TestKernelMixture:
         support = np.array([0.0, 1.0, 2.0])
         bw = 0.5
         km_str = KernelMixture(support=support, h=bw, kernel="gaussian")
-        km_dist = KernelMixture(
-            support=support, h=bw, kernel=Normal(mu=0, sigma=1)
-        )
+        km_dist = KernelMixture(support=support, h=bw, kernel=Normal(mu=0, sigma=1))
         for x in [-1.0, 0.0, 1.0, 2.0, 3.0]:
             assert abs(km_str.cdf(x) - km_dist.cdf(x)) < 1e-6
 
@@ -280,9 +270,7 @@ class TestKernelMixture:
         support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
         bw = 0.5
         km_str = KernelMixture(support=support, h=bw, kernel="gaussian")
-        km_dist = KernelMixture(
-            support=support, h=bw, kernel=Normal(mu=0, sigma=1)
-        )
+        km_dist = KernelMixture(support=support, h=bw, kernel=Normal(mu=0, sigma=1))
         assert abs(km_str.mean() - km_dist.mean()) < 1e-10
         assert abs(km_str.var() - km_dist.var()) < 1e-10
 
