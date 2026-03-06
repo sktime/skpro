@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Half-Cauchy probability distribution."""
 
-__author__ = ["SaiRevanth25"]
-
 import pandas as pd
 from scipy.stats import halfcauchy, rv_continuous
 
@@ -47,6 +45,11 @@ class HalfCauchy(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["SaiRevanth25"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",

@@ -1,6 +1,6 @@
 <a href="https://skpro.readthedocs.io/en/latest"><img src="https://github.com/sktime/skpro/blob/main/docs/source/images/skpro-banner.png" width="500" align="right" /></a>
 
-:rocket: **Version 2.10.0 out now!** [Read the release notes here.](https://skpro.readthedocs.io/en/latest/changelog.html).
+:rocket: **Version 2.11.0 out now!** [Read the release notes here.](https://skpro.readthedocs.io/en/latest/changelog.html).
 
 `skpro` is a library for supervised probabilistic prediction in python.
 It provides `scikit-learn`-like, `scikit-base` compatible interfaces to:
@@ -193,10 +193,10 @@ specification: all kinds of contributions are welcome - not just code.
 | :money_with_wings: **[Donate]** | Fund sktime and skpro maintenance and development. |
 | :classical_building: **[Governance]** | How and by whom decisions are made in the sktime community.   |
 
-[contribute]: https://skpro.readthedocs.io/en/latest/get_involved/contributing.html
+[contribute]: https://github.com/sktime/skpro/blob/main/CONTRIBUTING.md
 [donate]: https://opencollective.com/sktime
 [developer guides]: https://skpro.readthedocs.io/en/latest/developer_guide.html
-[contributors]: https://github.com/sktime/skpro/blob/main/CONTRIBUTORS.md
+[contributors]: https://github.com/sktime/skpro/graphs/contributors
 [governance]: https://www.sktime.net/en/latest/get_involved/governance.html
 [mentoring]: https://github.com/sktime/mentoring
 [meetings]: https://calendar.google.com/calendar/u/0/embed?src=sktime.toolbox@gmail.com&ctz=UTC

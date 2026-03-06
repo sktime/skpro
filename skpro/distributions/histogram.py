@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Histogram distribution."""
 
-__author__ = ["ShreeshaM07"]
-
 import numpy as np
 import pandas as pd
 
