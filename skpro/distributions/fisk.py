@@ -1,6 +1,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Log-logistic aka Fisk probability distribution."""
 
+import numpy as np
 import pandas as pd
 from scipy.stats import fisk, rv_continuous
 
@@ -40,8 +41,8 @@ class Fisk(_ScipyAdapter):
         "authors": ["fkiraly", "malikrafsan"],
         # estimator tags
         # --------------
-        "capabilities:approx": ["energy", "pdfnorm"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -61,6 +62,85 @@ class Fisk(_ScipyAdapter):
         beta = self._bc_params["beta"]
 
         return [], {"c": beta, "scale": alpha}
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        For Fisk(alpha, beta) (log-logistic), :math:`\mathbb{E}|X-Y|` is computed via:
+
+        .. math:: \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t))\,dt
+
+        using numerical integration. Requires beta > 1 for finiteness.
+        """
+        from scipy.integrate import quad
+
+        alpha = np.asarray(self._bc_params["alpha"])
+        beta = np.asarray(self._bc_params["beta"])
+        alpha_b, beta_b = np.broadcast_arrays(alpha, beta)
+        result = np.empty_like(alpha_b, dtype=float)
+
+        it = np.nditer(
+            [alpha_b, beta_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["readonly"], ["writeonly"]],
+        )
+        for aa, bb, out in it:
+            aa_val = float(aa)
+            bb_val = float(bb)
+
+            def integrand(t, aa=aa_val, bb=bb_val):
+                F = fisk.cdf(t, c=bb, scale=aa)
+                return 2 * F * (1 - F)
+
+            val, _ = quad(integrand, 0, np.inf, limit=200)
+            out[...] = val
+
+        result_flat = np.asarray(result).reshape(-1)
+        n_rows = 1 if self.index is None else len(self.index)
+        if result_flat.shape[0] != n_rows:
+            result_flat = result_flat.reshape(n_rows, -1).sum(axis=1)
+        if self.index is None and n_rows == 1:
+            return float(result_flat[0])
+        return result_flat
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        :math:`\mathbb{E}[|X-x|]` for X ~ Fisk(alpha, beta),
+        computed via numerical integration.
+        """
+        from scipy.integrate import quad
+
+        alpha = np.asarray(self._bc_params["alpha"])
+        beta = np.asarray(self._bc_params["beta"])
+        x_arr = np.asarray(x)
+        alpha_b, beta_b = np.broadcast_arrays(alpha, beta)
+        _, x_b = np.broadcast_arrays(alpha_b, x_arr)
+        result = np.empty_like(alpha_b, dtype=float)
+
+        it = np.nditer(
+            [alpha_b, beta_b, x_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["readonly"], ["readonly"], ["writeonly"]],
+        )
+        for aa, bb, x0, out in it:
+            aa_val = float(aa)
+            bb_val = float(bb)
+            x0_val = float(x0)
+
+            def integrand(t, aa=aa_val, bb=bb_val, x0=x0_val):
+                return abs(t - x0) * fisk.pdf(t, c=bb, scale=aa)
+
+            val, _ = quad(integrand, 0, np.inf, limit=200)
+            out[...] = val
+
+        result_flat = np.asarray(result).reshape(-1)
+        n_rows = 1 if self.index is None else len(self.index)
+        if result_flat.shape[0] != n_rows:
+            result_flat = result_flat.reshape(n_rows, -1).sum(axis=1)
+        if self.index is None and n_rows == 1:
+            return float(result_flat[0])
+        return result_flat
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
