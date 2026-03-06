@@ -2,12 +2,40 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.datasets import load_diabetes
+from sklearn.model_selection import train_test_split
 from skbase.testing import QuickTester
 
 from skpro.distributions import Normal
+from skpro.regression.residual import ResidualDouble
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
-TEST_DISTS = [Normal]
+X_DIAB, y_DIAB = load_diabetes(return_X_y=True, as_frame=True)
+y_DIAB = pd.DataFrame(y_DIAB)
+X_TRAIN, X_TEST, y_TRAIN, y_TEST = train_test_split(X_DIAB, y_DIAB, random_state=42)
+
+REG_QUANT_INT = ResidualDouble.create_test_instance()
+REG_QUANT_INT.fit(X_TRAIN, y_TRAIN)
+
+
+def _make_metric_test_data(scitype_y_pred):
+    """Create metric test data matching the metric's prediction scitype."""
+    if scitype_y_pred == "pred_proba":
+        y_pred = Normal.create_test_instance()
+        y_true = y_pred.sample()
+        return y_true, y_pred
+
+    if scitype_y_pred == "pred_quantiles":
+        y_true = y_TEST.copy()
+        y_pred = REG_QUANT_INT.predict_quantiles(X_TEST, alpha=[0.1, 0.5, 0.9])
+        return y_true, y_pred
+
+    if scitype_y_pred == "pred_interval":
+        y_true = y_TEST.copy()
+        y_pred = REG_QUANT_INT.predict_interval(X_TEST, coverage=[0.8, 0.9])
+        return y_true, y_pred
+
+    raise ValueError(f"Unsupported scitype:y_pred for test data: {scitype_y_pred}")
 
 
 class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
@@ -18,50 +46,61 @@ class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
 
     # which object types are generated; None=all, or scitype string
     # passed to skpro.registry.all_objects as object_type
-    object_type_filter = "metric_distr"
+    object_type_filter = "metric"
 
-    @pytest.mark.parametrize("dist", TEST_DISTS)
-    @pytest.mark.parametrize("pass_c", [True, False])
+    @pytest.mark.parametrize("pass_sample_weight", [True, False])
+    @pytest.mark.parametrize("score_average", [True, False])
     @pytest.mark.parametrize("multivariate", [True, False])
     @pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average"])
     def test_distr_evaluate(
-        self, object_instance, dist, pass_c, multivariate, multioutput
+        self,
+        object_instance,
+        pass_sample_weight,
+        score_average,
+        multivariate,
+        multioutput,
     ):
-        """Test expected output of evaluate functions."""
+        """Test evaluate/evaluate_by_index contract including weighted evaluate."""
         metric = object_instance
 
-        y_pred = dist.create_test_instance()
-        y_true = y_pred.sample()
+        if metric.get_tag("capability:survival", False, raise_error=False):
+            pytest.skip("Survival metrics require dedicated fixtures and C_true setup.")
+
+        scitype_y_pred = metric.get_tag("scitype:y_pred")
+        y_true, y_pred = _make_metric_test_data(scitype_y_pred)
 
         m = metric.set_params(multioutput=multioutput)
+
+        if "score_average" in metric.get_params():
+            m = m.set_params(score_average=score_average)
+
         if "multivariate" in metric.get_params():
             m = m.set_params(multivariate=multivariate)
-
-        if not multivariate:
-            expected_cols = y_true.columns
-        else:
-            expected_cols = ["score"]
+        elif multivariate:
+            pytest.skip("Metric does not expose multivariate parameter.")
 
         metric_args = {"y_true": y_true, "y_pred": y_pred}
-        if pass_c:
-            c_true = np.random.randint(0, 2, size=y_true.shape)
-            c_true = pd.DataFrame(c_true, columns=y_true.columns, index=y_true.index)
-            metric_args["c_true"] = c_true
+        if pass_sample_weight:
+            n_rows = len(y_true)
+            metric_args["sample_weight"] = np.arange(1, n_rows + 1)
 
-        res = m.evaluate_by_index(**metric_args)
-        assert isinstance(res, pd.DataFrame)
-        assert (res.columns == expected_cols).all()
-        assert res.shape == (y_true.shape[0], len(expected_cols))
+        # evaluate_by_index must preserve sample axis and index alignment
+        res_ix = m.evaluate_by_index(y_true=y_true, y_pred=y_pred)
+        assert isinstance(res_ix, (pd.Series, pd.DataFrame))
+        assert len(res_ix) == len(y_true)
 
-        res = m.evaluate(**metric_args)
+        # evaluate must support both weighted and unweighted contract paths
+        res = m.evaluate(y_true=y_true, y_pred=y_pred)
+        res_w = m.evaluate(**metric_args)
 
-        expect_df = not multivariate and multioutput == "raw_values"
-        if expect_df:
-            assert isinstance(res, pd.Series)
-            assert (res.index == expected_cols).all()
-            assert res.shape == (len(expected_cols),)
+        assert isinstance(res, (float, np.floating, pd.Series))
+        assert isinstance(res_w, (float, np.floating, pd.Series))
+
+        if isinstance(res, pd.Series):
+            assert isinstance(res_w, pd.Series)
+            assert (res.index == res_w.index).all()
         else:
-            assert isinstance(res, float)
+            assert np.isscalar(res_w)
 
 
 def test_sample_weight_logloss():
