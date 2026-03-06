@@ -26,6 +26,28 @@ class Poisson(_ScipyAdapter):
     >>> distr = Poisson(mu=[[1, 1], [2, 3], [4, 5]])
     """
 
+    _pmf_formula_doc = r"""
+    For mean :math:`\mu`, the probability mass function is
+
+    .. math::
+        \mathbb{P}(X = k) = \frac{\mu^k e^{-\mu}}{k!}, \quad k = 0, 1, 2, \dots
+    """
+
+    _log_pmf_formula_doc = r"""
+    For mean :math:`\mu`, the log-pmf is
+
+    .. math::
+        \log \mathbb{P}(X = k)
+        = k \log(\mu) - \mu - \log(k!)
+    """
+
+    _cdf_formula_doc = r"""
+    For mean :math:`\mu`, the cumulative distribution function is
+
+    .. math::
+        F(k) = \sum_{i=0}^{k} \frac{\mu^i e^{-\mu}}{i!}
+    """
+
     _tags = {
         # packaging info
         # --------------
