@@ -1,9 +1,5 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
-import numpy as np
-import pandas as pd
-from skbase.utils.dependencies import _check_soft_dependencies
-
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -96,6 +92,7 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             Fitted regressor.
         """
         import warnings
+
         import pandas as pd
         import pymc as pm
 
@@ -140,9 +137,7 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         model : pymc.Model
             The constructed PyMC model.
         """
-        raise NotImplementedError(
-            "Subclasses must implement the _build_model method."
-        )
+        raise NotImplementedError("Subclasses must implement the _build_model method.")
 
     def _predict_proba(self, X):
         """Predict distribution over labels for data from features.
@@ -158,16 +153,17 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             Predicted distributions.
         """
         import pymc as pm
+
         from skpro.distributions import Empirical
 
         with self.model_:
             # Remove existing predictions if any
             if "predictions" in self.trace_.groups():
                 del self.trace_.predictions
-            
+
             # Set data for prediction
             self._set_prediction_data(X)
-            
+
             # Sample posterior predictive
             self.trace_.extend(
                 pm.sample_posterior_predictive(
@@ -176,7 +172,7 @@ class BaseBayesianRegressor(BaseProbaRegressor):
                     random_seed=self.random_seed,
                 )
             )
-            
+
             # Mark that prediction has been done
             self._predict_done = True
 
@@ -184,42 +180,40 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         # Assume y_obs is the predictive variable
         if "y_obs" not in self.trace_.predictions:
             raise ValueError("Model must have 'y_obs' variable for predictions.")
-            
+
         pred_xarray = self.trace_.predictions["y_obs"]
-        
+
         # Convert to DataFrame format expected by Empirical
         pred_df = pred_xarray.to_dataframe().reset_index()
-        
+
         # Create sample_id by combining chain and draw
-        pred_df["sample_id"] = (
-            pred_df["chain"] * self.draws + pred_df["draw"]
-        )
-        
+        pred_df["sample_id"] = pred_df["chain"] * self.draws + pred_df["draw"]
+
         # Format for Empirical: columns should be the target variable names
         # Assume single output for now
-        target_col = getattr(self, '_y_columns', ['y'])[0]
+        target_col = getattr(self, "_y_columns", ["y"])[0]
         pred_df = pred_df[["obs_id", "sample_id", "y_obs"]]
         pred_df = pred_df.rename(columns={"y_obs": target_col})
         pred_df = pred_df.set_index(["sample_id", "obs_id"])
-        
+
         # Create Empirical distribution
         pred_dist = Empirical(spl=pred_df, columns=[target_col], index=X.index)
-        
+
         return pred_dist
 
     def _set_prediction_data(self, X):
         """Set data for prediction in the PyMC model.
-        
+
         This method can be overridden by subclasses if they need
         custom data setting logic.
-        
+
         Parameters
         ----------
         X : pandas DataFrame
             Prediction features.
         """
         import pymc as pm
-        
+
         # Default: assume X is set as "X" in the model
         pm.set_data({"X": X}, coords={"obs_id": X.index, "pred_id": X.columns})
 

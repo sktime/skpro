@@ -67,10 +67,10 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         if prior_config is None:
             prior_config = {}  # configuration for priors
         self.prior_config = {**self.default_prior_config, **prior_config}
-        
+
         # Extract sampler parameters
         sampler_params = {**self.default_sampler_config, **sampler_config}
-        
+
         print(  # noqa: T201
             f"instantiated {self.__class__.__name__} with the following priors:"
         )
@@ -132,7 +132,6 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         """
         import warnings
 
-        import pandas as pd
         import pymc as pm
 
         assert len(y.columns) == 1, "y must have only one column!"
@@ -164,10 +163,9 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
             )
 
         # Store training data in trace for later use
-        training_data = pd.concat([X, y], axis=1)
+        # Note: Training data is now added to trace in the base class
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=UserWarning)
-            # Note: We'll add this to trace after sampling in base class
 
         return model
 
@@ -386,7 +384,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         with self.model_:
             # if we've previously used the model for prediction,
             # we need to reset the reference of 'X' to X used for training
-            if hasattr(self, '_predict_done') and self._predict_done:
+            if hasattr(self, "_predict_done") and self._predict_done:
                 pm.set_data(
                     {"X": self._X},
                     coords={"obs_id": self._X.index, "pred_id": self._X.columns},
@@ -484,7 +482,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         with self.model_:
             # if we've previously used the model for prediction,
             # we need to reset the reference of 'X' to X_train (i.e. self._X)
-            if hasattr(self, '_predict_done') and self._predict_done:
+            if hasattr(self, "_predict_done") and self._predict_done:
                 pm.set_data(
                     {"X": self._X},
                     coords={"obs_id": self._X.index, "pred_id": self._X.columns},
