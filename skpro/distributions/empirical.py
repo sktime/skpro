@@ -35,8 +35,23 @@ class Empirical(BaseDistribution):
     weights : pd.Series, with same index and length as spl, optional, default=None
         if not passed, ``spl`` is assumed to be unweighted
     time_indep : bool, optional, default=True
-        if True, ``sample`` will sample individual instance indices independently
-        if False, ``sample`` will sample entire instances from ``spl``
+        Applies to array (non-scalar) distributions only.
+        Controls whether different time steps (columns within a row) are sampled
+        independently from each other.
+        if True, each time step (column) independently draws its own sample index.
+        Thus, samples from different time steps within the same instance are
+        drawn independently, breaking time-correlations present in ``spl``.
+        if False, all time steps within an instance draw from the same sample
+        index, preserving time-correlations present in ``spl``.
+    row_indep : bool, optional, default=False
+        Applies to array (non-scalar) distributions only.
+        Controls whether different rows (instances) are sampled independently
+        from each other.
+        if True, each row (instance) independently draws its own sample index.
+        Thus, samples from different rows are drawn independently, breaking
+        cross-row correlations present in ``spl``.
+        if False, all rows share the same sample index draw, preserving
+        cross-row correlations present in ``spl``.
     skip_init_sorted : bool, optional, default=False
         if True, skips sorting of empirical samples on init and instead builds
         sorted caches lazily when cdf/ppf/energy are first called.
@@ -83,6 +98,7 @@ class Empirical(BaseDistribution):
         spl,
         weights=None,
         time_indep=True,
+        row_indep=False,
         skip_init_sorted=False,
         index=None,
         columns=None,
@@ -90,6 +106,7 @@ class Empirical(BaseDistribution):
         self.spl = spl
         self.weights = weights
         self.time_indep = time_indep
+        self.row_indep = row_indep
         self.skip_init_sorted = skip_init_sorted
 
         index, columns = self._init_index(index, columns)
@@ -327,6 +344,7 @@ class Empirical(BaseDistribution):
             spl_subset,
             weights=weights_subset,
             time_indep=self.time_indep,
+            row_indep=self.row_indep,
             index=subs_rowidx,
             columns=subs_colidx,
             skip_init_sorted=self.skip_init_sorted,
@@ -564,7 +582,58 @@ class Empirical(BaseDistribution):
         spl_values = self._get_spl_array()
         n_spl, n_instances, n_cols = spl_values.shape
 
-        if self.time_indep:
+        time_indep = self.time_indep
+        row_indep = self.row_indep
+
+        if row_indep and time_indep:
+            # Each (row, time-step) pair independently draws a sample index
+            # shape: (n_samples, n_instances)
+            if self.weights is None:
+                sample_indices = rng.integers(
+                    0, n_spl, size=(n_samples, n_instances)
+                )
+            else:
+                weights_arr = self._get_weights_array()
+                sample_indices = np.zeros((n_samples, n_instances), dtype=int)
+                for j in range(n_instances):
+                    w = np.nan_to_num(weights_arr[:, j], nan=0.0)
+                    w_sum = np.sum(w)
+                    w = w / w_sum if w_sum > 0 else None
+                    sample_indices[:, j] = rng.choice(
+                        n_spl, size=n_samples, replace=True, p=w
+                    )
+            instance_indices = np.arange(n_instances)[np.newaxis, :].repeat(
+                n_samples, axis=0
+            )
+            samples = spl_values[sample_indices, instance_indices, :]
+
+        elif row_indep and not time_indep:
+            # Each row independently draws a sample index,
+            # but all time-steps within that row share the same index
+            if self.weights is None:
+                sample_indices = rng.integers(
+                    0, n_spl, size=(n_samples, n_instances)
+                )
+            else:
+                weights_arr = self._get_weights_array()
+                sample_indices = np.zeros((n_samples, n_instances), dtype=int)
+                for j in range(n_instances):
+                    w = np.nan_to_num(weights_arr[:, j], nan=0.0)
+                    w_sum = np.sum(w)
+                    w = w / w_sum if w_sum > 0 else None
+                    sample_indices[:, j] = rng.choice(
+                        n_spl, size=n_samples, replace=True, p=w
+                    )
+            # samples[s, i] = spl_values[sample_indices[s, i], i, :]
+            samples = spl_values[
+                sample_indices,
+                np.arange(n_instances)[np.newaxis, :].repeat(n_samples, axis=0),
+                :,
+            ]
+
+        elif not row_indep and time_indep:
+            # All rows share the same sample-level draw, but each column
+            # (time-step) independently picks its own index within a row
             if self.weights is None:
                 sample_indices = rng.integers(0, n_spl, size=(n_samples, n_instances))
             else:
@@ -573,19 +642,18 @@ class Empirical(BaseDistribution):
                 for j in range(n_instances):
                     w = np.nan_to_num(weights_arr[:, j], nan=0.0)
                     w_sum = np.sum(w)
-                    if w_sum == 0:
-                        w = None
-                    else:
-                        w = w / w_sum
+                    w = w / w_sum if w_sum > 0 else None
                     sample_indices[:, j] = rng.choice(
                         n_spl, size=n_samples, replace=True, p=w
                     )
-
             instance_indices = np.arange(n_instances)[np.newaxis, :].repeat(
                 n_samples, axis=0
             )
             samples = spl_values[sample_indices, instance_indices, :]
+
         else:
+            # row_indep=False, time_indep=False:
+            # All rows and all time-steps share the same sample index
             if self.weights is None:
                 sample_indices = rng.integers(0, n_spl, size=n_samples)
             else:
@@ -635,6 +703,7 @@ class Empirical(BaseDistribution):
             "spl": spl,
             "weights": None,
             "time_indep": True,
+            "row_indep": False,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }
@@ -644,6 +713,7 @@ class Empirical(BaseDistribution):
             "spl": spl,
             "weights": pd.Series([0.5, 0.5, 0.5, 1, 1, 1.1], index=spl_idx),
             "time_indep": False,
+            "row_indep": False,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }
@@ -671,7 +741,35 @@ class Empirical(BaseDistribution):
         spl = pd.DataFrame(np.random.rand(12, 2), index=spl_idx)
         param6 = {"spl": spl, "weights": weights}
 
-        return [params1, params2, params3, params4, param5, param6]
+        # params7: row_indep=True, time_indep=True
+        spl_idx7 = pd.MultiIndex.from_product(
+            [[0, 1], [0, 1, 2]], names=["sample", "time"]
+        )
+        spl7 = pd.DataFrame(
+            [[0, 1], [2, 3], [10, 11], [6, 7], [8, 9], [4, 5]],
+            index=spl_idx7,
+            columns=["a", "b"],
+        )
+        params7 = {
+            "spl": spl7,
+            "weights": None,
+            "time_indep": True,
+            "row_indep": True,
+            "index": pd.RangeIndex(3),
+            "columns": pd.Index(["a", "b"]),
+        }
+
+        # params8: row_indep=True, time_indep=False
+        params8 = {
+            "spl": spl7,
+            "weights": None,
+            "time_indep": False,
+            "row_indep": True,
+            "index": pd.RangeIndex(3),
+            "columns": pd.Index(["a", "b"]),
+        }
+
+        return [params1, params2, params3, params4, param5, param6, params7, params8]
 
 
 def _energy_np(spl, x=None, weights=None, assume_sorted=False):
