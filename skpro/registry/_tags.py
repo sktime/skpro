@@ -62,6 +62,7 @@ class _BaseTag(BaseObject):
         "short_descr": "",
     }
 
+    
 # --------------------------
 # All objects and estimators
 # --------------------------
@@ -75,6 +76,7 @@ class reserved_params(_BaseTag):
         "short_descr": "list of reserved parameter names",
     }
 
+    
 class object_type(_BaseTag):
     """Type of object, e.g., 'regressor', 'transformer'."""
     _tags = {
@@ -84,6 +86,7 @@ class object_type(_BaseTag):
         "short_descr": "type of object, e.g., 'regressor', 'transformer'",
     }
 
+    
 class estimator_type(_BaseTag):
     """Type of estimator, e.g., 'regressor', 'transformer'."""
     _tags = {
@@ -93,6 +96,7 @@ class estimator_type(_BaseTag):
         "short_descr": "type of estimator, e.g., 'regressor', 'transformer'",
     }
 
+    
 # Packaging information
 # ---------------------
 
@@ -105,6 +109,7 @@ class maintainers(_BaseTag):
         "short_descr": "list of current maintainers of the object, each maintainer a GitHub handle",
     }
 
+    
 class authors(_BaseTag):
     """List of authors of the object."""
     _tags = {
@@ -114,6 +119,7 @@ class authors(_BaseTag):
         "short_descr": "list of authors of the object, each author a GitHub handle",
     }
 
+    
 class python_version(_BaseTag):
     """Python version specifier (PEP 440)."""
     _tags = {
@@ -123,6 +129,7 @@ class python_version(_BaseTag):
         "short_descr": "python version specifier (PEP 440) for estimator, or None = all versions ok",
     }
 
+    
 class python_dependencies(_BaseTag):
     """Python dependencies of estimator."""
     _tags = {
@@ -132,6 +139,7 @@ class python_dependencies(_BaseTag):
         "short_descr": "python dependencies of estimator as str or list of str",
     }
 
+    
 class python_dependencies_alias(_BaseTag):
     """Import name aliases for dependencies."""
     _tags = {
@@ -141,6 +149,7 @@ class python_dependencies_alias(_BaseTag):
         "short_descr": "should be provided if import name differs from package name",
     }
 
+    
 class license_type(_BaseTag):
     """License type for interfaced packages."""
     _tags = {
@@ -150,6 +159,7 @@ class license_type(_BaseTag):
         "short_descr": "license type for interfaced packages: 'copyleft', 'permissive', 'copyright'",
     }
 
+    
 # CI and test flags
 # -----------------
 
@@ -162,6 +172,7 @@ class tests_libs(_BaseTag):
         "short_descr": "list of library dependencies required for tests",
     }
 
+    
 class tests_vm(_BaseTag):
     """Whether tests require their own VM."""
     _tags = {
@@ -171,6 +182,7 @@ class tests_vm(_BaseTag):
         "short_descr": "whether tests require their own VM to run",
     }
 
+    
 class tests_skip_by_name(_BaseTag):
     """Test names to skip on CI."""
     _tags = {
@@ -180,6 +192,7 @@ class tests_skip_by_name(_BaseTag):
         "short_descr": "list of test names to skip when running estimator checks on CI",
     }
 
+    
 class tests_python_dependencies(_BaseTag):
     """Additional dependencies for tests."""
     _tags = {
@@ -189,6 +202,7 @@ class tests_python_dependencies(_BaseTag):
         "short_descr": "additional python dependencies needed in tests (PEP 440)",
     }
 
+    
 # ------------------
 # BaseProbaRegressor
 # ------------------
@@ -202,6 +216,7 @@ class capability_survival(_BaseTag):
         "short_descr": "whether estimator can use censoring information, for survival analysis",
     }
 
+    
 class capability_multioutput(_BaseTag):
     """Support for multioutput regression."""
     _tags = {
@@ -211,6 +226,7 @@ class capability_multioutput(_BaseTag):
         "short_descr": "whether estimator supports multioutput regression",
     }
 
+    
 class capability_missing(_BaseTag):
     """Support for missing values."""
     _tags = {
@@ -220,6 +236,7 @@ class capability_missing(_BaseTag):
         "short_descr": "whether estimator supports missing values",
     }
 
+    
 class capability_update(_BaseTag):
     """Support for online updates."""
     _tags = {
@@ -229,6 +246,7 @@ class capability_update(_BaseTag):
         "short_descr": "whether estimator supports online updates via update",
     }
 
+    
 class X_inner_mtype(_BaseTag):
     """Internal X machine type."""
     _tags = {
@@ -238,6 +256,7 @@ class X_inner_mtype(_BaseTag):
         "short_descr": "which machine type(s) is the internal _fit/_predict able to deal with?",
     }
 
+    
 class y_inner_mtype(_BaseTag):
     """Internal y machine type."""
     _tags = {
@@ -247,6 +266,7 @@ class y_inner_mtype(_BaseTag):
         "short_descr": "which machine type(s) is the internal _fit/_predict able to deal with?",
     }
 
+    
 class C_inner_mtype(_BaseTag):
     """Internal censoring machine type."""
     _tags = {
@@ -256,6 +276,7 @@ class C_inner_mtype(_BaseTag):
         "short_descr": "which machine type(s) is the internal _fit/_predict able to deal with?",
     }
 
+    
 # ----------------
 # BaseDistribution
 # ----------------
@@ -269,6 +290,7 @@ class capabilities_approx(_BaseTag):
         "short_descr": "methods of distr that are approximate",
     }
 
+    
 class capabilities_exact(_BaseTag):
     """Numerically exact methods of distribution."""
     _tags = {
@@ -278,6 +300,17 @@ class capabilities_exact(_BaseTag):
         "short_descr": "methods of distr that are numerically exact",
     }
 
+    
+class capabilities_undefined(_BaseTag):
+    """Methods of distr that are mathematically undefined."""
+    _tags = {
+        "tag_name": "capabilities:undefined",
+        "parent_type": "distribution",
+        "tag_type": ("list", "str"),
+        "short_descr": "methods of distr that are mathematically undefined",
+    }
+    
+    
 class distr_measuretype(_BaseTag):
     """Measure type of distribution."""
     _tags = {
@@ -287,6 +320,7 @@ class distr_measuretype(_BaseTag):
         "short_descr": "measure type of distr",
     }
 
+    
 class distr_paramtype(_BaseTag):
     """Parametrization type of distribution."""
     _tags = {
@@ -296,6 +330,7 @@ class distr_paramtype(_BaseTag):
         "short_descr": "parametrization type of distribution",
     }
 
+    
 class approx_mean_spl(_BaseTag):
     """Sample size for MC mean estimates."""
     _tags = {
@@ -305,6 +340,7 @@ class approx_mean_spl(_BaseTag):
         "short_descr": "sample size used in MC estimates of mean",
     }
 
+    
 class approx_var_spl(_BaseTag):
     """Sample size for MC variance estimates."""
     _tags = {
@@ -314,6 +350,7 @@ class approx_var_spl(_BaseTag):
         "short_descr": "sample size used in MC estimates of var",
     }
 
+    
 class approx_energy_spl(_BaseTag):
     """Sample size for MC energy estimates."""
     _tags = {
@@ -323,6 +360,7 @@ class approx_energy_spl(_BaseTag):
         "short_descr": "sample size used in MC estimates of energy",
     }
 
+    
 class approx_spl(_BaseTag):
     """Sample size for other MC estimates."""
     _tags = {
@@ -332,6 +370,7 @@ class approx_spl(_BaseTag):
         "short_descr": "sample size used in other MC estimates",
     }
 
+    
 class bisect_iter(_BaseTag):
     """Max iterations for bisection method."""
     _tags = {
@@ -341,6 +380,7 @@ class bisect_iter(_BaseTag):
         "short_descr": "max iters for bisection method in ppf",
     }
 
+    
 class broadcast_params(_BaseTag):
     """Parameters to broadcast."""
     _tags = {
@@ -350,6 +390,7 @@ class broadcast_params(_BaseTag):
         "short_descr": "distribution parameters to broadcast",
     }
 
+    
 class broadcast_init(_BaseTag):
     """Whether to initialize broadcast parameters."""
     _tags = {
@@ -359,6 +400,7 @@ class broadcast_init(_BaseTag):
         "short_descr": "whether to initialize broadcast parameters in __init__",
     }
 
+    
 class broadcast_inner(_BaseTag):
     """Inner logic vectorization type."""
     _tags = {
@@ -368,6 +410,7 @@ class broadcast_inner(_BaseTag):
         "short_descr": "if inner logic is vectorized ('array') or scalar ('scalar')",
     }
 
+    
 # ---------------
 # BaseProbaMetric
 # ---------------
@@ -381,6 +424,7 @@ class scitype_y_pred(_BaseTag):
         "short_descr": "expected input type for y_pred in performance metric",
     }
 
+    
 class lower_is_better(_BaseTag):
     """Direction of metric optimization."""
     _tags = {
@@ -390,6 +434,7 @@ class lower_is_better(_BaseTag):
         "short_descr": "whether lower (True) or higher (False) is better",
     }
 
+    
 # ----------------------------
 # BaseMetaObject reserved tags
 # ----------------------------
@@ -403,6 +448,7 @@ class named_object_parameters(_BaseTag):
         "short_descr": "name of component list attribute for meta-objects",
     }
 
+    
 class fitted_named_object_parameters(_BaseTag):
     """Fitted component list attribute name."""
     _tags = {
@@ -412,6 +458,7 @@ class fitted_named_object_parameters(_BaseTag):
         "short_descr": "name of fitted component list attribute for meta-objects",
     }
 
+    
 # ---------------------------------------------------------
 # Registry Generation Logic
 # ---------------------------------------------------------
