@@ -30,7 +30,7 @@ class TestKernelMixture:
     def simple_km(self):
         """Simple Gaussian kernel mixture for testing."""
         support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
-        return KernelMixture(support=support, bandwidth=0.5, kernel="gaussian")
+        return KernelMixture(support=support, h=0.5, kernel="gaussian")
 
     @pytest.fixture
     def weighted_km(self):
@@ -39,7 +39,7 @@ class TestKernelMixture:
         weights = np.array([0.25, 0.5, 0.25])
         return KernelMixture(
             support=support,
-            bandwidth=0.5,
+            h=0.5,
             kernel="gaussian",
             weights=weights,
         )
@@ -50,7 +50,7 @@ class TestKernelMixture:
     def test_pdf_integrates_to_one(self, kernel):
         """Test pdf integrates to 1."""
         support = np.array([0.0, 1.0, 2.0, 3.0])
-        km = KernelMixture(support=support, bandwidth=0.5, kernel=kernel)
+        km = KernelMixture(support=support, h=0.5, kernel=kernel)
         xs = np.linspace(-5, 8, 10000)
         pdfs = np.array([km.pdf(x) for x in xs])
         integral = _trapezoid(pdfs, xs)
@@ -94,7 +94,7 @@ class TestKernelMixture:
         """Test 2D sample shape."""
         km = KernelMixture(
             support=[0.0, 1.0, 2.0],
-            bandwidth=0.5,
+            h=0.5,
             kernel="gaussian",
             index=pd.RangeIndex(3),
             columns=pd.Index(["a", "b"]),
@@ -107,24 +107,24 @@ class TestKernelMixture:
     def test_invalid_kernel_raises(self):
         """Test invalid kernel raises."""
         with pytest.raises(ValueError, match="Unknown kernel"):
-            KernelMixture(support=[0, 1], bandwidth=1.0, kernel="invalid")
+            KernelMixture(support=[0, 1], h=1.0, kernel="invalid")
 
     def test_weight_length_mismatch_raises(self):
         """Test mismatched weights raises."""
         with pytest.raises(ValueError, match="weights length"):
-            KernelMixture(support=[0, 1, 2], bandwidth=1.0, weights=[0.5, 0.5])
+            KernelMixture(support=[0, 1, 2], h=1.0, weights=[0.5, 0.5])
 
     def test_non_positive_bandwidth_raises(self):
         """Test non-positive bandwidth raises."""
-        with pytest.raises(ValueError, match="bandwidth must be positive"):
-            KernelMixture(support=[0, 1, 2], bandwidth=0.0)
-        with pytest.raises(ValueError, match="bandwidth must be positive"):
-            KernelMixture(support=[0, 1, 2], bandwidth=-1.0)
+        with pytest.raises(ValueError, match="h must be positive"):
+            KernelMixture(support=[0, 1, 2], h=0.0)
+        with pytest.raises(ValueError, match="h must be positive"):
+            KernelMixture(support=[0, 1, 2], h=-1.0)
 
     def test_negative_weights_raises(self):
         """Test negative weights raise."""
         with pytest.raises(ValueError, match="non-negative"):
-            KernelMixture(support=[0, 1, 2], bandwidth=1.0, weights=[1.0, -0.5, 0.5])
+            KernelMixture(support=[0, 1, 2], h=1.0, weights=[1.0, -0.5, 0.5])
 
     def test_log_pdf_consistency(self, simple_km):
         """Test log_pdf consistency with pdf."""
@@ -136,7 +136,7 @@ class TestKernelMixture:
     )
     def test_all_kernels_basic(self, kernel):
         """Test basic functionality for all kernels."""
-        km = KernelMixture(support=[0.0, 1.0, 2.0], bandwidth=0.5, kernel=kernel)
+        km = KernelMixture(support=[0.0, 1.0, 2.0], h=0.5, kernel=kernel)
         assert np.isfinite(km.mean())
         assert km.var() > 0
         assert km.pdf(1.0) > 0
@@ -162,10 +162,10 @@ class TestKernelMixture:
         """Test random_state reproducibility."""
         support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
         km1 = KernelMixture(
-            support=support, bandwidth=0.5, kernel="gaussian", random_state=42
+            support=support, h=0.5, kernel="gaussian", random_state=42
         )
         km2 = KernelMixture(
-            support=support, bandwidth=0.5, kernel="gaussian", random_state=42
+            support=support, h=0.5, kernel="gaussian", random_state=42
         )
         s1 = km1.sample(100)
         s2 = km2.sample(100)
@@ -174,22 +174,22 @@ class TestKernelMixture:
     def test_auto_bandwidth_scott(self):
         """Test Scott bandwidth rule."""
         support = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-        km = KernelMixture(support=support, bandwidth="scott", kernel="gaussian")
+        km = KernelMixture(support=support, h="scott", kernel="gaussian")
         expected = len(support) ** (-1.0 / 5.0) * np.std(support, ddof=1)
-        assert abs(km._bandwidth - expected) < 1e-10
+        assert abs(km._h - expected) < 1e-10
 
     def test_auto_bandwidth_silverman(self):
         """Test Silverman bandwidth rule."""
         support = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-        km = KernelMixture(support=support, bandwidth="silverman", kernel="gaussian")
+        km = KernelMixture(support=support, h="silverman", kernel="gaussian")
         expected = (4.0 / (3.0 * 5)) ** (1.0 / 5.0) * np.std(support, ddof=1)
-        assert abs(km._bandwidth - expected) < 1e-10
+        assert abs(km._h - expected) < 1e-10
 
     def test_subsetting_2d(self):
         """Test iloc subsetting."""
         km = KernelMixture(
             support=[0.0, 1.0, 2.0],
-            bandwidth=0.5,
+            h=0.5,
             kernel="gaussian",
             index=pd.RangeIndex(3),
             columns=pd.Index(["a", "b"]),
@@ -202,14 +202,14 @@ class TestKernelMixture:
     @pytest.mark.parametrize("rule", ["scott", "silverman"])
     def test_auto_bandwidth_single_element(self, rule):
         """Test bandwidth with single support point."""
-        km = KernelMixture(support=[5.0], bandwidth=rule, kernel="gaussian")
-        assert np.isfinite(km._bandwidth)
-        assert km._bandwidth > 0
+        km = KernelMixture(support=[5.0], h=rule, kernel="gaussian")
+        assert np.isfinite(km._h)
+        assert km._h > 0
 
     def test_invalid_kernel_type_raises(self):
         """Test non-string/distribution kernel raises."""
         with pytest.raises(TypeError, match="kernel must be a string"):
-            KernelMixture(support=[0, 1], bandwidth=1.0, kernel=42)
+            KernelMixture(support=[0, 1], h=1.0, kernel=42)
 
     def test_non_scalar_kernel_raises(self):
         """Test non-scalar distribution kernel raises."""
@@ -222,7 +222,7 @@ class TestKernelMixture:
             columns=pd.Index(["a", "b"]),
         )
         with pytest.raises(ValueError, match="scalar"):
-            KernelMixture(support=[0, 1], bandwidth=1.0, kernel=kernel_2d)
+            KernelMixture(support=[0, 1], h=1.0, kernel=kernel_2d)
 
     def test_nonzero_mean_kernel_warns(self):
         """Test non-zero mean kernel warns."""
@@ -230,7 +230,7 @@ class TestKernelMixture:
 
         with pytest.warns(UserWarning, match="non-zero mean"):
             KernelMixture(
-                support=[0, 1, 2], bandwidth=0.5, kernel=Normal(mu=5, sigma=1)
+                support=[0, 1, 2], h=0.5, kernel=Normal(mu=5, sigma=1)
             )
 
     def test_distribution_kernel_rng_warns(self):
@@ -239,7 +239,7 @@ class TestKernelMixture:
 
         km = KernelMixture(
             support=[0, 1, 2],
-            bandwidth=0.5,
+            h=0.5,
             kernel=Normal(mu=0, sigma=1),
             random_state=42,
         )
@@ -252,9 +252,9 @@ class TestKernelMixture:
 
         support = np.array([0.0, 1.0, 2.0])
         bw = 0.5
-        km_str = KernelMixture(support=support, bandwidth=bw, kernel="gaussian")
+        km_str = KernelMixture(support=support, h=bw, kernel="gaussian")
         km_dist = KernelMixture(
-            support=support, bandwidth=bw, kernel=Normal(mu=0, sigma=1)
+            support=support, h=bw, kernel=Normal(mu=0, sigma=1)
         )
         for x in [0.0, 0.5, 1.0, 1.5, 2.0, 2.5]:
             assert abs(km_str.pdf(x) - km_dist.pdf(x)) < 1e-6
@@ -265,9 +265,9 @@ class TestKernelMixture:
 
         support = np.array([0.0, 1.0, 2.0])
         bw = 0.5
-        km_str = KernelMixture(support=support, bandwidth=bw, kernel="gaussian")
+        km_str = KernelMixture(support=support, h=bw, kernel="gaussian")
         km_dist = KernelMixture(
-            support=support, bandwidth=bw, kernel=Normal(mu=0, sigma=1)
+            support=support, h=bw, kernel=Normal(mu=0, sigma=1)
         )
         for x in [-1.0, 0.0, 1.0, 2.0, 3.0]:
             assert abs(km_str.cdf(x) - km_dist.cdf(x)) < 1e-6
@@ -278,9 +278,9 @@ class TestKernelMixture:
 
         support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
         bw = 0.5
-        km_str = KernelMixture(support=support, bandwidth=bw, kernel="gaussian")
+        km_str = KernelMixture(support=support, h=bw, kernel="gaussian")
         km_dist = KernelMixture(
-            support=support, bandwidth=bw, kernel=Normal(mu=0, sigma=1)
+            support=support, h=bw, kernel=Normal(mu=0, sigma=1)
         )
         assert abs(km_str.mean() - km_dist.mean()) < 1e-10
         assert abs(km_str.var() - km_dist.var()) < 1e-10
@@ -291,7 +291,7 @@ class TestKernelMixture:
 
         km = KernelMixture(
             support=[0.0, 1.0, 2.0],
-            bandwidth=0.5,
+            h=0.5,
             kernel=Normal(mu=0, sigma=1),
         )
         assert np.isfinite(km.sample())
@@ -309,8 +309,8 @@ class TestKernelMixture:
 
         support = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
         bw = 0.5
-        km = KernelMixture(support=support, bandwidth=bw, kernel="gaussian")
-        kde = KernelDensity(bandwidth=bw, kernel="gaussian")
+        km = KernelMixture(support=support, h=bw, kernel="gaussian")
+        kde = KernelDensity(h=bw, kernel="gaussian")
         kde.fit(support.reshape(-1, 1))
         xs = np.linspace(-2, 6, 50)
         for x in xs:
