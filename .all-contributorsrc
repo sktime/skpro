@@ -233,6 +233,17 @@
       ]
     },
     {
+      "login": "arnavk23",
+      "name": "Arnav Kapoor",
+      "avatar_url": "https://avatars.githubusercontent.com/u/arnavk23?v=4",
+      "profile": "https://github.com/arnavk23",
+      "contributions": [
+        "code",
+        "doc",
+        "test",
+        "example"
+      ]
+    }
       "login": "Khushmagrawal",
       "name": "Khush Agrawal",
       "profile": "https://github.com/Khushmagrawal",
