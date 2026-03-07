@@ -3,7 +3,6 @@
 __author__ = ["meraldoantonio"]
 
 import numpy as np
-import pandas as pd
 
 from skpro.distributions import Normal
 from skpro.regression.base import BaseProbaRegressor
@@ -99,6 +98,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         "authors": ["meraldoantonio"],
         "capability:multioutput": False,
         "capability:missing": True,
+        "capability:update": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
     }
@@ -169,12 +169,18 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         self._coefs_prior_cov = self.coefs_prior_cov
         self._coefs_prior_precision = np.linalg.inv(self._coefs_prior_cov)
 
+        X_arr = X.to_numpy(dtype=float)
+        y_arr = y.to_numpy(dtype=float)
+
         # Perform Bayesian inference
         (
             self._coefs_posterior_mu,
             self._coefs_posterior_cov,
         ) = self._perform_bayesian_inference(
-            X, y, self._coefs_prior_mu, self._coefs_prior_cov
+            X_arr,
+            y_arr,
+            coefs_prior_mu=self._coefs_prior_mu,
+            coefs_prior_precision=self._coefs_prior_precision,
         )
         return self
 
@@ -192,8 +198,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Predicted Normal distribution for outputs.
         """
         idx = X.index
-        if isinstance(X, pd.DataFrame):
-            X = X.values
+        X = X.to_numpy(dtype=float)
 
         # Predictive mean: X * posterior_mu
         pred_mu = X @ self._coefs_posterior_mu
@@ -226,7 +231,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         )
         return self._y_pred
 
-    def _perform_bayesian_inference(self, X, y, coefs_prior_mu, coefs_prior_cov):
+    def _perform_bayesian_inference(self, X, y, coefs_prior_mu, coefs_prior_precision):
         """Perform Bayesian inference for linear regression.
 
         Obtains the posterior distribution using normal conjugacy formula.
@@ -239,8 +244,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Observed target vector (n_samples,).
         coefs_prior_mu : np.ndarray
             Mean vector of the prior Normal distribution for coefficients.
-        coefs_prior_cov : np.ndarray
-            Covariance matrix of the prior Normal distribution for coefficients.
+        coefs_prior_precision : np.ndarray
+            Precision matrix of the prior Normal distribution for coefficients.
 
         Returns
         -------
@@ -249,46 +254,47 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         coefs_posterior_cov : np.ndarray
             Covariance matrix of the posterior Normal distribution for coefficients.
         """
-        X = np.array(X)
-        y = np.array(y)
-
-        # Compute prior precision from prior covariance
-        coefs_prior_precision = np.linalg.inv(coefs_prior_cov)
-
-        # Compute posterior precision and covariance
+        # Information-form update (precision + natural parameter)
         coefs_posterior_precision = coefs_prior_precision + self.noise_precision * (
             X.T @ X
         )
-        coefs_posterior_cov = np.linalg.inv(coefs_posterior_precision)
-        coefs_posterior_mu = coefs_posterior_cov @ (
-            coefs_prior_precision @ coefs_prior_mu + self.noise_precision * X.T @ y
+        prior_natural_param = coefs_prior_precision @ coefs_prior_mu
+        posterior_natural_param = prior_natural_param + self.noise_precision * (X.T @ y)
+
+        # Solve instead of multiplying by inverse for improved numerical stability
+        coefs_posterior_mu = np.linalg.solve(
+            coefs_posterior_precision, posterior_natural_param
         )
+        coefs_posterior_cov = np.linalg.inv(coefs_posterior_precision)
 
         return coefs_posterior_mu, coefs_posterior_cov
 
-    def update(self, X, y):
+    def _update(self, X, y):
         """Update the posterior with new data.
 
         Parameters
         ----------
         X : pandas DataFrame
             New feature matrix.
-        y : pandas Series or DataFrame
+        y : pandas DataFrame
             New target vector.
 
         Returns
         -------
         self : reference to self
         """
-        # Ensure y is a DataFrame
-        if isinstance(y, pd.Series):
-            y = y.to_frame(name="y_train")
+        X_arr = X.to_numpy(dtype=float)
+        y_arr = y.to_numpy(dtype=float)
+        coefs_prior_precision = np.linalg.inv(self._coefs_posterior_cov)
 
         (
             self._coefs_posterior_mu,
             self._coefs_posterior_cov,
         ) = self._perform_bayesian_inference(
-            X, y, self._coefs_posterior_mu, self._coefs_posterior_cov
+            X_arr,
+            y_arr,
+            coefs_prior_mu=self._coefs_posterior_mu,
+            coefs_prior_precision=coefs_prior_precision,
         )
         return self
 
