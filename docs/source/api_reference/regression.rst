@@ -223,6 +223,17 @@ Gaussian process and kernel regression
 
     GaussianProcess
 
+Non-parametric regressors
+-------------------------
+
+.. currentmodule:: skpro.regression.nonparametric
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    NadarayaWatsonCDE
+
 Bayesian regressors
 -------------------
 
