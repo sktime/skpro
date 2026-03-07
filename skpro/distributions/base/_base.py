@@ -26,6 +26,9 @@ class BaseDistribution(BaseObject):
         # -------------
         "distr:measuretype": "mixed",  # distribution type, mixed, continuous, discrete
         "distr:paramtype": "general",
+        "property:multivariate": False,  # whether distribution is multivariate
+        "property:indep_axes": (0, 1),  # axes along which distr is independent
+        #
         # parameterization type - parametric, nonparametric, composite
         #
         # default parameter settings for MC estimates
@@ -687,6 +690,8 @@ class BaseDistribution(BaseObject):
                 x_inner = x.values
             # else, coerce to a numpy array if needed
             # then, broadcast it to the shape of self
+            if k == "axis":
+                x_inner = _coerce_to_tuple(x)
             else:
                 x_inner = self._coerce_to_self_index_np(x, flatten=False)
             kwargs_inner[k] = x_inner
@@ -707,7 +712,7 @@ class BaseDistribution(BaseObject):
             res = res[()]
         return res
 
-    def pdf(self, x):
+    def pdf(self, x, axis=None):
         r"""Probability density function.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
@@ -721,26 +726,89 @@ class BaseDistribution(BaseObject):
         and entries :math:`p_{X_{ij}}(x_{ij})`.
 
         If ``self`` has a mixed or discrete distribution, this returns
-        the weighted continuous part of `self`'s distribution instead of the pdf,
+        the weighted continuous part of ``self``'s distribution instead of the pdf,
         i.e., the marginal pdf integrate to the weight of the continuous part.
+
+        Joint pdfs can be obtained by specifying the ``axis`` argument:
+
+        * ``axis=0`` : joint pdf along rows.
+          Result is a single-row ``DataFrame`` corresponding to
+          :math:`p_{X_{\cdot j}}(x_{\cdot j})`, where :math:`X_{\cdot j}` is the
+          random variable corresponding to the :math:`j`-th column of :math:`X`,
+          :math:`x_{\cdot j}` is the :math:`j`-th column of :math:`x`,
+          and :math:`p_{X_{\cdot j}}` is the joint pdf of :math:`X_{\cdot j}`.
+        * ``axis=1`` : joint pdf along columns.
+          Result is a single-column ``DataFrame`` corresponding to
+          :math:`p_{X_{i \cdot}}(x_{i \cdot})`, where :math:`X_{i \cdot}` is the
+          random variable corresponding to the :math:`i`-th row of :math:`X`,
+          :math:`x_{i \cdot}` is the :math:`i`-th row of :math:`x`,
+        * ``axis=(0, 1)`` or ``axis=="all"`` : joint pdf along rows and columns.
+          Result is a single scalar value, corresponding to
+          :math:`p_{X}(x)`, where :math:`p_{X}` is the joint pdf of :math:`X`.
 
         Parameters
         ----------
         x : ``pandas.DataFrame`` or 2D ``np.ndarray``
             representing :math:`x`, as above
+        axis : None, ``"all"``, or tuple of int, default=None
+            Axes or axis along which the pdf is joint:
+
+            * None : marginal pdfs are returned (default).
+              Result has same shape as ``self`` and same index and columns.
+            * 0 : joint pdf along rows, result has one row and same columns as ``self``.
+            * 1 : joint pdf along columns,
+              result has one column and same index as ``self``.
+            * (0, 1) : joint pdf along rows and columns,
+              result is a single scalar, a numpy float.
 
         Returns
         -------
-        ``pd.DataFrame`` with same columns and index as ``self``
-            containing :math:`p_{X_{ij}}(x_{ij})`, as above
+        ``pd.DataFrame``
+            with same columns and index as ``self`` at default (``axis=None``),
+            containing :math:`p_{X_{ij}}(x_{ij})`, as above.
+
+            * if ``axis=0``, single-row ``DataFrame`` with joint pdfs along rows,
+              columns same as ``self``, row index is ``[0]``
+            * if ``axis=1``, single-column ``DataFrame`` with joint pdfs along columns
+              index same as ``self``, column name is ``'pdf'``
+            * if ``axis=(0, 1)``, single scalar value, a numpy float
         """
         distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
         if distr_type == "discrete":
             return self._coerce_to_self_index_df(0, flatten=False)
 
-        return self._boilerplate("_pdf", x=x)
+        # handle joint / marginalization
+        indep_axes = self.get_tag("property:indep_axes", (0, 1))
+        if axis is not None:
+            if axis == "all":
+                axis = (0, 1)
+            axis = _coerce_to_tuple(axis)
 
-    def _pdf(self, x):
+            axes_to_pass = tuple([ax for ax in axis if ax not in indep_axes])
+            axes_to_handle_here = [ax for ax in axis if ax in indep_axes]
+
+            axs = {"axis": axes_to_pass} if len(axes_to_pass) > 0 else {}
+        else:
+            axs = {}
+            axes_to_handle_here = []
+
+        pdf_val = self._boilerplate("_pdf", x=x, **axs)
+
+        # handle marginalization over independent axes
+        for ax in axes_to_handle_here:
+            pdf_val = pdf_val.prod(axis=ax)
+            if isinstance(pdf_val, pd.Series):
+                if ax == 0:
+                    pdf_val = pdf_val.to_frame().T
+                    pdf_val.index = pd.Index([0])
+                else:
+                    pdf_val = pdf_val.to_frame(name="pdf")
+        if len(axis) == 2:
+            pdf_val = pdf_val.values[0, 0]
+
+        return pdf_val
+
+    def _pdf(self, x, axis=None):
         """Probability density function.
 
         Private method, to be implemented by subclasses.
@@ -2050,3 +2118,15 @@ def _coerce_to_pd_index_or_none(x):
     if isinstance(x, pd.Index):
         return x
     return pd.Index(x)
+
+
+def _coerce_to_tuple(x):
+    """Coerce to tuple."""
+    if x is None:
+        return ()
+    if isinstance(x, tuple):
+        return x
+    # if iterable but not string, coerce to tuple
+    if hasattr(x, "__iter__") and not isinstance(x, str):
+        return tuple(x)
+    return (x,)  # else, make single-element tuple
