@@ -4,9 +4,7 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "commitConvention": "none",
-  "files": [
-    "CONTRIBUTORS.md"
-  ],
+  "files": [],
   "imageSize": 100,
   "contributorsPerLine": 9,
   "contributorsSortAlphabetically": true,
