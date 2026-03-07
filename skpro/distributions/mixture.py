@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Mixture distribution."""
 
-__author__ = ["fkiraly"]
-
 import numpy as np
 import pandas as pd
 from skbase.base import BaseMetaObject
@@ -43,6 +41,11 @@ class Mixture(BaseMetaObject, BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm", "energy", "ppf"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf"],
         "distr:measuretype": "mixed",

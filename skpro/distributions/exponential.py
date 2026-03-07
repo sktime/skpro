@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Exponential probability distribution."""
 
-__author__ = ["ShreeshaM07"]
-
 import numpy as np
 import pandas as pd
 from scipy.stats import expon, rv_continuous
@@ -37,6 +35,11 @@ class Exponential(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["ShreeshaM07"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["ppf", "pdfnorm"],
         "capabilities:exact": [
             "mean",

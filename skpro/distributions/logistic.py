@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Logistic probability distribution."""
 
-__author__ = ["malikrafsan"]
-
 import numpy as np
 import pandas as pd
 from scipy.integrate import quad
@@ -38,6 +36,11 @@ class Logistic(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["malikrafsan"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": [
             "mean",

@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Alpha probability distribution."""
 
-__author__ = ["SaiReavanth25"]
-
 import pandas as pd
 from scipy.stats import alpha, rv_continuous
 
@@ -46,6 +44,11 @@ class Alpha(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["SaiRevanth25"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",

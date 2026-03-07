@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Poisson probability distribution."""
 
-__author__ = ["fkiraly", "malikrafsan"]
-
 import pandas as pd
 from scipy.stats import poisson, rv_discrete
 
@@ -29,6 +27,11 @@ class Poisson(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly", "malikrafsan"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"],
         "distr:measuretype": "discrete",

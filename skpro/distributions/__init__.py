@@ -9,6 +9,7 @@ __all__ = [
     "Binomial",
     "BurrIII",
     "BurrXII",
+    "Cauchy",
     "ChiSquared",
     "Delta",
     "Empirical",
@@ -26,6 +27,7 @@ __all__ = [
     "HalfNormal",
     "Hurdle",
     "IID",
+    "KernelMixture",
     "InverseGamma",
     "InverseGaussian",
     "Histogram",
@@ -55,6 +57,7 @@ __all__ = [
     "TruncatedPareto",
     "Uniform",
     "Weibull",
+    "ZeroInflated",
 ]
 
 from skpro.distributions.alpha import Alpha
@@ -81,6 +84,7 @@ from skpro.distributions.histogram import Histogram
 from skpro.distributions.hurdle import Hurdle
 from skpro.distributions.inversegamma import InverseGamma
 from skpro.distributions.inversegaussian import InverseGaussian
+from skpro.distributions.kernel_mixture import KernelMixture
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.left_truncated import LeftTruncated
 from skpro.distributions.levy import Levy
@@ -105,3 +109,4 @@ from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.truncated_pareto import TruncatedPareto
 from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
+from skpro.distributions.zeroinflated import ZeroInflated
