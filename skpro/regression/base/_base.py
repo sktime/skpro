@@ -3,6 +3,7 @@
 
 import numpy as np
 import pandas as pd
+from warnings import warn
 from skbase.utils.dependencies import _check_estimator_deps, _check_soft_dependencies
 
 from skpro.base import BaseEstimator
@@ -34,6 +35,8 @@ class BaseProbaRegressor(BaseEstimator):
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
+        "distribution:fallback": "Normal",
+        "distribution:fallback_warn": True,
     }
 
     def __init__(self):
@@ -332,6 +335,15 @@ class BaseProbaRegressor(BaseEstimator):
         # default to var if any of the other three are implemented
 
         # we use predict_var to get scale, and predict to get location
+        if self.get_tag("distribution:fallback_warn"):
+            warn(
+                f"{type(self).__name__}.predict_proba: no _predict_proba override "
+                "found. Falling back to a Normal (Gaussian) predictive distribution "
+                "constructed from predict and predict_var. This assumption may be "
+                "inappropriate for skewed or heavy-tailed predictive distributions.",
+                UserWarning,
+                stacklevel=2,
+            )
         pred_var = self.predict_var(X=X)
         pred_std = np.sqrt(pred_var)
         pred_mean = self.predict(X=X)
@@ -656,6 +668,16 @@ class BaseProbaRegressor(BaseEstimator):
         #   we get quantile prediction for first and third quartile
         #   return variance of normal distribution with that first and third quartile
         if implements_interval or implements_quantiles:
+            if self.get_tag("distribution:fallback_warn"):
+                warn(
+                    f"{type(self).__name__}.predict_var: no _predict_var or "
+                    "_predict_proba override found. Falling back to Normal (Gaussian) "
+                    "variance estimation from the inter-quartile range (IQR). This "
+                    "assumption may be inappropriate for non-Gaussian predictive "
+                    "distributions.",
+                    UserWarning,
+                    stacklevel=2,
+                )
             pred_int = self._predict_interval(X=X, coverage=[0.5])
             var_names = pred_int.columns.get_level_values(0).unique()
             vars_dict = {}
