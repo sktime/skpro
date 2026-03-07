@@ -1602,13 +1602,21 @@ class BaseDistribution(BaseObject):
         quantiles = qres.loc[:, cols]
         return quantiles
 
-    def sample(self, n_samples=None):
+    def sample(self, n_samples=None, random_state=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : int, RandomState instance, or None, optional, default = None
+            Controls the random number generator used for sampling.
+
+            * If ``int``, the value is used to seed the ``RandomState``.
+            * If ``RandomState`` instance, it is used directly.
+            * If ``None``, the global ``numpy`` random state is used.
+
+            Pass an integer for reproducible results across multiple calls.
 
         Returns
         -------
@@ -1625,13 +1633,16 @@ class BaseDistribution(BaseObject):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
-        return self._sample(n_samples=n_samples)
+        return self._sample(n_samples=n_samples, random_state=random_state)
 
-    def _sample(self, n_samples=None):
+    def _sample(self, n_samples=None, random_state=None):
         """Private method, to be implemented by subclasses."""
+        from sklearn.utils import check_random_state
+
+        rng = check_random_state(random_state)
 
         def gen_unif():
-            np_unif = np.random.uniform(size=self.shape)
+            np_unif = rng.uniform(size=self.shape)
             if self.ndim > 0:
                 return pd.DataFrame(np_unif, index=self.index, columns=self.columns)
             return np_unif
