@@ -51,6 +51,7 @@ __all__ = [
     "Skellam",
     "SkewNormal",
     "TDistribution",
+    "TemporalNormal",
     "TransformedDistribution",
     "TruncatedDistribution",
     "TruncatedNormal",
@@ -103,6 +104,7 @@ from skpro.distributions.qpd_empirical import QPD_Empirical
 from skpro.distributions.skellam import Skellam
 from skpro.distributions.skew_normal import SkewNormal
 from skpro.distributions.t import TDistribution
+from skpro.distributions.temporal_normal import TemporalNormal
 from skpro.distributions.trafo import TransformedDistribution
 from skpro.distributions.truncated import TruncatedDistribution
 from skpro.distributions.truncated_normal import TruncatedNormal
