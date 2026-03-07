@@ -226,12 +226,14 @@ def convert(
 
     key = (from_type, to_type, as_scitype)
 
-    convert_dict = get_convert_dict()
-    if key not in convert_dict.keys():
-        raise NotImplementedError(
-            "no conversion defined from type " + str(from_type) + " to " + str(to_type)
-        )
+convert_dict = get_convert_dict()
 
+if key not in convert_dict:
+    raise NotImplementedError(
+        f"No conversion defined from '{from_type}' to '{to_type}' "
+        f"for object type {type(obj)}. "
+        f"Available conversions: {list(convert_dict)}"
+    )
     if store_behaviour == "freeze":
         store = deepcopy(store)
     elif store_behaviour == "reset":
