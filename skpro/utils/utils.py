@@ -54,7 +54,9 @@ def to_percent(value, return_float=True):
     Returns: int/float
         A percentage
     """
-
+     # validate input type
+    if not isinstance(value, (int, float)):
+        raise TypeError("value must be int or float")
     def percent(p):
         if return_float:
             return float(p)
