@@ -517,7 +517,7 @@ class fitted_named_object_parameters(_BaseTag):
 # Registry Generation Logic
 # ---------------------------------------------------------
 
-ESTIMATOR_TAG_REGISTER = []
+OBJECT_TAG_REGISTER = []
 tag_classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 
 for _, cl in tag_classes:
@@ -532,17 +532,12 @@ for _, cl in tag_classes:
 
     if isinstance(parent_type, list):
         for p_type in parent_type:
-            ESTIMATOR_TAG_REGISTER.append((tag_name, p_type, tag_type, short_descr))
+            OBJECT_TAG_REGISTER.append((tag_name, p_type, tag_type, short_descr))
     else:
-        ESTIMATOR_TAG_REGISTER.append((tag_name, parent_type, tag_type, short_descr))
+        OBJECT_TAG_REGISTER.append((tag_name, parent_type, tag_type, short_descr))
 
-ESTIMATOR_TAG_TABLE = pd.DataFrame(ESTIMATOR_TAG_REGISTER)
-ESTIMATOR_TAG_LIST = ESTIMATOR_TAG_TABLE[0].unique().tolist()
-
-# Compatibility Aliases
-OBJECT_TAG_REGISTER = ESTIMATOR_TAG_REGISTER
-OBJECT_TAG_TABLE = ESTIMATOR_TAG_TABLE
-OBJECT_TAG_LIST = ESTIMATOR_TAG_LIST
+OBJECT_TAG_TABLE = pd.DataFrame(OBJECT_TAG_REGISTER)
+OBJECT_TAG_LIST = OBJECT_TAG_TABLE[0].unique().tolist()
 
 
 def check_tag_is_valid(tag_name, tag_value):
