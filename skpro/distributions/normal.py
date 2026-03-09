@@ -100,7 +100,7 @@ class Normal(BaseDistribution):
         pdf = self.pdf(x)
         energy_arr = (x - mu) * (2 * cdf - 1) + 2 * sigma**2 * pdf
         if energy_arr.ndim > 0:
-            energy_arr = np.sum(np.asarray(energy_arr), axis=1)
+            energy_arr = energy_arr.sum(axis=1, skipna=False)
         return energy_arr
 
     def _mean(self):
