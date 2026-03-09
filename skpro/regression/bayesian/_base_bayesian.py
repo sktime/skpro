@@ -5,12 +5,17 @@ from skpro.regression.base import BaseProbaRegressor
 
 class BaseBayesianRegressor(BaseProbaRegressor):
     """
-    Base class for Bayesian probabilistic regressors using PyMC.
+    Base class for Bayesian probabilistic regressors.
 
-    This class encapsulates the PyMC backend logic for MCMC sampling and
-    posterior predictive inference. Individual Bayesian estimators should
-    inherit from this class and implement the `_build_model` method to define
-    their specific probabilistic model structure.
+    The class defines a backend-agnostic interface based on posterior
+    fitting/prediction hooks. By default, it provides a PyMC + MCMC
+    implementation, but subclasses can override the posterior hooks to support
+    non-MC Bayesian paradigms (e.g., conjugate/closed-form, variational,
+    Laplace, deterministic approximations).
+
+    Subclasses using the default PyMC/MCMC workflow should implement
+    `_build_model`. Subclasses using non-PyMC or non-MCMC workflows should
+    override `_fit_posterior` and `_predict_proba_from_posterior`.
 
     Parameters
     ----------
@@ -30,14 +35,14 @@ class BaseBayesianRegressor(BaseProbaRegressor):
     Attributes
     ----------
     model_ : pymc.Model
-        The fitted PyMC model.
+        The fitted PyMC model, if using the default PyMC backend.
     trace_ : arviz.InferenceData
-        The MCMC sampling results.
+        The posterior samples, if using the default PyMC backend.
 
     Notes
     -----
-    Subclasses must implement the `_build_model(self, X, y)` method that
-    constructs and returns a PyMC model given the training data X and y.
+    For the default backend, subclasses must implement
+    `_build_model(self, X, y)` to construct and return a PyMC model.
     """
 
     _tags = {
@@ -45,10 +50,6 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         # --------------
         "authors": ["skpro developers"],
         "python_version": ">=3.10",
-        "python_dependencies": [
-            "pymc>=5.0.0",
-            "arviz>=0.18.0",
-        ],
         # estimator tags
         # --------------
         "capability:multioutput": False,
@@ -77,6 +78,11 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         super().__init__()
 
     def _fit(self, X, y):
+        """Fit regressor to training data via posterior inference backend."""
+        self._fit_posterior(X, y)
+        return self
+
+    def _fit_posterior(self, X, y):
         """Fit regressor to training data.
 
         Parameters
@@ -117,13 +123,11 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             warnings.filterwarnings("ignore", category=UserWarning)
             self.trace_.add_groups(training_data=training_data.to_xarray())
 
-        return self
-
     def _build_model(self, X, y):
         """Build the PyMC model.
 
-        This method must be implemented by subclasses to define the
-        specific probabilistic model structure.
+        This method is used by the default PyMC/MCMC backend and must be
+        implemented by subclasses that rely on that backend.
 
         Parameters
         ----------
@@ -140,6 +144,10 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         raise NotImplementedError("Subclasses must implement the _build_model method.")
 
     def _predict_proba(self, X):
+        """Predict distribution over labels for data from features."""
+        return self._predict_proba_from_posterior(X)
+
+    def _predict_proba_from_posterior(self, X):
         """Predict distribution over labels for data from features.
 
         Parameters
@@ -226,9 +234,20 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             Dictionary containing fitted parameters, including:
             - trace_: arviz.InferenceData with MCMC results
         """
-        return {"trace_": self.trace_}
+        return self._get_fitted_params_from_posterior()
+
+    def _get_fitted_params_from_posterior(self):
+        """Get fitted parameters from the posterior representation."""
+        fitted_params = {}
+        if hasattr(self, "trace_"):
+            fitted_params["trace_"] = self.trace_
+        return fitted_params
 
     def get_posterior_summary(self, **kwargs):
+        """Get summary statistics of the posterior distributions."""
+        return self._get_posterior_summary_from_posterior(**kwargs)
+
+    def _get_posterior_summary_from_posterior(self, **kwargs):
         """Get summary statistics of the posterior distributions.
 
         Parameters
@@ -242,6 +261,13 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             Summary statistics of posterior distributions.
         """
         import arviz as az
+
+        if not hasattr(self, "trace_"):
+            raise NotImplementedError(
+                "Posterior summary is not available by default for this backend. "
+                "Override `_get_posterior_summary_from_posterior` in subclasses "
+                "that do not use `trace_`/ArviZ."
+            )
 
         return az.summary(self.trace_, **kwargs)
 

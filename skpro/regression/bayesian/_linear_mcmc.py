@@ -50,7 +50,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         "python_version": ">=3.10",
         "python_dependencies": [
             "pymc",
-            "pymc_marketing",
+            "pymc-extras",
             "arviz>=0.18.0",
         ],
         # estimator tags
@@ -83,7 +83,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
     @property
     def default_prior_config(self):
         """Return a dictionary of prior defaults."""
-        from pymc_marketing.prior import Prior
+        from pymc_extras.prior import Prior
 
         print(  # noqa: T201
             "The model assumes that the intercept and slopes are independent. \n\
@@ -279,7 +279,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
                 if not is_predictive:
                     df = pd.DataFrame(data_dict)
                     reshaped_df = df.stack()
-                    reshaped_df = reshaped_df.reset_index(name="value")
+                    reshaped_df = reshaped_df.to_frame("value").reset_index()
                     reshaped_df.set_index(["level_0", "level_1"], inplace=True)
                     reshaped_df.index.names = ["obs_id", "variable"]
                     return Empirical(spl=reshaped_df)
@@ -295,7 +295,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
                     # Create a new 'sample_id' column by
                     # combining the 'chain' and 'draw' columns
                     pred_proba_df["sample_id"] = (
-                        pred_proba_df["chain"] * self.sampler_config["draws"]
+                        pred_proba_df["chain"] * self.draws
                         + pred_proba_df["draw"]
                     )
                     pred_proba_df = pred_proba_df[["obs_id", "sample_id", "y_obs"]]
@@ -524,7 +524,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from pymc_marketing.prior import Prior
+        from pymc_extras.prior import Prior
 
         params1 = {}
         params2 = {"prior_config": {"intercept": Prior("Normal", mu=0, sigma=10)}}
