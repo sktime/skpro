@@ -171,8 +171,8 @@ Distributional boosting
 
     XGBoostLSS
 
-Neural conditional density estimation
--------------------------------------
+Deep learning based regression
+------------------------------
 
 .. currentmodule:: skpro.regression.mdn
 

@@ -35,6 +35,7 @@ Continuous support - full reals
     :toctree: auto_generated/
     :template: class.rst
 
+    Cauchy
     Laplace
     Logistic
     Normal
@@ -151,6 +152,7 @@ Mixture composition
     :toctree: auto_generated/
     :template: class.rst
 
+    KernelMixture
     Mixture
     NormalMixture
 

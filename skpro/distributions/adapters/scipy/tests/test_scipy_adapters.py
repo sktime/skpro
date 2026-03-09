@@ -79,6 +79,9 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
     @pytest.mark.parametrize("method,scipy_method", METHOD_TESTS["NO_PARAMS"])
     def test_method_no_params(self, object_instance, method, scipy_method):
         """Test method that doesn't need additional parameters."""
+        undefined = object_instance._tags.get("capabilities:undefined", [])
+        if method in undefined:
+            return
         res = getattr(object_instance, method)()
         params = object_instance._get_scipy_param()
         scipy_obj = object_instance._get_scipy_object()
@@ -90,7 +93,8 @@ class TestScipyAdapter(PackageConfig, ScipyDistributionFixtureGenerator, QuickTe
         if np.isscalar(res) and np.isscalar(scipy_res):
             if np.isinf(res) and res > 0 and np.isnan(scipy_res):
                 return
-
+        elif np.all(np.isinf(res) & (res > 0) & np.isnan(scipy_res)):
+            return
         assert np.allclose(res, scipy_res)
 
     @pytest.mark.parametrize("method,scipy_method", METHOD_TESTS["X_PARAMS"])

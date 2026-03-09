@@ -175,7 +175,6 @@ class ResidualDouble(BaseProbaRegressor):
         y_pred : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        est = self.estimator_resid_
         method = "predict"
         y_pred = y.copy()
 
