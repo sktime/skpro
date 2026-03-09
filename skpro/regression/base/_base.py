@@ -31,6 +31,7 @@ class BaseProbaRegressor(BaseEstimator):
         "capability:multioutput": False,
         "capability:missing": True,
         "capability:update": False,
+        "capability:feature_importance": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
@@ -203,6 +204,48 @@ class BaseProbaRegressor(BaseEstimator):
         self : reference to self
         """
         raise NotImplementedError
+
+    def feature_importances(self):
+        """Return feature importances for fitted estimator.
+
+        Returns
+        -------
+        importances : pd.Series
+            Feature importances indexed by feature names seen in ``fit``.
+        """
+        self.check_is_fitted()
+
+        if not self.get_tag("capability:feature_importance", False):
+            raise NotImplementedError(
+                f"{type(self).__name__} does not provide feature importances. "
+                "Set the tag 'capability:feature_importance' to True and implement "
+                "either `_feature_importances` or provide `feature_importances_`."
+            )
+
+        if self._has_implementation_of("_feature_importances"):
+            importances = self._feature_importances()
+        else:
+            try:
+                importances = getattr(self, "feature_importances_")
+            except Exception as e:
+                raise AttributeError(
+                    f"{type(self).__name__} declares it can provide feature importances "
+                    "(tag 'capability:feature_importance'=True) but does not expose "
+                    "`feature_importances_` and has no `_feature_importances` method."
+                ) from e
+
+        importances = np.asarray(importances).ravel()
+
+        if hasattr(self, "feature_names_in_"):
+            feat_names = self.feature_names_in_
+            if len(importances) != len(feat_names):
+                raise ValueError(
+                    f"feature importances length ({len(importances)}) does not match "
+                    f"number of features seen in fit ({len(feat_names)})."
+                )
+            return pd.Series(importances, index=feat_names, name="feature_importance")
+
+        return pd.Series(importances, name="feature_importance")
 
     def predict(self, X):
         """Predict labels for data from features.

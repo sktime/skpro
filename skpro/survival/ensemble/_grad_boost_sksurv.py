@@ -226,6 +226,7 @@ class SurvGradBoostSkSurv(_SksurvAdapter, BaseSurvReg):
 
     _tags = {
         "authors": ["sebp", "fkiraly"],  # sebp credit for interfaced estimator=
+        "capability:feature_importance": True,
     }
 
     def __init__(

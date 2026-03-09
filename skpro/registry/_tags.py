@@ -155,6 +155,12 @@ OBJECT_TAG_REGISTER = [
         "whether estimator supports online updates via update",
     ),
     (
+        "capability:feature_importance",
+        "regressor_proba",
+        "bool",
+        "whether estimator can return feature importances",
+    ),
+    (
         "X_inner_mtype",
         "regressor_proba",
         ("list", "str"),
