@@ -72,3 +72,25 @@ def test_lightgbmlss_param_handling(
 
         for key, value in expected_lgb_params.items():
             assert reg.lgb_params_.get(key) == value
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(LightGBMLSS),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
+def test_lightgbmlss_nonconsecutive_index():
+    """Test fit works with non-consecutive pandas indices."""
+    from sklearn.datasets import load_diabetes
+
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
+    y = pd.DataFrame(y)
+
+    X = X.iloc[:120].iloc[::2]
+    y = y.iloc[:120].iloc[::2]
+
+    reg = LightGBMLSS(n_trials=0, num_boost_round=5, num_leaves=7, n_jobs=1)
+    reg.fit(X, y)
+    y_pred = reg.predict_proba(X.iloc[:10])
+
+    assert list(X.index[:5]) != list(range(5))
+    assert y_pred.shape == (10, 1)

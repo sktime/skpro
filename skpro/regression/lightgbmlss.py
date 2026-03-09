@@ -61,9 +61,44 @@ class LightGBMLSS(BaseProbaRegressor):
     n_trials : int, optional, default=30
         Number of trials in tuning. If set to 0, no tuning is done and the
         provided LightGBM parameters are used directly.
-    explicitly_named_kwargs
-        Keyword arguments of LightGBM parameters to pass to the model when
-        ``n_trials=0``.
+    Other Parameters
+    ----------------
+    boosting : str, optional, default=None
+        LightGBM boosting type passed through to the underlying model.
+    learning_rate : float, optional, default=None
+        Learning rate used by the underlying LightGBM model.
+    num_leaves : int, optional, default=None
+        Maximum number of leaves in one tree.
+    max_depth : int, optional, default=None
+        Maximum tree depth for base learners.
+    min_data_in_leaf : int, optional, default=None
+        Minimum number of data points in a leaf.
+    min_sum_hessian_in_leaf : float, optional, default=None
+        Minimum sum Hessian in one leaf.
+    feature_fraction : float, optional, default=None
+        Fraction of features to sample for each tree.
+    feature_fraction_bynode : float, optional, default=None
+        Fraction of features to sample at each node.
+    bagging_fraction : float, optional, default=None
+        Fraction of rows to subsample for bagging.
+    bagging_freq : int, optional, default=None
+        Bagging frequency for row subsampling.
+    lambda_l1 : float, optional, default=None
+        L1 regularization term.
+    lambda_l2 : float, optional, default=None
+        L2 regularization term.
+    min_gain_to_split : float, optional, default=None
+        Minimum gain required to make a further split.
+    max_bin : int, optional, default=None
+        Maximum number of bins used for feature bucketing.
+    extra_trees : bool, optional, default=None
+        Whether to use extremely randomized trees.
+    linear_tree : bool, optional, default=None
+        Whether to fit linear models at leaves.
+    data_sample_strategy : str, optional, default=None
+        Data sampling strategy used by LightGBM.
+    callbacks : list of callables, optional, default=None
+        LightGBM callbacks used during direct training when ``n_trials=0``.
     """
 
     _tags = {
@@ -149,6 +184,7 @@ class LightGBMLSS(BaseProbaRegressor):
         super().__init__()
 
         if n_trials != 0:
+            # Hyperparameter tuning in lightgbmlss is implemented via optuna.
             self.set_tags(
                 **{
                     "python_dependencies": [
