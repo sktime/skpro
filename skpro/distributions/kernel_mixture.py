@@ -56,11 +56,14 @@ class KernelMixture(BaseDistribution):
         ``"cosine"``, ``"linear"``.
         If a ``BaseDistribution`` instance, it is used as a zero-centered,
         unit-scale kernel. The distribution must be scalar (0D).
-    weights : array-like or None, default=None
+    weights : array-like (1D or 2D) or None, default=None
         Weights for each support point. If None, uniform weights are used.
-        Must be same length as ``support``.
-        All weights must be non-negative and sum to a positive value.
-        Internally, weights are normalized to sum to 1 if they do not.
+        If 1D, must have length ``n`` (same as ``support``), and the same
+        weights are shared across all distribution instances.
+        If 2D, must have shape ``(n_instances, n)``, providing a separate
+        weight vector for each distribution instance (row of ``index``).
+        All weights must be non-negative; each row must sum to a positive
+        value. Internally, weights are row-normalized to sum to 1.
     random_state : int, np.random.Generator, or None, default=None
         Controls randomness for reproducible sampling.
         If int, used as seed for ``np.random.default_rng``.
@@ -81,6 +84,7 @@ class KernelMixture(BaseDistribution):
     --------
     >>> from skpro.distributions.kernel_mixture import KernelMixture
     >>> import numpy as np
+    >>> import pandas as pd
 
     Scalar distribution with built-in Gaussian kernel:
 
@@ -108,6 +112,18 @@ class KernelMixture(BaseDistribution):
     ... )
     >>> pdf_val = km_weighted.pdf(1.0)
 
+    Per-instance (2D) weights for a batch of distributions:
+
+    >>> weights_2d = [[0.5, 0.3, 0.2], [0.1, 0.3, 0.6]]
+    >>> km_batch = KernelMixture(
+    ...     support=[0.0, 1.0, 2.0],
+    ...     h=0.5,
+    ...     weights=weights_2d,
+    ...     index=pd.RangeIndex(2),
+    ...     columns=pd.Index(["y"]),
+    ... )
+    >>> means = km_batch.mean()
+
     See Also
     --------
     Mixture : Mixture of arbitrary distribution objects.
@@ -118,10 +134,10 @@ class KernelMixture(BaseDistribution):
     Evaluation cost is ``O(len(support) * len(x))`` for ``pdf`` and ``cdf``.
     Very large support arrays (e.g. >10 000 points) may be slow.
 
-    In the current implementation, if ``index``/``columns`` imply a multivariate
-    distribution (or batch of distributions), the ``support`` points and ``weights``
-    are shared across all marginals. Varying support or weights per marginal is
-    not yet supported (but planning to be supported in future versions).
+    When ``weights`` is 1D (or None), the same weights are shared across all
+    distribution instances.  When ``weights`` is 2D, each row of ``index``
+    gets its own weight vector, enabling e.g. Nadaraya-Watson conditional
+    density estimation where each test point has different kernel weights.
     """
 
     _tags = {
@@ -215,27 +231,56 @@ class KernelMixture(BaseDistribution):
 
         if weights is None:
             self._weights = np.ones(n) / n
+            self._weights_2d = False
         else:
-            w = np.asarray(weights, dtype=float).ravel()
-            if len(w) != n:
-                raise ValueError(
-                    f"weights length ({len(w)}) must match " f"support length ({n})."
-                )
-            w_sum = np.sum(w)
-            if w_sum <= 0:
-                raise ValueError("weights must have positive sum.")
-            if np.any(w < 0):
-                raise ValueError("All weights must be non-negative.")
-            self._weights = w / w_sum
+            w = np.asarray(weights, dtype=float)
+            if w.ndim == 1:
+                if len(w) != n:
+                    raise ValueError(
+                        f"weights length ({len(w)}) must match "
+                        f"support length ({n})."
+                    )
+                if np.any(w < 0):
+                    raise ValueError("All weights must be non-negative.")
+                w_sum = np.sum(w)
+                if w_sum <= 0:
+                    raise ValueError("weights must have positive sum.")
+                self._weights = w / w_sum
+                self._weights_2d = False
+            elif w.ndim == 2:
+                if w.shape[1] != n:
+                    raise ValueError(
+                        f"weights columns ({w.shape[1]}) must match "
+                        f"support length ({n})."
+                    )
+                if np.any(w < 0):
+                    raise ValueError("All weights must be non-negative.")
+                row_sums = w.sum(axis=1, keepdims=True)
+                if np.any(row_sums <= 0):
+                    raise ValueError("Each row of weights must have positive sum.")
+                self._weights = w / row_sums
+                self._weights_2d = True
+            else:
+                raise ValueError("weights must be 1D or 2D array-like.")
 
         super().__init__(index=index, columns=columns)
 
     def _init_shape_bc(self, index=None, columns=None):
+        if self._weights_2d and index is None:
+            n_rows = self._weights.shape[0]
+            index = pd.RangeIndex(n_rows)
+            self._index = index
+
         if index is None and columns is None:
             self._shape = ()
         else:
             n_rows = len(index) if index is not None else 1
             n_cols = len(columns) if columns is not None else 1
+            if self._weights_2d and self._weights.shape[0] != n_rows:
+                raise ValueError(
+                    f"weights rows ({self._weights.shape[0]}) must match "
+                    f"index length ({n_rows})."
+                )
             self._shape = (n_rows, n_cols)
 
     def _kernel_pdf(self, u):
@@ -349,6 +394,9 @@ class KernelMixture(BaseDistribution):
         For a kernel mixture:
         :math:`\mathbb{E}[X] = \sum_i w_i x_i`
         """
+        if self._weights_2d:
+            mean_vals = self._weights @ self._support
+            return np.broadcast_to(mean_vals[:, None], self.shape).copy()
         mean_val = np.sum(self._weights * self._support)
         if self.ndim > 0:
             return np.full(self.shape, mean_val)
@@ -361,9 +409,15 @@ class KernelMixture(BaseDistribution):
         :math:`\mathrm{Var}[X] = h^2 \mathrm{Var}[K] + \sum_i w_i (x_i - \mu)^2`
         """
         h = self._h
+        kernel_var = self._kernel_variance()
+        if self._weights_2d:
+            means = self._weights @ self._support
+            deviations = self._support[None, :] - means[:, None]
+            weighted_var = np.sum(self._weights * deviations**2, axis=1)
+            var_vals = h**2 * kernel_var + weighted_var
+            return np.broadcast_to(var_vals[:, None], self.shape).copy()
         mean_val = np.sum(self._weights * self._support)
         weighted_var = np.sum(self._weights * (self._support - mean_val) ** 2)
-        kernel_var = self._kernel_variance()
         var_val = h**2 * kernel_var + weighted_var
         if self.ndim > 0:
             return np.full(self.shape, var_val)
@@ -383,7 +437,13 @@ class KernelMixture(BaseDistribution):
         x_flat = x.ravel()
         u = (x_flat[:, None] - support[None, :]) / h
         K = self._kernel_pdf(u)
-        pdf_flat = np.sum(weights[None, :] * K, axis=1) / h
+
+        if self._weights_2d:
+            n_rows, n_cols = self.shape
+            w_exp = np.repeat(weights, n_cols, axis=0)
+            pdf_flat = np.sum(w_exp * K, axis=1) / h
+        else:
+            pdf_flat = np.sum(weights[None, :] * K, axis=1) / h
         return pdf_flat.reshape(x.shape)
 
     def _log_pdf(self, x):
@@ -409,7 +469,13 @@ class KernelMixture(BaseDistribution):
         x_flat = x.ravel()
         u = (x_flat[:, None] - support[None, :]) / h
         K_cdf = self._kernel_cdf(u)
-        cdf_flat = np.sum(weights[None, :] * K_cdf, axis=1)
+
+        if self._weights_2d:
+            n_rows, n_cols = self.shape
+            w_exp = np.repeat(weights, n_cols, axis=0)
+            cdf_flat = np.sum(w_exp * K_cdf, axis=1)
+        else:
+            cdf_flat = np.sum(weights[None, :] * K_cdf, axis=1)
         return cdf_flat.reshape(x.shape)
 
     def _sample(self, n_samples=None):
@@ -435,13 +501,22 @@ class KernelMixture(BaseDistribution):
             return pd.DataFrame(samples, columns=self.columns)
 
         n_rows, n_cols = self.shape
-        total = n_draw * n_rows * n_cols
+        n_support = len(support)
+        samples = np.empty((n_draw, n_rows, n_cols))
 
-        idx = rng.choice(len(support), size=total, p=weights)
-        centers = support[idx]
-        noise = self._kernel_sample(total, rng)
-        samples_flat = centers + h * noise
-        samples = samples_flat.reshape(n_draw, n_rows, n_cols)
+        if self._weights_2d:
+            for i in range(n_rows):
+                count = n_draw * n_cols
+                idx = rng.choice(n_support, size=count, p=weights[i])
+                centers = support[idx]
+                noise = self._kernel_sample(count, rng)
+                samples[:, i, :] = (centers + h * noise).reshape(n_draw, n_cols)
+        else:
+            total = n_draw * n_rows * n_cols
+            idx = rng.choice(n_support, size=total, p=weights)
+            centers = support[idx]
+            noise = self._kernel_sample(total, rng)
+            samples = (centers + h * noise).reshape(n_draw, n_rows, n_cols)
 
         if n_samples is None:
             return pd.DataFrame(samples[0], index=self.index, columns=self.columns)
@@ -477,11 +552,16 @@ class KernelMixture(BaseDistribution):
         else:
             columns_subset = columns
 
+        if self._weights_2d and rowidx is not None:
+            weights_subset = self._weights[rowidx]
+        else:
+            weights_subset = self.weights
+
         return KernelMixture(
             support=self.support,
             h=self.h,
             kernel=self.kernel,
-            weights=self.weights,
+            weights=weights_subset,
             random_state=self.random_state,
             index=index_subset,
             columns=columns_subset,
@@ -489,11 +569,16 @@ class KernelMixture(BaseDistribution):
 
     def _iat(self, rowidx=None, colidx=None):
         """Subset distribution to a single scalar element."""
+        if self._weights_2d:
+            weights_scalar = self._weights[rowidx]
+        else:
+            weights_scalar = self.weights
+
         return KernelMixture(
             support=self.support,
             h=self.h,
             kernel=self.kernel,
-            weights=self.weights,
+            weights=weights_scalar,
             random_state=self.random_state,
         )
 
@@ -530,4 +615,24 @@ class KernelMixture(BaseDistribution):
             "index": pd.RangeIndex(2),
             "columns": pd.Index(["x"]),
         }
-        return [params1, params2, params3, params4, params5]
+        params6 = {
+            "support": [0.0, 1.0, 2.0, 3.0],
+            "h": 0.5,
+            "kernel": "gaussian",
+            "weights": [
+                [0.1, 0.2, 0.3, 0.4],
+                [0.4, 0.3, 0.2, 0.1],
+                [0.25, 0.25, 0.25, 0.25],
+            ],
+            "index": pd.RangeIndex(3),
+            "columns": pd.Index(["y"]),
+        }
+        params7 = {
+            "support": [-1.0, 0.0, 1.0],
+            "h": 0.8,
+            "kernel": "epanechnikov",
+            "weights": [[0.5, 0.3, 0.2], [0.1, 0.1, 0.8]],
+            "index": pd.RangeIndex(2),
+            "columns": pd.Index(["a", "b"]),
+        }
+        return [params1, params2, params3, params4, params5, params6, params7]
