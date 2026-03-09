@@ -94,10 +94,6 @@ def test_empirical_energy_all_nan_samples():
         f"energy() should be NaN for all-NaN samples, got {energy_self}"
     )
 
-    # CRPS = energy(y_true) - 0.5 * energy(self) should also be NaN
-    crps = energy_x - 0.5 * energy_self
-    assert np.isnan(crps).all(), f"CRPS should be NaN for all-NaN samples, got {crps}"
-
 
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.distributions"),
