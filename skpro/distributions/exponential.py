@@ -13,7 +13,7 @@ class Exponential(_ScipyAdapter):
 
     Most methods wrap ``scipy.stats.expon``.
 
-    The Exponential distribution is parametrized by mean :math:`\mu` and
+    The Exponential distribution is parameterized by mean :math:`\mu` and
     scale :math:`b`, such that the pdf is
 
     .. math:: f(x) = \lambda*\exp\left(-\lambda*x\right)

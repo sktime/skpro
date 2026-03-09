@@ -19,7 +19,7 @@ class LogLaplace(_ScipyAdapter):
     taking the logarithm of the Laplace distribution, commonly used in finance and
     hydrology due to its heavy tails and asymmetry.
 
-    The log-Laplace distribution is parametrized by the scale parameter
+    The log-Laplace distribution is parameterized by the scale parameter
     :math:`\c`, such that the pdf is
 
     .. math:: f(x) = \frac{c}{2} x^{c-1}, \quad 0<x<1

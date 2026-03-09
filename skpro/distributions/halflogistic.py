@@ -20,7 +20,7 @@ class HalfLogistic(_ScipyAdapter):
     useful in reliability analysis, lifetime modeling, and other applications where
     non-negative values are required.
 
-    The half-logistic distribution is parametrized by the scale parameter
+    The half-logistic distribution is parameterized by the scale parameter
     :math:`\beta`, such that the pdf is
 
     .. math::

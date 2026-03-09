@@ -12,7 +12,7 @@ class Fisk(_ScipyAdapter):
 
     Most methods wrap ``scipy.stats.fisk``.
 
-    The Fisk distribution is parametrized by a scale parameter :math:`\alpha`
+    The Fisk distribution is parameterized by a scale parameter :math:`\alpha`
     and a shape parameter :math:`\beta`, such that the cumulative distribution
     function (CDF) is given by:
 

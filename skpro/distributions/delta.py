@@ -14,7 +14,7 @@ class Delta(BaseDistribution):
     It it useful to represent a constant value as a distribution, e.g., as a baseline
     method to create a probabilistic prediction from a point prediction.
 
-    The delta distribution is parametrized by a constant value :math:`c`.
+    The delta distribution is parameterized by a constant value :math:`c`.
     For the cdf, we have:
 
     .. math:: F(x) = 0 \text{ if } x < c, 1 \text{ if } x \geq c
