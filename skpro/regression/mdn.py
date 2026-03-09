@@ -198,7 +198,7 @@ class MDNRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["joshdunnlime"],
-        "python_dependencies": ["torch>=2.0.0", "pytorch_optimizer>=3.2.0"],
+        "python_dependencies": ["torch>=2.0.0"],
         # estimator tags
         # --------------
         "capability:multioutput": True,
@@ -355,12 +355,17 @@ class MDNRegressor(BaseProbaRegressor):
                 return torch.optim.Adam
 
             if opt_name == "SOAP":
-                try:
-                    from pytorch_optimizer.optimizer.soap import SOAP
-                except ModuleNotFoundError as exc:
+                from skbase.utils.dependencies import _check_soft_dependencies
+
+                if not _check_soft_dependencies(
+                    "pytorch_optimizer>=3.2.0", severity="none"
+                ):
                     raise ModuleNotFoundError(
-                        "optimizer='SOAP' requires package 'pytorch_optimizer'."
-                    ) from exc
+                        "optimizer='SOAP' requires package "
+                        "'pytorch_optimizer>=3.2.0'."
+                    )
+
+                from pytorch_optimizer.optimizer.soap import SOAP
 
                 return SOAP
 
