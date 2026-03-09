@@ -322,9 +322,7 @@ def test_energy_nan_propagation_empirical():
     """
     from skpro.distributions.empirical import Empirical
 
-    spl_idx = pd.MultiIndex.from_product(
-        [[0, 1, 2], ["A"]], names=["sample", "loc"]
-    )
+    spl_idx = pd.MultiIndex.from_product([[0, 1, 2], ["A"]], names=["sample", "loc"])
     spl_nan = pd.DataFrame({"qty": [np.nan, np.nan, np.nan]}, index=spl_idx)
     dist_nan = Empirical(spl_nan)
 

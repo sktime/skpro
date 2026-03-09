@@ -77,9 +77,7 @@ def test_empirical_energy_all_nan_samples():
     Regression test for bug where np.sum on a pandas DataFrame used skipna=True,
     silently converting NaN energy contributions to 0.0 instead of NaN.
     """
-    spl_idx = pd.MultiIndex.from_product(
-        [[0, 1, 2], ["A"]], names=["sample", "loc"]
-    )
+    spl_idx = pd.MultiIndex.from_product([[0, 1, 2], ["A"]], names=["sample", "loc"])
     y_true = pd.DataFrame({"qty": [10.0]}, index=pd.Index(["A"], name="loc"))
 
     # Distribution with all-NaN samples
@@ -118,17 +116,18 @@ def test_empirical_energy_mixed_nan_samples():
     spl = pd.DataFrame(
         {
             "qty": [
-                np.nan, 1.0,
-                np.nan, 2.0,
-                np.nan, 3.0,
+                np.nan,
+                1.0,
+                np.nan,
+                2.0,
+                np.nan,
+                3.0,
             ]
         },
         index=spl_idx,
     )
     dist = Empirical(spl)
-    y_true = pd.DataFrame(
-        {"qty": [10.0, 2.0]}, index=pd.Index(["A", "B"], name="loc")
-    )
+    y_true = pd.DataFrame({"qty": [10.0, 2.0]}, index=pd.Index(["A", "B"], name="loc"))
 
     energy_x = dist.energy(y_true)
     energy_self = dist.energy()
