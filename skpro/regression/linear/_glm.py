@@ -29,6 +29,7 @@ class GLMRegressor(BaseProbaRegressor):
         1."Normal"
         2."Poisson"
         3."Gamma"
+        4."Binomial"
     link : string, default : None
         This parameter is used to represent the link function to be
         used with the distribution.
@@ -39,6 +40,7 @@ class GLMRegressor(BaseProbaRegressor):
         ``Normal`` : "Identity", "Log", "InversePower";
         ``Poisson`` : "Log", "Identity", "Sqrt";
         ``Gamma`` : "InversePower", "Log", "Identity";
+        ``Binomial`` : "Logit", "Probit", "Log", "CLogLog";
     offset_var : string or int, default = None
         Pass the column name as a string or column number as an int in X.
         If string, then the exog or ``X`` passed while ``fit``-ting
@@ -57,6 +59,11 @@ class GLMRegressor(BaseProbaRegressor):
         in X with all the ``exposure_var`` values for predicting
         stored in the column for each row.
         If ``int`` it corresponding column number will be considered.
+    n_trials : int, default : 1
+        Number of binomial trials. Only used when ``family="Binomial"``.
+        Defaults to 1, which corresponds to a Bernoulli (binary) response.
+        When ``predict_proba`` is called, the returned ``Binomial`` distribution
+        will use this value as the ``n`` parameter.
     missing : str
         Available options are 'none', 'drop' and 'raise'. If 'none', no nan
         checking is done. If 'drop', any observations with nans are dropped.
@@ -208,18 +215,27 @@ class GLMRegressor(BaseProbaRegressor):
     def _str_to_sm_family(self, family, link):
         """Convert the string to a statsmodel object.
 
-        If the link function is also explcitly mentioned then include then
+        If the link function is also explicitly mentioned then include then
         that must be passed to the family/distribution object.
         """
         from warnings import warn
 
-        from statsmodels.genmod.families.family import Gamma, Gaussian, Poisson
-        from statsmodels.genmod.families.links import Identity, InversePower, Log, Sqrt
+        from statsmodels.genmod.families.family import Binomial, Gamma, Gaussian, Poisson
+        from statsmodels.genmod.families.links import (
+            CLogLog,
+            Identity,
+            InversePower,
+            Log,
+            Logit,
+            Probit,
+            Sqrt,
+        )
 
         sm_fmly = {
             "Normal": Gaussian,
             "Poisson": Poisson,
             "Gamma": Gamma,
+            "Binomial": Binomial,
         }
 
         links = {
@@ -227,6 +243,9 @@ class GLMRegressor(BaseProbaRegressor):
             "Identity": Identity,
             "InversePower": InversePower,
             "Sqrt": Sqrt,
+            "Logit": Logit,
+            "Probit": Probit,
+            "CLogLog": CLogLog,
         }
 
         if link in links:
@@ -243,6 +262,7 @@ class GLMRegressor(BaseProbaRegressor):
         self,
         family="Normal",
         link=None,
+        n_trials=1,
         offset_var=None,
         exposure_var=None,
         missing="none",
@@ -263,6 +283,7 @@ class GLMRegressor(BaseProbaRegressor):
 
         self.family = family
         self.link = link
+        self.n_trials = n_trials
         self.offset_var = offset_var
         self.exposure_var = exposure_var
         self.missing = missing
@@ -281,6 +302,7 @@ class GLMRegressor(BaseProbaRegressor):
 
         self._family = self.family
         self._link = self.link
+        self._n_trials = self.n_trials
         self._offset_var = self.offset_var
         self._exposure_var = self.exposure_var
         self._missing = self.missing
@@ -436,6 +458,7 @@ class GLMRegressor(BaseProbaRegressor):
 
     def _params_sm_to_skpro(self, y_predictions_df, index, columns, family):
         """Convert the statsmodels output to equivalent skpro distribution."""
+        from skpro.distributions.binomial import Binomial
         from skpro.distributions.gamma import Gamma
         from skpro.distributions.normal import Normal
         from skpro.distributions.poisson import Poisson
@@ -444,6 +467,7 @@ class GLMRegressor(BaseProbaRegressor):
             "Normal": Normal,
             "Poisson": Poisson,
             "Gamma": Gamma,
+            "Binomial": Binomial,
         }
 
         params = {}
@@ -472,6 +496,14 @@ class GLMRegressor(BaseProbaRegressor):
 
             params["alpha"] = y_alpha
             params["beta"] = y_beta
+        elif skp_dist == Binomial:
+            # statsmodels Binomial GLM predicts the probability p (the mean).
+            # The skpro Binomial distribution is parameterised by n and p.
+            # n_trials is configured at construction time (default 1 = Bernoulli).
+            y_p = y_predictions_df["mean"].rename("p").to_frame()
+            n_trials = self._n_trials
+            params["n"] = n_trials
+            params["p"] = y_p
 
         params["index"] = index
         params["columns"] = columns
@@ -612,5 +644,16 @@ class GLMRegressor(BaseProbaRegressor):
             "link": "Log",
             "add_constant": True,
         }
+        params7 = {
+            "family": "Binomial",
+            "link": "Logit",
+            "n_trials": 1,
+            "add_constant": True,
+        }
+        params8 = {
+            "family": "Binomial",
+            "n_trials": 1,
+            "add_constant": True,
+        }
 
-        return [params1, params2, params3, params4, params5, params6]
+        return [params1, params2, params3, params4, params5, params6, params7, params8]
