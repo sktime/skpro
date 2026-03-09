@@ -14,7 +14,7 @@ class Beta(_ScipyAdapter):
 
     Most methods wrap ``scipy.stats.beta``.
 
-    The Beta distribution is parametrized by two shape parameters :math:`\alpha`
+    The Beta distribution is parameterized by two shape parameters :math:`\alpha`
     and :math:`\beta`, such that the probability density function (PDF) is given by:
 
     .. math:: f(x) = \frac{x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha, \beta)}

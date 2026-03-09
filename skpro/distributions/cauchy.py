@@ -19,7 +19,7 @@ class Cauchy(_ScipyAdapter):
     used in robust statistics and as a prior in Bayesian inference. It has
     heavy tails and no finite moments (mean and variance are undefined).
 
-    The Cauchy distribution is parametrized by location :math:`x_0` and
+    The Cauchy distribution is parameterized by location :math:`x_0` and
     scale :math:`\gamma`, such that the pdf is
 
     .. math::

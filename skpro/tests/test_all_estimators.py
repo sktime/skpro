@@ -49,7 +49,7 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
     """Fixture generator for base testing functionality in sktime.
 
     Test classes inheriting from this and not overriding pytest_generate_tests
-        will have estimator and scenario fixtures parametrized out of the box.
+        will have estimator and scenario fixtures parameterized out of the box.
 
     Descendants can override:
         estimator_type_filter: str, class variable; None or scitype string
@@ -126,7 +126,7 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
     def _generate_scenario(self, test_name, **kwargs):
         """Return estimator test scenario.
 
-        Fixtures parametrized
+        Fixtures parameterized
         ---------------------
         scenario: instance of TestScenario
             ranges over all scenarios returned by retrieve_scenarios
