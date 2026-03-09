@@ -295,8 +295,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
                     # Create a new 'sample_id' column by
                     # combining the 'chain' and 'draw' columns
                     pred_proba_df["sample_id"] = (
-                        pred_proba_df["chain"] * self.draws
-                        + pred_proba_df["draw"]
+                        pred_proba_df["chain"] * self.draws + pred_proba_df["draw"]
                     )
                     pred_proba_df = pred_proba_df[["obs_id", "sample_id", "y_obs"]]
                     pred_proba_df = pred_proba_df.rename(
