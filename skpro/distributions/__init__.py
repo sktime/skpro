@@ -21,6 +21,7 @@ __all__ = [
     "GeneralizedPareto",
     "LogGamma",
     "Geometric",
+    "Gumbel",
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
@@ -75,6 +76,7 @@ from skpro.distributions.fisk import Fisk
 from skpro.distributions.gamma import Gamma
 from skpro.distributions.gen_pareto import GeneralizedPareto
 from skpro.distributions.geometric import Geometric
+from skpro.distributions.gumbel import Gumbel
 from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halflogistic import HalfLogistic
 from skpro.distributions.halfnormal import HalfNormal
