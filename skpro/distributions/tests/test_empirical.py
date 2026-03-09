@@ -87,12 +87,12 @@ def test_empirical_energy_all_nan_samples():
     energy_x = dist_nan.energy(y_true).values
     energy_self = dist_nan.energy().values
 
-    assert np.isnan(energy_x).all(), (
-        f"energy(y_true) should be NaN for all-NaN samples, got {energy_x}"
-    )
-    assert np.isnan(energy_self).all(), (
-        f"energy() should be NaN for all-NaN samples, got {energy_self}"
-    )
+    assert np.isnan(
+        energy_x
+    ).all(), f"energy(y_true) should be NaN for all-NaN samples, got {energy_x}"
+    assert np.isnan(
+        energy_self
+    ).all(), f"energy() should be NaN for all-NaN samples, got {energy_self}"
 
 
 @pytest.mark.skipif(
@@ -129,17 +129,17 @@ def test_empirical_energy_mixed_nan_samples():
     energy_self = dist.energy()
 
     # Row "A" (some NaN) should give NaN
-    assert np.isnan(energy_x.loc["A", "energy"]), (
-        "energy(y_true) for all-NaN row should be NaN"
-    )
-    assert np.isnan(energy_self.loc["A", "energy"]), (
-        "energy() for all-NaN row should be NaN"
-    )
+    assert np.isnan(
+        energy_x.loc["A", "energy"]
+    ), "energy(y_true) for all-NaN row should be NaN"
+    assert np.isnan(
+        energy_self.loc["A", "energy"]
+    ), "energy() for all-NaN row should be NaN"
 
     # Row "B" (valid) should give finite energy
-    assert np.isfinite(energy_x.loc["B", "energy"]), (
-        "energy(y_true) for valid row should be finite"
-    )
-    assert np.isfinite(energy_self.loc["B", "energy"]), (
-        "energy() for valid row should be finite"
-    )
+    assert np.isfinite(
+        energy_x.loc["B", "energy"]
+    ), "energy(y_true) for valid row should be finite"
+    assert np.isfinite(
+        energy_self.loc["B", "energy"]
+    ), "energy() for valid row should be finite"
