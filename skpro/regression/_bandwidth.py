@@ -1,9 +1,9 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
-"""Bandwidth selection utilities for kernel bandwidth estimation.
+"""Bandwidth selection utilities for 1D Gaussian smoothing bandwidths.
 
-This is a skpro specific module for regression bandwidth utilities.
-It is not intended for general-purpose use and may have a less stable API than other
-skpro modules.
+This is a skpro-specific module for regression bandwidth heuristics.
+It is not intended for general-purpose use and may have a less stable API
+than other skpro modules.
 
 The ISJ and related implementation details are adapted from KDEpy:
 https://github.com/tommyod/KDEpy
@@ -23,7 +23,7 @@ _BANDWIDTH_METHODS = ("scott", "silverman", "isj")
 
 
 def _as_1d_float_array(y):
-    """Convert input to finite 1D float array."""
+    """Convert input to a finite 1D ``float`` numpy array."""
     y_arr = np.asarray(y, dtype=float)
 
     if y_arr.ndim == 2 and y_arr.shape[1] == 1:
@@ -41,7 +41,11 @@ def _as_1d_float_array(y):
 
 
 def _normalize_weights(weights, n):
-    """Return normalized positive weights and a boolean mask."""
+    """Return positive normalized weights and the corresponding selection mask.
+
+    Non-positive weights are dropped and therefore excluded from the returned
+    aligned sample subset (via the mask).
+    """
     if weights is None:
         return None, np.ones(n, dtype=bool)
 
@@ -68,7 +72,10 @@ def _normalize_weights(weights, n):
 
 
 def _effective_sample_size(weights):
-    """Effective sample size of normalized weights."""
+    """Compute effective sample size for normalized weights.
+
+    Uses ``n_eff = 1 / sum(w_i^2)``.
+    """
     if weights is None:
         return None
 
@@ -76,7 +83,11 @@ def _effective_sample_size(weights):
 
 
 def _weighted_std(y, weights):
-    """Weighted std (population) of 1D vector."""
+    """Return unweighted/weighted sample scale estimate for a 1D vector.
+
+    For ``weights is None``, uses ``np.std(y, ddof=1)``.
+    For normalized weights, uses the weighted second central moment.
+    """
     if y.size <= 1:
         return 0.0
 
@@ -87,22 +98,6 @@ def _weighted_std(y, weights):
     var = float(np.sum(weights * np.square(y - mean)))
 
     return float(np.sqrt(max(var, 0.0)))
-
-
-def _weighted_quantile(y, weights, q):
-    """Weighted quantile for q in [0, 1]."""
-    if y.size == 0:
-        raise ValueError("Cannot compute quantile of empty array.")
-
-    if weights is None:
-        return float(np.quantile(y, q))
-
-    order = np.argsort(y)
-    y_sorted = y[order]
-    w_sorted = weights[order]
-    cdf = np.cumsum(w_sorted)
-    cdf /= cdf[-1]
-    return float(np.interp(q, cdf, y_sorted))
 
 
 def _resolve_method(method, *, valid):
@@ -119,7 +114,20 @@ def _resolve_method(method, *, valid):
 
 
 def bw_scott_1d(y, weights=None):
-    """Scott 1D bandwidth for Gaussian kernels."""
+    """Scott 1D bandwidth for Gaussian kernels.
+
+    Parameters
+    ----------
+    y : array-like, shape (n,) or (n, 1)
+        1D sample values.
+    weights : array-like, optional
+        Optional non-negative sample weights.
+
+    Returns
+    -------
+    float
+        Bandwidth interpreted as Gaussian kernel standard deviation.
+    """
     y_arr = _as_1d_float_array(y)
     w_norm, mask = _normalize_weights(weights, y_arr.shape[0])
     y_use = y_arr[mask]
@@ -134,7 +142,23 @@ def bw_scott_1d(y, weights=None):
 
 
 def bw_silverman_1d(y, weights=None):
-    """Silverman 1D bandwidth for Gaussian kernels."""
+    """Silverman 1D bandwidth for Gaussian kernels.
+
+    Uses the KDEpy-compatible normal-reference formulation in 1D:
+    ``h = sigma * (3 n / 4)^(-1/5)``.
+
+    Parameters
+    ----------
+    y : array-like, shape (n,) or (n, 1)
+        1D sample values.
+    weights : array-like, optional
+        Optional non-negative sample weights.
+
+    Returns
+    -------
+    float
+        Bandwidth interpreted as Gaussian kernel standard deviation.
+    """
     y_arr = _as_1d_float_array(y)
     w_norm, mask = _normalize_weights(weights, y_arr.shape[0])
     y_use = y_arr[mask]
@@ -145,23 +169,34 @@ def bw_silverman_1d(y, weights=None):
         return 0.0
 
     sigma = _weighted_std(y_use, w_norm)
-
-    iqr = _weighted_quantile(y_use, w_norm, 0.75) - _weighted_quantile(
-        y_use, w_norm, 0.25
-    )
-
-    robust_sigma = float(iqr / 1.3489795003921634)
-
-    s = min(v for v in [sigma, robust_sigma] if v > 0) if (sigma > 0 or iqr > 0) else 0
-
-    if s <= 0:
+    if sigma <= 0:
         return 0.0
 
-    return float(0.9 * s * (n_eff ** (-1.0 / 5.0)))
+    return float(sigma * ((3.0 * n_eff / 4.0) ** (-1.0 / 5.0)))
 
 
 def _autogrid_1d(y, n_grid, boundary_abs, boundary_rel):
-    """Create an equidistant padded grid for FFT-based selectors."""
+    """Create an equidistant padded grid for DCT-based selectors.
+
+    The grid is centered on the data range with additional padding on both sides.
+
+    Parameters
+    ----------
+    y : array-like, shape (n,)
+        1D sample values.
+    n_grid : int
+        Number of grid points (must be >= 2).
+    boundary_abs : float
+        Absolute boundary padding added to each side of the data range.
+    boundary_rel : float
+        Relative boundary padding as a fraction of the data range added to each
+        side.
+
+    Returns
+    -------
+    ndarray, shape (n_grid,)
+        Equidistant grid covering the data range with specified padding.
+    """
     y_min = float(np.min(y))
     y_max = float(np.max(y))
     data_range = y_max - y_min
@@ -170,7 +205,23 @@ def _autogrid_1d(y, n_grid, boundary_abs, boundary_rel):
 
 
 def _linear_binning_1d(y, grid, weights):
-    """Linear 1D binning onto equidistant grid."""
+    """Linear 1D binning onto equidistant grid.
+
+    Parameters
+    ----------
+    y : array-like, shape (n,)
+        1D sample values.
+    grid : array-like, shape (m,)
+        Equidistant grid points (must have length >= 2).
+    weights : array-like, shape (n,) or None
+        Optional non-negative sample weights. If None, uniform weights are used.
+
+    Returns
+    -------
+    ndarray, shape (m,)
+        Binned probability mass function over grid points (sums to 1 up to
+        numerical tolerance).
+    """
     n_grid = grid.shape[0]
 
     if n_grid < 2:
@@ -216,7 +267,24 @@ def _linear_binning_1d(y, grid, weights):
 
 
 def _isj_fixed_point(t, n_eff, i_sq, a2):
-    """Fixed-point-function for ISJ diffusion estimator."""
+    """Fixed-point function for the ISJ diffusion estimator.
+
+    Parameters
+    ----------
+    t : float
+        Diffusion time parameter.
+    n_eff : float
+        Effective sample size.
+    i_sq : array-like
+        Squared Discrete Cosine Transform indices.
+    a2 : array-like
+        Squared Discrete Cosine Transform coefficients.
+
+    Returns
+    -------
+    float
+        Difference between t and the ISJ fixed-point solution for given parameters.
+    """
     float_type = np.longdouble
     i_sq = np.asarray(i_sq, dtype=float_type)
     a2 = np.asarray(a2, dtype=float_type)
@@ -250,7 +318,22 @@ def _isj_fixed_point(t, n_eff, i_sq, a2):
 
 
 def _isj_root(n_eff, i_sq, a2):
-    """Find positive root for ISJ fixed-point equation."""
+    """Find positive root for ISJ fixed-point equation.
+
+    Parameters
+    ----------
+    n_eff : float
+        Effective sample size.
+    i_sq : array-like
+        Squared Discrete Cosine Transform indices.
+    a2 : array-like
+        Squared Discrete Cosine Transform coefficients.
+
+    Returns
+    -------
+    float
+        Positive root of the ISJ fixed-point equation.
+    """
     n_eff = int(max(50, min(1050, n_eff)))
     upper = 1e-11 + 0.01 * (n_eff - 50) / 1000.0
     max_upper = 1.0
@@ -285,7 +368,37 @@ def bw_isj_1d(
     boundary_rel=0.5,
     fallback="silverman",
 ):
-    """Improved Sheather-Jones bandwidth for 1D Gaussian kernels."""
+    """Improved Sheather-Jones bandwidth for 1D Gaussian kernels.
+
+    Parameters
+    ----------
+    y : array-like, shape (n,) or (n, 1)
+        1D sample values.
+    weights : array-like, optional
+        Optional non-negative sample weights.
+    n_grid : int, optional
+        Number of grid points for DCT (power of two and >= 16 for stability).
+        Default is 1024.
+    boundary_abs : float, optional
+        Absolute boundary padding added to each side of the data range for the
+        DCT grid. Default is 6.0.
+    boundary_rel : float, optional
+        Relative boundary padding as a fraction of the data range added to each
+        side of the DCT grid. Default is 0.5.
+    fallback : {"silverman", "scott", "none"}, optional
+        Fallback method if ISJ root finding fails. Default is "silverman". If
+        "none", an exception is raised instead. Used only if ISJ fails to
+        converge.
+
+    Returns
+    -------
+    float
+        Bandwidth interpreted as Gaussian kernel standard deviation.
+
+    Notes
+    -----
+    If the data are degenerate (zero range), returns ``0.0`` directly.
+    """
     y_arr = _as_1d_float_array(y)
     w_norm, mask = _normalize_weights(weights, y_arr.shape[0])
     y_use = y_arr[mask]

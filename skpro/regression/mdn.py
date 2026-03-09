@@ -10,18 +10,18 @@ from skpro.regression._bandwidth import bw_isj_1d, bw_silverman_1d
 from skpro.regression.base import BaseProbaRegressor
 
 
-def _noise_schedule_scale(n_samples, total_dim, schedule="silverman"):
-    """Return sample-size based noise scaling factor."""
-    if not isinstance(schedule, str):
-        raise TypeError("noise_schedule must be a string.")
-    schedule = schedule.lower()
+def _noise_scale_method_factor(n_samples, total_dim, method="silverman"):
+    """Return sample-size based noise scaling factor for a named method."""
+    if not isinstance(method, str):
+        raise TypeError("noise_scale_method must be a string.")
+    method = method.lower()
     n_samples = int(n_samples)
     total_dim = int(total_dim)
 
-    if schedule not in {"constant", "scott", "silverman"}:
+    if method not in {"constant", "scott", "silverman"}:
         raise ValueError(
             "Unknown method "
-            f"'{schedule}'. Valid options are ['constant', 'scott', 'silverman']."
+            f"'{method}'. Valid options are ['constant', 'scott', 'silverman']."
         )
 
     if n_samples <= 0:
@@ -30,16 +30,17 @@ def _noise_schedule_scale(n_samples, total_dim, schedule="silverman"):
     if total_dim < 0:
         raise ValueError("total_dim must be non-negative.")
 
-    if schedule == "constant":
+    if method == "constant":
         return 1.0
 
-    if schedule == "scott":
+    if method == "scott":
         return float(n_samples ** (-1.0 / (total_dim + 4.0)))
 
+    # silverman
     return float((n_samples * (total_dim + 2.0) / 4.0) ** (-1.0 / (total_dim + 4.0)))
 
 
-def _noise_schedule_scale_isj(X, y=None):
+def _noise_scale_method_isj(X, y=None):
     """Return ISJ-derived data-driven noise scale for MDN."""
 
     def _to_2d_float(arr, name):
@@ -152,14 +153,14 @@ class MDNRegressor(BaseProbaRegressor):
         Base standard deviation :math:`h_y` of Gaussian noise added to ``y`` during
         training only. Set to ``0.0`` to disable input noise regularization on ``y``.
 
-    noise_schedule : str, optional, default="constant"
-        Schedule for scaling noise intensity.
+    noise_scale_method : str, optional, default="constant"
+        Method for scaling noise intensity.
 
         * ``"constant"``: no scaling, uses ``h_x`` and ``h_y`` directly
         * ``"silverman"``: scales by Silverman multivariate factor
         * ``"scott"``: scales by Scott factor :math:`n^{-1/(4+d)}`
-        * ``"isj"``: data-driven scaling via Improved Sheather-Jones bandwidth
-            over standardized feature and target marginals.
+        * ``"isj"``: scaling via Improved Sheather-Jones bandwidth over standardized
+            feature and target marginals.
 
     batch_size : int or None, optional, default=None
         Mini-batch size for training. If None, full-batch training is used
@@ -221,7 +222,7 @@ class MDNRegressor(BaseProbaRegressor):
         optimizer_kwargs=None,
         input_noise_std=0.0,
         target_noise_std=0.0,
-        noise_schedule="constant",
+        noise_scale_method="constant",
         batch_size=None,
         device="auto",
         random_state=None,
@@ -236,7 +237,7 @@ class MDNRegressor(BaseProbaRegressor):
         self.optimizer_kwargs = optimizer_kwargs
         self.input_noise_std = input_noise_std
         self.target_noise_std = target_noise_std
-        self.noise_schedule = noise_schedule
+        self.noise_scale_method = noise_scale_method
         self.batch_size = batch_size
         self.device = device
         self.random_state = random_state
@@ -244,22 +245,25 @@ class MDNRegressor(BaseProbaRegressor):
         super().__init__()
 
     def _noise_scale(self, n_samples, total_dim, X=None, y=None):
-        """Return schedule-based multiplier for noise regularization.
+        """Return method-based multiplier for noise regularization.
 
         Noise Regularization for Conditional Density Estimation by Rothfuss
         et al - https://arxiv.org/pdf/1907.08982
         """
-        if str(self.noise_schedule).lower() == "isj":
+        if str(self.noise_scale_method).lower() == "isj":
             if X is None or y is None:
                 raise ValueError(
-                    "noise_schedule='isj' requires X and y to compute data-driven "
+                    "noise_scale_method='isj' requires X and y to compute "
+                    "data-driven "
                     "scale."
                 )
 
-            return _noise_schedule_scale_isj(X=X, y=y)
+            return _noise_scale_method_isj(X=X, y=y)
 
-        return _noise_schedule_scale(
-            n_samples=n_samples, total_dim=total_dim, schedule=self.noise_schedule
+        return _noise_scale_method_factor(
+            n_samples=n_samples,
+            total_dim=total_dim,
+            method=self.noise_scale_method,
         )
 
     def _resolve_device(self):
@@ -307,11 +311,13 @@ class MDNRegressor(BaseProbaRegressor):
 
         if isinstance(activation, str):
             act_name = activation.lower()
+
             if act_name not in activations:
                 raise ValueError(
                     f"Unknown activation '{activation}'. "
                     f"Valid string options: {list(activations.keys())}"
                 )
+
             return activations[act_name]
 
         if isclass(activation) and issubclass(activation, nn.Module):
@@ -322,10 +328,12 @@ class MDNRegressor(BaseProbaRegressor):
 
         if callable(activation):
             probe = activation()
+
             if not isinstance(probe, nn.Module):
                 raise TypeError(
                     "activation callable must return a torch.nn.Module instance."
                 )
+
             return activation
 
         raise TypeError(
@@ -429,6 +437,7 @@ class MDNRegressor(BaseProbaRegressor):
 
         input_noise_std = float(self.input_noise_std)
         target_noise_std = float(self.target_noise_std)
+
         if input_noise_std < 0:
             raise ValueError(
                 "input_noise_std must be non-negative, but found "
@@ -445,6 +454,7 @@ class MDNRegressor(BaseProbaRegressor):
         y_arr = y.values.astype("float32")
         n_samples = len(X)
         total_dim = self._input_dim + self._output_dim
+
         noise_scale = self._noise_scale(
             n_samples=n_samples,
             total_dim=total_dim,
@@ -495,10 +505,12 @@ class MDNRegressor(BaseProbaRegressor):
             # full-batch training
             for _epoch in range(self.epochs):
                 optimiser.zero_grad()
+
                 if input_noise_std > 0:
                     X_t_train = X_t + torch.randn_like(X_t) * input_noise_std
                 else:
                     X_t_train = X_t
+
                 if target_noise_std > 0:
                     y_t_train = y_t + torch.randn_like(y_t) * target_noise_std
                 else:
@@ -508,6 +520,7 @@ class MDNRegressor(BaseProbaRegressor):
                 loss.backward()
                 optimiser.step()
                 losses.append(loss.item())
+
         else:
             # mini-batch training
             dataset = torch.utils.data.TensorDataset(X_t, y_t)
@@ -521,8 +534,10 @@ class MDNRegressor(BaseProbaRegressor):
 
                 for X_batch, y_batch in loader:
                     optimiser.zero_grad()
+
                     if input_noise_std > 0:
                         X_batch = X_batch + torch.randn_like(X_batch) * input_noise_std
+
                     if target_noise_std > 0:
                         y_batch = y_batch + torch.randn_like(y_batch) * target_noise_std
                     pi, mu, sigma = model(X_batch)
@@ -531,6 +546,7 @@ class MDNRegressor(BaseProbaRegressor):
                     optimiser.step()
                     epoch_loss += loss.item()
                     n_batches += 1
+
                 losses.append(epoch_loss / max(n_batches, 1))
 
         self.model_ = model
@@ -637,7 +653,7 @@ class MDNRegressor(BaseProbaRegressor):
             "epochs": 5,
             "input_noise_std": 0.05,
             "target_noise_std": 0.02,
-            "noise_schedule": "silverman",
+            "noise_scale_method": "silverman",
             "random_state": 42,
         }
 

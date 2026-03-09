@@ -11,13 +11,13 @@ from skpro.tests.test_switch import run_test_for_class
 def test_mdn_noise_schedule_values_and_isj():
     """Test schedule scaling for canonical options including ISJ."""
     reg = object.__new__(MDNRegressor)
-    reg.noise_schedule = "silverman"
+    reg.noise_scale_method = "silverman"
     silverman = reg._noise_scale(n_samples=200, total_dim=3)
 
-    reg.noise_schedule = "scott"
+    reg.noise_scale_method = "scott"
     scott = reg._noise_scale(n_samples=200, total_dim=3)
 
-    reg.noise_schedule = "constant"
+    reg.noise_scale_method = "constant"
     constant = reg._noise_scale(n_samples=200, total_dim=3)
     assert np.isclose(constant, 1.0)
     assert silverman > 0
@@ -26,7 +26,7 @@ def test_mdn_noise_schedule_values_and_isj():
     rng = np.random.default_rng(42)
     X = rng.normal(size=(200, 4))
     y = rng.normal(size=(200, 1))
-    reg.noise_schedule = "isj"
+    reg.noise_scale_method = "isj"
     isj = reg._noise_scale(n_samples=200, total_dim=5, X=X, y=y)
     assert np.isfinite(isj)
     assert isj > 0
@@ -78,8 +78,8 @@ def test_mdn_custom_activation_and_optimizer_class():
     not run_test_for_class(MDNRegressor),
     reason="run test only if softdeps are present and incrementally (if requested)",
 )
-def test_mdn_noise_schedule_performance_comparison():
-    """Benchmark-like test comparing MDN performance across noise schedules."""
+def test_mdn_noise_scale_method_performance_comparison():
+    """Benchmark-like test comparing MDN performance across noise methods."""
     from sklearn.datasets import make_regression
     from sklearn.model_selection import train_test_split
 
@@ -107,7 +107,7 @@ def test_mdn_noise_schedule_performance_comparison():
             batch_size=32,
             input_noise_std=0.05,
             target_noise_std=0.02,
-            noise_schedule=schedule,
+            noise_scale_method=schedule,
             optimizer="ADAM",
             random_state=42,
         )
