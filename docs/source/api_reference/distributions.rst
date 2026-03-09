@@ -4,13 +4,13 @@
 Probability distributions
 =========================
 
-The :mod:`sktime.distributions` module contains
+The :mod:`skpro.distributions` module contains
 probability distributions which combine a ``pandas.DataFrame``-like API
 with a ``scikit-base`` compatible object interface.
 
 All distributions in ``skpro`` can be listed using the ``skpro.registry.all_objects`` utility,
 using ``object_types="distribution"``, optionally filtered by tags.
-Valid tags can be listed using ``sktime.registry.all_tags``.
+Valid tags can be listed using ``skpro.registry.all_tags``.
 
 Base
 ----
