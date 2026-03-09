@@ -102,21 +102,21 @@ def test_empirical_energy_all_nan_samples():
 def test_empirical_energy_mixed_nan_samples():
     """Test energy with mixed NaN and non-NaN rows.
 
-    Rows with all-NaN samples should give NaN energy;
+    Rows with some NaN samples should give NaN energy;
     rows with valid samples should give finite energy.
     """
     spl_idx = pd.MultiIndex.from_product(
         [[0, 1, 2], ["A", "B"]], names=["sample", "loc"]
     )
-    # Row "A" has all-NaN samples, row "B" has valid samples
+    # Row "A" has some NaN samples, row "B" has valid samples
     spl = pd.DataFrame(
         {
             "qty": [
-                np.nan,
+                1.0,
                 1.0,
                 np.nan,
                 2.0,
-                np.nan,
+                3.0,
                 3.0,
             ]
         },
@@ -128,7 +128,7 @@ def test_empirical_energy_mixed_nan_samples():
     energy_x = dist.energy(y_true)
     energy_self = dist.energy()
 
-    # Row "A" (all NaN) should give NaN
+    # Row "A" (some NaN) should give NaN
     assert np.isnan(energy_x.loc["A", "energy"]), (
         "energy(y_true) for all-NaN row should be NaN"
     )
