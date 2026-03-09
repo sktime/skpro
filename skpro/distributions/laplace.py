@@ -13,7 +13,7 @@ class Laplace(BaseDistribution):
     This distribution is univariate, without correlation between dimensions
     for the array-valued case.
 
-    The Laplace distribution is parametrized by mean :math:`\mu` and
+    The Laplace distribution is parameterized by mean :math:`\mu` and
     scale :math:`b`, such that the pdf is
 
     .. math:: f(x) = \frac{1}{2b} \exp\left(-\frac{|x - \mu|}{b}\right)

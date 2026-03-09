@@ -18,7 +18,7 @@ class HalfNormal(_ScipyAdapter):
     The distribution is `cut off` at :math:`\( x = 0 \)`. There is no mass assigned to
     negative values; they are entirely excluded from the distribution.
 
-    The half-normal distribution is parametrized by the standard deviation
+    The half-normal distribution is parameterized by the standard deviation
     :math:`\sigma`, such that the pdf is
 
     .. math:: f(x) = \frac{\sqrt{2}}{\sigma \sqrt{\pi}}

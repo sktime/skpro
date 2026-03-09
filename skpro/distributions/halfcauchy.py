@@ -20,7 +20,7 @@ class HalfCauchy(_ScipyAdapter):
     Bayesian statistics, especially as a prior distribution for scale parameters
     due to its heavy tails and non-negativity.
 
-    The half-Cauchy distribution is parametrized by the scale parameter
+    The half-Cauchy distribution is parameterized by the scale parameter
     :math:`\beta`, such that the pdf is
 
     .. math::
