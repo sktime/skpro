@@ -193,7 +193,8 @@ class BaseDistribution(BaseObject):
         """
         if self.ndim < 2:
             return self
-        assert isinstance(n, int)
+        if not isinstance(n, int):
+            raise TypeError(f"n must be an integer, got {type(n).__name__}")
         N = len(self)
         if n < 0:
             n = N - n
@@ -218,7 +219,8 @@ class BaseDistribution(BaseObject):
         """
         if self.ndim < 2:
             return self
-        assert isinstance(n, int)
+        if not isinstance(n, int):
+            raise TypeError(f"n must be an integer, got {type(n).__name__}")
         N = len(self)
         if n < 0:
             start = n
