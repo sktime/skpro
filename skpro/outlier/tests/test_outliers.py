@@ -302,6 +302,13 @@ def test_density_outlier_detector_no_y_error(simple_regression_data):
         detector.decision_function(X_df)
 
 
+@pytest.mark.skipif(
+    not all(
+        run_test_for_class(cls)
+        for cls in (QuantileOutlierDetector, DensityOutlierDetector, LossOutlierDetector)
+    ),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
 def test_all_detectors_compatibility(simple_regression_data):
     """Test that all detectors work with the same interface."""
     from sklearn.linear_model import LinearRegression

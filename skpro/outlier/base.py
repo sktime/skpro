@@ -53,8 +53,11 @@ class BaseOutlierDetector(BaseEstimator):
         X : pandas DataFrame or numpy array
             Training feature data
         y : pandas DataFrame, pandas Series, or numpy array, default=None
-            Training target data. If None, unsupervised outlier detection
-            is performed based on the distribution of X.
+            Training target data. This is required if the underlying
+            regressor is not yet fitted. Passing ``y=None`` is only
+            supported when using a pre-fitted regressor together with an
+            implementation of ``_compute_decision_scores`` that can operate
+            on ``X`` alone. In typical usage, ``y`` should be provided.
 
         Returns
         -------
@@ -65,8 +68,8 @@ class BaseOutlierDetector(BaseEstimator):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        if y is not None and not isinstance(y, (pd.DataFrame, pd.Series)):
-            y = pd.Series(y)
+        if y is not None and not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         # Fit the regressor if not already fitted
         if not self.regressor._is_fitted:

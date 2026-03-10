@@ -133,6 +133,21 @@ class LossOutlierDetector(BaseOutlierDetector):
         # Handle potential infinities or NaNs
         scores = np.nan_to_num(scores, nan=np.inf, posinf=np.inf, neginf=0.0)
 
+        # Ensure scores are a 1D array of shape (n_samples,)
+        scores = np.asarray(scores)
+        if scores.ndim == 2:
+            # If there is a single output dimension, squeeze it
+            if scores.shape[1] == 1:
+                scores = scores.ravel()
+            else:
+                # Aggregate multi-output scores per sample (mean across outputs)
+                scores = np.mean(scores, axis=1)
+        elif scores.ndim != 1:
+            raise ValueError(
+                "Loss function must return scores of shape (n_samples,) or "
+                "(n_samples, n_outputs). Got array with shape "
+                f"{scores.shape!r}."
+            )
         return scores
 
     @classmethod

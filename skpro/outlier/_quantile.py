@@ -97,28 +97,48 @@ class QuantileOutlierDetector(BaseOutlierDetector):
         quantiles = sorted(self.alpha if self.alpha is not None else [0.05, 0.95])
         q_pred = self.regressor.predict_quantiles(X, alpha=quantiles)
 
-        # Convert to numpy array
-        if isinstance(q_pred, pd.DataFrame):
-            q_pred_arr = q_pred.values
-        else:
-            q_pred_arr = np.array(q_pred)
-
         # Compute scores based on quantile extremity
         # Score is the distance from median, normalized by quantile range
         n_samples = len(X)
         scores = np.zeros(n_samples)
 
         # Get the lower and upper quantile predictions
-        # Reshape q_pred_arr to have shape (n_samples, n_outputs, n_quantiles)
-        if len(q_pred_arr.shape) == 2:
-            # Assume shape is (n_samples, n_quantiles) for single output
-            q_lower = q_pred_arr[:, 0:1]  # shape (n_samples, 1)
-            q_upper = q_pred_arr[:, -1:]  # shape (n_samples, 1)
-        else:
-            # Multi-output case
-            q_lower = q_pred_arr[:, :, 0]  # shape (n_samples, n_outputs)
-            q_upper = q_pred_arr[:, :, -1]  # shape (n_samples, n_outputs)
+        # Handle DataFrame with MultiIndex columns (common for multi-output)
+        used_multiindex = False
+        if isinstance(q_pred, pd.DataFrame) and isinstance(q_pred.columns, pd.MultiIndex):
+            quantile_level = None
+            # Try to identify the column level that corresponds to quantiles
+            for lvl in range(q_pred.columns.nlevels):
+                lvl_values = q_pred.columns.get_level_values(lvl)
+                if np.issubdtype(lvl_values.dtype, np.number):
+                    unique_vals = np.unique(lvl_values.astype(float))
+                    if all(q in unique_vals for q in quantiles):
+                        quantile_level = lvl
+                        break
+            if quantile_level is not None:
+                # Extract lower and upper quantiles per output using the column index
+                q_lower_df = q_pred.xs(quantiles[0], axis=1, level=quantile_level)
+                q_upper_df = q_pred.xs(quantiles[-1], axis=1, level=quantile_level)
+                q_lower = q_lower_df.values
+                q_upper = q_upper_df.values
+                used_multiindex = True
 
+        if not used_multiindex:
+            # Convert to numpy array and use positional slicing
+            if isinstance(q_pred, pd.DataFrame):
+                q_pred_arr = q_pred.values
+            else:
+                q_pred_arr = np.array(q_pred)
+
+            # Reshape q_pred_arr to have shape (n_samples, n_outputs, n_quantiles)
+            if q_pred_arr.ndim == 2:
+                # Assume shape is (n_samples, n_quantiles) for single output
+                q_lower = q_pred_arr[:, 0:1]  # shape (n_samples, 1)
+                q_upper = q_pred_arr[:, -1:]  # shape (n_samples, 1)
+            else:
+                # Multi-output case with explicit quantile axis
+                q_lower = q_pred_arr[:, :, 0]  # shape (n_samples, n_outputs)
+                q_upper = q_pred_arr[:, :, -1]  # shape (n_samples, n_outputs)
         # Compute the range
         q_range = q_upper - q_lower
         q_range = np.maximum(q_range, 1e-10)  # Avoid division by zero
@@ -137,18 +157,27 @@ class QuantileOutlierDetector(BaseOutlierDetector):
         below_lower = y_arr < q_lower
         above_upper = y_arr > q_upper
 
-        # Score is distance from nearest quantile bound, normalized by range
-        for i in range(n_samples):
-            if below_lower[i].any():
-                # Distance from lower quantile
-                scores[i] = np.max((q_lower[i] - y_arr[i]) / q_range[i])
-            elif above_upper[i].any():
-                # Distance from upper quantile
-                scores[i] = np.max((y_arr[i] - q_upper[i]) / q_range[i])
-            else:
-                # Inside quantile range - use normalized distance from median
-                scores[i] = np.max(distance_from_median[i] / q_range[i])
+        # Score is distance from nearest quantile bound, normalized by range.
+        # Vectorized implementation preserving the original per-sample logic:
+        #   - if any output is below its lower quantile -> use distance to lower bound
+        #   - elif any output is above its upper quantile -> use distance to upper bound
+        #   - else -> use distance from median
+        below_any = np.any(below_lower, axis=1)
+        # Ensure "below" has priority over "above" when both occur for different outputs
+        above_any = np.logical_and(~below_any, np.any(above_upper, axis=1))
+        inside = ~(below_any | above_any)
 
+        # Normalized distances for below/above cases (zero where condition is False)
+        lower_excess = np.where(below_lower, (q_lower - y_arr) / q_range, 0.0)
+        upper_excess = np.where(above_upper, (y_arr - q_upper) / q_range, 0.0)
+
+        scores_below = np.max(lower_excess, axis=1)
+        scores_above = np.max(upper_excess, axis=1)
+        scores_inside = np.max(distance_from_median / q_range, axis=1)
+
+        scores[below_any] = scores_below[below_any]
+        scores[above_any] = scores_above[above_any]
+        scores[inside] = scores_inside[inside]
         return scores
 
     @classmethod
