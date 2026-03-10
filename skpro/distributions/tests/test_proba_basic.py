@@ -170,6 +170,9 @@ def test_discrete_pmf_plotting():
         assert (
             len(ax.containers[0].get_children()) > 5
         ), "Should plot at multiple support points"
+
+
+def test_to_df_parametric():
     """Tests coercion to DataFrame via get_params_df and to_df."""
     from skpro.distributions.normal import Normal
 
