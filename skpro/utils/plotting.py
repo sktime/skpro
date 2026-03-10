@@ -3,6 +3,12 @@ import numpy as np
 import pandas as pd
 from skbase.utils.dependencies import _check_soft_dependencies
 
+__all__ = [
+    "plot_crossplot_interval",
+    "plot_crossplot_std",
+    "plot_crossplot_loss",
+    "plot_calibration",
+]
 __authors__ = ["fkiraly", "frthjf"]
 
 
@@ -233,5 +239,76 @@ def plot_crossplot_loss(y_true, y_pred, metric, ax=None):
     ax.set_ylabel(metric.name + r"($y_i$, $\widehat{y}_i$)")
 
     ax.tick_params(colors="y")
+
+    return ax
+
+def plot_calibration(y_true, y_pred, ax=None):
+    """Plot calibration curve for probabilistic predictions.
+
+    Visualizes calibration of quantile predictions by comparing
+    predicted quantile levels to observed coverage fractions.
+
+    Parameters
+    ----------
+    y_true : pd.Series
+        The actual values
+    y_pred : pd.DataFrame
+        Quantile predictions, as returned by predict_quantiles
+    ax : matplotlib axes, optional
+        Axes to plot on, if None, a new figure is created and returned
+
+    Returns
+    -------
+    ax : matplotlib axes
+        Axes containing the plot
+
+    Examples
+    --------
+    >>> from skpro.utils.plotting import plot_calibration  # doctest: +SKIP
+    >>> from skpro.regression.residual import ResidualDouble  # doctest: +SKIP
+    >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
+    >>> from sklearn.linear_model import LinearRegression  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
+    >>> reg_mean = RandomForestRegressor()  # doctest: +SKIP
+    >>> reg_resid = LinearRegression()  # doctest: +SKIP
+    >>> reg_proba = ResidualDouble(reg_mean, reg_resid)  # doctest: +SKIP
+    >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
+    ResidualDouble(...)
+    >>> y_pred = reg_proba.predict_quantiles(  # doctest: +SKIP
+    ...     X_test, alpha=[0.1, 0.25, 0.5, 0.75, 0.9]
+    ... )
+    >>> plot_calibration(y_test, y_pred)  # doctest: +SKIP
+    """
+    _check_soft_dependencies("matplotlib")
+
+    from matplotlib import pyplot
+
+    if ax is None:
+        _, ax = pyplot.subplots()
+
+    result = [0]
+    ideal_calibration = [0]
+
+    for col in y_pred.columns:
+        if isinstance(col, tuple):
+            q = col[1]
+        else:
+            q = col
+        pred_q = y_pred[col].values
+        result.append(sum(y_true.values < pred_q) / len(pred_q))
+        ideal_calibration.append(q)
+
+    result.append(1)
+    ideal_calibration.append(1)
+
+    ax.plot(ideal_calibration, result, label="Forecast's Calibration")
+    ax.plot([0, 1], [0, 1], label="Ideal Calibration")
+    ax.set_xlabel("Quantile level")
+    ax.set_ylabel("Observed coverage fraction")
+    ax.legend()
 
     return ax
