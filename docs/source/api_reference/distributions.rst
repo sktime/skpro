@@ -92,8 +92,10 @@ Integer support
     Geometric
     NegativeBinomial
     Poisson
-    ZeroInflated
     Skellam
+    ZINB
+    ZIPoisson
+    ZeroInflated
 
 Non-parametric and empirical distributions
 ------------------------------------------
