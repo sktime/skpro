@@ -164,13 +164,13 @@ class CyclicBoosting(BaseProbaRegressor):
 
         # check parameters
         if (not isinstance(feature_groups, list)) and feature_groups is not None:
-            raise ValueError("feature_groups needs to be list")
+            raise ValueError("feature_groups must be list")
         if (
             not isinstance(feature_properties, dict)
         ) and feature_properties is not None:
-            raise ValueError("feature_properties needs to be dict")
+            raise ValueError("feature_properties must be dict")
         if alpha >= 0.5 or alpha <= 0.0:
-            raise ValueError("alpha's range needs to be 0.0 < alpha < 0.5")
+            raise ValueError("alpha's range must be 0.0 < alpha < 0.5")
 
         # build estimators
         if self.mode == "multiplicative":
@@ -182,7 +182,7 @@ class CyclicBoosting(BaseProbaRegressor):
 
             regressor = pipeline_CBAdditiveQuantileRegressor
         else:
-            raise ValueError("mode needs to be 'multiplicative' or 'additive'")
+            raise ValueError("mode must be 'multiplicative' or 'additive'")
 
         for quantile in self.quantiles:
             self.quantile_est.append(
@@ -433,7 +433,7 @@ class CyclicBoosting(BaseProbaRegressor):
                 warnings.warn(warning.format(quantiles), stacklevel=2)
                 is_given_proba = True
         else:
-            raise ValueError("quantile needs to be float or list of floats")
+            raise ValueError("quantile must be float or list of floats")
 
         index = X.index
         y_cols = self._y_cols
