@@ -94,3 +94,30 @@ def test_lightgbmlss_nonconsecutive_index():
 
     assert list(X.index[:5]) != list(range(5))
     assert y_pred.shape == (10, 1)
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(LightGBMLSS),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
+def test_lightgbmlss_hyperopt_smoke():
+    """Test the hyperparameter optimization path."""
+    from sklearn.datasets import load_diabetes
+
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
+    y = pd.DataFrame(y)
+    X = X.iloc[:80]
+    y = y.iloc[:80]
+
+    reg = LightGBMLSS(
+        n_trials=1,
+        max_minutes=1,
+        num_boost_round=5,
+        n_jobs=1,
+    )
+    reg.fit(X, y)
+    y_pred = reg.predict_proba(X.iloc[:10])
+
+    assert y_pred.shape == (10, 1)
+    assert reg.lgb_params_["num_threads"] == 1
+    assert reg.lgblss_.booster.current_iteration() >= 1
