@@ -156,6 +156,7 @@ Mixture composition
 
     KernelMixture
     Mixture
+    NormalMixture
 
 Sampling and multivariate composition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
