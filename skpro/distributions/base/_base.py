@@ -1789,7 +1789,6 @@ class BaseDistribution(BaseObject):
 
     def _get_x_for_plot(self, fun, lower, upper, is_discrete):
         """Get x values for plotting, handling discrete distributions for PMF."""
-
         # general case: not discrete, or not pmf
         if not is_discrete or fun != "pmf":
             # in this case, the function is on a continuous domain,
