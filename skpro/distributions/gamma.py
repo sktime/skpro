@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Exponential probability distribution."""
 
-__author__ = ["ShreeshaM07"]
-
 import numpy as np
 import pandas as pd
 from scipy.integrate import quad
@@ -43,6 +41,11 @@ class Gamma(_ScipyAdapter):
     """  # noqa: E501
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["ShreeshaM07"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf", "energy"],
         "distr:measuretype": "continuous",
