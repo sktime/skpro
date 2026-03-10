@@ -66,6 +66,8 @@ Continuous support - non-negative reals
     Fisk
     Gamma
     GeneralizedPareto
+    GumbelL
+    GumbelR
     Levy
     LogGamma
     HalfCauchy
@@ -154,6 +156,7 @@ Mixture composition
 
     KernelMixture
     Mixture
+    NormalMixture
 
 Sampling and multivariate composition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -171,6 +171,17 @@ Distributional boosting
 
     XGBoostLSS
 
+Deep learning based regression
+------------------------------
+
+.. currentmodule:: skpro.regression.mdn
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MDNRegressor
+
 Naive regressors and baselines
 ------------------------------
 

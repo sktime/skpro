@@ -777,7 +777,7 @@ class BaseDistribution(BaseObject):
     def log_pdf(self, x):
         r"""Logarithmic probability density function.
 
-        Numerically more stable than calling pdf and then taking logartihms.
+        Numerically more stable than calling pdf and then taking logarithms.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in `(N, n)` ``DataFrame``-s
@@ -925,7 +925,7 @@ class BaseDistribution(BaseObject):
     def log_pmf(self, x):
         r"""Logarithmic probability mass function.
 
-        Numerically more stable than calling pmf and then taking logartihms.
+        Numerically more stable than calling pmf and then taking logarithms.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in `(N, n)` ``DataFrame``-s
@@ -1935,7 +1935,7 @@ class _BaseTFDistribution(BaseDistribution):
     def log_pdf(self, x):
         r"""Logarithmic probability density function.
 
-        Numerically more stable than calling pdf and then taking logartihms.
+        Numerically more stable than calling pdf and then taking logarithms.
 
         Let :math:`X` be a random variables with the distribution of `self`,
         taking values in `(N, n)` `DataFrame`-s
