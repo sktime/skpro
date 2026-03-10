@@ -1,11 +1,9 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Cross-validation utilities for probabilistic supervised regressors."""
 
-__author__ = ["Ahmed"]
 __all__ = ["cross_val_score"]
 
 import numpy as np
-import pandas as pd
 from sklearn.model_selection import check_cv
 
 from skpro.benchmarking.evaluate import evaluate
