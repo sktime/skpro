@@ -9,6 +9,7 @@ __all__ = [
     "Binomial",
     "BurrIII",
     "BurrXII",
+    "Cauchy",
     "ChiSquared",
     "Delta",
     "Empirical",
@@ -21,11 +22,14 @@ __all__ = [
     "GeneralizedPareto",
     "LogGamma",
     "Geometric",
+    "GumbelL",
+    "GumbelR",
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
     "Hurdle",
     "IID",
+    "KernelMixture",
     "InverseGamma",
     "InverseGaussian",
     "Histogram",
@@ -77,6 +81,8 @@ from skpro.distributions.fisk import Fisk
 from skpro.distributions.gamma import Gamma
 from skpro.distributions.gen_pareto import GeneralizedPareto
 from skpro.distributions.geometric import Geometric
+from skpro.distributions.gumbel_l import GumbelL
+from skpro.distributions.gumbel_r import GumbelR
 from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halflogistic import HalfLogistic
 from skpro.distributions.halfnormal import HalfNormal
@@ -84,6 +90,7 @@ from skpro.distributions.histogram import Histogram
 from skpro.distributions.hurdle import Hurdle
 from skpro.distributions.inversegamma import InverseGamma
 from skpro.distributions.inversegaussian import InverseGaussian
+from skpro.distributions.kernel_mixture import KernelMixture
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.left_truncated import LeftTruncated
 from skpro.distributions.levy import Levy

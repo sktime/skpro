@@ -35,6 +35,7 @@ Continuous support - full reals
     :toctree: auto_generated/
     :template: class.rst
 
+    Cauchy
     Laplace
     Logistic
     Normal
@@ -65,6 +66,8 @@ Continuous support - non-negative reals
     Fisk
     Gamma
     GeneralizedPareto
+    GumbelL
+    GumbelR
     Levy
     LogGamma
     HalfCauchy
@@ -151,6 +154,7 @@ Mixture composition
     :toctree: auto_generated/
     :template: class.rst
 
+    KernelMixture
     Mixture
 
 Sampling and multivariate composition
