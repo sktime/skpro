@@ -8,8 +8,66 @@ from skpro.regression.mdn import MDNRegressor
 from skpro.tests.test_switch import run_test_for_class
 
 
-def test_mdn_noise_schedule_values_and_isj():
-    """Test schedule scaling for canonical options including ISJ."""
+def test_mdn_loss_name_validation():
+    """Loss name validation should accept nll/ngem and reject invalid values."""
+    reg = object.__new__(MDNRegressor)
+
+    reg.loss = "nll"
+    assert reg._resolve_loss_name() == "nll"
+
+    reg.loss = "ngem"
+    assert reg._resolve_loss_name() == "ngem"
+
+    reg.loss = "invalid"
+    with pytest.raises(ValueError, match="loss must be 'nll' or 'ngem'"):
+        reg._resolve_loss_name()
+
+
+def test_mdn_ngem_hparams_resolution():
+    """Test effective hparam resolution for nGEM path."""
+    reg = object.__new__(MDNRegressor)
+    reg.lr = 0.01
+    reg.ngem_lr_scale = 0.5
+    reg.ngem_grad_clip_norm = 1.0
+
+    lr_nll, clip_nll = reg._resolve_training_hparams("nll")
+    assert np.isclose(lr_nll, 0.01)
+    assert clip_nll is None
+
+    lr_ngem, clip_ngem = reg._resolve_training_hparams("ngem")
+    assert np.isclose(lr_ngem, 0.005)
+    assert np.isclose(clip_ngem, 1.0)
+
+    reg.ngem_grad_clip_norm = None
+    lr_ngem, clip_ngem = reg._resolve_training_hparams("ngem")
+    assert np.isclose(lr_ngem, 0.005)
+    assert clip_ngem is None
+
+
+def test_mdn_ngem_hparams_validation():
+    """Invalid nGEM training hparams should raise clear errors."""
+    reg = object.__new__(MDNRegressor)
+    reg.lr = 0.01
+    reg.ngem_lr_scale = 0.5
+    reg.ngem_grad_clip_norm = 1.0
+
+    reg.lr = 0.0
+    with pytest.raises(ValueError, match="lr must be positive"):
+        reg._resolve_training_hparams("nll")
+
+    reg.lr = 0.01
+    reg.ngem_lr_scale = 0.0
+    with pytest.raises(ValueError, match="ngem_lr_scale must be positive"):
+        reg._resolve_training_hparams("ngem")
+
+    reg.ngem_lr_scale = 0.5
+    reg.ngem_grad_clip_norm = 0.0
+    with pytest.raises(ValueError, match="ngem_grad_clip_norm must be positive"):
+        reg._resolve_training_hparams("ngem")
+
+
+def test_mdn_noise_scale_method_values_and_isj():
+    """Test noise-scale methods for canonical options including ISJ."""
     reg = object.__new__(MDNRegressor)
     reg.noise_scale_method = "silverman"
     silverman = reg._noise_scale(n_samples=200, total_dim=3)
@@ -123,3 +181,42 @@ def test_mdn_noise_scale_method_performance_comparison():
 
     unique_scores = {round(v, 8) for v in nll_by_schedule.values()}
     assert len(unique_scores) > 1
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(MDNRegressor),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
+def test_mdn_ngem_loss_smoke():
+    """Smoke test for nGEM loss training path."""
+    from sklearn.datasets import make_regression
+    from sklearn.model_selection import train_test_split
+
+    X_arr, y_arr = make_regression(
+        n_samples=80,
+        n_features=4,
+        n_informative=3,
+        noise=0.1,
+        random_state=42,
+    )
+
+    X = pd.DataFrame(X_arr)
+    y = pd.DataFrame(y_arr, columns=["target"])
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
+
+    reg = MDNRegressor(
+        n_gaussians=2,
+        hidden_dims=[8],
+        epochs=4,
+        batch_size=16,
+        optimizer="ADAM",
+        loss="ngem",
+        random_state=42,
+    )
+
+    reg.fit(X_train, y_train)
+    y_pred = reg.predict_proba(X_test)
+
+    assert y_pred.shape == y_test.shape
+    assert len(reg.losses_) == reg.epochs
+    assert np.all(np.isfinite(reg.losses_))
