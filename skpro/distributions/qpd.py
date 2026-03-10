@@ -285,12 +285,21 @@ class QPD_S(BaseDistribution):
 
         phi = self.phi
 
+        # Initialize result array with zeros
+        pdf_arr = np.zeros_like(x, dtype=float)
+
+        # Only compute pdf for x > lower (support of semi-bounded distribution)
+        valid_mask = x > lower
+
+        if not np.any(valid_mask):
+            return pdf_arr
+
         # we work through the chain rule for the entire nested expression in cdf
         x_ = (x - lower) / theta
         x_der = 1 / theta
 
-        in_arcsinh = np.log(x_) / kappa
-        in_arcsinh_der = x_der / (kappa * x_)
+        in_arcsinh = np.where(valid_mask, np.log(x_) / kappa, 0)
+        in_arcsinh_der = np.where(valid_mask, x_der / (kappa * x_), 0)
 
         in_sinh = np.arcsinh(in_arcsinh) - np.arcsinh(n * c * delta)
         in_sinh_der = arcsinh_der(in_arcsinh) * in_arcsinh_der
@@ -301,7 +310,7 @@ class QPD_S(BaseDistribution):
         # cdf_arr = phi.cdf(in_cdf)
         cdf_arr_der = phi.pdf(in_cdf) * in_cdf_der
 
-        pdf_arr = cdf_arr_der
+        pdf_arr = np.where(valid_mask, cdf_arr_der, 0)
         return pdf_arr
 
     def _cdf(self, x: np.ndarray):
@@ -458,6 +467,7 @@ class QPD_B(BaseDistribution):
     def _pdf(self, x: np.ndarray):
         """Probability density function."""
         lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
         rnge = self._qpd_params["rnge"]
         delta = self._qpd_params["delta"]
         kappa = self._qpd_params["kappa"]
@@ -466,6 +476,9 @@ class QPD_B(BaseDistribution):
         xi = self._qpd_params["xi"]
 
         phi = self.phi
+
+        # Only compute pdf for lower < x < upper (support of bounded distribution)
+        valid_mask = (x > lower) & (x < upper)
 
         # we work through the chain rule for the entire nested expression in cdf
         x_ = (x - lower) / rnge
@@ -484,7 +497,7 @@ class QPD_B(BaseDistribution):
         # cdf_arr = phi.cdf(in_cdf)
         cdf_arr_der = phi.pdf(in_cdf) * in_cdf_der
 
-        pdf_arr = cdf_arr_der
+        pdf_arr = np.where(valid_mask, cdf_arr_der, 0)
         return pdf_arr
 
     def _cdf(self, x: np.ndarray):
