@@ -77,6 +77,7 @@ Continuous support - non-negative reals
     InverseGaussian
     LogLaplace
     Pareto
+    Rayleigh
     TruncatedPareto
     Weibull
 
