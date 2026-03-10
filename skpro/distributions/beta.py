@@ -73,6 +73,55 @@ class Beta(_ScipyAdapter):
 
         return [], {"a": alpha, "b": beta}
 
+    def _cdf(self, x):
+        """Cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            cdf values at the given points
+        """
+        from scipy.special import betainc
+
+        alpha = self._bc_params["alpha"]
+        beta_param = self._bc_params["beta"]
+
+        # Clip x to valid range [0, 1] for Beta distribution
+        x_clipped = np.clip(x, 0, 1)
+        cdf_arr = betainc(alpha, beta_param, x_clipped)
+
+        # Handle out-of-bounds: x < 0 -> 0, x > 1 -> 1
+        cdf_arr = np.where(x < 0, 0, cdf_arr)
+        cdf_arr = np.where(x > 1, 1, cdf_arr)
+
+        return cdf_arr
+
+    def _ppf(self, p):
+        """Quantile function = percent point function = inverse cdf.
+
+        Parameters
+        ----------
+        p : 2D np.ndarray, same shape as ``self``
+            values to evaluate the ppf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            ppf values at the given points
+        """
+        from scipy.special import betaincinv
+
+        alpha = self._bc_params["alpha"]
+        beta_param = self._bc_params["beta"]
+
+        ppf_arr = betaincinv(alpha, beta_param, p)
+        return ppf_arr
+
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
