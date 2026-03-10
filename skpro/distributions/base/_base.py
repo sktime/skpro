@@ -1766,24 +1766,9 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
-        # Handle discrete distributions differently for PMF plotting
         is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
-        if is_discrete and fun == "pmf":
-            # Define fallback array construction (used when _pmf_support not available)
-            def _get_fallback_arr():
-                arr = np.linspace(lower, upper, 1000)
-                arr = np.round(arr).astype(int)
-                return np.unique(arr)
 
-            # Use _pmf_support if the method exists and is callable
-            if hasattr(self, "_pmf_support") and callable(self._pmf_support):
-                x_arr = self._pmf_support(lower, upper, max_points=1000)
-                if x_arr.size == 0:
-                    x_arr = _get_fallback_arr()
-            else:
-                x_arr = _get_fallback_arr()
-        else:
-            x_arr = np.linspace(lower, upper, 1000)
+        x_arr = self._get_x_for_plot(fun, lower, upper, is_discrete)
 
         y_arr = [getattr(self, fun)(x) for x in x_arr]
         y_arr = np.array(y_arr)
@@ -1801,6 +1786,31 @@ class BaseDistribution(BaseObject):
             ax.set_xlabel(f"{x_argname}")
             ax.set_ylabel(f"{fun}({x_argname})")
         return ax
+
+    def _get_x_for_plot(self, fun, lower, upper, is_discrete):
+        """Get x values for plotting, handling discrete distributions for PMF."""
+
+        # general case: not discrete, or not pmf
+        if not is_discrete or fun != "pmf":
+            # in this case, the function is on a continuous domain,
+            # so we can plot on a dense grid of points
+            return np.linspace(lower, upper, 1000)
+
+        # special case: discrete distribution and pmf - plot at the support points
+
+        # Define fallback array construction (used when _pmf_support not available)
+        def _get_fallback_arr():
+            arr = np.linspace(lower, upper, 1000)
+            arr = np.round(arr).astype(int)
+            return np.unique(arr)
+
+        # Use _pmf_support if the method exists and is callable
+        if hasattr(self, "_pmf_support") and callable(self._pmf_support):
+            x_arr = self._pmf_support(lower, upper, max_points=1000)
+            if x_arr.size != 0:
+                return x_arr
+
+        return _get_fallback_arr()
 
     def _pmf_support(self, lower, upper, max_points=100):
         """Get support points for discrete distributions.
