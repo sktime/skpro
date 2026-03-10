@@ -48,18 +48,18 @@ def cross_val_score(
           per metric and one row per fold.
         * If None, defaults to ``CRPS()``.
 
-    cv : int, cross-validation generator or an iterable, default=None
+    cv : int, cross-validation generator or an iterable, default=5
         Determines the cross-validation splitting strategy.
 
         * None, to use the default 5-fold cross-validation
-          (``sklearn.model_selection.KFold(n_splits=5)``),
+          (``sklearn.model_selection.KFold(n_splits=5)``), equivalent to ``cv=5``,
         * int, to specify the number of folds in a ``KFold``,
         * An sklearn CV splitter instance, e.g. ``KFold(n_splits=3)``.
 
     error_score : "raise" or numeric, default=np.nan
         Value to assign to the score if an exception occurs in estimator fitting.
         If set to "raise", the exception is raised. If a numeric value is given,
-        FitFailedWarning is raised.
+        the specified value is assigned to the score and a warning is raised.
 
     backend : {"dask", "loky", "multiprocessing", "threading"}, by default None.
         Runs parallel evaluate if specified.
