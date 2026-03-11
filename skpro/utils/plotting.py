@@ -242,6 +242,7 @@ def plot_crossplot_loss(y_true, y_pred, metric, ax=None):
 
     return ax
 
+
 def plot_calibration(y_true, y_pred, ax=None):
     """Plot calibration curve for probabilistic predictions.
 
