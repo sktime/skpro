@@ -298,8 +298,8 @@ def plot_calibration(y_true, y_pred, ax=None):
             q = col[1]
         else:
             q = col
-        pred_q = y_pred[col].values
-        result.append(sum(y_true.values < pred_q) / len(pred_q))
+        pred_q = y_pred[col].to_numpy()
+        result.append(np.mean(y_true.to_numpy() < pred_q))
         ideal_calibration.append(q)
 
     result.append(1)
