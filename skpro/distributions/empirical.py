@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Empirical distribution."""
 
-__author__ = ["fkiraly"]
-
 import numpy as np
 import pandas as pd
 
@@ -69,6 +67,11 @@ class Empirical(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly", "marrov"],
+        # estimator tags
+        # --------------
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "energy", "cdf", "ppf"],
         "distr:measuretype": "discrete",
