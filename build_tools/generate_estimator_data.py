@@ -56,6 +56,9 @@ def _filter_user_facing_tags(tags_dict):
                     user_facing_tags[tag_name] = tag_value
 
     return user_facing_tags
+
+
+def _serialize_value(value):
     """Convert a value to JSON-serializable format.
 
     Parameters
