@@ -254,12 +254,11 @@ class BaseProbaMetric(BaseObject):
         n = y_true.shape[0]
         out_series = pd.Series(index=y_pred.index)
         try:
-            x_bar = self.evaluate(y_true, y_pred, self.multioutput, **kwargs)
+            x_bar = self.evaluate(y_true, y_pred, **kwargs)
             for i in range(n):
                 out_series[i] = n * x_bar - (n - 1) * self.evaluate(
                     np.vstack((y_true[:i, :], y_true[i + 1 :, :])),  # noqa
                     np.vstack((y_pred[:i, :], y_pred[i + 1 :, :])),  # noqa
-                    self.multioutput,
                     **kwargs,
                 )
             return out_series
