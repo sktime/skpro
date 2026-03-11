@@ -108,7 +108,7 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
         regressor_ind = self._get_regressor_index(estimator_tuples)
 
         if not allow_postproc and regressor_ind != len(estimators) - 1:
-            TypeError(
+            raise TypeError(
                 f"in {self.name}, last estimator must be a regressor, "
                 f"but found a transformer"
             )
@@ -590,11 +590,12 @@ class Pipeline(_Pipeline):
         X = prep_skl_df(X, copy_df=True)
         Xt = X
 
+        Xt = X
         for _, _, transformer in self._iter_transformers():
             if self._has_y_arg(transformer.transform):
-                Xt = transformer.transform(X=X, y=y)
+                Xt = transformer.transform(X=Xt, y=y)
             else:
-                Xt = transformer.transform(X=X)
+                Xt = transformer.transform(X=Xt)
             if not isinstance(Xt, pd.DataFrame):
                 Xt = pd.DataFrame(Xt, index=X.index)
             X = Xt
