@@ -193,7 +193,8 @@ class BaseDistribution(BaseObject):
         """
         if self.ndim < 2:
             return self
-        assert isinstance(n, int)
+        if not isinstance(n, int):
+            raise TypeError(f"head: n must be an integer, got {type(n).__name__}")
         N = len(self)
         if n < 0:
             n = N - n
@@ -218,7 +219,8 @@ class BaseDistribution(BaseObject):
         """
         if self.ndim < 2:
             return self
-        assert isinstance(n, int)
+        if not isinstance(n, int):
+            raise TypeError(f"tail: n must be an integer, got {type(n).__name__}")
         N = len(self)
         if n < 0:
             start = n
@@ -1465,6 +1467,8 @@ class BaseDistribution(BaseObject):
         """
         # special case: if a == 1, this is just the integral of the pdf, which is 1
         if a == 1:
+            if self.ndim == 0:
+                return 1.0
             return pd.DataFrame(1.0, index=self.index, columns=self.columns)
 
         approx_spl_size = self.get_tag("approx_spl")
@@ -1476,6 +1480,8 @@ class BaseDistribution(BaseObject):
 
         # uses formula int p(x)^a dx = E[p(X)^{a-1}], and MC approximates the RHS
         spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
+        if self.ndim == 0:
+            return np.mean(spl)
         spl_df = pd.concat(spl, keys=range(approx_spl_size))
         return spl_df.groupby(level=1, sort=False).mean()
 
