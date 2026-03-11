@@ -27,7 +27,35 @@ AUTO_GENERATED_DIR = os.path.join(
 )
 
 
-def _serialize_value(value):
+def _filter_user_facing_tags(tags_dict):
+    """Filter tags to only include user-facing ones based on registry._tags.
+
+    Parameters
+    ----------
+    tags_dict : dict
+        All tags from get_class_tags()
+
+    Returns
+    -------
+    dict
+        Filtered dictionary with only user-facing tags
+    """
+    from skpro.registry._tags import OBJECT_TAG_LIST
+
+    user_facing_tags = {}
+
+    # Internal tag patterns that should be excluded
+    internal_patterns = ["approx_", "bisect_", "broadcast_", "reserved_params"]
+
+    # Filter to only tags that are registered in OBJECT_TAG_LIST and not internal
+    for tag_name, tag_value in tags_dict.items():
+        if tag_name in OBJECT_TAG_LIST:
+            # Exclude internal implementation tags
+            if not any(tag_name.startswith(pattern) for pattern in internal_patterns):
+                if tag_value is not None and tag_value != "" and tag_value != []:
+                    user_facing_tags[tag_name] = tag_value
+
+    return user_facing_tags
     """Convert a value to JSON-serializable format.
 
     Parameters
@@ -105,36 +133,8 @@ def _infer_doc_path(module, name):
     str
         Dotted doc path without ``.html`` suffix.
     """
-    candidates = []
-
     if module:
-        candidates.append(f"{module}.{name}")
-
-        parts = module.split(".")
-        if parts and parts[-1].startswith("_"):
-            candidates.append(".".join(parts[:-1] + [name]))
-
-    if module.startswith("skpro.distributions"):
-        candidates.append(f"skpro.distributions.{name}")
-
-    if module.startswith("skpro.metrics"):
-        candidates.append(f"skpro.metrics.{name}")
-
-    seen = set()
-    unique_candidates = []
-    for candidate in candidates:
-        if candidate not in seen:
-            seen.add(candidate)
-            unique_candidates.append(candidate)
-
-    for candidate in unique_candidates:
-        rst_path = os.path.join(AUTO_GENERATED_DIR, f"{candidate}.rst")
-        if os.path.exists(rst_path):
-            return candidate
-
-    if unique_candidates:
-        return unique_candidates[0]
-
+        return f"{module}.{name}"
     return f"skpro.{name}"
 
 
