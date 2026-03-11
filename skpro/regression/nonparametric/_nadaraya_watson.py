@@ -7,7 +7,6 @@ __all__ = ["NadarayaWatsonCDE"]
 import numpy as np
 import pandas as pd
 
-from skpro.distributions.empirical import Empirical
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -16,7 +15,7 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
 
     Non-parametric probabilistic regressor based on kernel-weighted
     averaging of training targets. For each test point, the predicted
-    conditional distribution is a weighted empirical distribution over
+    conditional distribution is a weighted distribution over
     the training targets, where the weights are determined by a kernel
     function applied to the distance between test and training features.
 
@@ -25,18 +24,24 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
     .. math::
 
         \hat{f}(y \mid x)
-        = \sum_{i=1}^{n} w_i(x) \, \delta(y - y_i),
+        = \sum_{i=1}^{n} w_i(x) \, L_b(y - y_i),
         \quad
         w_i(x) = \frac{K_h(\|x - X_i\|)}{\sum_{j=1}^{n} K_h(\|x - X_j\|)}
 
-    where :math:`K_h` is a kernel function with bandwidth :math:`h`,
-    :math:`(X_i, y_i)` are the training samples, and :math:`\delta` is
-    the Dirac delta.
+    where :math:`K_h` is a kernel function with bandwidth :math:`h` in the
+    feature direction (X), :math:`L_b` is a kernel with bandwidth :math:`b`
+    in the target direction (Y), and :math:`(X_i, y_i)` are the training
+    samples.
+
+    When ``y_kernel="delta"`` (the default), :math:`L_b = \delta` (Dirac delta)
+    and the output is a weighted empirical distribution.
+    Otherwise, :math:`L_b` is a smooth kernel and the output is a
+    ``KernelMixture`` distribution providing a continuous density estimate.
 
     Parameters
     ----------
     bandwidth : float or {"scott", "silverman"}, default="scott"
-        Bandwidth for the kernel function.
+        Bandwidth for the kernel function in the feature direction (X).
 
         * If ``float``, used directly as the bandwidth parameter :math:`h`.
         * If ``"scott"``, bandwidth is computed by Scott's rule:
@@ -46,7 +51,7 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
           :math:`h = (n \cdot (d+2) / 4)^{-1/(d+4)}`.
 
     kernel : {"gaussian", "epanechnikov", "uniform"}, default="gaussian"
-        Kernel function to use for weighting.
+        Kernel function to use for weighting in the feature direction (X).
 
         * ``"gaussian"``:
           :math:`K(u) = \exp(-u^2 / 2)`
@@ -59,6 +64,27 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
         Whether to standardize features (zero mean, unit variance) before
         computing distances. Recommended when features have different scales.
 
+    y_kernel : str, ``BaseDistribution``, or ``"delta"``, default="delta"
+        Kernel function for smoothing in the target direction (Y).
+
+        * If ``"delta"``, the output is a weighted empirical distribution
+          (sum of Dirac deltas), using the ``Empirical`` distribution.
+        * If a ``str`` such as ``"gaussian"``, ``"epanechnikov"``, ``"tophat"``,
+          ``"cosine"``, or ``"linear"``, the output is a ``KernelMixture``
+          distribution with the corresponding built-in kernel.
+        * If a ``BaseDistribution`` instance (must be scalar, zero-centered),
+          it is used as a custom kernel in ``KernelMixture``.
+
+    y_bandwidth : float or {"scott", "silverman"}, default="scott"
+        Bandwidth for the kernel in the target direction (Y).
+        Only used when ``y_kernel`` is not ``"delta"``.
+
+        * If ``float``, used directly as the bandwidth parameter :math:`b`.
+        * If ``"scott"``, bandwidth is computed as
+          ``n**(-1/5) * std(y_train)``.
+        * If ``"silverman"``, bandwidth is computed as
+          ``(4/(3*n))**(1/5) * std(y_train)``.
+
     Attributes
     ----------
     X_train_ : pd.DataFrame
@@ -67,6 +93,8 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
         Training target data stored after ``fit``.
     bandwidth_ : float
         Effective bandwidth used after fitting (resolved from string rules).
+    y_bandwidth_ : float
+        Effective Y-direction bandwidth (only when ``y_kernel != "delta"``).
     x_mean_ : np.ndarray
         Per-feature mean of training data (only if ``normalize_features=True``).
     x_std_ : np.ndarray
@@ -85,6 +113,13 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
     >>> reg.fit(X_train, y_train)
     NadarayaWatsonCDE(...)
     >>> y_pred_proba = reg.predict_proba(X_test)
+
+    Using a smooth kernel in the Y-direction:
+
+    >>> reg = NadarayaWatsonCDE(y_kernel="gaussian", y_bandwidth="scott")
+    >>> reg.fit(X_train, y_train)
+    NadarayaWatsonCDE(...)
+    >>> y_pred_proba = reg.predict_proba(X_test)
     """
 
     _tags = {
@@ -93,10 +128,19 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
         "capability:missing": False,
     }
 
-    def __init__(self, bandwidth="scott", kernel="gaussian", normalize_features=True):
+    def __init__(
+        self,
+        bandwidth="scott",
+        kernel="gaussian",
+        normalize_features=True,
+        y_kernel="delta",
+        y_bandwidth="scott",
+    ):
         self.bandwidth = bandwidth
         self.kernel = kernel
         self.normalize_features = normalize_features
+        self.y_kernel = y_kernel
+        self.y_bandwidth = y_bandwidth
 
         super().__init__()
 
@@ -139,6 +183,19 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
         else:
             self.bandwidth_ = float(bandwidth)
 
+        if self.y_kernel != "delta":
+            y_vals = y.values.astype(float).ravel()
+            std = np.std(y_vals, ddof=1)
+            if np.isnan(std) or std < 1e-15:
+                std = 1.0
+            y_bw = self.y_bandwidth
+            if y_bw == "scott":
+                self.y_bandwidth_ = n ** (-1.0 / 5.0) * std
+            elif y_bw == "silverman":
+                self.y_bandwidth_ = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
+            else:
+                self.y_bandwidth_ = float(y_bw)
+
         return self
 
     def _predict(self, X):
@@ -180,6 +237,15 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
+        if self.y_kernel == "delta":
+            return self._predict_proba_empirical(X)
+        else:
+            return self._predict_proba_kernel_mixture(X)
+
+    def _predict_proba_empirical(self, X):
+        """Return weighted Empirical (Dirac delta) distribution."""
+        from skpro.distributions.empirical import Empirical
+
         weights = self._compute_weights(X)
         y_train = self.y_train_
         cols = self._y_cols
@@ -206,13 +272,32 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
         spl_df = pd.concat(spl_frames, axis=0)
         weights_all = pd.concat(weight_series, axis=0)
 
-        y_proba = Empirical(
+        return Empirical(
             spl=spl_df,
             weights=weights_all,
             index=X.index,
             columns=cols,
         )
-        return y_proba
+
+    def _predict_proba_kernel_mixture(self, X):
+        """Return KernelMixture distribution for smooth CDE.
+
+        Uses per-instance weights (2D weights array) so a single
+        KernelMixture object represents all test points.
+        """
+        from skpro.distributions.kernel_mixture import KernelMixture
+
+        weights = self._compute_weights(X)
+        support = self.y_train_.values.astype(float).ravel()
+
+        return KernelMixture(
+            support=support,
+            h=self.y_bandwidth_,
+            kernel=self.y_kernel,
+            weights=weights,
+            index=X.index,
+            columns=self._y_cols,
+        )
 
     def _compute_weights(self, X):
         """Compute kernel weights between test points and training points.
@@ -301,5 +386,17 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
             "kernel": "uniform",
             "normalize_features": False,
         }
+        params4 = {
+            "bandwidth": "scott",
+            "kernel": "gaussian",
+            "y_kernel": "gaussian",
+            "y_bandwidth": "scott",
+        }
+        params5 = {
+            "bandwidth": 0.5,
+            "kernel": "epanechnikov",
+            "y_kernel": "epanechnikov",
+            "y_bandwidth": "silverman",
+        }
 
-        return [params1, params2, params3]
+        return [params1, params2, params3, params4, params5]

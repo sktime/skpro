@@ -234,7 +234,7 @@ Gaussian process and kernel regression
 
     GaussianProcess
 
-Non-parametric regressors
+Non-parametric conditional density estimation
 -------------------------
 
 .. currentmodule:: skpro.regression.nonparametric
