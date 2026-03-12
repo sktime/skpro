@@ -3,6 +3,9 @@
 
 __author__ = ["fkiraly"]
 
+import numpy as np
+import pandas as pd
+
 from skpro.survival.adapters.sksurv import _SksurvAdapter
 from skpro.survival.base import BaseSurvReg
 
@@ -229,6 +232,22 @@ class SurvGradBoostSkSurv(_SksurvAdapter, BaseSurvReg):
         "capability:feature_importance": True,
     }
 
+    def _feature_importances(self):
+        """Feature importances from the underlying sksurv tree ensemble.
+
+        Returns
+        -------
+        pd.Series
+            Index: feature names from ``fit``. Name: ``"feature_importance"``.
+            Values: from scikit-survival's ``GradientBoostingSurvivalAnalysis``.
+        """
+        sksurv_est = getattr(self, self._estimator_attr)
+        imp = np.asarray(sksurv_est.feature_importances_).ravel()
+        names = getattr(self, "feature_names_in_", None)
+        if names is not None and len(names) == len(imp):
+            return pd.Series(imp, index=names, name="feature_importance")
+        return pd.Series(imp, name="feature_importance")
+
     def __init__(
         self,
         loss="coxph",
@@ -397,7 +416,27 @@ class SurvGradBoostCompSkSurv(_SksurvAdapter, BaseSurvReg):
 
     _tags = {
         "authors": ["sebp", "fkiraly"],  # sebp credit for interfaced estimator=
+        "capability:feature_importance": True,
     }
+
+    def _feature_importances(self):
+        """Feature importances from component-wise coefficients (absolute values).
+
+        Returns
+        -------
+        pd.Series
+            Index: feature names from ``fit``. Name: ``"feature_importance"``.
+            Values: absolute aggregated coefficients from sksurv (excludes intercept).
+        """
+        coef = np.asarray(self.coef_).ravel()
+        if len(coef) > 1:
+            imp = np.abs(coef[1:])  # drop intercept
+        else:
+            imp = np.abs(coef)
+        names = getattr(self, "feature_names_in_", None)
+        if names is not None and len(names) == len(imp):
+            return pd.Series(imp, index=names, name="feature_importance")
+        return pd.Series(imp, name="feature_importance")
 
     def __init__(
         self,

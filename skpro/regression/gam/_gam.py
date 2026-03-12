@@ -104,6 +104,7 @@ class GAMRegressor(BaseProbaRegressor):
         "capability:multioutput": False,
         "capability:missing": True,
         "capability:update": False,
+        "capability:feature_importance": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "tests:vm": True,
@@ -208,6 +209,27 @@ class GAMRegressor(BaseProbaRegressor):
         y_pred_np = self.estimator_.predict(X_np)
 
         return pd.DataFrame(y_pred_np, index=X.index, columns=self._y_cols)
+
+    def _feature_importances(self):
+        """Feature importances from GAM term effects (range of partial dependence).
+
+        Returns
+        -------
+        pd.Series
+            Index: feature names from ``fit``. Name: ``"feature_importance"``.
+            Values: range (max - min) of partial dependence per term.
+        """
+        gam = self.estimator_
+        names = self.feature_names_in_
+        n = len(names)
+        imp = np.zeros(n, dtype=float)
+        for i in range(n):
+            try:
+                pd_val = gam.partial_dependence(term=i)
+                imp[i] = np.ptp(np.asarray(pd_val))
+            except Exception:
+                imp[i] = 0.0
+        return pd.Series(imp, index=names, name="feature_importance")
 
     def _get_distribution_name(self, dist):
         """Extract distribution name from pyGAM estimator."""

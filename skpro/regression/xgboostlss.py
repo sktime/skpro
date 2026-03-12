@@ -2,6 +2,8 @@
 
 import warnings
 
+import numpy as np
+import pandas as pd
 from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.regression.base import BaseProbaRegressor
@@ -109,6 +111,7 @@ class XGBoostLSS(BaseProbaRegressor):
         # --------------
         "capability:multioutput": False,  # can the estimator handle multi-output data?
         "capability:missing": True,  # can the estimator handle missing data?
+        "capability:feature_importance": True,
         "X_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit, _predict
         "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
         # CI and test flags
@@ -437,6 +440,36 @@ class XGBoostLSS(BaseProbaRegressor):
 
         self.xgblss_ = xgblss
         return self
+
+    def _feature_importances(self):
+        """Feature importances from the underlying XGBoost booster (gain).
+
+        Returns
+        -------
+        pd.Series
+            Index: feature names from ``fit``. Name: ``"feature_importance"``.
+            Values: importance from XGBoost (default: gain).
+        """
+        import xgboost as xgb
+
+        booster = getattr(self.xgblss_, "model", None)
+        if booster is None:
+            booster = getattr(self.xgblss_, "get_booster", lambda: None)()
+        if booster is None and hasattr(self.xgblss_, "booster"):
+            booster = self.xgblss_.booster
+        if booster is None:
+            raise AttributeError(
+                "XGBoostLSS: could not obtain booster from xgblss for feature importance."
+            )
+        if not isinstance(booster, xgb.Booster):
+            booster = getattr(booster, "get_booster", lambda: None)()
+        score = booster.get_score(importance_type="gain")
+        names = self.feature_names_in_
+        imp = np.zeros(len(names), dtype=float)
+        for i, name in enumerate(names):
+            key = name if name in score else f"f{i}"
+            imp[i] = score.get(key, 0.0)
+        return pd.Series(imp, index=names, name="feature_importance")
 
     def _hyper_opt(self, xgblss, dtrain):
         """Run internal hyperparameter optimization.

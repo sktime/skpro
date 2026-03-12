@@ -208,10 +208,28 @@ class BaseProbaRegressor(BaseEstimator):
     def feature_importances(self):
         """Return feature importances for fitted estimator.
 
+        All estimators that support this (i.e. have ``capability:feature_importance``
+        tag set to ``True``) return importances in the same format for consistency.
+
         Returns
         -------
         importances : pd.Series
-            Feature importances indexed by feature names seen in ``fit``.
+            Feature importances, one value per feature seen in ``fit``.
+
+            * **Index**: same as feature names seen in ``fit`` (i.e. ``feature_names_in_``).
+              Order and length match the columns of the training data ``X``.
+            * **Name**: ``"feature_importance"``.
+            * **Values**: non-negative floats; higher means more important.
+              Interpretation (e.g. gain vs. split count) is estimator-specific.
+
+        Notes
+        -----
+        Subclasses that support feature importances should set the tag
+        ``capability:feature_importance`` to ``True`` and implement
+        ``_feature_importances`` to return a ``pd.Series`` in exactly the format
+        above. Library-specific handling (e.g. mapping from scikit-survival or
+        xgboost) belongs in that override, so the public method always returns
+        the same structure.
         """
         self.check_is_fitted()
 
@@ -219,23 +237,21 @@ class BaseProbaRegressor(BaseEstimator):
             raise NotImplementedError(
                 f"{type(self).__name__} does not provide feature importances. "
                 "Set the tag 'capability:feature_importance' to True and implement "
-                "either `_feature_importances` or provide `feature_importances_`."
+                "`_feature_importances` to return a pd.Series in the documented format."
             )
 
         if self._has_implementation_of("_feature_importances"):
-            importances = self._feature_importances()
-        else:
-            try:
-                importances = getattr(self, "feature_importances_")
-            except Exception as e:
-                raise AttributeError(
-                    f"{type(self).__name__} declares it can provide feature importances "
-                    "(tag 'capability:feature_importance'=True) but does not expose "
-                    "`feature_importances_` and has no `_feature_importances` method."
-                ) from e
+            return self._feature_importances()
+        try:
+            importances = getattr(self, "feature_importances_")
+        except Exception as e:
+            raise AttributeError(
+                f"{type(self).__name__} declares it can provide feature importances "
+                "(tag 'capability:feature_importance'=True) but does not expose "
+                "`feature_importances_` and has no `_feature_importances` method."
+            ) from e
 
         importances = np.asarray(importances).ravel()
-
         if hasattr(self, "feature_names_in_"):
             feat_names = self.feature_names_in_
             if len(importances) != len(feat_names):
@@ -244,7 +260,6 @@ class BaseProbaRegressor(BaseEstimator):
                     f"number of features seen in fit ({len(feat_names)})."
                 )
             return pd.Series(importances, index=feat_names, name="feature_importance")
-
         return pd.Series(importances, name="feature_importance")
 
     def predict(self, X):

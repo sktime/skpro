@@ -92,7 +92,41 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         "authors": ["ShreeshaM07"],
         "maintainers": ["ShreeshaM07"],
         "python_dependencies": "ngboost",
+        "capability:feature_importance": True,
     }
+
+    def _feature_importances(self):
+        """Feature importances from the NGBoost ensemble (e.g. tree base learners).
+
+        Returns
+        -------
+        pd.Series
+            Index: feature names from ``fit``. Name: ``"feature_importance"``.
+            Values: from the underlying NGBoost model when base learner supports it.
+        """
+        import numpy as np
+        import pandas as pd
+
+        names = self.feature_names_in_
+        n_features = len(names)
+        if hasattr(self.ngb_, "feature_importances_"):
+            imp = np.asarray(self.ngb_.feature_importances_).ravel()
+        elif hasattr(self.ngb_, "estimators_") and len(self.ngb_.estimators_) > 0:
+            imp = np.zeros(n_features)
+            for est in self.ngb_.estimators_:
+                if hasattr(est, "feature_importances_"):
+                    imp += np.asarray(est.feature_importances_).ravel()
+        else:
+            raise AttributeError(
+                "This NGBoost configuration does not expose feature importances; "
+                "use a tree-based base learner (e.g. DecisionTreeRegressor)."
+            )
+        if len(imp) != n_features:
+            raise ValueError(
+                f"Feature importance length ({len(imp)}) does not match "
+                f"number of features ({n_features})."
+            )
+        return pd.Series(imp, index=names, name="feature_importance")
 
     def __init__(
         self,
