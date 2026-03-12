@@ -29,7 +29,7 @@ class Levy(BaseDistribution):
     --------
     >>> from skpro.distributions.levy import Levy
     >>> dist = Levy(mu=0.0, scale=1.0)
-    >>> dist.mean()
+    >>> mu = dist.mean()
     """
 
     _tags = {
