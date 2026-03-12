@@ -11,6 +11,10 @@ Tags are key-value pairs, where the key is a string with the name of the tag.
 The value of the tag can have arbitrary type, and describes a property, capability,
 or controls behaviour of the object, depending on the tag.
 
+For instance, a probabilistic regressor has the tag ``"capability:survival": True``
+if it can use censoring information for survival analysis.
+Users can find all regressors with this capability by filtering for this tag.
+
 This API reference lists all tags available in ``skpro``, and key utilities
 for their usage.
 
