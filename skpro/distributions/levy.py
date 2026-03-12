@@ -2,10 +2,10 @@
 
 from scipy.stats import levy
 
-from skpro.distributions.base import BaseDistribution
+from skpro.distributions.adapters.scipy import _ScipyAdapter
 
 
-class Levy(BaseDistribution):
+class Levy(_ScipyAdapter):
     r"""Levy probability distribution.
 
     The Levy distribution is parametrized by location :math:`\mu` and
