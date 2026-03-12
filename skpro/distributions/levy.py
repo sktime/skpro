@@ -33,7 +33,7 @@ class Levy(BaseDistribution):
     """
 
     _tags = {
-        "authors": ["arnavk23"],
+        "authors": ["direkkakkar319-ops", "arnavk23", "fkiraly"],
         "distr:measuretype": "continuous",
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "broadcast_init": "on",
@@ -44,30 +44,13 @@ class Levy(BaseDistribution):
         self.scale = scale
         super().__init__(index=index, columns=columns)
 
-    def _pdf(self, x):
-        mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
-        return levy.pdf(x, loc=mu, scale=scale)
+    def _get_scipy_object(self):
+        return levy
 
-    def _cdf(self, x):
+    def _get_scipy_param(self):
         mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
-        return levy.cdf(x, loc=mu, scale=scale)
-
-    def _ppf(self, p):
-        mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
-        return levy.ppf(p, loc=mu, scale=scale)
-
-    def _mean(self):
-        mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
-        return levy.mean(loc=mu, scale=scale)
-
-    def _var(self):
-        mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
-        return levy.var(loc=mu, scale=scale)
+        return [mu, scale], {}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
