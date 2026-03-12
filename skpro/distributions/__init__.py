@@ -22,7 +22,6 @@ __all__ = [
     "GeneralizedPareto",
     "LogGamma",
     "Geometric",
-    "Gumbel",
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
