@@ -82,10 +82,10 @@ probabilistic regressors.
     :template: function.rst
     :nosignatures:
 
-    capability_survival
-    capability_multioutput
-    capability_missing
-    capability_update
+    capability__survival
+    capability__multioutput
+    capability__missing
+    capability__update
     X_inner_mtype
     y_inner_mtype
     C_inner_mtype

@@ -230,7 +230,7 @@ class tests_python_dependencies(_BaseTag):
 # ------------------
 
 
-class capability_survival(_BaseTag):
+class capability__survival(_BaseTag):
     """Capability for survival analysis."""
 
     _tags = {
@@ -242,7 +242,7 @@ class capability_survival(_BaseTag):
     }
 
 
-class capability_multioutput(_BaseTag):
+class capability__multioutput(_BaseTag):
     """Support for multioutput regression."""
 
     _tags = {
@@ -253,7 +253,7 @@ class capability_multioutput(_BaseTag):
     }
 
 
-class capability_missing(_BaseTag):
+class capability__missing(_BaseTag):
     """Support for missing values."""
 
     _tags = {
@@ -264,7 +264,7 @@ class capability_missing(_BaseTag):
     }
 
 
-class capability_update(_BaseTag):
+class capability__update(_BaseTag):
     """Support for online updates."""
 
     _tags = {
