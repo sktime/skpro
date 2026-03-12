@@ -31,8 +31,7 @@ Tags can be inspected at runtime using the following utilities:
   By default, class tags that may vary for instances take the most "capable" value,
   in the case of capabilities.
 * to programmatically retrieve all tags available in ``skpro``
-  or for a particular type of object, at runtime, use the ``registry.all_tags``
-  utility.
+  or for a particular type of object, at runtime, use the ``registry.all_tags`` utility.
 
 .. currentmodule:: skpro.registry
 
@@ -41,6 +40,7 @@ Tags can be inspected at runtime using the following utilities:
     :template: function.rst
 
     all_tags
+    all_objects
 
 
 .. _packaging_tags:
@@ -112,11 +112,11 @@ distributions.
     :template: function.rst
     :nosignatures:
 
-    capabilities_approx
-    capabilities_exact
-    capabilities_undefined
-    distr_measuretype
-    distr_paramtype
+    capabilities__approx
+    capabilities__exact
+    capabilities__undefined
+    distr__measuretype
+    distr__paramtype
     approx_mean_spl
     approx_var_spl
     approx_energy_spl

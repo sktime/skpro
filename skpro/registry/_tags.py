@@ -316,7 +316,7 @@ class C_inner_mtype(_BaseTag):
 # ----------------
 
 
-class capabilities_approx(_BaseTag):
+class capabilities__approx(_BaseTag):
     """Approximate methods of distribution."""
 
     _tags = {
@@ -327,7 +327,7 @@ class capabilities_approx(_BaseTag):
     }
 
 
-class capabilities_exact(_BaseTag):
+class capabilities__exact(_BaseTag):
     """Numerically exact methods of distribution."""
 
     _tags = {
@@ -338,7 +338,7 @@ class capabilities_exact(_BaseTag):
     }
 
 
-class capabilities_undefined(_BaseTag):
+class capabilities__undefined(_BaseTag):
     """Methods of distr that are mathematically undefined."""
 
     _tags = {
@@ -349,7 +349,7 @@ class capabilities_undefined(_BaseTag):
     }
 
 
-class distr_measuretype(_BaseTag):
+class distr__measuretype(_BaseTag):
     """Measure type of distribution."""
 
     _tags = {
@@ -360,7 +360,7 @@ class distr_measuretype(_BaseTag):
     }
 
 
-class distr_paramtype(_BaseTag):
+class distr__paramtype(_BaseTag):
     """Parametrization type of distribution."""
 
     _tags = {
