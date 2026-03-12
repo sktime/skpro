@@ -50,7 +50,7 @@ class Levy(BaseDistribution):
     def _get_scipy_param(self):
         mu = self._bc_params["mu"]
         scale = self._bc_params["scale"]
-        return [mu, scale], {}
+        return [], {"loc": mu, "scale": scale}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
