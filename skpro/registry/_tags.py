@@ -181,7 +181,7 @@ class license_type(_BaseTag):
 # -----------------
 
 
-class tests_libs(_BaseTag):
+class tests__libs(_BaseTag):
     """Library dependencies required for tests."""
 
     _tags = {
@@ -192,7 +192,7 @@ class tests_libs(_BaseTag):
     }
 
 
-class tests_vm(_BaseTag):
+class tests__vm(_BaseTag):
     """Whether tests require their own VM."""
 
     _tags = {
@@ -203,7 +203,7 @@ class tests_vm(_BaseTag):
     }
 
 
-class tests_skip_by_name(_BaseTag):
+class tests__skip_by_name(_BaseTag):
     """Test names to skip on CI."""
 
     _tags = {
@@ -214,7 +214,7 @@ class tests_skip_by_name(_BaseTag):
     }
 
 
-class tests_python_dependencies(_BaseTag):
+class tests__python_dependencies(_BaseTag):
     """Additional dependencies for tests."""
 
     _tags = {
@@ -464,7 +464,7 @@ class broadcast_inner(_BaseTag):
 # ---------------
 
 
-class scitype_y_pred(_BaseTag):
+class scitype__y_pred(_BaseTag):
     """Expected input type for y_pred."""
 
     _tags = {

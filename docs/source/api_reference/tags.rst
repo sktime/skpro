@@ -141,8 +141,9 @@ This section lists tags applying to probabilistic metrics (``"metric"`` type).
     :template: function.rst
     :nosignatures:
 
-    scitype_y_pred
+    scitype__y_pred
     lower_is_better
+    capability__survival
 
 
 .. _meta_object_tags:
@@ -181,7 +182,7 @@ objects.
     :template: function.rst
     :nosignatures:
 
-    tests_libs
-    tests_vm
-    tests_skip_by_name
-    tests_python_dependencies
+    tests__libs
+    tests__vm
+    tests__skip_by_name
+    tests__python_dependencies
