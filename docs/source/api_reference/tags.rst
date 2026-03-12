@@ -31,10 +31,7 @@ Tags can be inspected at runtime using the following utilities:
   By default, class tags that may vary for instances take the most "capable" value,
   in the case of capabilities.
 * to programmatically retrieve all tags available in ``skpro``
-  or for a particular type of object, at runtime, use the ``registry.all_tags`` utility
-* to programmatically retrieve all objects in ``skpro``,
-  filtered for values of tags, use the ``registry.all_objects`` utility
-
+  or for a particular type of object, at runtime, use the ``registry.all_tags`` utility.
 
 .. currentmodule:: skpro.registry
 
@@ -79,8 +76,8 @@ Probabilistic regressor tags
 
 This section lists tags applying to probabilistic regressors
 (``"regressor_proba"`` type).
-These tags are used to describe capabilities, properties, and behavior
-of probabilistic regressors.
+These tags are used to describe capabilities, properties, and behavior of
+probabilistic regressors.
 
 .. currentmodule:: skpro.registry._tags
 
@@ -105,6 +102,8 @@ Distribution tags
 
 This section lists tags applying to probability distributions
 (``"distribution"`` type).
+These tags are used to describe capabilities, properties, and behavior of
+distributions.
 
 .. currentmodule:: skpro.registry._tags
 
@@ -133,7 +132,7 @@ This section lists tags applying to probability distributions
 Metric tags
 -----------
 
-This section lists tags applying to performance metrics (``"metric"`` type).
+This section lists tags applying to probabilistic metrics (``"metric"`` type).
 
 .. currentmodule:: skpro.registry._tags
 
@@ -144,15 +143,15 @@ This section lists tags applying to performance metrics (``"metric"`` type).
 
     scitype__y_pred
     lower_is_better
-    capability__survival_metric
+    capability__survival
 
 
-.. _meta_tags:
+.. _meta_object_tags:
 
 Meta-object tags
 ----------------
 
-This section lists tags reserved for meta-objects and composites.
+Tags relating to meta-object composition (pipelines, ensembles, etc.).
 
 .. currentmodule:: skpro.registry._tags
 
@@ -165,15 +164,16 @@ This section lists tags reserved for meta-objects and composites.
     fitted_named_object_parameters
 
 
-.. _dev_testing_tags:
+.. _testing_tags:
 
 Testing and CI tags
 -------------------
 
-These tags control behaviour of estimators in the ``skpro`` continuous integration
+These tags control behaviour of objects in ``skpro`` continuous integration
 tests.
 
-They are primarily useful for developers managing CI behaviour of individual objects.
+They are primarily useful for developers managing CI behaviour of individual
+objects.
 
 .. currentmodule:: skpro.registry._tags
 
