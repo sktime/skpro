@@ -49,6 +49,7 @@ dependencies = [
 all_extras = [
     "distfit; python_version < '3.13'",
     "lifelines<0.31.0; python_version < '3.13'",
+    "mapie",
     "matplotlib>=3.3.2",
     "polars<1.37.0",
     "pymc; python_version < '3.13'",
