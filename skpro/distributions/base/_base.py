@@ -1023,6 +1023,49 @@ class BaseDistribution(BaseObject):
         spl = sply <= splx
         return self._sample_mean(spl)
 
+    def log_cdf(self, x):
+        r"""Logarithm of the cumulative distribution function.
+
+        Numerically more stable than calling cdf and then taking logarithms.
+
+        Let X be a random variable with the distribution of ``self``.
+        Returns log(F_X(x)), where F_X is the cumulative distribution function.
+
+        Parameters
+        ----------
+        x : pandas.DataFrame or 2D np.ndarray
+            values at which to evaluate the log-CDF
+
+        Returns
+        -------
+        pd.DataFrame with same index and columns as self
+            containing log(F_X(x))
+        """
+        return self._boilerplate("_log_cdf", x=x)
+
+    def _log_cdf(self, x):
+        """Logarithm of the cumulative distribution function.
+
+        Private method, to be implemented by subclasses.
+        """
+        self_has_cdf = self._has_implementation_of("cdf")
+        self_has_cdf = self_has_cdf or self._has_implementation_of("_cdf")
+
+        if self_has_cdf:
+            approx_method = (
+                "by taking the logarithm of the output returned by the cdf method, "
+                "this may be numerically unstable"
+            )
+            warn(self._method_error_msg("log_cdf", fill_in=approx_method))
+
+            x = self._coerce_to_self_index_df(x, flatten=False)
+            res = self.cdf(x)
+            if isinstance(res, pd.DataFrame):
+                res = res.values
+            return np.log(res)
+
+        raise NotImplementedError(self._method_error_msg("log_cdf", "error"))
+
     def surv(self, x):
         r"""Survival function.
 
