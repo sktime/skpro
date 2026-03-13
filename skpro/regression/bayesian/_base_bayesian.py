@@ -313,14 +313,14 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         summary : pandas.DataFrame
             Summary statistics of posterior distributions.
         """
-        import arviz as az
-
         if not hasattr(self, "trace_"):
             raise NotImplementedError(
                 "Posterior summary is not available by default for this backend. "
                 "Override `_get_posterior_summary_from_posterior` in subclasses "
                 "that do not use `trace_`/ArviZ."
             )
+
+        import arviz as az
 
         return az.summary(self.trace_, **kwargs)
 
