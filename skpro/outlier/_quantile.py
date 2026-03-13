@@ -85,17 +85,22 @@ class QuantileOutlierDetector(BaseOutlierDetector):
                 "Target variable y is required for quantile-based " "outlier detection."
             )
 
-        # Ensure y is a Series or DataFrame
+        # Ensure y is a Series or DataFrame and convert to float
         if isinstance(y, pd.Series):
-            y_arr = y.values.reshape(-1, 1)
+            y_arr = y.astype(float).values.reshape(-1, 1)
         elif isinstance(y, pd.DataFrame):
-            y_arr = y.values
+            y_arr = y.astype(float).values
         else:
-            y_arr = np.array(y).reshape(-1, 1)
+            y_arr = np.array(y, dtype=float).reshape(-1, 1)
 
         # Get quantile predictions
         quantiles = sorted(self.alpha if self.alpha is not None else [0.05, 0.95])
         q_pred = self.regressor.predict_quantiles(X, alpha=quantiles)
+        # Convert quantile predictions to float if DataFrame or Series
+        if isinstance(q_pred, pd.DataFrame):
+            q_pred = q_pred.astype(float)
+        elif isinstance(q_pred, pd.Series):
+            q_pred = q_pred.astype(float)
 
         # Compute scores based on quantile extremity
         # Score is the distance from median, normalized by quantile range
