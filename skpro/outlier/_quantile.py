@@ -115,18 +115,9 @@ class QuantileOutlierDetector(BaseOutlierDetector):
         ):
             quantile_level = None
             # Try to identify the column level that corresponds to quantiles
-            for lvl in range(q_pred.columns.nlevels):
-                lvl_values = q_pred.columns.get_level_values(lvl)
-                # Only check if dtype is numeric, object, or string
-                if np.issubdtype(lvl_values.dtype, np.number):
-                    unique_vals = np.unique(lvl_values)
-                    if all(q in unique_vals for q in quantiles):
-                        quantile_level = lvl
-                        break
-                elif lvl_values.dtype == object or str(lvl_values.dtype).startswith(
-                    "string"
-                ):
-                    # Attempt conversion only if dtype is object or string
+                for lvl in range(q_pred.columns.nlevels):
+                    lvl_values = q_pred.columns.get_level_values(lvl)
+                    # Always attempt conversion to float
                     lvl_values_float = pd.to_numeric(lvl_values, errors="coerce")
                     unique_vals = np.unique(lvl_values_float)
                     if all(q in unique_vals for q in quantiles):
