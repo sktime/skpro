@@ -15,9 +15,15 @@ class Mixture(BaseMetaObject, BaseDistribution):
     ----------
     distributions : list of tuples (str, BaseDistribution) or BaseDistribution
         list of mixture components
-    weights : list of float, optional, default = None
-        list of mixture weights, will be normalized to sum to 1
-        if not provided, uniform mixture is assumed
+    weights : 1D or 2D array-like, optional, default = None
+        Mixture weights. Can be:
+
+        - 1D array of shape ``(n_components,)`` — global weights shared across
+          all rows. Will be normalized to sum to 1.
+        - 2D array of shape ``(n_rows, n_components)`` — per-row weights.
+          Each row will be normalized to sum to 1.
+
+        If not provided, uniform mixture is assumed.
     indep_rows : bool, optional, default = True
         if True, rows are sampled independently from the mixture components.
         If False, the same component is used for all rows.
@@ -43,7 +49,7 @@ class Mixture(BaseMetaObject, BaseDistribution):
     _tags = {
         # packaging info
         # --------------
-        "authors": ["fkiraly"],
+        "authors": ["fkiraly", "MurtuzaShaikh26"],
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm", "energy", "ppf"],
@@ -72,8 +78,17 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         if weights is None:
             self._weights = np.ones(n_dists) / n_dists
+            self._row_weights = False
         else:
-            self._weights = np.array(weights) / np.sum(weights)
+            w = np.array(weights, dtype=float)
+            if w.ndim == 2:
+                # row-wise weights: normalize each row to sum to 1
+                row_sums = w.sum(axis=1, keepdims=True)
+                self._weights = w / row_sums
+                self._row_weights = True
+            else:
+                self._weights = w / w.sum()
+                self._row_weights = False
 
         if index is None:
             index = self._distributions[0][1].index
@@ -85,12 +100,16 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
     def _iloc(self, rowidx=None, colidx=None):
         dists = self._distributions
-        weights = self.weights
 
         dists_subset = [(x[0], x[1].iloc[rowidx, colidx]) for x in dists]
 
         index_subset = dists_subset[0][1].index
         columns_subset = dists_subset[0][1].columns
+
+        if self._row_weights and rowidx is not None:
+            weights = self._weights[rowidx]
+        else:
+            weights = self.weights
 
         return Mixture(
             distributions=dists_subset,
@@ -101,9 +120,13 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
     def _iat(self, rowidx=None, colidx=None):
         dists = self._distributions
-        weights = self.weights
 
         dists_subset = [(x[0], x[1].iat[rowidx, colidx]) for x in dists]
+
+        if self._row_weights and rowidx is not None:
+            weights = self._weights[rowidx]
+        else:
+            weights = self.weights
 
         return Mixture(distributions=dists_subset, weights=weights)
 
@@ -131,7 +154,6 @@ class Mixture(BaseMetaObject, BaseDistribution):
         pd.DataFrame with same rows, columns as `self`
         variance of distribution (entry-wise)
         """
-        weights = self._weights
         var_mean = self._average("var")
         mixture_mean = self._average("mean")
 
@@ -139,9 +161,13 @@ class Mixture(BaseMetaObject, BaseDistribution):
         mean_var = [(m - mixture_mean) ** 2 for m in means]
 
         if self.ndim > 0:
-            var_mean_var = self._average_df(mean_var, weights=weights)
+            var_mean_var = self._average_df(mean_var)
+        elif self._row_weights:
+            var_mean_var = np.sum(
+                [w * v for w, v in zip(self._weights, mean_var)]
+            )
         else:
-            var_mean_var = np.average(mean_var, weights=weights)
+            var_mean_var = np.average(mean_var, weights=self._weights)
 
         return var_mean + var_mean_var
 
@@ -156,18 +182,35 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         if self.ndim > 0:
             return self._average_df(vals, weights=weights)
+        elif self._row_weights:
+            if weights is None:
+                weights = self._weights
+            return np.sum([w * v for w, v in zip(weights, vals)])
         else:
             return np.average(vals, weights=weights)
 
     def _average_df(self, df_list, weights=None):
-        """Average a list of `pd.DataFrame` objects, with weights."""
+        """Average a list of ``pd.DataFrame`` objects, with weights.
+
+        Supports both global weights (1D) and row-wise weights (2D).
+        """
         if weights is None and hasattr(self, "_weights"):
             weights = self._weights
         elif weights is None:
             weights = np.ones(len(df_list)) / len(df_list)
 
+        weights = np.asarray(weights)
         n_df = len(df_list)
-        df_weighted = [df * w for df, w in zip(df_list, weights)]
+
+        if weights.ndim == 2:
+            # row-wise weights: weights[i, k] is the weight for row i, comp k
+            df_weighted = [
+                df.multiply(weights[:, k], axis=0)
+                for k, df in enumerate(df_list)
+            ]
+        else:
+            df_weighted = [df * w for df, w in zip(df_list, weights)]
+
         df_concat = pd.concat(df_weighted, axis=1, keys=range(n_df))
         df_res = df_concat.T.groupby(level=-1).sum().T
         return df_res
@@ -227,7 +270,23 @@ class Mixture(BaseMetaObject, BaseDistribution):
             rd_size[1] = 1
 
         n_dist = len(self._distributions)
-        selector = np.random.choice(n_dist, size=rd_size, p=self._weights)
+        weights = self._weights
+
+        if self._row_weights:
+            # per-row component selection
+            n_rows = full_size[0]
+            n_cols = rd_size[1] if indep_cols else 1
+            # tile row weights for n_samples if needed
+            if N > 1:
+                tiled_weights = np.tile(weights, (N, 1))
+            else:
+                tiled_weights = weights
+            selector = np.array([
+                np.random.choice(n_dist, size=n_cols, p=tiled_weights[i])
+                for i in range(n_rows)
+            ])
+        else:
+            selector = np.random.choice(n_dist, size=rd_size, p=weights)
         indicators = [selector == i for i in range(n_dist)]
         indicators = [np.broadcast_to(ind, full_size) for ind in indicators]
 
@@ -254,7 +313,12 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         n_dist = len(self._distributions)
 
-        selector = np.random.choice(n_dist, size=N, p=self._weights)
+        if self._row_weights:
+            # for blocked case with row weights, use first row's weights
+            p = self._weights[0]
+        else:
+            p = self._weights
+        selector = np.random.choice(n_dist, size=N, p=p)
 
         samples = [self._distributions[i][1].sample() for i in selector]
 
@@ -297,4 +361,11 @@ class Mixture(BaseMetaObject, BaseDistribution):
         dists3 = [normal1, normal2, normal5, normal6]
         params5 = {"distributions": dists3}
 
-        return [params1, params2, params3, params4, params5]
+        # row-wise weights: 3 rows, 2 components
+        row_weights = [[0.9, 0.1], [0.5, 0.5], [0.1, 0.9]]
+        normal7 = Normal(mu=0, sigma=1, index=index, columns=columns)
+        normal8 = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=columns)
+        dists_rw = [("normal7", normal7), ("normal8", normal8)]
+        params6 = {"distributions": dists_rw, "weights": row_weights}
+
+        return [params1, params2, params3, params4, params5, params6]
