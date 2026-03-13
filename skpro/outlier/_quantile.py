@@ -123,7 +123,9 @@ class QuantileOutlierDetector(BaseOutlierDetector):
                     if all(q in unique_vals for q in quantiles):
                         quantile_level = lvl
                         break
-                elif lvl_values.dtype == object or str(lvl_values.dtype).startswith("string"):
+                elif lvl_values.dtype == object or str(lvl_values.dtype).startswith(
+                    "string"
+                ):
                     # Attempt conversion only if dtype is object or string
                     lvl_values_float = pd.to_numeric(lvl_values, errors="coerce")
                     unique_vals = np.unique(lvl_values_float)
