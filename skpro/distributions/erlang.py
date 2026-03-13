@@ -3,6 +3,7 @@
 
 __author__ = ["RUPESH-KUMAR01"]
 
+import numpy as np
 import pandas as pd
 from scipy.stats import erlang
 
@@ -41,8 +42,8 @@ class Erlang(_ScipyAdapter):
         "authors": ["RUPESH-KUMAR01"],
         # estimator tags
         # --------------
-        "capabilities:approx": ["energy", "pdfnorm"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -62,6 +63,85 @@ class Erlang(_ScipyAdapter):
         k = self._bc_params["k"]
 
         return [], {"scale": 1 / rate, "a": k}
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        For Erlang(rate, k), :math:`\mathbb{E}|X-Y|` is computed via:
+
+        .. math:: \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t))\,dt
+
+        using numerical integration over the CDF.
+        """
+        from scipy.integrate import quad
+
+        rate = np.asarray(self._bc_params["rate"])
+        k = np.asarray(self._bc_params["k"])
+        rate_b, k_b = np.broadcast_arrays(rate, k)
+        result = np.empty_like(rate_b, dtype=float)
+
+        it = np.nditer(
+            [rate_b, k_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["readonly"], ["writeonly"]],
+        )
+        for rr, kk, out in it:
+            rr_val = float(rr)
+            kk_val = float(kk)
+
+            def integrand(t, rr=rr_val, kk=kk_val):
+                F = erlang.cdf(t, a=kk, scale=1.0 / rr)
+                return 2 * F * (1 - F)
+
+            val, _ = quad(integrand, 0, np.inf, limit=200)
+            out[...] = val
+
+        result_flat = np.asarray(result).reshape(-1)
+        n_rows = 1 if self.index is None else len(self.index)
+        if result_flat.shape[0] != n_rows:
+            result_flat = result_flat.reshape(n_rows, -1).sum(axis=1)
+        if self.index is None and n_rows == 1:
+            return float(result_flat[0])
+        return result_flat
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        :math:`\mathbb{E}[|X-x|]` for X ~ Erlang(rate, k),
+        computed via numerical integration.
+        """
+        from scipy.integrate import quad
+
+        rate = np.asarray(self._bc_params["rate"])
+        k = np.asarray(self._bc_params["k"])
+        x_arr = np.asarray(x)
+        rate_b, k_b = np.broadcast_arrays(rate, k)
+        _, x_b = np.broadcast_arrays(rate_b, x_arr)
+        result = np.empty_like(rate_b, dtype=float)
+
+        it = np.nditer(
+            [rate_b, k_b, x_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["readonly"], ["readonly"], ["writeonly"]],
+        )
+        for rr, kk, x0, out in it:
+            rr_val = float(rr)
+            kk_val = float(kk)
+            x0_val = float(x0)
+
+            def integrand(t, rr=rr_val, kk=kk_val, x0=x0_val):
+                return abs(t - x0) * erlang.pdf(t, a=kk, scale=1.0 / rr)
+
+            val, _ = quad(integrand, 0, np.inf, limit=200)
+            out[...] = val
+
+        result_flat = np.asarray(result).reshape(-1)
+        n_rows = 1 if self.index is None else len(self.index)
+        if result_flat.shape[0] != n_rows:
+            result_flat = result_flat.reshape(n_rows, -1).sum(axis=1)
+        if self.index is None and n_rows == 1:
+            return float(result_flat[0])
+        return result_flat
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
