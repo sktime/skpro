@@ -388,9 +388,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         """
         import pymc as pm
 
-        assert (
-            self.is_fitted
-        ), "Model needs to be fitted before you can sample from prior"
+        assert self.is_fitted, "Model must be fitted before you can sample from prior"
 
         with self.model:
             # if we've previously used the model for prediction,
