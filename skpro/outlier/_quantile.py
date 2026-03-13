@@ -115,14 +115,14 @@ class QuantileOutlierDetector(BaseOutlierDetector):
         ):
             quantile_level = None
             # Try to identify the column level that corresponds to quantiles
-                for lvl in range(q_pred.columns.nlevels):
-                    lvl_values = q_pred.columns.get_level_values(lvl)
-                    # Always attempt conversion to float
-                    lvl_values_float = pd.to_numeric(lvl_values, errors="coerce")
-                    unique_vals = np.unique(lvl_values_float)
-                    if all(q in unique_vals for q in quantiles):
-                        quantile_level = lvl
-                        break
+            for lvl in range(q_pred.columns.nlevels):
+                lvl_values = q_pred.columns.get_level_values(lvl)
+                # Always attempt conversion to float
+                lvl_values_float = pd.to_numeric(lvl_values, errors="coerce")
+                unique_vals = np.unique(lvl_values_float)
+                if all(q in unique_vals for q in quantiles):
+                    quantile_level = lvl
+                    break
             if quantile_level is not None:
                 # Extract lower and upper quantiles per output using the column index
                 q_lower_df = q_pred.xs(quantiles[0], axis=1, level=quantile_level)
