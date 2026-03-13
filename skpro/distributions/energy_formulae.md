@@ -26,6 +26,7 @@ This file collects analytic formulae, derivations, and summary tables for energy
 | InverseGaussian(2,1)          | 2.272415  | 2.278161    | 0.005746  |
 | LogGamma(2)                   | 0.886294  | 0.692743    | 0.193551  |
 | Poisson(3)                    | 1.907392  | 1.910830    | 0.003438  |
+| Rayleigh(1.0)                 | 0.734174  | 0.734174    | 0.000000  |
 | TruncatedNormal(0,1,-1,2)     | 0.824430  | 0.824881    | 0.000451  |
 
 ## Example: Beta(2,3)
@@ -285,6 +286,31 @@ where $F$ is the t-distribution CDF with 5 degrees of freedom.
 
 **Derivation:**
 For Student's t-distribution with $\nu$ degrees of freedom, the energy is computed using numerical integration of the CDF.
+
+---
+
+## Example: Rayleigh(scale)
+
+**PDF:**
+$$
+f(x; \sigma) = \frac{x}{\sigma^2} \exp\left(-\frac{x^2}{2\sigma^2}\right), \quad x \geq 0
+$$
+
+**Energy:**
+$$
+\mathbb{E}|X-Y| = \sigma \sqrt{\pi} (\sqrt{2} - 1)
+$$
+
+**Derivation:**
+For Rayleigh($\sigma$), the energy distance is calculated as:
+$$
+\mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt
+$$
+Substituting the Rayleigh CDF $F(t) = 1 - \exp\left(-\frac{t^2}{2\sigma^2}\right)$:
+$$
+F(t)(1-F(t)) = \left( 1 - \exp\left(-\frac{t^2}{2\sigma^2}\right) \right) \exp\left(-\frac{t^2}{2\sigma^2}\right) = \exp\left(-\frac{t^2}{2\sigma^2}\right) - \exp\left(-\frac{t^2}{\sigma^2}\right)
+$$
+Integrating this yields $\sigma \sqrt{\frac{\pi}{2}} - \frac{\sigma \sqrt{\pi}}{2}$, which multiplied by 2 gives the analytical solution.
 
 ---
 
