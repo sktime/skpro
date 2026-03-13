@@ -23,6 +23,7 @@ each tuple corresponds to a tag, elements as follows:
             ("list", "str") - any individual string or list of strings is valid
         validity can be checked by check_tag_is_valid (see below)
     3 : string - plain English description of the tag
+    4 : bool - whether the tag is user-facing (True) or internal/developer-only (False)
 
 ---
 
@@ -32,6 +33,9 @@ OBJECT_TAG_TABLE - pd.DataFrame
 
 OBJECT_TAG_LIST - list of string
     elements are 0-th entries of OBJECT_TAG_REGISTER, in same order
+
+OBJECT_TAG_LIST_USER_FACING - list of string
+    elements are 0-th entries of OBJECT_TAG_REGISTER where 4th entry is True
 
 ---
 
@@ -48,18 +52,21 @@ OBJECT_TAG_REGISTER = [
         "object",
         "list",
         "list of reserved parameter names",
+        False,
     ),
     (
         "object_type",
         "object",
         "str",
         "type of object, e.g., 'regressor', 'transformer'",
+        True,
     ),
     (
         "estimator_type",
         "estimator",
         "str",
         "type of estimator, e.g., 'regressor', 'transformer'",
+        True,
     ),
     # packaging information
     # ---------------------
@@ -68,24 +75,28 @@ OBJECT_TAG_REGISTER = [
         "object",
         ("list", "str"),
         "list of current maintainers of the object, each maintainer a GitHub handle",
+        True,
     ),
     (
         "authors",
         "object",
         ("list", "str"),
         "list of authors of the object, each author a GitHub handle",
+        True,
     ),
     (
         "python_version",
         "object",
         "str",
         "python version specifier (PEP 440) for estimator, or None = all versions ok",
+        False,
     ),
     (
         "python_dependencies",
         "object",
         ("list", "str"),
         "python dependencies of estimator as str or list of str",
+        True,
     ),
     (
         "python_dependencies_alias",
@@ -93,6 +104,7 @@ OBJECT_TAG_REGISTER = [
         "dict",
         "should be provided if import name differs from package name, \
         key-value pairs are package name, import name",
+        False,
     ),
     (
         "license_type",
@@ -100,6 +112,7 @@ OBJECT_TAG_REGISTER = [
         "str",
         "license type for interfaced packages: 'copyleft', 'permissive', 'copyright'. \
         may be incorrect, NO LIABILITY assumed for this field",
+        True,
     ),
     # CI and test flags
     # -----------------
@@ -108,24 +121,28 @@ OBJECT_TAG_REGISTER = [
         "object",
         ("list", "str"),
         "list of library dependencies required for tests",
+        False,
     ),
     (
         "tests:vm",
         "object",
         "bool",
         "whether tests require their own VM to run",
+        False,
     ),
     (
         "tests:skip_by_name",
         "object",
         ("list", "str"),
         "list of test names to skip when running estimator checks on CI",
+        False,
     ),
     (
         "tests:python_dependencies",
         "object",
         ("list", "str"),
         "additional python dependencies needed in tests, str or list of str (PEP 440)",
+        False,
     ),
     # ------------------
     # BaseProbaRegressor
@@ -135,42 +152,49 @@ OBJECT_TAG_REGISTER = [
         "regressor_proba",
         "bool",
         "whether estimator can use censoring information, for survival analysis",
+        True,
     ),
     (
         "capability:multioutput",
         "regressor_proba",
         "bool",
         "whether estimator supports multioutput regression",
+        True,
     ),
     (
         "capability:missing",
         "regressor_proba",
         "bool",
         "whether estimator supports missing values",
+        True,
     ),
     (
         "capability:update",
         "regressor_proba",
         "bool",
         "whether estimator supports online updates via update",
+        True,
     ),
     (
         "X_inner_mtype",
         "regressor_proba",
         ("list", "str"),
         "which machine type(s) is the internal _fit/_predict able to deal with?",
+        False,
     ),
     (
         "y_inner_mtype",
         "regressor_proba",
         ("list", "str"),
         "which machine type(s) is the internal _fit/_predict able to deal with?",
+        False,
     ),
     (
         "C_inner_mtype",
         "regressor_proba",
         ("list", "str"),
         "which machine type(s) is the internal _fit/_predict able to deal with?",
+        False,
     ),
     # ----------------
     # BaseDistribution
@@ -180,72 +204,84 @@ OBJECT_TAG_REGISTER = [
         "distribution",
         ("list", "str"),
         "methods of distr that are approximate",
+        True,
     ),
     (
         "capabilities:exact",
         "distribution",
         ("list", "str"),
         "methods of distr that are numerically exact",
+        True,
     ),
     (
         "distr:measuretype",
         "distribution",
         ("str", ["continuous", "discrete", "mixed"]),
         "measure type of distr",
+        True,
     ),
     (
         "distr:paramtype",
         "distribution",
         ("str", ["general", "parametric", "nonparametric", "composite"]),
         "parametrization type of distribution",
+        True,
     ),
     (
         "approx_mean_spl",
         "distribution",
         "int",
         "sample size used in MC estimates of mean",
+        False,
     ),
     (
         "approx_var_spl",
         "distribution",
         "int",
         "sample size used in MC estimates of var",
+        False,
     ),
     (
         "approx_energy_spl",
         "distribution",
         "int",
         "sample size used in MC estimates of energy",
+        False,
     ),
     (
         "approx_spl",
         "distribution",
         "int",
         "sample size used in other MC estimates",
+        False,
     ),
     (
         "bisect_iter",
         "distribution",
         "int",
         "max iters for bisection method in ppf",
+        False,
     ),
     (
         "broadcast_params",
         "distribution",
         ("list", "str"),
         "distribution parameters to broadcast, complement is not broadcast",
+        False,
     ),
     (
         "broadcast_init",
         "distribution",
         ("str", ["on", "off"]),
         "whether to initialize broadcast parameters in __init__, 'on' or 'off'",
+        False,
     ),
     (
         "broadcast_inner",
         "distribution",
         ("str", ["array", "scalar"]),
         "if inner logic is vectorized ('array') or scalar ('scalar')",
+        False,
     ),
     # ---------------
     # BaseProbaMetric
@@ -255,18 +291,21 @@ OBJECT_TAG_REGISTER = [
         "metric",
         "str",
         "expected input type for y_pred in performance metric",
+        True,
     ),
     (
         "lower_is_better",
         "metric",
         "bool",
         "whether lower (True) or higher (False) is better",
+        True,
     ),
     (
         "capability:survival",
         "metric",
         "bool",
         "whether metric uses censoring information, for survival analysis",
+        True,
     ),
     # ----------------------------
     # BaseMetaObject reserved tags
@@ -276,17 +315,20 @@ OBJECT_TAG_REGISTER = [
         "object",
         "str",
         "name of component list attribute for meta-objects",
+        False,
     ),
     (
         "fitted_named_object_parameters",
         "estimator",
         "str",
         "name of fitted component list attribute for meta-objects",
+        False,
     ),
 ]
 
 OBJECT_TAG_TABLE = pd.DataFrame(OBJECT_TAG_REGISTER)
 OBJECT_TAG_LIST = OBJECT_TAG_TABLE[0].tolist()
+OBJECT_TAG_LIST_USER_FACING = [row[0] for row in OBJECT_TAG_REGISTER if row[4]]
 
 
 def check_tag_is_valid(tag_name, tag_value):

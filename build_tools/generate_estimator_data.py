@@ -30,6 +30,9 @@ AUTO_GENERATED_DIR = os.path.join(
 def _filter_user_facing_tags(tags_dict):
     """Filter tags to only include user-facing ones based on registry._tags.
 
+    Whether a tag is user-facing is determined by the 5th element (user_facing bool)
+    of each entry in OBJECT_TAG_REGISTER.
+
     Parameters
     ----------
     tags_dict : dict
@@ -40,22 +43,18 @@ def _filter_user_facing_tags(tags_dict):
     dict
         Filtered dictionary with only user-facing tags
     """
-    from skpro.registry._tags import OBJECT_TAG_LIST
+    from skpro.registry._tags import OBJECT_TAG_LIST_USER_FACING
 
-    user_facing_tags = {}
+    user_facing_set = set(OBJECT_TAG_LIST_USER_FACING)
 
-    # Internal tag patterns that should be excluded
-    internal_patterns = ["approx_", "bisect_", "broadcast_", "reserved_params"]
-
-    # Filter to only tags that are registered in OBJECT_TAG_LIST and not internal
-    for tag_name, tag_value in tags_dict.items():
-        if tag_name in OBJECT_TAG_LIST:
-            # Exclude internal implementation tags
-            if not any(tag_name.startswith(pattern) for pattern in internal_patterns):
-                if tag_value is not None and tag_value != "" and tag_value != []:
-                    user_facing_tags[tag_name] = tag_value
-
-    return user_facing_tags
+    return {
+        tag_name: tag_value
+        for tag_name, tag_value in tags_dict.items()
+        if tag_name in user_facing_set
+        and tag_value is not None
+        and tag_value != ""
+        and tag_value != []
+    }
 
 
 def _serialize_value(value):
@@ -124,6 +123,15 @@ def _infer_object_type(tags_dict, module):
 def _infer_doc_path(module, name):
     """Infer autosummary doc path used in api_reference/auto_generated.
 
+    Uses the same logic as sktime: strips the leaf module file name from the
+    full dotted path so that the path matches the Sphinx ``currentmodule``
+    used in the RST autosummary directives (which is the parent package, not
+    the individual ``.py`` file).
+
+    For example ``skpro.distributions.normal.Normal`` becomes
+    ``skpro.distributions.Normal``, matching the RST entry
+    ``.. currentmodule:: skpro.distributions``.
+
     Parameters
     ----------
     module : str
@@ -136,9 +144,13 @@ def _infer_doc_path(module, name):
     str
         Dotted doc path without ``.html`` suffix.
     """
-    if module:
-        return f"{module}.{name}"
-    return f"skpro.{name}"
+    if not module:
+        return f"skpro.{name}"
+    modpath = f"{module}.{name}"
+    path_parts = modpath.split(".")
+    if len(path_parts) > 2:
+        del path_parts[-2]  # remove leaf file module (e.g. 'normal', '_base')
+    return ".".join(path_parts)
 
 
 def _fallback_api_url(object_type):
@@ -175,6 +187,11 @@ def generate_estimator_data(output_file):
             for _idx, row in estimators_df.iterrows():
                 name = row.get("name", "Unknown")
                 estimator_class = row.get("object")
+                class_name = (
+                    estimator_class.__name__
+                    if hasattr(estimator_class, "__name__")
+                    else str(name)
+                )
 
                 # Extract module from class
                 module = (
@@ -187,36 +204,27 @@ def generate_estimator_data(output_file):
                 object_type = "unknown"
                 tags = {}
 
-                # Extract tags from _tags attribute
-                if hasattr(estimator_class, "_tags"):
-                    tags_dict = estimator_class._tags or {}
-
-                    object_type = _infer_object_type(tags_dict=tags_dict, module=module)
-
-                    # Extract all tags that are meaningful
-                    for tag_name, tag_value in tags_dict.items():
-                        # Skip internal tags and None values
-                        if (
-                            tag_name.startswith("_")
-                            or tag_value is None
-                            or tag_name == "object_type"
-                        ):
-                            continue
-
-                        # Skip empty strings and empty lists
-                        if tag_value == "" or tag_value == []:
-                            continue
-
-                        # Serialize the value
-                        tags[tag_name] = _serialize_value(tag_value)
+                # Extract tags via get_class_tags (includes inherited tags)
+                if hasattr(estimator_class, "get_class_tags"):
+                    tags_dict = estimator_class.get_class_tags() or {}
                 else:
-                    object_type = _infer_object_type(tags_dict={}, module=module)
+                    tags_dict = {}
+
+                object_type = _infer_object_type(tags_dict=tags_dict, module=module)
+
+                # Filter to user-facing tags only and serialize values
+                user_facing = _filter_user_facing_tags(tags_dict)
+                user_facing.pop("object_type", None)
+                tags = {
+                    tag_name: _serialize_value(tag_value)
+                    for tag_name, tag_value in user_facing.items()
+                }
 
                 est_info = {
                     "name": name,
                     "object_type": object_type,
                     "module": module,
-                    "doc_path": _infer_doc_path(module=module, name=name),
+                    "doc_path": _infer_doc_path(module=module, name=class_name),
                     "tags": tags,
                 }
 

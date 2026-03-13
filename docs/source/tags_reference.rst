@@ -32,9 +32,9 @@ Common Tags
     Whether the estimator supports survival/time-to-event prediction with censoring.
     Value: ``True`` or ``False``
 
-.. _tag_handles_missing_data:
+.. _tag_capability_missing:
 
-**handles_missing_data**
+**capability:missing**
     Whether the estimator can handle missing values in input features.
     Value: ``True`` or ``False``
 
@@ -44,9 +44,9 @@ Common Tags
     Whether the estimator requires a target variable for fitting.
     Value: ``True`` or ``False``
 
-.. _tag_handles_multioutput:
+.. _tag_capability_multioutput:
 
-**handles_multioutput**
+**capability:multioutput**
     Whether the estimator can handle multiple target variables (multioutput regression).
     Value: ``True`` or ``False``
 
@@ -71,13 +71,13 @@ Tags can be accessed from estimator classes using the tag registry:
 
     # Get all estimators that handle missing data
     missing_data_estimators = all_objects(
-        filter_tags={"handles_missing_data": True},
+        filter_tags={"capability:missing": True},
         as_dataframe=True
     )
 
     # Get tag value for a specific estimator
-    from skpro.regression import LinearRegressor
-    survival_capable = LinearRegressor.get_tag("capability:survival")
+    from skpro.distributions import Normal
+    measure_type = Normal.get_class_tag("distr:measuretype")
 
 For a complete list of available tags and their descriptions, see the
 :mod:`skpro.registry` module documentation.

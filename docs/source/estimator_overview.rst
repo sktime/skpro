@@ -136,10 +136,6 @@ Use the below search table to find estimators and distributions by property.
             <label for="estimator-type-select">Filter by type:</label>
             <select id="estimator-type-select">
                 <option value="">All types</option>
-                <option value="regressor_proba">Probabilistic Regressors</option>
-                <option value="distribution">Distributions</option>
-                <option value="metric">Metrics</option>
-                <option value="survival">Survival Prediction</option>
             </select>
         </div>
 
@@ -175,16 +171,47 @@ Use the below search table to find estimators and distributions by property.
             return `tags_reference.html#tag_${tag.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase()}`;
         }
 
-        // Function to get valid tags for a specific object type
-        function getValidTagsForType(objectType) {
-            const tagsByType = {
-                'regressor_proba': ['object_type', 'estimator_type', 'capability:survival', 'handles_missing_data', 'requires_y', 'handles_multioutput'],
-                'distribution': ['object_type', 'distr:measuretype', 'capabilities:approx', 'capabilities:exact'],
-                'metric': ['object_type', 'metric_type'],
-                'survival': ['object_type', 'estimator_type', 'handles_missing_data']
+        function getTypeLabel(type) {
+            const labels = {
+                'regressor_proba': 'Probabilistic Regressors',
+                'distribution': 'Distributions',
+                'metric': 'Metrics',
+                'survival': 'Survival Prediction'
             };
+            return labels[type] || type;
+        }
 
-            return tagsByType[objectType] || [];
+        function initializeTypeOptions() {
+            const typeSelect = document.getElementById('estimator-type-select');
+            const currentValue = typeSelect.value;
+
+            const types = Array.from(
+                new Set(
+                    estimatorData
+                        .map(est => est.object_type)
+                        .filter(type => typeof type === 'string' && type)
+                )
+            ).sort();
+
+            typeSelect.innerHTML = '<option value="">All types</option>';
+
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = getTypeLabel(type);
+                typeSelect.appendChild(option);
+            });
+
+            if (currentValue && types.includes(currentValue)) {
+                typeSelect.value = currentValue;
+            }
+        }
+
+        function valueMatchesFilter(tagValue, filterValue) {
+            if (Array.isArray(tagValue)) {
+                return tagValue.map(v => String(v)).includes(filterValue);
+            }
+            return String(tagValue) === filterValue;
         }
 
         // Render estimators based on current filters
@@ -211,7 +238,7 @@ Use the below search table to find estimators and distributions by property.
                         if (tagFilter.includes('=')) {
                             // String-valued tag: key=value
                             const [key, value] = tagFilter.split('=');
-                            return est.tags[key] === value;
+                            return valueMatchesFilter(est.tags[key], value);
                         } else {
                             // Boolean tag
                             return est.tags[tagFilter] === true;
@@ -236,7 +263,7 @@ Use the below search table to find estimators and distributions by property.
             grid.innerHTML = filtered.map(est => {
                 const tagsHtml = Object.entries(est.tags)
                     .filter(([key]) => key !== 'object_type')
-                    .filter(([key, value]) => value === true || (typeof value === 'string' && value))
+                    .filter(([_key, value]) => value !== null && value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0))
                     .map(([key, value]) => `
                         <span class="tag">
                             <span class="tag-label"><a href="${getTagDocUrl(key)}">${key}</a>:</span>
@@ -309,9 +336,6 @@ Use the below search table to find estimators and distributions by property.
             // Clear existing options
             tagsSelect.innerHTML = '';
 
-            // Get valid tags for current type
-            const validTags = typeFilter ? getValidTagsForType(typeFilter) : null;
-
             const booleanTags = new Set();
             const stringTagValues = new Map(); // key -> Set of values
 
@@ -322,14 +346,18 @@ Use the below search table to find estimators and distributions by property.
                 Object.entries(est.tags).forEach(([key, value]) => {
                     if (key === 'object_type') return;
 
-                    // If type filter is set, only show valid tags for that type
-                    if (validTags && !validTags.includes(key)) return;
-
                     if (typeof value === 'boolean') {
-                        booleanTags.add(key);
-                    } else if (typeof value === 'string' && value) {
+                        if (value === true) {
+                            booleanTags.add(key);
+                        }
+                    } else if (typeof value === 'string' || typeof value === 'number') {
                         if (!stringTagValues.has(key)) stringTagValues.set(key, new Set());
-                        stringTagValues.get(key).add(value);
+                        stringTagValues.get(key).add(String(value));
+                    } else if (Array.isArray(value)) {
+                        if (!stringTagValues.has(key)) stringTagValues.set(key, new Set());
+                        value.forEach(item => {
+                            stringTagValues.get(key).add(String(item));
+                        });
                     }
                 });
             });
@@ -366,6 +394,7 @@ Use the below search table to find estimators and distributions by property.
         document.addEventListener('DOMContentLoaded', function() {
             if (estimatorData.length > 0) {
                 restoreFilterState();  // Restore from URL hash if present
+                initializeTypeOptions();
                 initializeTags();
                 renderEstimators();
             } else {
