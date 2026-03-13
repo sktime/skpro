@@ -67,6 +67,7 @@ class _BaseTag(BaseObject):
         "parent_type": "object",
         "tag_type": "str",
         "short_descr": "",
+        "user_facing": False,
     }
 
 
@@ -94,6 +95,7 @@ class object_type(_BaseTag):
         "parent_type": "object",
         "tag_type": "str",
         "short_descr": "type of object, e.g., 'regressor', 'transformer'",
+        "user_facing": True,
     }
 
 
@@ -105,6 +107,7 @@ class estimator_type(_BaseTag):
         "parent_type": "estimator",
         "tag_type": "str",
         "short_descr": "type of estimator, e.g., 'regressor', 'transformer'",
+        "user_facing": True,
     }
 
 
@@ -121,6 +124,7 @@ class maintainers(_BaseTag):
         "tag_type": ("list", "str"),
         "short_descr": "list of current maintainers of the object,"
         " each maintainer a GitHub handle",
+        "user_facing": True,
     }
 
 
@@ -132,6 +136,7 @@ class authors(_BaseTag):
         "parent_type": "object",
         "tag_type": ("list", "str"),
         "short_descr": "list of authors of the object, each author a GitHub handle",
+        "user_facing": True,
     }
 
 
@@ -155,6 +160,7 @@ class python_dependencies(_BaseTag):
         "parent_type": "object",
         "tag_type": ("list", "str"),
         "short_descr": "python dependencies of estimator as str or list of str",
+        "user_facing": True,
     }
 
 
@@ -178,6 +184,7 @@ class license_type(_BaseTag):
         "tag_type": "str",
         "short_descr": "license type for interfaced"
         " packages: 'copyleft', 'permissive', 'copyright'",
+        "user_facing": True,
     }
 
 
@@ -243,6 +250,7 @@ class capability__survival(_BaseTag):
         "tag_type": "bool",
         "short_descr": "whether estimator can use censoring information,"
         " for survival analysis",
+        "user_facing": True,
     }
 
 
@@ -254,6 +262,7 @@ class capability__multioutput(_BaseTag):
         "parent_type": "regressor_proba",
         "tag_type": "bool",
         "short_descr": "whether estimator supports multioutput regression",
+        "user_facing": True,
     }
 
 
@@ -265,6 +274,7 @@ class capability__missing(_BaseTag):
         "parent_type": "regressor_proba",
         "tag_type": "bool",
         "short_descr": "whether estimator supports missing values",
+        "user_facing": True,
     }
 
 
@@ -276,6 +286,7 @@ class capability__update(_BaseTag):
         "parent_type": "regressor_proba",
         "tag_type": "bool",
         "short_descr": "whether estimator supports online updates via update",
+        "user_facing": True,
     }
 
 
@@ -328,6 +339,7 @@ class capabilities__approx(_BaseTag):
         "parent_type": "distribution",
         "tag_type": ("list", "str"),
         "short_descr": "methods of distr that are approximate",
+        "user_facing": True,
     }
 
 
@@ -339,6 +351,7 @@ class capabilities__exact(_BaseTag):
         "parent_type": "distribution",
         "tag_type": ("list", "str"),
         "short_descr": "methods of distr that are numerically exact",
+        "user_facing": True,
     }
 
 
@@ -350,6 +363,7 @@ class capabilities__undefined(_BaseTag):
         "parent_type": "distribution",
         "tag_type": ("list", "str"),
         "short_descr": "methods of distr that are mathematically undefined",
+        "user_facing": True,
     }
 
 
@@ -361,6 +375,7 @@ class distr__measuretype(_BaseTag):
         "parent_type": "distribution",
         "tag_type": ("str", ["continuous", "discrete", "mixed"]),
         "short_descr": "measure type of distr",
+        "user_facing": True,
     }
 
 
@@ -372,6 +387,7 @@ class distr__paramtype(_BaseTag):
         "parent_type": "distribution",
         "tag_type": ("str", ["general", "parametric", "nonparametric", "composite"]),
         "short_descr": "parametrization type of distribution",
+        "user_facing": True,
     }
 
 
@@ -476,6 +492,7 @@ class scitype__y_pred(_BaseTag):
         "parent_type": "metric",
         "tag_type": "str",
         "short_descr": "expected input type for y_pred in performance metric",
+        "user_facing": True,
     }
 
 
@@ -487,6 +504,7 @@ class lower_is_better(_BaseTag):
         "parent_type": "metric",
         "tag_type": "bool",
         "short_descr": "whether lower (True) or higher (False) is better",
+        "user_facing": True,
     }
 
 
@@ -533,15 +551,21 @@ for _, cl in tag_classes:
     parent_type = cl_tags.get("parent_type", "object")
     tag_type = cl_tags.get("tag_type", "str")
     short_descr = cl_tags.get("short_descr", "")
+    user_facing = cl_tags.get("user_facing", False)
 
     if isinstance(parent_type, list):
         for p_type in parent_type:
-            OBJECT_TAG_REGISTER.append((tag_name, p_type, tag_type, short_descr))
+            OBJECT_TAG_REGISTER.append(
+                (tag_name, p_type, tag_type, short_descr, user_facing)
+            )
     else:
-        OBJECT_TAG_REGISTER.append((tag_name, parent_type, tag_type, short_descr))
+        OBJECT_TAG_REGISTER.append(
+            (tag_name, parent_type, tag_type, short_descr, user_facing)
+        )
 
 OBJECT_TAG_TABLE = pd.DataFrame(OBJECT_TAG_REGISTER)
 OBJECT_TAG_LIST = OBJECT_TAG_TABLE[0].unique().tolist()
+OBJECT_TAG_LIST_USER_FACING = [row[0] for row in OBJECT_TAG_REGISTER if row[4]]
 
 
 def check_tag_is_valid(tag_name, tag_value):
