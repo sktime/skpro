@@ -6,10 +6,12 @@ from skpro.regression.conformal import (
     MapieSplitConformalRegressor,
 )
 from skpro.regression.jackknife import MapieJackknifeAfterBootstrapRegressor
+from skpro.regression.nonparametric import NadarayaWatsonCDE
 
 __all__ = [
     "MapieSplitConformalRegressor",
     "MapieCrossConformalRegressor",
     "MapieConformalizedQuantileRegressor",
     "MapieJackknifeAfterBootstrapRegressor",
+    "NadarayaWatsonCDE",
 ]
