@@ -126,6 +126,7 @@ class CyclicBoosting(BaseProbaRegressor):
         # --------------
         "capability:multioutput": False,
         "capability:missing": True,
+        "capability:feature_importance": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         # CI and test flags
@@ -459,6 +460,49 @@ class CyclicBoosting(BaseProbaRegressor):
             )
 
         return quantiles
+
+    def _feature_importances(self):
+        """Feature importances derived from underlying cyclic-boosting estimators.
+
+        Preference order:
+        1) Use ``feature_importances_`` from available quantile estimators and
+           average them.
+        2) Fall back to absolute coefficients ``coef_`` of the median estimator.
+        3) If neither is exposed, return zeros (and warn).
+
+        Returns
+        -------
+        pd.Series
+            Index: feature names from ``fit``; Name: ``\"feature_importance\"``.
+        """
+        names = getattr(self, "feature_names_in_", None)
+        n_features = len(names) if names is not None else None
+
+        imps = []
+        for est in getattr(self, "quantile_est", []):
+            if hasattr(est, "feature_importances_"):
+                imps.append(np.asarray(est.feature_importances_).ravel())
+
+        if imps:
+            importances = np.mean(np.stack(imps, axis=0), axis=0)
+        elif hasattr(self.quantile_est[1], "coef_"):
+            importances = np.abs(np.asarray(self.quantile_est[1].coef_).ravel())
+        else:
+            importances = np.zeros(n_features if n_features is not None else 0, dtype=float)
+            warnings.warn(
+                "cyclic-boosting estimator does not expose feature importances; returning zeros.",
+                stacklevel=2,
+            )
+
+        if n_features is not None:
+            if len(importances) != n_features:
+                raise ValueError(
+                    f"feature importances length ({len(importances)}) does not match "
+                    f"number of features seen in fit ({n_features})."
+                )
+            return pd.Series(importances, index=names, name="feature_importance")
+
+        return pd.Series(importances, name="feature_importance")
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

@@ -205,6 +205,10 @@ class BaseProbaRegressor(BaseEstimator):
         """
         raise NotImplementedError
 
+    def _feature_importances(self):
+        """Private hook for feature importances, to be optionally overridden."""
+        raise NotImplementedError
+
     def feature_importances(self):
         """Return feature importances for fitted estimator.
 
@@ -240,27 +244,40 @@ class BaseProbaRegressor(BaseEstimator):
                 "`_feature_importances` to return a pd.Series in the documented format."
             )
 
-        if self._has_implementation_of("_feature_importances"):
-            return self._feature_importances()
-        try:
-            importances = getattr(self, "feature_importances_")
-        except Exception as e:
-            raise AttributeError(
-                f"{type(self).__name__} declares it can provide feature importances "
-                "(tag 'capability:feature_importance'=True) but does not expose "
-                "`feature_importances_` and has no `_feature_importances` method."
-            ) from e
+        hook = getattr(type(self), "_feature_importances", None)
+        has_hook = hook is not None and hook is not BaseProbaRegressor._feature_importances
 
-        importances = np.asarray(importances).ravel()
+        if has_hook:
+            importances = self._feature_importances()
+        else:
+            try:
+                importances = getattr(self, "feature_importances_")
+            except Exception as e:
+                raise AttributeError(
+                    f"{type(self).__name__} declares it can provide feature importances "
+                    "(tag 'capability:feature_importance'=True) but does not expose "
+                    "`feature_importances_` and has no `_feature_importances` method."
+                ) from e
+
+        # standardise to pd.Series and validate shape/index
+        if isinstance(importances, pd.Series):
+            imp = importances.copy()
+            if imp.name is None:
+                imp.name = "feature_importance"
+        else:
+            imp = pd.Series(np.asarray(importances).ravel(), name="feature_importance")
+
         if hasattr(self, "feature_names_in_"):
             feat_names = self.feature_names_in_
-            if len(importances) != len(feat_names):
+            if len(imp) != len(feat_names):
                 raise ValueError(
-                    f"feature importances length ({len(importances)}) does not match "
+                    f"feature importances length ({len(imp)}) does not match "
                     f"number of features seen in fit ({len(feat_names)})."
                 )
-            return pd.Series(importances, index=feat_names, name="feature_importance")
-        return pd.Series(importances, name="feature_importance")
+            # enforce alignment with training feature order
+            if not np.array_equal(imp.index, feat_names):
+                imp.index = feat_names
+        return imp
 
     def predict(self, X):
         """Predict labels for data from features.
