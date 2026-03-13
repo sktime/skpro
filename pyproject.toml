@@ -49,6 +49,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all_extras = [
+    "arviz; python_version < '3.13'",
     "distfit; python_version < '3.13'",
     "lifelines<0.31.0; python_version < '3.13'",
     "mapie; python_version < '3.13'",
@@ -69,6 +70,12 @@ dev = [
     "pytest-timeout",
     "pytest-xdist",
     "wheel",
+]
+
+bayesian = [
+    "arviz>=0.18.0; python_version < '3.13'",
+    "pymc; python_version < '3.13'",
+    "pymc-extras; python_version < '3.13'",
 ]
 
 binder = [
