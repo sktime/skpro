@@ -135,7 +135,15 @@ class LossOutlierDetector(BaseOutlierDetector):
 
         # Ensure scores are a 1D array of shape (n_samples,)
         scores = np.asarray(scores)
+        n_samples = len(y_df)
+
         if scores.ndim == 2:
+            if scores.shape[0] != n_samples:
+                raise ValueError(
+                    "Loss function must return scores aligned with the number "
+                    f"of samples. Expected first dimension {n_samples}, got "
+                    f"array with shape {scores.shape!r}."
+                )
             # If there is a single output dimension, squeeze it
             if scores.shape[1] == 1:
                 scores = scores.ravel()
@@ -148,6 +156,14 @@ class LossOutlierDetector(BaseOutlierDetector):
                 "(n_samples, n_outputs). Got array with shape "
                 f"{scores.shape!r}."
             )
+
+        if scores.shape[0] != n_samples:
+            raise ValueError(
+                "Loss function must return one score per sample. "
+                f"Expected shape ({n_samples},) after reduction, got "
+                f"{scores.shape!r}."
+            )
+
         return scores
 
     @classmethod
@@ -251,12 +267,16 @@ class LossOutlierDetector(BaseOutlierDetector):
             pdf = norm.pdf(z)  # PDF
 
             crps = y_pred_std * (z * (2 * phi - 1) + 2 * pdf - 1 / np.sqrt(np.pi))
-            crps = np.abs(crps.flatten())
+            crps = np.abs(crps)
 
         if isinstance(crps, (pd.DataFrame, pd.Series)):
             crps = crps.values
 
-        if crps.ndim > 1:
+        crps = np.asarray(crps)
+
+        if crps.ndim == 2 and crps.shape[1] == 1:
+            crps = crps.ravel()
+        elif crps.ndim > 1:
             crps = np.sum(crps, axis=1)
 
         return crps

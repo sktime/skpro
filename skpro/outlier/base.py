@@ -14,6 +14,15 @@ class BaseOutlierDetector(BaseEstimator):
     based on probabilistic regression models. It follows the pyod API with
     methods like fit, decision_function, and predict.
 
+    Outlier scoring is supervised by default: concrete detectors typically
+    require both ``X`` and ``y`` so they can compare observed targets against
+    predictive distributions from the underlying regressor. Passing ``y=None``
+    is only supported when both of the following hold:
+
+    1. the wrapped regressor is already fitted, and
+    2. the detector's ``_compute_decision_scores`` implementation can score
+       samples from ``X`` alone.
+
     Parameters
     ----------
     regressor : skpro probabilistic regressor
@@ -96,7 +105,9 @@ class BaseOutlierDetector(BaseEstimator):
         X : pandas DataFrame or numpy array
             Test feature data
         y : pandas DataFrame, pandas Series, or numpy array, default=None
-            Test target data. Required for supervised outlier detection.
+            Test target data. Required for the default supervised outlier
+            detection workflow. ``y=None`` is only supported for detectors
+            that implement an ``X``-only scoring strategy.
 
         Returns
         -------
@@ -108,8 +119,8 @@ class BaseOutlierDetector(BaseEstimator):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        if y is not None and not isinstance(y, (pd.DataFrame, pd.Series)):
-            y = pd.Series(y)
+        if y is not None and not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         return self._compute_decision_scores(X, y)
 
@@ -121,7 +132,9 @@ class BaseOutlierDetector(BaseEstimator):
         X : pandas DataFrame or numpy array
             Test feature data
         y : pandas DataFrame, pandas Series, or numpy array, default=None
-            Test target data. Required for supervised outlier detection.
+            Test target data. Required for the default supervised outlier
+            detection workflow. ``y=None`` is only supported for detectors
+            that implement an ``X``-only scoring strategy.
 
         Returns
         -------
@@ -141,7 +154,8 @@ class BaseOutlierDetector(BaseEstimator):
         X : pandas DataFrame
             Feature data
         y : pandas DataFrame or pandas Series, default=None
-            Target data
+            Target data. Implementations may support ``y=None`` only if they
+            are designed to score samples from ``X`` alone.
 
         Returns
         -------

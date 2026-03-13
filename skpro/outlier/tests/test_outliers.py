@@ -10,6 +10,7 @@ from skpro.outlier import (
     LossOutlierDetector,
     QuantileOutlierDetector,
 )
+from skpro.outlier.base import BaseOutlierDetector
 from skpro.regression.residual import ResidualDouble
 from skpro.tests.test_switch import run_test_for_class
 
@@ -32,6 +33,39 @@ def simple_regression_data():
     y_series = pd.Series(y, name="y")
 
     return X_df, y_series, outlier_indices
+
+
+class _FallbackCRPSDistribution:
+    """Minimal distribution stub for exercising fallback CRPS logic."""
+
+    def __init__(self, mean, std):
+        self._mean = mean
+        self._std = std
+
+    def mean(self):
+        return self._mean
+
+    def std(self):
+        return self._std
+
+
+class _DummyPredictProbaRegressor:
+    """Minimal regressor stub for testing score normalization."""
+
+    _is_fitted = True
+
+    def predict_proba(self, X):
+        return object()
+
+
+class _YRecordingOutlierDetector(BaseOutlierDetector):
+    """Detector stub that records the internal y representation."""
+
+    def _compute_decision_scores(self, X, y=None):
+        self.last_X_type_ = type(X)
+        self.last_y_type_ = type(y)
+        self.last_y_ = y
+        return np.zeros(len(X))
 
 
 @pytest.mark.skipif(
@@ -217,6 +251,36 @@ def test_loss_outlier_detector_crps(simple_regression_data):
     assert set(predictions).issubset({0, 1})
 
 
+def test_loss_outlier_detector_crps_fallback_multioutput_shape():
+    """Fallback CRPS must reduce over outputs and return one score per sample."""
+    y_true = pd.DataFrame([[0.0, 1.0], [1.0, 2.0], [2.0, 3.0]], columns=["y0", "y1"])
+    y_pred_dist = _FallbackCRPSDistribution(
+        mean=pd.DataFrame([[0.1, 0.9], [0.8, 2.1], [2.2, 2.7]], columns=["y0", "y1"]),
+        std=pd.DataFrame([[1.0, 0.5], [0.9, 0.7], [1.1, 0.6]], columns=["y0", "y1"]),
+    )
+
+    detector = LossOutlierDetector(regressor=None, loss="crps")
+    scores = detector._compute_crps(y_true, y_pred_dist)
+
+    assert scores.shape == (len(y_true),)
+    assert np.isfinite(scores).all()
+
+
+def test_loss_outlier_detector_crps_fallback_singleoutput_shape():
+    """Fallback CRPS must preserve sample count for a single output column."""
+    y_true = pd.DataFrame([[0.0], [1.0], [2.0]], columns=["y"])
+    y_pred_dist = _FallbackCRPSDistribution(
+        mean=pd.DataFrame([[0.1], [0.8], [2.2]], columns=["y"]),
+        std=pd.DataFrame([[1.0], [0.9], [1.1]], columns=["y"]),
+    )
+
+    detector = LossOutlierDetector(regressor=None, loss="crps")
+    scores = detector._compute_crps(y_true, y_pred_dist)
+
+    assert scores.shape == (len(y_true),)
+    assert np.isfinite(scores).all()
+
+
 @pytest.mark.skipif(
     not run_test_for_class(LossOutlierDetector),
     reason="run test only if softdeps are present and incrementally (if requested)",
@@ -266,6 +330,65 @@ def test_loss_outlier_detector_custom_loss(simple_regression_data):
     assert set(predictions).issubset({0, 1})
 
 
+def test_loss_outlier_detector_custom_loss_multioutput_reduced_per_sample():
+    """Callable loss returning (n_samples, n_outputs) should reduce to 1D."""
+    X_df = pd.DataFrame({"x": [0.0, 1.0, 2.0]})
+    y_df = pd.DataFrame({"y": [1.0, 2.0, 3.0]})
+
+    def custom_loss(y_true, y_pred_dist):
+        del y_pred_dist
+        return np.column_stack([y_true.iloc[:, 0].to_numpy(), np.ones(len(y_true))])
+
+    detector = LossOutlierDetector(
+        _DummyPredictProbaRegressor(), contamination=0.1, loss=custom_loss
+    )
+    scores = detector._compute_decision_scores(X_df, y_df)
+
+    assert scores.shape == (len(X_df),)
+    expected = np.mean(
+        np.column_stack([y_df.iloc[:, 0].to_numpy(), np.ones(len(y_df))]), axis=1
+    )
+    np.testing.assert_allclose(scores, expected)
+
+
+def test_loss_outlier_detector_custom_loss_invalid_shape_raises():
+    """Callable loss must raise clearly when it does not return per-sample scores."""
+    X_df = pd.DataFrame({"x": [0.0, 1.0, 2.0]})
+    y_df = pd.DataFrame({"y": [1.0, 2.0, 3.0]})
+
+    def custom_loss(y_true, y_pred_dist):
+        del y_true, y_pred_dist
+        return np.array([1.0, 2.0])
+
+    detector = LossOutlierDetector(
+        _DummyPredictProbaRegressor(), contamination=0.1, loss=custom_loss
+    )
+
+    with pytest.raises(ValueError, match="one score per sample"):
+        detector._compute_decision_scores(X_df, y_df)
+
+
+def test_base_outlier_detector_normalizes_y_to_dataframe():
+    """fit and decision_function should use DataFrame y internally."""
+    X = np.array([[0.0], [1.0], [2.0]])
+    y = np.array([1.0, 2.0, 3.0])
+
+    detector = _YRecordingOutlierDetector(
+        regressor=_DummyPredictProbaRegressor(), contamination=0.1
+    )
+
+    detector.fit(X, y)
+    assert detector.last_X_type_ is pd.DataFrame
+    assert detector.last_y_type_ is pd.DataFrame
+    assert detector.last_y_.shape == (len(y), 1)
+
+    scores = detector.decision_function(X, y)
+    assert detector.last_X_type_ is pd.DataFrame
+    assert detector.last_y_type_ is pd.DataFrame
+    assert detector.last_y_.shape == (len(y), 1)
+    assert scores.shape == (len(y),)
+
+
 @pytest.mark.skipif(
     not run_test_for_class(QuantileOutlierDetector),
     reason="run test only if softdeps are present and incrementally (if requested)",
@@ -305,7 +428,11 @@ def test_density_outlier_detector_no_y_error(simple_regression_data):
 @pytest.mark.skipif(
     not all(
         run_test_for_class(cls)
-        for cls in (QuantileOutlierDetector, DensityOutlierDetector, LossOutlierDetector)
+        for cls in (
+            QuantileOutlierDetector,
+            DensityOutlierDetector,
+            LossOutlierDetector,
+        )
     ),
     reason="run test only if softdeps are present and incrementally (if requested)",
 )

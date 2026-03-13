@@ -9,7 +9,6 @@ All three implement a pyod-compatible interface.
 """
 # flake8: noqa: T201
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
