@@ -70,6 +70,24 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
 
         # Extract sampler parameters
         sampler_params = {**self.default_sampler_config, **sampler_config}
+        base_sampler_keys = {
+            "draws",
+            "tune",
+            "chains",
+            "target_accept",
+            "random_seed",
+            "progressbar",
+        }
+        base_sampler_params = {
+            key: value
+            for key, value in sampler_params.items()
+            if key in base_sampler_keys
+        }
+        sample_kwargs = {
+            key: value
+            for key, value in sampler_params.items()
+            if key not in base_sampler_keys
+        }
 
         print(  # noqa: T201
             f"instantiated {self.__class__.__name__} with the following priors:"
@@ -78,7 +96,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         for key, value in self.prior_config.items():
             print(f"  - {key}: {value}")  # noqa: T201
 
-        super().__init__(**sampler_params)
+        super().__init__(**base_sampler_params, sample_kwargs=sample_kwargs)
 
     @property
     def default_prior_config(self):
@@ -176,7 +194,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         )
         import pymc as pm
 
-        assert self._is_fitted, "You need to fit the model before visualizing it!"
+        assert self.is_fitted, "You need to fit the model before visualizing."
 
         return pm.model_to_graphviz(self.model_, **kwargs)
 

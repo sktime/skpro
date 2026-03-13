@@ -1,4 +1,4 @@
-"""Closed-form Bayesian linear regression (non-MC) example."""
+"""Bayesian linear regression with exact closed-form (conjugate) posterior updates."""
 
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 

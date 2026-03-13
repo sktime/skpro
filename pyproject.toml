@@ -72,6 +72,12 @@ dev = [
     "wheel",
 ]
 
+bayesian = [
+    "arviz>=0.18.0; python_version < '3.13'",
+    "pymc; python_version < '3.13'",
+    "pymc-extras; python_version < '3.13'",
+]
+
 binder = [
     "jupyter",
 ]

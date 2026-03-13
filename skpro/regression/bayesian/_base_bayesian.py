@@ -67,6 +67,7 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         target_accept=0.95,
         random_seed=None,
         progressbar=True,
+        sample_kwargs=None,
     ):
         self.draws = draws
         self.tune = tune
@@ -74,6 +75,7 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         self.target_accept = target_accept
         self.random_seed = random_seed
         self.progressbar = progressbar
+        self.sample_kwargs = {} if sample_kwargs is None else sample_kwargs
 
         super().__init__()
 
@@ -115,6 +117,7 @@ class BaseBayesianRegressor(BaseProbaRegressor):
                 random_seed=self.random_seed,
                 progressbar=self.progressbar,
                 return_inferencedata=True,
+                **self.sample_kwargs,
             )
 
         # Add training data to trace
@@ -184,24 +187,39 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             # Mark that prediction has been done
             self._predict_done = True
 
-        # Convert to skpro Empirical distribution
-        # Assume y_obs is the predictive variable
-        if "y_obs" not in self.trace_.predictions:
-            raise ValueError("Model must have 'y_obs' variable for predictions.")
-
-        pred_xarray = self.trace_.predictions["y_obs"]
-
-        # Convert to DataFrame format expected by Empirical
+        pred_var_name = self._get_predictive_variable_name()
+        pred_xarray = self.trace_.predictions[pred_var_name]
         pred_df = pred_xarray.to_dataframe().reset_index()
 
-        # Create sample_id by combining chain and draw
-        pred_df["sample_id"] = pred_df["chain"] * self.draws + pred_df["draw"]
+        if {"chain", "draw"}.issubset(pred_df.columns):
+            pred_df["sample_id"] = pred_df.groupby(
+                ["chain", "draw"], sort=False
+            ).ngroup()
+            sample_dim_cols = ["chain", "draw"]
+        elif "sample" in pred_df.columns:
+            pred_df["sample_id"] = pred_df["sample"]
+            sample_dim_cols = ["sample"]
+        else:
+            raise ValueError(
+                "Posterior predictive samples must expose either ('chain', 'draw') "
+                "or 'sample' coordinates to build an Empirical distribution."
+            )
 
-        # Format for Empirical: columns should be the target variable names
-        # Assume single output for now
+        obs_dims = [
+            dim
+            for dim in pred_xarray.dims
+            if dim not in sample_dim_cols and dim not in ["chain", "draw"]
+        ]
+        if len(obs_dims) != 1:
+            raise NotImplementedError(
+                "Default posterior predictive conversion expects a single observation "
+                "dimension. Override `_predict_proba_from_posterior` for custom shapes."
+            )
+
+        obs_dim = obs_dims[0]
         target_col = getattr(self, "_y_columns", ["y"])[0]
-        pred_df = pred_df[["obs_id", "sample_id", "y_obs"]]
-        pred_df = pred_df.rename(columns={"y_obs": target_col})
+        pred_df = pred_df[[obs_dim, "sample_id", pred_var_name]]
+        pred_df = pred_df.rename(columns={obs_dim: "obs_id", pred_var_name: target_col})
         pred_df = pred_df.set_index(["sample_id", "obs_id"])
 
         # Create Empirical distribution
@@ -223,7 +241,42 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         import pymc as pm
 
         # Default: assume X is set as "X" in the model
-        pm.set_data({"X": X}, coords={"obs_id": X.index, "pred_id": X.columns})
+        try:
+            pm.set_data({"X": X}, coords={"obs_id": X.index, "pred_id": X.columns})
+        except Exception as exc:
+            raise RuntimeError(
+                "Default `_set_prediction_data` expects a PyMC model with mutable "
+                "data variable 'X' and coordinates 'obs_id'/'pred_id'. "
+                "Override `_set_prediction_data` for custom models."
+            ) from exc
+
+    def _get_predictive_variable_name(self):
+        """Get predictive variable name from trace predictions group."""
+        if not hasattr(self, "trace_") or "predictions" not in self.trace_.groups():
+            raise ValueError("No 'predictions' group found in posterior trace.")
+
+        predictions = self.trace_.predictions
+        configured = getattr(self, "_predictive_var_name", None)
+        if configured is not None:
+            if configured not in predictions:
+                raise ValueError(
+                    f"Configured predictive variable '{configured}' not found in "
+                    f"predictions group: {list(predictions.data_vars)}"
+                )
+            return configured
+
+        if "y_obs" in predictions:
+            return "y_obs"
+
+        data_vars = list(predictions.data_vars)
+        if len(data_vars) == 1:
+            return data_vars[0]
+
+        raise ValueError(
+            "Could not infer predictive variable from predictions group. "
+            "Set `self._predictive_var_name` in subclass or override "
+            "`_predict_proba_from_posterior`."
+        )
 
     def get_fitted_params(self):
         """Get fitted parameters.
