@@ -226,10 +226,8 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         regressor = object_instance
         regressor.fit(X_train, y_train)
 
-        # snapshot constructor params before calling predict_proba
         params_before = copy.deepcopy(regressor.get_params())
 
-        # call predict_proba twice, with different-sized inputs
         regressor.predict_proba(X_test)
         regressor.predict_proba(X_test[:5])
 
@@ -248,9 +246,10 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
                 f"Parameter '{key}' type changed after predict_proba: "
                 f"before={type(before_val)}, after={type(after_val)}"
             )
+            # We use repr() to compare values because they might contain estimators
+            #  which fail `==` checks after being deepcopied.
 
-            if isinstance(before_val, dict):
-                assert before_val == after_val, (
-                    f"Parameter '{key}' dict was mutated by predict_proba: "
-                    f"before={before_val}, after={after_val}"
-                )
+            assert repr(before_val) == repr(after_val), (
+                f"Parameter '{key}' was mutated by predict_proba: "
+                f"before={before_val}, after={after_val}"
+            )
