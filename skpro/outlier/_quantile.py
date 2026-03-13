@@ -105,7 +105,9 @@ class QuantileOutlierDetector(BaseOutlierDetector):
         # Get the lower and upper quantile predictions
         # Handle DataFrame with MultiIndex columns (common for multi-output)
         used_multiindex = False
-        if isinstance(q_pred, pd.DataFrame) and isinstance(q_pred.columns, pd.MultiIndex):
+        if isinstance(q_pred, pd.DataFrame) and isinstance(
+            q_pred.columns, pd.MultiIndex
+        ):
             quantile_level = None
             # Try to identify the column level that corresponds to quantiles
             for lvl in range(q_pred.columns.nlevels):
