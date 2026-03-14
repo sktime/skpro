@@ -588,6 +588,7 @@ class Pipeline(_Pipeline):
         """Transform data."""
         # coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
+        Xt = X
 
         Xt = X
         for _, _, transformer in self._iter_transformers():
@@ -597,7 +598,7 @@ class Pipeline(_Pipeline):
                 Xt = transformer.transform(X=Xt)
             if not isinstance(Xt, pd.DataFrame):
                 Xt = pd.DataFrame(Xt, index=X.index)
-
+            X = Xt
         return Xt
 
     def _has_y_arg(self, method):
