@@ -257,8 +257,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        self._validate_feature_groups(X)
-
         index = X.index
         y_cols = self._y_cols
 
@@ -288,8 +286,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        self._validate_feature_groups(X)
-
         index = X.index
         y_cols = self._y_cols
 
@@ -342,8 +338,6 @@ class CyclicBoosting(BaseProbaRegressor):
             Upper/lower interval end are equivalent to
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
-        self._validate_feature_groups(X)
-
         index = X.index
         y_cols = self._y_cols
         columns = pd.MultiIndex.from_product(
@@ -384,8 +378,6 @@ class CyclicBoosting(BaseProbaRegressor):
                 at quantile probability in second col index, for the row index.
         """
         quantiles = alpha
-
-        self._validate_feature_groups(X)
 
         is_given_proba = False
         warning = (
