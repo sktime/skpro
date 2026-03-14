@@ -184,14 +184,6 @@ This section lists simple regressors which can be used as baselines.
 
     DeltaPointRegressor
 
-.. currentmodule:: skpro.regression.constantvariance
-
-.. autosummary::
-    :toctree: auto_generated/
-    :template: class.rst
-
-    ConstantVarianceRegressor
-
 .. currentmodule:: skpro.regression.dummy
 
 .. autosummary::
@@ -199,6 +191,14 @@ This section lists simple regressors which can be used as baselines.
     :template: class.rst
 
     DummyProbaRegressor
+
+.. currentmodule:: skpro.regression.constantvariance
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    ConstantVarianceRegressor
 
 
 Linear regression
