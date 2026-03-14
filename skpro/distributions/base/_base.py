@@ -194,7 +194,7 @@ class BaseDistribution(BaseObject):
         if self.ndim < 2:
             return self
         if not isinstance(n, int):
-            raise TypeError(f"n must be an integer, got {type(n).__name__}")
+            raise TypeError(f"head: n must be an integer, got {type(n).__name__}")
         N = len(self)
         if n < 0:
             n = N - n
@@ -220,7 +220,7 @@ class BaseDistribution(BaseObject):
         if self.ndim < 2:
             return self
         if not isinstance(n, int):
-            raise TypeError(f"n must be an integer, got {type(n).__name__}")
+            raise TypeError(f"tail: n must be an integer, got {type(n).__name__}")
         N = len(self)
         if n < 0:
             start = n
@@ -1467,6 +1467,8 @@ class BaseDistribution(BaseObject):
         """
         # special case: if a == 1, this is just the integral of the pdf, which is 1
         if a == 1:
+            if self.ndim == 0:
+                return 1.0
             return pd.DataFrame(1.0, index=self.index, columns=self.columns)
 
         approx_spl_size = self.get_tag("approx_spl")
@@ -1478,6 +1480,8 @@ class BaseDistribution(BaseObject):
 
         # uses formula int p(x)^a dx = E[p(X)^{a-1}], and MC approximates the RHS
         spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
+        if self.ndim == 0:
+            return np.mean(spl)
         spl_df = pd.concat(spl, keys=range(approx_spl_size))
         return spl_df.groupby(level=1, sort=False).mean()
 
@@ -1768,19 +1772,50 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
-        x_arr = np.linspace(lower, upper, 1000)
+        is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
+
+        x_arr = self._get_x_for_plot(fun, lower, upper, is_discrete)
+
         y_arr = [getattr(self, fun)(x) for x in x_arr]
         y_arr = np.array(y_arr)
 
         if ax is None:
             ax = plt.gca()
 
-        ax.plot(x_arr, y_arr, **kwargs)
+        # Use stem plot for discrete PMF, line plot otherwise
+        if is_discrete and fun == "pmf":
+            ax.stem(x_arr, y_arr, basefmt=" ", **kwargs)
+        else:
+            ax.plot(x_arr, y_arr, **kwargs)
 
         if print_labels == "on":
             ax.set_xlabel(f"{x_argname}")
             ax.set_ylabel(f"{fun}({x_argname})")
         return ax
+
+    def _get_x_for_plot(self, fun, lower, upper, is_discrete):
+        """Get x values for plotting, handling discrete distributions for PMF."""
+        # general case: not discrete, or not pmf
+        if not is_discrete or fun != "pmf":
+            # in this case, the function is on a continuous domain,
+            # so we can plot on a dense grid of points
+            return np.linspace(lower, upper, 1000)
+
+        # special case: discrete distribution and pmf - plot at the support points
+
+        # Define fallback array construction (used when _pmf_support not available)
+        def _get_fallback_arr():
+            arr = np.linspace(lower, upper, 1000)
+            arr = np.round(arr).astype(int)
+            return np.unique(arr)
+
+        # Use _pmf_support if the method exists and is callable
+        if hasattr(self, "_pmf_support") and callable(self._pmf_support):
+            x_arr = self._pmf_support(lower, upper, max_points=1000)
+            if x_arr.size != 0:
+                return x_arr
+
+        return _get_fallback_arr()
 
     def _pmf_support(self, lower, upper, max_points=100):
         """Get support points for discrete distributions.
