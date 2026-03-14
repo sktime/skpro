@@ -16,10 +16,6 @@ from skpro.registry._tags import (
     OBJECT_TAG_REGISTER,
     check_tag_is_valid,
 )
-from skpro.registry.test_class_register import (
-    get_test_class_registry,
-    get_test_classes_for_obj,
-)
 
 __all__ = [
     "OBJECT_TAG_LIST",
@@ -35,8 +31,6 @@ __all__ = [
     "get_base_class_register",
     "get_obj_scitype_list",
     "get_test_class_for_str",
-    "get_test_class_registry",
-    "get_test_classes_for_obj",
     "imports",
     "scitype",
 ]
