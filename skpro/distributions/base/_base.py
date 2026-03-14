@@ -5,6 +5,7 @@ __author__ = ["fkiraly"]
 
 __all__ = ["BaseDistribution"]
 
+from contextlib import contextmanager
 from warnings import warn
 
 import numpy as np
@@ -12,6 +13,35 @@ import pandas as pd
 from skbase.utils.dependencies import _check_estimator_deps, _check_soft_dependencies
 
 from skpro.base import BaseObject
+
+
+def _check_random_state(random_state):
+    """Normalize random_state to np.random.Generator.
+
+    Parameters
+    ----------
+    random_state : None, int, np.random.Generator, or np.random.RandomState
+        * None: uses global numpy random state (non-reproducible)
+        * int: seeds a new np.random.Generator (reproducible)
+        * np.random.Generator: used directly
+        * np.random.RandomState: wrapped into a Generator (sklearn legacy compat)
+
+    Returns
+    -------
+    np.random.Generator
+    """
+    if random_state is None:
+        return np.random.default_rng()
+    if isinstance(random_state, (int, np.integer)):
+        return np.random.default_rng(random_state)
+    if isinstance(random_state, np.random.Generator):
+        return random_state
+    if isinstance(random_state, np.random.RandomState):
+        return np.random.default_rng(random_state)
+    raise ValueError(
+        f"random_state must be None, int, np.random.Generator, "
+        f"or np.random.RandomState, got {type(random_state)}"
+    )
 
 
 class BaseDistribution(BaseObject):
@@ -146,8 +176,6 @@ class BaseDistribution(BaseObject):
 
         Use ``my_distribution.at[index]`` for ``pandas``-like row/column subsetting
         of ``BaseDistribution`` descendants.
-
-        ``index`` can be any ``pandas`` ``at`` compatible index subsetter.
 
         ``my_distribution.at[index]``
         or ``my_distribution.at[row_index, col_index]``
@@ -1608,13 +1636,21 @@ class BaseDistribution(BaseObject):
         quantiles = qres.loc[:, cols]
         return quantiles
 
-    def sample(self, n_samples=None):
+    def sample(self, n_samples=None, random_state=None):
         """Sample from the distribution.
 
         Parameters
         ----------
         n_samples : int, optional, default = None
             number of samples to draw from the distribution
+        random_state : None, int, np.random.Generator, or np.random.RandomState
+            optional, default = None
+            Controls random number generation for reproducibility.
+
+            * ``None`` (default): uses global numpy random state (non-reproducible)
+            * ``int``: seeds a new ``np.random.Generator`` (reproducible)
+            * ``np.random.Generator``: used directly
+            * ``np.random.RandomState``: wrapped into a Generator (sklearn compat)
 
         Returns
         -------
@@ -1631,13 +1667,39 @@ class BaseDistribution(BaseObject):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
-        return self._sample(n_samples=n_samples)
+        rng = _check_random_state(random_state)
+
+        @contextmanager
+        def _rng_context():
+            old = getattr(self, "_sample_rng", None)
+            self._sample_rng = rng
+            try:
+                yield
+            finally:
+                if old is None:
+                    if hasattr(self, "_sample_rng"):
+                        del self._sample_rng
+                else:
+                    self._sample_rng = old
+
+        with _rng_context():
+            return self._sample(n_samples=n_samples)
 
     def _sample(self, n_samples=None):
-        """Private method, to be implemented by subclasses."""
+        """Private method, to be implemented by subclasses.
+
+        Subclasses overriding this method do not need to accept ``random_state``.
+        The RNG set by ``sample()`` is available via
+        ``getattr(self, '_sample_rng', None)``.
+        If ``_sample_rng`` is not set, fall back to ``np.random``.
+        """
+        rng = getattr(self, "_sample_rng", None)
 
         def gen_unif():
-            np_unif = np.random.uniform(size=self.shape)
+            if rng is not None:
+                np_unif = rng.uniform(size=self.shape)
+            else:
+                np_unif = np.random.uniform(size=self.shape)
             if self.ndim > 0:
                 return pd.DataFrame(np_unif, index=self.index, columns=self.columns)
             return np_unif
