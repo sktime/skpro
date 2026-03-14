@@ -54,6 +54,7 @@ Online learning
     :toctree: auto_generated/
     :template: class.rst
 
+    OnlineBatchMixture
     OnlineRefit
     OnlineRefitEveryN
     OnlineDontRefit
