@@ -253,3 +253,46 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
                 f"Parameter '{key}' was mutated by predict_proba: "
                 f"before={before_val}, after={after_val}"
             )
+
+    @pytest.mark.parametrize(
+        "method",
+        [
+            "predict",
+            "predict_proba",
+            "predict_interval",
+            "predict_quantiles",
+            "predict_var",
+        ],
+    )
+    def test_non_state_changing_method_contract(self, object_instance, method):
+        """Test that predict methods do not mutate constructor parameters.
+
+        Checks this for all predict methods, and for parameters that are
+        component estimators, i.e., parameters inside parameters that are estimators.
+        """
+        from sklearn.datasets import load_diabetes
+        from sklearn.model_selection import train_test_split
+
+        from skpro.utils.deep_equals import deep_equals
+
+        X, y = load_diabetes(return_X_y=True, as_frame=True)
+        X = X.iloc[:50]
+        y = y.iloc[:50]
+        y = pd.DataFrame(y)
+
+        X_train, X_test, y_train, _ = train_test_split(X, y, random_state=42)
+
+        regressor = object_instance
+        regressor.fit(X_train, y_train)
+
+        params_before = copy.deepcopy(regressor.get_params(deep=True))
+
+        getattr(regressor, method)(X_test)
+        getattr(regressor, method)(X_test[:5])
+
+        params_after = regressor.get_params(deep=True)
+
+        is_equal, msg = deep_equals(params_before, params_after, return_msg=True)
+        assert is_equal, (
+            f"Parameter mutation detected after calling {method}. " f"Reason: {msg}"
+        )
