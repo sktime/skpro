@@ -1,10 +1,12 @@
 import pandas as pd
+import pytest
 
 from skpro.utils.plotting import plot_calibration
 
 
 def test_plot_calibration_runs():
     """Test that plot_calibration runs without errors."""
+    pytest.importorskip("matplotlib")
     y_true = pd.Series([1, 2, 3, 4])
     y_pred = pd.DataFrame(
         {
@@ -19,6 +21,7 @@ def test_plot_calibration_runs():
 
 def test_plot_calibration_with_ax():
     """Test that plot_calibration accepts an existing ax."""
+    pytest.importorskip("matplotlib")
     from matplotlib import pyplot as plt
 
     y_true = pd.Series([1, 2, 3, 4])
