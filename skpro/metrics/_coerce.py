@@ -1,4 +1,5 @@
 """Output coercion utilities for metric classes."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
@@ -9,15 +10,20 @@ def _coerce_to_scalar(obj):
     """Coerce obj to scalar, from polymorphic input scalar or pandas."""
     if isinstance(obj, pd.DataFrame):
         if len(obj) != 1:
-            raise ValueError(f"Expected DataFrame with 1 row, got {len(obj)}.")
+            raise ValueError(
+                f"_coerce_to_scalar: expected DataFrame with 1 row, got {len(obj)}."
+            )
         if len(obj.columns) != 1:
             raise ValueError(
-                f"Expected DataFrame with 1 column, got {len(obj.columns)}."
+                "_coerce_to_scalar: expected DataFrame with 1 column, "
+                f"got {len(obj.columns)}."
             )
         return obj.iloc[0, 0]
     if isinstance(obj, pd.Series):
         if len(obj) != 1:
-            raise ValueError(f"Expected Series with 1 element, got {len(obj)}.")
+            raise ValueError(
+                f"_coerce_to_scalar: expected Series with 1 element, got {len(obj)}."
+            )
         return obj.iloc[0]
     return obj
 
@@ -32,7 +38,8 @@ def _coerce_to_series(obj):
     if isinstance(obj, pd.DataFrame):
         if len(obj.columns) != 1:
             raise ValueError(
-                f"Expected DataFrame with 1 column, got {len(obj.columns)}."
+                "_coerce_to_series: expected DataFrame with 1 column, "
+                f"got {len(obj.columns)}."
             )
         return obj.iloc[:, 0]
     elif isinstance(obj, pd.Series):
