@@ -86,7 +86,7 @@ class _SksurvAdapter:
             Fitted estimator.
         """
         from skpro.utils.validation._dependencies import _check_soft_dependencies
-
+        
         sksurv_est = self._init_sksurv_object()
 
         if C is None:
@@ -98,7 +98,7 @@ class _SksurvAdapter:
         X = X.astype("float")  # sksurv insists on float dtype
         X = prep_skl_df(X)
         if _check_soft_dependencies("scikit-survival>=0.19.0", severity="none"):
-            y_np = y.iloc[:, 0].values.ravel() 
+            y_np = y.iloc[:, 0].values.ravel()
             C_np = C.iloc[:, 0].values.ravel()
         else:
             y_np = y.iloc[:, 0].values  # we know univariate due to tag
