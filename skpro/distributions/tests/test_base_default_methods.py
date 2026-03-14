@@ -189,6 +189,7 @@ def test_base_default_minimal_cdf():
     minimal_n = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
 
+
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
@@ -196,6 +197,7 @@ def test_base_default_minimal_cdf():
 def test_head_negative_n():
     """Test that head(-k) returns all rows except last k."""
     import pandas as pd
+
     from skpro.distributions.normal import Normal
 
     idx = pd.RangeIndex(10)
@@ -207,6 +209,4 @@ def test_head_negative_n():
 
     result = d.head(-2)
 
-    assert len(result) == max(len(d) - 2, 0) 
-
-    
+    assert len(result) == max(len(d) - 2, 0)
