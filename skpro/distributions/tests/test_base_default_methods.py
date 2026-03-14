@@ -188,3 +188,21 @@ def test_base_default_minimal_cdf():
     """Test default cdf method."""
     minimal_n = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
+
+import pytest
+from skpro.datatypes import convert
+
+
+def test_convert_error_message():
+    """Test improved error message when conversion is undefined."""
+
+    obj = "dummy_object"
+
+    with pytest.raises(NotImplementedError) as excinfo:
+        convert(obj, from_type="invalid_type", to_type="another_type")
+
+    msg = str(excinfo.value)
+
+    assert "No conversion defined from" in msg
+    assert "Available conversions" in msg 
+    
