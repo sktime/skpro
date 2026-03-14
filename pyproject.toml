@@ -132,3 +132,8 @@ sktime = [
 
 [tool.setuptools.packages.find]
 exclude = ["tests", "tests.*"]
+
+[tool.codespell]
+# Only check files ending in .py
+skip = "*.js,*.css,*.html,*.ipynb,*.lock,*.toml"
+check-filenames = true
