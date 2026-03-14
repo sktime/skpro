@@ -194,6 +194,22 @@ class CyclicBoosting(BaseProbaRegressor):
                 )
             )
 
+    def _validate_feature_groups(self, X):
+        """Validate that all feature groups exist in X columns."""
+        if self.feature_groups is None:
+            return
+
+        feature_names = []
+        for feature in self.feature_groups:
+            if isinstance(feature, tuple):
+                feature_names.extend(feature)
+            else:
+                feature_names.append(feature)
+
+        missing_features = set(feature_names) - set(X.columns)
+        if missing_features:
+            raise ValueError(f"{missing_features} are not in X")
+
     def _fit(self, X, y):
         """Fit regressor to training data.
 
@@ -211,16 +227,7 @@ class CyclicBoosting(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
+        self._validate_feature_groups(X)
 
         self._y_cols = y.columns
         y = y.to_numpy().flatten()
@@ -250,17 +257,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         index = X.index
         y_cols = self._y_cols
 
@@ -290,17 +286,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         index = X.index
         y_cols = self._y_cols
 
@@ -353,17 +338,6 @@ class CyclicBoosting(BaseProbaRegressor):
             Upper/lower interval end are equivalent to
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         index = X.index
         y_cols = self._y_cols
         columns = pd.MultiIndex.from_product(
@@ -404,17 +378,6 @@ class CyclicBoosting(BaseProbaRegressor):
                 at quantile probability in second col index, for the row index.
         """
         quantiles = alpha
-
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
 
         is_given_proba = False
         warning = (
