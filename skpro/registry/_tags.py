@@ -235,7 +235,7 @@ class capability__survival(_BaseTag):
 
     _tags = {
         "tag_name": "capability:survival",
-        "parent_type": ["regressor_proba", "metric"],
+        "parent_type": ["regressor_proba", "metric", "distfitter"],
         "tag_type": "bool",
         "short_descr": "whether estimator can use censoring information,"
         " for survival analysis",
@@ -308,6 +308,35 @@ class C_inner_mtype(_BaseTag):
         "tag_type": ("list", "str"),
         "short_descr": "which machine type(s) is the "
         "internal _fit/_predict able to deal with?",
+    }
+
+
+# ---------------
+# BaseDistFitter
+# ---------------
+
+
+class distfitter_X_inner_mtype(_BaseTag):
+    """Internal X machine type for distribution fitters."""
+
+    _tags = {
+        "tag_name": "X_inner_mtype",
+        "parent_type": "distfitter",
+        "tag_type": ("list", "str"),
+        "short_descr": "which machine type(s) is the"
+        " internal _fit able to deal with?",
+    }
+
+
+class distfitter_C_inner_mtype(_BaseTag):
+    """Internal censoring machine type for distribution fitters."""
+
+    _tags = {
+        "tag_name": "C_inner_mtype",
+        "parent_type": "distfitter",
+        "tag_type": ("list", "str"),
+        "short_descr": "which machine type(s) is the"
+        " internal _fit able to deal with for censoring?",
     }
 
 
