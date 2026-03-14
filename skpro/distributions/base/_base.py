@@ -196,7 +196,7 @@ class BaseDistribution(BaseObject):
         assert isinstance(n, int)
         N = len(self)
         if n < 0:
-            n = N - n
+            n = N + n
         n = min(n, N)
         return self.iloc[range(n)]
 
