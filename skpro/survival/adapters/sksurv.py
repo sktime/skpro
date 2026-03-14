@@ -88,7 +88,9 @@ class _SksurvAdapter:
         sksurv_est = self._init_sksurv_object()
 
         if C is None:
-            C = pd.DataFrame(np.zeros((len(y), len(y.columns))), index=y.index, columns=y.columns)
+            C = pd.DataFrame(
+                np.zeros((len(y), len(y.columns))), index=y.index, columns=y.columns
+            )
 
         # input conversion
         X = X.astype("float")  # sksurv insists on float dtype
