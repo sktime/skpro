@@ -85,6 +85,8 @@ class _SksurvAdapter:
         self: reference to self
             Fitted estimator.
         """
+        from skpro.utils.validation._dependencies import _check_soft_dependencies
+        
         sksurv_est = self._init_sksurv_object()
 
         if C is None:
@@ -95,8 +97,12 @@ class _SksurvAdapter:
         # input conversion
         X = X.astype("float")  # sksurv insists on float dtype
         X = prep_skl_df(X)
-        y_np = y.iloc[:, 0].values  # we know univariate due to tag
-        C_np = C.iloc[:, 0].values
+        if _check_soft_dependencies("scikit-survival>=0.19.0", severity="none"):
+            y_np = y.iloc[:, 0].values.ravel() 
+            C_np = C.iloc[:, 0].values.ravel()
+        else:
+            y_np = y.iloc[:, 0].values  # we know univariate due to tag
+            C_np = C.iloc[:, 0].values
         C_np_bool = C_np == 0  # sksurv uses "delta" indicator, 0 = censored
         # this is the opposite of skpro ("censoring" indicator), where 1 = censored
 
