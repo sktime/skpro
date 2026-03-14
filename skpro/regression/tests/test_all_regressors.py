@@ -256,7 +256,13 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
 
     @pytest.mark.parametrize(
         "method",
-        ["predict", "predict_proba", "predict_interval", "predict_quantiles", "predict_var"],
+        [
+            "predict",
+            "predict_proba",
+            "predict_interval",
+            "predict_quantiles",
+            "predict_var",
+        ],
     )
     def test_non_state_changing_method_contract(self, object_instance, method):
         """Test that predict methods do not mutate constructor parameters.
@@ -288,6 +294,5 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
 
         is_equal, msg = deep_equals(params_before, params_after, return_msg=True)
         assert is_equal, (
-            f"Parameter mutation detected after calling {method}. "
-            f"Reason: {msg}"
+            f"Parameter mutation detected after calling {method}. " f"Reason: {msg}"
         )
