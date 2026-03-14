@@ -57,6 +57,7 @@ Online learning
     OnlineRefit
     OnlineRefitEveryN
     OnlineDontRefit
+    OnlineBatchMixture
 
 .. currentmodule:: skpro.regression.ondil
 
