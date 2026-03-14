@@ -141,7 +141,7 @@ class TemporalNormal(Normal):
         mu_bc = self._bc_params.get("mu", self.mu)
 
         if isinstance(self.index, pd.DatetimeIndex) or hasattr(self.index, "get_loc"):
-            try:
+            if t in self.index:
                 loc = self.index.get_loc(t)
                 if isinstance(mu_bc, np.ndarray) and mu_bc.ndim >= 2:
                     return mu_bc[loc, :]
@@ -149,7 +149,7 @@ class TemporalNormal(Normal):
                     return mu_bc[loc]
                 else:
                     return mu_bc
-            except (KeyError, TypeError):
+            else:
                 raise ValueError(f"Time point {t} not found in distribution index")
         else:
             if isinstance(t, int) and 0 <= t < len(self.index):
@@ -182,7 +182,7 @@ class TemporalNormal(Normal):
         sigma_bc = self._bc_params.get("sigma", self.sigma)
 
         if isinstance(self.index, pd.DatetimeIndex) or hasattr(self.index, "get_loc"):
-            try:
+            if t in self.index:
                 loc = self.index.get_loc(t)
                 if isinstance(sigma_bc, np.ndarray) and sigma_bc.ndim >= 2:
                     sigma_t = sigma_bc[loc, :]
@@ -191,7 +191,7 @@ class TemporalNormal(Normal):
                 else:
                     sigma_t = sigma_bc
                 return sigma_t**2
-            except (KeyError, TypeError):
+            else:
                 raise ValueError(f"Time point {t} not found in distribution index")
         else:
             if isinstance(t, int) and 0 <= t < len(self.index):
@@ -225,7 +225,7 @@ class TemporalNormal(Normal):
         sigma_bc = self._bc_params.get("sigma", self.sigma)
 
         if isinstance(self.index, pd.DatetimeIndex) or hasattr(self.index, "get_loc"):
-            try:
+            if t in self.index:
                 loc = self.index.get_loc(t)
                 if isinstance(sigma_bc, np.ndarray) and sigma_bc.ndim >= 2:
                     return sigma_bc[loc, :]
@@ -233,7 +233,7 @@ class TemporalNormal(Normal):
                     return sigma_bc[loc]
                 else:
                     return sigma_bc
-            except (KeyError, TypeError):
+            else:
                 raise ValueError(f"Time point {t} not found in distribution index")
         else:
             if isinstance(t, int) and 0 <= t < len(self.index):
