@@ -206,8 +206,10 @@ class BaseProbaRegressor(BaseEstimator):
         raise NotImplementedError
 
     def _feature_importances(self):
-        """Private hook for feature importances, to be optionally overridden."""
-        raise NotImplementedError
+        """Private hook for feature importances; subclasses must override."""
+        raise NotImplementedError(
+            f"{type(self).__name__} does not implement `_feature_importances`."
+        )
 
     def feature_importances(self):
         """Return feature importances for fitted estimator.
@@ -238,26 +240,9 @@ class BaseProbaRegressor(BaseEstimator):
         self.check_is_fitted()
 
         if not self.get_tag("capability:feature_importance", False):
-            raise NotImplementedError(
-                f"{type(self).__name__} does not provide feature importances. "
-                "Set the tag 'capability:feature_importance' to True and implement "
-                "`_feature_importances` to return a pd.Series in the documented format."
-            )
+            raise NotImplementedError(f"{type(self).__name__} does not provide feature importances.")
 
-        hook = getattr(type(self), "_feature_importances", None)
-        has_hook = hook is not None and hook is not BaseProbaRegressor._feature_importances
-
-        if has_hook:
-            importances = self._feature_importances()
-        else:
-            try:
-                importances = getattr(self, "feature_importances_")
-            except Exception as e:
-                raise AttributeError(
-                    f"{type(self).__name__} declares it can provide feature importances "
-                    "(tag 'capability:feature_importance'=True) but does not expose "
-                    "`feature_importances_` and has no `_feature_importances` method."
-                ) from e
+        importances = self._feature_importances()
 
         # standardise to pd.Series and validate shape/index
         if isinstance(importances, pd.Series):

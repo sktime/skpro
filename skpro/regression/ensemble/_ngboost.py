@@ -109,18 +109,13 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
 
         names = self.feature_names_in_
         n_features = len(names)
-        if hasattr(self.ngb_, "feature_importances_"):
-            imp = np.asarray(self.ngb_.feature_importances_).ravel()
-        elif hasattr(self.ngb_, "estimators_") and len(self.ngb_.estimators_) > 0:
-            imp = np.zeros(n_features)
-            for est in self.ngb_.estimators_:
-                if hasattr(est, "feature_importances_"):
-                    imp += np.asarray(est.feature_importances_).ravel()
-        else:
+        imp = getattr(self.ngb_, "feature_importances_", None)
+        if imp is None:
             raise AttributeError(
                 "This NGBoost configuration does not expose feature importances; "
                 "use a tree-based base learner (e.g. DecisionTreeRegressor)."
             )
+        imp = np.asarray(imp).ravel()
         if len(imp) != n_features:
             raise ValueError(
                 f"Feature importance length ({len(imp)}) does not match "

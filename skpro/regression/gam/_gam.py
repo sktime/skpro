@@ -223,12 +223,34 @@ class GAMRegressor(BaseProbaRegressor):
         names = self.feature_names_in_
         n = len(names)
         imp = np.zeros(n, dtype=float)
-        for i in range(n):
+
+        terms = getattr(gam, "terms", None)
+        if terms is None:
+            # fallback: assume one term per feature in order
+            term_indices = [(i, [i]) for i in range(n)]
+        else:
+            term_indices = []
+            for i, term in enumerate(terms):
+                feats = getattr(term, "feature", None)
+                if feats is None:
+                    feats = getattr(term, "features", None)
+                if feats is None:
+                    continue
+                if not isinstance(feats, (list, tuple)):
+                    feats = [feats]
+                term_indices.append((i, list(feats)))
+
+        for term_idx, feat_idxs in term_indices:
             try:
-                pd_val = gam.partial_dependence(term=i)
-                imp[i] = np.ptp(np.asarray(pd_val))
+                pd_val = gam.partial_dependence(term=term_idx)
+                val = np.ptp(np.asarray(pd_val))
             except Exception:
-                imp[i] = 0.0
+                val = 0.0
+            share = val / max(len(feat_idxs), 1)
+            for fi in feat_idxs:
+                if 0 <= fi < n:
+                    imp[fi] += share
+
         return pd.Series(imp, index=names, name="feature_importance")
 
     def _get_distribution_name(self, dist):

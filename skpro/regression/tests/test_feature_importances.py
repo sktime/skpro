@@ -6,7 +6,7 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class _TestFIRegressor(BaseProbaRegressor):
-    """Uses attribute feature_importances_ (fallback path)."""
+    """Uses attribute feature_importances_ via its own hook."""
 
     _tags = {
         "capability:feature_importance": True,
@@ -23,6 +23,13 @@ class _TestFIRegressor(BaseProbaRegressor):
             np.zeros(len(X), dtype=float),
             index=X.index,
             columns=[self._y_varname],
+        )
+
+    def _feature_importances(self):
+        return pd.Series(
+            np.asarray(self.feature_importances_).ravel(),
+            index=self.feature_names_in_,
+            name="feature_importance",
         )
 
 
@@ -119,6 +126,6 @@ def test_feature_importances_unsupported_raises():
 def test_feature_importances_tag_true_but_missing_attr_raises():
     X, y = _make_xy()
     est = _TestBrokenFIRegressor().fit(X, y)
-    with pytest.raises(AttributeError):
+    with pytest.raises(NotImplementedError):
         est.feature_importances()
 
