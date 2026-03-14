@@ -92,7 +92,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         "authors": ["ShreeshaM07"],
         "maintainers": ["ShreeshaM07"],
         "python_dependencies": "ngboost",
-        "capability:feature_importance": True,
+        "capability:feature_importance": False,
     }
 
     def _feature_importances(self):
@@ -228,6 +228,9 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
 
         self.ngb_ = clone(self.ngb)
         self.ngb_.fit(X, y)
+        # set tag dynamically based on whether base learner exposes feature importances
+        supports_importance = self.ngb_.feature_importances_ is not None
+        self.set_tags(**{"capability:feature_importance": supports_importance})
         return self
 
     def _predict(self, X):
