@@ -130,3 +130,17 @@ def test_convert(scitype, from_mtype, to_mtype, fixture_index):
             return_msg=True,
         )
         assert equals, msg + deep_equals_msg
+
+def test_convert_error_message_for_missing_conversion():
+    """Test improved error message when conversion is undefined."""
+
+    obj = 123
+
+    with pytest.raises(NotImplementedError) as excinfo:
+        convert(obj=obj, from_type="invalid", to_type="invalid", as_scitype="Table")
+
+    msg = str(excinfo.value)
+
+    assert "No conversion defined" in msg
+    assert "Available conversions" in msg 
+    
