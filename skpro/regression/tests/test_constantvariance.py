@@ -1,5 +1,6 @@
 """Tests for the ConstantVarianceRegressor."""
 
+import numpy as np
 import pandas as pd
 import pandas.testing as pdt
 import pytest
@@ -64,3 +65,31 @@ def test_constant_variance_regressor_invalid_distribution():
 
     with pytest.raises(ValueError, match="distribution must be one of"):
         reg.fit(X.iloc[:20], y.iloc[:20])
+
+
+@pytest.mark.parametrize(
+    "distribution, expected_distr",
+    [("Normal", Normal), ("Laplace", Laplace)],
+)
+def test_constant_variance_regressor_constant_target_is_numerically_stable(
+    distribution, expected_distr
+):
+    """Constant targets should still yield a valid predictive distribution."""
+    from sklearn.linear_model import LinearRegression
+
+    X = pd.DataFrame({"x": [0, 1, 2, 3]})
+    y = pd.DataFrame({"y": [1.0, 1.0, 1.0, 1.0]})
+
+    reg = ConstantVarianceRegressor(
+        estimator=LinearRegression(),
+        distribution=distribution,
+    )
+    reg.fit(X, y)
+
+    y_var = reg.predict_var(X)
+    y_proba = reg.predict_proba(X)
+
+    assert isinstance(y_proba, expected_distr)
+    assert (y_var.to_numpy() > 0).all()
+    assert np.isfinite(y_proba.pdf(y_proba.mean()).to_numpy()).all()
+    pdt.assert_frame_equal(y_proba.var(), y_var)

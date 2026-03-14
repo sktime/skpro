@@ -12,6 +12,8 @@ from skpro.distributions.normal import Normal
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.sklearn import prep_skl_df
 
+_MIN_VARIANCE = 1e-12
+
 
 class ConstantVarianceRegressor(BaseProbaRegressor):
     """Probabilistic regressor with mean from a deterministic regressor.
@@ -66,7 +68,8 @@ class ConstantVarianceRegressor(BaseProbaRegressor):
 
         self._get_distribution_name()
         self._y_cols = y.columns
-        self._y_var = y.var(axis=0, ddof=0)
+        # Keep predictive distributions valid when training targets are constant.
+        self._y_var = y.var(axis=0, ddof=0).clip(lower=_MIN_VARIANCE)
 
         y_inner = y.iloc[:, 0] if y.shape[1] == 1 else y
 
