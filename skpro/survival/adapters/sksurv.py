@@ -86,7 +86,7 @@ class _SksurvAdapter:
             Fitted estimator.
         """
         from skpro.utils.validation._dependencies import _check_soft_dependencies
-        
+
         sksurv_est = self._init_sksurv_object()
 
         if C is None:
