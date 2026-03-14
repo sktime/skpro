@@ -217,7 +217,7 @@ def _run_test_for_class(
 
     def _tests_covering_class_changed(cls):
         """Check if any of the tests covering cls have changed, return bool."""
-        from skpro.tests.test_class_register import get_test_classes_for_obj
+        from skpro.registry.test_class_register import get_test_classes_for_obj
 
         test_classes = get_test_classes_for_obj(cls)
         return any(is_class_changed(x) for x in test_classes)
