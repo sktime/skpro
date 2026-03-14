@@ -37,6 +37,8 @@ Contents
    get_started
    users
    installation
+   estimator_overview
+   tags_reference
    api_reference
    get_involved
    developer_guide
@@ -89,6 +91,20 @@ From here, you can navigate to:
             :expand:
 
             API Reference
+
+    .. grid-item-card:: Estimator Overview
+        :text-align: center
+
+        Browse all estimators and distributions.
+
+        +++
+
+        .. button-ref:: estimator_overview
+            :color: primary
+            :click-parent:
+            :expand:
+
+            Estimator Overview
 
     .. grid-item-card:: Get Involved
         :text-align: center
