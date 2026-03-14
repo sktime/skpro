@@ -184,7 +184,7 @@ def convert_1Dnp_to_df_as_Table(obj: np.ndarray, store=None) -> pd.DataFrame:
     if not isinstance(obj, np.ndarray) and len(obj.shape) != 1:
         raise TypeError("input must be a 1D np.ndarray")
 
-    obj = np.reshape(obj, (-1, 1)) 
+    obj = np.reshape(obj, (-1, 1))
 
     if (
         isinstance(store, dict)
