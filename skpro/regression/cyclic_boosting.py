@@ -220,7 +220,7 @@ class CyclicBoosting(BaseProbaRegressor):
                 else:
                     feature_names.append(feature)
             if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
+                raise ValueError(f"Feature '{feature}' is not in X columns")
 
         self._y_cols = y.columns
         y = y.to_numpy().flatten()
@@ -259,7 +259,7 @@ class CyclicBoosting(BaseProbaRegressor):
                 else:
                     feature_names.append(feature)
             if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
+                raise ValueError(f"Feature '{feature}' is not in X columns")
 
         index = X.index
         y_cols = self._y_cols
@@ -299,7 +299,7 @@ class CyclicBoosting(BaseProbaRegressor):
                 else:
                     feature_names.append(feature)
             if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
+                raise ValueError(f"Feature '{feature}' is not in X columns")
 
         index = X.index
         y_cols = self._y_cols
@@ -362,7 +362,7 @@ class CyclicBoosting(BaseProbaRegressor):
                 else:
                     feature_names.append(feature)
             if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
+                raise ValueError(f"Feature '{feature}' is not in X columns")
 
         index = X.index
         y_cols = self._y_cols
@@ -414,7 +414,7 @@ class CyclicBoosting(BaseProbaRegressor):
                 else:
                     feature_names.append(feature)
             if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
+                raise ValueError(f"Feature '{feature}' is not in X columns")
 
         is_given_proba = False
         warning = (
