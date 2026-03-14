@@ -321,7 +321,7 @@ def mtype(
     Parameters
     ----------
     obj : object to infer type of - any type, should comply with some mtype spec
-        if as_scitype is provided, this needs to be mtype belonging to scitype
+        if as_scitype is provided, this must be mtype belonging to scitype
     as_scitype : str, list of str, or None, optional, default=None
         name of scitype(s) the object "obj" is considered as, finds mtype for that
         if None (default), does not assume a specific as_scitype and tests all mtypes
@@ -551,7 +551,7 @@ def scitype(obj, candidate_scitypes=SCITYPE_LIST, exclude_mtypes=AMBIGUOUS_MTYPE
     Parameters
     ----------
     obj : object to infer type of - any type, should comply with some mtype spec
-        if as_scitype is provided, this needs to be mtype belonging to scitype
+        if as_scitype is provided, this must be mtype belonging to scitype
     candidate_scitypes: str or list of str, scitypes to pick from
         valid scitype strings are in datatypes.SCITYPE_REGISTER
     exclude_mtypes : list of str, default = AMBIGUOUS_MTYPES

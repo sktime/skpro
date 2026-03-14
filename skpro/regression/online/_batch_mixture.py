@@ -1,7 +1,7 @@
 """Meta-strategy for online learning: batch-mixture of fitted regressors."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
-__author__ = ["chpatel"]
+__author__ = ["patelchaitany"]
 __all__ = ["OnlineBatchMixture"]
 
 import pandas as pd
@@ -69,7 +69,10 @@ class OnlineBatchMixture(BaseProbaRegressor):
     >>> y_pred = online.predict_proba(X_test)
     """
 
-    _tags = {"capability:update": True}
+    _tags = {
+        "capability:update": True,
+        "authors": ["patelchaitany"],
+    }
 
     def __init__(self, estimator, min_batch_size=1, batch_mode="accumulate"):
         self.estimator = estimator
