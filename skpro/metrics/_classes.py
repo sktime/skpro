@@ -267,7 +267,7 @@ class EmpiricalCoverage(BaseProbaMetric):
         return out_df
 
     @classmethod
-    def get_test_params(self):
+    def get_test_params(cls, parameter_set="default"):
         """Retrieve test parameters."""
         params1 = {}
         params2 = {"coverage": 0.5}
@@ -367,7 +367,7 @@ class IntervalWidth(BaseProbaMetric):
         return out_df
 
     @classmethod
-    def get_test_params(self):
+    def get_test_params(cls, parameter_set="default"):
         """Retrieve test parameters."""
         params1 = {}
         params2 = {"coverage": 0.5}
@@ -483,7 +483,7 @@ class ConstraintViolation(BaseProbaMetric):
         return out_df
 
     @classmethod
-    def get_test_params(self):
+    def get_test_params(cls, parameter_set="default"):
         """Retrieve test parameters."""
         params1 = {}
         params2 = {"coverage": 0.5}
