@@ -15,7 +15,8 @@ def test_plot_calibration_runs():
             (0, 0.9): [3, 4, 4, 5],
         }
     )
-    ax = plot_calibration(y_true, y_pred)
+    fig, ax = plot_calibration(y_true, y_pred)
+    assert fig is not None
     assert ax is not None
 
 

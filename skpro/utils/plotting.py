@@ -245,25 +245,57 @@ def plot_crossplot_loss(y_true, y_pred, metric, ax=None):
 
 
 def plot_calibration(y_true, y_pred, ax=None):
-    """Plot calibration curve for probabilistic predictions.
+    r"""Plot the calibration curve for a sample of quantile predictions.
 
-    Visualizes calibration of quantile predictions by comparing
-    predicted quantile levels to observed coverage fractions.
+    Visualizes calibration of the quantile predictions.
+
+    Computes the following calibration plot:
+
+    Let :math:`p_1, \dots, p_k` be the quantile points at which
+    predictions in ``y_pred`` were queried,
+    e.g., via ``alpha`` in ``predict_quantiles``.
+
+    Let :math:`y_1, \dots, y_N` be the actual values in ``y_true``,
+    and let :math:`\widehat{y}_{i,j}`, for :math:`i = 1, \dots, N, j = 1, \dots, k`
+    be quantile predictions at quantile point :math:`p_j`,
+    of the conditional distribution of :math:`y_i`, as contained in ``y_pred``.
+
+    We compute the calibration indicators :math:`c_{i, j},`
+    as :math:`c_{i, j} = 1, \text{ if } y_i \le \widehat{y}_{i,j} \text{ and } 0,
+    \text{otherwise},` and calibration fractions as
+
+    .. math:: \widehat{p}_j = \frac{1}{N} \sum_{i = 1}^N c_{i, j}.
+
+    If the quantile predictions are well-calibrated, we expect :math:`\widehat{p}_j`
+    to be close to :math:`p_j`.
+
+    x-axis: interval from 0 to 1, quantile points
+
+    y-axis: interval from 0 to 1, calibration fractions
+
+    plot elements: calibration curve of the quantile predictions (blue) and the ideal
+    calibration curve (orange), the curve with equation y = x.
+        Calibration curve are points :math:`(p_i, \widehat{p}_i), i = 1 \dots, k`;
+
+        Ideal curve is the curve with equation y = x,
+        containing points :math:`(p_i, p_i)`.
 
     Parameters
     ----------
-    y_true : pd.Series
+    y_true : pd.Series, single columned pd.DataFrame, or single columned np.array.
         The actual values
     y_pred : pd.DataFrame or BaseDistribution
-        Quantile predictions, as returned by predict_quantiles,
-        or a BaseDistribution object as returned by predict_proba
-    ax : matplotlib axes, optional
-        Axes to plot on, if None, a new figure is created and returned
+        The quantile predictions, formatted as returned by ``predict_quantiles``,
+        or a BaseDistribution object as returned by ``predict_proba``
+    ax : matplotlib.axes.Axes, optional (default=None)
+        Axes on which to plot. If None, axes will be created and returned.
 
     Returns
     -------
-    ax : matplotlib axes
-        Axes containing the plot
+    fig : matplotlib.figure.Figure, returned only if ax is None
+        matplotlib figure object
+    ax : matplotlib.axes.Axes
+        matplotlib axes object with the figure
 
     Examples
     --------
@@ -286,7 +318,7 @@ def plot_calibration(y_true, y_pred, ax=None):
     """
     _check_soft_dependencies("matplotlib")
 
-    from matplotlib import pyplot
+    import matplotlib.pyplot as plt
 
     # handle BaseDistribution input
     if hasattr(y_pred, "quantile") and not isinstance(y_pred, pd.DataFrame):
@@ -295,10 +327,12 @@ def plot_calibration(y_true, y_pred, ax=None):
 
     # ensure y_true is a pd.Series
     if not isinstance(y_true, pd.Series):
-        y_true = pd.Series(y_true)
+        y_true = pd.Series(y_true.squeeze())
 
-    if ax is None:
-        _, ax = pyplot.subplots()
+    _ax_kwarg_is_none = True if ax is None else False
+
+    if _ax_kwarg_is_none:
+        fig, ax = plt.subplots(1, figsize=plt.figaspect(0.25))
 
     result = [0]
     ideal_calibration = [0]
@@ -315,10 +349,14 @@ def plot_calibration(y_true, y_pred, ax=None):
     result.append(1)
     ideal_calibration.append(1)
 
-    ax.plot(ideal_calibration, result, label="Forecast's Calibration")
-    ax.plot([0, 1], [0, 1], label="Ideal Calibration")
-    ax.set_xlabel("Quantile level")
-    ax.set_ylabel("Observed coverage fraction")
-    ax.legend()
+    df = pd.DataFrame(
+        {"Forecast's Calibration": result, "Ideal Calibration": ideal_calibration},
+        index=ideal_calibration,
+    )
 
-    return ax
+    df.plot(ax=ax)
+
+    if _ax_kwarg_is_none:
+        return fig, ax
+    else:
+        return ax
