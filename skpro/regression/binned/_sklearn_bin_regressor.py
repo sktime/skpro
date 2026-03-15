@@ -16,13 +16,13 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
     It is a probabilistic regressor that fits a Histogram Distribution
     by presenting binned outcomes to a probabilistic sklearn classifier.
     It can be used for predicting the class that a set of X belongs to and
-    predict_proba can be used to represent the predicted probabilites of
+    predict_proba can be used to represent the predicted probabilities of
     each class for respective values in X in the form of a Histogram
     Distribution.
 
     The ``bins`` will be used to bin the ``y`` values in fit into the respective
     bins. It then uses these bins as the classes for the classifier and predicts
-    the probabilites for each class.
+    the probabilities for each class.
 
     Note: Ensure the ``y`` values while calling ``fit`` are within the the ``bins``
     range. If it is not then it will be internally replaced to move to the
@@ -47,7 +47,7 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
         It maps the key (which indicates the ``i``th bin) to the respective
         bin's boundaries np.array([bins[i],bins[i+1]]).
     classes_proba_ : pd.DataFrame
-        Contains the class probabilites.
+        Contains the class probabilities.
 
     Examples
     --------
