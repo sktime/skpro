@@ -3,7 +3,7 @@
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import quad
+
 
 from skpro.distributions.base import BaseDistribution
 
@@ -190,28 +190,7 @@ class Pareto(BaseDistribution):
             energy_arr = energy_arr.sum(axis=1)
         return energy_arr
 
-    def _energy_x(self, x):
-        r"""Energy of self, w.r.t. a constant frame x.
 
-        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt.
-        """
-        alpha = self._bc_params["alpha"]
-        scale = self._bc_params["scale"]
-        mean = np.where(alpha <= 1, np.inf, scale * alpha / (alpha - 1))
-
-        def energy_cell(a, s, m, xi):
-            if xi <= 0:
-                return m - xi
-
-            cdf = lambda t: 0 if t < s else 1 - np.power(s / t, a)  # noqa: E731
-            integral, _ = quad(cdf, 0, xi, limit=200)
-            return m - xi + 2 * integral
-
-        vec_energy = np.vectorize(energy_cell)
-        energy_arr = vec_energy(alpha, scale, mean, x)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
-        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
