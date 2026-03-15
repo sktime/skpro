@@ -1,4 +1,5 @@
 """Utility functions for plotting."""
+
 import numpy as np
 import pandas as pd
 from skbase.utils.dependencies import _check_soft_dependencies
@@ -253,8 +254,9 @@ def plot_calibration(y_true, y_pred, ax=None):
     ----------
     y_true : pd.Series
         The actual values
-    y_pred : pd.DataFrame
-        Quantile predictions, as returned by predict_quantiles
+    y_pred : pd.DataFrame or BaseDistribution
+        Quantile predictions, as returned by predict_quantiles,
+        or a BaseDistribution object as returned by predict_proba
     ax : matplotlib axes, optional
         Axes to plot on, if None, a new figure is created and returned
 
@@ -279,14 +281,21 @@ def plot_calibration(y_true, y_pred, ax=None):
     >>> reg_proba = ResidualDouble(reg_mean, reg_resid)  # doctest: +SKIP
     >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
     ResidualDouble(...)
-    >>> y_pred = reg_proba.predict_quantiles(  # doctest: +SKIP
-    ...     X_test, alpha=[0.1, 0.25, 0.5, 0.75, 0.9]
-    ... )
+    >>> y_pred = reg_proba.predict_proba(X_test)  # doctest: +SKIP
     >>> plot_calibration(y_test, y_pred)  # doctest: +SKIP
     """
     _check_soft_dependencies("matplotlib")
 
     from matplotlib import pyplot
+
+    # handle BaseDistribution input
+    if hasattr(y_pred, "quantile") and not isinstance(y_pred, pd.DataFrame):
+        alpha = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        y_pred = y_pred.quantile(alpha)
+
+    # ensure y_true is a pd.Series
+    if not isinstance(y_true, pd.Series):
+        y_true = pd.Series(y_true)
 
     if ax is None:
         _, ax = pyplot.subplots()
