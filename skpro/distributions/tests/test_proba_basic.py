@@ -308,3 +308,24 @@ def test_pmf_support_method():
     support = delta._pmf_support(3, 4)
     assert isinstance(support, np.ndarray)
     assert len(support) == 0
+
+@pytest.mark.skipif(
+    not _check_soft_dependencies("matplotlib", severity="none"),
+    reason="skip if matplotlib is not available",
+)
+def test_discrete_pmf_plotting():
+    """Test that discrete PMF plotting uses stem plots."""
+    from matplotlib.axes import Axes
+    from matplotlib.container import StemContainer
+
+    from skpro.distributions.binomial import Binomial
+
+    dist = Binomial(n=10, p=0.5)
+    ax = dist.plot(fun="pmf", x_bounds=(0, 10))
+
+    assert isinstance(ax, Axes)
+    assert len(ax.containers) > 0
+    assert isinstance(ax.containers[0], StemContainer)
+
+    xdata = ax.containers[0].markerline.get_xdata()
+    assert len(xdata) == 11
