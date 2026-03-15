@@ -1225,6 +1225,8 @@ class BaseDistribution(BaseObject):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
+        if self._has_implementation_of("_cdf"):
+            return self._energy_self_cdf_quad()
         return self._energy_default()
 
     def _energy_x(self, x):
@@ -1245,7 +1247,131 @@ class BaseDistribution(BaseObject):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
+        if self._has_implementation_of("_cdf"):
+            return self._energy_x_cdf_quad(x)
         return self._energy_default(x)
+
+    def _energy_self_cdf_quad(self):
+        r"""Energy of self, w.r.t. self, via CDF quadrature.
+
+        Computes :math:`\mathbb{E}[|X-Y|] = 2 \int F(t)(1-F(t))\,dt`
+        using ``scipy.integrate.quad`` element-wise.
+        """
+        from scipy.integrate import quad
+
+        approx_method = (
+            "by numerical quadrature of F(t)(1-F(t)) via scipy.integrate.quad"
+        )
+        warn(self._method_error_msg("energy", fill_in=approx_method))
+
+        # determine integration bounds
+        has_ppf = self._has_implementation_of("_ppf")
+        shape = self.shape
+
+        if len(shape) == 0:
+            # scalar distribution
+            if has_ppf:
+                lb = float(self.ppf(np.float64(1e-8)))
+                ub = float(self.ppf(np.float64(1 - 1e-8)))
+            else:
+                lb, ub = -1e6, 1e6
+
+            def integrand(t):
+                t_arr = np.float64(t)
+                F = float(self.cdf(t_arr))
+                return 2 * F * (1 - F)
+
+            val, _ = quad(integrand, lb, ub, limit=200)
+            return val
+
+        # array distribution
+        n_row, n_col = shape
+        energy_arr = np.zeros((n_row, n_col), dtype=float)
+
+        for i in range(n_row):
+            for j in range(n_col):
+                ix = self.index[i]
+                col = self.columns[j]
+                d_ij = self.loc[[ix], [col]]
+
+                if has_ppf:
+                    lb_df = pd.DataFrame([[1e-8]], index=[ix], columns=[col])
+                    ub_df = pd.DataFrame([[1 - 1e-8]], index=[ix], columns=[col])
+                    lb = float(d_ij.ppf(lb_df).values[0][0])
+                    ub = float(d_ij.ppf(ub_df).values[0][0])
+                else:
+                    lb, ub = -1e6, 1e6
+
+                def integrand(t, _d=d_ij, _ix=ix, _col=col):
+                    t_df = pd.DataFrame([[t]], index=[_ix], columns=[_col])
+                    F = float(_d.cdf(t_df).values[0][0])
+                    return 2 * F * (1 - F)
+
+                val, _ = quad(integrand, lb, ub, limit=200)
+                energy_arr[i, j] = val
+
+        energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
+
+    def _energy_x_cdf_quad(self, x):
+        r"""Energy of self, w.r.t. a constant frame x, via CDF quadrature.
+
+        Computes :math:`\mathbb{E}[|X-x|] = \mu - x + 2\int_{-\infty}^{x} F(t)\,dt`
+        using ``scipy.integrate.quad`` element-wise.
+        """
+        from scipy.integrate import quad
+
+        approx_method = "by numerical quadrature of the CDF via scipy.integrate.quad"
+        warn(self._method_error_msg("energy", fill_in=approx_method))
+
+        shape = self.shape
+        has_ppf = self._has_implementation_of("_ppf")
+
+        if len(shape) == 0:
+            # scalar distribution
+            xi = float(x)
+            mean_val = float(self.mean())
+
+            if has_ppf:
+                lb = float(self.ppf(np.float64(1e-8)))
+            else:
+                lb = -1e6
+
+            def integrand(t):
+                t_arr = np.float64(t)
+                return float(self.cdf(t_arr))
+
+            val, _ = quad(integrand, lb, xi, limit=200)
+            return mean_val - xi + 2 * val
+
+        # array distribution
+        n_row, n_col = shape
+        energy_arr = np.zeros((n_row, n_col), dtype=float)
+        mean_df = self.mean()
+
+        for i in range(n_row):
+            for j in range(n_col):
+                ix = self.index[i]
+                col = self.columns[j]
+                d_ij = self.loc[[ix], [col]]
+                xi = float(x[i, j])
+                mean_val = float(mean_df.loc[ix, col])
+
+                if has_ppf:
+                    lb_df = pd.DataFrame([[1e-8]], index=[ix], columns=[col])
+                    lb = float(d_ij.ppf(lb_df).values[0][0])
+                else:
+                    lb = -1e6
+
+                def integrand(t, _d=d_ij, _ix=ix, _col=col):
+                    t_df = pd.DataFrame([[t]], index=[_ix], columns=[_col])
+                    return float(_d.cdf(t_df).values[0][0])
+
+                val, _ = quad(integrand, lb, xi, limit=200)
+                energy_arr[i, j] = mean_val - xi + 2 * val
+
+        energy_arr = energy_arr.sum(axis=1)
+        return energy_arr
 
     def _energy_default(self, x=None):
         """Energy of self, w.r.t. self or a constant frame x.

@@ -3,7 +3,6 @@
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import quad
 from scipy.stats.distributions import chi2
 
 from skpro.distributions.base import BaseDistribution
@@ -146,27 +145,6 @@ class ChiSquared(BaseDistribution):
         dof = self._bc_params["dof"]
         icdf_arr = chi2.ppf(p, dof)
         return icdf_arr
-
-    def _energy_self(self):
-        r"""Energy of self, w.r.t. self.
-
-        Uses deterministic 1D quadrature:
-        \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt,
-        where F is the ChiSquared CDF.
-        """
-        dof = self._bc_params["dof"]
-
-        def self_energy_cell(k):
-            integral, _ = quad(
-                lambda t: chi2.cdf(t, k) * (1 - chi2.cdf(t, k)), 0, np.inf, limit=200
-            )
-            return 2 * integral
-
-        vec_energy = np.vectorize(self_energy_cell)
-        energy_arr = vec_energy(dof)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
-        return energy_arr
 
     def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.

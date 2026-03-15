@@ -1,5 +1,6 @@
 """F probability distribution for skpro."""
 
+import numpy as np
 from scipy.stats import f, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -32,6 +33,7 @@ class FDist(_ScipyAdapter):
     _tags = {
         "authors": ["arnavk23"],
         "distr:measuretype": "continuous",
+        "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "broadcast_init": "on",
     }

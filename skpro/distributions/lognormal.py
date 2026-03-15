@@ -3,7 +3,6 @@
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import quad
 from scipy.special import erf, erfinv
 
 from skpro.distributions.base import BaseDistribution
@@ -35,8 +34,8 @@ class LogNormal(BaseDistribution):
 
     _tags = {
         "authors": ["bhavikar04", "fkiraly"],
-        "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["energy", "pdfnorm"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -47,44 +46,6 @@ class LogNormal(BaseDistribution):
         self.sigma = sigma
 
         super().__init__(index=index, columns=columns)
-
-    # commented out, seems incorrect
-    # def energy(self, x=None):
-    #     r"""Energy of self, w.r.t. self or a constant frame x.
-
-    #     Let :math:`X, Y` be i.i.d. random variables with the distribution of `self`.
-
-    #     If `x` is `None`, returns :math:`\mathbb{E}[|X-Y|]` (per row), "self-energy".
-    #     If `x` is passed, returns :math:`\mathbb{E}[|X-x|]-0.5\mathbb{E}[|X-Y|]`
-    #     (per row), "CRPS wrt x".
-
-    #     Parameters
-    #     ----------
-    #     x : None or pd.DataFrame, optional, default=None
-    #         if pd.DataFrame, must have same rows and columns as `self`
-
-    #     Returns
-    #     -------
-    #     pd.DataFrame with same rows as `self`, single column `"energy"`
-    #     each row contains one float, self-energy/energy as described above.
-    #     """
-    #     if x is None:
-    #         return super().energy(x)
-    #     # explicit formula for CRPS of log-normal cross-term
-    #     # obtained by bhavikar04 via wolfram alpha
-    #     else:
-    #         d = self.loc[x.index, x.columns]
-    #         mu_arr, sd_arr = d._mu, d._sigma
-    #         c_arr = x * (2 * self.cdf(x) - 1)
-    #         c_arr2 = -2 * np.exp((mu_arr + sd_arr**2) / 2)
-    #         c_arr3 = self.cdf((np.log(x) - mu_arr - sd_arr**2) / sd_arr)
-    #         c_arr3 = c_arr3 + self.cdf(sd_arr / mu_arr**0.5) - 1
-    #         c_arr2 = c_arr2 * c_arr3
-    #         c_arr = c_arr + c_arr2
-
-    #         energy_arr = np.sum(c_arr, axis=1)
-    #         energy = pd.DataFrame(energy_arr, index=self.index, columns=["energy"])
-    #     return energy
 
     def _mean(self):
         """Return expected value of the distribution.
@@ -192,61 +153,6 @@ class LogNormal(BaseDistribution):
         icdf_arr = mu + sigma * np.sqrt(2) * erfinv(2 * p - 1)
         icdf_arr = np.exp(icdf_arr)
         return icdf_arr
-
-    def _energy_self(self):
-        r"""Energy of self, w.r.t. self.
-
-        Uses deterministic 1D quadrature:
-        \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt,
-        where F is the LogNormal CDF.
-        """
-        mu = self._bc_params["mu"]
-        sigma = self._bc_params["sigma"]
-
-        def self_energy_cell(m, s):
-            def cdf_func(t):
-                if t <= 0:
-                    return 0.0
-                return 0.5 * (1 + erf((np.log(t) - m) / (s * np.sqrt(2))))
-
-            integral, _ = quad(
-                lambda t: cdf_func(t) * (1 - cdf_func(t)), 0, np.inf, limit=200
-            )
-            return 2 * integral
-
-        vec_energy = np.vectorize(self_energy_cell)
-        energy_arr = vec_energy(mu, sigma)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
-        return energy_arr
-
-    def _energy_x(self, x):
-        r"""Energy of self, w.r.t. a constant frame x.
-
-        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt
-        (with empty integral if x<0).
-        """
-        mu = self._bc_params["mu"]
-        sigma = self._bc_params["sigma"]
-
-        def energy_cell(m, s, xi):
-            mean_val = np.exp(m + s**2 / 2)
-            if xi <= 0:
-                return mean_val - xi
-
-            def cdf_func(t):
-                if t <= 0:
-                    return 0.0
-                return 0.5 * (1 + erf((np.log(t) - m) / (s * np.sqrt(2))))
-
-            integral, _ = quad(cdf_func, 0, xi, limit=200)
-            return mean_val - xi + 2 * integral
-
-        vec_energy = np.vectorize(energy_cell)
-        energy_arr = vec_energy(mu, sigma, x)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
-        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

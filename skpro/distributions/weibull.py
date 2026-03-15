@@ -3,7 +3,6 @@
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import quad
 from scipy.special import gamma
 
 from skpro.distributions.base import BaseDistribution
@@ -42,7 +41,7 @@ class Weibull(BaseDistribution):
         "authors": ["malikrafsan"],
         # estimator tags
         # --------------
-        "capabilities:approx": ["pdfnorm"],
+        "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": [
             "mean",
             "var",
@@ -50,7 +49,6 @@ class Weibull(BaseDistribution):
             "log_pdf",
             "cdf",
             "ppf",
-            "energy",
         ],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
@@ -176,52 +174,6 @@ class Weibull(BaseDistribution):
 
         ppf_arr = scale * (-np.log(1 - p)) ** (1 / k)
         return ppf_arr
-
-    def _energy_self(self):
-        r"""Energy of self, w.r.t. self.
-
-        Deterministic quadrature: \mathbb{E}|X-Y| = 2 \int_0^\infty F(t)(1-F(t)) dt.
-        """
-        k = self._bc_params["k"]
-        scale = self._bc_params["scale"]
-
-        def self_energy_cell(kk, ss):
-            cdf = lambda t: (  # noqa: E731
-                (1 - np.exp(-((t / ss) ** kk))) if t >= 0 else 0
-            )
-            integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, np.inf, limit=200)
-            return 2 * integral
-
-        vec_energy = np.vectorize(self_energy_cell)
-        energy_arr = vec_energy(k, scale)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
-        return energy_arr
-
-    def _energy_x(self, x):
-        r"""Energy of self, w.r.t. a constant frame x.
-
-        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt.
-        """
-        k = self._bc_params["k"]
-        scale = self._bc_params["scale"]
-        mean = scale * gamma(1 + 1 / k)
-
-        def energy_cell(kk, ss, mm, xi):
-            if xi <= 0:
-                return mm - xi
-
-            cdf = lambda t: (  # noqa: E731
-                (1 - np.exp(-((t / ss) ** kk))) if t >= 0 else 0
-            )
-            integral, _ = quad(cdf, 0, xi, limit=200)
-            return mm - xi + 2 * integral
-
-        vec_energy = np.vectorize(energy_cell)
-        energy_arr = vec_energy(k, scale, mean, x)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
-        return energy_arr
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

@@ -3,7 +3,6 @@
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import quad
 
 from skpro.distributions.base import BaseDistribution
 
@@ -179,31 +178,6 @@ class Logistic(BaseDistribution):
         """
         scale = self._bc_params["scale"]
         energy_arr = 2 * scale
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
-        return energy_arr
-
-    def _energy_x(self, x):
-        r"""Energy of self, w.r.t. a constant frame x.
-
-        Uses numerical integration:
-        \\mathbb{E}|X - x| = \\int_{-\\infty}^{\\infty} |t - x| f(t) dt.
-        """
-        mu = self._bc_params["mu"]
-        scale = self._bc_params["scale"]
-
-        def energy_cell(m, s, xi):
-            # Compute E|X - xi| by integrating |t - xi| * f(t)
-            # Logistic PDF: f(t) = 1/(4*s) * sech^2((t-m)/(2*s))
-            pdf = lambda t: 1 / (4 * s) / np.cosh((t - m) / (2 * s)) ** 2  # noqa: E731
-
-            # Split integral at xi
-            lower, _ = quad(lambda t: (xi - t) * pdf(t), m - 10 * s, xi, limit=200)
-            upper, _ = quad(lambda t: (t - xi) * pdf(t), xi, m + 10 * s, limit=200)
-            return lower + upper
-
-        vec_energy = np.vectorize(energy_cell)
-        energy_arr = vec_energy(mu, scale, x)
         if np.ndim(energy_arr) > 1:
             energy_arr = energy_arr.sum(axis=1)
         return energy_arr

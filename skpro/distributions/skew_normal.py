@@ -2,6 +2,7 @@
 
 """Skew-Normal probability distribution."""
 
+import numpy as np
 from scipy.stats import skewnorm
 
 from skpro.distributions.adapters.scipy._distribution import _ScipyAdapter
@@ -49,8 +50,8 @@ class SkewNormal(_ScipyAdapter):
         "authors": ["Spinachboul"],
         "python_dependencies": ["scipy"],
         "distr:measuretype": "continuous",
-        "capabilities:approx": ["energy"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:approx": ["pdfnorm"],
+        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "broadcast_init": "on",
     }
 
@@ -76,6 +77,95 @@ class SkewNormal(_ScipyAdapter):
             "scale": sigma,
             "a": alpha,
         }
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        For SkewNormal(mu, sigma, alpha), :math:`\mathbb{E}|X-Y|` is computed via:
+
+        .. math:: \mathbb{E}|X-Y| = 2 \int_{-\infty}^{\infty} F(t)(1-F(t))\,dt
+
+        using numerical integration over the CDF.
+        """
+        from scipy.integrate import quad
+
+        mu = np.asarray(self._bc_params["mu"])
+        sigma = np.asarray(self._bc_params["sigma"])
+        alpha = np.asarray(self._bc_params["alpha"])
+        mu_b, sigma_b, alpha_b = np.broadcast_arrays(mu, sigma, alpha)
+        result = np.empty_like(mu_b, dtype=float)
+
+        it = np.nditer(
+            [mu_b, sigma_b, alpha_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["readonly"], ["readonly"], ["writeonly"]],
+        )
+        for mm, ss, aa, out in it:
+            mm_val = float(mm)
+            ss_val = float(ss)
+            aa_val = float(aa)
+
+            def integrand(t, mm=mm_val, ss=ss_val, aa=aa_val):
+                F = skewnorm.cdf(t, a=aa, loc=mm, scale=ss)
+                return 2 * F * (1 - F)
+
+            val, _ = quad(integrand, -np.inf, np.inf, limit=200)
+            out[...] = val
+
+        result_flat = np.asarray(result).reshape(-1)
+        n_rows = 1 if self.index is None else len(self.index)
+        if result_flat.shape[0] != n_rows:
+            result_flat = result_flat.reshape(n_rows, -1).sum(axis=1)
+        if self.index is None and n_rows == 1:
+            return float(result_flat[0])
+        return result_flat
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        :math:`\mathbb{E}[|X-x|]` for X ~ SkewNormal(mu, sigma, alpha),
+        computed via numerical integration.
+        """
+        from scipy.integrate import quad
+
+        mu = np.asarray(self._bc_params["mu"])
+        sigma = np.asarray(self._bc_params["sigma"])
+        alpha = np.asarray(self._bc_params["alpha"])
+        x_arr = np.asarray(x)
+        mu_b, sigma_b, alpha_b = np.broadcast_arrays(mu, sigma, alpha)
+        _, x_b = np.broadcast_arrays(mu_b, x_arr)
+        result = np.empty_like(mu_b, dtype=float)
+
+        it = np.nditer(
+            [mu_b, sigma_b, alpha_b, x_b, result],
+            flags=["multi_index"],
+            op_flags=[
+                ["readonly"],
+                ["readonly"],
+                ["readonly"],
+                ["readonly"],
+                ["writeonly"],
+            ],
+        )
+        for mm, ss, aa, x0, out in it:
+            mm_val = float(mm)
+            ss_val = float(ss)
+            aa_val = float(aa)
+            x0_val = float(x0)
+
+            def integrand(t, mm=mm_val, ss=ss_val, aa=aa_val, x0=x0_val):
+                return abs(t - x0) * skewnorm.pdf(t, a=aa, loc=mm, scale=ss)
+
+            val, _ = quad(integrand, -np.inf, np.inf, limit=200)
+            out[...] = val
+
+        result_flat = np.asarray(result).reshape(-1)
+        n_rows = 1 if self.index is None else len(self.index)
+        if result_flat.shape[0] != n_rows:
+            result_flat = result_flat.reshape(n_rows, -1).sum(axis=1)
+        if self.index is None and n_rows == 1:
+            return float(result_flat[0])
+        return result_flat
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

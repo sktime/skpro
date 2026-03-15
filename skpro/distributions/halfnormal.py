@@ -1,6 +1,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Half-Normal probability distribution."""
 
+import numpy as np
 import pandas as pd
 from scipy.stats import halfnorm, rv_continuous
 
@@ -47,7 +48,7 @@ class HalfNormal(_ScipyAdapter):
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -64,6 +65,83 @@ class HalfNormal(_ScipyAdapter):
     def _get_scipy_param(self):
         sigma = self._bc_params["sigma"]
         return [sigma], {}
+
+    def _energy_self(self):
+        r"""Energy of self, w.r.t. self.
+
+        For HalfNormal(sigma), :math:`\mathbb{E}|X-Y|` is computed via:
+
+        .. math:: \mathbb{E}|X-Y| = 2 \int_{\sigma}^\infty F(t)(1-F(t))\,dt
+
+        using numerical integration. The distribution is
+        ``halfnorm(loc=sigma, scale=1)`` as passed by ``_get_scipy_param``.
+        """
+        from scipy.integrate import quad
+
+        sigma = np.asarray(self._bc_params["sigma"])
+        result = np.empty_like(sigma, dtype=float)
+
+        it = np.nditer(
+            [sigma, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["writeonly"]],
+        )
+        for ss, out in it:
+            ss_val = float(ss)
+
+            def integrand(t, ss=ss_val):
+                # positional arg = loc, as in _get_scipy_param: [sigma], {}
+                F = halfnorm.cdf(t, ss)
+                return 2 * F * (1 - F)
+
+            val, _ = quad(integrand, ss_val, np.inf, limit=200)
+            out[...] = val
+
+        result_flat = np.asarray(result).reshape(-1)
+        n_rows = 1 if self.index is None else len(self.index)
+        if result_flat.shape[0] != n_rows:
+            result_flat = result_flat.reshape(n_rows, -1).sum(axis=1)
+        if self.index is None and n_rows == 1:
+            return float(result_flat[0])
+        return result_flat
+
+    def _energy_x(self, x):
+        r"""Energy of self, w.r.t. a constant frame x.
+
+        :math:`\mathbb{E}[|X-x|]` for X ~ HalfNormal(sigma),
+        computed via numerical integration.
+        The distribution is ``halfnorm(loc=sigma, scale=1)``.
+        """
+        from scipy.integrate import quad
+
+        sigma = np.asarray(self._bc_params["sigma"])
+        x_arr = np.asarray(x)
+        sigma_b, x_b = np.broadcast_arrays(sigma, x_arr)
+        result = np.empty_like(sigma_b, dtype=float)
+
+        it = np.nditer(
+            [sigma_b, x_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["readonly"], ["writeonly"]],
+        )
+        for ss, x0, out in it:
+            ss_val = float(ss)
+            x0_val = float(x0)
+
+            def integrand(t, ss=ss_val, x0=x0_val):
+                # positional arg = loc
+                return abs(t - x0) * halfnorm.pdf(t, ss)
+
+            val, _ = quad(integrand, ss_val, np.inf, limit=200)
+            out[...] = val
+
+        result_flat = np.asarray(result).reshape(-1)
+        n_rows = 1 if self.index is None else len(self.index)
+        if result_flat.shape[0] != n_rows:
+            result_flat = result_flat.reshape(n_rows, -1).sum(axis=1)
+        if self.index is None and n_rows == 1:
+            return float(result_flat[0])
+        return result_flat
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

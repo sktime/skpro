@@ -3,7 +3,7 @@
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import quad
+from scipy.special import betaln
 from scipy.stats import beta, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -43,7 +43,7 @@ class Beta(_ScipyAdapter):
         "authors": ["malikrafsan"],
         # estimator tags
         # --------------
-        "capabilities:approx": ["pdfnorm"],
+        "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": [
             "mean",
             "var",
@@ -51,7 +51,6 @@ class Beta(_ScipyAdapter):
             "log_pdf",
             "cdf",
             "ppf",
-            "energy",
         ],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
@@ -73,52 +72,33 @@ class Beta(_ScipyAdapter):
 
         return [], {"a": alpha, "b": beta}
 
-    def _energy_self(self):
-        r"""Energy of self, w.r.t. self.
+    def _log_pdf(self, x):
+        r"""Logarithm of the probability density function.
 
-        Deterministic quadrature: \mathbb{E}|X-Y| = 2 \int_0^1 F(t)(1-F(t)) dt.
+        For Beta(alpha, beta), the log-pdf is:
+
+        .. math::
+            \log f(x) = (\alpha-1)\log x + (\beta-1)\log(1-x)
+                        - \log B(\alpha, \beta)
+
+        for :math:`0 < x < 1`, and :math:`-\infty` otherwise.
+
+        Uses ``scipy.special.betaln`` for numerical stability, avoiding
+        ``RuntimeWarning: divide by zero`` from the base class fallback
+        ``np.log(self.pdf(x))``.
         """
         alpha = self._bc_params["alpha"]
         beta_param = self._bc_params["beta"]
 
-        def self_energy_cell(a, b):
-            cdf = lambda t: beta.cdf(t, a=a, b=b)  # noqa: E731
-            integral, _ = quad(lambda t: cdf(t) * (1 - cdf(t)), 0, 1, limit=200)
-            return 2 * integral
-
-        vec_energy = np.vectorize(self_energy_cell)
-        energy_arr = vec_energy(alpha, beta_param)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
-        return energy_arr
-
-    def _energy_x(self, x):
-        r"""Energy of self, w.r.t. a constant frame x.
-
-        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_0^{x} F(t) dt.
-        """
-        alpha = self._bc_params["alpha"]
-        beta_param = self._bc_params["beta"]
-        mean = alpha / (alpha + beta_param)
-
-        def energy_cell(a, b, m, xi):
-            if xi <= 0:
-                return m - xi
-            if xi >= 1:
-                # Use mean - xi + 2*(1 - 0) = mean - xi + 2
-                # since integral from 0 to 1 of CDF
-                cdf = lambda t: beta.cdf(t, a=a, b=b)  # noqa: E731
-                integral, _ = quad(cdf, 0, 1, limit=200)
-                return m - xi + 2 * integral
-            cdf = lambda t: beta.cdf(t, a=a, b=b)  # noqa: E731
-            integral, _ = quad(cdf, 0, xi, limit=200)
-            return m - xi + 2 * integral
-
-        vec_energy = np.vectorize(energy_cell)
-        energy_arr = vec_energy(alpha, beta_param, mean, x)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
-        return energy_arr
+        in_support = (x > 0) & (x < 1)
+        # Compute log-pdf only where in support; use 0.5 as safe fallback value
+        x_safe = np.where(in_support, x, 0.5)
+        log_pdf_val = (
+            (alpha - 1) * np.log(x_safe)
+            + (beta_param - 1) * np.log(1 - x_safe)
+            - betaln(alpha, beta_param)
+        )
+        return np.where(in_support, log_pdf_val, -np.inf)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
