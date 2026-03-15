@@ -144,9 +144,9 @@ def test_proba_plotting(fun):
     assert isinstance(ax, Axes)
 
 
-@pytest.mark.skip(
-    reason="Undiagnosed failure. Skipping until resolved. See #918."
-)
+# @pytest.mark.skip(
+#     reason="Undiagnosed failure. Skipping until resolved. See #918."
+# )
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip if matplotlib is not available",
@@ -168,10 +168,11 @@ def test_discrete_pmf_plotting():
     # For small distributions, check that all support points are plotted
     # Binomial(n=10) has support [0,1,2,...,10] = 11 points
     # The stem plot should have evaluated at these points
-    if hasattr(ax.containers[0], "get_children"):
-        # This is a rough check - the stem plot should have multiple elements
+    if hasattr(ax.containers[0], "markerline"):
+        # A StemContainer has a markerline, stemlines, and baseline
+        # We check the number of markers to verify multiple points are plotted
         assert (
-            len(ax.containers[0].get_children()) > 5
+            len(ax.containers[0].markerline.get_xdata()) > 5
         ), "Should plot at multiple support points"
 
 
