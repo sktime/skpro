@@ -72,13 +72,6 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         self.idata = None  # generated during fitting
         self._predict_done = False  # a flag indicating if a prediction has been done
 
-        print(  # noqa: T201
-            f"instantiated {self.__class__.__name__} with the following priors:"
-        )
-
-        for key, value in self.prior_config.items():
-            print(f"  - {key}: {value}")  # noqa: T201
-
         super().__init__()
 
     @property
@@ -86,10 +79,6 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         """Return a dictionary of prior defaults."""
         from pymc_marketing.prior import Prior
 
-        print(  # noqa: T201
-            "The model assumes that the intercept and slopes are independent. \n\
-            Modify the model if this assumption doesn't apply!"
-        )
         default_prior_config = {
             "intercept": Prior(
                 "Normal", mu=0, sigma=100

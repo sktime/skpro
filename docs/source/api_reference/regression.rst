@@ -234,6 +234,17 @@ Gaussian process and kernel regression
 
     GaussianProcess
 
+Non-parametric conditional density estimation
+-------------------------
+
+.. currentmodule:: skpro.regression.nonparametric
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    NadarayaWatsonCDE
+
 Bayesian regressors
 -------------------
 
