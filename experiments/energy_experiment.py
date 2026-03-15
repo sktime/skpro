@@ -108,8 +108,10 @@ def run_experiment():
 
     # --- Self-energy comparison ---
     print("\n--- Self-Energy E[|X-Y|] ---")  # noqa: T201
-    print(f"{'Distribution':<22} {'Quadrature':>12} {'MC (10k)':>12} {'MC (100k)':>12}"  # noqa: T201
-          f" {'RelErr(10k)':>12} {'RelErr(100k)':>12}")
+    print(
+        f"{'Distribution':<22} {'Quadrature':>12} {'MC (10k)':>12} {'MC (100k)':>12}"  # noqa: T201
+        f" {'RelErr(10k)':>12} {'RelErr(100k)':>12}"
+    )
     print("-" * 82)  # noqa: T201
 
     for name, dist in test_cases.items():
@@ -120,13 +122,17 @@ def run_experiment():
         rel_err_10k = abs(mc_10k - quad_val) / max(abs(quad_val), 1e-10)
         rel_err_100k = abs(mc_100k - quad_val) / max(abs(quad_val), 1e-10)
 
-        print(f"{name:<22} {quad_val:>12.6f} {mc_10k:>12.6f} {mc_100k:>12.6f}"  # noqa: T201
-              f" {rel_err_10k:>12.4%} {rel_err_100k:>12.4%}")
+        print(
+            f"{name:<22} {quad_val:>12.6f} {mc_10k:>12.6f} {mc_100k:>12.6f}"  # noqa: T201
+            f" {rel_err_10k:>12.4%} {rel_err_100k:>12.4%}"
+        )
 
     # --- Cross-energy comparison ---
     print("\n--- Cross-Energy E[|X-x|] (x = mean + 0.5) ---")  # noqa: T201
-    print(f"{'Distribution':<22} {'Quadrature':>12} {'MC (10k)':>12} {'MC (100k)':>12}"  # noqa: T201
-          f" {'RelErr(10k)':>12} {'RelErr(100k)':>12}")
+    print(
+        f"{'Distribution':<22} {'Quadrature':>12} {'MC (10k)':>12} {'MC (100k)':>12}"  # noqa: T201
+        f" {'RelErr(10k)':>12} {'RelErr(100k)':>12}"
+    )
     print("-" * 82)  # noqa: T201
 
     for name, dist in test_cases.items():
@@ -146,11 +152,15 @@ def run_experiment():
         rel_err_10k = abs(mc_10k - quad_val) / max(abs(quad_val), 1e-10)
         rel_err_100k = abs(mc_100k - quad_val) / max(abs(quad_val), 1e-10)
 
-        print(f"{name:<22} {quad_val:>12.6f} {mc_10k:>12.6f} {mc_100k:>12.6f}"  # noqa: T201
-              f" {rel_err_10k:>12.4%} {rel_err_100k:>12.4%}")
+        print(
+            f"{name:<22} {quad_val:>12.6f} {mc_10k:>12.6f} {mc_100k:>12.6f}"  # noqa: T201
+            f" {rel_err_10k:>12.4%} {rel_err_100k:>12.4%}"
+        )
 
     print("\n" + "=" * 80)  # noqa: T201
-    print("Conclusion: Quadrature provides deterministic, high-accuracy results.")  # noqa: T201
+    print(
+        "Conclusion: Quadrature provides deterministic, high-accuracy results."
+    )  # noqa: T201
     print("Monte Carlo converges to quadrature as sample size increases.")  # noqa: T201
     print("=" * 80)  # noqa: T201
 

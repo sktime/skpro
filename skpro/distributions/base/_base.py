@@ -1257,7 +1257,9 @@ class BaseDistribution(BaseObject):
         """
         from scipy.integrate import quad
 
-        approx_method = "by numerical quadrature of F(t)(1-F(t)) via scipy.integrate.quad"
+        approx_method = (
+            "by numerical quadrature of F(t)(1-F(t)) via scipy.integrate.quad"
+        )
         warn(self._method_error_msg("energy", fill_in=approx_method))
 
         # determine integration bounds
