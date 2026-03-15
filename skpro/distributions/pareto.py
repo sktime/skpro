@@ -4,7 +4,6 @@
 import numpy as np
 import pandas as pd
 
-
 from skpro.distributions.base import BaseDistribution
 
 
@@ -189,8 +188,6 @@ class Pareto(BaseDistribution):
         if np.ndim(energy_arr) > 1:
             energy_arr = energy_arr.sum(axis=1)
         return energy_arr
-
-
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

@@ -146,8 +146,6 @@ class ChiSquared(BaseDistribution):
         icdf_arr = chi2.ppf(p, dof)
         return icdf_arr
 
-
-
     def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
 
