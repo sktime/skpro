@@ -1,14 +1,13 @@
 # Temporary and binary files
 *~
 *.py[cod]
-*.pyc.*
 *.so
 *.cfg
 !setup.cfg
 *.orig
 *.log
 *.pot
-__pycache__/
+__pycache__/*
 .cache/*
 .*.swp
 */.ipynb_checkpoints/*
@@ -50,4 +49,3 @@ MANIFEST
 venv/
 env/
 ENV/
-.venv_wsl/
