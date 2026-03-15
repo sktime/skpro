@@ -1775,7 +1775,7 @@ class BaseDistribution(BaseObject):
         if ax is None:
             ax = plt.gca()
 
-        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error = False)
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
         if fun == "pmf" and distr_type == "discrete":
             x_arr = self._pmf_support(lower, upper)
             y_arr = np.array([getattr(self, fun)(x) for x in x_arr])

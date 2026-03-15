@@ -340,6 +340,7 @@ def test_pmf_support_method():
     assert isinstance(support, np.ndarray)
     assert len(support) == 0
 
+
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip if matplotlib is not available",
