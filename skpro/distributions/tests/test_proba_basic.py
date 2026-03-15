@@ -144,9 +144,7 @@ def test_proba_plotting(fun):
     assert isinstance(ax, Axes)
 
 
-@pytest.mark.skip(
-    reason="Undiagnosed failure. Skipping until resolved. See #918."
-)
+@pytest.mark.skip(reason="Undiagnosed failure. Skipping until resolved. See #918.")
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip if matplotlib is not available",
