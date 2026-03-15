@@ -1257,9 +1257,7 @@ class BaseDistribution(BaseObject):
         """
         from scipy.integrate import quad
 
-        approx_method = (
-            "by numerical quadrature of F(t)(1-F(t)) via scipy.integrate.quad"
-        )
+        approx_method = "by numerical quadrature of F(t)(1-F(t)) via scipy.integrate.quad"
         warn(self._method_error_msg("energy", fill_in=approx_method))
 
         # determine integration bounds
@@ -1293,12 +1291,8 @@ class BaseDistribution(BaseObject):
                 d_ij = self.loc[[ix], [col]]
 
                 if has_ppf:
-                    lb_df = pd.DataFrame(
-                        [[1e-8]], index=[ix], columns=[col]
-                    )
-                    ub_df = pd.DataFrame(
-                        [[1 - 1e-8]], index=[ix], columns=[col]
-                    )
+                    lb_df = pd.DataFrame([[1e-8]], index=[ix], columns=[col])
+                    ub_df = pd.DataFrame([[1 - 1e-8]], index=[ix], columns=[col])
                     lb = float(d_ij.ppf(lb_df).values[0][0])
                     ub = float(d_ij.ppf(ub_df).values[0][0])
                 else:
@@ -1323,9 +1317,7 @@ class BaseDistribution(BaseObject):
         """
         from scipy.integrate import quad
 
-        approx_method = (
-            "by numerical quadrature of the CDF via scipy.integrate.quad"
-        )
+        approx_method = "by numerical quadrature of the CDF via scipy.integrate.quad"
         warn(self._method_error_msg("energy", fill_in=approx_method))
 
         shape = self.shape
@@ -1362,9 +1354,7 @@ class BaseDistribution(BaseObject):
                 mean_val = float(mean_df.loc[ix, col])
 
                 if has_ppf:
-                    lb_df = pd.DataFrame(
-                        [[1e-8]], index=[ix], columns=[col]
-                    )
+                    lb_df = pd.DataFrame([[1e-8]], index=[ix], columns=[col])
                     lb = float(d_ij.ppf(lb_df).values[0][0])
                 else:
                     lb = -1e6
