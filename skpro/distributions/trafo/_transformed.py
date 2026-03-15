@@ -59,7 +59,6 @@ class TransformedDistribution(BaseDistribution):
 
     _tags = {
         "capabilities:approx": [
-            "pdfnorm",
             "mean",
             "var",
             "energy",
@@ -99,7 +98,7 @@ class TransformedDistribution(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-        # transformed discret distributions are always discrete
+        # transformed discrete distributions are always discrete
         # (otherwise we only know that they are mixed)
         if distribution.get_tag("distr:measuretype") == "discrete":
             self.set_tags(**{"distr:measuretype": "discrete"})
@@ -110,7 +109,7 @@ class TransformedDistribution(BaseDistribution):
             self.set_tags(
                 **{
                     "capabilities:exact": ["ppf", "cdf"],
-                    "capabilities:approx": ["pdfnorm", "mean", "var", "energy"],
+                    "capabilities:approx": ["pdf", "pdfnorm", "mean", "var", "energy"],
                 }
             )
 
