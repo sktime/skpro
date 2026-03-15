@@ -346,7 +346,7 @@ def run_test_module_changed(module):
 
 
 @lru_cache
-def _get_all_changed_classes(vm=False):
+def _get_all_changed_classes(vm=False, only_changed_modules=True):
     """Get all skpro object classes that have changed compared to the main branch.
 
     Returns a tuple of string class names of object classes that have changed.
@@ -358,16 +358,27 @@ def _get_all_changed_classes(vm=False):
         Queries the tag ``"tests:vm"`` in the class tags.
         If ``vm`` is True, only classes with tag ``"tests:vm"=True`` are returned.
 
+    only_changed_modules : bool, optional, default=True
+        whether to restrict the returned classes to those from changed modules only.
+
     Returns
     -------
-    tuple of strings of class names : object classes that have changed
+    tuple of strings of class names : object classes to test
     """
     from skpro.registry import all_objects
 
     def _changed_class(cls):
         """Check if a class has changed compared to the main branch."""
-        run, _ = _run_test_for_class(cls, ignore_deps=True, only_vm_required=vm)
+        run, _ = _run_test_for_class(
+            cls,
+            ignore_deps=True,
+            only_vm_required=vm,
+            only_changed_modules=only_changed_modules,
+        )
         return run
 
     names = [name for name, est in all_objects() if _changed_class(est)]
     return names
+
+
+
