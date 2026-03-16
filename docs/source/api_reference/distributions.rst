@@ -96,6 +96,8 @@ Integer support
     NegativeBinomial
     Poisson
     ZeroInflated
+    ZeroInflatedNegativeBinomial
+    ZeroInflatedPoisson
     Skellam
 
 Non-parametric and empirical distributions
@@ -145,6 +147,8 @@ Truncated and inflated distributions
     LeftTruncated
     TruncatedDistribution
     ZeroInflated
+    ZeroInflatedNegativeBinomial
+    ZeroInflatedPoisson
 
 Mixture composition
 ~~~~~~~~~~~~~~~~~~~
