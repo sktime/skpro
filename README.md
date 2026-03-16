@@ -129,7 +129,7 @@ from skpro.regression.residual import ResidualDouble
 
 # step 1: data specification
 X, y = load_diabetes(return_X_y=True, as_frame=True)
-X_train, X_new, y_train, _ = train_test_split(X, y)
+X_train, X_new, y_train, y_test = train_test_split(X, y)
 
 # step 2: specifying the regressor - any compatible regressor is valid!
 # example - "squaring residuals" regressor
