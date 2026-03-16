@@ -16,25 +16,6 @@ EXCLUDE_ESTIMATORS = [
     "ClassName",  # exclude classes from extension templates
 ]
 
-
-EXCLUDED_TESTS = {
-    # BUG: component estimator fitted state mutates constructor params
-    # see issue #922
-    "BaggingRegressor": ["test_non_state_changing_method_contract"],
-    "BootstrapRegressor": ["test_non_state_changing_method_contract"],
-    "ConditionUncensored": ["test_non_state_changing_method_contract"],
-    "DeltaPointRegressor": ["test_non_state_changing_method_contract"],
-    "EnbpiRegressor": ["test_non_state_changing_method_contract"],
-    "FitUncensored": ["test_non_state_changing_method_contract"],
-    "GridSearchCV": ["test_non_state_changing_method_contract"],
-    "HistBinnedProbaRegressor": ["test_non_state_changing_method_contract"],
-    "MultipleQuantileRegressor": ["test_non_state_changing_method_contract"],
-    "OnlineDontRefit": ["test_non_state_changing_method_contract"],
-    "OnlineRefit": ["test_non_state_changing_method_contract"],
-    "OnlineRefitEveryN": ["test_non_state_changing_method_contract"],
-    "Pipeline": ["test_non_state_changing_method_contract"],
-    "RandomizedSearchCV": ["test_non_state_changing_method_contract"],
-    "ResidualDouble": ["test_non_state_changing_method_contract"],
-    "SklearnProbaReg": ["test_non_state_changing_method_contract"],
-    "TransformedTargetRegressor": ["test_non_state_changing_method_contract"],
-}
+# do not add skips here, instead use the "tests:skip_by_name" tag on the estimator class
+# see skpro/registry/_tags.py for tag reference
+EXCLUDED_TESTS = {}

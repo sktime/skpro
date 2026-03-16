@@ -1,4 +1,5 @@
 """Automated tests based on the skbase test suite template."""
+
 import numbers
 import types
 from copy import deepcopy
@@ -162,6 +163,23 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
         # comment out to run the full test suite with new scenarios
         if not scenario.get_tag("is_enabled", False, raise_error=False):
             return True
+
+        return False
+
+    def is_excluded(self, test_name, est):
+        """Shorthand to check whether test_name is excluded for estimator est.
+
+        Extends the base class check to also consider the ``tests:skip_by_name``
+        tag on the estimator class.
+        """
+        # check excluded_tests dict via super (skbase base class behaviour)
+        if super().is_excluded(test_name, est):
+            return True
+
+        # additionally check tests:skip_by_name tag on the estimator class
+        skip_by_name = est.get_class_tag("tests:skip_by_name", None)
+        if skip_by_name is not None:
+            return test_name in skip_by_name
 
         return False
 
