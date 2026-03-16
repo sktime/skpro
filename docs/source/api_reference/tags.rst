@@ -27,12 +27,8 @@ Tags can be inspected at runtime using the following utilities:
   By default, class tags that may vary for instances take the most "capable" value,
   in the case of capabilities.
 * to programmatically retrieve all tags available in ``skpro``
-<<<<<<< HEAD
-  or for a particular type of object, at runtime, use the ``registry.all_tags`` utility.
-=======
   or for a particular type of object, at runtime, use the ``registry.all_tags``
   utility.
->>>>>>> 7c7c11f ([DOC] add tag documentation page to API reference #768)
 
 .. currentmodule:: skpro.registry
 
@@ -41,10 +37,6 @@ Tags can be inspected at runtime using the following utilities:
     :template: function.rst
 
     all_tags
-<<<<<<< HEAD
-    all_objects
-=======
->>>>>>> 7c7c11f ([DOC] add tag documentation page to API reference #768)
 
 
 .. _packaging_tags:
@@ -90,17 +82,10 @@ probabilistic regressors.
     :template: function.rst
     :nosignatures:
 
-<<<<<<< HEAD
-    capability__survival
-    capability__multioutput
-    capability__missing
-    capability__update
-=======
     capability_survival
     capability_multioutput
     capability_missing
     capability_update
->>>>>>> 7c7c11f ([DOC] add tag documentation page to API reference #768)
     X_inner_mtype
     y_inner_mtype
     C_inner_mtype
@@ -123,19 +108,11 @@ distributions.
     :template: function.rst
     :nosignatures:
 
-<<<<<<< HEAD
-    capabilities__approx
-    capabilities__exact
-    capabilities__undefined
-    distr__measuretype
-    distr__paramtype
-=======
     capabilities_approx
     capabilities_exact
     capabilities_undefined
     distr_measuretype
     distr_paramtype
->>>>>>> 7c7c11f ([DOC] add tag documentation page to API reference #768)
     approx_mean_spl
     approx_var_spl
     approx_energy_spl
@@ -160,14 +137,8 @@ This section lists tags applying to probabilistic metrics (``"metric"`` type).
     :template: function.rst
     :nosignatures:
 
-<<<<<<< HEAD
-    scitype__y_pred
-    lower_is_better
-    capability__survival
-=======
     scitype_y_pred
     lower_is_better
->>>>>>> 7c7c11f ([DOC] add tag documentation page to API reference #768)
 
 
 .. _meta_object_tags:
@@ -206,14 +177,7 @@ objects.
     :template: function.rst
     :nosignatures:
 
-<<<<<<< HEAD
-    tests__libs
-    tests__vm
-    tests__skip_by_name
-    tests__python_dependencies
-=======
     tests_libs
     tests_vm
     tests_skip_by_name
     tests_python_dependencies
->>>>>>> 7c7c11f ([DOC] add tag documentation page to API reference #768)
