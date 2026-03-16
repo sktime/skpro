@@ -29,6 +29,7 @@ class Skellam(_ScipyAdapter):
     _tags = {
         "authors": ["arnavk23"],
         "distr:measuretype": "discrete",
+        "distr:paramtype": "parametric",
         "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"],
         "broadcast_init": "on",
     }
