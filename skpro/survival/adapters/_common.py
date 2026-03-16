@@ -104,17 +104,11 @@ def _get_fitted_params_default_safe(obj=None):
         attr for attr in dir(obj) if attr.endswith("_") and not attr.startswith("_")
     ]
 
-    def hasattr_safe(obj, attr):
+    fitted_param_dict = {}
+    for p in fitted_params:
         try:
-            if hasattr(obj, attr):
-                getattr(obj, attr)
-                return True
+            fitted_param_dict[p[:-1]] = getattr(obj, p)
         except Exception:
-            return False
-
-    # remove the "_" at the end
-    fitted_param_dict = {
-        p[:-1]: getattr(obj, p) for p in fitted_params if hasattr_safe(obj, p)
-    }
+            continue
 
     return fitted_param_dict
