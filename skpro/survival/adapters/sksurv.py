@@ -85,7 +85,7 @@ class _SksurvAdapter:
         self: reference to self
             Fitted estimator.
         """
-        from skpro.utils.validation._dependencies import _check_soft_dependencies
+        from skbase.utils.dependencies import _check_soft_dependencies
 
         sksurv_est = self._init_sksurv_object()
 
