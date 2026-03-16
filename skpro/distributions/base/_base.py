@@ -1772,6 +1772,17 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
+        if ax is None:
+            ax = plt.gca()
+
+        distr_type = self.get_tag("distr:measuretype", "mixed", raise_error=False)
+        if fun == "pmf" and distr_type == "discrete":
+            x_arr = self._pmf_support(lower, upper)
+            y_arr = np.array([getattr(self, fun)(x) for x in x_arr])
+            ax.stem(x_arr, y_arr, **kwargs)
+        else:
+            x_arr = np.linspace(lower, upper, 1000)
+            y_arr = np.array([getattr(self, fun)(x) for x in x_arr])
         is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
 
         x_arr = self._get_x_for_plot(fun, lower, upper, is_discrete)
@@ -1848,7 +1859,7 @@ class BaseDistribution(BaseObject):
             return np.array([])
 
         # Default implementation assumes non-negative integer support
-        lower_int = max(0, int(np.floor(lower)))
+        lower_int = int(np.floor(lower))
         upper_int = min(int(np.ceil(upper)) + 1, lower_int + max_points)
         return np.arange(lower_int, upper_int)
 

@@ -85,16 +85,25 @@ class _SksurvAdapter:
         self: reference to self
             Fitted estimator.
         """
+        from skbase.utils.dependencies import _check_soft_dependencies
+
         sksurv_est = self._init_sksurv_object()
 
         if C is None:
-            C = pd.DataFrame(np.zeros(len(y)), index=y.index, columns=y.columns)
+            C = pd.DataFrame(
+                np.zeros((len(y), len(y.columns))), index=y.index, columns=y.columns
+            )
 
         # input conversion
         X = X.astype("float")  # sksurv insists on float dtype
         X = prep_skl_df(X)
-        y_np = y.iloc[:, 0].values  # we know univariate due to tag
-        C_np = C.iloc[:, 0].values
+        if _check_soft_dependencies("scikit-survival>=0.19.0", severity="none"):
+            y_np = y.iloc[:, 0].values.ravel()
+            C_np = C.iloc[:, 0].values.ravel()
+        else:
+            y_np = y.iloc[:, 0].values  # we know univariate due to tag
+            C_np = C.iloc[:, 0].values
+
         C_np_bool = C_np == 0  # sksurv uses "delta" indicator, 0 = censored
         # this is the opposite of skpro ("censoring" indicator), where 1 = censored
 
@@ -107,9 +116,6 @@ class _SksurvAdapter:
         sksurv_est.fit(X, y_sksurv)
 
         # write fitted params to self
-        # some fitted parameters are properties and may raise exceptions
-        # for example, AIC_ and AIC_partial_ of CoxPHFitter
-        # to avoid this, we use a safe getter
         EXCEPTED_FITTED_PARAMS = ["n_features_in", "feature_names_in"]
         sksurv_fitted_params = _get_fitted_params_default_safe(sksurv_est)
         for k, v in sksurv_fitted_params.items():
