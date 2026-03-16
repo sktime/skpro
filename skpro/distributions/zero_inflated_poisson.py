@@ -3,6 +3,8 @@
 
 __author__ = ["Mutalenic"]
 
+from functools import cached_property
+
 import pandas as pd
 from numpy.typing import ArrayLike
 
@@ -67,7 +69,7 @@ class ZeroInflatedPoisson(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    @property
+    @cached_property
     def _zi(self):
         """Construct the inner ZeroInflated(Poisson) delegate on the fly."""
         from skpro.distributions.poisson import Poisson

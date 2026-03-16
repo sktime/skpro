@@ -3,6 +3,8 @@
 
 __author__ = ["Mutalenic"]
 
+from functools import cached_property
+
 import pandas as pd
 from numpy.typing import ArrayLike
 
@@ -73,7 +75,7 @@ class ZeroInflatedNegativeBinomial(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    @property
+    @cached_property
     def _zi(self):
         """Construct the inner ZeroInflated(NegativeBinomial) delegate."""
         from skpro.distributions.negative_binomial import NegativeBinomial
