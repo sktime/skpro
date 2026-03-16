@@ -333,6 +333,12 @@ class BaseProbaRegressor(BaseEstimator):
 
         # we use predict_var to get scale, and predict to get location
         pred_var = self.predict_var(X=X)
+        
+        # Clip pred_var to eps to avoid completely deterministic 0-variance propagation
+        # which yields NaN log_pdf evaluations downstream in Normal.
+        eps = np.finfo(float).eps
+        pred_var = np.clip(pred_var, eps, None)
+        
         pred_std = np.sqrt(pred_var)
         pred_mean = self.predict(X=X)
 
