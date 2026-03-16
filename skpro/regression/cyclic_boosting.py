@@ -14,7 +14,7 @@ __author__ = [
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
 import warnings
-from typing import Union
+from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -135,12 +135,12 @@ class CyclicBoosting(BaseProbaRegressor):
 
     def __init__(
         self,
-        feature_groups=None,
+        feature_groups: Union[List[str], List[Tuple[str, ...]], None] = None,
         feature_properties=None,
         alpha=0.2,
         mode="multiplicative",
-        lower=None,
-        upper=None,
+        lower: Union[float, None] = None,
+        upper: Union[float, None] = None,
         maximal_iterations=10,
         dist_type: Union[str, None] = "normal",
         dist_shape: Union[float, None] = 0.0,
@@ -194,8 +194,19 @@ class CyclicBoosting(BaseProbaRegressor):
                 )
             )
 
-    def _validate_feature_groups(self, X):
-        """Validate that all feature groups exist in X columns."""
+    def _validate_feature_groups(self, X: pd.DataFrame) -> None:
+        """Validate that all feature groups exist in X columns.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Feature data to validate against
+
+        Raises
+        ------
+        ValueError
+            If any feature in feature_groups is not present in X.columns
+        """
         if self.feature_groups is None:
             return
 
@@ -208,7 +219,8 @@ class CyclicBoosting(BaseProbaRegressor):
 
         missing_features = set(feature_names) - set(X.columns)
         if missing_features:
-            raise ValueError(f"{missing_features} are not in X")
+            missing_list = sorted(list(missing_features))
+            raise ValueError(f"Features {missing_list} are not in X")
 
     def _fit(self, X, y):
         """Fit regressor to training data.
