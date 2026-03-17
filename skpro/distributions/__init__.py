@@ -27,6 +27,7 @@ __all__ = [
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
+    "HalfT",
     "Hurdle",
     "IID",
     "KernelMixture",
@@ -51,7 +52,6 @@ __all__ = [
     "QPD_B",
     "QPD_U",
     "QPD_Johnson",
-    "Rayleigh",
     "Skellam",
     "SkewNormal",
     "TDistribution",
@@ -86,6 +86,7 @@ from skpro.distributions.gumbel_r import GumbelR
 from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halflogistic import HalfLogistic
 from skpro.distributions.halfnormal import HalfNormal
+from skpro.distributions.halft import HalfT
 from skpro.distributions.histogram import Histogram
 from skpro.distributions.hurdle import Hurdle
 from skpro.distributions.inversegamma import InverseGamma
@@ -107,7 +108,6 @@ from skpro.distributions.pareto import Pareto
 from skpro.distributions.poisson import Poisson
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
 from skpro.distributions.qpd_empirical import QPD_Empirical
-from skpro.distributions.rayleigh import Rayleigh
 from skpro.distributions.skellam import Skellam
 from skpro.distributions.skew_normal import SkewNormal
 from skpro.distributions.t import TDistribution
