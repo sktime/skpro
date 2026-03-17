@@ -12,6 +12,8 @@ from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.tests.test_switch import run_test_module_changed
 
+from skpro.distributions.normal import Normal
+
 
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.distributions"),
@@ -308,3 +310,38 @@ def test_pmf_support_method():
     support = delta._pmf_support(3, 4)
     assert isinstance(support, np.ndarray)
     assert len(support) == 0
+<<<<<<< HEAD
+=======
+
+def test_none_required_numeric_params_rejected():
+    """Required numeric params should not accept None."""
+    import pytest
+
+    from skpro.distributions.cauchy import Cauchy
+    from skpro.distributions.gumbel_l import GumbelL
+    from skpro.distributions.gumbel_r import GumbelR
+    from skpro.distributions.laplace import Laplace
+    from skpro.distributions.normal import Normal
+
+    with pytest.raises(ValueError, match="must not be None"):
+        Normal(mu=None, sigma=None)
+
+    with pytest.raises(ValueError, match="must not be None"):
+        Laplace(mu=None, scale=None)
+
+    with pytest.raises(ValueError, match="must not be None"):
+        Cauchy(mu=None, scale=None)
+
+    with pytest.raises(ValueError, match="must not be None"):
+        GumbelL(mu=None, sigma=None)
+
+    with pytest.raises(ValueError, match="must not be None"):
+        GumbelR(mu=None, sigma=None)
+
+def test_normal_nonpositive_sigma_rejected():
+    with pytest.raises(ValueError, match="sigma must be positive"):
+       Normal(mu=0, sigma=-1)
+
+    with pytest.raises(ValueError, match="sigma must be positive"):
+        Normal(mu=0, sigma=0)
+>>>>>>> a7f76f39 ([BUG] reject non-positive sigma in Normal)
