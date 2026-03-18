@@ -5,10 +5,10 @@
 __author__ = ["arnavk23"]
 
 import numpy as np
-import pandas as pd
 
 from skpro.distributions import Normal
 from skpro.regression.base import BaseProbaRegressor
+
 
 class BayesianConjugateGLMRegressor(BaseProbaRegressor):
     """
@@ -31,6 +31,7 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
     add_constant : bool, default=True
         Whether to add intercept column to X.
     """
+
     _tags = {
         "authors": ["arnavk23"],
         "capability:multioutput": False,
@@ -40,18 +41,24 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, coefs_prior_cov, coefs_prior_mu=None, noise_precision=1, add_constant=True):
+    def __init__(
+        self, coefs_prior_cov, coefs_prior_mu=None, noise_precision=1, add_constant=True
+    ):
         if coefs_prior_cov is None:
             raise ValueError("`coefs_prior_cov` must be provided.")
         self.coefs_prior_cov = coefs_prior_cov
         if coefs_prior_mu is None:
             self.coefs_prior_mu = np.zeros((self.coefs_prior_cov.shape[0], 1))
         elif coefs_prior_mu.ndim != 2 or coefs_prior_mu.shape[1] != 1:
-            raise ValueError("coefs_prior_mu must be a column vector with shape (n_features, 1).")
+            raise ValueError(
+                "coefs_prior_mu must be a column vector with shape (n_features, 1)."
+            )
         else:
             self.coefs_prior_mu = coefs_prior_mu
         if self.coefs_prior_mu.shape[0] != self.coefs_prior_cov.shape[0]:
-            raise ValueError("Dimensionality of `coefs_prior_mu` and `coefs_prior_cov` must match.")
+            raise ValueError(
+                "Dimensionality of `coefs_prior_mu` and `coefs_prior_cov` must match."
+            )
         self.noise_precision = noise_precision
         self.add_constant = add_constant
         super().__init__()
@@ -68,7 +75,10 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         self._coefs_prior_precision = np.linalg.inv(self._coefs_prior_cov)
         self._X_train = X_arr
         self._y_train = y_arr
-        self._coefs_posterior_mu, self._coefs_posterior_cov = self._perform_bayesian_inference(
+        (
+            self._coefs_posterior_mu,
+            self._coefs_posterior_cov,
+        ) = self._perform_bayesian_inference(
             X_arr, y_arr, self._coefs_prior_mu, self._coefs_prior_precision
         )
         return self
@@ -83,7 +93,9 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         pred_var_all_x_i = []
         for i in range(X_arr.shape[0]):
             x_i = X_arr[i, :].reshape(1, -1)
-            pred_var_x_i = x_i @ self._coefs_posterior_cov @ x_i.T + 1 / self.noise_precision
+            pred_var_x_i = (
+                x_i @ self._coefs_posterior_cov @ x_i.T + 1 / self.noise_precision
+            )
             pred_var_all_x_i.append(pred_var_x_i.item())
         pred_var_all_x_i = np.array(pred_var_all_x_i)
         pred_sigma = np.sqrt(pred_var_all_x_i)
@@ -92,10 +104,14 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         return Normal(mu=mus, sigma=sigmas, columns=self._y_cols, index=idx)
 
     def _perform_bayesian_inference(self, X, y, coefs_prior_mu, coefs_prior_precision):
-        coefs_posterior_precision = coefs_prior_precision + self.noise_precision * (X.T @ X)
+        coefs_posterior_precision = coefs_prior_precision + self.noise_precision * (
+            X.T @ X
+        )
         prior_natural_param = coefs_prior_precision @ coefs_prior_mu
         posterior_natural_param = prior_natural_param + self.noise_precision * (X.T @ y)
-        coefs_posterior_mu = np.linalg.solve(coefs_posterior_precision, posterior_natural_param)
+        coefs_posterior_mu = np.linalg.solve(
+            coefs_posterior_precision, posterior_natural_param
+        )
         coefs_posterior_cov = np.linalg.inv(coefs_posterior_precision)
         return coefs_posterior_mu, coefs_posterior_cov
 
@@ -112,7 +128,10 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         X_arr = X_arr.to_numpy(dtype=float)
         y_arr = y.to_numpy(dtype=float)
         coefs_prior_precision = np.linalg.inv(self._coefs_posterior_cov)
-        self._coefs_posterior_mu, self._coefs_posterior_cov = self._perform_bayesian_inference(
+        (
+            self._coefs_posterior_mu,
+            self._coefs_posterior_cov,
+        ) = self._perform_bayesian_inference(
             X_arr, y_arr, self._coefs_posterior_mu, coefs_prior_precision
         )
         return self
