@@ -11,6 +11,27 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class BayesianConjugateGLMRegressor(BaseProbaRegressor):
+    """
+    Bayesian GLM with Gaussian likelihood and conjugate priors.
+
+    This estimator models the relationship between features `X` and target `t` using
+    a Bayesian GLM framework with conjugate priors (multivariate normal).
+    Only Gaussian link is supported (conjugate case).
+
+    Parameters
+    ----------
+    coefs_prior_cov : 2D np.ndarray, required
+        Covariance matrix of the prior for intercept and coefficients.
+        Must be positive-definite.
+    coefs_prior_mu : np.ndarray column vector, optional
+        Mean vector of the prior for intercept and coefficients.
+        If not provided, assumed to be a column vector of zeroes.
+    noise_precision : float
+        Known precision of the Gaussian likelihood noise (inverse variance).
+    add_constant : bool, default=True
+        Whether to add intercept column to X.
+    """
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """
@@ -34,27 +55,6 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
             "noise_precision": noise_precision,
             "add_constant": add_constant,
         }
-
-    """
-    Bayesian GLM with Gaussian likelihood and conjugate priors.
-
-    This estimator models the relationship between features `X` and target `t` using
-    a Bayesian GLM framework with conjugate priors (multivariate normal).
-    Only Gaussian link is supported (conjugate case).
-
-    Parameters
-    ----------
-    coefs_prior_cov : 2D np.ndarray, required
-        Covariance matrix of the prior for intercept and coefficients.
-        Must be positive-definite.
-    coefs_prior_mu : np.ndarray column vector, optional
-        Mean vector of the prior for intercept and coefficients.
-        If not provided, assumed to be a column vector of zeroes.
-    noise_precision : float
-        Known precision of the Gaussian likelihood noise (inverse variance).
-    add_constant : bool, default=True
-        Whether to add intercept column to X.
-    """
 
     _tags = {
         "object_type": "regressor_proba",
