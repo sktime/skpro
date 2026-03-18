@@ -26,6 +26,7 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
             "noise_precision": noise_precision,
             "add_constant": add_constant,
         }
+
     """
     Bayesian GLM with Gaussian likelihood and conjugate priors.
 
