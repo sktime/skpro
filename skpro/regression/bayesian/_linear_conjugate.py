@@ -3,6 +3,7 @@
 __author__ = ["meraldoantonio"]
 
 import numpy as np
+import pandas as pd
 
 from skpro.distributions import Normal
 from skpro.regression.base import BaseProbaRegressor
@@ -191,7 +192,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Predicted Normal distribution for outputs.
         """
         idx = X.index
-        X = X.to_numpy(dtype=float)
+        if isinstance(X, pd.DataFrame):
+            X = X.values
 
         # Predictive mean: X * posterior_mu
         pred_mu = X @ self._coefs_posterior_mu
