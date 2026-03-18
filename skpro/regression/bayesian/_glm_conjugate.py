@@ -14,12 +14,12 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """
-            Return valid test parameters for BayesianConjugateGLMRegressor.
+        Return valid test parameters for BayesianConjugateGLMRegressor.
 
-            Returns
-            -------
-            dict
-                Dictionary of parameters for testing.
+        Returns
+        -------
+        dict
+            Dictionary of parameters for testing.
         """
         # Match diabetes dataset: 10 features + intercept
         n_features = 10
