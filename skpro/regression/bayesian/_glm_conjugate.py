@@ -13,6 +13,14 @@ from skpro.regression.base import BaseProbaRegressor
 class BayesianConjugateGLMRegressor(BaseProbaRegressor):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
+        """
+            Return valid test parameters for BayesianConjugateGLMRegressor.
+
+            Returns
+            -------
+            dict
+                Dictionary of parameters for testing.
+        """
         # Match diabetes dataset: 10 features + intercept
         n_features = 10
         add_constant = True
