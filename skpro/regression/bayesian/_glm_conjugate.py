@@ -45,22 +45,22 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         import numpy as np
 
         n_features = 10
-            # First parameter set: add_constant=True (11 coefs)
-            n_coefs1 = n_features + 1
-            params1 = {
-                "add_constant": True,
-                "coefs_prior_mu": np.zeros((n_coefs1, 1)),
-                "coefs_prior_cov": np.eye(n_coefs1),
-                "noise_precision": 1.0,
-            }
-            # Second parameter set: add_constant=False (10 coefs)
-            n_coefs2 = n_features
-            params2 = {
-                "add_constant": False,
-                "coefs_prior_mu": np.ones((n_coefs2, 1)),
-                "coefs_prior_cov": np.eye(n_coefs2) * 2,
-                "noise_precision": 2.0,
-            }
+        # First parameter set: add_constant=True (11 coefs)
+        n_coefs1 = n_features + 1
+        params1 = {
+            "add_constant": True,
+            "coefs_prior_mu": np.zeros((n_coefs1, 1)),
+            "coefs_prior_cov": np.eye(n_coefs1),
+            "noise_precision": 1.0,
+        }
+        # Second parameter set: add_constant=False (10 coefs)
+        n_coefs2 = n_features
+        params2 = {
+            "add_constant": False,
+            "coefs_prior_mu": np.ones((n_coefs2, 1)),
+            "coefs_prior_cov": np.eye(n_coefs2) * 2,
+            "noise_precision": 2.0,
+        }
         return [params1, params2]
 
     _tags = {
