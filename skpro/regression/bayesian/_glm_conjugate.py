@@ -11,6 +11,21 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class BayesianConjugateGLMRegressor(BaseProbaRegressor):
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        # Match diabetes dataset: 10 features + intercept
+        n_features = 10
+        add_constant = True
+        n_coefs = n_features + 1 if add_constant else n_features
+        coefs_prior_cov = np.eye(n_coefs)
+        coefs_prior_mu = np.zeros((n_coefs, 1))
+        noise_precision = 1.0
+        return {
+            "coefs_prior_cov": coefs_prior_cov,
+            "coefs_prior_mu": coefs_prior_mu,
+            "noise_precision": noise_precision,
+            "add_constant": add_constant,
+        }
     """
     Bayesian GLM with Gaussian likelihood and conjugate priors.
 
@@ -33,6 +48,8 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
     """
 
     _tags = {
+        "object_type": "regressor_proba",
+        "estimator_type": "regressor_proba",
         "authors": ["arnavk23"],
         "capability:multioutput": False,
         "capability:missing": True,
