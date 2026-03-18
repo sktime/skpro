@@ -218,7 +218,7 @@ class ZeroInflated(BaseDistribution):
 
         params = [params_1, params_2, params_3]
 
-        # continous
+        # continuous
         from skpro.distributions import LogNormal
 
         params_continuous_1 = {

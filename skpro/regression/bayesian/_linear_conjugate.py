@@ -103,7 +103,7 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
     }
 
     def __init__(self, coefs_prior_cov, coefs_prior_mu=None, noise_precision=1):
-        """Initialize regressor by providing coefficent priors and noise precision.
+        """Initialize regressor by providing coefficient priors and noise precision.
 
         Parameters
         ----------

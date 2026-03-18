@@ -92,6 +92,7 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
         "authors": ["ShreeshaM07"],
         "maintainers": ["ShreeshaM07"],
         "python_dependencies": "ngboost",
+        "tests:vm": True,
     }
 
     def __init__(

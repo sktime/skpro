@@ -351,7 +351,7 @@ class ResidualDouble(BaseProbaRegressor):
 
         # collate all parameters for the distribution constructor
         # distribution params, if passed
-        params = distr_params
+        params = dict(distr_params)
         # row/column index
         ix = {"index": X.index, "columns": self._y_cols}
         params.update(ix)
