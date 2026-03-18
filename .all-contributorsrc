@@ -4,9 +4,7 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "commitConvention": "none",
-  "files": [
-    "CONTRIBUTORS.md"
-  ],
+  "files": [],
   "imageSize": 100,
   "contributorsPerLine": 9,
   "contributorsSortAlphabetically": true,
@@ -245,7 +243,7 @@
       "name": "Khush Agrawal",
       "profile": "https://github.com/Khushmagrawal",
       "contributions": [
-        "code",
+        "code"
       ]
     },
     {
@@ -257,5 +255,14 @@
         "bug"
       ]
     },
+    {
+      "login": "ANANYA542",
+      "name": "ANANYA542",
+      "avatar_url": "https://avatars.githubusercontent.com/u/184496275?v=4",
+      "profile": "https://github.com/ANANYA542",
+      "contributions": [
+        "code"
+      ]
+    }
   ]
 }
