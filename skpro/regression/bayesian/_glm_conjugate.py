@@ -1,6 +1,5 @@
-"""Bayesian Conjugate GLM Regressor with Gaussian likelihood and conjugate priors."""
-
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
+"""Bayesian GLM with Gaussian likelihood and conjugate priors."""
 
 __author__ = ["arnavk23"]
 
@@ -11,12 +10,27 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class BayesianConjugateGLMRegressor(BaseProbaRegressor):
-    """
-    Bayesian GLM with Gaussian likelihood and conjugate priors.
+    r"""Bayesian GLM with Gaussian likelihood and conjugate priors.
 
-    This estimator models the relationship between features `X` and target `t` using
-    a Bayesian GLM framework with conjugate priors (multivariate normal).
-    Only Gaussian link is supported (conjugate case).
+    This estimator models the relationship between features :math:`X` and target
+    :math:`y` using a Bayesian GLM framework with conjugate priors (multivariate
+    normal). Only Gaussian link is supported (conjugate case).
+
+    The model is:
+
+    .. math::
+        y = X \beta + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \tau^{-1})
+
+    Priors:
+
+    .. math::
+        \beta \sim \mathcal{N}(\mu_0, \Sigma_0)
+
+    where :math:`\beta` is the vector of coefficients (including intercept if
+    `add_constant=True`),
+    :math:`\mu_0` and :math:`\Sigma_0` are prior mean and covariance,
+    and
+    :math:`\tau` is the noise precision.
 
     Parameters
     ----------
@@ -30,12 +44,30 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         Known precision of the Gaussian likelihood noise (inverse variance).
     add_constant : bool, default=True
         Whether to add intercept column to X.
+
+    Examples
+    --------
+    >>> from skpro.regression.bayesian._glm_conjugate \
+    ...     import BayesianConjugateGLMRegressor
+    >>> import numpy as np
+    >>> n_features = 10
+    >>> coefs_prior_cov = np.eye(n_features + 1)
+    >>> coefs_prior_mu = np.zeros((n_features + 1, 1))
+    >>> reg = BayesianConjugateGLMRegressor(
+    ...     coefs_prior_cov=coefs_prior_cov,
+    ...     coefs_prior_mu=coefs_prior_mu,
+    ...     noise_precision=1.0,
+    ...     add_constant=True
+    ... )
+
+    References
+    ----------
+    Bishop, C. M. (2006). Pattern Recognition and Machine Learning. Springer.
     """
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
-        """
-        Return valid test parameters for BayesianConjugateGLMRegressor.
+        """Return testing parameter settings for the estimator.
 
         Returns
         -------
@@ -45,7 +77,7 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         import numpy as np
 
         n_features = 10
-        # First parameter set: add_constant=True (11 coefs)
+        # Parameter set 1: add_constant=True (11 coefs)
         n_coefs1 = n_features + 1
         params1 = {
             "add_constant": True,
@@ -53,7 +85,7 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
             "coefs_prior_cov": np.eye(n_coefs1),
             "noise_precision": 1.0,
         }
-        # Second parameter set: add_constant=False (10 coefs)
+        # Parameter set 2: add_constant=False (10 coefs)
         n_coefs2 = n_features
         params2 = {
             "add_constant": False,
@@ -77,6 +109,19 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
     def __init__(
         self, coefs_prior_cov, coefs_prior_mu=None, noise_precision=1, add_constant=True
     ):
+        """Initialize BayesianConjugateGLMRegressor.
+
+        Parameters
+        ----------
+        coefs_prior_cov : 2D np.ndarray
+            Covariance matrix of the prior for intercept and coefficients.
+        coefs_prior_mu : np.ndarray, optional
+            Mean vector of the prior for intercept and coefficients.
+        noise_precision : float
+            Known precision of the Gaussian likelihood noise (inverse variance).
+        add_constant : bool, default=True
+            Whether to add intercept column to X.
+        """
         if coefs_prior_cov is None:
             raise ValueError("`coefs_prior_cov` must be provided.")
         self.coefs_prior_cov = coefs_prior_cov
@@ -97,6 +142,20 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         super().__init__()
 
     def _fit(self, X, y):
+        """Fit the Bayesian GLM to data.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Feature matrix.
+        y : pd.DataFrame
+            Target values.
+
+        Returns
+        -------
+        self : object
+            Returns self.
+        """
         self._y_cols = y.columns
         X_arr = X.copy()
         if self.add_constant:
@@ -117,6 +176,18 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         return self
 
     def _predict_proba(self, X):
+        """Return predictive distribution for input features.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Feature matrix.
+
+        Returns
+        -------
+        Normal
+            Predictive Normal distribution for each sample.
+        """
         idx = X.index
         X_arr = X.copy()
         if self.add_constant:
@@ -137,6 +208,26 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         return Normal(mu=mus, sigma=sigmas, columns=self._y_cols, index=idx)
 
     def _perform_bayesian_inference(self, X, y, coefs_prior_mu, coefs_prior_precision):
+        """Perform Bayesian inference for GLM coefficients.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            Feature matrix.
+        y : np.ndarray
+            Target values.
+        coefs_prior_mu : np.ndarray
+            Prior mean vector.
+        coefs_prior_precision : np.ndarray
+            Prior precision matrix.
+
+        Returns
+        -------
+        coefs_posterior_mu : np.ndarray
+            Posterior mean vector.
+        coefs_posterior_cov : np.ndarray
+            Posterior covariance matrix.
+        """
         coefs_posterior_precision = coefs_prior_precision + self.noise_precision * (
             X.T @ X
         )
@@ -149,12 +240,38 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         return coefs_posterior_mu, coefs_posterior_cov
 
     def _add_intercept(self, X):
+        """Add intercept column to feature matrix if not present.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Feature matrix.
+
+        Returns
+        -------
+        pd.DataFrame
+            Feature matrix with intercept column.
+        """
         if "const" not in X.columns:
             X = X.copy()
             X.insert(0, "const", 1.0)
         return X
 
     def _update(self, X, y):
+        """Online update of the model with new data.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Feature matrix.
+        y : pd.DataFrame
+            Target values.
+
+        Returns
+        -------
+        self : object
+            Returns self.
+        """
         X_arr = X.copy()
         if self.add_constant:
             X_arr = self._add_intercept(X_arr)
