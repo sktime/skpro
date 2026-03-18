@@ -325,13 +325,29 @@ def _construct_child_tree_cached(mode="class"):
         elif mode == "str":
             return cl.get_class_tags()["scitype_name"]
 
+    # when mode == "class", child_tree keys are classes; build a mapping
+    # from scitype name strings to classes to resolve parent_scitype tags
+    if mode == "class":
+        name_to_class = {cl.get_class_tags()["scitype_name"]: cl for cl in clss}
+    else:
+        name_to_class = None
+
     child_tree = {_entry_for(cl): [] for cl in clss}
     for cl in clss:
-        parent_scitype = cl.get_class_tags()["parent_scitype"]
-        if parent_scitype is not None:
-            if parent_scitype not in child_tree:
-                child_tree[parent_scitype] = []
-            child_tree[parent_scitype].append(_entry_for(cl))
+        parent_scitype_name = cl.get_class_tags()["parent_scitype"]
+        if parent_scitype_name is not None:
+            if mode == "class":
+                # resolve string parent scitype name to the corresponding class
+                parent_key = name_to_class.get(parent_scitype_name)
+                # if no corresponding class exists, skip linking to avoid
+                # mixing string and class keys in child_tree
+                if parent_key is None:
+                    continue
+            else:
+                parent_key = parent_scitype_name
+            if parent_key not in child_tree:
+                child_tree[parent_key] = []
+            child_tree[parent_key].append(_entry_for(cl))
 
     return child_tree
 
