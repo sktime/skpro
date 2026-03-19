@@ -248,9 +248,7 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
                 raise ValueError("Cannot infer n_coefs for synthetic prior.")
             pseudo_X = np.eye(n_coefs)
             pseudo_precision = prior_strength * self.noise_precision
-            coefs_prior_cov = np.linalg.inv(
-                pseudo_precision * (pseudo_X.T @ pseudo_X)
-            )
+            coefs_prior_cov = np.linalg.inv(pseudo_precision * (pseudo_X.T @ pseudo_X))
             coefs_prior_precision = pseudo_precision * (pseudo_X.T @ pseudo_X)
             coefs_prior_mu = np.zeros((n_coefs, 1))
         elif prior_type == "gprior":
