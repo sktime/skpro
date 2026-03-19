@@ -152,39 +152,32 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         prior_strength=1.0,
         g=None,
     ):
+        self.coefs_prior_cov = coefs_prior_cov
+        self.coefs_prior_mu = coefs_prior_mu
+        self.noise_precision = noise_precision
+        self.add_constant = add_constant
+        self.coefs_prior_precision = coefs_prior_precision
+        self.ard = ard
+        self.ard_lambda = ard_lambda
         self.noise_prior_shape = noise_prior_shape
         self.noise_prior_rate = noise_prior_rate
         self.prior_type = prior_type
         self.prior_strength = prior_strength
         self.g = g
-        """Initialize BayesianConjugateGLMRegressor.
 
-        Parameters
-        ----------
-        coefs_prior_cov : 2D np.ndarray
-            Covariance matrix of the prior for intercept and coefficients.
-        coefs_prior_mu : np.ndarray, optional
-            Mean vector of the prior for intercept and coefficients.
-        noise_precision : float
-            Known precision of the Gaussian likelihood noise (inverse variance).
-        add_constant : bool, default=True
-            Whether to add intercept column to X.
-        """
         # Prior covariance or precision
         if self.prior_type == "synthetic":
-            # Synthetic prior: construct from pseudo-data
             n_coefs = (
                 coefs_prior_cov.shape[0]
                 if coefs_prior_cov is not None
                 else (
                     coefs_prior_precision.shape[0]
                     if coefs_prior_precision is not None
-                    else (len(ard_lambda) if ard else None)
+                    else (len(ard_lambda) if ard_lambda is not None else None)
                 )
             )
             if n_coefs is None:
                 raise ValueError("Cannot infer n_coefs for synthetic prior.")
-            # Pseudo-data: zero-centered, prior_strength controls informativeness
             pseudo_X = np.eye(n_coefs)
             pseudo_precision = self.prior_strength * self.noise_precision
             self.coefs_prior_cov = np.linalg.inv(
@@ -193,7 +186,6 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
             self.coefs_prior_precision = pseudo_precision * (pseudo_X.T @ pseudo_X)
             self.coefs_prior_mu = np.zeros((n_coefs, 1))
         elif self.prior_type == "gprior":
-            # Zellner's g-prior: prior covariance = (g / n) * (X^T X)^{-1}
             if g is None:
                 raise ValueError("Must provide g for g-prior.")
             n_coefs = (
@@ -202,7 +194,7 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
                 else (
                     coefs_prior_precision.shape[0]
                     if coefs_prior_precision is not None
-                    else (len(ard_lambda) if ard else None)
+                    else (len(ard_lambda) if ard_lambda is not None else None)
                 )
             )
             if n_coefs is None:
@@ -215,37 +207,11 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
             self.coefs_prior_cov = (self.g / n) * np.linalg.inv(XTX)
             self.coefs_prior_precision = np.linalg.inv(self.coefs_prior_cov)
             self.coefs_prior_mu = np.zeros((n_coefs, 1))
-
-            def _posterior_predictive_check(self, X=None, n_samples=100):
-                """Generate posterior predictive samples for model criticism (PPC).
-
-                Parameters
-                ----------
-                X : pd.DataFrame or np.ndarray, optional
-                    Feature matrix. If None, uses training data.
-                n_samples : int, default=100
-                    Number of replicated datasets to generate.
-
-                Returns
-                -------
-                np.ndarray
-                    Replicated datasets (n_samples, n_obs, n_targets).
-                """
-                if X is None:
-                    X = self._X_train
-                else:
-                    if hasattr(X, "to_numpy"):
-                        X = X.to_numpy(dtype=float)
-                pred_dist = self._predict_proba(X)
-                samples = pred_dist.sample(n_samples)
-                return samples
-
         elif coefs_prior_cov is None and coefs_prior_precision is None and not ard:
             raise ValueError(
                 "Must provide prior covariance, precision, or set ard=True."
             )
         elif ard:
-            # ARD prior: diagonal precision matrix
             if ard_lambda is None:
                 raise ValueError(
                     "ard_lambda (array of prior precisions) must be provided for ARD."
@@ -273,10 +239,43 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
             raise ValueError(
                 "Dimensionality of `coefs_prior_mu` and `coefs_prior_cov` must match."
             )
-        self.noise_precision = noise_precision
-        self.add_constant = add_constant
-        self.ard = ard
         super().__init__()
+
+    def _posterior_predictive_check(self, X=None, n_samples=100):
+        """Generate posterior predictive samples for model criticism (PPC).
+
+        Parameters
+        ----------
+        X : pd.DataFrame or np.ndarray, optional
+            Feature matrix. If None, uses training data.
+        n_samples : int, default=100
+            Number of replicated datasets to generate.
+
+        Returns
+        -------
+        np.ndarray
+            Replicated datasets (n_samples, n_obs, n_targets).
+        """
+        import pandas as pd
+
+        if X is None:
+            X = self._X_train
+        elif isinstance(X, np.ndarray):
+            # Use training columns if available
+            if hasattr(self, "_y_cols"):
+                columns = self._y_cols
+            elif hasattr(self, "_X_train") and hasattr(self._X_train, "columns"):
+                columns = self._X_train.columns
+            else:
+                columns = [f"x{i}" for i in range(X.shape[1])]
+            X = pd.DataFrame(X, columns=columns)
+        pred_dist = self._predict_proba(X)
+        samples_df = pred_dist.sample(n_samples)
+        n_obs = X.shape[0]
+        n_targets = samples_df.shape[1]
+        # samples_df is (n_samples * n_obs, n_targets)
+        samples_arr = samples_df.to_numpy().reshape(n_samples, n_obs, n_targets)
+        return samples_arr
 
     def _fit(self, X, y):
         """Fit the Bayesian GLM to data.
