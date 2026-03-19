@@ -164,81 +164,6 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         self.prior_type = prior_type
         self.prior_strength = prior_strength
         self.g = g
-
-        # Prior covariance or precision
-        if self.prior_type == "synthetic":
-            n_coefs = (
-                coefs_prior_cov.shape[0]
-                if coefs_prior_cov is not None
-                else (
-                    coefs_prior_precision.shape[0]
-                    if coefs_prior_precision is not None
-                    else (len(ard_lambda) if ard_lambda is not None else None)
-                )
-            )
-            if n_coefs is None:
-                raise ValueError("Cannot infer n_coefs for synthetic prior.")
-            pseudo_X = np.eye(n_coefs)
-            pseudo_precision = self.prior_strength * self.noise_precision
-            self.coefs_prior_cov = np.linalg.inv(
-                pseudo_precision * (pseudo_X.T @ pseudo_X)
-            )
-            self.coefs_prior_precision = pseudo_precision * (pseudo_X.T @ pseudo_X)
-            self.coefs_prior_mu = np.zeros((n_coefs, 1))
-        elif self.prior_type == "gprior":
-            if g is None:
-                raise ValueError("Must provide g for g-prior.")
-            n_coefs = (
-                coefs_prior_cov.shape[0]
-                if coefs_prior_cov is not None
-                else (
-                    coefs_prior_precision.shape[0]
-                    if coefs_prior_precision is not None
-                    else (len(ard_lambda) if ard_lambda is not None else None)
-                )
-            )
-            if n_coefs is None:
-                raise ValueError("Cannot infer n_coefs for g-prior.")
-            try:
-                XTX = self._X_train.T @ self._X_train
-            except AttributeError:
-                XTX = np.eye(n_coefs)
-            n = XTX.shape[0]
-            self.coefs_prior_cov = (self.g / n) * np.linalg.inv(XTX)
-            self.coefs_prior_precision = np.linalg.inv(self.coefs_prior_cov)
-            self.coefs_prior_mu = np.zeros((n_coefs, 1))
-        elif coefs_prior_cov is None and coefs_prior_precision is None and not ard:
-            raise ValueError(
-                "Must provide prior covariance, precision, or set ard=True."
-            )
-        elif ard:
-            if ard_lambda is None:
-                raise ValueError(
-                    "ard_lambda (array of prior precisions) must be provided for ARD."
-                )
-            self.coefs_prior_precision = np.diag(ard_lambda)
-            self.coefs_prior_cov = np.linalg.inv(self.coefs_prior_precision)
-            self.coefs_prior_mu = np.zeros((len(ard_lambda), 1))
-        elif coefs_prior_precision is not None:
-            self.coefs_prior_precision = coefs_prior_precision
-            self.coefs_prior_cov = np.linalg.inv(coefs_prior_precision)
-            self.coefs_prior_mu = (
-                coefs_prior_mu
-                if coefs_prior_mu is not None
-                else np.zeros((self.coefs_prior_cov.shape[0], 1))
-            )
-        else:
-            self.coefs_prior_cov = coefs_prior_cov
-            self.coefs_prior_precision = np.linalg.inv(coefs_prior_cov)
-            self.coefs_prior_mu = (
-                coefs_prior_mu
-                if coefs_prior_mu is not None
-                else np.zeros((self.coefs_prior_cov.shape[0], 1))
-            )
-        if self.coefs_prior_mu.shape[0] != self.coefs_prior_cov.shape[0]:
-            raise ValueError(
-                "Dimensionality of `coefs_prior_mu` and `coefs_prior_cov` must match."
-            )
         super().__init__()
 
     def _posterior_predictive_check(self, X=None, n_samples=100):
@@ -298,9 +223,91 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
             X_arr = self._add_intercept(X_arr)
         X_arr = X_arr.to_numpy(dtype=float)
         y_arr = y.to_numpy(dtype=float)
-        self._coefs_prior_mu = self.coefs_prior_mu
-        self._coefs_prior_cov = self.coefs_prior_cov
-        self._coefs_prior_precision = np.linalg.inv(self.coefs_prior_cov)
+
+        # Prior construction logic (moved from __init__)
+        coefs_prior_cov = self.coefs_prior_cov
+        coefs_prior_mu = self.coefs_prior_mu
+        coefs_prior_precision = self.coefs_prior_precision
+        ard = self.ard
+        ard_lambda = self.ard_lambda
+        prior_type = self.prior_type
+        prior_strength = self.prior_strength
+        g = self.g
+
+        if prior_type == "synthetic":
+            n_coefs = (
+                coefs_prior_cov.shape[0]
+                if coefs_prior_cov is not None
+                else (
+                    coefs_prior_precision.shape[0]
+                    if coefs_prior_precision is not None
+                    else (len(ard_lambda) if ard_lambda is not None else None)
+                )
+            )
+            if n_coefs is None:
+                raise ValueError("Cannot infer n_coefs for synthetic prior.")
+            pseudo_X = np.eye(n_coefs)
+            pseudo_precision = prior_strength * self.noise_precision
+            coefs_prior_cov = np.linalg.inv(
+                pseudo_precision * (pseudo_X.T @ pseudo_X)
+            )
+            coefs_prior_precision = pseudo_precision * (pseudo_X.T @ pseudo_X)
+            coefs_prior_mu = np.zeros((n_coefs, 1))
+        elif prior_type == "gprior":
+            if g is None:
+                raise ValueError("Must provide g for g-prior.")
+            n_coefs = (
+                coefs_prior_cov.shape[0]
+                if coefs_prior_cov is not None
+                else (
+                    coefs_prior_precision.shape[0]
+                    if coefs_prior_precision is not None
+                    else (len(ard_lambda) if ard_lambda is not None else None)
+                )
+            )
+            if n_coefs is None:
+                raise ValueError("Cannot infer n_coefs for g-prior.")
+            XTX = X_arr.T @ X_arr
+            n = XTX.shape[0]
+            coefs_prior_cov = (g / n) * np.linalg.inv(XTX)
+            coefs_prior_precision = np.linalg.inv(coefs_prior_cov)
+            coefs_prior_mu = np.zeros((n_coefs, 1))
+        elif coefs_prior_cov is None and coefs_prior_precision is None and not ard:
+            raise ValueError(
+                "Must provide prior covariance, precision, or set ard=True."
+            )
+        elif ard:
+            if ard_lambda is None:
+                raise ValueError(
+                    "ard_lambda (array of prior precisions) must be provided for ARD."
+                )
+            coefs_prior_precision = np.diag(ard_lambda)
+            coefs_prior_cov = np.linalg.inv(coefs_prior_precision)
+            coefs_prior_mu = np.zeros((len(ard_lambda), 1))
+        elif coefs_prior_precision is not None:
+            coefs_prior_precision = coefs_prior_precision
+            coefs_prior_cov = np.linalg.inv(coefs_prior_precision)
+            coefs_prior_mu = (
+                coefs_prior_mu
+                if coefs_prior_mu is not None
+                else np.zeros((coefs_prior_cov.shape[0], 1))
+            )
+        else:
+            coefs_prior_cov = coefs_prior_cov
+            coefs_prior_precision = np.linalg.inv(coefs_prior_cov)
+            coefs_prior_mu = (
+                coefs_prior_mu
+                if coefs_prior_mu is not None
+                else np.zeros((coefs_prior_cov.shape[0], 1))
+            )
+        if coefs_prior_mu.shape[0] != coefs_prior_cov.shape[0]:
+            raise ValueError(
+                "Dimensionality of `coefs_prior_mu` and `coefs_prior_cov` must match."
+            )
+
+        self._coefs_prior_mu = coefs_prior_mu
+        self._coefs_prior_cov = coefs_prior_cov
+        self._coefs_prior_precision = np.linalg.inv(coefs_prior_cov)
         self._X_train = X_arr
         self._y_train = y_arr
         (
