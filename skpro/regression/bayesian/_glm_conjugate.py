@@ -486,10 +486,9 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         X_arr = X_arr.to_numpy(dtype=float)
         y_arr = y.to_numpy(dtype=float)
         coefs_prior_precision = np.linalg.inv(self._coefs_posterior_cov)
-        (
-            self._coefs_posterior_mu,
-            self._coefs_posterior_cov,
-        ) = self._perform_bayesian_inference(
+        results = self._perform_bayesian_inference(
             X_arr, y_arr, self._coefs_posterior_mu, coefs_prior_precision
         )
+        self._coefs_posterior_mu = results[0]
+        self._coefs_posterior_cov = results[1]
         return self
