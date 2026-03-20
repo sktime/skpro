@@ -52,7 +52,7 @@ all_extras = [
     "lifelines<0.31.0; python_version < '3.13'",
     "matplotlib>=3.3.2",
     "polars<1.37.0",
-    "pymc",
+    "pymc; python_version < '3.13'",
     "statsmodels>=0.12.1",
     "pymc-extras; python_version < '3.13'",
 ]
@@ -68,7 +68,6 @@ dev = [
     "pytest-xdist",
     "wheel",
 ]
-
 
 binder = [
     "jupyter",
