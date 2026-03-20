@@ -256,8 +256,8 @@ jobs:
         shell: pwsh
         run: echo "MPLBACKEND=Agg" >> $env:GITHUB_ENV
 
-      - name: Install skpro with all extras
-        run: uv pip install .[all_extras,binder,dev,bayesian]
+      - name: Install skpro with dev dependencies
+        run: uv pip install .[dev]
         env:
           UV_SYSTEM_PYTHON: 1
 
