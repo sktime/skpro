@@ -44,7 +44,7 @@ class BayesianLinearClosedFormRegressor(BaseBayesianRegressor):
     """
 
     _tags = {
-        "authors": ["skpro developers"],
+        "authors": ["arnavk23"],
         "python_version": ">=3.10",
         "capability:multioutput": False,
         "capability:missing": True,
