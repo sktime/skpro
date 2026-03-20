@@ -78,6 +78,7 @@ class DummyProbaRegressor(BaseProbaRegressor):
         self._y_columns = y.columns
         self._mu = np.mean(y.values)
         self._sigma = np.std(y.values)
+        self._var = np.var(y.values)
         if self.strategy == "empirical":
             self.distribution_ = Empirical(y)
         if self.strategy == "normal":
@@ -126,7 +127,7 @@ class DummyProbaRegressor(BaseProbaRegressor):
         X_ind = X.index
         X_n_rows = X.shape[0]
         y_pred = pd.DataFrame(
-            np.ones(X_n_rows) * self._sigma, index=X_ind, columns=self._y_columns
+            np.ones(X_n_rows) * self._var, index=X_ind, columns=self._y_columns
         )
         return y_pred
 
