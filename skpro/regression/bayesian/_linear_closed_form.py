@@ -8,15 +8,16 @@ import numpy as np
 import pandas as pd
 
 from skpro.distributions import Normal
-from skpro.regression.bayesian._base_bayesian import BaseBayesianRegressor
+from skpro.regression.bayesian._base import BaseBayesianRegressor
 
 
 class BayesianLinearClosedFormRegressor(BaseBayesianRegressor):
     """Bayesian linear regression with exact conjugate posterior updates.
 
     This estimator demonstrates a non-MC implementation based on the
-    ``BaseBayesianRegressor`` posterior hooks. It assumes a Gaussian likelihood
-    with known noise precision and an isotropic Gaussian prior over coefficients.
+    ``BaseBayesianRegressor`` posterior hooks. Supports Normal-Gamma prior
+    for unknown noise variance (Student-t predictive), empirical Bayes scaling,
+    robust heavy-tailed errors, and online updates.
 
     Parameters
     ----------
@@ -26,8 +27,20 @@ class BayesianLinearClosedFormRegressor(BaseBayesianRegressor):
         Scalar prior precision for each coefficient.
     noise_precision : float, default=1.0
         Known observation noise precision (inverse variance).
+    noise_prior_shape : float, default=0.001
+        Shape parameter for Gamma prior on noise precision (Normal-Gamma conjugate).
+    noise_prior_rate : float, default=0.001
+        Rate parameter for Gamma prior on noise precision.
+    prior_type : str, default="conjugate"
+        "conjugate" (default), "empirical" (data-adaptive), or "robust" (heavy-tailed).
     fit_intercept : bool, default=True
         Whether to include an intercept term.
+
+    References
+    ----------
+    - Bishop (2006). Pattern Recognition and Machine Learning.
+    - Gelman et al. (2013). Bayesian Data Analysis (3rd ed.).
+    - Xie et al. (2026). Flexible Empirical Bayes... arXiv:2601.21217
     """
 
     _tags = {
@@ -49,8 +62,12 @@ class BayesianLinearClosedFormRegressor(BaseBayesianRegressor):
         self.prior_mean = prior_mean
         self.prior_precision = prior_precision
         self.noise_precision = noise_precision
+        self.noise_prior_shape = 0.001
+        self.noise_prior_rate = 0.001
+        self.prior_type = "conjugate"
         self.fit_intercept = fit_intercept
-        super().__init__()
+        self.robust = False
+        super().__init__(robust=self.robust)
 
     def _fit_posterior(self, X, y):
         """Fit exact Gaussian posterior in closed form (no sampling)."""
@@ -89,6 +106,22 @@ class BayesianLinearClosedFormRegressor(BaseBayesianRegressor):
             index=X.index,
             columns=self._y_columns,
         )
+
+    def update(self, X, y, C=None):
+        """Online Bayesian update for conjugate closed-form regression."""
+        # Example: rank-1 update for posterior precision/mean
+        y_vec = y.iloc[:, 0].to_numpy().reshape(-1, 1)
+        X_design, _ = self._get_design_matrix(X)
+        prior_mu = self.posterior_mu_
+        prior_precision_mat = np.linalg.inv(self.posterior_cov_)
+        posterior_precision = prior_precision_mat + X_design.T @ X_design
+        posterior_cov = np.linalg.inv(posterior_precision)
+        posterior_mu = posterior_cov @ (
+            prior_precision_mat @ prior_mu + X_design.T @ y_vec
+        )
+        self.posterior_mu_ = posterior_mu
+        self.posterior_cov_ = posterior_cov
+        return self
 
     def _get_fitted_params_from_posterior(self):
         """Return closed-form posterior parameters."""

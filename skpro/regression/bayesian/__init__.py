@@ -8,7 +8,7 @@ __all__ = [
     "BayesianLinearRegressor",
 ]
 
-from skpro.regression.bayesian._base_bayesian import BaseBayesianRegressor
+from skpro.regression.bayesian._base import BaseBayesianRegressor
 from skpro.regression.bayesian._linear_closed_form import (
     BayesianLinearClosedFormRegressor,
 )

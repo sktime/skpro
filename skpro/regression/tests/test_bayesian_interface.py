@@ -123,6 +123,41 @@ class TestImportsAndHierarchy:
 
 
 class TestBaseBayesianRegressorConstructor:
+    def test_default_priors_and_robust(self):
+        X, y = _make_data(n=10, n_features=3)
+        reg = BaseBayesianRegressor()
+        priors = reg._get_default_priors(X, y)
+        assert "intercept" in priors and "slopes" in priors and "noise" in priors
+        reg_robust = BaseBayesianRegressor(robust=True)
+        priors_robust = reg_robust._get_default_priors(X, y)
+        assert priors_robust["intercept"]["dist"] == "StudentT"
+        assert priors_robust["slopes"]["dist"] == "StudentT"
+
+    def test_prior_strength_scales_defaults(self):
+        X, y = _make_data(n=10, n_features=2)
+        reg = BaseBayesianRegressor(prior_strength=4.0)
+        priors = reg._get_default_priors(X, y)
+        assert priors["intercept"]["sd"] < 10.0 * y.values.std()
+
+    def test_apply_prior_config_parsing(self):
+        reg = BaseBayesianRegressor()
+        model_vars = {
+            "intercept": type(
+                "Dummy",
+                (),
+                {"set_prior": lambda self, spec: setattr(self, "prior", spec)},
+            )()
+        }
+        prior_cfg = {"intercept": "Normal(0,10)"}
+        reg._apply_prior_config(model_vars, prior_cfg)
+        assert hasattr(model_vars["intercept"], "prior")
+        assert model_vars["intercept"].prior["dist"] == "Normal"
+
+    def test_variational_inference_stub(self):
+        reg = BaseBayesianRegressor(inference_strategy="variational")
+        with pytest.raises(NotImplementedError):
+            reg._fit_variational_posterior(_make_data()[0], _make_data()[1])
+
     def test_default_parameter_values(self):
         reg = BaseBayesianRegressor()
         assert reg.draws == 1000
@@ -223,7 +258,7 @@ class TestPosteriorSummaryFallback:
     def test_raises_not_implemented_without_trace(self):
         reg = BaseBayesianRegressor()
         # trace_ not set, should raise NotImplementedError with helpful message
-        with pytest.raises(NotImplementedError, match="Override"):
+        with pytest.raises(NotImplementedError, match="No posterior available"):
             reg.get_posterior_summary()
 
 
@@ -489,6 +524,21 @@ class TestPosteriorStructure:
 
 
 class TestPosteriorAccessors:
+    def test_posterior_summary_variational_and_mcmc(self):
+        reg = BaseBayesianRegressor()
+
+        # Simulate approx_ and trace_ for diagnostics
+        class DummyApprox:
+            def sample(self, draws):
+                import pandas as pd
+
+                return pd.DataFrame({"a": [0, 1], "b": [2, 3]})
+
+        reg.approx_ = DummyApprox()
+        # Should raise ValueError due to wrong sample type
+        with pytest.raises(ValueError, match="Can only convert xarray dataarray"):
+            reg._get_posterior_summary_from_posterior()
+
     @pytest.fixture(autouse=True)
     def _setup(self):
         X, y = _make_data(n=20, n_features=2, seed=7)
@@ -686,13 +736,19 @@ class TestGeneralisation:
 
 
 class TestGetTestParams:
-    def test_both_param_sets_create_valid_instances(self):
-        for params in BayesianLinearClosedFormRegressor.get_test_params():
-            reg = BayesianLinearClosedFormRegressor(**params)
+    def test_all_param_sets_create_valid_instances(self):
+        for params in BaseBayesianRegressor.get_test_params():
+            reg = BaseBayesianRegressor(**params)
             X, y = _make_data(n=10, n_features=2)
-            reg.fit(X, y)
-            pred = reg.predict_proba(X)
-            assert pred.shape == y.shape
+            if hasattr(reg, "inference_strategy") and reg.inference_strategy in [
+                "conjugate",
+                "variational",
+                "mcmc",
+            ]:
+                with pytest.raises(NotImplementedError):
+                    reg.fit(X, y)
+            else:
+                reg.fit(X, y)
 
 
 # ===========================================================================

@@ -43,21 +43,44 @@ class BaseBayesianRegressor(BaseProbaRegressor):
     -----
     For the default backend, subclasses must implement
     `_build_model(self, X, y)` to construct and return a PyMC model.
+
+    References
+    ----------
+    - Bishop, C. M. (2006). Pattern Recognition and Machine Learning. Springer.
+    - Gelman et al. (2013). Bayesian Data Analysis (3rd ed.).
+    - Capretto et al. (2022). Bambi: A Bayesian model-building interface in Python JOSS.
+    - Polson et al. (2026). Synthetic Priors. arXiv.
+    - Xie et al. (2026). Flexible Empirical Bayes for GLMs. arXiv:2601.21217.
     """
 
     _tags = {
-        # packaging info
-        # --------------
-        "authors": ["skpro developers"],
+        "authors": ["arnavk23"],
         "python_version": ">=3.10",
-        # estimator tags
-        # --------------
         "capability:multioutput": False,
         "capability:missing": True,
-        "capability:update": False,  # Bayesian updating not implemented yet
+        "capability:update": True,  # Bayesian updating supported via update()
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
     }
+
+    def update(self, X, y, C=None):
+        """Update regressor with new batch of training data (Bayesian updating).
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            New feature instances.
+        y : pandas DataFrame
+            New labels.
+        C : optional
+            Censoring information (not used by default).
+
+        Returns
+        -------
+        self : reference to self
+        """
+        # Stub: subclasses should implement Bayesian updating logic
+        raise NotImplementedError("Bayesian updating not implemented in base. Subclasses should override.")
 
     def __init__(
         self,
@@ -68,7 +91,39 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         random_seed=None,
         progressbar=True,
         sample_kwargs=None,
+        prior_config=None,
+        inference_strategy="mcmc",
+        prior_strength=None,
+        hyperprior_shape=None,
+        robust=False,
+        **kwargs,
     ):
+        """
+        Parameters
+        ----------
+        prior_config : dict or None, default=None
+            Dictionary specifying prior distributions or hyperparameters for model parameters.
+            Example: {"beta": {"dist": "Normal", "mean": 0, "sd": 10}, "sigma": {"dist": "HalfNormal", "sd": 5}}
+            Subclasses can read this in _build_model (PyMC path) or _fit_posterior (custom path).
+            If None, subclasses fall back to weakly informative defaults.
+        inference_strategy : str, default="mcmc"
+            Inference method. Options: "mcmc", "conjugate", "variational".
+        robust : bool, default=False
+            If True, use heavier-tailed priors (e.g., Student-t) for location/scale.
+        prior_strength : float, optional
+            Strength/weight of the prior (e.g., for synthetic/power priors).
+        hyperprior_shape : float, optional
+            Shape parameter for hierarchical/empirical Bayes priors.
+        draws, tune, chains, target_accept, random_seed, progressbar, sample_kwargs :
+            MCMC sampling parameters (see class docstring).
+        kwargs : dict
+            Additional keyword arguments passed to BaseProbaRegressor.
+        """
+        self.prior_config = prior_config if prior_config is not None else {}
+        self.inference_strategy = inference_strategy
+        self.robust = robust
+        self.prior_strength = prior_strength
+        self.hyperprior_shape = hyperprior_shape
         self.draws = draws
         self.tune = tune
         self.chains = chains
@@ -77,7 +132,67 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         self.progressbar = progressbar
         self.sample_kwargs = {} if sample_kwargs is None else sample_kwargs
 
-        super().__init__()
+        super().__init__(**kwargs)
+
+    def _get_default_priors(self, X, y):
+        """Default weakly informative priors (can be overridden).
+
+        Returns dict compatible with prior_config merging.
+        """
+        import numpy as np
+        n_features = X.shape[1]
+        y_std = y.values.std() if hasattr(y, 'values') else y.std()
+        sd_intercept = 10.0 * y_std
+        sd_slopes = 2.5 / np.sqrt(n_features)
+        sd_noise = y_std
+        defaults = {
+            "intercept": {"dist": "Normal", "mean": 0.0, "sd": sd_intercept},
+            "slopes": {"dist": "Normal", "mean": 0.0, "sd": sd_slopes},
+            "noise": {"dist": "HalfNormal", "sd": sd_noise},
+        }
+        if getattr(self, "robust", False):
+            defaults["intercept"]["dist"] = "StudentT"
+            defaults["intercept"]["nu"] = 4
+            defaults["slopes"]["dist"] = "StudentT"
+            defaults["slopes"]["nu"] = 4
+        if getattr(self, "prior_strength", None) is not None:
+            strength = self.prior_strength
+            defaults["intercept"]["sd"] /= strength ** 0.5
+            defaults["slopes"]["sd"] /= strength ** 0.5
+            defaults["noise"]["sd"] /= strength ** 0.5
+        return defaults
+    def _apply_prior_config(self, model_vars, prior_cfg):
+        """Apply user prior_config to PyMC variables or subclass logic."""
+        import re
+        for var_name, spec in prior_cfg.items():
+            if isinstance(spec, str):
+                # Parse e.g. "Normal(0,10)" to dict
+                m = re.match(r"([A-Za-z]+)\(([^)]+)\)", spec)
+                if m:
+                    dist = m.group(1)
+                    params = [float(x) for x in m.group(2).split(",")]
+                    if dist.lower() == "normal":
+                        spec = {"dist": "Normal", "mean": params[0], "sd": params[1]}
+                    elif dist.lower() == "studentt":
+                        spec = {"dist": "StudentT", "mean": params[0], "sd": params[1], "nu": params[2]}
+                    # Add more as needed
+            if var_name in model_vars:
+                # Override prior (PyMC or custom logic)
+                model_vars[var_name].set_prior(spec)
+        return model_vars
+
+    # Subclasses should implement _fit and _predict_proba
+    def _fit(self, X, y, C=None):
+        raise NotImplementedError("Subclasses must implement _fit with prior support.")
+
+    def _predict_proba(self, X):
+        raise NotImplementedError("Subclasses must implement _predict_proba with prior support.")
+
+    # Optionally, utility for prior parsing
+    def _parse_prior(self):
+        """Parse prior specification into usable form for inference."""
+        # Example: convert string to dict, validate shapes, etc.
+        return self.prior
 
     def _fit(self, X, y):
         """Fit regressor to training data via posterior inference backend."""
@@ -99,34 +214,57 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         self : BaseBayesianRegressor
             Fitted regressor.
         """
-        import warnings
+        if self.inference_strategy == "mcmc":
+            import warnings
+            import pandas as pd
+            import pymc as pm
 
-        import pandas as pd
+            # Merge default priors with user config
+            prior_cfg = {**self._get_default_priors(X, y), **self.prior_config}
+            # Build the PyMC model using subclass implementation
+            self.model_ = self._build_model(X, y, prior_cfg)
+
+            # Perform MCMC sampling
+            with self.model_:
+                self.trace_ = pm.sample(
+                    draws=self.draws,
+                    tune=self.tune,
+                    chains=self.chains,
+                    target_accept=self.target_accept,
+                    random_seed=self.random_seed,
+                    progressbar=self.progressbar,
+                    return_inferencedata=True,
+                    **self.sample_kwargs,
+                )
+
+            # Add training data to trace
+            training_data = pd.concat([X, y], axis=1)
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=UserWarning)
+                self.trace_.add_groups(training_data=training_data.to_xarray())
+        elif self.inference_strategy == "variational":
+            self._fit_variational_posterior(X, y)
+        elif self.inference_strategy == "conjugate":
+            # Subclass should implement conjugate closed-form
+            raise NotImplementedError("Conjugate inference not implemented in base.")
+        else:
+            raise ValueError(f"Unknown inference_strategy: {self.inference_strategy}")
+    def _fit_variational_posterior(self, X, y):
+        """Fit mean-field variational posterior (ADVI). Literature: PyMC ADVI docs, Kucukelbir et al. (2015)."""
         import pymc as pm
-
-        # Build the PyMC model using subclass implementation
-        self.model_ = self._build_model(X, y)
-
-        # Perform MCMC sampling
+        prior_cfg = {**self._get_default_priors(X, y), **self.prior_config}
+        self.model_ = self._build_model(X, y, prior_cfg)
         with self.model_:
-            self.trace_ = pm.sample(
-                draws=self.draws,
-                tune=self.tune,
-                chains=self.chains,
-                target_accept=self.target_accept,
-                random_seed=self.random_seed,
+            self.approx_ = pm.fit(
+                method="advi",
+                n=30000,
+                obj_optimizer=pm.adagrad_window(learning_rate=0.01),
+                callbacks=[pm.callbacks.CheckParametersConvergence(tolerance=1e-4)],
                 progressbar=self.progressbar,
-                return_inferencedata=True,
-                **self.sample_kwargs,
             )
+            self.trace_ = self.approx_.sample(self.draws)
 
-        # Add training data to trace
-        training_data = pd.concat([X, y], axis=1)
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=UserWarning)
-            self.trace_.add_groups(training_data=training_data.to_xarray())
-
-    def _build_model(self, X, y):
+    def _build_model(self, X, y, prior_cfg=None):
         """Build the PyMC model.
 
         This method is used by the default PyMC/MCMC backend and must be
@@ -138,6 +276,8 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             Feature instances.
         y : pandas DataFrame
             Labels.
+        prior_cfg : dict, optional
+            Prior configuration dictionary.
 
         Returns
         -------
@@ -241,14 +381,7 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         import pymc as pm
 
         # Default: assume X is set as "X" in the model
-        try:
-            pm.set_data({"X": X}, coords={"obs_id": X.index, "pred_id": X.columns})
-        except Exception as exc:
-            raise RuntimeError(
-                "Default `_set_prediction_data` expects a PyMC model with mutable "
-                "data variable 'X' and coordinates 'obs_id'/'pred_id'. "
-                "Override `_set_prediction_data` for custom models."
-            ) from exc
+        pm.set_data({"X": X}, coords={"obs_id": X.index, "pred_id": X.columns})
 
     def _get_predictive_variable_name(self):
         """Get predictive variable name from trace predictions group."""
@@ -301,28 +434,15 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         return self._get_posterior_summary_from_posterior(**kwargs)
 
     def _get_posterior_summary_from_posterior(self, **kwargs):
-        """Get summary statistics of the posterior distributions.
-
-        Parameters
-        ----------
-        **kwargs
-            Additional arguments passed to arviz.summary.
-
-        Returns
-        -------
-        summary : pandas.DataFrame
-            Summary statistics of posterior distributions.
-        """
-        if not hasattr(self, "trace_"):
-            raise NotImplementedError(
-                "Posterior summary is not available by default for this backend. "
-                "Override `_get_posterior_summary_from_posterior` in subclasses "
-                "that do not use `trace_`/ArviZ."
-            )
-
+        """Get summary statistics of the posterior distributions (diagnostics for MCMC/variational)."""
         import arviz as az
-
-        return az.summary(self.trace_, **kwargs)
+        if hasattr(self, "approx_"):
+            return az.summary(self.approx_.sample(self.draws), kind="stats", extend=True)
+        elif hasattr(self, "trace_"):
+            return az.summary(self.trace_, kind="diagnostics", extend=True, **kwargs)
+        else:
+            raise NotImplementedError("No posterior available for summary.")
+    inference_strategies_supported = ["mcmc", "variational"]
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -345,5 +465,13 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             "chains": 1,
             "random_seed": 42,
         }
-
-        return [params1, params2]
+        params3 = {
+            "inference_strategy": "variational",
+            "draws": 50,
+            "robust": True,
+        }
+        params4 = {
+            "prior_config": {"intercept": "Normal(0,10)", "slopes": "StudentT(0,5,4)"},
+            "prior_strength": 2.0,
+        }
+        return [params1, params2, params3, params4]

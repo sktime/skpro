@@ -10,7 +10,7 @@ __author__ = ["meraldoantonio"]
 
 from skbase.utils.dependencies import _check_soft_dependencies
 
-from skpro.regression.bayesian._base_bayesian import BaseBayesianRegressor
+from skpro.regression.bayesian._base import BaseBayesianRegressor
 
 
 class BayesianLinearRegressor(BaseBayesianRegressor):
