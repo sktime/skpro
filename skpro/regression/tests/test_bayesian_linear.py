@@ -213,7 +213,10 @@ class TestPosteriorStructure:
 
 
 class TestPosteriorAccessors:
-    @pytest.mark.skipif(not _check_soft_dependencies("arviz", severity="none"), reason="arviz not installed")
+    @pytest.mark.skipif(
+        not _check_soft_dependencies("arviz", severity="none"),
+        reason="arviz not installed",
+    )
     def test_posterior_summary_variational_and_mcmc(self):
         from skpro.regression.bayesian import BaseBayesianRegressor
 
