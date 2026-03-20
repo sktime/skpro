@@ -162,7 +162,7 @@ jobs:
 
       - name: Install skpro and dependencies
         shell: bash
-        run: uv pip install .[all_extras,binder,dev] --no-cache-dir
+        run: uv pip install .[dev] --no-cache-dir
         env:
           UV_SYSTEM_PYTHON: 1
 
@@ -257,7 +257,7 @@ jobs:
         run: echo "MPLBACKEND=Agg" >> $env:GITHUB_ENV
 
       - name: Install skpro with all extras
-        run: uv pip install .[all_extras,binder,dev]
+        run: uv pip install .[all_extras,binder,dev,bayesian]
         env:
           UV_SYSTEM_PYTHON: 1
 
