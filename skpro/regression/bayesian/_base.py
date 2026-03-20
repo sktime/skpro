@@ -80,7 +80,9 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         self : reference to self
         """
         # Stub: subclasses should implement Bayesian updating logic
-        raise NotImplementedError("Bayesian updating not implemented in base. Subclasses should override.")
+        raise NotImplementedError(
+            "Bayesian updating not implemented in base. Subclasses should override."
+        )
 
     def __init__(
         self,
@@ -98,14 +100,16 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         robust=False,
         **kwargs,
     ):
-        """
+        """Initialize a Bayesian probabilistic regressor.
+
         Parameters
         ----------
         prior_config : dict or None, default=None
-            Dictionary specifying prior distributions or hyperparameters for model parameters.
-            Example: {"beta": {"dist": "Normal", "mean": 0, "sd": 10}, "sigma": {"dist": "HalfNormal", "sd": 5}}
-            Subclasses can read this in _build_model (PyMC path) or _fit_posterior (custom path).
-            If None, subclasses fall back to weakly informative defaults.
+            Dictionary specifying prior distributions or hyperparameters for model
+            parameters. Example: {"beta": {"dist": "Normal", "mean": 0, "sd": 10},
+            "sigma": {"dist": "HalfNormal", "sd": 5}}
+            Subclasses can read this in _build_model (PyMC path) or _fit_posterior
+            (custom path). If None, subclasses fall back to weakly informative defaults.
         inference_strategy : str, default="mcmc"
             Inference method. Options: "mcmc", "conjugate", "variational".
         robust : bool, default=False
@@ -135,13 +139,17 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         super().__init__(**kwargs)
 
     def _get_default_priors(self, X, y):
-        """Default weakly informative priors (can be overridden).
+        """Return default weakly informative priors (can be overridden).
 
-        Returns dict compatible with prior_config merging.
+        Returns
+        -------
+        dict
+            Dict compatible with prior_config merging.
         """
         import numpy as np
+
         n_features = X.shape[1]
-        y_std = y.values.std() if hasattr(y, 'values') else y.std()
+        y_std = y.values.std() if hasattr(y, "values") else y.std()
         sd_intercept = 10.0 * y_std
         sd_slopes = 2.5 / np.sqrt(n_features)
         sd_noise = y_std
@@ -157,13 +165,15 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             defaults["slopes"]["nu"] = 4
         if getattr(self, "prior_strength", None) is not None:
             strength = self.prior_strength
-            defaults["intercept"]["sd"] /= strength ** 0.5
-            defaults["slopes"]["sd"] /= strength ** 0.5
-            defaults["noise"]["sd"] /= strength ** 0.5
+            defaults["intercept"]["sd"] /= strength**0.5
+            defaults["slopes"]["sd"] /= strength**0.5
+            defaults["noise"]["sd"] /= strength**0.5
         return defaults
+
     def _apply_prior_config(self, model_vars, prior_cfg):
         """Apply user prior_config to PyMC variables or subclass logic."""
         import re
+
         for var_name, spec in prior_cfg.items():
             if isinstance(spec, str):
                 # Parse e.g. "Normal(0,10)" to dict
@@ -174,19 +184,17 @@ class BaseBayesianRegressor(BaseProbaRegressor):
                     if dist.lower() == "normal":
                         spec = {"dist": "Normal", "mean": params[0], "sd": params[1]}
                     elif dist.lower() == "studentt":
-                        spec = {"dist": "StudentT", "mean": params[0], "sd": params[1], "nu": params[2]}
+                        spec = {
+                            "dist": "StudentT",
+                            "mean": params[0],
+                            "sd": params[1],
+                            "nu": params[2],
+                        }
                     # Add more as needed
             if var_name in model_vars:
                 # Override prior (PyMC or custom logic)
                 model_vars[var_name].set_prior(spec)
         return model_vars
-
-    # Subclasses should implement _fit and _predict_proba
-    def _fit(self, X, y, C=None):
-        raise NotImplementedError("Subclasses must implement _fit with prior support.")
-
-    def _predict_proba(self, X):
-        raise NotImplementedError("Subclasses must implement _predict_proba with prior support.")
 
     # Optionally, utility for prior parsing
     def _parse_prior(self):
@@ -216,6 +224,7 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         """
         if self.inference_strategy == "mcmc":
             import warnings
+
             import pandas as pd
             import pymc as pm
 
@@ -249,10 +258,15 @@ class BaseBayesianRegressor(BaseProbaRegressor):
             raise NotImplementedError("Conjugate inference not implemented in base.")
         else:
             raise ValueError(f"Unknown inference_strategy: {self.inference_strategy}")
+
     def _fit_variational_posterior(self, X, y):
-        """Fit mean-field variational posterior (ADVI). Literature: PyMC ADVI docs, Kucukelbir et al. (2015)."""
+        """Fit mean-field variational posterior (ADVI)."""
         import pymc as pm
-        prior_cfg = {**self._get_default_priors(X, y), **self.prior_config}
+
+        prior_cfg = {
+            **self._get_default_priors(X, y),
+            **self.prior_config,
+        }
         self.model_ = self._build_model(X, y, prior_cfg)
         with self.model_:
             self.approx_ = pm.fit(
@@ -434,14 +448,18 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         return self._get_posterior_summary_from_posterior(**kwargs)
 
     def _get_posterior_summary_from_posterior(self, **kwargs):
-        """Get summary statistics of the posterior distributions (diagnostics for MCMC/variational)."""
+        """Get summary statistics of the posterior distributions."""
         import arviz as az
+
         if hasattr(self, "approx_"):
-            return az.summary(self.approx_.sample(self.draws), kind="stats", extend=True)
+            return az.summary(
+                self.approx_.sample(self.draws), kind="stats", extend=True
+            )
         elif hasattr(self, "trace_"):
             return az.summary(self.trace_, kind="diagnostics", extend=True, **kwargs)
         else:
             raise NotImplementedError("No posterior available for summary.")
+
     inference_strategies_supported = ["mcmc", "variational"]
 
     @classmethod
