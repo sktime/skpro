@@ -87,6 +87,26 @@ class Uniform(BaseDistribution):
         pdf_arr = in_bounds / (upper - lower)
         return pdf_arr
 
+    def _log_pdf(self, x):
+        """Logarithmic probability density function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the log of the pdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log pdf values at the given points
+        """
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+
+        in_bounds = np.logical_and(x >= lower, x <= upper)
+        log_pdf_arr = np.where(in_bounds, -np.log(upper - lower), -np.inf)
+        return log_pdf_arr
+
     def _cdf(self, x):
         """Cumulative distribution function.
 

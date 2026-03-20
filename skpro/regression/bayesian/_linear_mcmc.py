@@ -103,10 +103,6 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         """Return a dictionary of prior defaults."""
         from pymc_extras.prior import Prior
 
-        print(  # noqa: T201
-            "The model assumes that the intercept and slopes are independent. \n\
-            Modify the model if this assumption doesn't apply!"
-        )
         default_prior_config = {
             "intercept": Prior(
                 "Normal", mu=0, sigma=100
@@ -394,9 +390,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         """
         import pymc as pm
 
-        assert (
-            self.is_fitted
-        ), "Model needs to be fitted before you can sample from prior"
+        assert self.is_fitted, "Model must be fitted before you can sample from prior"
 
         with self.model_:
             # if we've previously used the model for prediction,
