@@ -122,6 +122,7 @@ class TestBaseBayesianRegressorConstructor:
         assert hasattr(model_vars["intercept"], "prior")
         assert model_vars["intercept"].prior["dist"] == "Normal"
 
+    @pytest.mark.skipif(not _check_soft_dependencies("pymc", severity="none"), reason="pymc not installed")
     def test_variational_inference_stub(self):
         reg = BaseBayesianRegressor(inference_strategy="variational")
         with pytest.raises(NotImplementedError):
@@ -213,6 +214,7 @@ class TestGetPredictiveVariableName:
 
 
 class TestPosteriorSummaryFallback:
+    @pytest.mark.skipif(not _check_soft_dependencies("arviz", severity="none"), reason="arviz not installed")
     def test_raises_not_implemented_without_trace(self):
         reg = BaseBayesianRegressor()
         with pytest.raises(NotImplementedError, match="No posterior available"):
@@ -254,6 +256,7 @@ class TestNonMCHookContract:
 
 
 class TestGetTestParams:
+    @pytest.mark.skipif(not _check_soft_dependencies("pymc", severity="none"), reason="pymc not installed")
     def test_all_param_sets_create_valid_instances(self):
         for params in BaseBayesianRegressor.get_test_params():
             reg = BaseBayesianRegressor(**params)
