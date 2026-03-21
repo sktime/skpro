@@ -57,7 +57,6 @@ class BayesianLinearClosedFormRegressor(BaseBayesianRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
         # CI and test flags
         # -----------------
-        "tests.vm": True,
         "tests:python_dependencies": ["arviz>=0.18.0", "pymc-extras"],
     }
 
