@@ -20,6 +20,7 @@ def get_test_class_registry():
         test class registry
         keys are scitypes, values are test classes TestAll[Scitype]
     """
+    from skpro.distfitter.tests.test_all_distfitters import TestAllDistFitters
     from skpro.distributions.tests.test_all_distrs import TestAllDistributions
     from skpro.metrics.tests.test_distr_metrics import TestAllDistrMetrics
     from skpro.regression.tests.test_all_regressors import TestAllRegressors
@@ -39,6 +40,7 @@ def get_test_class_registry():
     testclass_dict["distribution"] = TestAllDistributions
     testclass_dict["regressor_proba"] = TestAllRegressors
     testclass_dict["metric_proba"] = TestAllDistrMetrics
+    testclass_dict["distfitter"] = TestAllDistFitters
 
     return testclass_dict
 
