@@ -1,5 +1,7 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
+from skbase.utils.dependencies import _check_soft_dependencies
+
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -57,18 +59,19 @@ class BaseBayesianRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["arnavk23"],
+        "maintainers": ["arnavk23"],
         "python_version": ">=3.10",
-        "python_dependencies": [
-            "pymc",
-            "pymc-extras",
-            "arviz>=0.18.0",
-        ],
+        "python_dependencies": ["pymc"],  # only core dependency
         # estimator tags
         # --------------
         "capability:multioutput": False,  # can the estimator handle multi-output data?
         "capability:missing": True,  # can the estimator handle missing data?
         "X_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit, _predict
         "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
+        # CI and test flags
+        # -----------------
+        "tests.vm": True,
+        "tests:python_dependencies": ["arviz>=0.18.0", "pymc-extras"],
     }
 
     def update(self, X, y, C=None):

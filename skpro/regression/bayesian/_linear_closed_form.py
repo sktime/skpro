@@ -6,6 +6,7 @@ __author__ = ["arnavk23"]
 
 import numpy as np
 import pandas as pd
+from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.distributions import Normal
 from skpro.regression.bayesian._base import BaseBayesianRegressor
@@ -48,17 +49,17 @@ class BayesianLinearClosedFormRegressor(BaseBayesianRegressor):
         # --------------
         "authors": ["arnavk23"],
         "python_version": ">=3.10",
-        "python_dependencies": [
-            "pymc",
-            "pymc-extras",
-            "arviz>=0.18.0",
-        ],
+        "python_dependencies": ["pymc"],  # only core dependency
         # estimator tags
         # --------------
         "capability:multioutput": False,  # can the estimator handle multi-output data?
         "capability:missing": True,  # can the estimator handle missing data?
         "X_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit, _predict
         "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
+        # CI and test flags
+        # -----------------
+        "tests.vm": True,
+        "tests:python_dependencies": ["arviz>=0.18.0", "pymc-extras"],
     }
 
     def __init__(

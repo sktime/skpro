@@ -165,9 +165,7 @@ jobs:
 
       - name: Install skpro and dependencies
         shell: bash
-        run: |
-          uv pip install .[dev] --no-cache-dir
-          pip install pymc pymc-extras "arviz>=0.18.0"
+        run: uv pip install .[dev] --no-cache-dir
         env:
           UV_SYSTEM_PYTHON: 1
 
@@ -213,9 +211,7 @@ jobs:
 
       - name: Install skpro and dependencies
         shell: bash
-        run: |
-          uv pip install .[dev] --no-cache-dir
-          pip install pymc pymc-extras "arviz>=0.18.0"
+        run: uv pip install .[dev] --no-cache-dir
         env:
           UV_SYSTEM_PYTHON: 1
 
@@ -264,9 +260,7 @@ jobs:
         run: echo "MPLBACKEND=Agg" >> $env:GITHUB_ENV
 
       - name: Install skpro with dev dependencies
-        run: |
-          uv pip install .[dev]
-          pip install pymc pymc-extras "arviz>=0.18.0"
+        run: uv pip install .[dev]
         env:
           UV_SYSTEM_PYTHON: 1
 
