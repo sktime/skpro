@@ -44,12 +44,21 @@ class BayesianLinearClosedFormRegressor(BaseBayesianRegressor):
     """
 
     _tags = {
+        # packaging info
+        # --------------
         "authors": ["arnavk23"],
         "python_version": ">=3.10",
-        "capability:multioutput": False,
-        "capability:missing": True,
-        "X_inner_mtype": "pd_DataFrame_Table",
-        "y_inner_mtype": "pd_DataFrame_Table",
+        "python_dependencies": [
+            "pymc",
+            "pymc-extras",
+            "arviz>=0.18.0",
+        ],
+        # estimator tags
+        # --------------
+        "capability:multioutput": False,  # can the estimator handle multi-output data?
+        "capability:missing": True,  # can the estimator handle missing data?
+        "X_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit, _predict
+        "y_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
     }
 
     def __init__(
