@@ -48,7 +48,7 @@ class BayesianLinearClosedFormRegressor(BaseBayesianRegressor):
         # --------------
         "authors": ["arnavk23"],
         "python_version": ">=3.10",
-        # no runtime python_dependencies
+        "python_dependencies": ["pymc"],  # only core dependency
         # estimator tags
         # --------------
         "capability:multioutput": False,  # can the estimator handle multi-output data?
