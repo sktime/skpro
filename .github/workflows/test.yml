@@ -172,6 +172,9 @@ jobs:
       - name: Show available branches
         run: git branch -a
 
+      - name: Install Bayesian dependencies
+        run: pip install pymc arviz pymc-extras
+
       - name: Run tests
         run: make test
 
@@ -217,6 +220,9 @@ jobs:
 
       - name: Show available branches
         run: git branch -a
+
+      - name: Install Bayesian dependencies
+        run: pip install pymc arviz pymc-extras
 
       - name: Run tests
         run: make test
