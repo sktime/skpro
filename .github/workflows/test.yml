@@ -173,7 +173,7 @@ jobs:
         run: git branch -a
 
       - name: Install Bayesian dependencies
-        run: pip install 'pymc>=5.0,<5.10' arviz pymc-extras
+        run: pip install 'pymc>=5.0,<5.10' arviz 'pymc-extras<0.2'
 
       - name: Run tests
         run: make test
@@ -222,7 +222,7 @@ jobs:
         run: git branch -a
 
       - name: Install Bayesian dependencies
-        run: pip install 'pymc>=5.0,<5.10' arviz pymc-extras
+        run: pip install 'pymc>=5.0,<5.10' arviz 'pymc-extras<0.2'
 
       - name: Run tests
         run: make test
