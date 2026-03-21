@@ -171,7 +171,6 @@ Enhancements
 * [ENH] Add ``interval_type`` for configurable bounds in ``TruncatedDistribution`` (:pr:`667`) :user:`Khushmagrawal`
 * [ENH] Log-Gamma Distribution (:pr:`669`) :user:`ali-john`
 * [ENH] estimator tag for extra testing dependencies (:pr:`681`) :user:`fkiraly`
-
 Documentation
 ~~~~~~~~~~~~~
 
