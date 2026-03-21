@@ -1,7 +1,5 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
-from skbase.utils.dependencies import _check_soft_dependencies
-
 from skpro.regression.base import BaseProbaRegressor
 
 

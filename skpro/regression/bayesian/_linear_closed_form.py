@@ -6,7 +6,6 @@ __author__ = ["arnavk23"]
 
 import numpy as np
 import pandas as pd
-from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.distributions import Normal
 from skpro.regression.bayesian._base import BaseBayesianRegressor
