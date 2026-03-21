@@ -172,6 +172,9 @@ jobs:
       - name: Show available branches
         run: git branch -a
 
+      - name: Install build tools
+        run: pip install --upgrade pip setuptools wheel
+
       - name: Install Bayesian dependencies
         run: pip install 'pymc>=5.0,<5.10' arviz
 
@@ -220,6 +223,9 @@ jobs:
 
       - name: Show available branches
         run: git branch -a
+
+      - name: Install build tools
+        run: pip install --upgrade pip setuptools wheel
 
       - name: Install Bayesian dependencies
         run: pip install 'pymc>=5.0,<5.10' arviz
