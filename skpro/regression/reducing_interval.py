@@ -104,13 +104,13 @@ class ReducingIntervalRegressor(BaseProbaRegressor):
         data = np.hstack(quantiles)
         return pd.DataFrame(data, index=X.index, columns=columns)
 
-        @classmethod
-        def get_test_params(cls, parameter_set="default"):
-            """Return testing parameter sets for automated tests.
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter sets for automated tests.
 
-            Returns two parameter sets: one for mean/sd, one for quantile method.
-            """
-            return [
-                {"method": "mean_sd"},
-                {"method": "quantile"},
-            ]
+        Returns two parameter sets: one for mean/sd, one for quantile method.
+        """
+        return [
+            {"method": "mean_sd"},
+            {"method": "quantile"},
+        ]
