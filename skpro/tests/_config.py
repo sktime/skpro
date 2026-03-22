@@ -16,5 +16,6 @@ EXCLUDE_ESTIMATORS = [
     "ClassName",  # exclude classes from extension templates
 ]
 
-
+# do not add skips here, instead use the "tests:skip_by_name" tag on the estimator class
+# see skpro/registry/_tags.py for tag reference
 EXCLUDED_TESTS = {}

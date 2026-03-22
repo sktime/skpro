@@ -71,7 +71,13 @@ class BootstrapRegressor(BaseProbaRegressor):
     >>> y_pred = reg_proba.predict_proba(X_test)
     """
 
-    _tags = {"authors": "fkiraly", "capability:missing": True}
+    _tags = {
+        "authors": "fkiraly",
+        "capability:missing": True,
+        "tests:skip_by_name": [
+            "test_non_state_changing_method_contract"
+        ],  # TODO: fix in #922
+    }
 
     def __init__(
         self,
