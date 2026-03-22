@@ -552,7 +552,9 @@ def scitype(obj, candidate_scitypes=None, exclude_mtypes=AMBIGUOUS_MTYPES):
     ----------
     obj : object to infer type of - any type, should comply with some mtype spec
         if as_scitype is provided, this must be mtype belonging to scitype
-    candidate_scitypes: str or list of str, scitypes to pick from
+    candidate_scitypes: str, list of str, or None, optional, default=None
+        scitypes to pick from. If None, it defaults to all valid scitypes dynamically
+        resolved via lazy import (i.e., datatypes.SCITYPE_LIST).
         valid scitype strings are in datatypes.SCITYPE_REGISTER
     exclude_mtypes : list of str, default = AMBIGUOUS_MTYPES
         which mtypes to ignore in inferring mtype, default = ambiguous ones

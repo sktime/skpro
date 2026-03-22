@@ -40,6 +40,8 @@ mtype_to_scitype(mtype: str) - convenience function that returns scitype for an 
 ---
 """
 
+import threading
+
 from skpro.datatypes._proba._registry import MTYPE_LIST_PROBA, MTYPE_REGISTER_PROBA
 from skpro.datatypes._table._registry import MTYPE_LIST_TABLE, MTYPE_REGISTER_TABLE
 
@@ -56,6 +58,7 @@ __all__ = [
     "MTYPE_LIST_PROBA",
     "MTYPE_SOFT_DEPS",  # noqa: F822
     "SCITYPE_REGISTER",  # noqa: F822
+    "SCITYPE_LIST",  # noqa: F822
 ]
 
 _SCITYPE_DESCRIPTIONS = {
@@ -66,6 +69,7 @@ _SCITYPE_DESCRIPTIONS = {
 # We expose these via __getattr__ for programmatic lookup
 _CACHE = {}
 _IS_GENERATING = False
+_REGISTRY_LOCK = threading.RLock()
 
 
 def _get_registry(name):
@@ -73,60 +77,69 @@ def _get_registry(name):
     if name in _CACHE:
         return _CACHE[name]
 
-    if name in ["MTYPE_SOFT_DEPS", "SCITYPE_REGISTER", "SCITYPE_LIST"]:
-        if _IS_GENERATING:
-            if name == "MTYPE_SOFT_DEPS":
-                return {}
-            if name == "SCITYPE_REGISTER":
-                return []
-            if name == "SCITYPE_LIST":
-                return []
-            return None
-
-        _IS_GENERATING = True
-        try:
-            from skpro.datatypes._check import get_check_dict
-
-            check_dict = get_check_dict(soft_deps="all")
-
-            soft_deps = {}
-            scitypes = set()
-
-            for k, cls in check_dict.items():
-                if hasattr(cls, "get_class_tag"):
-                    mtype = cls.get_class_tag("name")
-                    scitype = cls.get_class_tag("scitype")
-                    deps = cls.get_class_tag("python_dependencies", None)
-                else:
-                    mtype = k[0]
-                    scitype = k[1]
-                    deps = None
-
-                if deps is not None:
-                    soft_deps[mtype] = list(deps) if isinstance(deps, tuple) else deps
-                if scitype is not None:
-                    scitypes.add(scitype)
-
-            for mtype_tuple in MTYPE_REGISTER:
-                mtype = mtype_tuple[0]
-                scitype = mtype_tuple[1]
-                scitypes.add(scitype)
-                if len(mtype_tuple) >= 4 and mtype_tuple[3] is not None:
-                    deps = mtype_tuple[3]
-                    soft_deps[mtype] = list(deps) if isinstance(deps, tuple) else deps
-
-            scitype_register = [
-                (sci, _SCITYPE_DESCRIPTIONS.get(sci, "")) for sci in scitypes
-            ]
-            scitype_list = [x[0] for x in scitype_register]
-
-            _CACHE["MTYPE_SOFT_DEPS"] = soft_deps
-            _CACHE["SCITYPE_REGISTER"] = scitype_register
-            _CACHE["SCITYPE_LIST"] = scitype_list
-
+    with _REGISTRY_LOCK:
+        if name in _CACHE:
             return _CACHE[name]
-        finally:
-            _IS_GENERATING = False
+
+        if name in ["MTYPE_SOFT_DEPS", "SCITYPE_REGISTER", "SCITYPE_LIST"]:
+            if _IS_GENERATING:
+                if name == "MTYPE_SOFT_DEPS":
+                    return {}
+                if name == "SCITYPE_REGISTER":
+                    return []
+                if name == "SCITYPE_LIST":
+                    return []
+                return None
+
+            _IS_GENERATING = True
+            try:
+                from skpro.datatypes._check import get_check_dict
+
+                check_dict = get_check_dict(soft_deps="all")
+
+                soft_deps = {}
+                scitypes = set()
+
+                for k, cls in check_dict.items():
+                    if hasattr(cls, "get_class_tag"):
+                        mtype = cls.get_class_tag("name")
+                        scitype = cls.get_class_tag("scitype")
+                        deps = cls.get_class_tag("python_dependencies", None)
+                    else:
+                        mtype = k[0]
+                        scitype = k[1]
+                        deps = None
+
+                    if deps is not None:
+                        soft_deps[mtype] = (
+                            list(deps) if isinstance(deps, tuple) else deps
+                        )
+                    if scitype is not None:
+                        scitypes.add(scitype)
+
+                for mtype_tuple in MTYPE_REGISTER:
+                    mtype = mtype_tuple[0]
+                    scitype = mtype_tuple[1]
+                    scitypes.add(scitype)
+                    if len(mtype_tuple) >= 4 and mtype_tuple[3] is not None:
+                        deps = mtype_tuple[3]
+                        soft_deps[mtype] = (
+                            list(deps) if isinstance(deps, tuple) else deps
+                        )
+
+                scitype_register = [
+                    (sci, _SCITYPE_DESCRIPTIONS.get(sci, ""))
+                    for sci in sorted(scitypes)
+                ]
+                scitype_list = [x[0] for x in scitype_register]
+
+                _CACHE["MTYPE_SOFT_DEPS"] = soft_deps
+                _CACHE["SCITYPE_REGISTER"] = scitype_register
+                _CACHE["SCITYPE_LIST"] = scitype_list
+
+                return _CACHE[name]
+            finally:
+                _IS_GENERATING = False
 
     raise AttributeError(f"module {__name__} has no attribute {name}")
 
@@ -136,7 +149,10 @@ def __getattr__(name):
 
 
 def __dir__():
-    return __all__
+    """Return module attributes and dynamically generated properties."""
+    return sorted(
+        list(globals().keys()) + ["MTYPE_SOFT_DEPS", "SCITYPE_REGISTER", "SCITYPE_LIST"]
+    )
 
 
 def mtype_to_scitype(mtype: str, return_unique=False, coerce_to_list=False):
