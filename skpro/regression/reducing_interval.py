@@ -18,6 +18,22 @@ class ReducingIntervalRegressor(BaseProbaRegressor):
     ----------
     method : str, default="mean_sd"
         "mean_sd" for mean/sd-based intervals, "quantile" for empirical quantiles.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>> from skpro.regression.reducing_interval import ReducingIntervalRegressor
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> y = pd.DataFrame(y)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> reg = ReducingIntervalRegressor(method="mean_sd")
+    >>> reg.fit(X_train, y_train)
+    ReducingIntervalRegressor(...)
+    >>> y_pred = reg.predict(X_test)
+    >>> intervals = reg.predict_interval(X_test, coverage=[0.9])
+    >>> quantiles = reg.predict_quantiles(X_test, alpha=[0.05, 0.5, 0.95])
     """
     _tags = {
         "authors": ["arnavk23"],
