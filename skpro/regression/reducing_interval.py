@@ -9,7 +9,9 @@ Implements both _predict_interval and _predict_quantiles for demonstration.
 
 import numpy as np
 import pandas as pd
+
 from skpro.regression.base import BaseProbaRegressor
+
 
 class ReducingIntervalRegressor(BaseProbaRegressor):
     """Probabilistic regressor with reducing intervals as n increases.
@@ -35,6 +37,7 @@ class ReducingIntervalRegressor(BaseProbaRegressor):
     >>> intervals = reg.predict_interval(X_test, coverage=[0.9])
     >>> quantiles = reg.predict_quantiles(X_test, alpha=[0.05, 0.5, 0.95])
     """
+
     _tags = {
         "authors": ["arnavk23"],
         "capability:multioutput": False,
@@ -81,7 +84,9 @@ class ReducingIntervalRegressor(BaseProbaRegressor):
             np.tile(["lower", "upper"], len(self._y_cols) * len(coverage)),
         ]
         columns = pd.MultiIndex.from_arrays(arrays, names=["var", "coverage", "bound"])
-        data = np.hstack([np.column_stack([l, u]) for l, u in intervals])
+        data = np.hstack(
+            [np.column_stack([lower, upper]) for lower, upper in intervals]
+        )
         return pd.DataFrame(data, index=X.index, columns=columns)
 
     def _predict_quantiles(self, X, alpha):
