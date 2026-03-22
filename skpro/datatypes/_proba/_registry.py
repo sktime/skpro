@@ -12,9 +12,9 @@ __all__ = [
 
 
 MTYPE_REGISTER_PROBA = [
-    ("pred_interval", "Proba", "predictive intervals"),
-    ("pred_quantiles", "Proba", "quantile predictions"),
-    ("pred_var", "Proba", "variance predictions"),
+    ("pred_interval", "Proba", "predictive intervals", None),
+    ("pred_quantiles", "Proba", "quantile predictions", None),
+    ("pred_var", "Proba", "variance predictions", None),
     # ("pred_dost", "Proba", "full distribution predictions, tensorflow-probability"),
 ]
 

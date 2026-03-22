@@ -30,7 +30,7 @@ import numpy as np
 from skpro.datatypes._base import BaseDatatype
 from skpro.datatypes._common import _metadata_requested, _ret
 from skpro.datatypes._proba import check_dict_Proba
-from skpro.datatypes._registry import AMBIGUOUS_MTYPES, SCITYPE_LIST, mtype_to_scitype
+from skpro.datatypes._registry import AMBIGUOUS_MTYPES, mtype_to_scitype
 
 
 def get_check_dict(soft_deps="present"):
@@ -545,7 +545,7 @@ def check_is_error_msg(msg, var_name="obj", allowed_msg=None, raise_exception=Fa
         raise raise_exception(msg_invalid_input)
 
 
-def scitype(obj, candidate_scitypes=SCITYPE_LIST, exclude_mtypes=AMBIGUOUS_MTYPES):
+def scitype(obj, candidate_scitypes=None, exclude_mtypes=AMBIGUOUS_MTYPES):
     """Infer the scitype of an object.
 
     Parameters
@@ -568,6 +568,11 @@ def scitype(obj, candidate_scitypes=SCITYPE_LIST, exclude_mtypes=AMBIGUOUS_MTYPE
     ------
     TypeError if no type can be identified, or more than one type is identified
     """
+    if candidate_scitypes is None:
+        from skpro.datatypes._registry import SCITYPE_LIST
+
+        candidate_scitypes = SCITYPE_LIST
+
     candidate_scitypes = _coerce_list_of_str(
         candidate_scitypes, var_name="candidate_scitypes"
     )
