@@ -198,8 +198,6 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
                 self.y_bandwidth_ = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
             elif y_bw == "isj":
                 self.y_bandwidth_ = bandwidth_1d(y_vals, method="isj")
-                if not np.isfinite(self.y_bandwidth_) or self.y_bandwidth_ < 1e-15:
-                    self.y_bandwidth_ = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
             else:
                 self.y_bandwidth_ = float(y_bw)
 

@@ -211,22 +211,27 @@ class KernelMixture(BaseDistribution):
         n = len(self._support)
 
         if isinstance(h, str):
-            import warnings
-
             method = h.lower()
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", RuntimeWarning)
-                std = np.std(self._support, ddof=1)
-            if np.isnan(std) or std < 1e-15:
-                std = 1.0
             if method == "scott":
+                import warnings
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", RuntimeWarning)
+                    std = np.std(self._support, ddof=1)
+                if np.isnan(std) or std < 1e-15:
+                    std = 1.0
                 self._h = n ** (-1.0 / 5.0) * std
             elif method == "silverman":
+                import warnings
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", RuntimeWarning)
+                    std = np.std(self._support, ddof=1)
+                if np.isnan(std) or std < 1e-15:
+                    std = 1.0
                 self._h = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
             elif method == "isj":
                 self._h = bandwidth_1d(self._support, method="isj")
-                if not np.isfinite(self._h) or self._h < 1e-15:
-                    self._h = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
             else:
                 raise ValueError(
                     f"Unknown h rule '{h}'. "
