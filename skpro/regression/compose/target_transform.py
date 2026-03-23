@@ -1,22 +1,18 @@
-
 """Implements target transformation pipeline element for probabilistic regression."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["arnavk23"]
 __all__ = ["TargetTransform"]
 
-import pandas as pd
-from skpro.regression.compose._ttr import TransformedTargetRegressor
 from skpro.regression.base import BaseProbaRegressor
-
-
 from skpro.regression.compose._ttr import TransformedTargetRegressor
-from skpro.regression.base import BaseProbaRegressor
+
 
 class TargetTransform(BaseProbaRegressor):
-    """TargetTransform pipeline element for target variable transformation in pipelines.
+    """TargetTransform pipeline for target variable transformation.
 
-    Wraps a regressor and a transformer, applying the transformer to y during fit and inverse-transforming predictions.
+    Wraps a regressor and a transformer, applying the transformer to y
+    during fit and inverse-transforming predictions.
     Uses TransformedTargetRegressor internally.
 
     Parameters
@@ -61,7 +57,9 @@ class TargetTransform(BaseProbaRegressor):
     def __init__(self, regressor, transformer):
         self.regressor = regressor
         self.transformer = transformer
-        self._ttr = TransformedTargetRegressor(regressor=regressor, transformer=transformer)
+        self._ttr = TransformedTargetRegressor(
+            regressor=regressor, transformer=transformer
+        )
         super().__init__()
 
     def _fit(self, X, y, C=None):
@@ -89,8 +87,10 @@ class TargetTransform(BaseProbaRegressor):
 
         Returns two parameter sets: one with StandardScaler, one with MinMaxScaler.
         """
+        from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
         from skpro.regression.residual import ResidualDouble
-        from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
         reg = ResidualDouble.create_test_instance()
         return [
             {"regressor": reg, "transformer": StandardScaler()},
