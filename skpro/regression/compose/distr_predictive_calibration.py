@@ -74,7 +74,7 @@ class DistrPredictiveCalibration(BaseProbaRegressor):
     DistrPredictiveCalibration(...)
     >>> y_pred = calreg.predict(X_test)
     >>> y_pred_proba = calreg.predict_proba(X_test)
-    >>> # Note: Calibrator must accept and return distribution objects 
+    >>> # Note: Calibrator must accept and return distribution objects
     >>> # as output from predict_proba.
     """
 
