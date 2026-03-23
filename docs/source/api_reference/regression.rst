@@ -24,6 +24,8 @@ Composition
 
     Pipeline
     TransformedTargetRegressor
+    TargetTransform
+    DistrPredictiveCalibration
 
 Model selection and tuning
 --------------------------
