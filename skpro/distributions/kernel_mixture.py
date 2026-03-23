@@ -8,6 +8,7 @@ import pandas as pd
 from scipy.special import erf
 
 from skpro.distributions.base import BaseDistribution
+from skpro.regression._bandwidth import bandwidth_1d
 
 _KERNEL_VARIANCE = {
     "gaussian": 1.0,
@@ -42,13 +43,15 @@ class KernelMixture(BaseDistribution):
     support : array-like, 1D
         Support points (data) on which the kernel density is centered.
         A 1D array, support points are shared across all marginals.
-    h : float, or str ``"scott"`` or ``"silverman"``, default=1.0
+    h : float, or str ``"scott"``, ``"silverman"``, or ``"isj"``, default=1.0
         Bandwidth of the kernel.
         If float, used directly as the bandwidth parameter ``h``.
         If ``"scott"``, bandwidth is computed as
         ``n**(-1/5) * std(support, ddof=1)``.
         If ``"silverman"``, bandwidth is computed as
         ``(4/(3*n))**(1/5) * std(support, ddof=1)``.
+        If ``"isj"``, bandwidth is computed by the 1D Improved
+        Sheather-Jones selector over ``support``.
     kernel : str or ``BaseDistribution``, default="gaussian"
         The kernel function to use.
         If str, must be one of the built-in kernels:
@@ -210,19 +213,24 @@ class KernelMixture(BaseDistribution):
         if isinstance(h, str):
             import warnings
 
+            method = h.lower()
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)
                 std = np.std(self._support, ddof=1)
             if np.isnan(std) or std < 1e-15:
                 std = 1.0
-            if h == "scott":
+            if method == "scott":
                 self._h = n ** (-1.0 / 5.0) * std
-            elif h == "silverman":
+            elif method == "silverman":
                 self._h = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
+            elif method == "isj":
+                self._h = bandwidth_1d(self._support, method="isj")
+                if not np.isfinite(self._h) or self._h < 1e-15:
+                    self._h = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
             else:
                 raise ValueError(
                     f"Unknown h rule '{h}'. "
-                    "Must be a float, 'scott', or 'silverman'."
+                    "Must be a float, 'scott', 'silverman', or 'isj'."
                 )
         else:
             self._h = float(h)
@@ -635,4 +643,9 @@ class KernelMixture(BaseDistribution):
             "index": pd.RangeIndex(2),
             "columns": pd.Index(["a", "b"]),
         }
-        return [params1, params2, params3, params4, params5, params6, params7]
+        params8 = {
+            "support": [-1.5, -0.25, 0.0, 1.75, 2.25, 2.5],
+            "h": "isj",
+            "kernel": "gaussian",
+        }
+        return [params1, params2, params3, params4, params5, params6, params7, params8]

@@ -10,6 +10,7 @@ import pytest
 from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.distributions.kernel_mixture import KernelMixture
+from skpro.regression._bandwidth import bandwidth_1d
 from skpro.tests.test_switch import run_test_for_class
 
 
@@ -181,6 +182,15 @@ class TestKernelMixture:
         expected = (4.0 / (3.0 * 5)) ** (1.0 / 5.0) * np.std(support, ddof=1)
         assert abs(km._h - expected) < 1e-10
 
+    def test_auto_bandwidth_isj(self):
+        """Test ISJ bandwidth rule."""
+        support = np.array([-1.5, -0.25, 0.0, 1.75, 2.25, 2.5])
+        km = KernelMixture(support=support, h="isj", kernel="gaussian")
+        expected = bandwidth_1d(support, method="isj")
+        assert np.isfinite(km._h)
+        assert km._h > 0
+        assert abs(km._h - expected) < 1e-10
+
     def test_subsetting_2d(self):
         """Test iloc subsetting."""
         km = KernelMixture(
@@ -195,7 +205,7 @@ class TestKernelMixture:
         sub_scalar = km.iloc[0, 0]
         assert sub_scalar.shape == ()
 
-    @pytest.mark.parametrize("rule", ["scott", "silverman"])
+    @pytest.mark.parametrize("rule", ["scott", "silverman", "isj"])
     def test_auto_bandwidth_single_element(self, rule):
         """Test bandwidth with single support point."""
         km = KernelMixture(support=[5.0], h=rule, kernel="gaussian")
