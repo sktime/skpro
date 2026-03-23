@@ -53,14 +53,14 @@ class DistrPredictiveCalibration(BaseProbaRegressor):
     --------
     >>> from skpro.regression.compose import DistrPredictiveCalibration
     >>> from skpro.regression.residual import ResidualDouble
-    >>> from sklearn.preprocessing import StandardScaler
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.model_selection import train_test_split
     >>> import pandas as pd
     >>> # Dummy calibrator for demonstration
-    >>> class DummyCalibrator:
+    >>> from sklearn.base import BaseEstimator, TransformerMixin
+    >>> class DummyCalibrator(BaseEstimator, TransformerMixin):
     ...     def fit(self, y_true, y_pred):
-    ...         pass
+    ...         return self
     ...     def transform(self, y_pred):
     ...         return y_pred
     >>> # Load data
@@ -74,11 +74,8 @@ class DistrPredictiveCalibration(BaseProbaRegressor):
     DistrPredictiveCalibration(...)
     >>> y_pred = calreg.predict(X_test)
     >>> y_pred_proba = calreg.predict_proba(X_test)
-    >>> # Using StandardScaler as a calibrator (for test purposes)
-    >>> calreg2 = DistrPredictiveCalibration(regressor=reg, calibrator=StandardScaler())
-    >>> calreg2.fit(X_train, y_train)
-    DistrPredictiveCalibration(...)
-    >>> y_pred2 = calreg2.predict(X_test)
+    >>> # Note: Calibrator must accept and return distribution objects 
+    >>> # as output from predict_proba.
     """
 
     _tags = {
@@ -94,31 +91,32 @@ class DistrPredictiveCalibration(BaseProbaRegressor):
     def _fit(self, X, y, C=None):
         from sklearn.base import clone
 
-        self.regressor.fit(X, y, C=C)
-        # Clone calibrator to avoid mutating the parameter instance
+        # Clone regressor and calibrator to avoid mutating input parameters
+        self._fitted_regressor = clone(self.regressor)
+        self._fitted_regressor.fit(X, y, C=C)
         self._fitted_calibrator = clone(self.calibrator)
         # Fit calibrator on training predictions
-        y_pred = self.regressor.predict_proba(X)
+        y_pred = self._fitted_regressor.predict_proba(X)
         self._fitted_calibrator.fit(y, y_pred)
         return self
 
     def _predict(self, X):
-        return self.regressor.predict(X)
+        return self._fitted_regressor.predict(X)
 
     def _predict_quantiles(self, X, alpha):
-        y_pred = self.regressor.predict_quantiles(X, alpha)
+        y_pred = self._fitted_regressor.predict_quantiles(X, alpha)
         return self._fitted_calibrator.transform(y_pred)
 
     def _predict_interval(self, X, coverage):
-        y_pred = self.regressor.predict_interval(X, coverage)
+        y_pred = self._fitted_regressor.predict_interval(X, coverage)
         return self._fitted_calibrator.transform(y_pred)
 
     def _predict_var(self, X):
-        y_pred = self.regressor.predict_var(X)
+        y_pred = self._fitted_regressor.predict_var(X)
         return self._fitted_calibrator.transform(y_pred)
 
     def _predict_proba(self, X):
-        y_pred = self.regressor.predict_proba(X)
+        y_pred = self._fitted_regressor.predict_proba(X)
         return self._fitted_calibrator.transform(y_pred)
 
     @classmethod
