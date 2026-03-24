@@ -655,9 +655,9 @@ class SquaredDistrLoss(BaseDistrMetric):
         super().__init__(multioutput=multioutput)
 
     def _evaluate_by_index(self, y_true, y_pred, **kwargs):
-        res = -2 * y_pred.log_pdf(y_true) + y_pred.pdfnorm(a=2)
-        # replace this by multivariate log_pdf once distr implements
-        # i.e., pass multivariate on to log_pdf
+        res = -2 * y_pred.pdf(y_true) + y_pred.pdfnorm(a=2)
+        # replace this by multivariate pdf once distr implements
+        # i.e., pass multivariate on to pdf
         if self.multivariate:
             return pd.DataFrame(res.mean(axis=1), columns=["density"])
         else:

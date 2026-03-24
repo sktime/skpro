@@ -14,7 +14,7 @@ __author__ = [
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
 import warnings
-from typing import Union
+from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -135,12 +135,12 @@ class CyclicBoosting(BaseProbaRegressor):
 
     def __init__(
         self,
-        feature_groups=None,
+        feature_groups: Union[List[str], List[Tuple[str, ...]], None] = None,
         feature_properties=None,
         alpha=0.2,
         mode="multiplicative",
-        lower=None,
-        upper=None,
+        lower: Union[float, None] = None,
+        upper: Union[float, None] = None,
         maximal_iterations=10,
         dist_type: Union[str, None] = "normal",
         dist_shape: Union[float, None] = 0.0,
@@ -194,6 +194,34 @@ class CyclicBoosting(BaseProbaRegressor):
                 )
             )
 
+    def _validate_feature_groups(self, X: pd.DataFrame) -> None:
+        """Validate that all feature groups exist in X columns.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Feature data to validate against
+
+        Raises
+        ------
+        ValueError
+            If any feature in feature_groups is not present in X.columns
+        """
+        if self.feature_groups is None:
+            return
+
+        feature_names = []
+        for feature in self.feature_groups:
+            if isinstance(feature, tuple):
+                feature_names.extend(feature)
+            else:
+                feature_names.append(feature)
+
+        missing_features = set(feature_names) - set(X.columns)
+        if missing_features:
+            missing_list = sorted(list(missing_features))
+            raise ValueError(f"Features {missing_list} are not in X")
+
     def _fit(self, X, y):
         """Fit regressor to training data.
 
@@ -211,16 +239,7 @@ class CyclicBoosting(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
+        self._validate_feature_groups(X)
 
         self._y_cols = y.columns
         y = y.to_numpy().flatten()
@@ -250,17 +269,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         index = X.index
         y_cols = self._y_cols
 
@@ -290,17 +298,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         index = X.index
         y_cols = self._y_cols
 
@@ -353,17 +350,6 @@ class CyclicBoosting(BaseProbaRegressor):
             Upper/lower interval end are equivalent to
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         index = X.index
         y_cols = self._y_cols
         columns = pd.MultiIndex.from_product(
@@ -404,17 +390,6 @@ class CyclicBoosting(BaseProbaRegressor):
                 at quantile probability in second col index, for the row index.
         """
         quantiles = alpha
-
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
 
         is_given_proba = False
         warning = (
