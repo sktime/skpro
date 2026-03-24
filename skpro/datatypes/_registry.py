@@ -56,9 +56,9 @@ __all__ = [
     "MTYPE_REGISTER",
     "MTYPE_LIST_TABLE",
     "MTYPE_LIST_PROBA",
-    "MTYPE_SOFT_DEPS",  # noqa: F822
-    "SCITYPE_REGISTER",  # noqa: F822
-    "SCITYPE_LIST",  # noqa: F822
+    "MTYPE_SOFT_DEPS",  # noqa: F822 - dynamically exported via __getattr__
+    "SCITYPE_REGISTER",  # noqa: F822 - dynamically exported via __getattr__
+    "SCITYPE_LIST",  # noqa: F822 - dynamically exported via __getattr__
 ]
 
 _SCITYPE_DESCRIPTIONS = {
@@ -68,12 +68,10 @@ _SCITYPE_DESCRIPTIONS = {
 
 # We expose these via __getattr__ for programmatic lookup
 _CACHE = {}
-_IS_GENERATING = False
 _REGISTRY_LOCK = threading.RLock()
 
 
 def _get_registry(name):
-    global _IS_GENERATING
     if name in _CACHE:
         return _CACHE[name]
 
@@ -82,16 +80,12 @@ def _get_registry(name):
             return _CACHE[name]
 
         if name in ["MTYPE_SOFT_DEPS", "SCITYPE_REGISTER", "SCITYPE_LIST"]:
-            if _IS_GENERATING:
-                if name == "MTYPE_SOFT_DEPS":
-                    return {}
-                if name == "SCITYPE_REGISTER":
-                    return []
-                if name == "SCITYPE_LIST":
-                    return []
-                return None
+            # Pre-seed _CACHE to prevent infinite recursion during generation
+            # Re-entrant calls (e.g., from inspect) will receive these references
+            _CACHE["MTYPE_SOFT_DEPS"] = {}
+            _CACHE["SCITYPE_REGISTER"] = []
+            _CACHE["SCITYPE_LIST"] = []
 
-            _IS_GENERATING = True
             try:
                 from skpro.datatypes._check import get_check_dict
 
@@ -127,19 +121,30 @@ def _get_registry(name):
                             list(deps) if isinstance(deps, tuple) else deps
                         )
 
-                scitype_register = [
-                    (sci, _SCITYPE_DESCRIPTIONS.get(sci, ""))
-                    for sci in sorted(scitypes)
-                ]
+                scitype_register = []
+                for sci in sorted(scitypes):
+                    desc = _SCITYPE_DESCRIPTIONS.get(sci)
+                    if desc is None:
+                        raise ValueError(
+                            f"scitype '{sci}' is missing a description in "
+                            "`_SCITYPE_DESCRIPTIONS`. Please add it to "
+                            "`skpro.datatypes._registry._SCITYPE_DESCRIPTIONS`."
+                        )
+                    scitype_register.append((sci, desc))
+
                 scitype_list = [x[0] for x in scitype_register]
 
-                _CACHE["MTYPE_SOFT_DEPS"] = soft_deps
-                _CACHE["SCITYPE_REGISTER"] = scitype_register
-                _CACHE["SCITYPE_LIST"] = scitype_list
+                # Update the pre-seeded objects in-place
+                _CACHE["MTYPE_SOFT_DEPS"].update(soft_deps)
+                _CACHE["SCITYPE_REGISTER"].extend(scitype_register)
+                _CACHE["SCITYPE_LIST"].extend(scitype_list)
 
                 return _CACHE[name]
-            finally:
-                _IS_GENERATING = False
+            except Exception:
+                _CACHE.pop("MTYPE_SOFT_DEPS", None)
+                _CACHE.pop("SCITYPE_REGISTER", None)
+                _CACHE.pop("SCITYPE_LIST", None)
+                raise
 
     raise AttributeError(f"module {__name__} has no attribute {name}")
 
