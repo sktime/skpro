@@ -96,18 +96,9 @@ def _get_registry(name):
 
                 for k, cls in check_dict.items():
                     if hasattr(cls, "get_class_tag"):
-                        mtype = cls.get_class_tag("name")
                         scitype = cls.get_class_tag("scitype")
-                        deps = cls.get_class_tag("python_dependencies", None)
                     else:
-                        mtype = k[0]
                         scitype = k[1]
-                        deps = None
-
-                    if deps is not None:
-                        soft_deps[mtype] = (
-                            list(deps) if isinstance(deps, tuple) else deps
-                        )
                     if scitype is not None:
                         scitypes.add(scitype)
 
