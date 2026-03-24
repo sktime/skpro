@@ -155,9 +155,12 @@ def __getattr__(name):
 
 def __dir__():
     """Return module attributes and dynamically generated properties."""
-    return sorted(
-        list(globals().keys()) + ["MTYPE_SOFT_DEPS", "SCITYPE_REGISTER", "SCITYPE_LIST"]
-    )
+    names = list(globals().keys()) + [
+        "MTYPE_SOFT_DEPS",
+        "SCITYPE_REGISTER",
+        "SCITYPE_LIST",
+    ]
+    return sorted(set(names))
 
 
 def mtype_to_scitype(mtype: str, return_unique=False, coerce_to_list=False):
