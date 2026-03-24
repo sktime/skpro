@@ -3,5 +3,14 @@
 
 from skpro.regression.ensemble._bagging import BaggingRegressor
 from skpro.regression.ensemble._ngboost import NGBoostRegressor
+from skpro.regression.ensemble._probabilistic_ensemble import (
+    ProbabilisticBoostingRegressor,
+    ProbabilisticStackingRegressor,
+)
 
-__all__ = ["BaggingRegressor", "NGBoostRegressor"]
+__all__ = [
+    "BaggingRegressor",
+    "NGBoostRegressor",
+    "ProbabilisticStackingRegressor",
+    "ProbabilisticBoostingRegressor",
+]
