@@ -49,7 +49,7 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     }
 
     def __init__(
-        self, distr_type="norm", random_state=None, fit_kde=False, fit_histogram=False
+        self, distr_type="norm", random_state=None, fit_kde=True, fit_histogram=False
     ):
         """
         Initialize UnconditionalDistfitRegressor.
@@ -68,7 +68,7 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         """
         self.distr_type = distr_type
         self.random_state = random_state
-        self.fit_kde = False
+        self.fit_kde = fit_kde
         self.fit_histogram = fit_histogram
         super().__init__()
 
