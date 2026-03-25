@@ -1,15 +1,13 @@
-"""
-Unconditional probabilistic regression baseline using distfit.
+"""Unconditional probabilistic regression baseline using distfit.
 
-This regressor ignores all features and fits a univariate density to the target using distfit.
+Regressor ignores all features and fits a univariate density to target using distfit.
 """
-
 
 import numpy as np
-from skpro.regression.base import BaseProbaRegressor
-from skpro.distributions.base import BaseDistribution
-
 from distfit import distfit
+
+from skpro.distributions.base import BaseDistribution
+from skpro.regression.base import BaseProbaRegressor
 
 
 class UnconditionalDistfitRegressor(BaseProbaRegressor):
@@ -17,27 +15,47 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     Featureless unconditional probabilistic regressor using distfit.
 
     Fits a univariate density to the target using distfit, ignoring all features.
-    Supports parametric (e.g., normal, laplace), nonparametric (kde), and histogram fitting via distfit's API.
+    Supports parametric (e.g., normal, laplace), nonparametric (kde),
+    and histogram fitting via distfit's API.
 
     References
     ----------
-    - mlr3proba: Probabilistic Supervised Learning in R (mlr3 book chapter on density estimation, 2020–ongoing).
+    - mlr3proba: Probabilistic Supervised Learning in R (density estimation).
       https://mlr3book.mlr-org.com/chapters/chapter13/beyond_regression_and_classification.html
-    - LinCDE: Conditional Density Estimation via Lindsey’s Method (Gao & Hastie, JMLR 2022).
-      https://jmlr.org/papers/volume23/21-0840/21-0840.pdf
+    - LinCDE: Conditional Density Estimation via Lindsey’s Method
+      (Gao & Hastie, JMLR 2022). https://jmlr.org/papers/volume23/21-0840/21-0840.pdf
     - Conditional Density Estimation with Histogram Trees (Yang et al., NeurIPS 2024).
       https://arxiv.org/html/2410.11449v1
     - Nonparametric Conditional Density Estimation (Hansen, 2004).
       https://users.ssc.wisc.edu/~behansen/papers/ncde.pdf
     - distfit documentation: https://erdogant.github.io/distfit/
+
+    Examples
+    --------
+    >>> from skpro.regression.unconditional_distfit import \
+    ...     UnconditionalDistfitRegressor
+    >>> import numpy as np
+    >>> X = np.random.randn(100, 2)
+    >>> y = np.random.randn(100)
+    >>> reg = UnconditionalDistfitRegressor(distr_type='norm')
+    >>> reg.fit(X, y)
+    >>> dist = reg.predict_proba(X)
+    >>> samples = dist.sample(5)
+    >>> print(samples.shape)
+    (5,)
     """
 
-    def __init__(self, distr_type='norm', random_state=None, fit_kde=False, fit_histogram=False):
+    def __init__(
+        self, distr_type="norm", random_state=None, fit_kde=False, fit_histogram=False
+    ):
         """
+        Initialize UnconditionalDistfitRegressor.
+
         Parameters
         ----------
         distr_type : str, default='norm'
-            Distribution type for distfit (e.g., 'norm', 'laplace', etc.; see distfit docs for full list).
+            Distribution type for distfit (e.g., 'norm', 'laplace', etc.; see
+            distfit docs for full list).
         random_state : int or None
             Random seed for reproducibility.
         fit_kde : bool, default=False
@@ -52,13 +70,15 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         super().__init__()
 
     def _fit(self, X, y, C=None):
-        y_arr = y.values.flatten() if hasattr(y, 'values') else np.asarray(y).flatten()
+        y_arr = y.values.flatten() if hasattr(y, "values") else np.asarray(y).flatten()
         if self.fit_kde:
-            self.distfit_ = distfit(distr='kde', random_state=self.random_state)
+            self.distfit_ = distfit(distr="kde", random_state=self.random_state)
         elif self.fit_histogram:
-            self.distfit_ = distfit(distr='histogram', random_state=self.random_state)
+            self.distfit_ = distfit(distr="histogram", random_state=self.random_state)
         else:
-            self.distfit_ = distfit(distr=self.distr_type, random_state=self.random_state)
+            self.distfit_ = distfit(
+                distr=self.distr_type, random_state=self.random_state
+            )
         self.distfit_.fit_transform(y_arr)
         return self
 
@@ -66,8 +86,10 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         # Return a distribution object that wraps the fitted distfit
         return _DistfitDistribution(self.distfit_)
 
+
 class _DistfitDistribution(BaseDistribution):
     """Wraps a distfit fitted object as a skpro distribution."""
+
     def __init__(self, distfit_obj):
         self.distfit_obj = distfit_obj
         super().__init__()

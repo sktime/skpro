@@ -1,9 +1,12 @@
-# Benchmark script for baseline probabilistic regressors
+"""Benchmark script for baseline probabilistic regressors."""
+import logging
+
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from skpro.regression.unconditional_distfit import UnconditionalDistfitRegressor
-from skpro.regression.deterministic_reduction import DeterministicReductionRegressor
+
 from skpro.metrics import PinballLoss
+from skpro.regression.deterministic_reduction import DeterministicReductionRegressor
+from skpro.regression.unconditional_distfit import UnconditionalDistfitRegressor
 
 # Generate synthetic data
 X = np.random.randn(200, 5)
@@ -19,7 +22,7 @@ reg1.fit(X_train, y_train)
 dist1 = reg1.predict_proba(X_test)
 
 # Baseline 2: Deterministic reduction
-reg2 = DeterministicReductionRegressor(LinearRegression(), distr_type='gaussian')
+reg2 = DeterministicReductionRegressor(LinearRegression(), distr_type="gaussian")
 reg2.fit(X_train, y_train)
 dist2 = reg2.predict_proba(X_test)
 
@@ -28,4 +31,10 @@ alphas = [0.1, 0.5, 0.9]
 for alpha in alphas:
     loss1 = PinballLoss(alpha=alpha)(y_test, dist1)
     loss2 = PinballLoss(alpha=alpha)(y_test, dist2)
-    print(f"Alpha={alpha}: UnconditionalDistfitRegressor pinball loss={loss1:.4f}, DeterministicReductionRegressor pinball loss={loss2:.4f}")
+    logging.info(
+        "Alpha=%s: UnconditionalDistfitRegressor pinball loss=%.4f, "
+        "DeterministicReductionRegressor pinball loss=%.4f",
+        alpha,
+        loss1,
+        loss2,
+    )
