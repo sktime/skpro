@@ -48,7 +48,6 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         "tests:vm": True,  # set True if special VM is needed
     }
 
-
     def __init__(self, distr_type="norm", random_state=None, fit_histogram=False):
         """
         Initialize UnconditionalDistfitRegressor.
@@ -122,7 +121,9 @@ class _DistfitDistribution(BaseDistribution):
         model = self.distfit_obj.model
         if isinstance(model, dict) and "scale" in model:
             return model["scale"] ** 2
-        raise AttributeError("distfit model does not have a 'scale' (variance) attribute")
+        raise AttributeError(
+            "distfit model does not have a 'scale' (variance) attribute"
+        )
 
     def get_params(self, deep=True):
         """Return parameters of the distribution."""
