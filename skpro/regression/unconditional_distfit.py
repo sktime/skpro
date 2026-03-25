@@ -115,8 +115,15 @@ class _DistfitDistribution(BaseDistribution):
 
     def mean(self):
         model = self.distfit_obj.model
-        if isinstance(model, dict) and "loc" in model:
-            return model["loc"]
+        if isinstance(model, dict):
+            # distfit returns 'loc' for normal/laplace, sometimes 'mean' for others
+            if "loc" in model:
+                return model["loc"]
+            if "mean" in model:
+                return model["mean"]
+            raise AttributeError(
+                "distfit model dict has neither 'loc' nor 'mean' key; cannot determine mean."
+            )
         return model.mean()
 
     def var(self):
