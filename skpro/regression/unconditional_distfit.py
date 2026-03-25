@@ -88,7 +88,7 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         return self
 
     def _predict_proba(self, X):
-        # Return a distribution object that wraps the fitted distfit
+        # Return a single distribution object for all samples
         return _DistfitDistribution(self.distfit_)
 
     @classmethod
