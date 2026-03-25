@@ -49,7 +49,7 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     }
 
     def __init__(
-        self, distr_type="norm", random_state=None, fit_kde=True, fit_histogram=False
+        self, distr_type="norm", random_state=None, fit_histogram=False
     ):
         """
         Initialize UnconditionalDistfitRegressor.
@@ -61,14 +61,11 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
             distfit docs for full list).
         random_state : int or None
             Random seed for reproducibility.
-            fit_kde : bool, default=True
-                If True, fit a KDE (kernel density estimate) using distfit's kde option.
         fit_histogram : bool, default=False
             If True, fit a histogram using distfit's histogram option.
         """
         self.distr_type = distr_type
         self.random_state = random_state
-        self.fit_kde = fit_kde
         self.fit_histogram = fit_histogram
         super().__init__()
 
@@ -77,11 +74,11 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         from distfit import distfit
 
         y_arr = y.values.flatten() if hasattr(y, "values") else np.asarray(y).flatten()
-        # Block KDE usage due to scipy.stats.kde deprecation in distfit
-        if self.fit_kde or self.distr_type == "kde":
+        # KDE support removed due to scipy.stats.kde deprecation in distfit
+        if self.distr_type == "kde":
             raise RuntimeError(
-                "distfit KDE support broken due to scipy.stats.kde removal. "
-                "Please use a different distribution type or set fit_kde=False."
+                "KDE support is removed due to scipy.stats.kde deprecation in distfit. "
+                "Please use a different distribution type."
             )
         if self.fit_histogram:
             self.distfit_ = distfit(distr="histogram", random_state=self.random_state)
@@ -100,8 +97,8 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter sets for automated tests."""
         return [
-            {"distr_type": "norm", "fit_kde": False, "fit_histogram": False},
-            {"distr_type": "laplace", "fit_kde": True, "fit_histogram": False},
+            {"distr_type": "norm", "fit_histogram": False},
+            {"distr_type": "laplace", "fit_histogram": False},
         ]
 
 
