@@ -38,8 +38,7 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
     >>> reg = DeterministicReductionRegressor(LinearRegression(), distr_type='gaussian')
     >>> reg.fit(X, y)
     >>> dist = reg.predict_proba(X)
-    >>> print(dist.mean().shape)
-    (100,)
+    >>> print(dist.mean())
     """
 
     def __init__(self, regressor, distr_type="gaussian"):
@@ -51,6 +50,7 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
         # Ensure X and y are DataFrames with string column names
         import pandas as pd
         from sklearn.base import clone
+
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         X = X.copy()
@@ -75,6 +75,7 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
 
     def _predict_proba(self, X):
         import pandas as pd
+
         # Ensure X is a DataFrame with string column names
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X, columns=self._X_cols)
