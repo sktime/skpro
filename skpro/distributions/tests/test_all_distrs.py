@@ -48,7 +48,7 @@ def _has_capability(distr, method):
     return method in approx_methods or method in exact_methods
 
 
-METHODS_SCALAR = ["mean", "var", "energy", "pdfnorm"]
+METHODS_SCALAR = ["mean", "var", "energy", "pdfnorm", "truncated_mean"]
 METHODS_SCALAR_POS = ["var", "energy", "pdfnorm"]  # result always non-negative?
 METHODS_X = ["energy", "pdf", "log_pdf", "pmf", "log_pmf", "cdf"]
 METHODS_X_POS = ["energy", "pdf", "pmf", "cdf", "surv", "haz"]  # result non-negative?
@@ -273,6 +273,45 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             assert np.allclose(x.values, x_approx.values)
         else:
             assert np.allclose(x, x_approx)
+
+    def test_truncated_mean_unbounded_equals_mean(self, object_instance):
+        """Test that truncated_mean with no bounds equals mean."""
+        d = object_instance
+        if not _has_capability(d, "truncated_mean") or not _has_capability(d, "mean"):
+            return None
+
+        mean_val = d.mean()
+        trunc_mean_val = d.truncated_mean()
+
+        if d.ndim > 0:
+            assert np.allclose(
+                mean_val.values, trunc_mean_val.values, rtol=1e-4, atol=1e-6
+            )
+        else:
+            assert np.allclose(mean_val, trunc_mean_val, rtol=1e-4, atol=1e-6)
+
+    def test_truncated_mean_with_bounds(self, object_instance):
+        """Test truncated_mean output format when called with bounds."""
+        d = object_instance
+        if not _has_capability(d, "truncated_mean"):
+            return None
+
+        x = d.sample()
+        if d.ndim > 0:
+            lower = x.values
+            upper = lower + 1.0
+            res = d.truncated_mean(lower=lower, upper=upper)
+            assert res.shape == d.shape
+            assert (res.index == d.index).all()
+            assert (res.columns == d.columns).all()
+            assert isinstance(res, pd.DataFrame)
+            assert res.apply(pd.api.types.is_numeric_dtype).all()
+        else:
+            lower = x - 1.0
+            upper = x + 1.0
+            res = d.truncated_mean(lower=lower, upper=upper)
+            assert np.isscalar(res)
+            assert np.isreal(res)
 
     def test_index_columns_last_args(self, object_class):
         """Test that index and columns are the last arguments in __init__."""
