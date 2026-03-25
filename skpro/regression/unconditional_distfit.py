@@ -61,14 +61,14 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
             distfit docs for full list).
         random_state : int or None
             Random seed for reproducibility.
-        fit_kde : bool, default=False
-            If True, fit a KDE (kernel density estimate) using distfit's kde option.
+            fit_kde : bool, default=True
+                If True, fit a KDE (kernel density estimate) using distfit's kde option.
         fit_histogram : bool, default=False
             If True, fit a histogram using distfit's histogram option.
         """
         self.distr_type = distr_type
         self.random_state = random_state
-        self.fit_kde = fit_kde
+        self.fit_kde = False
         self.fit_histogram = fit_histogram
         super().__init__()
 
