@@ -80,7 +80,7 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         # Block KDE usage due to scipy.stats.kde deprecation in distfit
         if self.fit_kde or self.distr_type == "kde":
             raise RuntimeError(
-                "distfit KDE support is broken due to scipy.stats.kde removal in recent scipy. "
+                "distfit KDE support broken due to scipy.stats.kde removal. "
                 "Please use a different distribution type or set fit_kde=False."
             )
         if self.fit_histogram:
