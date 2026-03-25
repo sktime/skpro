@@ -48,9 +48,7 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         "tests:vm": True,  # set True if special VM is needed
     }
 
-    def __init__(
-        self, distr_type="norm", random_state=None, fit_histogram=False
-    ):
+    def __init__(self, distr_type="norm", random_state=None, fit_histogram=False):
         """
         Initialize UnconditionalDistfitRegressor.
 
