@@ -43,22 +43,3 @@ def test_deterministic_reduction_regressor_laplace():
     assert hasattr(dist, "mu")
     assert hasattr(dist, "scale")
     assert np.allclose(dist.scale, np.sqrt(np.var(y) / 2))
-
-
-@pytest.mark.xfail(
-    reason="distfit KDE support is broken with recent scipy (scipy.stats.kde removed).",
-    strict=False,
-)
-def test_unconditional_distfit_regressor_kde():
-    # Test KDE as a nonparametric option if distfit supports it
-    # Broken in distfit due to scipy.stats.kde removal in recent scipy versions.
-    X = np.random.randn(50, 2)
-    y = np.random.randn(50)
-    reg = UnconditionalDistfitRegressor(distr_type="kde")
-    reg.fit(X, y)
-    dist = reg.predict_proba(X)
-    samples = dist.sample(5)
-    assert samples.shape[0] == 5
-
-
-# Note: duplicate test removed to fix F811

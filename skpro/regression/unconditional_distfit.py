@@ -77,9 +77,13 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         from distfit import distfit
 
         y_arr = y.values.flatten() if hasattr(y, "values") else np.asarray(y).flatten()
-        if self.fit_kde:
-            self.distfit_ = distfit(distr="kde", random_state=self.random_state)
-        elif self.fit_histogram:
+        # Block KDE usage due to scipy.stats.kde deprecation in distfit
+        if self.fit_kde or self.distr_type == "kde":
+            raise RuntimeError(
+                "distfit KDE support is broken due to scipy.stats.kde removal in recent scipy. "
+                "Please use a different distribution type or set fit_kde=False."
+            )
+        if self.fit_histogram:
             self.distfit_ = distfit(distr="histogram", random_state=self.random_state)
         else:
             self.distfit_ = distfit(
