@@ -45,7 +45,16 @@ class Normal(BaseDistribution):
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": [
+            "mean",
+            "var",
+            "energy",
+            "pdf",
+            "log_pdf",
+            "cdf",
+            "ppf",
+            "truncated_mean",
+        ],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -112,6 +121,50 @@ class Normal(BaseDistribution):
             expected value of distribution (entry-wise)
         """
         return self._bc_params["mu"]
+
+    def _truncated_mean(self, lower, upper):
+        r"""Return expected value of the distribution truncated to [lower, upper].
+
+        For :math:`X \sim N(\mu, \sigma^2)`:
+
+        .. math::
+
+            \mathbb{E}[X \mid a < X < b]
+            = \mu + \sigma \frac{\phi(\alpha) - \phi(\beta)}
+                                {\Phi(\beta) - \Phi(\alpha)}
+
+        where :math:`\alpha = (a - \mu)/\sigma`,
+        :math:`\beta = (b - \mu)/\sigma`,
+        :math:`\phi` is the standard normal pdf,
+        and :math:`\Phi` is the standard normal cdf.
+
+        Parameters
+        ----------
+        lower : 2D np.ndarray, same shape as ``self``
+            lower truncation bound
+        upper : 2D np.ndarray, same shape as ``self``
+            upper truncation bound
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            truncated expected value of distribution (entry-wise)
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+
+        alpha = (lower - mu) / sigma
+        beta = (upper - mu) / sigma
+
+        phi_alpha = np.exp(-0.5 * alpha**2) / np.sqrt(2 * np.pi)
+        phi_beta = np.exp(-0.5 * beta**2) / np.sqrt(2 * np.pi)
+        Phi_alpha = 0.5 * (1 + erf(alpha / np.sqrt(2)))
+        Phi_beta = 0.5 * (1 + erf(beta / np.sqrt(2)))
+
+        denom = Phi_beta - Phi_alpha
+        safe_denom = np.where(np.abs(denom) < 1e-15, np.nan, denom)
+
+        return mu + sigma * (phi_alpha - phi_beta) / safe_denom
 
     def _var(self):
         r"""Return element/entry-wise variance of the distribution.
