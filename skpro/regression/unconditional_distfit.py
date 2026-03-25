@@ -3,8 +3,8 @@
 Regressor ignores all features and fits a univariate density to target using distfit.
 """
 
+
 import numpy as np
-from distfit import distfit
 
 from skpro.distributions.base import BaseDistribution
 from skpro.regression.base import BaseProbaRegressor
@@ -45,6 +45,23 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     (5,)
     """
 
+    _tags = {
+        # packaging info
+        # --------------
+        "authors": ["arnavk23"],
+        "estimator_type": "regressor_proba",
+        "python_dependencies": "distfit>=1.6.8",
+        # estimator tags
+        # --------------
+        "capability:multioutput": False,
+        "capability:missing": True,
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
+        # CI and test flags
+        # -----------------
+        "tests:vm": True,  # set True if special VM is needed
+    }
+
     def __init__(
         self, distr_type="norm", random_state=None, fit_kde=False, fit_histogram=False
     ):
@@ -70,6 +87,9 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         super().__init__()
 
     def _fit(self, X, y, C=None):
+        # Import distfit only when needed for dependency isolation
+        from distfit import distfit
+
         y_arr = y.values.flatten() if hasattr(y, "values") else np.asarray(y).flatten()
         if self.fit_kde:
             self.distfit_ = distfit(distr="kde", random_state=self.random_state)
@@ -85,6 +105,14 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     def _predict_proba(self, X):
         # Return a distribution object that wraps the fitted distfit
         return _DistfitDistribution(self.distfit_)
+
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter sets for automated tests."""
+        return [
+            {"distr_type": "norm", "fit_kde": False, "fit_histogram": False},
+            {"distr_type": "laplace", "fit_kde": True, "fit_histogram": False},
+        ]
 
 
 class _DistfitDistribution(BaseDistribution):
@@ -105,3 +133,9 @@ class _DistfitDistribution(BaseDistribution):
 
     def var(self):
         return self.distfit_obj.model.var()
+
+    def get_params(self, deep=True):
+        """Return parameters of the distribution."""
+        # Example: expose distfit_obj and its distribution type if available
+        distr_type = getattr(self.distfit_obj, "distr", None)
+        return {"distfit_obj": self.distfit_obj, "distr_type": distr_type}
