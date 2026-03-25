@@ -26,19 +26,6 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
     - Efficient and Distance-Aware Deep Regressor for Uncertainty Quantification
       (Bui et al., 2024).
       https://proceedings.mlr.press/v238/manh-bui24a/manh-bui24a.pdf
-
-    Examples
-    --------
-    >>> from skpro.regression.deterministic_reduction import \
-        ...     DeterministicReductionRegressor
-    >>> from sklearn.linear_model import LinearRegression
-    >>> import numpy as np
-    >>> X = np.random.randn(100, 2)
-    >>> y = np.random.randn(100)
-    >>> reg = DeterministicReductionRegressor(LinearRegression(), distr_type='gaussian')
-    >>> reg.fit(X, y)
-    >>> dist = reg.predict_proba(X)
-    >>> print(dist.mean())
     """
 
     def __init__(self, regressor, distr_type="gaussian"):

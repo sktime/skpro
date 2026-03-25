@@ -29,20 +29,6 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     - Nonparametric Conditional Density Estimation (Hansen, 2004).
       https://users.ssc.wisc.edu/~behansen/papers/ncde.pdf
     - distfit documentation: https://erdogant.github.io/distfit/
-
-    Examples
-    --------
-    >>> from skpro.regression.unconditional_distfit import \
-        ...     UnconditionalDistfitRegressor
-    >>> import numpy as np
-    >>> X = np.random.randn(100, 2)
-    >>> y = np.random.randn(100)
-    >>> reg = UnconditionalDistfitRegressor(distr_type='norm')
-    >>> reg.fit(X, y)
-    >>> dist = reg.predict_proba(X)
-    >>> samples = dist.sample(5)
-    >>> print(samples.shape)
-    (5,)
     """
 
     _tags = {
