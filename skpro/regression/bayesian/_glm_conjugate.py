@@ -346,17 +346,18 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         # Student-t predictive if noise_prior_shape/rate are set
         if self.noise_prior_shape is not None and self.noise_prior_rate is not None:
             nu = 2 * self._noise_posterior_shape
-            scale = (
+            # predictive scale: sqrt(bN/aN * (1 + x^T Sigma_N x))
+            pred_scale = np.sqrt(
                 self._noise_posterior_rate
                 / self._noise_posterior_shape
                 * (1 + pred_var_all_x_i)
             )
-            from skpro.distributions.student_t import StudentT
+            from skpro.distributions.t import TDistribution
 
             mus = pred_mu.reshape(-1, 1).tolist()
-            scales = scale.reshape(-1, 1).tolist()
-            return StudentT(
-                mu=mus, scale=scales, df=nu, columns=self._y_cols, index=idx
+            sigmas = pred_scale.reshape(-1, 1).tolist()
+            return TDistribution(
+                mu=mus, sigma=sigmas, df=nu, columns=self._y_cols, index=idx
             )
         else:
             pred_sigma = np.sqrt(pred_var_all_x_i + 1 / self.noise_precision)
@@ -379,18 +380,27 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         float
             Log marginal likelihood (evidence).
         """
-        # Convert to numpy arrays
-        if isinstance(X, (np.ndarray, np.generic)):
-            X_arr = X
+        import pandas as pd
+
+        # Apply the same intercept logic used in _fit / _predict_proba
+        if isinstance(X, pd.DataFrame):
+            X_df = X.copy()
+            if self.add_constant:
+                X_df = self._add_intercept(X_df)
+            X_arr = X_df.to_numpy(dtype=float)
         else:
-            X_arr = X.to_numpy(dtype=float)
+            X_arr = np.array(X, dtype=float)
+            if self.add_constant:
+                X_arr = np.column_stack([np.ones(X_arr.shape[0]), X_arr])
+
         if isinstance(y, (np.ndarray, np.generic)):
             y_arr = y
         else:
             y_arr = y.to_numpy(dtype=float)
+
         N = X_arr.shape[0]
-        S0 = self.coefs_prior_cov
-        m0 = self.coefs_prior_mu
+        S0 = self._coefs_prior_cov
+        m0 = self._coefs_prior_mu
         tau = self.noise_precision
         SN_inv = np.linalg.inv(S0) + tau * (X_arr.T @ X_arr)
         SN = np.linalg.inv(SN_inv)
@@ -399,7 +409,7 @@ class BayesianConjugateGLMRegressor(BaseProbaRegressor):
         term1 = -0.5 * N * np.log(2 * np.pi)
         term2 = 0.5 * np.log(np.linalg.det(SN) / np.linalg.det(S0))
         term3 = -0.5 * tau * np.sum((y_arr - X_arr @ mN) ** 2)
-        term4 = -0.5 * (mN - m0).T @ np.linalg.inv(S0) @ (mN - m0)
+        term4 = -0.5 * ((mN - m0).T @ np.linalg.inv(S0) @ (mN - m0)).item()
         log_ml = term1 + term2 + term3 + term4
         return float(log_ml)
 
