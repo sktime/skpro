@@ -114,7 +114,10 @@ class _DistfitDistribution(BaseDistribution):
         return self.distfit_obj.model.pdf(x)
 
     def mean(self):
-        return self.distfit_obj.model.mean()
+        model = self.distfit_obj.model
+        if isinstance(model, dict) and "loc" in model:
+            return model["loc"]
+        return model.mean()
 
     def var(self):
         # For normal/laplace, variance is scale**2
