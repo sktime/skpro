@@ -122,7 +122,7 @@ class _DistfitDistribution(BaseDistribution):
             if "mean" in model:
                 return model["mean"]
             raise AttributeError(
-                "distfit model dict has neither 'loc' nor 'mean' key; cannot determine mean."
+                "distfit dict has neither 'loc' nor 'mean' key; cannot determine mean."
             )
         return model.mean()
 
