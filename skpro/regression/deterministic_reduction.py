@@ -30,7 +30,7 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
     Examples
     --------
     >>> from skpro.regression.deterministic_reduction import \
-    ...     DeterministicReductionRegressor
+        ...     DeterministicReductionRegressor
     >>> from sklearn.linear_model import LinearRegression
     >>> import numpy as np
     >>> X = np.random.randn(100, 2)

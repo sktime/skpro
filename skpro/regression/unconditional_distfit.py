@@ -33,7 +33,7 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     Examples
     --------
     >>> from skpro.regression.unconditional_distfit import \
-    ...     UnconditionalDistfitRegressor
+        ...     UnconditionalDistfitRegressor
     >>> import numpy as np
     >>> X = np.random.randn(100, 2)
     >>> y = np.random.randn(100)
