@@ -104,6 +104,7 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
         raise ValueError(f"Unknown distr_type: {self.distr_type}")
 
     def get_params(self, deep=True):
+        """Get parameters for this estimator."""
         # Only return true hyperparameters, not fitted attributes
         return {"regressor": self.regressor, "distr_type": self.distr_type}
 
