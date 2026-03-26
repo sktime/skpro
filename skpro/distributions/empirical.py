@@ -542,7 +542,7 @@ class Empirical(BaseDistribution):
         else:
             n_samples_was_none = False
 
-        rng = np.random.default_rng()
+        rng = getattr(self, "_sample_rng", None) or np.random.default_rng()
 
         # scalar case
         if self.ndim == 0:
