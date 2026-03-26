@@ -15,8 +15,27 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     Featureless unconditional probabilistic regressor using distfit.
 
     Fits a univariate density to the target using distfit, ignoring all features.
-    Supports parametric (e.g., normal, laplace), nonparametric (kde),
-    and histogram fitting via distfit's API.
+    Supports parametric (e.g., normal, laplace) and histogram fitting via distfit's API.
+    Multi-output y is not supported (raises NotImplementedError).
+
+    This is a constant-uncertainty baseline: uncertainty does not shrink with more
+    data. Requires the optional dependency `distfit` (install with
+    `pip install distfit`).
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from skpro.regression.unconditional_distfit import (
+    ...     UnconditionalDistfitRegressor
+    ... )
+    >>> y = pd.DataFrame([1, 2, 3, 4, 5])
+    >>> X = pd.DataFrame(index=y.index)  # featureless DataFrame
+    >>> reg = UnconditionalDistfitRegressor(distr_type="norm")
+    >>> reg.fit(X, y)
+    UnconditionalDistfitRegressor()
+    >>> dist = reg.predict_proba(X)
+    >>> dist.mean()
+    3.0
 
     References
     ----------
@@ -49,19 +68,22 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     }
 
     def __init__(self, distr_type="norm", random_state=None, fit_histogram=False):
-        """
-        Initialize UnconditionalDistfitRegressor.
+        """Initialize UnconditionalDistfitRegressor.
 
         Parameters
         ----------
         distr_type : str, default='norm'
-            Distribution type for distfit (e.g., 'norm', 'laplace', etc.; see
-            distfit docs for full list).
+            Distribution type for distfit (e.g., 'norm', 'laplace'; see distfit docs).
         random_state : int or None
             Random seed for reproducibility.
         fit_histogram : bool, default=False
             If True, fit a histogram using distfit's histogram option.
         """
+        allowed_types = ["norm", "laplace", "histogram"]
+        if distr_type not in allowed_types:
+            raise ValueError(
+                f"distr_type must be one of {allowed_types}, got {distr_type}"
+            )
         self.distr_type = distr_type
         self.random_state = random_state
         self.fit_histogram = fit_histogram
@@ -72,7 +94,11 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         from distfit import distfit
 
         y_arr = y.values.flatten() if hasattr(y, "values") else np.asarray(y).flatten()
-        # KDE support removed due to scipy.stats.kde deprecation in distfit
+        if y_arr.ndim != 1:
+            raise NotImplementedError(
+                "UnconditionalDistfitRegressor only supports univariate y. Got shape: "
+                + str(y.shape)
+            )
         if self.distr_type == "kde":
             raise RuntimeError(
                 "KDE support is removed due to scipy.stats.kde deprecation in distfit. "

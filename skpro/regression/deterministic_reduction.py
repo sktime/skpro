@@ -11,10 +11,45 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class DeterministicReductionRegressor(BaseProbaRegressor):
+        _tags = {
+            # packaging info
+            # --------------
+            "authors": ["arnavk23"],
+            "estimator_type": "regressor_proba",
+            # estimator tags
+            # --------------
+            "capability:multioutput": False,
+            "capability:missing": True,
+            "X_inner_mtype": "pd_DataFrame_Table",
+            "y_inner_mtype": "pd_DataFrame_Table",
+            # CI and test flags
+            # -----------------
+            "tests:vm": True,  # set True if special VM is needed
+        }
     """
     Wraps a deterministic regressor to output a Gaussian or Laplace.
 
     The output has mean=prediction, var=training sample var.
+    Multi-output y is not supported (raises NotImplementedError).
+
+    Examples
+    --------
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from skpro.regression.deterministic_reduction import (
+    ...     DeterministicReductionRegressor
+    ... )
+    >>> import pandas as pd
+    >>> X = pd.DataFrame({"a": [1, 2, 3]})
+    >>> y = pd.DataFrame([1, 2, 3])
+    >>> reg = DeterministicReductionRegressor(LinearRegression(), distr_type="gaussian")
+     >>> reg.fit(X, y)  # doctest: +ELLIPSIS
+     DeterministicReductionRegressor(...)
+     >>> dist = reg.predict_proba(X)
+     >>> dist.mean()  # doctest: +NORMALIZE_WHITESPACE
+         0
+     0  1.0
+     1  2.0
+     2  3.0
 
     References
     ----------
@@ -29,6 +64,11 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
     """
 
     def __init__(self, regressor, distr_type="gaussian"):
+        allowed_types = ["gaussian", "laplace"]
+        if distr_type not in allowed_types:
+            raise ValueError(
+                f"distr_type must be one of {allowed_types}, got {distr_type}"
+            )
         self.regressor = regressor
         self.distr_type = distr_type
         super().__init__()
@@ -46,6 +86,11 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
             y = pd.DataFrame(y)
         y = y.copy()
         y.columns = [str(col) for col in y.columns]
+        if y.shape[1] > 1:
+            raise NotImplementedError(
+                "DeterministicReductionRegressor only supports univariate y. "
+                f"Got shape: {y.shape}"
+            )
         self._X_cols = X.columns
         self._y_cols = y.columns
         self._X_index = X.index
