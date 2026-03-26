@@ -11,21 +11,6 @@ from skpro.regression.base import BaseProbaRegressor
 
 
 class DeterministicReductionRegressor(BaseProbaRegressor):
-        _tags = {
-            # packaging info
-            # --------------
-            "authors": ["arnavk23"],
-            "estimator_type": "regressor_proba",
-            # estimator tags
-            # --------------
-            "capability:multioutput": False,
-            "capability:missing": True,
-            "X_inner_mtype": "pd_DataFrame_Table",
-            "y_inner_mtype": "pd_DataFrame_Table",
-            # CI and test flags
-            # -----------------
-            "tests:vm": True,  # set True if special VM is needed
-        }
     """
     Wraps a deterministic regressor to output a Gaussian or Laplace.
 
@@ -62,6 +47,16 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
       (Bui et al., 2024).
       https://proceedings.mlr.press/v238/manh-bui24a/manh-bui24a.pdf
     """
+            _tags = {
+            "authors": ["arnavk23"],
+            "estimator_type": "regressor_proba",
+            # estimator tags
+            # --------------
+            "capability:multioutput": False,
+            "capability:missing": True,
+            "X_inner_mtype": "pd_DataFrame_Table",
+            "y_inner_mtype": "pd_DataFrame_Table",
+        }
 
     def __init__(self, regressor, distr_type="gaussian"):
         allowed_types = ["gaussian", "laplace"]
