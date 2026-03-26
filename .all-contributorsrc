@@ -256,6 +256,14 @@
         "code",
         "bug"
       ]
-    },
+    {
+      "login": "maniktyagi04",
+      "name": "Manik Tyagi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/74643036?v=4",
+      "profile": "https://github.com/maniktyagi04",
+      "contributions": [
+        "doc"
+      ]
+    }
   ]
 }
