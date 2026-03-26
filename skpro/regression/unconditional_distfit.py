@@ -64,7 +64,7 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
         # CI and test flags
         # -----------------
-        "tests:vm": True,  # set True if special VM is needed
+        "tests:vm": False,  # set True if special VM is needed
     }
 
     def __init__(self, distr_type="norm", random_state=None, fit_histogram=False):
