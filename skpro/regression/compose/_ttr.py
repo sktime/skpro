@@ -6,6 +6,7 @@ __all__ = ["TransformedTargetRegressor"]
 
 import pandas as pd
 from sklearn import clone
+from sklearn.preprocessing import FunctionTransformer
 
 from skpro.distributions.trafo import TransformedDistribution
 from skpro.regression.base import BaseProbaRegressor
@@ -41,7 +42,17 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         probabilistic regressor to fit on transformed target variable
     transformer : sklearn transformer, optional (default=None)
         transformer to apply to target variable before fitting regressor,
-        and to apply inverse transform to predictions of regressor
+        and to apply inverse transform to predictions of regressor.
+        If provided, `func` and `inverse_func` are ignored.
+    func : callable, optional (default=None)
+        function to apply to target variable before fitting regressor.
+        The function should accept an array-like and return an array-like.
+        Only used if `transformer` is None. If provided, a FunctionTransformer
+        is created with `func` and `inverse_func`.
+    inverse_func : callable, optional (default=None)
+        function to apply to predictions of regressor before returning them.
+        The function should accept an array-like and return an array-like.
+        Only used if `transformer` is None and `func` is provided.
 
     Attributes
     ----------
@@ -70,6 +81,18 @@ class TransformedTargetRegressor(BaseProbaRegressor):
     >>> reg.fit(X_train, y_train)
     TransformedTargetRegressor(...)
     >>> y_pred = reg.predict_proba(X_test)
+    >>>
+    >>> # Using func and inverse_func for log transformation
+    >>> import numpy as np
+    >>> reg_log = TransformedTargetRegressor(
+    ...     regressor=ResidualDouble.create_test_instance(),
+    ...     func=np.log,
+    ...     inverse_func=np.exp
+    ... )
+    >>>
+    >>> reg_log.fit(X_train, y_train)
+    TransformedTargetRegressor(...)
+    >>> y_pred_log = reg_log.predict_proba(X_test)
     """
 
     _tags = {
@@ -77,19 +100,32 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         "capability:missing": True,
     }
 
-    def __init__(self, regressor, transformer=None):
+    def __init__(self, regressor, transformer=None, func=None, inverse_func=None):
         self.regressor = regressor
         self.transformer = transformer
+        self.func = func
+        self.inverse_func = inverse_func
+
         super().__init__()
 
         self.regressor_ = regressor.clone()
-        self.transformer_ = clone(transformer) if transformer else None
+
+        # Handle transformer, func, and inverse_func similar to sklearn
+        if transformer is not None:
+            self.transformer_ = clone(transformer)
+        elif func is not None:
+            self.transformer_ = FunctionTransformer(
+                func=func, inverse_func=inverse_func, validate=False
+            )
+        else:
+            self.transformer_ = None
 
         tags_to_clone = [
             "capability:multioutput",
             "capability:survival",
             "capability:update",
         ]
+
         self.clone_tags(self.regressor_, tags_to_clone)
 
     def _fit(self, X, y, C=None):
@@ -171,6 +207,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             yt = self.transformer_.transform(y)
         else:
             yt = y
+
         self.regressor_.update(X=X, y=yt, C=C)
         return self
 
@@ -194,13 +231,19 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         y_pred = self.regressor_.predict(X=X)
-        y_pred_it = self.transformer_.inverse_transform(y_pred)
-        if not isinstance(y_pred_it, pd.DataFrame):
-            y_cols = self._y_metadata["feature_names"]
-            y_pred_it = pd.DataFrame(y_pred_it, index=X.index, columns=y_cols)
+
+        if self.transformer_ is not None:
+            y_pred_it = self.transformer_.inverse_transform(y_pred)
+
+            if not isinstance(y_pred_it, pd.DataFrame):
+                y_cols = self._y_metadata["feature_names"]
+                y_pred_it = pd.DataFrame(y_pred_it, index=X.index, columns=y_cols)
+            else:
+                y_pred_it.columns = self._y_metadata["feature_names"]
+            return y_pred_it
+
         else:
-            y_pred_it.columns = self._y_metadata["feature_names"]
-        return y_pred_it
+            return y_pred
 
     def _predict_quantiles(self, X, alpha):
         """Compute/return quantile predictions.
@@ -225,12 +268,18 @@ class TransformedTargetRegressor(BaseProbaRegressor):
                 at quantile probability in second col index, for the row index.
         """
         y_pred = self.regressor_.predict_quantiles(X=X, alpha=alpha)
-        y_pred_it = self._get_inverse_transform_pred_int(
-            transformer=self.transformer_, y=y_pred
-        )
-        cols = self._y_metadata["feature_names"]
-        y_pred_it.columns = self._replace_column_level(y_pred_it.columns, cols)
-        return y_pred_it
+
+        if self.transformer_ is not None:
+            y_pred_it = self._get_inverse_transform_pred_int(
+                transformer=self.transformer_, y=y_pred
+            )
+
+            cols = self._y_metadata["feature_names"]
+            y_pred_it.columns = self._replace_column_level(y_pred_it.columns, cols)
+            return y_pred_it
+
+        else:
+            return y_pred
 
     def _predict_interval(self, X, coverage):
         """Compute/return interval predictions.
@@ -260,12 +309,17 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
         y_pred = self.regressor_.predict_interval(X=X, coverage=coverage)
-        y_pred_it = self._get_inverse_transform_pred_int(
-            transformer=self.transformer_, y=y_pred
-        )
-        cols = self._y_metadata["feature_names"]
-        y_pred_it.columns = self._replace_column_level(y_pred_it.columns, cols)
-        return y_pred_it
+
+        if self.transformer_ is not None:
+            y_pred_it = self._get_inverse_transform_pred_int(
+                transformer=self.transformer_, y=y_pred
+            )
+            cols = self._y_metadata["feature_names"]
+            y_pred_it.columns = self._replace_column_level(y_pred_it.columns, cols)
+            return y_pred_it
+
+        else:
+            return y_pred
 
     def _predict_var(self, X):
         """Compute/return variance predictions.
@@ -309,16 +363,20 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         y_pred = self.regressor_.predict_proba(X=X)
-        # The regressor outputs distributions in transformed space.
-        # We need to apply inverse_transform to get back to original space.
-        y_pred_it = TransformedDistribution(
-            distribution=y_pred,
-            transform=self.transformer_,
-            assume_monotonic=True,
-            index=X.index,
-            columns=self._y_metadata["feature_names"],
-        )
-        return y_pred_it
+
+        if self.transformer_ is not None:
+            # The regressor outputs distributions in transformed space.
+            # We need to apply inverse_transform to get back to original space.
+            y_pred_it = TransformedDistribution(
+                distribution=y_pred,
+                transform=self.transformer_,
+                assume_monotonic=True,
+                index=X.index,
+                columns=self._y_metadata["feature_names"],
+            )
+            return y_pred_it
+        else:
+            return y_pred
 
     def _get_inverse_transform_pred_int(self, transformer, y):
         """Inverse transform predict outputs predict_interval and predict_quantiles.
@@ -434,4 +492,14 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             "regressor": ConditionUncensored.create_test_instance(),
             "transformer": StandardScaler(),
         }
-        return [params1, params2]
+
+        # Test case using func and inverse_func
+        import numpy as np
+
+        params3 = {
+            "regressor": DummyProbaRegressor(strategy="normal"),
+            "func": np.log1p,
+            "inverse_func": np.expm1,
+        }
+
+        return [params1, params2, params3]
