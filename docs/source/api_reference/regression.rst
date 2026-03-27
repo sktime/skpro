@@ -149,6 +149,14 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
 
     CyclicBoosting
 
+.. currentmodule:: skpro.regression.reducing_interval
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    ReducingIntervalRegressor
+
 Reduction to probabilistic classification
 -----------------------------------------
 
