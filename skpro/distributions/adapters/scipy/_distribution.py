@@ -5,6 +5,7 @@ __author__ = ["malikrafsan"]
 
 from typing import Union
 
+import numpy as np
 import pandas as pd
 from scipy.stats import rv_continuous, rv_discrete
 
@@ -71,6 +72,14 @@ class _ScipyAdapter(BaseDistribution):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
         args, kwds = self._get_scipy_param()
         return obj.cdf(x, *args, **kwds)
+
+    def _log_cdf(self, x: pd.DataFrame):
+        obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
+        args, kwds = self._get_scipy_param()
+        if hasattr(obj, "logcdf"):
+            return obj.logcdf(x, *args, **kwds)
+        # fallback if logcdf not available
+        return np.log(obj.cdf(x, *args, **kwds))
 
     def _ppf(self, p: pd.DataFrame):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
