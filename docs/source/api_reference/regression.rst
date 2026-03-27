@@ -208,6 +208,7 @@ Linear regression
 
     ARDRegression
     BayesianRidge
+    BinomialRegressor
     GLMRegressor
     GlumRegressor
     PoissonRegressor
