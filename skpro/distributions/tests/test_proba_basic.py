@@ -141,7 +141,6 @@ def test_proba_plotting(fun):
     assert isinstance(ax, Axes)
 
 
-@pytest.mark.skip(reason="Undiagnosed failure. Skipping until resolved. See #918.")
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip if matplotlib is not available",
@@ -160,14 +159,20 @@ def test_discrete_pmf_plotting():
     # Check that stem plot was used (should have containers)
     assert len(ax.containers) > 0, "Stem plot should be used for discrete PMF"
 
-    # For small distributions, check that all support points are plotted
-    # Binomial(n=10) has support [0,1,2,...,10] = 11 points
-    # The stem plot should have evaluated at these points
-    if hasattr(ax.containers[0], "get_children"):
-        # This is a rough check - the stem plot should have multiple elements
-        assert (
-            len(ax.containers[0].get_children()) > 5
-        ), "Should plot at multiple support points"
+    # For small distributions, check that all support points are plotted.
+    # Binomial(n=10) has support [0, 1, 2, ..., 10] = 11 points.
+    # A StemContainer always has exactly 3 children (markerline, stemlines,
+    # baseline) regardless of the number of data points. The correct way to
+    # count plotted points is via stemlines.get_segments().
+    stem_container = ax.containers[0]
+    assert hasattr(
+        stem_container, "stemlines"
+    ), "Expected StemContainer from stem plot, check _plot_single uses ax.stem"
+    n_plotted = len(stem_container.stemlines.get_segments())
+    assert n_plotted > 5, (
+        f"Should plot at multiple support points, got {n_plotted}. "
+        "Binomial(n=10) has 11 support points (0..10)."
+    )
 
 
 def test_to_df_parametric():
