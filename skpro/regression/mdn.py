@@ -222,6 +222,7 @@ class MDNRegressor(BaseProbaRegressor):
         # CI and test flags
         # -----------------
         "tests:vm": True,
+        "tests:python_dependencies": ["pytorch_optimizer"],
     }
 
     def __init__(
@@ -597,6 +598,7 @@ class MDNRegressor(BaseProbaRegressor):
                     torch.nn.utils.clip_grad_norm_(
                         model.parameters(), max_norm=ngem_grad_clip_norm
                     )
+
                 optimiser.step()
                 losses.append(loss.item())
 
@@ -832,7 +834,8 @@ class _MixtureDensityNetwork:
         Number of Gaussian mixture components.
     """
 
-    pass  # defined dynamically to avoid top-level torch import
+    def __init__(self, backbone, backbone_out_dim, output_dim, n_gaussians):
+        pass  # defined dynamically to avoid top-level torch import
 
 
 class _NGEMPrecond:
@@ -913,7 +916,7 @@ def _ensure_mdn_class():
             sigma = sigma + 1e-6
             return logits, mu, sigma
 
-    _MixtureDensityNetwork = _MixtureDensityNetworkImpl
+    _MixtureDensityNetwork = _MixtureDensityNetworkImpl  # type: ignore[assignment]
 
 
 def _ensure_ngem_precond():
@@ -932,7 +935,8 @@ def _ensure_ngem_precond():
             return logits, mu, sigma
 
         @staticmethod
-        def backward(ctx, grad_logits, grad_mu, grad_sigma):
+        def backward(ctx, *grad_outputs):
+            grad_logits, grad_mu, grad_sigma = grad_outputs
             (sigma,) = ctx.saved_tensors
             sigma2 = sigma * sigma
 
@@ -943,7 +947,7 @@ def _ensure_ngem_precond():
 
             return grad_logits, grad_mu, grad_sigma
 
-    _NGEMPrecond = _NGEMPrecondImpl
+    _NGEMPrecond = _NGEMPrecondImpl  # type: ignore[assignment]
 
 
 def _gaussian_log_prob_diag(target, mu, sigma):
@@ -975,7 +979,9 @@ def _ngem_loss(logits, mu, sigma, target, eps=1e-12):
     import torch.nn.functional as F
 
     _ensure_ngem_precond()
-    logits, mu, sigma = _NGEMPrecond.apply(logits, mu, sigma)
+    logits, mu, sigma = _NGEMPrecond.apply(  # type: ignore[attr-defined]
+        logits, mu, sigma
+    )
 
     log_weights = F.log_softmax(logits, dim=1)
     log_normal = _gaussian_log_prob_diag(target, mu, sigma)

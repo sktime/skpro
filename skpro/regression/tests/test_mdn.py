@@ -97,7 +97,7 @@ def test_mdn_noise_scale_method_values_and_isj():
 def test_mdn_custom_activation_and_optimizer_class():
     """Test MDN supports custom hidden activation and optimizer class."""
     import torch.nn as nn
-    from pytorch_optimizer import AdamP
+    from pytorch_optimizer.optimizer.adamp import AdamP
     from sklearn.datasets import make_regression
     from sklearn.model_selection import train_test_split
 
