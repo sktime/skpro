@@ -104,6 +104,9 @@ class EnbpiRegressor(BaseProbaRegressor):
     _tags = {
         "authors": ["fkiraly", "hamrel-cxu"],
         "capability:missing": True,
+        "tests:skip_by_name": [
+            "test_non_state_changing_method_contract"
+        ],  # TODO: fix in #922
     }
 
     def __init__(

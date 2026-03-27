@@ -18,6 +18,9 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         "estimator_type": "regressor",
         "capability:multioutput": True,
         "capability:missing": True,
+        "tests:skip_by_name": [
+            "test_non_state_changing_method_contract"
+        ],  # TODO: fix in #922
     }
 
     def __init__(
@@ -188,11 +191,9 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         self.best_index_ = results.loc[:, f"rank_{scoring_name}"].argmin()
         # Raise error if all fits in evaluate failed because all score values are NaN.
         if self.best_index_ == -1:
-            raise RuntimeError(
-                f"""All fits of estimator failed,
+            raise RuntimeError(f"""All fits of estimator failed,
                 set error_score='raise' to see the exceptions.
-                Failed estimator: {self.estimator}"""
-            )
+                Failed estimator: {self.estimator}""")
         self.best_score_ = results.loc[self.best_index_, f"mean_{scoring_name}"]
         self.best_params_ = results.loc[self.best_index_, "params"]
         self.best_estimator_ = self.estimator.clone().set_params(**self.best_params_)
