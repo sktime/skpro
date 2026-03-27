@@ -12,6 +12,12 @@ from skpro.regression._bandwidth import (
     bw_scott_1d,
     bw_silverman_1d,
 )
+from skpro.tests.test_switch import run_test_module_changed
+
+pytestmark = pytest.mark.skipif(
+    not run_test_module_changed("skpro.regression"),
+    reason="run only if skpro.regression has been changed",
+)
 
 
 def test_bandwidth_1d_methods_return_finite_positive_values():
