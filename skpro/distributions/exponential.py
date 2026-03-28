@@ -48,6 +48,7 @@ class Exponential(_ScipyAdapter):
             "log_pdf",
             "cdf",
             "energy",
+            "truncated_mean",
         ],
         "distr:measuretype": "continuous",
         "broadcast_init": "on",
@@ -91,6 +92,56 @@ class Exponential(_ScipyAdapter):
         if energy_arr.ndim > 0:
             energy_arr = energy_arr.sum(axis=1)
         return energy_arr
+
+    def _truncated_mean(self, lower, upper):
+        r"""Return expected value of the distribution truncated to [lower, upper].
+
+        For :math:`X \sim \text{Exp}(\lambda)` with support :math:`[0, \infty)`:
+
+        .. math::
+
+            \mathbb{E}[X \mid a < X < b]
+            = \frac{(a + 1/\lambda) e^{-\lambda a}
+                  - (b + 1/\lambda) e^{-\lambda b}}
+                   {e^{-\lambda a} - e^{-\lambda b}}
+
+        where :math:`a = \max(\text{lower}, 0)`.
+
+        Parameters
+        ----------
+        lower : 2D np.ndarray, same shape as ``self``
+            lower truncation bound
+        upper : 2D np.ndarray, same shape as ``self``
+            upper truncation bound
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            truncated expected value of distribution (entry-wise)
+        """
+        rate = self._bc_params["rate"]
+        inv_rate = 1.0 / rate
+
+        a = np.maximum(lower, 0.0)
+        b = np.asarray(upper, dtype=float)
+
+        b_safe = np.where(np.isfinite(b), b, 0.0)
+        exp_a = np.exp(-rate * a)
+        exp_b_raw = np.exp(-rate * b_safe)
+        is_b_finite = np.isfinite(b)
+
+        term_a = (a + inv_rate) * exp_a
+        term_b = np.where(is_b_finite, (b_safe + inv_rate) * exp_b_raw, 0.0)
+
+        numer = term_a - term_b
+        denom = exp_a - np.where(is_b_finite, exp_b_raw, 0.0)
+
+        safe_denom = np.where(np.abs(denom) < 1e-15, np.nan, denom)
+        result = numer / safe_denom
+
+        no_overlap = (a >= b) | ((upper <= 0) & np.isfinite(upper))
+        result = np.where(no_overlap, np.nan, result)
+        return result
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
