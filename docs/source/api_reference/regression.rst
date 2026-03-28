@@ -58,6 +58,14 @@ Online learning
     OnlineRefitEveryN
     OnlineDontRefit
 
+.. currentmodule:: skpro.regression.ondil
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    OndilOnlineGamlss
+
 Reduction - adding ``predict_proba``
 ------------------------------------
 
@@ -106,6 +114,24 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
 
     MapieRegressor
 
+.. currentmodule:: skpro.regression.conformal
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MapieSplitConformalRegressor
+    MapieCrossConformalRegressor
+    MapieConformalizedQuantileRegressor
+
+.. currentmodule:: skpro.regression.jackknife
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MapieJackknifeAfterBootstrapRegressor
+
 .. currentmodule:: skpro.regression.ensemble
 
 .. autosummary::
@@ -145,6 +171,17 @@ Distributional boosting
 
     XGBoostLSS
 
+Deep learning based regression
+------------------------------
+
+.. currentmodule:: skpro.regression.mdn
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MDNRegressor
+
 Naive regressors and baselines
 ------------------------------
 
@@ -172,7 +209,19 @@ Linear regression
     ARDRegression
     BayesianRidge
     GLMRegressor
+    GlumRegressor
     PoissonRegressor
+
+Generalized Additive Models
+---------------------------
+
+.. currentmodule:: skpro.regression.gam
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    GAMRegressor
 
 Gaussian process and kernel regression
 --------------------------------------
@@ -184,6 +233,17 @@ Gaussian process and kernel regression
     :template: class.rst
 
     GaussianProcess
+
+Non-parametric conditional density estimation
+-------------------------
+
+.. currentmodule:: skpro.regression.nonparametric
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    NadarayaWatsonCDE
 
 Bayesian regressors
 -------------------

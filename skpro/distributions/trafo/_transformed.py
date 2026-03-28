@@ -91,7 +91,6 @@ class TransformedDistribution(BaseDistribution):
 
     _tags = {
         "capabilities:approx": [
-            "pdfnorm",
             "mean",
             "var",
             "energy",
@@ -501,7 +500,7 @@ class TransformedDistribution(BaseDistribution):
 
         return cdf_res
 
-    def sample(self, n_samples=None):
+    def _sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters

@@ -16,6 +16,215 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.12.0] - 2026-03-14
+=====================
+
+Highlights
+~~~~~~~~~~
+
+* Nadaraya Watson CDE regressor (:pr:`772`) :user:`patelchaitany`
+* Mixture Density Network regressor (:pr:`796`) :user:`joshdunnlime`
+* ``KernelMixture`` distribution for kernel density estimation (:pr:`721`) :user:`amaydixit11`
+* performance improvements in ``EnbpiRegressor`` (:pr:`704`) :user:`marrov`
+* zero-inflated probability distribution compositor (:pr:`648`) :user:`Khushmagrawal`
+* new probability distributions: BurrIII, BurrXII, Cauchy, FDist, FatigueLife,
+  GeneralizedPareto, Gumbel, Levy, Rayleigh,
+  Skellam, TruncatedPareto (:pr:`690`, :pr:`728`, :pr:`754`, :pr:`778`)
+  :user:`an1k3sh`, :user:`arnavk23`, :user:`KaranSinghDev`, :user:`patelchaitany`
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] Add explicit energy computations for multiple distributions (:pr:`688`) :user:`arnavk23`
+* [ENH] Add BurrIII, BurrXII, FDist, FatigueLife, GeneralizedPareto, Levy, Skellam, TruncatedPareto distributions (:pr:`690`) :user:`arnavk23`
+* [ENH] in ``XGBoostLSS``, expose underlying parameters when ``n_trail=0`` (:pr:`672`) :user:`joshdunnlime`
+* [ENH] Optimize ``EnbpiRegressor`` through faster sampling in ``Empirical`` (:pr:`704`) :user:`marrov`
+* [ENH] analytic computations for energy of some distributions (:pr:`691`) :user:`arnavk23`
+* [ENH] ``_pmf_support`` method for ``BaseDistribution`` returning inspectable mass support (:pr:`711`) :user:`arnavk23`
+* [ENH] zero-inflated distribution (:pr:`648`) :user:`Khushmagrawal`
+* [ENH] systematically move distribution author credits to tag system (:pr:`774`) :user:`fkiraly`
+* [ENH] Cauchy probability distribution (:pr:`754`) :user:`patelchaitany`
+* [ENH] exact ``_log_pdf`` for ``Uniform`` distribution (:pr:`784`) :user:`Ashish-Kumar-Dash`
+* [ENH] ``KernelMixture`` distribution for kernel density estimation (:pr:`721`) :user:`amaydixit11`
+* [ENH] Delete dead code in legacy module ``utils.py`` (:pr:`823`) :user:`Ahmed-Zahran02`
+* [ENH] Refactor registry tags to class-based system  (:pr:`769`) :user:`codeit-ronit`
+* [ENH] Gumbel Left and Gumbel Right Distributions (:pr:`728`) :user:`an1k3sh`
+* [ENH] ``MDNRegressor`` (Mixture Density Network) (:pr:`796`) :user:`joshdunnlime`
+* [ENH] Extend ``KernelMixture`` to support 2D per-instance weights (:pr:`841`) :user:`patelchaitany`
+* [ENH] Rayleigh Distribution with analytical energy calculation (:pr:`778`) :user:`KaranSinghDev`
+* [ENH] Add pdfnorm to test coverage and fix handling in scalar case (:pr:`712`) :user:`arnavk23`
+* [ENH] Nadaraya Watson CDE regressor (:pr:`772`) :user:`patelchaitany`
+* [ENH] Update ``TestAllRegressors`` to check against parameter mutation in non-state changing methods (:pr:`872`) :user:`Ahmed-Zahran02`
+* [ENH] Remove invasive print statements from ``BayesianLinearRegressor`` (:pr:`882`) :user:`krsatyamthakur-droid`
+* [ENH] Fix incorrect PMF plotting (:pr:`714`) :user:`arnavk23`
+* [ENH] ``get_test_params`` uses ``self`` instead of ``cls`` in several metric classes (:pr:`876`) :user:`OmAmbole009`
+* [ENH] move testing of ``mapie`` based classes to own vm (:pr:`911`) :user:`fkiraly`
+* [ENH] move testing of ``ngboost`` based classes to own vm (:pr:`912`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] add missing ``Uniform`` distribution to API reference (:pr:`702`) :user:`fkiraly`
+* [DOC] fix broken community links in README (:pr:`752`) :user:`kabirvashisht4-glitch`
+* [DOC] Fix typo variancee → variance in BaseDistribution warning message (:pr:`734`) :user:`sabasiddique1`
+* [DOC] Reorder API reference on composite distributions (:pr:`773`) :user:`fkiraly`
+* [DOC] Fix typo in docstrings: "logartihms" -> "logarithms" (:pr:`813`) :user:`MayankSharma-2812`
+* [DOC] Fix grammar: needs to be -> must be in error messages (:pr:`833`) :user:`MayankSharma-2812`
+* [DOC] Fix incorrect sktime references in API reference docs (:pr:`844`) :user:`MBKKHAN`
+* [DOC] API reference for tags (:pr:`799`) :user:`sakun15`
+* [DOC] API reference for tags (:pr:`877`) :user:`Mushfiqur719`
+* [DOC] Fix broken sktime governance link in governance.rst (:pr:`873`) :user:`kabirvashisht4-glitch`
+* [DOC] Fix broken Git documentation link in dependencies.rst (:pr:`888`) :user:`kabirvashisht4-glitch`
+* [DOC] Fix typos across the docs (:pr:`904`) :user:`Ahmed-Zahran02`
+* [DOC] Fix undefined variable ``y_test`` in README quickstart (:pr:`820`) :user:`direkkakkar319-ops`
+
+Fixes
+~~~~~
+
+* [BUG] Fix ``XGBoostLSS`` wrapper parameterization (:pr:`700`) :user:`marrov`
+* [BUG] Fix MultiIndex quantile bug in BaseDistribution.loc indexing (:pr:`697`) :user:`arnavk23`
+* [BUG] Fix Laplace energy_self calculation and docstring typos (:pr:`720`) :user:`Ashish-Kumar-Dash`
+* [BUG] Update GLM Normal and Gamma distribution parameter calculations to use self.scale_ (:pr:`718`) :user:`amaydixit11`
+* [BUG] Replace assert with proper TypeError in head and tail methods (:pr:`739`) :user:`Abhishek242004`
+* [BUG] Fix incorrect mean formula in Pareto distribution (:pr:`744`) :user:`Ashish-Kumar-Dash`
+* [BUG] ``BaseGridSearch``: Ensure censoring data (C) is passed in all refit loops (:pr:`746`) :user:`ashnaaseth2325-oss`
+* [BUG] fix transformer chaining in regression pipeline (:pr:`780`) :user:`ashnaaseth2325-oss`
+* [BUG] Fix ResidualDouble using wrong estimator in CV residuals (:pr:`781`) :user:`WHOIM1205`
+* [BUG] fix NGBoostRegressor ignoring user-set natural_gradient param (:pr:`789`) :user:`patelchaitany`
+* [BUG] Fix ``_check_C`` using wrong converter store ``_y_converter_store`` -> ``_C_converter_store`` (:pr:`750`) :user:`kindler-king`
+* [BUG] fix wrong converter stores in ``predict`` and ``_check_C`` (:pr:`797`) :user:`WHOIM1205`
+* [BUG] Fix missing raise before TypeError in Pipeline._check_steps (:pr:`807`) :user:`Sanchit2662`
+* [BUG] in ``ResidualDouble.predict_proba``, fix in place mutation of ``distr_params`` (:pr:`861`) :user:`WHOIM1205`
+* [BUG] Fix ``Levy`` distribution to conform with ``scipy`` interface (:pr:`880`) :user:`direkkakkar319-ops`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update numpy requirement from ``<2.4,>=1.21.0`` to ``>=1.21.0,<2.5`` (:pr:`695`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update sphinx-gallery requirement from ``<0.20.0`` to ``<0.21.0`` (:pr:`694`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update sphinx requirement from ``!=7.2.0,<9.0.0`` to ``!=7.2.0,<10.0.0`` (:pr:`693`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump styfle/cancel-workflow-action from ``0.12.1`` to ``0.13.0`` (:pr:`703`) :user:`dependabot[bot]`
+* [MNT] Delete unused workflow ``cancel.yml`` (:pr:`705`) :user:`fkiraly`
+* [MNT] migrate all CI environments to ``uv`` (:pr:`707`) :user:`fkiraly`
+* [MNT] CI job at mid-2024 state (:pr:`708`) :user:`fkiraly`
+* [MNT] allow ``pandas 3.0`` (:pr:`706`) :user:`fkiraly`
+* [MNT] remove dead code in ``parametric`` module (:pr:`716`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Bump actions/download-artifact from 7 to 8 (:pr:`775`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/upload-artifact from 6 to 7 (:pr:`776`) :user:`dependabot[bot]`
+* [MNT] Remove legacy ``skpro/tests/utils.py`` module. (:pr:`902`) :user:`Ahmed-Zahran02`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`Abhishek242004`,
+:user:`Ahmed-Zahran02`,
+:user:`amaydixit11`,
+:user:`an1k3sh`,
+:user:`arnavk23`,
+:user:`Ashish-Kumar-Dash`,
+:user:`ashnaaseth2325-oss`,
+:user:`codeit-ronit`,
+:user:`dependabot[bot]`,
+:user:`direkkakkar319-ops`,
+:user:`fkiraly`,
+:user:`joshdunnlime`,
+:user:`kabirvashisht4-glitch`,
+:user:`KaranSinghDev`,
+:user:`Khushmagrawal`,
+:user:`kindler-king`,
+:user:`krsatyamthakur-droid`,
+:user:`marrov`,
+:user:`MayankSharma-2812`,
+:user:`MBKKHAN`,
+:user:`Mushfiqur719`,
+:user:`OmAmbole009`,
+:user:`patelchaitany`,
+:user:`sabasiddique1`,
+:user:`sakun15`,
+:user:`Sanchit2662`,
+:user:`WHOIM1205`
+
+[2.11.0] - 2025-12-17
+=====================
+
+Highlights
+~~~~~~~~~~
+
+* ``pygam`` GAM regressor interface (:pr:`636`, :pr:`638`) :user:`ravjot07`, :user:`Omswastik-11`
+* ``glum`` Generalized Linear Models (GlumRegressor) (:pr:`646`) :user:`Omswastik-11`
+* ``ondil`` online GAMLSS (:pr:`637`) :user:`arnavk23`
+* ``mapie>=1.0`` estimators (:pr:`665`) :user:`Omswastik-11`
+* new distributions: Geometric, Inverse Gaussian, Log-Gamma (:pr:`635`, :pr:`663`, :pr:`669`) :user:`ali-john`, :user:`aryabhatta-dey`,  :user:`Omswastik-11`
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] estimator dependency management and individual CI (:pr:`626`) :user:`fkiraly`
+* [ENH] ``pygam`` regressor interface (:pr:`636`, :pr:`638`) :user:`ravjot07`, :user:`Omswastik-11`
+* [ENH] ``glum`` Generalized Linear Models (GlumRegressor) (:pr:`646`) :user:`Omswastik-11`
+* [ENH] Geometric Distribution (:pr:`663`) :user:`aryabhatta-dey`
+* [ENH] Inverse Gaussian distribution (:pr:`635`) :user:`Omswastik-11`
+* [ENH] ``mapie>1.0`` interface (:pr:`665`) :user:`Omswastik-11`
+* [ENH] moved ``BaseDistribution.sample`` method to boilerplate layered design (:pr:`650`) :user:`smilingprogrammer`
+* [ENH] ``ondil`` online GAMLSS (:pr:`637`) :user:`arnavk23`
+* [ENH] move ``scikit-survival`` estimators to VM based testing (:pr:`664`) :user:`Omswastik-11`
+* [ENH] Add ``interval_type`` for configurable bounds in ``TruncatedDistribution`` (:pr:`667`) :user:`Khushmagrawal`
+* [ENH] Log-Gamma Distribution (:pr:`669`) :user:`ali-john`
+* [ENH] estimator tag for extra testing dependencies (:pr:`681`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] add GC.OS sponsoring badge to README (:pr:`620`) :user:`fkiraly`
+* [DOC] minor improvements to distributions documentation and changelog (:pr:`641`) :user:`fkiraly`
+* [DOC] add missing API reference entry for ``GAMRegressor`` (:pr:`658`) :user:`neha222222`
+* [ENH] censoring indicator conventions (:pr:`677`) :user:`arnavk23`
+* [DOC] add missing parameter doc for ``TransformedDistribution`` (:pr:`686`) :user:`fkiraly`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.34.0`` to ``<1.35.0`` (:pr:`607`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update polars requirement from ``<1.35.0`` to ``<1.36.0`` (:pr:`627`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/upload-artifact from ``4`` to ``5`` (:pr:`624`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/download-artifact from ``5`` to ``6`` (:pr:`623`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/checkout from ``5`` to ``6`` (:pr:`640`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/checkout from ``5`` to ``6`` (:pr:`649`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update polars requirement from ``<1.36.0`` to ``<1.37.0`` (:pr:`679`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/upload-artifact from ``5`` to ``6`` (:pr:`684`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump actions/download-artifact from ``6`` to ``7`` (:pr:`685`) :user:`dependabot[bot]`
+* [MNT] remove conflicting dependencies from ``all_extras`` (:pr:`625`) :user:`fkiraly`
+* [MNT] remove dead legacy module ``workflow`` (:pr:`629`) :user:`fkiraly`
+* [MNT] update notebook CI test python version to 3.11 (:pr:`642`) :user:`fkiraly`
+* [MNT] Added allcontributors workflow (:pr:`632`) :user:`ParamThakkar123`
+* [MNT] simplify release wheel test CI job (:pr:`680`) :user:`fkiraly`
+
+Fixes
+~~~~~
+
+* [BUG] fix sporadic ``GLMRegressor`` failures (:pr:`628`) :user:`SimonBlanke`
+* [BUG] Fix ``GLMRegressor`` class  (:pr:`655`) :user:`Omswastik-11`
+* [BUG] Handle ``Hurdle`` values less than zero properly (:pr:`652`) :user:`tingiskhan`
+* [BUG] ``XGBoostLSS`` dynamic dependencies: add optuna to ``python_dependencies`` when ``n_trials != 0`` (:pr:`643`) :user:`ravjot07`
+* [BUG] Ensure gamma/poission always get positive ``y`` in doctest (:pr:`660`) :user:`Omswastik-11`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`ali-john`,
+:user:`arnavk23`,
+:user:`aryabhatta-dey`,
+:user:`fkiraly`,
+:user:`Khushmagrawal`,
+:user:`neha222222`,
+:user:`Omswastik-11`,
+:user:`ParamThakkar123`,
+:user:`ravjot07`,
+:user:`SimonBlanke`,
+:user:`smilingprogrammer`,
+:user:`tingiskhan`
+
+
 [2.10.0] - 2025-10-09
 =====================
 

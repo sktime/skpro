@@ -135,7 +135,7 @@ class _DistrDefaultMethodTesterOnlySample(BaseDistribution):
 
         super().__init__(index=index, columns=columns)
 
-    def sample(self, n_samples=None):
+    def _sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters
