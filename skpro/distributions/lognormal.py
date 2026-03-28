@@ -1,4 +1,4 @@
-# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
+﻿# copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
 """Log-Normal probability distribution."""
 
 import numpy as np
