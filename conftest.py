@@ -32,6 +32,12 @@ def pytest_addoption(parser):
         help="test only estimators from modules that have changed compared to main",
     )
 
+    parser.addoption(
+        "--skip_vm_tests",
+        default=False,
+        help="skip tests for estimators with 'tests:vm' tag (useful in CI/CD)",
+    )
+
 
 def pytest_configure(config):
     """Pytest configuration preamble."""
@@ -39,3 +45,6 @@ def pytest_configure(config):
 
     if config.getoption("--only_changed_modules") in [True, "True"]:
         _config.ONLY_CHANGED_MODULES = True
+
+    if config.getoption("--skip_vm_tests") in [True, "True"]:
+        _config.SKIP_VM_TESTS = True
