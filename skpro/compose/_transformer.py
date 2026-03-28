@@ -9,27 +9,44 @@ from sklearn.exceptions import NotFittedError
 
 from skpro.base import BaseEstimator
 
-# Optional import for scipy derivative
-HAS_SCIPY_DERIVATIVE = False
-scipy_derivative = None
-SCIPY_DERIVATIVE_NEW_API = False
 
-try:
-    # Try scipy.differentiate first (scipy >= 1.14.0)
-    from scipy.differentiate import derivative as scipy_derivative
+def _get_scipy_derivative():
+    """Get scipy derivative function if available.
 
-    HAS_SCIPY_DERIVATIVE = True
-    SCIPY_DERIVATIVE_NEW_API = True
-except ImportError:
+    Checks for scipy and returns the appropriate derivative function.
+    Tries scipy.differentiate first (scipy >= 1.14.0), then falls back
+    to scipy.misc (scipy < 1.14.0, deprecated in scipy 2.0.0).
+
+    Returns
+    -------
+    tuple of (callable or None, bool)
+        - derivative function if scipy is available, None otherwise
+        - True if using new API (scipy >= 1.14.0), False if old API
+    """
+    from skbase.utils.dependencies import _check_soft_dependencies
+
+    # Check if scipy is available at all
+    if not _check_soft_dependencies("scipy", severity="none"):
+        return None, False
+
+    # Try new API first (scipy >= 1.14.0)
     try:
-        # Fall back to scipy.misc (scipy < 1.14.0)
-        # Note: scipy.misc.derivative is deprecated and removed in scipy 2.0.0
-        from scipy.misc import derivative as scipy_derivative
+        from scipy.differentiate import derivative
 
-        HAS_SCIPY_DERIVATIVE = True
-        SCIPY_DERIVATIVE_NEW_API = False
+        return derivative, True
     except (ImportError, AttributeError):
         pass
+
+    # Fall back to old API (scipy < 1.14.0)
+    try:
+        from scipy.misc import derivative
+
+        return derivative, False
+    except (ImportError, AttributeError):
+        pass
+
+    # scipy is installed but derivative is not available
+    return None, False
 
 
 class BaseTransformer(BaseEstimator, TransformerMixin):
@@ -431,7 +448,10 @@ class BaseDifferentiableTransformer(BaseTransformer):
         original_shape = X.shape
         X_flat = X.flatten()
 
-        if HAS_SCIPY_DERIVATIVE and scipy_derivative is not None:
+        # Get scipy derivative function if available
+        scipy_derivative, use_new_api = _get_scipy_derivative()
+
+        if scipy_derivative is not None:
             # Use scipy.derivative (from differentiate or misc module)
             diff = np.zeros_like(X_flat)
 
@@ -447,7 +467,7 @@ class BaseDifferentiableTransformer(BaseTransformer):
                             result = result.values
                         result = np.asarray(result).flatten()[0]
 
-                        if SCIPY_DERIVATIVE_NEW_API:
+                        if use_new_api:
                             return np.array(result)
                         else:
                             return result
@@ -460,7 +480,7 @@ class BaseDifferentiableTransformer(BaseTransformer):
                         result = np.asarray(result).flatten()
                         return result.reshape(x.shape)
 
-                if SCIPY_DERIVATIVE_NEW_API:
+                if use_new_api:
                     # New API (scipy >= 1.14.0): scipy.differentiate.derivative
                     # Returns a result object with .df attribute
                     result = scipy_derivative(

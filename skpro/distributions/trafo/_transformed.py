@@ -46,9 +46,8 @@ class TransformedDistribution(BaseDistribution):
         the distribution is transformed in a way that preserves order of sample values.
 
     transform : callable, DifferentiableTransformer or Transformer, default = None
-        .. deprecated:: 0.11.0
-            ``transform`` will be removed in version 0.12.0.
-            Use ``func`` instead.
+        Alias for ``func``. Provided for backwards compatibility. Using
+        ``func`` is recommended for clarity.
 
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
@@ -108,15 +107,15 @@ class TransformedDistribution(BaseDistribution):
         index=None,
         columns=None,
     ):
-        # Handle deprecation of transform parameter
+        # Handle backwards compatibility for transform parameter
         if transform is not None:
             warnings.warn(
-                "The 'transform' parameter is deprecated and will be removed in "
-                "version 0.12.0. Use 'func' instead.",
-                FutureWarning,
+                "The 'transform' parameter is an alias for 'func'. "
+                "Consider using 'func' instead for clarity.",
+                UserWarning,
                 stacklevel=2,
             )
-            # TODO: remove in v0.12.0
+
             if func is None and transformer is None:
                 func = transform
 
