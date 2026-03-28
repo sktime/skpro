@@ -15,8 +15,8 @@ from skpro.regression._bandwidth import (
 from skpro.tests.test_switch import run_test_module_changed
 
 pytestmark = pytest.mark.skipif(
-    not run_test_module_changed("skpro.regression"),
-    reason="run only if skpro.regression has been changed",
+    not run_test_module_changed("skpro.regression._bandwidth"),
+    reason="run only if skpro.regression._bandwidth has been changed",
 )
 
 
