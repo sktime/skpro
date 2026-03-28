@@ -22,7 +22,6 @@ class TransformedDistribution(BaseDistribution):
     * ``distribution``: a skpro distribution object, which is transformed
     * ``func`` and ``inverse_func``: functions that are applied to the distribution
     * ``transformer``: an sklearn transformer (forward: dist→output)
-    * ``inverse_transformer``: an sklearn transformer (forward uses inverse_transform)
 
     Parameters
     ----------
@@ -31,21 +30,16 @@ class TransformedDistribution(BaseDistribution):
     func : callable, optional, default = None
         function that is applied to the distribution (forward direction),
         must be applicable to array-likes of the same shape as ``self``.
-        Only used if both ``transformer`` and ``inverse_transformer`` are None.
+        Only used if ``transformer`` is None.
 
     inverse_func : callable, optional, default = None
         inverse function of ``func``, must be applicable to array-likes of the
         same shape as ``self``.
-        Only used if both ``transformer`` and ``inverse_transformer`` are None.
+        Only used if ``transformer`` is None.
 
     transformer : sklearn transformer, optional, default = None
         Transformer where ``.transform()`` is the forward direction (dist→output).
-        Takes precedence over ``inverse_transformer`` and ``func``/``inverse_func``.
-
-    inverse_transformer : sklearn transformer, optional, default = None
-        Transformer where ``.inverse_transform()`` is the forward direction.
-        Used when the transformer naturally goes in the opposite direction.
-        Only used if ``transformer`` is None.
+        Takes precedence over ``func``/``inverse_func``.
 
     assume_monotonic : bool, optional, default = True
         whether to assume that the transform is monotonic, i.e., that
@@ -83,10 +77,12 @@ class TransformedDistribution(BaseDistribution):
     >>> ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
     >>> t = TransformedDistribution(distribution=n, transformer=ft)
 
-    Or using ``inverse_transformer`` when the transformer is in the opposite direction:
+    For internal use with TransformedTargetRegressor, use the factory method:
     >>> from sklearn.preprocessing import StandardScaler
     >>> scaler = StandardScaler().fit([[1.0], [2.0], [3.0]])
-    >>> t = TransformedDistribution(distribution=n, inverse_transformer=scaler)
+    >>> t = TransformedDistribution._from_inverse_transformer(
+    ...     distribution=n, transformer=scaler
+    ... )
     """
 
     _tags = {
@@ -107,7 +103,6 @@ class TransformedDistribution(BaseDistribution):
         func=None,
         inverse_func=None,
         transformer=None,
-        inverse_transformer=None,
         assume_monotonic=True,
         transform=None,
         index=None,
@@ -122,7 +117,7 @@ class TransformedDistribution(BaseDistribution):
                 stacklevel=2,
             )
             # TODO: remove in v0.12.0
-            if func is None and transformer is None and inverse_transformer is None:
+            if func is None and transformer is None:
                 func = transform
 
         # Store all parameters for get_params
@@ -130,7 +125,6 @@ class TransformedDistribution(BaseDistribution):
         self.func = func
         self.inverse_func = inverse_func
         self.transformer = transformer
-        self.inverse_transformer = inverse_transformer
         self.assume_monotonic = assume_monotonic
         self.transform = transform
 
@@ -148,7 +142,7 @@ class TransformedDistribution(BaseDistribution):
                     columns = pd.RangeIndex(n_cols)
 
         # Determine which transformation to use based on precedence
-        # Precedence: transformer > inverse_transformer > func/inverse_func
+        # Precedence: transformer > func/inverse_func
         _transform = None
         _inverse_transform = None
 
@@ -156,24 +150,13 @@ class TransformedDistribution(BaseDistribution):
             # Use transformer directly (forward: transform, inverse: inverse_transform)
             _transform = transformer
             _inverse_transform = None
-        elif inverse_transformer is not None:
-            # For inverse_transformer: designed for TTR use case
-            # TTR's transformer.transform() = y_orig → y_trans
-            # TTR's transformer.inverse_transform() = y_trans → y_orig
-            # Distribution is in y_trans space
-            # We need: transform = y_trans → y_orig (for sampling)
-            # So we need to use TTR's .inverse_transform() as our .transform()
-            # Pass the methods as callables to swap them
-            _transform = inverse_transformer.inverse_transform
-            _inverse_transform = inverse_transformer.transform
         elif func is not None:
-            # Use func/inverse_funcinverse_func
+            # Use func/inverse_func
             _transform = func
             _inverse_transform = inverse_func
         else:
             raise ValueError(
-                "At least one of 'func', 'transformer', or 'inverse_transformer' "
-                "must be provided."
+                "At least one of 'func' or 'transformer' must be provided."
             )
 
         self.transformer_ = _coerce_to_diff_transformer(
@@ -232,6 +215,54 @@ class TransformedDistribution(BaseDistribution):
                     "capabilities:approx": approx_methods,
                 }
             )
+
+    @classmethod
+    def _from_inverse_transformer(
+        cls,
+        distribution,
+        transformer,
+        assume_monotonic=True,
+        index=None,
+        columns=None,
+    ):
+        """Create TransformedDistribution from a transformer with inverted semantics.
+
+        This is a private factory method for internal use, primarily by
+        TransformedTargetRegressor. When TTR transforms targets, its transformer's
+        ``.transform()`` maps original→transformed space, but the distribution lives
+        in transformed space. This factory handles the semantic swap.
+
+        Parameters
+        ----------
+        distribution : skpro distribution
+            Distribution in the transformed space.
+        transformer : sklearn transformer
+            Transformer where ``.inverse_transform()`` should be used as the forward
+            direction (transformed→original space for sampling).
+        assume_monotonic : bool, optional, default=True
+            Whether to assume the transform is monotonic.
+        index : pd.Index, optional
+            Index for the transformed distribution.
+        columns : pd.Index, optional
+            Columns for the transformed distribution.
+
+        Returns
+        -------
+        TransformedDistribution
+            Distribution with semantics correctly swapped for the inverse transformer.
+        """
+        # Create instance by passing bound methods as callables
+        # This swaps the transform directions:
+        # - transformer.inverse_transform becomes our forward transform (D→T)
+        # - transformer.transform becomes our inverse transform (T→D)
+        return cls(
+            distribution=distribution,
+            func=transformer.inverse_transform,
+            inverse_func=transformer.transform,
+            assume_monotonic=assume_monotonic,
+            index=index,
+            columns=columns,
+        )
 
     def _pdf(self, x):
         r"""Probability density function.

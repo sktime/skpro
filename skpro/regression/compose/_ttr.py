@@ -367,9 +367,9 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         if self.transformer_ is not None:
             # The regressor outputs distributions in transformed space.
             # We need to apply inverse_transform to get back to original space.
-            y_pred_it = TransformedDistribution(
+            y_pred_it = TransformedDistribution._from_inverse_transformer(
                 distribution=y_pred,
-                inverse_transformer=self.transformer_,
+                transformer=self.transformer_,
                 assume_monotonic=True,
                 index=X.index,
                 columns=self._y_metadata["feature_names"],
