@@ -191,16 +191,16 @@ class TransformedDistribution(BaseDistribution):
         inner_inverse_diff_status = self.transformer_._get_transform_diff_capabilities()
 
         # Check if we have external->internal transform (inner inverse)
-        # After the swap in _coerce_to_diff_transformer, this is in transformer_.func
-        has_transform_func = (
+        # This is the inverse_func that maps from transformed to distribution space
+        has_inverse_func = (
             hasattr(self.transformer_, "transformer_")
-            and hasattr(self.transformer_.transformer_, "func")
-            and self.transformer_.transformer_.func is not None
+            and hasattr(self.transformer_.transformer_, "inverse_func")
+            and self.transformer_.transformer_.inverse_func is not None
         )
 
         self._has_inner_inverse = any(
             [
-                has_transform_func,
+                has_inverse_func,
                 inverse_func is not None,
             ]
         )
