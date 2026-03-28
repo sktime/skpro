@@ -26,15 +26,18 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
     >>> import pandas as pd
     >>> X = pd.DataFrame({"a": [1, 2, 3]})
     >>> y = pd.DataFrame([1, 2, 3])
-    >>> reg = DeterministicReductionRegressor(LinearRegression(), distr_type="gaussian")
-     >>> reg.fit(X, y)  # doctest: +ELLIPSIS
-     DeterministicReductionRegressor(...)
-     >>> dist = reg.predict_proba(X)
-     >>> dist.mean()  # doctest: +NORMALIZE_WHITESPACE
-         0
-     0  1.0
-     1  2.0
-     2  3.0
+    >>> reg = DeterministicReductionRegressor(
+    ...     LinearRegression(),
+    ...     distr_type="gaussian"
+    ... )
+    >>> reg.fit(X, y)  # doctest: +ELLIPSIS
+    DeterministicReductionRegressor(...)
+    >>> dist = reg.predict_proba(X)
+    >>> dist.mean()  # doctest: +NORMALIZE_WHITESPACE
+        0
+    0  1.0
+    1  2.0
+    2  3.0
 
     References
     ----------
@@ -47,16 +50,17 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
       (Bui et al., 2024).
       https://proceedings.mlr.press/v238/manh-bui24a/manh-bui24a.pdf
     """
-            _tags = {
-            "authors": ["arnavk23"],
-            "estimator_type": "regressor_proba",
-            # estimator tags
-            # --------------
-            "capability:multioutput": False,
-            "capability:missing": True,
-            "X_inner_mtype": "pd_DataFrame_Table",
-            "y_inner_mtype": "pd_DataFrame_Table",
-        }
+
+    _tags = {
+        "authors": ["arnavk23"],
+        "estimator_type": "regressor_proba",
+        # estimator tags
+        # --------------
+        "capability:multioutput": False,
+        "capability:missing": True,
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
+    }
 
     def __init__(self, regressor, distr_type="gaussian"):
         allowed_types = ["gaussian", "laplace"]
