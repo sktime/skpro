@@ -250,11 +250,7 @@ class BaggingRegressor(BaseProbaRegressor):
         return [params1, params2, params3, params4]
 
 
-def _random_ss_ix(ix, size, replace=True):
-    """Randomly uniformly sample indices from a list of indices."""
-    a = range(len(ix))
-    ixs = ix[np.random.choice(a, size=size, replace=replace)]
-    return ixs
+from skpro.utils.sampling import _random_ss_ix  # noqa: E402, F811
 
 
 def _subs_cols(df, col_ix, reset_cols=False):

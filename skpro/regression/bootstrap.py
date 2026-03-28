@@ -205,11 +205,4 @@ class BootstrapRegressor(BaseProbaRegressor):
         return [params1, params2]
 
 
-def _random_ss_ix(ix, size, replace=True, random_state=None):
-    """Randomly uniformly sample indices from a list of indices."""
-    if random_state is None:
-        random_state = np.random.RandomState()
-
-    a = range(len(ix))
-    ixs = ix[random_state.choice(a, size=size, replace=replace)]
-    return ixs
+from skpro.utils.sampling import _random_ss_ix  # noqa: E402, F811
