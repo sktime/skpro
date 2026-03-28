@@ -39,7 +39,7 @@ def test_ttr_pdf_vs_linear_jacobian(sample_data):
     y_transformed = mms.fit_transform(y)
     est.fit(X=X, y=y_transformed)
     pdf_raw = est.predict_proba(X).pdf(y_transformed).values
-    pdf_expected = pdf_raw / mms.scale_
+    pdf_expected = pdf_raw * mms.scale_
 
     assert np.allclose(pdf_ttr, pdf_expected, rtol=1e-2)
     assert not np.allclose(pdf_ttr, pdf_raw, rtol=1e-2)
@@ -66,7 +66,7 @@ def test_ttr_pdf_vs_nonlinear_jacobian(sample_data):
     y_transformed = expit(y)
     est.fit(X=X, y=y_transformed)
     pdf_raw = est.predict_proba(X).pdf(y_transformed).values
-    pdf_expected = pdf_raw / transform_func_diff(y).abs().values
+    pdf_expected = pdf_raw * transform_func_diff(y).abs().values
 
     assert np.allclose(pdf_ttr, pdf_expected, rtol=0.1)
     assert not np.allclose(pdf_ttr, pdf_raw, rtol=0.1)

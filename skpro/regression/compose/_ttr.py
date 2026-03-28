@@ -369,11 +369,12 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             # We need to apply inverse_transform to get back to original space.
             y_pred_it = TransformedDistribution(
                 distribution=y_pred,
-                transform=self.transformer_,
+                inverse_transformer=self.transformer_,
                 assume_monotonic=True,
                 index=X.index,
                 columns=self._y_metadata["feature_names"],
             )
+
             return y_pred_it
         else:
             return y_pred

@@ -10,7 +10,7 @@ import pandas as pd
 from sklearn.base import TransformerMixin
 from sklearn.pipeline import FunctionTransformer
 
-from skpro.compose import DifferentiableTransformer
+from skpro.compose._transformer import DifferentiableTransformer
 from skpro.distributions.base import BaseDistribution
 
 
@@ -20,44 +20,41 @@ class TransformedDistribution(BaseDistribution):
     Constructed with:
 
     * ``distribution``: a skpro distribution object, which is transformed
-    * ``transform``: a function that is applied to the distribution.
-      This can be entry-wise, or a ``pandas.DataFrame`` to ``pandas.DataFrame``
-      function that can be applied to samples from ``distribution``.
-      NOTE: this is the transform that is applied to the distribution, not
-      the of the sk-like transformer that is applied to data to fit the distribution.
-    * ``inverse_transform``: (optional) the inverse function of ``transform``.
-      If given, more methods of the transformed distribution can be implemented exactly.
-      NOTE: this is the inverse of the transform that is applied to the distribution,
-      not the inverse of the sk-like transformer that is applied to data to fit
-      the distribution.
+    * ``func`` and ``inverse_func``: functions that are applied to the distribution
+    * ``transformer``: an sklearn transformer (forward: dist→output)
+    * ``inverse_transformer``: an sklearn transformer (forward uses inverse_transform)
 
     Parameters
     ----------
     distribution : skpro distribution - must be same shape as ``self``
 
-    transform : callable, DifferentiableTransformer or Transformer
-        function or Transformer that is applied to the distribution, must be
-        applicable to array-likes of the same shape as ``self``.
-        NOTE: This is the transform applied to internal distribution to return the
-        original (external) distribution. This nomenclature is opposite to that of
-        sklearn-like transformers, where ``transform`` is applied to data to go
-        to the transformed space. This is maintained for backwards compatibility.
-        NOTE: Avoid passing Transformer methods as functions, instead pass
-        the full Transformer.
+    func : callable, optional, default = None
+        function that is applied to the distribution (forward direction),
+        must be applicable to array-likes of the same shape as ``self``.
+        Only used if both ``transformer`` and ``inverse_transformer`` are None.
+
+    inverse_func : callable, optional, default = None
+        inverse function of ``func``, must be applicable to array-likes of the
+        same shape as ``self``.
+        Only used if both ``transformer`` and ``inverse_transformer`` are None.
+
+    transformer : sklearn transformer, optional, default = None
+        Transformer where ``.transform()`` is the forward direction (dist→output).
+        Takes precedence over ``inverse_transformer`` and ``func``/``inverse_func``.
+
+    inverse_transformer : sklearn transformer, optional, default = None
+        Transformer where ``.inverse_transform()`` is the forward direction.
+        Used when the transformer naturally goes in the opposite direction.
+        Only used if ``transformer`` is None.
 
     assume_monotonic : bool, optional, default = True
         whether to assume that the transform is monotonic, i.e., that
         the distribution is transformed in a way that preserves order of sample values.
 
-    inverse_transform : callable, optional, default = None
-        inverse function of ``transform``, must be applicable to array-likes of the
-        same shape as ``self``.
-        NOTE: This is the inverse_transform applied to external distribution to return
-        the internal distribution (`self.distribution`). This nomenclature is opposite
-        to that of sklearn-like transformers, where ``transform`` is applied to data to
-        go to the transformed space. This is maintained for backwards compatibility.
-        NOTE: Avoid passing Transformer methods as functions, instead pass
-        the full Transformer to transform.
+    transform : callable, DifferentiableTransformer or Transformer, default = None
+        .. deprecated:: 0.11.0
+            ``transform`` will be removed in version 0.12.0.
+            Use ``func`` instead.
 
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
@@ -72,19 +69,24 @@ class TransformedDistribution(BaseDistribution):
     >>>
     >>> n = Normal(mu=0, sigma=1)
     >>> # transform the distribution by taking the exponential
-    >>> t = TransformedDistribution(distribution=n, transform=np.exp)
+    >>> t = TransformedDistribution(distribution=n, func=np.exp)
 
     If the inverse is known, it can be given to ensure more methods are exact:
 
     >>> t = TransformedDistribution(
     ...     distribution=n,
-    ...     transform=np.exp,
-    ...     inverse_transform=np.log,
+    ...     func=np.exp,
+    ...     inverse_func=np.log,
     ... )
 
     It can also be constructed with a ``FunctionTransformer``:
     >>> ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
-    >>> t = TransformedDistribution(distribution=n, transform=ft)
+    >>> t = TransformedDistribution(distribution=n, transformer=ft)
+
+    Or using ``inverse_transformer`` when the transformer is in the opposite direction:
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> scaler = StandardScaler().fit([[1.0], [2.0], [3.0]])
+    >>> t = TransformedDistribution(distribution=n, inverse_transformer=scaler)
     """
 
     _tags = {
@@ -103,17 +105,35 @@ class TransformedDistribution(BaseDistribution):
     def __init__(
         self,
         distribution,
-        transform,
+        func=None,
+        inverse_func=None,
+        transformer=None,
+        inverse_transformer=None,
         assume_monotonic=True,
-        inverse_transform=None,
+        transform=None,
         index=None,
         columns=None,
     ):
-        # TODO: explain nomenclature of transform vs sklearn transformers
+        # Handle deprecation of transform parameter
+        if transform is not None:
+            warnings.warn(
+                "The 'transform' parameter is deprecated and will be removed in "
+                "version 0.12.0. Use 'func' instead.",
+                FutureWarning,
+                stacklevel=2,
+            )
+            # TODO: remove in v0.12.0
+            if func is None and transformer is None and inverse_transformer is None:
+                func = transform
+
+        # Store all parameters for get_params
         self.distribution = distribution
-        self.transform = transform
-        self.inverse_transform = inverse_transform
+        self.func = func
+        self.inverse_func = inverse_func
+        self.transformer = transformer
+        self.inverse_transformer = inverse_transformer
         self.assume_monotonic = assume_monotonic
+        self.transform = transform
 
         self._is_scalar_dist = self.distribution.ndim == 0
 
@@ -128,8 +148,37 @@ class TransformedDistribution(BaseDistribution):
                 if columns is None:
                     columns = pd.RangeIndex(n_cols)
 
+        # Determine which transformation to use based on precedence
+        # Precedence: transformer > inverse_transformer > func/inverse_func
+        _transform = None
+        _inverse_transform = None
+
+        if transformer is not None:
+            # Use transformer directly (forward: transform, inverse: inverse_transform)
+            _transform = transformer
+            _inverse_transform = None
+        elif inverse_transformer is not None:
+            # For inverse_transformer: designed for TTR use case
+            # TTR's transformer.transform() = y_orig → y_trans
+            # TTR's transformer.inverse_transform() = y_trans → y_orig
+            # Distribution is in y_trans space
+            # We need: transform = y_trans → y_orig (for sampling)
+            # So we need to use TTR's .inverse_transform() as our .transform()
+            # Pass the methods as callables to swap them
+            _transform = inverse_transformer.inverse_transform
+            _inverse_transform = inverse_transformer.transform
+        elif func is not None:
+            # Use func/inverse_funcinverse_func
+            _transform = func
+            _inverse_transform = inverse_func
+        else:
+            raise ValueError(
+                "At least one of 'func', 'transformer', or 'inverse_transformer' "
+                "must be provided."
+            )
+
         self.transformer_ = _coerce_to_diff_transformer(
-            transform, inverse_transform, index=index, columns=columns
+            _transform, _inverse_transform, index=index, columns=columns
         )
 
         super().__init__(index=index, columns=columns)
@@ -153,7 +202,7 @@ class TransformedDistribution(BaseDistribution):
         self._has_inner_inverse = any(
             [
                 has_transform_func,
-                self.inverse_transform is not None,
+                inverse_func is not None,
             ]
         )
 
@@ -210,7 +259,8 @@ class TransformedDistribution(BaseDistribution):
             pdf values at the given points
         """
         dist = self.distribution
-        x_ = self.transformer_.transform(x)
+        # Use inverse transform (T→D) to map x back to distribution space
+        x_ = self.transformer_.inverse_transform(x)
         pdf_out = dist.pdf(x_)
 
         if isinstance(pdf_out, pd.DataFrame):
@@ -226,9 +276,20 @@ class TransformedDistribution(BaseDistribution):
             # This avoids sklearn warnings about feature names
             if not isinstance(x, pd.DataFrame) and self.columns is not None:
                 x_df = pd.DataFrame(x, columns=self.columns)
-                jacobian = np.abs(self.transformer_.transform_diff(x_df))
+                # Use derivative of inverse transform (T→D)
+                # x is already in transformed space, so use _inverse_transform_diff
+                jacobian = np.abs(
+                    self.transformer_._inverse_transform_diff(x_df.values)
+                )
             else:
-                jacobian = np.abs(self.transformer_.transform_diff(x))
+                # Use derivative of inverse transform (T→D)
+                # x is already in transformed space, so use _inverse_transform_diff
+                if isinstance(x, pd.DataFrame):
+                    jacobian = np.abs(
+                        self.transformer_._inverse_transform_diff(x.values)
+                    )
+                else:
+                    jacobian = np.abs(self.transformer_._inverse_transform_diff(x))
         else:
             raise ValueError(
                 "The TransformedDistribution must have a transform to compute the pdf: "
@@ -236,7 +297,7 @@ class TransformedDistribution(BaseDistribution):
                 "or provide an inverse_transform ufunc."
             )
 
-        return pdf_out / jacobian
+        return pdf_out * jacobian
 
     def _log_pdf(self, x):
         r"""Logarithmic probability density function.
@@ -265,7 +326,8 @@ class TransformedDistribution(BaseDistribution):
             log-pdf values at the given points
         """
         dist = self.distribution
-        x_ = self.transformer_.transform(x)
+        # Use inverse transform (T→D) to map x back to distribution space
+        x_ = self.transformer_.inverse_transform(x)
         log_pdf_out = dist.log_pdf(x_)
 
         if isinstance(log_pdf_out, pd.DataFrame):
@@ -283,16 +345,23 @@ class TransformedDistribution(BaseDistribution):
             # This avoids sklearn warnings about feature names
             if not isinstance(x, pd.DataFrame) and self.columns is not None:
                 x_df = pd.DataFrame(x, columns=self.columns)
-                jacobian = np.abs(self.transformer_.transform_diff(x_df))
+                # Use derivative of inverse transform (T→D)
+                # x is already in transformed space, so use _inverse_transform_diff
+                jacobian = self.transformer_._inverse_transform_diff(x_df.values)
             else:
-                jacobian = np.abs(self.transformer_.transform_diff(x))
+                # Use derivative of inverse transform (T→D)
+                # x is already in transformed space, so use _inverse_transform_diff
+                if isinstance(x, pd.DataFrame):
+                    jacobian = self.transformer_._inverse_transform_diff(x.values)
+                else:
+                    jacobian = self.transformer_._inverse_transform_diff(x)
         else:
             raise ValueError(
                 "The TransformedDistribution must have a transform to compute the "
                 "log-pdf.",
             )
 
-        return log_pdf_out - np.log(jacobian)
+        return log_pdf_out + np.log(np.abs(jacobian))
 
     def _iloc(self, rowidx=None, colidx=None):
         if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
@@ -371,8 +440,8 @@ class TransformedDistribution(BaseDistribution):
         if self.ndim != 0:
             p = pd.DataFrame(p, index=self.index, columns=self.columns)
 
-        # use inner_transform
-        trafo = self.transformer_.inverse_transform
+        # Use forward transform (D→T) to map from distribution space to output
+        trafo = self.transformer_.transform
         inner_ppf = self.distribution.ppf(p)
 
         if self.ndim == 0:
@@ -408,8 +477,8 @@ class TransformedDistribution(BaseDistribution):
         if not self._has_inner_inverse:
             return super()._cdf(x)
 
-        # use inner_inverse if exists
-        inv_trafo = self.transformer_.transform
+        # Use inverse transform (T→D) to map x back to distribution space
+        inv_trafo = self.transformer_.inverse_transform
 
         if self.ndim != 0:
             x = pd.DataFrame(x, index=self.index, columns=self.columns)
@@ -461,8 +530,8 @@ class TransformedDistribution(BaseDistribution):
         else:
             n = n_samples
 
-        # inner transform
-        trafo = self.transformer_.inverse_transform
+        # Use forward transform (D→T)
+        trafo = self.transformer_.transform
 
         samples = []
 
@@ -504,14 +573,14 @@ class TransformedDistribution(BaseDistribution):
 
         n_scalar = Normal(mu=0, sigma=1)
         # scalar case example
-        params1 = {"distribution": n_scalar, "transform": np.exp}
+        params1 = {"distribution": n_scalar, "func": np.exp}
 
         # array case example
         n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["a", "b"]))
 
         params2 = {
             "distribution": n_array,
-            "transform": np.exp,
+            "func": np.exp,
             "index": pd.Index([1, 2]),
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
@@ -520,15 +589,15 @@ class TransformedDistribution(BaseDistribution):
         n_array = Normal(mu=[[1, 2], [3, 4]], sigma=1, columns=pd.Index(["c", "d"]))
         params3 = {
             "distribution": n_array,
-            "transform": lambda x: 2 * x,
-            "inverse_transform": lambda x: x / 2,
+            "func": lambda x: 2 * x,
+            "inverse_func": lambda x: x / 2,
             "index": pd.Index([1, 2]),
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
 
         params4 = {
             "distribution": n_array,
-            "transform": ft,
+            "transformer": ft,
             "index": pd.Index([1, 2]),
             "columns": pd.Index(["a", "b"]),  # this should override n_row.columns
         }
@@ -536,13 +605,13 @@ class TransformedDistribution(BaseDistribution):
         # scalar case example with inverse transform
         params5 = {
             "distribution": n_scalar,
-            "transform": np.exp,
-            "inverse_transform": np.log,
+            "func": np.exp,
+            "inverse_func": np.log,
         }
 
         params6 = {
             "distribution": n_array,
-            "transform": dft,
+            "transformer": dft,
         }
 
         return [params1, params2, params3, params4, params5, params6]
@@ -599,6 +668,21 @@ def _coerce_to_diff_transformer(
         transform_owner = getattr(transform, "__self__", None)
         inverse_owner = getattr(inverse_transform, "__self__", None)
 
+        # Check if methods come from a DifferentiableTransformer
+        # If so, extract derivative functions and swap them
+        transform_func_diff = None
+        inverse_func_diff = None
+
+        if isinstance(transform_owner, DifferentiableTransformer):
+            # transform is inv_transform method, inv_transform is transform method
+            # So derivative functions need to be swapped
+            transform_func_diff = getattr(transform_owner, "inverse_func_diff", None)
+            inverse_func_diff = getattr(transform_owner, "transform_func_diff", None)
+        elif isinstance(inverse_owner, DifferentiableTransformer):
+            # inv_transform is transform method, transform is inv_transform method
+            inverse_func_diff = getattr(inverse_owner, "transform_func_diff", None)
+            transform_func_diff = getattr(inverse_owner, "inverse_func_diff", None)
+
         if any(
             [
                 isinstance(transform_owner, TransformerMixin),
@@ -613,11 +697,16 @@ def _coerce_to_diff_transformer(
                 stacklevel=2,
             )
 
+        # DO NOT swap - maintain natural semantics where func is forward
         ft = FunctionTransformer(
-            func=inverse_transform, inverse_func=transform, check_inverse=False
+            func=transform, inverse_func=inverse_transform, check_inverse=False
         )
 
-        transformer = DifferentiableTransformer(transformer=ft)
+        transformer = DifferentiableTransformer(
+            transformer=ft,
+            transform_func_diff=transform_func_diff,
+            inverse_func_diff=inverse_func_diff,
+        )
     else:
         raise ValueError(
             "transform must be a callable, a TransformerMixin, "
