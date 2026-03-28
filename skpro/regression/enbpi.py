@@ -11,6 +11,7 @@ from sklearn.utils import check_random_state
 from skpro.distributions.empirical import Empirical
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.numpy import flatten_to_1D_if_colvector
+from skpro.utils.sampling import _random_ss_ix
 from skpro.utils.sklearn import prep_skl_df
 
 
@@ -338,9 +339,6 @@ class EnbpiRegressor(BaseProbaRegressor):
         }
 
         return [params1, params2, params3]
-
-
-from skpro.utils.sampling import _random_ss_ix  # noqa: E402, F811
 
 
 def _coerce_numpy2d(x):

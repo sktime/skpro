@@ -10,6 +10,7 @@ import pandas as pd
 
 from skpro.distributions.mixture import Mixture
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.sampling import _random_ss_ix
 
 
 class BaggingRegressor(BaseProbaRegressor):
@@ -152,9 +153,16 @@ class BaggingRegressor(BaseProbaRegressor):
         for _i in range(n_estimators):
             esti = estimator.clone()
             row_iloc = pd.RangeIndex(n)
-            row_ss = _random_ss_ix(row_iloc, size=n_samples_, replace=bootstrap)
+            row_ss = _random_ss_ix(
+                row_iloc, size=n_samples_, replace=bootstrap, random_state=random_state
+            )
             inst_ix_i = inst_ix[row_ss]
-            col_ix_i = _random_ss_ix(col_ix, size=n_features_, replace=bootstrap_ft)
+            col_ix_i = _random_ss_ix(
+                col_ix,
+                size=n_features_,
+                replace=bootstrap_ft,
+                random_state=random_state,
+            )
 
             # store column subset for use in predict
             self.cols_ += [col_ix_i]
@@ -248,9 +256,6 @@ class BaggingRegressor(BaseProbaRegressor):
         }
 
         return [params1, params2, params3, params4]
-
-
-from skpro.utils.sampling import _random_ss_ix  # noqa: E402, F811
 
 
 def _subs_cols(df, col_ix, reset_cols=False):
