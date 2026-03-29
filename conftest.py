@@ -28,8 +28,23 @@ def pytest_addoption(parser):
     """Pytest command line parser options adder."""
     parser.addoption(
         "--only_changed_modules",
+        action="store_true",
         default=False,
         help="test only estimators from modules that have changed compared to main",
+    )
+
+    parser.addoption(
+        "--run_all_modules",
+        action="store_true",
+        default=False,
+        help="run tests for all modules (override --only_changed_modules)",
+    )
+
+    parser.addoption(
+        "--skip_vm_tests",
+        action="store_true",
+        default=False,
+        help="skip tests for estimators with 'tests:vm' tag (useful in CI/CD)",
     )
 
 
@@ -37,5 +52,11 @@ def pytest_configure(config):
     """Pytest configuration preamble."""
     from skpro.tests import _config
 
-    if config.getoption("--only_changed_modules") in [True, "True"]:
+    # --run_all_modules overrides --only_changed_modules
+    if config.getoption("--run_all_modules"):
+        _config.ONLY_CHANGED_MODULES = False
+    elif config.getoption("--only_changed_modules"):
         _config.ONLY_CHANGED_MODULES = True
+
+    if config.getoption("--skip_vm_tests"):
+        _config.SKIP_VM_TESTS = True
