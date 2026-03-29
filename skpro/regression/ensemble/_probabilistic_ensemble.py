@@ -3,11 +3,11 @@
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
-from skpro.regression.residual import ResidualDouble
+
 from skpro.distributions.mixture import Mixture
 from skpro.distributions.normal import Normal
 from skpro.regression.base import BaseProbaRegressor
-
+from skpro.regression.residual import ResidualDouble
 
 
 class ProbabilisticStackingRegressor(BaseProbaRegressor):
@@ -28,15 +28,19 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
     }
 
     def get_params(self, deep=True):
+        """Get parameters for this estimator."""
         params = super().get_params(deep=deep)
-        params.update({
-            "estimators": self.estimators,
-            "weights": self.weights,
-            "meta_learner": self.meta_learner,
-        })
+        params.update(
+            {
+                "estimators": self.estimators,
+                "weights": self.weights,
+                "meta_learner": self.meta_learner,
+            }
+        )
         return params
 
     def set_params(self, **params):
+        """Set the parameters of this estimator."""
         for key, value in params.items():
             setattr(self, key, value)
         return self
@@ -57,7 +61,9 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
         if not isinstance(estimators, list) or not all(
             isinstance(e, tuple) and len(e) == 2 for e in estimators
         ):
-            raise ValueError("estimators must be a list of (str, BaseProbaRegressor) tuples.")
+            raise ValueError(
+                "estimators must be a list of (str, BaseProbaRegressor) tuples."
+            )
 
         for _, est in estimators:
             if not hasattr(est, "predict_proba"):
@@ -77,7 +83,9 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
     def add_base_estimator(self, name, estimator):
         """Add base estimator; returns a new instance (no mutation of original)."""
         new_self = self.clone()
-        new_self.estimators = list(new_self.estimators) if new_self.estimators is not None else []
+        new_self.estimators = (
+            list(new_self.estimators) if new_self.estimators is not None else []
+        )
         new_self.estimators.append((name, estimator))
         return new_self
 
@@ -100,13 +108,19 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
     def _fit(self, X, y, C=None):
         self.fitted_estimators_ = []
         for name, est in self.estimators:
-            est_fitted = est.clone().fit(X, y, C) if hasattr(est, "clone") else est.fit(X, y, C)
+            est_fitted = (
+                est.clone().fit(X, y, C) if hasattr(est, "clone") else est.fit(X, y, C)
+            )
             self.fitted_estimators_.append((name, est_fitted))
 
         if self.meta_learner is not None:
             X_meta = self._get_meta_features(X)
             y_meta = np.asarray(y).flatten()
-            meta = self.meta_learner.clone() if hasattr(self.meta_learner, "clone") else self.meta_learner
+            meta = (
+                self.meta_learner.clone()
+                if hasattr(self.meta_learner, "clone")
+                else self.meta_learner
+            )
             self.meta_learner_ = meta.fit(X_meta, y_meta)
         else:
             self.meta_learner_ = None
@@ -163,7 +177,9 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
             lower = lower[:, :, np.newaxis]
             upper = upper[:, :, np.newaxis]
         # Stack lower/upper along last axis (bound)
-        data = np.concatenate([lower, upper], axis=2)  # (n_samples, n_vars, 2) or (n_samples, n_vars, n_cov, 2)
+        data = np.concatenate(
+            [lower, upper], axis=2
+        )  # (n_samples, n_vars, 2) or (n_samples, n_vars, n_cov, 2)
         # If multiple coverages, data shape: (n_samples, n_vars, n_cov, 2)
         if data.ndim == 4:
             data = data.transpose(0, 1, 2, 3).reshape(n_samples, n_vars * n_cov * 2)
@@ -179,47 +195,6 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
             [var_names, coverage_arr, bounds], names=["variable", "coverage", "bound"]
         )
         return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
-            dist = self._predict_proba(X)
-            coverage_arr = np.atleast_1d(coverage)
-            # Get lower, upper as arrays (n_samples, n_vars, n_cov)
-            if hasattr(dist, "interval"):
-                lower, upper = dist.interval(coverage)
-            else:
-                mean = np.asarray(dist.mean())
-                if mean.ndim == 1:
-                    mean = mean.reshape(-1, 1)
-                sigma = np.full_like(mean, 1e-5, dtype=float)
-                lower, upper = Normal(mu=mean, sigma=sigma).interval(coverage)
-            lower = np.asarray(lower)
-            upper = np.asarray(upper)
-            n_samples = lower.shape[0]
-            # Handle shape for multi-variate, multi-coverage
-            if lower.ndim == 1:
-                lower = lower[:, np.newaxis, np.newaxis]
-                upper = upper[:, np.newaxis, np.newaxis]
-            elif lower.ndim == 2:
-                if lower.shape[1] == len(coverage_arr):
-                    lower = lower[:, np.newaxis, :]
-                    upper = upper[:, np.newaxis, :]
-                else:
-                    lower = lower[:, :, np.newaxis]
-                    upper = upper[:, :, np.newaxis]
-            # Now lower/upper: (n_samples, n_vars, n_cov)
-            n_vars = lower.shape[1]
-            n_cov = lower.shape[2]
-            # Stack lower/upper along last axis (bound)
-            data = np.stack([lower, upper], axis=3)  # (n_samples, n_vars, n_cov, 2)
-            data = data.reshape(n_samples, n_vars * n_cov * 2)
-            # Build MultiIndex columns
-            if hasattr(X, "columns"):
-                var_names = list(X.columns)
-            else:
-                var_names = [0] if n_vars == 1 else list(range(n_vars))
-            bounds = ["lower", "upper"]
-            columns = pd.MultiIndex.from_product(
-                [var_names, coverage_arr, bounds], names=["variable", "coverage", "bound"]
-            )
-            return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
 
     def _predict_quantiles(self, X, quantiles):
         dist = self._predict_proba(X)
@@ -235,7 +210,9 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
+        """Return test parameters for automated tests."""
         from sklearn.linear_model import LinearRegression
+
         from skpro.regression.residual import ResidualDouble
 
         base = ResidualDouble(LinearRegression())
@@ -252,10 +229,6 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
 
 
 class ProbabilisticBoostingRegressor(BaseProbaRegressor):
-        def set_params(self, **params):
-            for key, value in params.items():
-                setattr(self, key, value)
-            return self
     """Residual-based probabilistic boosting ensemble.
 
     Fits bases sequentially on residuals of previous mean prediction.
@@ -294,16 +267,6 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
         self.learning_rate = learning_rate
         self.uncertainty_weighting = uncertainty_weighting
         self.calibrator = calibrator
-    def get_params(self, deep=True):
-        params = super().get_params(deep=deep)
-        params.update({
-            "base_estimator": self.base_estimator,
-            "n_estimators": self.n_estimators,
-            "learning_rate": self.learning_rate,
-            "uncertainty_weighting": self.uncertainty_weighting,
-            "calibrator": self.calibrator,
-        })
-        return params
 
         super().__init__()
 
@@ -312,10 +275,18 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
         self.weights_ = []
 
         y_arr = np.asarray(y).flatten()
-        residual = y.copy() if hasattr(y, "copy") else pd.DataFrame({"residual": y_arr}, index=getattr(y, "index", None))
+        residual = (
+            y.copy()
+            if hasattr(y, "copy")
+            else pd.DataFrame({"residual": y_arr}, index=getattr(y, "index", None))
+        )
 
         for i in range(self.n_estimators):
-            est = self.base_estimator.clone().fit(X, residual, C) if hasattr(self.base_estimator, "clone") else self.base_estimator.fit(X, residual, C)
+            est = (
+                self.base_estimator.clone().fit(X, residual, C)
+                if hasattr(self.base_estimator, "clone")
+                else self.base_estimator.fit(X, residual, C)
+            )
             self.estimators_.append(est)
 
             y_pred = est.predict(X)
@@ -336,7 +307,11 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
 
         if self.calibrator is not None:
             final_dist = self._predict_proba(X)
-            cal = self.calibrator.clone() if hasattr(self.calibrator, "clone") else self.calibrator
+            cal = (
+                self.calibrator.clone()
+                if hasattr(self.calibrator, "clone")
+                else self.calibrator
+            )
             self.calibrator_ = cal.fit(y, final_dist)
         else:
             self.calibrator_ = None
@@ -344,7 +319,9 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
         return self
 
     def _predict_proba(self, X):
-        dists = [(f"est{i}", est.predict_proba(X)) for i, est in enumerate(self.estimators_)]
+        dists = [
+            (f"est{i}", est.predict_proba(X)) for i, est in enumerate(self.estimators_)
+        ]
         weights = np.asarray(self.weights_, dtype=float)
         weights = weights / weights.sum()
 
@@ -400,42 +377,6 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
             [var_names, coverage_arr, bounds], names=["variable", "coverage", "bound"]
         )
         return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
-            dist = self._predict_proba(X)
-            coverage_arr = np.atleast_1d(coverage)
-            if hasattr(dist, "interval"):
-                lower, upper = dist.interval(coverage)
-            else:
-                mean = np.asarray(dist.mean())
-                if mean.ndim == 1:
-                    mean = mean.reshape(-1, 1)
-                sigma = np.full_like(mean, 1e-5, dtype=float)
-                lower, upper = Normal(mu=mean, sigma=sigma).interval(coverage)
-            lower = np.asarray(lower)
-            upper = np.asarray(upper)
-            n_samples = lower.shape[0]
-            if lower.ndim == 1:
-                lower = lower[:, np.newaxis, np.newaxis]
-                upper = upper[:, np.newaxis, np.newaxis]
-            elif lower.ndim == 2:
-                if lower.shape[1] == len(coverage_arr):
-                    lower = lower[:, np.newaxis, :]
-                    upper = upper[:, np.newaxis, :]
-                else:
-                    lower = lower[:, :, np.newaxis]
-                    upper = upper[:, :, np.newaxis]
-            n_vars = lower.shape[1]
-            n_cov = lower.shape[2]
-            data = np.stack([lower, upper], axis=3)
-            data = data.reshape(n_samples, n_vars * n_cov * 2)
-            if hasattr(X, "columns"):
-                var_names = list(X.columns)
-            else:
-                var_names = [0] if n_vars == 1 else list(range(n_vars))
-            bounds = ["lower", "upper"]
-            columns = pd.MultiIndex.from_product(
-                [var_names, coverage_arr, bounds], names=["variable", "coverage", "bound"]
-            )
-            return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
 
     def _predict_quantiles(self, X, quantiles):
         dist = self._predict_proba(X)
@@ -448,9 +389,31 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
         sigma = np.full_like(mean, 1e-5, dtype=float)
         return Normal(mu=mean, sigma=sigma).quantile(quantiles)
 
+    def get_params(self, deep=True):
+        """Get parameters for this estimator."""
+        params = super().get_params(deep=deep)
+        params.update(
+            {
+                "base_estimator": self.base_estimator,
+                "n_estimators": self.n_estimators,
+                "learning_rate": self.learning_rate,
+                "uncertainty_weighting": self.uncertainty_weighting,
+                "calibrator": self.calibrator,
+            }
+        )
+        return params
+
+    def set_params(self, **params):
+        """Set the parameters of this estimator."""
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
+        """Return test parameters for automated tests."""
         from sklearn.linear_model import LinearRegression
+
         from skpro.regression.residual import ResidualDouble
 
         base = ResidualDouble(LinearRegression())
