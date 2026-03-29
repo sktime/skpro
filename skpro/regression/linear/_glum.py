@@ -24,14 +24,14 @@ class GlumRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    family : str or ExponentialDispersionModel, default='normal'
+    dist : str or ExponentialDispersionModel, default='normal'
         The distributional assumption of the GLM.
         One of: 'binomial', 'gamma', 'gaussian', 'inverse.gaussian',
         'normal', 'poisson', 'tweedie', 'negative.binomial'.
     link : str or Link, default='auto'
         The link function of the GLM.
-        If 'auto', the canonical link for the family is used.
-        Supported links depend on the family. Common options include:
+        If 'auto', the canonical link for the distribution is used.
+        Supported links depend on the distribution. Common options include:
         'identity', 'log', 'logit', 'probit', 'cloglog', 'pow', 'nbinom'.
     alpha : float or array-like, default=None
         Constant that multiplies the penalty terms.
@@ -131,9 +131,15 @@ class GlumRegressor(BaseProbaRegressor):
         "tests:vm": True,
     }
 
+    # TODO (release 2.14.0)
+    # remove the 'family' argument from '__init__' signature
+    # remove the following 'if' check and deprecation warning
+    # de-indent the following 'else' check
+
     def __init__(
         self,
-        family="normal",
+        family="deprecated",
+        dist="normal",
         link="auto",
         alpha=None,
         l1_ratio=0,
@@ -163,6 +169,7 @@ class GlumRegressor(BaseProbaRegressor):
         expected_information=False,
     ):
         self.family = family
+        self.dist = dist
         self.link = link
         self.alpha = alpha
         self.l1_ratio = l1_ratio
@@ -193,14 +200,31 @@ class GlumRegressor(BaseProbaRegressor):
 
         super().__init__()
 
+        # handle deprecation of family -> dist
+        if family != "deprecated":
+            from warnings import warn
+
+            warn(
+                "in `GlumRegressor`, parameter 'family' "
+                "will be renamed to 'dist' in version 2.14.0. "
+                "To keep current behaviour and to silence this warning, "
+                "use 'dist' instead of 'family', "
+                "set dist explicitly via kwarg, and do not set family.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self._dist = family
+        else:
+            self._dist = dist
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        params1 = {"family": "normal"}
-        params2 = {"family": "gamma", "link": "log"}
-        params3 = {"family": "poisson"}
-        params4 = {"family": "negative.binomial"}
-        params5 = {"family": "normal", "alpha": 0.1, "l1_ratio": 0.5}
+        params1 = {"dist": "normal"}
+        params2 = {"dist": "gamma", "link": "log"}
+        params3 = {"dist": "poisson"}
+        params4 = {"dist": "negative.binomial"}
+        params5 = {"dist": "normal", "alpha": 0.1, "l1_ratio": 0.5}
         return [params1, params2, params3, params4, params5]
 
     def _fit(self, X, y):
@@ -221,7 +245,7 @@ class GlumRegressor(BaseProbaRegressor):
         from glum import GeneralizedLinearRegressor
 
         self.estimator_ = GeneralizedLinearRegressor(
-            family=self.family,
+            family=self._dist,
             link=self.link,
             alpha=self.alpha,
             l1_ratio=self.l1_ratio,
@@ -312,30 +336,30 @@ class GlumRegressor(BaseProbaRegressor):
             The predicted distribution.
         """
         mu = self._predict(X)
-        family = self.family
+        dist = self._dist
 
-        if isinstance(family, str):
-            family_str = family.lower()
+        if isinstance(dist, str):
+            dist_str = dist.lower()
         else:
-            # If family is an object, we need to infer the type
+            # If dist is an object, we need to infer the type
             # This is tricky, but let's assume string for now as per init
-            family_str = str(family).lower()
+            dist_str = str(dist).lower()
 
-        if "normal" in family_str or "gaussian" in family_str:
+        if "normal" in dist_str or "gaussian" in dist_str:
             # Normal distribution
             # Variance = dispersion * v(mu) = dispersion * 1 = dispersion
             # So sigma = sqrt(dispersion)
             sigma = np.sqrt(self.dispersion_)
             return Normal(mu=mu, sigma=sigma, index=X.index, columns=self._y_cols)
 
-        elif "poisson" in family_str:
+        elif "poisson" in dist_str:
             # Poisson distribution
             # skpro Poisson takes mu.
             # If dispersion != 1, it's not standard Poisson.
             # But skpro Poisson is standard.
             return Poisson(mu=mu, index=X.index, columns=self._y_cols)
 
-        elif "gamma" in family_str:
+        elif "gamma" in dist_str:
             # Gamma distribution
             # mu = alpha / beta
             # var = alpha / beta^2 = dispersion * mu^2
@@ -345,20 +369,20 @@ class GlumRegressor(BaseProbaRegressor):
             beta = 1.0 / (self.dispersion_ * mu)
             return Gamma(alpha=alpha, beta=beta, index=X.index, columns=self._y_cols)
 
-        elif "negative.binomial" in family_str:
+        elif "negative.binomial" in dist_str:
             # Negative Binomial
             # var = mu + theta * mu^2
             # skpro NB takes mu and alpha (where var = mu + mu^2/alpha)
             # So alpha_skpro = 1/theta_glum
 
-            # We need to extract theta from family string or object
-            # If family is string like 'negative.binomial(1.5)', theta is 1.5
-            # If family is 'negative.binomial', theta is default 1.0?
+            # We need to extract theta from dist string or object
+            # If dist is string like 'negative.binomial(1.5)', theta is 1.5
+            # If dist is 'negative.binomial', theta is default 1.0?
 
             theta = 1.0
-            if "(" in family_str:
+            if "(" in dist_str:
                 try:
-                    theta = float(family_str.split("(")[1].split(")")[0])
+                    theta = float(dist_str.split("(")[1].split(")")[0])
                 except ValueError:
                     pass
 
@@ -376,6 +400,6 @@ class GlumRegressor(BaseProbaRegressor):
 
         else:
             raise NotImplementedError(
-                f"Distribution for family '{family}' not implemented in "
+                f"Distribution for family '{dist}' not implemented in "
                 "skpro interface."
             )
