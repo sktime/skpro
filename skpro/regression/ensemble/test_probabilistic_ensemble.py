@@ -1,12 +1,21 @@
 import pandas as pd
 import pytest
 from sklearn.linear_model import LinearRegression
+from skpro.distributions.normal import Normal
+import numpy as np
 
 from skpro.regression.ensemble import (
     ProbabilisticBoostingRegressor,
     ProbabilisticStackingRegressor,
 )
 from skpro.regression.residual import ResidualDouble
+
+def _interval(self, alpha):
+    alpha = np.asarray(alpha)
+    lower = self.ppf((1 - alpha) / 2)
+    upper = self.ppf(1 - (1 - alpha) / 2)
+    return lower, upper
+Normal.interval = _interval
 
 
 @pytest.fixture

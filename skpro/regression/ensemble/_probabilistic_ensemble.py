@@ -1,267 +1,460 @@
-"""Probabilistic boosting and stacking compositors for skpro.
-
-Implements ensemble compositors for boosting and stacking of probabilistic regressors.
-"""
+"""Probabilistic boosting and stacking compositors for skpro."""
 
 import numpy as np
-
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from skpro.regression.residual import ResidualDouble
 from skpro.distributions.mixture import Mixture
+from skpro.distributions.normal import Normal
 from skpro.regression.base import BaseProbaRegressor
+
 
 
 class ProbabilisticStackingRegressor(BaseProbaRegressor):
     """Stacking ensemble for probabilistic regressors.
 
-    Fits multiple base probabilistic regressors and combines their predictions
-    using a weighted mixture (default: uniform weights).
-
-    This class is inspired by modular, composable stacking/meta-learning frameworks
-    that produce calibrated probabilistic or quantile predictions, as described in:
-
-    - Dudek, G. (2024). Stacking for Probabilistic Short-term Load Forecasting.
-      https://arxiv.org/abs/2406.10718
-    - Large, J., et al. (2019). A probabilistic classifier ensemble weighting scheme
-      based on cross-validated accuracy estimates (CAWPE).
-      Machine Learning. https://pmc.ncbi.nlm.nih.gov/articles/PMC6790343/
-
-    Parameters
-    ----------
-    estimators : list of (str, BaseProbaRegressor)
-        List of (name, estimator) tuples.
-    weights : list of float, optional (default=None)
-        Mixture weights for the base estimators. If None, uniform weights are used.
+    - No meta_learner: weighted Mixture of base distributions.
+    - With meta_learner: meta trained on stacked mean + variance features;
+      returns meta's predict_proba (must return a proper skpro distribution).
     """
 
-    def __init__(
-        self, estimators, weights=None, meta_learner=None, use_meta_proba=True
-    ):
-        """
-        Initialize ProbabilisticStackingRegressor.
+    _tags = {
+        "authors": ["arnavk23"],
+        "estimator_type": "regressor_proba",
+        "capability:multioutput": False,
+        "capability:missing": True,
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
+    }
 
-        Parameters
-        ----------
-        estimators : list of (str, BaseProbaRegressor)
-            List of (name, estimator) tuples.
-        weights : list of float, optional (default=None)
-            Mixture weights for the base estimators. If None, uniform weights are used.
-        meta_learner : regressor or classifier, optional
-            If provided, fits a meta-learner on the base predictions (mean or proba).
-            Should support fit(X, y) and predict or predict_proba.
-        use_meta_proba : bool, default True
-            If True and meta_learner supports predict_proba, for probabilistic output.
-        """
+    def get_params(self, deep=True):
+        params = super().get_params(deep=deep)
+        params.update({
+            "estimators": self.estimators,
+            "weights": self.weights,
+            "meta_learner": self.meta_learner,
+        })
+        return params
+
+    def set_params(self, **params):
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
+
+    _tags = {
+        "authors": ["arnavk23"],
+        "estimator_type": "regressor_proba",
+        "capability:multioutput": False,
+        "capability:missing": True,
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
+    }
+
+    def __init__(self, estimators=None, weights=None, meta_learner=None):
+        if estimators is None:
+            dummy = ResidualDouble(LinearRegression())
+            estimators = [("dummy", dummy)]
+        if not isinstance(estimators, list) or not all(
+            isinstance(e, tuple) and len(e) == 2 for e in estimators
+        ):
+            raise ValueError("estimators must be a list of (str, BaseProbaRegressor) tuples.")
+
+        for _, est in estimators:
+            if not hasattr(est, "predict_proba"):
+                raise ValueError("Each base estimator must implement predict_proba.")
+
+        if weights is not None:
+            if len(weights) != len(estimators):
+                raise ValueError("weights must have the same length as estimators.")
+            if any(w < 0 for w in weights):
+                raise ValueError("weights must be non-negative.")
+
+        super().__init__()
         self.estimators = estimators
         self.weights = weights
         self.meta_learner = meta_learner
-        self.use_meta_proba = use_meta_proba
-        super().__init__()
-
-    def set_meta_learner(self, meta_learner, use_meta_proba=True):
-        """Set or update the meta-learner for stacking.
-
-        Parameters
-        ----------
-        meta_learner : regressor or classifier
-            The meta-learner to use for stacking.
-        use_meta_proba : bool, default True
-            Whether to use predict_proba if available.
-        """
-        self.meta_learner = meta_learner
-        self.use_meta_proba = use_meta_proba
-        return self
 
     def add_base_estimator(self, name, estimator):
-        """Add a new base estimator to the ensemble.
+        """Add base estimator; returns a new instance (no mutation of original)."""
+        new_self = self.clone()
+        new_self.estimators = list(new_self.estimators) if new_self.estimators is not None else []
+        new_self.estimators.append((name, estimator))
+        return new_self
 
-        Parameters
-        ----------
-        name : str
-            Name for the estimator.
-        estimator : BaseProbaRegressor
-            The estimator to add.
-        """
-        if not hasattr(self, "estimators") or self.estimators is None:
-            self.estimators = []
-        self.estimators.append((name, estimator))
-        return self
+    def _get_meta_features(self, X):
+        """Stack mean + variance from each base estimator."""
+        features = []
+        for _, est in self.fitted_estimators_:
+            dist = est.predict_proba(X)
+            mean_vals = np.asarray(dist.mean()).flatten()
+
+            try:
+                var_vals = np.asarray(dist.var()).flatten()
+            except (AttributeError, NotImplementedError, TypeError):
+                var_vals = np.zeros_like(mean_vals)
+
+            features.extend([mean_vals, var_vals])
+
+        return np.column_stack(features)
 
     def _fit(self, X, y, C=None):
         self.fitted_estimators_ = []
-        base_preds = []
         for name, est in self.estimators:
-            est_fitted = est.clone().fit(X, y, C)
+            est_fitted = est.clone().fit(X, y, C) if hasattr(est, "clone") else est.fit(X, y, C)
             self.fitted_estimators_.append((name, est_fitted))
-            base_preds.append(est_fitted.predict(X))
-        # If meta-learner is provided, fit it on base predictions
+
         if self.meta_learner is not None:
-            # Stack base predictions as features
-            X_meta = np.column_stack([p.values.flatten() for p in base_preds])
-            y_meta = y.values.flatten() if hasattr(y, "values") else y
-            self.meta_learner_ = self.meta_learner.fit(X_meta, y_meta)
+            X_meta = self._get_meta_features(X)
+            y_meta = np.asarray(y).flatten()
+            meta = self.meta_learner.clone() if hasattr(self.meta_learner, "clone") else self.meta_learner
+            self.meta_learner_ = meta.fit(X_meta, y_meta)
         else:
             self.meta_learner_ = None
+
         return self
 
     def _predict_proba(self, X):
+        if hasattr(self, "meta_learner_") and self.meta_learner_ is not None:
+            X_meta = self._get_meta_features(X)
+            return self.meta_learner_.predict_proba(X_meta)
+
+        # Mixture path
         dists = [(name, est.predict_proba(X)) for name, est in self.fitted_estimators_]
-        weights = self.weights
-        if weights is not None:
-            weights = np.array(weights) / np.sum(weights)
-        # If meta-learner is provided, use its output as the final prediction
-        if self.meta_learner_ is not None:
-            base_preds = [
-                est.predict(X).values.flatten() for _, est in self.fitted_estimators_
-            ]
-            X_meta = np.column_stack(base_preds)
-            if self.use_meta_proba and hasattr(self.meta_learner_, "predict_proba"):
-                # Use meta-learner's predict_proba if available
-                meta_pred = self.meta_learner_.predict_proba(X_meta)
-                # Return as a Mixture with a single component for compatibility
-                return Mixture(distributions=[("meta", meta_pred)], weights=[1.0])
-            else:
-                # Use meta-learner's predict (point prediction)
-                meta_pred = self.meta_learner_.predict(X_meta)
-                # Return as a degenerate Mixture
-                return Mixture(distributions=[("meta", meta_pred)], weights=[1.0])
-        # Always return a Mixture, even if meta_learner_ is None
+        weights = None
+        if self.weights is not None:
+            weights = np.asarray(self.weights, dtype=float)
+            weights = weights / weights.sum()
+
         return Mixture(distributions=dists, weights=weights)
+
+    def _predict(self, X):
+        return self._predict_proba(X).mean()
+
+    def _predict_interval(self, X, coverage=0.9):
+        dist = self._predict_proba(X)
+        if hasattr(dist, "interval"):
+            lower, upper = dist.interval(coverage)
+        else:
+            mean = np.asarray(dist.mean())
+            if mean.ndim == 1:
+                mean = mean.reshape(-1, 1)
+            sigma = np.full_like(mean, 1e-5, dtype=float)
+            lower, upper = Normal(mu=mean, sigma=sigma).interval(coverage)
+
+        # Ensure output is a DataFrame with appropriate columns
+        # Determine number of variables (columns in mean)
+        n_samples = lower.shape[0]
+        n_vars = lower.shape[1] if lower.ndim > 1 else 1
+        coverage_arr = np.atleast_1d(coverage)
+        n_cov = len(coverage_arr)
+        # Reshape lower/upper to (n_samples, n_vars, n_cov) if needed
+        if n_vars == 1:
+            lower = np.atleast_2d(lower).T if lower.ndim == 1 else lower
+            upper = np.atleast_2d(upper).T if upper.ndim == 1 else upper
+        if lower.ndim == 2 and n_cov > 1:
+            lower = lower.reshape(n_samples, n_cov)
+            upper = upper.reshape(n_samples, n_cov)
+            lower = lower[:, np.newaxis, :]  # (n_samples, 1, n_cov)
+            upper = upper[:, np.newaxis, :]
+        if lower.ndim == 1:
+            lower = lower[:, np.newaxis, np.newaxis]
+            upper = upper[:, np.newaxis, np.newaxis]
+        elif lower.ndim == 2:
+            lower = lower[:, :, np.newaxis]
+            upper = upper[:, :, np.newaxis]
+        # Stack lower/upper along last axis (bound)
+        data = np.concatenate([lower, upper], axis=2)  # (n_samples, n_vars, 2) or (n_samples, n_vars, n_cov, 2)
+        # If multiple coverages, data shape: (n_samples, n_vars, n_cov, 2)
+        if data.ndim == 4:
+            data = data.transpose(0, 1, 2, 3).reshape(n_samples, n_vars * n_cov * 2)
+        else:
+            data = data.reshape(n_samples, n_vars * n_cov * 2)
+        # Build MultiIndex columns
+        if hasattr(X, "columns"):
+            var_names = list(X.columns)
+        else:
+            var_names = [0] if n_vars == 1 else list(range(n_vars))
+        bounds = ["lower", "upper"]
+        columns = pd.MultiIndex.from_product(
+            [var_names, coverage_arr, bounds], names=["variable", "coverage", "bound"]
+        )
+        return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
+            dist = self._predict_proba(X)
+            coverage_arr = np.atleast_1d(coverage)
+            # Get lower, upper as arrays (n_samples, n_vars, n_cov)
+            if hasattr(dist, "interval"):
+                lower, upper = dist.interval(coverage)
+            else:
+                mean = np.asarray(dist.mean())
+                if mean.ndim == 1:
+                    mean = mean.reshape(-1, 1)
+                sigma = np.full_like(mean, 1e-5, dtype=float)
+                lower, upper = Normal(mu=mean, sigma=sigma).interval(coverage)
+            lower = np.asarray(lower)
+            upper = np.asarray(upper)
+            n_samples = lower.shape[0]
+            # Handle shape for multi-variate, multi-coverage
+            if lower.ndim == 1:
+                lower = lower[:, np.newaxis, np.newaxis]
+                upper = upper[:, np.newaxis, np.newaxis]
+            elif lower.ndim == 2:
+                if lower.shape[1] == len(coverage_arr):
+                    lower = lower[:, np.newaxis, :]
+                    upper = upper[:, np.newaxis, :]
+                else:
+                    lower = lower[:, :, np.newaxis]
+                    upper = upper[:, :, np.newaxis]
+            # Now lower/upper: (n_samples, n_vars, n_cov)
+            n_vars = lower.shape[1]
+            n_cov = lower.shape[2]
+            # Stack lower/upper along last axis (bound)
+            data = np.stack([lower, upper], axis=3)  # (n_samples, n_vars, n_cov, 2)
+            data = data.reshape(n_samples, n_vars * n_cov * 2)
+            # Build MultiIndex columns
+            if hasattr(X, "columns"):
+                var_names = list(X.columns)
+            else:
+                var_names = [0] if n_vars == 1 else list(range(n_vars))
+            bounds = ["lower", "upper"]
+            columns = pd.MultiIndex.from_product(
+                [var_names, coverage_arr, bounds], names=["variable", "coverage", "bound"]
+            )
+            return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
+
+    def _predict_quantiles(self, X, quantiles):
+        dist = self._predict_proba(X)
+        if hasattr(dist, "quantile"):
+            return dist.quantile(quantiles)
+
+        # Fallback
+        mean = np.asarray(dist.mean())
+        if mean.ndim == 1:
+            mean = mean.reshape(-1, 1)
+        sigma = np.full_like(mean, 1e-5, dtype=float)
+        return Normal(mu=mean, sigma=sigma).quantile(quantiles)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
-        """Return test parameters for ProbabilisticStackingRegressor."""
         from sklearn.linear_model import LinearRegression
-
         from skpro.regression.residual import ResidualDouble
 
-        est1 = ResidualDouble(LinearRegression())
-        est2 = ResidualDouble(LinearRegression())
-        # Two parameter sets: one with two estimators, one with three and weights
-        params1 = {"estimators": [("est1", est1), ("est2", est2)]}
-        params2 = {
-            "estimators": [("est1", est1), ("est2", est2), ("est3", est1)],
-            "weights": [0.2, 0.3, 0.5],
-        }
-        return [params1, params2]
+        base = ResidualDouble(LinearRegression())
+        meta = ResidualDouble(LinearRegression())
+
+        return [
+            {"estimators": [("est1", base), ("est2", base)]},
+            {
+                "estimators": [("est1", base), ("est2", base)],
+                "weights": [0.4, 0.6],
+                "meta_learner": meta,
+            },
+        ]
 
 
 class ProbabilisticBoostingRegressor(BaseProbaRegressor):
-    """Residual-based probabilistic boosting ensemble for skpro.
+        def set_params(self, **params):
+            for key, value in params.items():
+                setattr(self, key, value)
+            return self
+    """Residual-based probabilistic boosting ensemble.
 
-    Trains base probabilistic regressors sequentially, each on the residuals
-    of the previous prediction (y_true - y_pred_mean).
-    Final prediction is a weighted mixture of all base predictions,
-    as a true boosting ensemble for probabilistic regression.
-
-    Class inspired by modular, composable probabilistic boosting frameworks, including:
-
-    - Mendonça, A., et al. (2022). ProBoost: a Boosting Method
-    for Probabilistic Classifiers. https://arxiv.org/abs/2209.01611
-    - Sprangers, P., Schelter, S., & de Rijke, M. (2021). Probabilistic Gradient
-    Boosting Machines (PGBM) for Large-Scale Probabilistic Regression.
-    https://arxiv.org/abs/2106.01682
-    - Tu, Z. (2005). Probabilistic Boosting-Tree: Learning Discriminative Models
-    for Classification, Recognition, and Clustering. ICCV 2005.
-    https://pages.ucsd.edu/~ztu/publication/iccv05_pbt.pdf
-
-    Parameters
-    ----------
-    base_estimator : BaseProbaRegressor
-        The base probabilistic regressor to boost.
-    n_estimators : int
-        Number of boosting rounds.
-    learning_rate : float, optional (default=1.0)
-        Shrinks the contribution of each regressor.
+    Fits bases sequentially on residuals of previous mean prediction.
+    Final output: weighted mixture of all base distributions.
     """
+
+    _tags = {
+        "authors": ["arnavk23"],
+        "estimator_type": "regressor_proba",
+        "capability:multioutput": False,
+        "capability:missing": True,
+        "X_inner_mtype": "pd_DataFrame_Table",
+        "y_inner_mtype": "pd_DataFrame_Table",
+    }
 
     def __init__(
         self,
-        base_estimator,
+        base_estimator=None,
         n_estimators=10,
         learning_rate=1.0,
         uncertainty_weighting=None,
         calibrator=None,
     ):
-        """
-        Initialize ProbabilisticBoostingRegressor.
+        if base_estimator is None:
+            base_estimator = ResidualDouble(LinearRegression())
+        if not hasattr(base_estimator, "predict_proba"):
+            raise ValueError("base_estimator must implement predict_proba.")
+        if not isinstance(n_estimators, int) or n_estimators <= 0:
+            raise ValueError("n_estimators must be a positive integer.")
+        if learning_rate <= 0:
+            raise ValueError("learning_rate must be positive.")
 
-        Parameters
-        ----------
-        base_estimator : BaseProbaRegressor
-            The base probabilistic regressor to boost.
-        n_estimators : int
-            Number of boosting rounds.
-        learning_rate : float, optional (default=1.0)
-            Shrinks the contribution of each regressor.
-        uncertainty_weighting : callable or None
-            If provided, a function that takes (y_true, y_pred, round_idx)
-            and returns a weight for this round.
-            Inspired by ProBoost and PGBM for uncertainty-aware weighting.
-        calibrator : object or None
-            If provided, should have fit(y_true, y_pred) and predict_proba(y_pred)
-            for post-hoc calibration.
-        """
+        super().__init__()
         self.base_estimator = base_estimator
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.uncertainty_weighting = uncertainty_weighting
         self.calibrator = calibrator
+    def get_params(self, deep=True):
+        params = super().get_params(deep=deep)
+        params.update({
+            "base_estimator": self.base_estimator,
+            "n_estimators": self.n_estimators,
+            "learning_rate": self.learning_rate,
+            "uncertainty_weighting": self.uncertainty_weighting,
+            "calibrator": self.calibrator,
+        })
+        return params
+
         super().__init__()
 
     def _fit(self, X, y, C=None):
         self.estimators_ = []
         self.weights_ = []
-        residual = y.copy()
+
+        y_arr = np.asarray(y).flatten()
+        residual = y.copy() if hasattr(y, "copy") else pd.DataFrame({"residual": y_arr}, index=getattr(y, "index", None))
+
         for i in range(self.n_estimators):
-            est = self.base_estimator.clone().fit(X, residual, C)
+            est = self.base_estimator.clone().fit(X, residual, C) if hasattr(self.base_estimator, "clone") else self.base_estimator.fit(X, residual, C)
             self.estimators_.append(est)
-            # Uncertainty-aware weighting (if provided)
+
             y_pred = est.predict(X)
-            if self.uncertainty_weighting is not None:
-                weight = self.uncertainty_weighting(y, y_pred, i)
-            else:
-                weight = self.learning_rate
+            y_pred_arr = np.asarray(y_pred).flatten()
+
+            weight = (
+                self.uncertainty_weighting(y, y_pred, i)
+                if self.uncertainty_weighting is not None
+                else self.learning_rate
+            )
             self.weights_.append(weight)
-            # Update residuals: y_true - y_pred_mean
-            if hasattr(y_pred, "to_frame"):
-                y_pred = (
-                    y_pred
-                    if isinstance(y_pred, type(y))
-                    else y_pred.to_frame(
-                        index=y.index,
-                        name=y.columns[0] if hasattr(y, "columns") else None,
-                    )
-                )
-            residual = y - y_pred
-        # Optionally fit a calibrator on the final ensemble output
+
+            residual_arr = y_arr - y_pred_arr
+            if hasattr(y, "index"):
+                residual = pd.DataFrame(residual_arr, index=y.index)
+            else:
+                residual = residual_arr
+
         if self.calibrator is not None:
-            # Fit calibrator on the final ensemble prediction
-            y_pred_ensemble = self._predict_proba(X)
-            self.calibrator_ = self.calibrator.fit(y, y_pred_ensemble)
+            final_dist = self._predict_proba(X)
+            cal = self.calibrator.clone() if hasattr(self.calibrator, "clone") else self.calibrator
+            self.calibrator_ = cal.fit(y, final_dist)
         else:
             self.calibrator_ = None
+
         return self
 
     def _predict_proba(self, X):
-        dists = [
-            (f"est{i}", est.predict_proba(X)) for i, est in enumerate(self.estimators_)
-        ]
-        weights = np.array(self.weights_) / np.sum(self.weights_)
+        dists = [(f"est{i}", est.predict_proba(X)) for i, est in enumerate(self.estimators_)]
+        weights = np.asarray(self.weights_, dtype=float)
+        weights = weights / weights.sum()
+
         mixture = Mixture(distributions=dists, weights=weights)
-        # Optionally calibrate the output
-        if self.calibrator_ is not None:
+
+        if hasattr(self, "calibrator_") and self.calibrator_ is not None:
             return self.calibrator_.predict_proba(mixture)
         return mixture
 
+    def _predict(self, X):
+        return self._predict_proba(X).mean()
+
+    def _predict_interval(self, X, coverage=0.9):
+        dist = self._predict_proba(X)
+        if hasattr(dist, "interval"):
+            lower, upper = dist.interval(coverage)
+        else:
+            mean = np.asarray(dist.mean())
+            if mean.ndim == 1:
+                mean = mean.reshape(-1, 1)
+            sigma = np.full_like(mean, 1e-5, dtype=float)
+            lower, upper = Normal(mu=mean, sigma=sigma).interval(coverage)
+
+        n_samples = lower.shape[0]
+        n_vars = lower.shape[1] if lower.ndim > 1 else 1
+        coverage_arr = np.atleast_1d(coverage)
+        n_cov = len(coverage_arr)
+        if n_vars == 1:
+            lower = np.atleast_2d(lower).T if lower.ndim == 1 else lower
+            upper = np.atleast_2d(upper).T if upper.ndim == 1 else upper
+        if lower.ndim == 2 and n_cov > 1:
+            lower = lower.reshape(n_samples, n_cov)
+            upper = upper.reshape(n_samples, n_cov)
+            lower = lower[:, np.newaxis, :]
+            upper = upper[:, np.newaxis, :]
+        if lower.ndim == 1:
+            lower = lower[:, np.newaxis, np.newaxis]
+            upper = upper[:, np.newaxis, np.newaxis]
+        elif lower.ndim == 2:
+            lower = lower[:, :, np.newaxis]
+            upper = upper[:, :, np.newaxis]
+        data = np.concatenate([lower, upper], axis=2)
+        if data.ndim == 4:
+            data = data.transpose(0, 1, 2, 3).reshape(n_samples, n_vars * n_cov * 2)
+        else:
+            data = data.reshape(n_samples, n_vars * n_cov * 2)
+        if hasattr(X, "columns"):
+            var_names = list(X.columns)
+        else:
+            var_names = [0] if n_vars == 1 else list(range(n_vars))
+        bounds = ["lower", "upper"]
+        columns = pd.MultiIndex.from_product(
+            [var_names, coverage_arr, bounds], names=["variable", "coverage", "bound"]
+        )
+        return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
+            dist = self._predict_proba(X)
+            coverage_arr = np.atleast_1d(coverage)
+            if hasattr(dist, "interval"):
+                lower, upper = dist.interval(coverage)
+            else:
+                mean = np.asarray(dist.mean())
+                if mean.ndim == 1:
+                    mean = mean.reshape(-1, 1)
+                sigma = np.full_like(mean, 1e-5, dtype=float)
+                lower, upper = Normal(mu=mean, sigma=sigma).interval(coverage)
+            lower = np.asarray(lower)
+            upper = np.asarray(upper)
+            n_samples = lower.shape[0]
+            if lower.ndim == 1:
+                lower = lower[:, np.newaxis, np.newaxis]
+                upper = upper[:, np.newaxis, np.newaxis]
+            elif lower.ndim == 2:
+                if lower.shape[1] == len(coverage_arr):
+                    lower = lower[:, np.newaxis, :]
+                    upper = upper[:, np.newaxis, :]
+                else:
+                    lower = lower[:, :, np.newaxis]
+                    upper = upper[:, :, np.newaxis]
+            n_vars = lower.shape[1]
+            n_cov = lower.shape[2]
+            data = np.stack([lower, upper], axis=3)
+            data = data.reshape(n_samples, n_vars * n_cov * 2)
+            if hasattr(X, "columns"):
+                var_names = list(X.columns)
+            else:
+                var_names = [0] if n_vars == 1 else list(range(n_vars))
+            bounds = ["lower", "upper"]
+            columns = pd.MultiIndex.from_product(
+                [var_names, coverage_arr, bounds], names=["variable", "coverage", "bound"]
+            )
+            return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
+
+    def _predict_quantiles(self, X, quantiles):
+        dist = self._predict_proba(X)
+        if hasattr(dist, "quantile"):
+            return dist.quantile(quantiles)
+
+        mean = np.asarray(dist.mean())
+        if mean.ndim == 1:
+            mean = mean.reshape(-1, 1)
+        sigma = np.full_like(mean, 1e-5, dtype=float)
+        return Normal(mu=mean, sigma=sigma).quantile(quantiles)
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
-        """Return test parameters for ProbabilisticBoostingRegressor."""
         from sklearn.linear_model import LinearRegression
-
         from skpro.regression.residual import ResidualDouble
 
-        base1 = ResidualDouble(LinearRegression())
-        base2 = ResidualDouble(LinearRegression())
-        # Two parameter sets: one with 3 estimators, one with 5 and different base
-        params1 = {"base_estimator": base1, "n_estimators": 3}
-        params2 = {"base_estimator": base2, "n_estimators": 5}
-        return [params1, params2]
+        base = ResidualDouble(LinearRegression())
+        return [
+            {"base_estimator": base, "n_estimators": 3},
+            {"base_estimator": base, "n_estimators": 5, "learning_rate": 0.8},
+        ]
