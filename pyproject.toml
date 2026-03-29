@@ -99,10 +99,10 @@ dependencies_2024 = [
 [project.urls]
 Homepage = "https://github.com/sktime/skpro"
 Repository = "https://github.com/sktime/skpro"
-Documentation = "https://github.com/sktime/skpro"
+Documentation = "https://github.com/sktime/skpro#readme"
 Download = "https://pypi.org/project/skpro/#files"
-"API Reference" = "https://github.com/sktime/skpro"
-"Release Notes" = "https://github.com/sktime/skpro"
+"API Reference" = "https://github.com/sktime/skpro/tree/main/docs/source/api_reference"
+"Release Notes" = "https://github.com/sktime/skpro/releases"
 
 [project.license]
 file = "LICENSE"
