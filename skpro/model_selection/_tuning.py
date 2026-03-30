@@ -108,7 +108,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
 
         # scoring = check_scoring(self.scoring, obj=self)
         scoring = self.scoring
-        scoring_name = f"test_{scoring.name}"
+        scoring_name = f"test_{scoring.name}" if scoring is not None else "test_CPRS"
 
         backend = self.backend
         backend_params = self.backend_params if self.backend_params else {}
