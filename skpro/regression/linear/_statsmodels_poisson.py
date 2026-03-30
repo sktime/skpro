@@ -87,10 +87,10 @@ class StatsmodelsPoissonRegressor(BaseProbaRegressor):
     >>> import pandas as pd
     >>> import numpy as np
     >>>
-    >>> X, y = make_regression(n_samples=100, n_features=2, noise=0.1)
-    >>> y = np.abs(y)  # Poisson requires non-negative targets
+    >>> X, _ = make_regression(n_samples=100, n_features=2, noise=0.1)
     >>> X = pd.DataFrame(X, columns=["x1", "x2"])
-    >>> y = pd.DataFrame(y, columns=["target"])
+    >>> rate = np.exp(0.3 * X["x1"] - 0.2 * X["x2"])  # positive Poisson rates
+    >>> y = pd.DataFrame(np.random.poisson(rate), columns=["target"])
     >>>
     >>> reg = StatsmodelsPoissonRegressor()
     >>> reg.fit(X, y)  # doctest: +SKIP
@@ -231,7 +231,7 @@ class StatsmodelsPoissonRegressor(BaseProbaRegressor):
             "tol": self.tol,
             "disp": self.disp,
             "cov_type": self.cov_type,
-            "cov_kwds": self.cov_kwds if self.cov_kwds is not None else {},
+            "cov_kwds": self.cov_kwds,
         }
 
         self._fitted_model = sm_model.fit(**fit_kwargs)
@@ -341,5 +341,6 @@ class StatsmodelsPoissonRegressor(BaseProbaRegressor):
         }
         param3 = {
             "add_constant": False,
+            "method": "bfgs",
         }
         return [param1, param2, param3]
