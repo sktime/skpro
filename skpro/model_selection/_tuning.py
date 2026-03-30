@@ -663,6 +663,7 @@ class RandomizedSearchCV(BaseGridSearch):
         verbose=0,
         return_n_best_estimators=1,
         random_state=None,
+        backend="loky",
         error_score=np.nan,
         backend_params=None,
     ):
@@ -673,6 +674,7 @@ class RandomizedSearchCV(BaseGridSearch):
             cv=cv,
             verbose=verbose,
             return_n_best_estimators=return_n_best_estimators,
+            backend=backend,
             error_score=error_score,
             backend_params=backend_params,
         )
