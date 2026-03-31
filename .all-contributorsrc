@@ -245,7 +245,7 @@
       "name": "Khush Agrawal",
       "profile": "https://github.com/Khushmagrawal",
       "contributions": [
-        "code",
+        "code"
       ]
     },
     {
@@ -257,5 +257,15 @@
         "bug"
       ]
     },
+    {
+      "login": "sun-9545sunoj",
+      "name": "Sunoj",
+      "avatar_url": "https://avatars.githubusercontent.com/u/156280523?v=4",
+      "profile": "https://github.com/sun-9545sunoj",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    }
   ]
 }

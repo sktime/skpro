@@ -23,7 +23,8 @@ MTYPE_REGISTER - list of tuples
 each tuple corresponds to an mtype, elements as follows:
     0 : string - name of the mtype as used throughout skpro and in datatypes
     1 : string - name of the scitype the mtype is for, must be in SCITYPE_REGISTER
-    2 : string - plain English description of the scitype
+    2 : string - plain English description of the mtype
+    3 : string or list of strings - soft dependencies of the mtype, or None if no soft deps
 
 ---
 
@@ -39,6 +40,8 @@ mtype_to_scitype(mtype: str) - convenience function that returns scitype for an 
 ---
 """
 
+import threading
+
 from skpro.datatypes._proba._registry import MTYPE_LIST_PROBA, MTYPE_REGISTER_PROBA
 from skpro.datatypes._table._registry import MTYPE_LIST_TABLE, MTYPE_REGISTER_TABLE
 
@@ -46,31 +49,109 @@ MTYPE_REGISTER = []
 MTYPE_REGISTER += MTYPE_REGISTER_TABLE
 MTYPE_REGISTER += MTYPE_REGISTER_PROBA
 
-MTYPE_SOFT_DEPS = {
-    "polars_eager_table": "polars",
-    "polars_lazy_table": "polars",
-}
-
-
 # mtypes to exclude in checking since they are ambiguous and rare
 AMBIGUOUS_MTYPES = []
-
 
 __all__ = [
     "MTYPE_REGISTER",
     "MTYPE_LIST_TABLE",
     "MTYPE_LIST_PROBA",
-    "MTYPE_SOFT_DEPS",
-    "SCITYPE_REGISTER",
+    "MTYPE_SOFT_DEPS",  # noqa: F822 - dynamically exported via __getattr__
+    "SCITYPE_REGISTER",  # noqa: F822 - dynamically exported via __getattr__
+    "SCITYPE_LIST",  # noqa: F822 - dynamically exported via __getattr__
 ]
 
+_SCITYPE_DESCRIPTIONS = {
+    "Table": "data table with primitive column types",
+    "Proba": "probability distribution or distribution statistics, return types",
+}
 
-SCITYPE_REGISTER = [
-    ("Table", "data table with primitive column types"),
-    ("Proba", "probability distribution or distribution statistics, return types"),
-]
+# We expose these via __getattr__ for programmatic lookup
+_CACHE = {}
+_REGISTRY_LOCK = threading.RLock()
 
-SCITYPE_LIST = [x[0] for x in SCITYPE_REGISTER]
+
+def _get_registry(name):
+    if name in _CACHE:
+        return _CACHE[name]
+
+    with _REGISTRY_LOCK:
+        if name in _CACHE:
+            return _CACHE[name]
+
+        if name in ["MTYPE_SOFT_DEPS", "SCITYPE_REGISTER", "SCITYPE_LIST"]:
+            # Pre-seed _CACHE to prevent infinite recursion during generation
+            # Re-entrant calls (e.g., from inspect) will receive these references
+            _CACHE["MTYPE_SOFT_DEPS"] = {}
+            _CACHE["SCITYPE_REGISTER"] = []
+            _CACHE["SCITYPE_LIST"] = []
+
+            try:
+                from skpro.datatypes._check import get_check_dict
+
+                check_dict = get_check_dict(soft_deps="all")
+
+                soft_deps = {}
+                scitypes = set()
+
+                for k, cls in check_dict.items():
+                    if hasattr(cls, "get_class_tag"):
+                        scitype = cls.get_class_tag("scitype")
+                    else:
+                        scitype = k[1]
+                    if scitype is not None:
+                        scitypes.add(scitype)
+
+                for mtype_tuple in MTYPE_REGISTER:
+                    mtype = mtype_tuple[0]
+                    scitype = mtype_tuple[1]
+                    scitypes.add(scitype)
+                    if len(mtype_tuple) >= 4 and mtype_tuple[3] is not None:
+                        deps = mtype_tuple[3]
+                        soft_deps[mtype] = (
+                            list(deps) if isinstance(deps, tuple) else deps
+                        )
+
+                scitype_register = []
+                for sci in sorted(scitypes):
+                    desc = _SCITYPE_DESCRIPTIONS.get(sci)
+                    if desc is None:
+                        raise ValueError(
+                            f"scitype '{sci}' is missing a description in "
+                            "`_SCITYPE_DESCRIPTIONS`. Please add it to "
+                            "`skpro.datatypes._registry._SCITYPE_DESCRIPTIONS`."
+                        )
+                    scitype_register.append((sci, desc))
+
+                scitype_list = [x[0] for x in scitype_register]
+
+                # Update the pre-seeded objects in-place
+                _CACHE["MTYPE_SOFT_DEPS"].update(soft_deps)
+                _CACHE["SCITYPE_REGISTER"].extend(scitype_register)
+                _CACHE["SCITYPE_LIST"].extend(scitype_list)
+
+                return _CACHE[name]
+            except Exception:
+                _CACHE.pop("MTYPE_SOFT_DEPS", None)
+                _CACHE.pop("SCITYPE_REGISTER", None)
+                _CACHE.pop("SCITYPE_LIST", None)
+                raise
+
+    raise AttributeError(f"module {__name__} has no attribute {name}")
+
+
+def __getattr__(name):
+    return _get_registry(name)
+
+
+def __dir__():
+    """Return module attributes and dynamically generated properties."""
+    names = list(globals().keys()) + [
+        "MTYPE_SOFT_DEPS",
+        "SCITYPE_REGISTER",
+        "SCITYPE_LIST",
+    ]
+    return sorted(set(names))
 
 
 def mtype_to_scitype(mtype: str, return_unique=False, coerce_to_list=False):
@@ -173,8 +254,8 @@ def scitype_to_mtype(scitype: str, softdeps: str = "exclude"):
     if not isinstance(scitype, str):
         raise TypeError(msg)
 
-    # now we know scitype is a string, check if it is in the register
-    if scitype not in SCITYPE_LIST:
+    scitype_list = _get_registry("SCITYPE_LIST")
+    if scitype not in scitype_list:
         raise ValueError(
             f'"{scitype}" is not a valid scitype string, see datatypes.SCITYPE_REGISTER'
         )
@@ -188,9 +269,11 @@ def scitype_to_mtype(scitype: str, softdeps: str = "exclude"):
     if softdeps not in ["exclude", "present"]:
         return mtypes
 
+    mtype_soft_deps = _get_registry("MTYPE_SOFT_DEPS")
+
     if softdeps == "exclude":
         # subset to mtypes that require no soft deps
-        mtypes = [m for m in mtypes if m not in MTYPE_SOFT_DEPS.keys()]
+        mtypes = [m for m in mtypes if m not in mtype_soft_deps.keys()]
         return mtypes
 
     if softdeps == "present":
@@ -198,10 +281,10 @@ def scitype_to_mtype(scitype: str, softdeps: str = "exclude"):
 
         def present(x):
             """Return True if x has satisfied soft dependency or has no soft dep."""
-            if x not in MTYPE_SOFT_DEPS.keys():
+            if x not in mtype_soft_deps.keys():
                 return True
             else:
-                return _check_soft_dependencies(MTYPE_SOFT_DEPS[x], severity="none")
+                return _check_soft_dependencies(mtype_soft_deps[x], severity="none")
 
         # return only mtypes with soft dependencies present (or requiring none)
         mtypes = [m for m in mtypes if present(m)]
