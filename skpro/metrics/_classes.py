@@ -124,12 +124,12 @@ class PinballLoss(BaseProbaMetric):
         if alpha is None:
             alphas = y_pred_alphas
         else:
-            # if alpha was provided, check whether  they are predicted
-            #   if not all alpha are observed, raise a ValueError
-            if not np.isin(alpha, y_pred_alphas).all():
-                # todo: make error msg more informative
-                #   which alphas are missing
-                msg = "not all quantile values in alpha are available in y_pred"
+            missing_alphas = np.setdiff1d(alpha, y_pred_alphas)
+            if len(missing_alphas) > 0:
+                msg = (
+                    f"Not all quantile values in alpha are available in y_pred. "
+                    f"Missing alphas: {missing_alphas.tolist()}"
+                )
                 raise ValueError(msg)
             else:
                 alphas = alpha
