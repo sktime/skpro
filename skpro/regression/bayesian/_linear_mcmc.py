@@ -278,7 +278,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
 
                 if not is_predictive:
                     df = pd.DataFrame(data_dict)
-                    reshaped_df = df.stack()
+                    reshaped_df = df.stack(future_stack=True)
                     reshaped_df = reshaped_df.reset_index(name="value")
                     reshaped_df.set_index(["level_0", "level_1"], inplace=True)
                     reshaped_df.index.names = ["obs_id", "variable"]

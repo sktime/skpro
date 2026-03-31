@@ -315,7 +315,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         # format as empirical sample for empirical distr
         # row multiindex: (alpha, X.index)
         # column index  : as y in fit
-        empirical_spl = quantile_preds.stack(level=1).swaplevel(0, 1)
+        empirical_spl = quantile_preds.stack(level=1, future_stack=True).swaplevel(0, 1)
 
         y_pred_proba = QPD_Empirical(
             empirical_spl,
