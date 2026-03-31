@@ -143,9 +143,7 @@ class GammaRegressor(BaseProbaRegressor):
 
         # Estimate dispersion (phi) using Pearson chi-squared statistic
         if n_samples > p:
-            dispersion = np.sum(((y_inner - y_pred) / y_pred) ** 2) / (
-                n_samples - p
-            )
+            dispersion = np.sum(((y_inner - y_pred) / y_pred) ** 2) / (n_samples - p)
             # Ensure strictly positive dispersion to avoid divide-by-zero later
             self.dispersion_ = max(dispersion, eps)
         else:
