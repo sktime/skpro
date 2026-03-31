@@ -210,7 +210,7 @@ def test_evaluate_alpha_positive(Metric, y_pred, y_true):
 )
 def test_evaluate_alpha_negative(Metric, y_pred, y_true):
     """Tests whether correct error raised when required quantile not present."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=".*Missing alphas:.*"):
         # 0.3 not in test quantile data so raise error.
         Loss = Metric.create_test_instance().set_params(alpha=0.3)
         res = Loss(y_true=y_true, y_pred=y_pred)  # noqa
