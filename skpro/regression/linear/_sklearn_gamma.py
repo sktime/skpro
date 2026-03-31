@@ -26,19 +26,11 @@ class GammaRegressor(BaseProbaRegressor):
     fit_intercept : bool, default=True
         Whether to fit an intercept term.
 
-    solver : {'lbfgs', 'newton-cholesky'}, default='lbfgs'
-        Algorithm to use in the optimization problem.
-
-    'lbfgs' is an optimization algorithm that approximates the BFGS algorithm
-    'newton-cholesky' uses a Newton-CG variant of Newton's method.
-
     max_iter : int, default=100
         The maximal number of iterations for the solver.
 
     tol : float, default=1e-4
-        The convergence tolerance. If it is not None, training will stop
-        when (loss > best_loss - tol) for n_iter_no_change consecutive
-        epochs.
+        Tolerance for the stopping criteria of the optimization solver.
 
     verbose : int, default=0
         For the 'sag' and 'lbfgs' solvers set verbose to any positive
@@ -145,12 +137,17 @@ class GammaRegressor(BaseProbaRegressor):
         p = n_features + (1 if self.fit_intercept else 0)
 
         y_pred = estimator.predict(X_inner)
+        # Guard against zero/underflow predictions when used as a divisor
+        eps = np.finfo(float).eps
+        y_pred = np.clip(y_pred, eps, None)
 
         # Estimate dispersion (phi) using Pearson chi-squared statistic
         if n_samples > p:
-            self.dispersion_ = np.sum(((y_inner - y_pred) / y_pred) ** 2) / (
+            dispersion = np.sum(((y_inner - y_pred) / y_pred) ** 2) / (
                 n_samples - p
             )
+            # Ensure strictly positive dispersion to avoid divide-by-zero later
+            self.dispersion_ = max(dispersion, eps)
         else:
             self.dispersion_ = 1.0
 
