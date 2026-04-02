@@ -64,20 +64,13 @@ class TransformedDistribution(BaseDistribution):
 
     >>> t = TransformedDistribution(
     ...     distribution=n,
-    ...     func=np.exp,
+    ...     transform=np.exp,
     ...     inverse_func=np.log,
     ... )
 
     It can also be constructed with a ``FunctionTransformer``:
     >>> ft = FunctionTransformer(func=np.log, inverse_func=np.exp)
     >>> t = TransformedDistribution(distribution=n, transformer=ft)
-
-    For internal use with TransformedTargetRegressor, use the factory method:
-    >>> from sklearn.preprocessing import StandardScaler
-    >>> scaler = StandardScaler().fit([[1.0], [2.0], [3.0]])
-    >>> t = TransformedDistribution._from_inverse_transformer(
-    ...     distribution=n, transformer=scaler
-    ... )
     """
 
     _tags = {

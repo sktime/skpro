@@ -197,6 +197,7 @@ class DifferentiableTransformer(BaseTransformer):
     >>> from sklearn.preprocessing import StandardScaler
     >>> import numpy as np
     >>> import pandas as pd
+    >>> from skpro.compose import DifferentiableTransformer
 
     >>> X = pd.DataFrame([[1.0], [2.0], [3.0]], columns=["y"])
     >>> dt = DifferentiableTransformer(StandardScaler())
