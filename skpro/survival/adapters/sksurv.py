@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.distributions.empirical import Empirical
-from skpro.survival.adapters._common import _get_fitted_params_default_safe
+from skpro.survival.adapters._common import _clip_surv, _get_fitted_params_default_safe
 from skpro.utils.sklearn import prep_skl_df
 
 
@@ -139,7 +139,7 @@ class _SksurvAdapter:
         # predict on X
         sksurv_survf = sksurv_est.predict_survival_function(X, return_array=True)
 
-        times = sksurv_est.unique_times_[:-1]
+        times = sksurv_est.unique_times_
 
         nt = len(times)
         mi = pd.MultiIndex.from_product([X.index, range(nt)]).swaplevel()
@@ -147,7 +147,23 @@ class _SksurvAdapter:
         times_val = np.repeat(times, repeats=len(X))
         times_df = pd.DataFrame(times_val, index=mi, columns=self._y_cols)
 
-        weights = -np.diff(sksurv_survf, axis=1).flatten()
+        _, surv_arr_diff, clipped = _clip_surv(sksurv_survf)
+
+        if clipped:
+            from warnings import warn
+
+            warn(
+                f"Warning from {self.__class__.__name__}: "
+                f"Interfaced sksurv class {sksurv_est.__class__.__name__} "
+                "produced improper survival function predictions, i.e., "
+                "not monotonically decreasing or not in [0, 1]. "
+                "skpro has clipped the predictions to enforce proper range and "
+                "valid predictive distributions. "
+                "However, predictions may still be unreliable.",
+                stacklevel=2,
+            )
+
+        weights = -surv_arr_diff.flatten()
         weights_df = pd.Series(weights, index=mi)
 
         dist = Empirical(
