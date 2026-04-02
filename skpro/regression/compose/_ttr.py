@@ -435,6 +435,7 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         from sklearn.preprocessing import StandardScaler
 
         from skpro.regression.linear import DummyProbaRegressor
+        from skpro.regression.online import OnlineRefit
         from skpro.survival.compose import ConditionUncensored
 
         params1 = {
@@ -445,4 +446,8 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             "regressor": ConditionUncensored.create_test_instance(),
             "transformer": StandardScaler(),
         }
-        return [params1, params2]
+        params3 = {
+            "regressor": OnlineRefit(DummyProbaRegressor()),
+            "transformer": StandardScaler(),
+        }
+        return [params1, params2, params3]
