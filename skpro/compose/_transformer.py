@@ -198,18 +198,11 @@ class DifferentiableTransformer(BaseTransformer):
     >>> import numpy as np
     >>> import pandas as pd
 
-    >>> # With unfitted transformer
     >>> X = pd.DataFrame([[1.0], [2.0], [3.0]], columns=["y"])
     >>> dt = DifferentiableTransformer(StandardScaler())
     >>> dt.fit(X)
     >>> dt.transform([[2.0]])
     >>> dt.transform_diff([[2.0]])  # Get derivative
-
-    >>> # With already-fitted transformer
-    >>> scaler = StandardScaler().fit(X)
-    >>> dt_fitted = DifferentiableTransformer(scaler)
-    >>> dt_fitted.fit(X)
-    >>> dt_fitted.transform([[2.0]])
     """
 
     def __init__(self, transformer, transform_func_diff=None, inverse_func_diff=None):

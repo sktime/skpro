@@ -58,7 +58,7 @@ class TransformedDistribution(BaseDistribution):
 
     >>> n = Normal(mu=0, sigma=1)
     >>> # transform the distribution by taking the exponential
-    >>> t = TransformedDistribution(distribution=n, func=np.exp)
+    >>> t = TransformedDistribution(distribution=n, transform=np.exp)
 
     If the inverse is known, it can be given to ensure more methods are exact:
 
