@@ -163,7 +163,14 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        yt = self.transformer_(y)
+        if self.transformer_ is not None:
+            yt = self.transformer_.transform(X=y)
+            if not isinstance(yt, pd.DataFrame):
+                yt = pd.DataFrame(yt, index=y.index, columns=y.columns)
+            else:
+                yt.columns = y.columns
+        else:
+            yt = y
         self.regressor_.update(X=X, y=yt, C=C)
         return self
 
@@ -187,7 +194,10 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         y_pred = self.regressor_.predict(X=X)
-        y_pred_it = self.transformer_.inverse_transform(y_pred)
+        if self.transformer_ is None:
+            return y_pred
+
+        y_pred_it = self.transformer_.inverse_transform(X=y_pred)
         if not isinstance(y_pred_it, pd.DataFrame):
             y_cols = self._y_metadata["feature_names"]
             y_pred_it = pd.DataFrame(y_pred_it, index=X.index, columns=y_cols)
@@ -218,6 +228,9 @@ class TransformedTargetRegressor(BaseProbaRegressor):
                 at quantile probability in second col index, for the row index.
         """
         y_pred = self.regressor_.predict_quantiles(X=X, alpha=alpha)
+        if self.transformer_ is None:
+            return y_pred
+
         y_pred_it = self._get_inverse_transform_pred_int(
             transformer=self.transformer_, y=y_pred
         )
@@ -253,6 +266,9 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
         y_pred = self.regressor_.predict_interval(X=X, coverage=coverage)
+        if self.transformer_ is None:
+            return y_pred
+
         y_pred_it = self._get_inverse_transform_pred_int(
             transformer=self.transformer_, y=y_pred
         )
@@ -302,6 +318,9 @@ class TransformedTargetRegressor(BaseProbaRegressor):
             labels predicted for `X`
         """
         y_pred = self.regressor_.predict_proba(X=X)
+        if self.transformer_ is None:
+            return y_pred
+
         y_pred_it = TransformedDistribution(
             distribution=y_pred,
             transform=self.transformer_.inverse_transform,
