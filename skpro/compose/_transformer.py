@@ -14,8 +14,7 @@ def _get_scipy_derivative():
     """Get scipy derivative function if available.
 
     Checks for scipy and returns the appropriate derivative function.
-    Tries scipy.differentiate first (scipy >= 1.14.0), then falls back
-    to scipy.misc (scipy < 1.14.0, deprecated in scipy 2.0.0).
+    Uses scipy.differentiate for scipy >= 1.14.0, scipy.misc for older versions.
 
     Returns
     -------
@@ -25,27 +24,19 @@ def _get_scipy_derivative():
     """
     from skbase.utils.dependencies import _check_soft_dependencies
 
-    # Check if scipy is available at all
-    if not _check_soft_dependencies("scipy", severity="none"):
-        return None, False
-
-    # Try new API first (scipy >= 1.14.0)
-    try:
+    # Check for new API (scipy >= 1.14.0)
+    if _check_soft_dependencies("scipy>=1.14.0", severity="none"):
         from scipy.differentiate import derivative
 
         return derivative, True
-    except (ImportError, AttributeError):
-        pass
 
-    # Fall back to old API (scipy < 1.14.0)
-    try:
+    # Check for old API (scipy < 1.14.0)
+    elif _check_soft_dependencies("scipy", severity="none"):
         from scipy.misc import derivative
 
         return derivative, False
-    except (ImportError, AttributeError):
-        pass
 
-    # scipy is installed but derivative is not available
+    # scipy is not available
     return None, False
 
 
@@ -172,26 +163,78 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
         raise NotImplementedError("Subclasses must implement _inverse_transform method")
 
 
-class WrapTransformer(BaseTransformer):
-    """Transformer that wraps an sklearn-compatible transformer.
+class DifferentiableTransformer(BaseTransformer):
+    """Differentiable transformer that wraps sklearn transformers.
 
-    This class handles wrapping an external transformer object and delegates
-    fit, transform, and inverse_transform operations to it.
+    Wraps an sklearn-compatible transformer and adds differentiation capabilities
+    for computing derivatives of the transform and inverse_transform functions.
+
+    Parameters
+    ----------
+    transformer : sklearn-compatible transformer
+        A transformer object that implements fit and transform methods.
+        Can be already fitted or an unfitted transformer.
+    transform_func_diff : callable, optional
+        Function to compute the derivative of the transform function.
+        If not provided, will use numerical differentiation or scale_
+        attribute if available.
+    inverse_func_diff : callable, optional
+        Function to compute the derivative of the inverse transform function.
+        If not provided, will use numerical differentiation or scale_
+        attribute if available.
+
+    Attributes
+    ----------
+    transformer_ : fitted transformer
+        The fitted transformer. If transformer was already fitted when
+        passed to __init__, this references the original. Otherwise,
+        it's a clone of transformer that has been fitted.
+    columns_ : pd.Index or None
+        Column names from the data passed to fit.
+
+    Examples
+    --------
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> import numpy as np
+    >>> import pandas as pd
+
+    >>> # With unfitted transformer
+    >>> X = pd.DataFrame([[1.0], [2.0], [3.0]], columns=["y"])
+    >>> dt = DifferentiableTransformer(StandardScaler())
+    >>> dt.fit(X)
+    >>> dt.transform([[2.0]])
+    >>> dt.transform_diff([[2.0]])  # Get derivative
+
+    >>> # With already-fitted transformer
+    >>> scaler = StandardScaler().fit(X)
+    >>> dt_fitted = DifferentiableTransformer(scaler)
+    >>> dt_fitted.fit(X)
+    >>> dt_fitted.transform([[2.0]])
     """
 
-    def __init__(self, transformer):
-        """Initialize the wrapper transformer.
+    def __init__(self, transformer, transform_func_diff=None, inverse_func_diff=None):
+        """Initialize differentiable transformer.
 
         Parameters
         ----------
         transformer : sklearn-compatible transformer
             A transformer object that implements fit and transform methods.
+        transform_func_diff : callable, optional
+            Function to compute the derivative of the transform function.
+        inverse_func_diff : callable, optional
+            Function to compute the derivative of the inverse transform function.
         """
         self.transformer = transformer
+        self.transform_func_diff = transform_func_diff
+        self.inverse_func_diff = inverse_func_diff
         super().__init__()
 
     def _fit(self, X, y=None):
         """Fit the wrapped transformer to X.
+
+        Always clones and fits the transformer on X, following sklearn conventions.
+        This ensures calling .fit(X) actually fits on X regardless of whether
+        the transformer was already fitted.
 
         Parameters
         ----------
@@ -204,8 +247,10 @@ class WrapTransformer(BaseTransformer):
         -------
         self : reference to self
         """
+        # Always clone to avoid mutating the original, then fit on X
         self.transformer_ = clone(self.transformer)
         self.transformer_.fit(X)
+
         return self
 
     def _transform(self, X, y=None):
@@ -300,59 +345,6 @@ class WrapTransformer(BaseTransformer):
             )
             return pd.DataFrame(Xt, index=index, columns=columns)
 
-    def _fit_with_fitted_transformer(self, index=None, columns=None):
-        """Fit with already fitted transformer if possible.
-
-        This is useful when wrapping a transformer that has already been fitted.
-
-        Parameters
-        ----------
-        index : pd.Index, optional
-            Not used, kept for API compatibility.
-        columns : pd.Index, optional
-            Columns to use for output formatting.
-
-        Returns
-        -------
-        self : reference to self
-        """
-        self.columns_ = columns
-
-        try:
-            check_is_fitted(self.transformer)
-            self.transformer_ = self.transformer
-            self._is_fitted = True
-        except NotFittedError:
-            pass
-
-        return self
-
-
-class BaseDifferentiableTransformer(BaseTransformer):
-    """Base class for differentiable transformers.
-
-    This class adds differentiation capabilities to transformers.
-    Subclasses must implement _fit, _transform, and _inverse_transform,
-    and can optionally provide explicit derivative functions.
-    """
-
-    def __init__(self, transform_func_diff=None, inverse_func_diff=None):
-        """Initialize differentiable transformer.
-
-        Parameters
-        ----------
-        transform_func_diff : callable, optional
-            Function to compute the derivative of the transform function.
-        inverse_func_diff : callable, optional
-            Function to compute the derivative of the inverse transform function.
-        """
-        # Only set if not already set (for cooperative multiple inheritance)
-        if not hasattr(self, "transform_func_diff"):
-            self.transform_func_diff = transform_func_diff
-        if not hasattr(self, "inverse_func_diff"):
-            self.inverse_func_diff = inverse_func_diff
-        super().__init__()
-
     def transform_diff(self, X):
         """Compute the derivative of the transform function at X.
 
@@ -374,8 +366,9 @@ class BaseDifferentiableTransformer(BaseTransformer):
     def _transform_diff(self, X):
         """Compute the derivative of the transform function at X.
 
-        Default implementation to be overridden by subclasses.
-        Uses numerical differentiation on the _transform method.
+        Uses explicit derivative if provided, otherwise tries to use
+        scale_ attribute if available, otherwise falls back to numerical
+        differentiation.
 
         Parameters
         ----------
@@ -387,7 +380,18 @@ class BaseDifferentiableTransformer(BaseTransformer):
         diff : array-like
             Derivative of the transform function at X.
         """
-        return self._numerical_diff(self._transform, X)
+        if self.transform_func_diff is not None:
+            # Explicit derivative function provided
+            return self.transform_func_diff(X)
+        elif (
+            hasattr(self.transformer_, "scale_")
+            and self.transformer_.scale_ is not None
+        ):
+            # Use scale_ attribute (e.g., MinMaxScaler, StandardScaler)
+            return np.ones_like(X) * self.transformer_.scale_
+        else:
+            # Fall back to numerical differentiation
+            return self._numerical_diff(self.transformer_.transform, X)
 
     def inverse_transform_diff(self, X):
         """Compute the derivative of the inverse transform function at X.
@@ -412,8 +416,9 @@ class BaseDifferentiableTransformer(BaseTransformer):
     def _inverse_transform_diff(self, Xt):
         """Compute the derivative of the inverse transform function.
 
-        Default implementation to be overridden by subclasses.
-        Uses numerical differentiation on the _inverse_transform method.
+        Uses explicit derivative if provided, otherwise tries to use
+        scale_ attribute if available, otherwise falls back to numerical
+        differentiation.
 
         Parameters
         ----------
@@ -425,7 +430,18 @@ class BaseDifferentiableTransformer(BaseTransformer):
         diff : array-like
             Derivative of the inverse transform function.
         """
-        return self._numerical_diff(self._inverse_transform, Xt)
+        if self.inverse_func_diff is not None:
+            # Explicit derivative function provided
+            return self.inverse_func_diff(Xt)
+        elif (
+            hasattr(self.transformer_, "scale_")
+            and self.transformer_.scale_ is not None
+        ):
+            # Use scale_ attribute (inverse derivative is 1/scale_)
+            return np.ones_like(Xt) / self.transformer_.scale_
+        else:
+            # Fall back to numerical differentiation
+            return self._numerical_diff(self.transformer_.inverse_transform, Xt)
 
     def _numerical_diff(self, func, X, delta=1e-8):
         """Apply numerical differentiation using central difference.
@@ -528,93 +544,36 @@ class BaseDifferentiableTransformer(BaseTransformer):
 
         return diff.reshape(original_shape)
 
+    def _wrap_if_fitted(self, columns=None):
+        """Mark transformer as fitted if already fitted.
 
-class DifferentiableTransformer(WrapTransformer, BaseDifferentiableTransformer):
-    """Differentiable transformer that wraps sklearn transformers.
-
-    Combines WrapTransformer (for wrapping sklearn transformers) with
-    BaseDifferentiableTransformer (for differentiation capabilities).
-    """
-
-    def __init__(self, transformer, transform_func_diff=None, inverse_func_diff=None):
-        """Initialize differentiable transformer.
+        This is useful for TransformedDistribution which doesn't have
+        data to fit with, but may receive an already-fitted transformer.
 
         Parameters
         ----------
-        transformer : sklearn-compatible transformer
-            A transformer object that implements fit and transform methods.
-        transform_func_diff : callable, optional
-            Function to compute the derivative of the transform function.
-        inverse_func_diff : callable, optional
-            Function to compute the derivative of the inverse transform function.
-        """
-        self.transform_func_diff = transform_func_diff
-        self.inverse_func_diff = inverse_func_diff
-        super().__init__(transformer=transformer)
-
-    def _transform_diff(self, X):
-        """Compute the derivative of the transform function at X.
-
-        Overrides BaseDifferentiableTransformer._transform_diff to use
-        wrapped transformer's scale_ attribute if available.
-
-        Parameters
-        ----------
-        X : array-like, shape (n_samples,) or (n_samples, 1)
-            Input data.
+        columns : pd.Index, optional
+            Columns to use for output formatting.
 
         Returns
         -------
-        diff : array-like
-            Derivative of the transform function at X.
+        self : reference to self
         """
-        if self.transform_func_diff is not None:
-            # if explicit derivative function was provided
-            return self.transform_func_diff(X)
-        elif (
-            # if transformer has scale_ attribute (e.g., MinMaxScaler)
-            hasattr(self.transformer_, "scale_")
-            and self.transformer_.scale_ is not None
-        ):
-            return np.ones_like(X) * self.transformer_.scale_
-        else:
-            # Fall back to numerical differentiation
-            return self._numerical_diff(self.transformer_.transform, X)
+        self.columns_ = columns
 
-    def _inverse_transform_diff(self, Xt):
-        """Compute the derivative of the inverse transform function.
+        try:
+            check_is_fitted(self.transformer)
+            # Already fitted - just use it directly
+            self.transformer_ = self.transformer
+            self._is_fitted = True
+        except NotFittedError:
+            # Not fitted - leave as is
+            pass
 
-        Overrides BaseDifferentiableTransformer._inverse_transform_diff to use
-        wrapped transformer's scale_ attribute if available.
-
-        Parameters
-        ----------
-        Xt : array-like, shape (n_samples,) or (n_samples, 1)
-            Transformed data.
-
-        Returns
-        -------
-        diff : array-like
-            Derivative of the inverse transform function.
-        """
-        if self.inverse_func_diff is not None:
-            # if explicit derivative function was provided
-            return self.inverse_func_diff(Xt)
-
-        elif (
-            hasattr(self.transformer_, "scale_")
-            and self.transformer_.scale_ is not None
-        ):
-            # if transformer has scale_ attribute
-            return np.ones_like(Xt) / self.transformer_.scale_
-        else:
-            # Fall back to numerical differentiation
-            return self._numerical_diff(self.transformer_.inverse_transform, Xt)
+        return self
 
     def _get_transform_diff_capabilities(self):
         """Check if transform diff function is available, approx or exact.
-
-        Prima
 
         Returns
         -------
