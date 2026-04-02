@@ -448,6 +448,6 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         }
         params3 = {
             "regressor": OnlineRefit(DummyProbaRegressor()),
-            "transformer": StandardScaler(),
+            "transformer": None,
         }
         return [params1, params2, params3]
