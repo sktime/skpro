@@ -23,7 +23,7 @@ The package offers a variety of features and specifically allows for
 A motivating example
 ^^^^^^^^^^^^^^^^^^^^
 
-Let's have a look at an example of Boston Housing price prediction (using sklearn's `boston data <http://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html>`_).
+Let's have a look at an example of California Housing price prediction (using sklearn's `california housing data <https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_california_housing.html>`_).
 
 .. literalinclude:: ../examples/simple.py
     :language: python
@@ -31,7 +31,7 @@ Let's have a look at an example of Boston Housing price prediction (using sklear
 
 >>> Loss: 3.444260+-0.062277
 
-If you are familiar with scikit-learn you will recognise that we define and train a model on the boston housing dataset and obtain the test prediction ``y_pred``. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values -- nothing unexpected there.
+If you are familiar with scikit-learn you will recognise that we define and train a model on the California Housing dataset and obtain the test prediction ``y_pred``. Furthermore, we use a loss function to calculate the loss between the predicted points and the true values -- nothing unexpected there.
 
 Crucially, however, the skpro model does not just return a list of numbers or point predictions here. Instead, ``y_pred`` is a probabilistic prediction, i.e. it represents probability distributions for each individual data point.
 We can, for instance, obtain the standard deviation of the predicted distribution that corresponds with the first (0th) test point (or any other test point distribution) ::
@@ -49,7 +49,7 @@ Furthermore, it is possible to conveniently access the distributional properties
     >>> y_pred.std().shape
     (152,)
 
-The returned vector represent the standard deviations of each of the 152 predicted distributions that correspond to the 152 test points in the Boston data set. The prediction object also supports numpy's elementwise operations::
+The returned vector represent the standard deviations of each of the 152 predicted distributions that correspond to the 152 test points in the California Housing set. The prediction object also supports numpy's elementwise operations::
 
     >>> (numpy.mean(y_pred) * 2).shape
     (152,)
@@ -75,7 +75,7 @@ Obviously, we ought to compare multiple models for gain meaningful insight into 
 | 3   | Example model 3   | (3) 28\ :math:`\pm`\ 3\*       | (3) 29\ :math:`\pm`\ 4\*       |
 +-----+-------------------+--------------------------------+--------------------------------+
 
-Going back to the boston housing example, the code to produce such a model comparison can be composed in a few lines:
+Going back to the California Housing example, the code to produce such a model comparison can be composed in a few lines:
 
 .. literalinclude:: ../examples/workflow.py
     :language: python
@@ -83,7 +83,7 @@ Going back to the boston housing example, the code to produce such a model compa
 
 >>>
 +-----+------------------------------------------------------+------------------------+
-|   # | Model information                                    | CV(boston, log_loss)   |
+|   # | Model information                                    | CV(California, log_loss)   |
 +=====+======================================================+========================+
 |   2 | Norm(point=LinearRegression(), std=Constant(std(y))) | (1) 4.25+/-0.29*       |
 +-----+------------------------------------------------------+------------------------+
