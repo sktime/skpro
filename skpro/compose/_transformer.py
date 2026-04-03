@@ -204,6 +204,7 @@ class DifferentiableTransformer(BaseTransformer):
     >>> dt.fit(X)
     >>> dt.transform([[2.0]])
     >>> dt.transform_diff([[2.0]])  # Get derivative
+    array([[0.81649658]])
     """
 
     def __init__(self, transformer, transform_func_diff=None, inverse_func_diff=None):
