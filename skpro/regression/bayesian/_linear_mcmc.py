@@ -10,10 +10,10 @@ __author__ = ["meraldoantonio"]
 
 from skbase.utils.dependencies import _check_soft_dependencies
 
-from skpro.regression.base import BaseProbaRegressor
+from skpro.regression.bayesian._base import BaseBayesianRegressor
 
 
-class BayesianLinearRegressor(BaseProbaRegressor):
+class BayesianLinearRegressor(BaseBayesianRegressor):
     """
     Bayesian Linear Regression class with MCMC sampling.
 
@@ -50,7 +50,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         "python_version": ">=3.10",
         "python_dependencies": [
             "pymc",
-            "pymc_marketing",
+            "pymc-extras",
             "arviz>=0.18.0",
         ],
         # estimator tags
@@ -66,18 +66,42 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             sampler_config = {}
         if prior_config is None:
             prior_config = {}  # configuration for priors
-        self.sampler_config = {**self.default_sampler_config, **sampler_config}
         self.prior_config = {**self.default_prior_config, **prior_config}
-        self.model = None  # generated during fitting
-        self.idata = None  # generated during fitting
-        self._predict_done = False  # a flag indicating if a prediction has been done
 
-        super().__init__()
+        # Extract sampler parameters
+        sampler_params = {**self.default_sampler_config, **sampler_config}
+        base_sampler_keys = {
+            "draws",
+            "tune",
+            "chains",
+            "target_accept",
+            "random_seed",
+            "progressbar",
+        }
+        base_sampler_params = {
+            key: value
+            for key, value in sampler_params.items()
+            if key in base_sampler_keys
+        }
+        sample_kwargs = {
+            key: value
+            for key, value in sampler_params.items()
+            if key not in base_sampler_keys
+        }
+
+        print(  # noqa: T201
+            f"instantiated {self.__class__.__name__} with the following priors:"
+        )
+
+        for key, value in self.prior_config.items():
+            print(f"  - {key}: {value}")  # noqa: T201
+
+        super().__init__(**base_sampler_params, sample_kwargs=sample_kwargs)
 
     @property
     def default_prior_config(self):
         """Return a dictionary of prior defaults."""
-        from pymc_marketing.prior import Prior
+        from pymc_extras.prior import Prior
 
         default_prior_config = {
             "intercept": Prior(
@@ -105,42 +129,38 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         }
         return default_sampler_config
 
-    def _fit(self, X, y):
-        """Fit regressor to training data.
-
-        Writes to self:
-            Sets fitted model attributes ending in "_".
+    def _build_model(self, X, y):
+        """Build the PyMC model for Bayesian linear regression.
 
         Parameters
         ----------
         X : pandas DataFrame
-            feature instances to fit regressor to
-        y : pandas DataFrame, must be same length as X
-            labels to fit regressor to
+            Feature instances.
+        y : pandas DataFrame
+            Labels.
 
         Returns
         -------
-        self : reference to self
+        model : pymc.Model
+            The constructed PyMC model.
         """
         import warnings
 
-        import pandas as pd
         import pymc as pm
 
         assert len(y.columns) == 1, "y must have only one column!"
         self._X = X
         self._y = y
-        self._y_vals = y.values[
-            :, 0
-        ]  # we need a 1-dimensional array for compatibility with pymc
+        self._y_vals = y.values[:, 0]  # 1-dimensional array for pymc
+        self._y_columns = y.columns.tolist()
 
-        # Model construction and posterior sampling
-        with pm.Model(coords={"obs_id": X.index, "pred_id": X.columns}) as self.model:
+        # Model construction
+        with pm.Model(coords={"obs_id": X.index, "pred_id": X.columns}) as model:
             # Mutable data containers for X and y
             X_data = pm.Data("X", X, dims=("obs_id", "pred_id"))
             y_data = pm.Data("y", self._y_vals, dims=("obs_id"))
 
-            # Priors for model parameters, taken from self.prior_config
+            # Priors for model parameters
             self.intercept = self.prior_config["intercept"].create_variable("intercept")
             self.slopes = self.prior_config["slopes"].create_variable("slopes")
             self.noise_var = self.prior_config["noise_var"].create_variable("noise_var")
@@ -156,18 +176,12 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                 "y_obs", mu=self.mu, sigma=self.noise, observed=y_data, dims=("obs_id")
             )
 
-            # Constructing the posterior
-            self.idata = pm.sample(**self.sampler_config)
-
-        # Incorporation of training_data as a new group in self.idata
-        training_data = pd.concat([X, y], axis=1)
+        # Store training data in trace for later use
+        # Note: Training data is now added to trace in the base class
         with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                category=UserWarning,
-            )
-            self.idata.add_groups(training_data=training_data.to_xarray())
-        return self
+            warnings.filterwarnings("ignore", category=UserWarning)
+
+        return model
 
     def visualize_model(self, **kwargs):
         """Use Graphviz to visualize the model flow."""
@@ -176,9 +190,9 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         )
         import pymc as pm
 
-        assert self._is_fitted, "You need to fit the model before visualizing it!"
+        assert self.is_fitted, "You need to fit the model before visualizing."
 
-        return pm.model_to_graphviz(self.model, **kwargs)
+        return pm.model_to_graphviz(self.model_, **kwargs)
 
     def _sample_dataset(self, group_name, return_type=None):
         """
@@ -222,11 +236,11 @@ class BayesianLinearRegressor(BaseProbaRegressor):
 
         # Validate that the group_name exists in idata
         assert hasattr(
-            self.idata, group_name
-        ), f"{group_name} group does not exist in the idata object."
+            self.trace_, group_name
+        ), f"{group_name} group does not exist in the trace object."
 
-        # Get the specified group from idata
-        group = getattr(self.idata, group_name)
+        # Get the specified group from trace
+        group = getattr(self.trace_, group_name)
         # prediction-specific groups which focus on posterior predictive
         is_predictive = group_name in ["predictions", "posterior_predictive"]
         # as opposed to ["prior", "posterior"] which focus on prior/posterior
@@ -279,7 +293,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                 if not is_predictive:
                     df = pd.DataFrame(data_dict)
                     reshaped_df = df.stack()
-                    reshaped_df = reshaped_df.reset_index(name="value")
+                    reshaped_df = reshaped_df.to_frame("value").reset_index()
                     reshaped_df.set_index(["level_0", "level_1"], inplace=True)
                     reshaped_df.index.names = ["obs_id", "variable"]
                     return Empirical(spl=reshaped_df)
@@ -295,8 +309,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                     # Create a new 'sample_id' column by
                     # combining the 'chain' and 'draw' columns
                     pred_proba_df["sample_id"] = (
-                        pred_proba_df["chain"] * self.sampler_config["draws"]
-                        + pred_proba_df["draw"]
+                        pred_proba_df["chain"] * self.draws + pred_proba_df["draw"]
                     )
                     pred_proba_df = pred_proba_df[["obs_id", "sample_id", "y_obs"]]
                     pred_proba_df = pred_proba_df.rename(
@@ -333,20 +346,20 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         """
         import arviz as az
 
-        # Check if the specified group exists in the idata object
-        if group_name not in self.idata.groups():
+        # Check if the specified group exists in the trace object
+        if group_name not in self.trace_.groups():
             if group_name == "prior":
                 self.sample_prior()
             elif group_name == "posterior":
                 self.sample_posterior()
             else:
                 raise ValueError(
-                    f"Group '{group_name}' does not exist in the idata object."
+                    f"Group '{group_name}' does not exist in the trace object."
                 )
 
         # Get the summary statistics with optional kwargs
         return az.summary(
-            getattr(self.idata, group_name), var_names=var_names, **kwargs
+            getattr(self.trace_, group_name), var_names=var_names, **kwargs
         )
 
     def sample_prior(self, return_type=None):
@@ -379,21 +392,20 @@ class BayesianLinearRegressor(BaseProbaRegressor):
 
         assert self.is_fitted, "Model must be fitted before you can sample from prior"
 
-        with self.model:
+        with self.model_:
             # if we've previously used the model for prediction,
             # we need to reset the reference of 'X' to X used for training
-            if self._predict_done:
+            if hasattr(self, "_predict_done") and self._predict_done:
                 pm.set_data(
                     {"X": self._X},
                     coords={"obs_id": self._X.index, "pred_id": self._X.columns},
                 )
-            self.idata.extend(
+            self.trace_.extend(
                 pm.sample_prior_predictive(
-                    samples=self.sampler_config["draws"],
-                    random_seed=self.sampler_config["random_seed"],
+                    samples=self.draws,
+                    random_seed=self.random_seed,
                 )
-            )  # todo: the keyword 'samples' will be changed to 'draws'
-            # in pymc 5.16
+            )
 
         return self._sample_dataset(
             group_name="prior",
@@ -478,16 +490,16 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         """Perform in-sample predictions and sample from it."""
         import pymc as pm
 
-        with self.model:
+        with self.model_:
             # if we've previously used the model for prediction,
             # we need to reset the reference of 'X' to X_train (i.e. self._X)
-            if self._predict_done:
+            if hasattr(self, "_predict_done") and self._predict_done:
                 pm.set_data(
                     {"X": self._X},
                     coords={"obs_id": self._X.index, "pred_id": self._X.columns},
                 )
-            self.idata.extend(
-                pm.sample_posterior_predictive(self.idata, predictions=False)
+            self.trace_.extend(
+                pm.sample_posterior_predictive(self.trace_, predictions=False)
             )
 
         return self._sample_dataset(
@@ -498,48 +510,10 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         """Plot the posterior predictive check."""
         import arviz as az
 
-        if "posterior_predictive" not in self.idata:
+        if "posterior_predictive" not in self.trace_:
             self.sample_in_sample_posterior_predictive()
 
-        return az.plot_ppc(self.idata, **kwargs)
-
-    def _predict_proba(self, X):
-        """
-        Predict distribution over labels for data from features.
-
-        State required:
-            Requires state to be "fitted".
-
-        Accesses in self:
-            Fitted model attributes ending in "_"
-
-        Parameters
-        ----------
-        X : pandas DataFrame, must have same columns as X in `fit`
-            data to predict labels for
-
-        Returns
-        -------
-        pred_proba_dist : skpro BaseDistribution, same length as `X`
-            labels predicted for `X`
-        """
-        import pymc as pm
-
-        with self.model:
-            if "predictions" in self.idata.groups():
-                del self.idata.predictions
-
-            # Set the X to be the new 'X' variable and then sample posterior predictive
-            pm.set_data({"X": X}, coords={"obs_id": X.index, "pred_id": X.columns})
-            self.idata.extend(
-                pm.sample_posterior_predictive(
-                    self.idata,
-                    predictions=True,
-                )
-            )
-            self._predict_done = True  # a flag indicating prediction has been done
-
-        return self._sample_dataset(group_name="predictions", return_type="skpro")
+        return az.plot_ppc(self.trace_, **kwargs)
 
     # todo: return default parameters, so that a test instance can be created
     # required for automated unit and integration testing of estimator
@@ -561,7 +535,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             `MyClass(**params)` or `MyClass(**params[i])` creates a valid test instance.
             `create_test_instance` uses the first (or only) dictionary in `params`
         """
-        from pymc_marketing.prior import Prior
+        from pymc_extras.prior import Prior
 
         params1 = {}
         params2 = {"prior_config": {"intercept": Prior("Normal", mu=0, sigma=10)}}

@@ -257,6 +257,8 @@ for prior and posterior handling.
     :toctree: auto_generated/
     :template: class.rst
 
+    BaseBayesianRegressor
+    BayesianClosedFormLinearRegressor
     BayesianConjugateLinearRegressor
     BayesianLinearRegressor
 
