@@ -13,7 +13,7 @@ Features
 The package offers a variety of features and specifically allows for
 
 - a unified implementation and handling of supervised probabilistic prediction strategies
-- strategy optimization through hyperparamter tuning and ensemble methods (e.g. bagging)
+- strategy optimization through hyperparameter tuning and ensemble methods (e.g. bagging)
 - comparison of frequentist and Bayesian prediction methods
 - workflow automation
 
