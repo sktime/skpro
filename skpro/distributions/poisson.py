@@ -5,6 +5,7 @@ import pandas as pd
 from scipy.stats import poisson, rv_discrete
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
+from skpro.distributions.base._set import IntegerSet
 
 
 class Poisson(_ScipyAdapter):
@@ -105,6 +106,19 @@ class Poisson(_ScipyAdapter):
         if getattr(self, "index", None) is None and result.size == 1:
             return result.item()
         return result
+
+    def _support(self):
+        r"""Return the support of the Poisson distribution.
+
+        The support is the set of non-negative integers
+        :math:`\{0, 1, 2, \ldots\}`.
+
+        Returns
+        -------
+        IntegerSet
+            ``IntegerSet(lower=0)``, representing non-negative integers.
+        """
+        return IntegerSet(lower=0, index=self.index, columns=self.columns)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
