@@ -201,7 +201,7 @@ class DifferentiableTransformer(BaseTransformer):
 
     >>> X = pd.DataFrame([[1.0], [2.0], [3.0]], columns=["y"])
     >>> dt = DifferentiableTransformer(StandardScaler())
-    >>> dt.fit(X)
+    >>> df = dt.fit(X)
     >>> dt.transform(X)
               y
     0 -1.224745
