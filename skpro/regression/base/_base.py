@@ -683,7 +683,7 @@ class BaseProbaRegressor(BaseEstimator):
         len_y = y_metadata["n_instances"]
 
         # input check X vs y
-        if len_X != "NA" and len_y != "NA" and not len_X == len_y:
+        if len_X != "NA" and len_y != "NA" and len_X != len_y:
             raise ValueError(
                 f"X and y in fit of {self} must have same number of rows, "
                 f"but X had {len_X} rows, and y had {len_y} rows"
@@ -696,7 +696,7 @@ class BaseProbaRegressor(BaseEstimator):
         if capa_surv and C is not None:
             C_inner, C_metadata = self._check_C(C)
             len_C = C_metadata["n_instances"]
-            if len_C != "NA" and not len_C == len_y:
+            if len_C != "NA" and len_C != len_y:
                 raise ValueError(
                     f"X, y, C in fit of {self} must have same number of rows, "
                     f"but C had {len_C} rows, and y had {len_y} rows"
