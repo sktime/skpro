@@ -333,18 +333,37 @@ class BaseProbaRegressor(BaseEstimator):
 
         # we use predict_var to get scale, and predict to get location
         pred_var = self.predict_var(X=X)
-        pred_std = np.sqrt(pred_var)
         pred_mean = self.predict(X=X)
-
-        from skpro.distributions.normal import Normal
 
         if hasattr(X, "index"):
             index = X.index
         else:
             index = pd.RangeIndex(start=0, stop=len(X), step=1)
         columns = self._get_columns(method="predict")
-        pred_dist = Normal(mu=pred_mean, sigma=pred_std, index=index, columns=columns)
 
+        eps = np.finfo(float).eps
+
+        # if all predicted variances are below machine epsilon,
+        # predictions are deterministic - return a Delta distribution
+        if (pred_var.values < eps).all():
+            from skpro.distributions.delta import Delta
+
+            return Delta(c=pred_mean, index=index, columns=columns)
+
+        # for non-degenerate predictions, construct a Normal
+        # clamp any individual near-zero variance entries to eps
+        # to avoid division by zero in Normal's pdf/log_pdf
+        pred_var = np.clip(pred_var, eps, None)
+        pred_std = np.sqrt(pred_var)
+
+        from skpro.distributions.normal import Normal
+
+        pred_dist = Normal(
+            mu=pred_mean,
+            sigma=pred_std,
+            index=index,
+            columns=columns,
+        )
         return pred_dist
 
     def predict_interval(self, X=None, coverage=0.90):
