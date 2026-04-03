@@ -62,6 +62,8 @@ __all__ = [
     "Uniform",
     "Weibull",
     "ZeroInflated",
+    "ZeroInflatedNegativeBinomial",
+    "ZeroInflatedPoisson",
 ]
 
 from skpro.distributions.alpha import Alpha
@@ -117,4 +119,8 @@ from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.truncated_pareto import TruncatedPareto
 from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
+from skpro.distributions.zero_inflated_negative_binomial import (
+    ZeroInflatedNegativeBinomial,
+)
+from skpro.distributions.zero_inflated_poisson import ZeroInflatedPoisson
 from skpro.distributions.zeroinflated import ZeroInflated
