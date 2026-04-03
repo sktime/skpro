@@ -194,17 +194,24 @@ class DifferentiableTransformer(BaseTransformer):
 
     Examples
     --------
-    >>> from sklearn.preprocessing import StandardScaler
     >>> import numpy as np
     >>> import pandas as pd
+    >>> from sklearn.preprocessing import StandardScaler
     >>> from skpro.compose import DifferentiableTransformer
 
     >>> X = pd.DataFrame([[1.0], [2.0], [3.0]], columns=["y"])
     >>> dt = DifferentiableTransformer(StandardScaler())
     >>> dt.fit(X)
-    >>> dt.transform([[2.0]])
-    >>> dt.transform_diff([[2.0]])  # Get derivative
-    array([[0.81649658]])
+    >>> dt.transform(X)
+              y
+    0 -1.224745
+    1  0.000000
+    2  1.224745
+
+    >>> dt.transform_diff(X)  # Get derivatives
+    array([[0.81649658],
+           [0.81649658],
+           [0.81649658]])
     """
 
     def __init__(self, transformer, transform_func_diff=None, inverse_func_diff=None):
