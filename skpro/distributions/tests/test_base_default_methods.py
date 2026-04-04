@@ -189,6 +189,7 @@ def test_base_default_minimal_cdf():
     minimal_n = _DistrDefaultMethodTesterOnlySample(mu=0, sigma=1)
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
 
+
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
