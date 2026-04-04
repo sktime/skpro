@@ -25,18 +25,18 @@ def _get_scipy_derivative():
     from skbase.utils.dependencies import _check_soft_dependencies
 
     # Check for new API (scipy >= 1.14.0)
-    if _check_soft_dependencies("scipy>=1.14.0", severity="none"):
+    if _check_soft_dependencies("scipy>=1.15.0", severity="none"):
         from scipy.differentiate import derivative
 
         return derivative, True
 
-    # Check for old API (scipy < 1.14.0)
-    elif _check_soft_dependencies("scipy", severity="none"):
+    # Check for old API (scipy <= 1.12.0)
+    elif _check_soft_dependencies("scipy<=1.12.0", severity="none"):
         from scipy.misc import derivative
 
         return derivative, False
 
-    # scipy is not available
+    # scipy is not available or no scipy derivative function
     return None, False
 
 
@@ -505,21 +505,19 @@ class DifferentiableTransformer(BaseTransformer):
                         func_1d,
                         x_val,
                         initial_step=delta,
-                        maxiter=10,
-                        preserve_shape=True,
                     )
 
                     diff[i] = result.df
                 else:
-                    # Old API (scipy < 1.14.0): scipy.misc.derivative
+                    # Old API (scipy <= 1.12.0): scipy.misc.derivative
                     # Returns the derivative directly, uses 'dx' parameter
                     diff[i] = scipy_derivative(func_1d, x_val, dx=delta)
         else:
             # Warn user that scipy is not available
             warnings.warn(
-                "scipy.derivative is not available. Falling back to custom "
-                "central difference implementation. For better numerical "
-                "differentiation, install scipy >= 0.14.0.",
+                "scipy derivative is not available. "
+                "Using custom central difference implementation for numerical "
+                "differentiation.",
                 UserWarning,
                 stacklevel=2,
             )
