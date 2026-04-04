@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import ParameterGrid, ParameterSampler, check_cv
 
+from skpro.metrics import CRPS
 from skpro.benchmarking.evaluate import evaluate
 from skpro.regression.base._delegate import _DelegatedProbaRegressor
 from skpro.utils.parallel import parallelize
@@ -108,6 +109,8 @@ class BaseGridSearch(_DelegatedProbaRegressor):
 
         # scoring = check_scoring(self.scoring, obj=self)
         scoring = self.scoring
+        if scoring is None:
+            scoring = CRPS()
         scoring_name = f"test_{scoring.name}"
 
         backend = self.backend
@@ -660,6 +663,7 @@ class RandomizedSearchCV(BaseGridSearch):
         verbose=0,
         return_n_best_estimators=1,
         random_state=None,
+        backend="loky",
         error_score=np.nan,
         backend_params=None,
     ):
@@ -670,6 +674,7 @@ class RandomizedSearchCV(BaseGridSearch):
             cv=cv,
             verbose=verbose,
             return_n_best_estimators=return_n_best_estimators,
+            backend=backend,
             error_score=error_score,
             backend_params=backend_params,
         )
