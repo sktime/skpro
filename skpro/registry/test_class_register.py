@@ -68,17 +68,18 @@ def get_test_classes_for_obj(obj):
         else:
             return isinstance(obj, BaseEstimator)
 
+    # warning: BaseEstimator does not inherit from BaseObject,
+    # therefore we need to check both
     if not is_object(obj) and not is_estimator(obj):
         return []
 
     testclass_dict = get_test_class_registry()
 
-    test_clss = []
-    if "object" in testclass_dict:
-        test_clss.append(testclass_dict["object"])
+    # we always need to run "object" tests
+    test_clss = [testclass_dict["object"]]
 
-    if is_estimator(obj) and "estimator" in testclass_dict:
-        test_clss.append(testclass_dict["estimator"])
+    if is_estimator(obj):
+        test_clss += [testclass_dict["estimator"]]
 
     try:
         obj_scitypes = scitype(obj, force_single_scitype=False, coerce_to_list=True)
@@ -88,8 +89,7 @@ def get_test_classes_for_obj(obj):
     for obj_scitype in obj_scitypes:
         if obj_scitype in testclass_dict:
             test_cls = testclass_dict[obj_scitype]
-
             if test_cls not in test_clss:
-                test_clss.append(test_cls)
+                test_clss += [testclass_dict[obj_scitype]]
 
     return test_clss
