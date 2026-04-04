@@ -3,7 +3,7 @@
 import pytest
 
 from skpro.base import BaseEstimator, BaseObject
-from skpro.registry.test_class_register import (
+from skpro.registry._base_classes_tests import (
     get_test_class_registry,
     get_test_classes_for_obj,
 )
