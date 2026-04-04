@@ -88,8 +88,6 @@ def get_test_classes_for_obj(obj):
 
     for obj_scitype in obj_scitypes:
         if obj_scitype in testclass_dict:
-            test_cls = testclass_dict[obj_scitype]
-            if test_cls not in test_clss:
-                test_clss += [testclass_dict[obj_scitype]]
+            test_clss += [testclass_dict[obj_scitype]]
 
     return test_clss
