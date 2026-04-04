@@ -190,7 +190,7 @@ def test_base_default_minimal_cdf():
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
 
 @pytest.mark.skipif(
-    not_run_test_module_changed("skpro.distributions"),
+    not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
 )
 def test_head_negative_n():
@@ -209,4 +209,3 @@ def test_head_negative_n():
     result = d.head(-2)
 
     assert len(result) == max(len(d) - 2, 0)
-    
