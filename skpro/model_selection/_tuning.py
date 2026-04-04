@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import ParameterGrid, ParameterSampler, check_cv
 
+from skpro.metrics import CRPS
 from skpro.benchmarking.evaluate import evaluate
 from skpro.regression.base._delegate import _DelegatedProbaRegressor
 from skpro.utils.parallel import parallelize
@@ -108,6 +109,8 @@ class BaseGridSearch(_DelegatedProbaRegressor):
 
         # scoring = check_scoring(self.scoring, obj=self)
         scoring = self.scoring
+        if scoring is None:
+            scoring = CRPS()
         scoring_name = f"test_{scoring.name}"
 
         backend = self.backend
