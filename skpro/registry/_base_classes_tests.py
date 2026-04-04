@@ -90,4 +90,8 @@ def get_test_classes_for_obj(obj):
         if obj_scitype in testclass_dict:
             test_clss += [testclass_dict[obj_scitype]]
 
+    # deduplicate test classes - edge case where scitype is object
+    # but object was hard-coded above
+    test_clss = list(set(test_clss))
+
     return test_clss
