@@ -118,6 +118,36 @@ class BaseDistribution(BaseObject):
                 # Safely attach the new wrapped method to the subclass
                 setattr(cls, method_name, _make_wrapper(method, new_doc))
 
+    @classmethod
+    def _has_implementation_of(cls, method):
+        """Check if method has a concrete implementation, ignoring docstring wrapper."""
+        # 1. Ask the standard framework if it thinks the method is implemented
+        is_implemented = super()._has_implementation_of(method)
+
+        if is_implemented:
+            # 2. If it says YES, let's peek underneath the wrapper (X-Ray Vision)
+            method_obj = getattr(cls, method, None)
+
+            if hasattr(method_obj, "__wrapped__"):
+                base_method = getattr(BaseDistribution, method, None)
+
+                # Unwrap the subclass method to find the real function
+                unwrapped = method_obj
+                while hasattr(unwrapped, "__wrapped__"):
+                    unwrapped = unwrapped.__wrapped__
+
+                # Unwrap the base method just in case
+                if base_method is not None:
+                    while hasattr(base_method, "__wrapped__"):
+                        base_method = base_method.__wrapped__
+
+                # 3. If the real function underneath is exactly the Base default,
+                # then the subclass didn't write custom math. It's just our doc wrapper!
+                if unwrapped is base_method:
+                    return False
+
+        return is_implemented
+
     # default tag values - these typically make the "safest" assumption
     _tags = {
         "object_type": "distribution",  # type of object, e.g., 'distribution'
