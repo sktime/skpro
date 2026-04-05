@@ -37,7 +37,16 @@ class Uniform(BaseDistribution):
     _tags = {
         "authors": ["an20805"],
         "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["pdf", "log_pdf", "cdf", "ppf", "mean", "var", "energy"],
+        "capabilities:exact": [
+            "pdf",
+            "log_pdf",
+            "cdf",
+            "ppf",
+            "mean",
+            "var",
+            "energy",
+            "truncated_mean",
+        ],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -161,6 +170,35 @@ class Uniform(BaseDistribution):
 
         mean_arr = (lower + upper) / 2
         return mean_arr
+
+    def _truncated_mean(self, lower, upper):
+        r"""Return expected value of the distribution truncated to [lower, upper].
+
+        For :math:`X \sim \text{Uniform}(a, b)`, the truncated mean on
+        :math:`[\ell, u]` is the midpoint of the overlap interval
+        :math:`[\max(a, \ell), \min(b, u)]`.
+
+        Parameters
+        ----------
+        lower : 2D np.ndarray, same shape as ``self``
+            lower truncation bound
+        upper : 2D np.ndarray, same shape as ``self``
+            upper truncation bound
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            truncated expected value of distribution (entry-wise)
+        """
+        a = self._bc_params["lower"]
+        b = self._bc_params["upper"]
+
+        eff_lower = np.maximum(a, lower)
+        eff_upper = np.minimum(b, upper)
+
+        result = (eff_lower + eff_upper) / 2.0
+        result = np.where(eff_lower >= eff_upper, np.nan, result)
+        return result
 
     def _var(self):
         r"""Return element/entry-wise variance of the distribution.
