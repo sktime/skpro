@@ -75,19 +75,19 @@ class ResidualDouble(BaseProbaRegressor):
         * ``"squared"`` = squared residuals
         * if transformer, applies ``fit_transform`` to batch of signed residuals
 
-    distr_type : str or BaseDistribution, default = "Normal"
+    dist : str or BaseDistribution, default = "Normal"
         type of distribution to predict
         str options are "Normal", "Laplace", "Cauchy", "t"
     distr_loc_scale_name : tuple of length two, default = ("loc", "scale")
         names of the parameters in the distribution to use for location and scale
 
-        * if ``distr_type`` is a string, this is overridden to the correct parameters
-        * if ``distr_type`` is a BaseDistribution, this is used to determine the
+        * if ``dist`` is a string, this is overridden to the correct parameters
+        * if ``dist`` is a BaseDistribution, this is used to determine the
           location and scale parameters that the predictions are passed to
 
     distr_params : dict, default = {}
         parameters to pass to the distribution
-        must be valid parameters of ``distr_type``, if ``BaseDistribution``;
+        must be valid parameters of ``dist``, if ``BaseDistribution``;
         must be default or dict with key ``df``, if ``t`` distribution
     use_y_pred : bool, default=False
         whether to use the predicted location in predicting the scale of the residual
@@ -125,12 +125,18 @@ class ResidualDouble(BaseProbaRegressor):
 
     _tags = {"capability:missing": True}
 
+    # TODO (release 2.14.0)
+    # remove the 'distr_type' argument from '__init__' signature
+    # remove the following 'if' check and deprecation warning
+    # de-indent the following 'else' check
+
     def __init__(
         self,
         estimator,
         estimator_resid=None,
         residual_trafo="absolute",
-        distr_type="Normal",
+        distr_type="deprecated",
+        dist="Normal",
         distr_loc_scale_name=None,
         distr_params=None,
         use_y_pred=False,
@@ -140,6 +146,7 @@ class ResidualDouble(BaseProbaRegressor):
         self.estimator = estimator
         self.estimator_resid = estimator_resid
         self.residual_trafo = residual_trafo
+        self.dist = dist
         self.distr_type = distr_type
         self.distr_loc_scale_name = distr_loc_scale_name
         self.distr_params = distr_params
@@ -148,6 +155,23 @@ class ResidualDouble(BaseProbaRegressor):
         self.min_scale = min_scale
 
         super().__init__()
+
+        # handle deprecation of distr_type -> dist
+        if distr_type != "deprecated":
+            from warnings import warn
+
+            warn(
+                "in `ResidualDouble`, parameter 'distr_type' "
+                "will be renamed to 'dist' in version 2.14.0. "
+                "To keep current behaviour and to silence this warning, "
+                "use 'dist' instead of 'distr_type', "
+                "set dist explicitly via kwarg, and do not set distr_type.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self._dist = distr_type
+        else:
+            self._dist = dist
 
         self.estimator_ = clone(estimator)
 
@@ -298,7 +322,7 @@ class ResidualDouble(BaseProbaRegressor):
         est = self.estimator_
         est_r = self.estimator_resid_
         use_y_pred = self.use_y_pred
-        distr_type = self.distr_type
+        distr_type = self._dist
         distr_loc_scale_name = self.distr_loc_scale_name
         distr_params = self.distr_params
         min_scale = self.min_scale
@@ -395,14 +419,14 @@ class ResidualDouble(BaseProbaRegressor):
             "min_scale": 1e-7,
             "residual_trafo": "squared",
             "use_y_pred": True,
-            "distr_type": "Laplace",
+            "dist": "Laplace",
         }
         params3 = {
             "estimator": LinearRegression(),
             "estimator_resid": RandomForestRegressor(),
             "min_scale": 1e-6,
             "use_y_pred": True,
-            "distr_type": "t",
+            "dist": "t",
             "distr_params": {"df": 3},
             "cv": KFold(n_splits=3),
         }
