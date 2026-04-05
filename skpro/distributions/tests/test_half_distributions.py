@@ -60,6 +60,10 @@ def test_half_broadcast_and_shape(dist_class, scipy_func, param_name, param_arra
     cdf = dist.cdf(x)
     ppf = dist.ppf(p)
 
+    assert isinstance(pdf, pd.DataFrame)
+    assert isinstance(cdf, pd.DataFrame)
+    assert isinstance(ppf, pd.DataFrame)
+
     assert pdf.shape == dist.shape
     assert cdf.shape == dist.shape
     assert ppf.shape == dist.shape
