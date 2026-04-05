@@ -66,6 +66,12 @@ def test_halfcauchy_broadcast_and_shape():
 
     beta_np = np.asarray(beta)
 
-    assert_allclose(pdf.to_numpy(), halfcauchy.pdf(x.to_numpy(), scale=beta_np), rtol=1e-12)
-    assert_allclose(cdf.to_numpy(), halfcauchy.cdf(x.to_numpy(), scale=beta_np), rtol=1e-12)
-    assert_allclose(ppf.to_numpy(), halfcauchy.ppf(p.to_numpy(), scale=beta_np), rtol=1e-12)
+    assert_allclose(
+        pdf.to_numpy(), halfcauchy.pdf(x.to_numpy(), scale=beta_np), rtol=1e-12
+    )
+    assert_allclose(
+        cdf.to_numpy(), halfcauchy.cdf(x.to_numpy(), scale=beta_np), rtol=1e-12
+    )
+    assert_allclose(
+        ppf.to_numpy(), halfcauchy.ppf(p.to_numpy(), scale=beta_np), rtol=1e-12
+    )
