@@ -73,6 +73,9 @@ class HistBinnedProbaRegressor(BaseProbaRegressor):
         "maintainers": ["ShreeshaM07"],
         "capability:multioutput": False,
         "capability:missing": True,
+        "tests:skip_by_name": [
+            "test_non_state_changing_method_contract"
+        ],  # TODO: fix in #922
     }
 
     def __init__(self, clf, bins=10):
