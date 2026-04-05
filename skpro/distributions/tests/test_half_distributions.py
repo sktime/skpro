@@ -16,44 +16,42 @@ from skpro.tests.test_switch import run_test_module_changed
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
 )
-def test_halfnormal_scalar_matches_scipy_scale():
-    """HalfNormal scalar pdf/cdf/ppf should match scipy with scale=sigma."""
-    sigma = 2.5
-    dist = HalfNormal(sigma=sigma)
+@pytest.mark.parametrize(
+    "dist_class,scipy_func,param_name,param_value,x,p",
+    [
+        (HalfNormal, halfnorm, "sigma", 2.5, 1.7, 0.8),
+        (HalfLogistic, halflogistic, "beta", 1.8, 1.3, 0.7),
+    ],
+)
+def test_half_scalar_matches_scipy_scale(dist_class, scipy_func, param_name, param_value, x, p):
+    """Half-distributions should match scipy with scale parameter."""
+    dist = dist_class(**{param_name: param_value})
 
-    x = 1.7
-    p = 0.8
-
-    assert_allclose(dist.pdf(x), halfnorm.pdf(x, scale=sigma), rtol=1e-12)
-    assert_allclose(dist.cdf(x), halfnorm.cdf(x, scale=sigma), rtol=1e-12)
-    assert_allclose(dist.ppf(p), halfnorm.ppf(p, scale=sigma), rtol=1e-12)
+    assert_allclose(
+        dist.pdf(x), scipy_func.pdf(x, scale=param_value), rtol=1e-10, atol=1e-14
+    )
+    assert_allclose(
+        dist.cdf(x), scipy_func.cdf(x, scale=param_value), rtol=1e-10, atol=1e-14
+    )
+    assert_allclose(
+        dist.ppf(p), scipy_func.ppf(p, scale=param_value), rtol=1e-10, atol=1e-14
+    )
 
 
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
 )
-def test_halflogistic_scalar_matches_scipy_scale():
-    """HalfLogistic scalar pdf/cdf/ppf should match scipy with scale=beta."""
-    beta = 1.8
-    dist = HalfLogistic(beta=beta)
-
-    x = 1.3
-    p = 0.7
-
-    assert_allclose(dist.pdf(x), halflogistic.pdf(x, scale=beta), rtol=1e-12)
-    assert_allclose(dist.cdf(x), halflogistic.cdf(x, scale=beta), rtol=1e-12)
-    assert_allclose(dist.ppf(p), halflogistic.ppf(p, scale=beta), rtol=1e-12)
-
-
-@pytest.mark.skipif(
-    not run_test_module_changed("skpro.distributions"),
-    reason="run only if skpro.distributions has been changed",
+@pytest.mark.parametrize(
+    "dist_class,scipy_func,param_name,param_array",
+    [
+        (HalfNormal, halfnorm, "sigma", [[1.0, 2.0], [3.0, 4.0]]),
+        (HalfLogistic, halflogistic, "beta", [[1.0, 2.0], [3.0, 4.0]]),
+    ],
 )
-def test_halfnormal_broadcast_and_shape():
-    """HalfNormal should preserve broadcasted shape/index/columns."""
-    sigma = [[1.0, 2.0], [3.0, 4.0]]
-    dist = HalfNormal(sigma=sigma)
+def test_half_broadcast_and_shape(dist_class, scipy_func, param_name, param_array):
+    """Half-distributions should preserve broadcasted shape/index/columns."""
+    dist = dist_class(**{param_name: param_array})
 
     x = pd.DataFrame([[0.5, 1.0], [2.0, 3.0]], index=dist.index, columns=dist.columns)
     p = pd.DataFrame([[0.1, 0.2], [0.7, 0.9]], index=dist.index, columns=dist.columns)
@@ -72,39 +70,13 @@ def test_halfnormal_broadcast_and_shape():
     assert cdf.columns.equals(dist.columns)
     assert ppf.columns.equals(dist.columns)
 
-    sigma_np = np.asarray(sigma)
-    assert_allclose(pdf.to_numpy(), halfnorm.pdf(x.to_numpy(), scale=sigma_np), rtol=1e-12)
-    assert_allclose(cdf.to_numpy(), halfnorm.cdf(x.to_numpy(), scale=sigma_np), rtol=1e-12)
-    assert_allclose(ppf.to_numpy(), halfnorm.ppf(p.to_numpy(), scale=sigma_np), rtol=1e-12)
-
-
-@pytest.mark.skipif(
-    not run_test_module_changed("skpro.distributions"),
-    reason="run only if skpro.distributions has been changed",
-)
-def test_halflogistic_broadcast_and_shape():
-    """HalfLogistic should preserve broadcasted shape/index/columns."""
-    beta = [[1.0, 2.0], [3.0, 4.0]]
-    dist = HalfLogistic(beta=beta)
-
-    x = pd.DataFrame([[0.5, 1.0], [2.0, 3.0]], index=dist.index, columns=dist.columns)
-    p = pd.DataFrame([[0.1, 0.2], [0.7, 0.9]], index=dist.index, columns=dist.columns)
-
-    pdf = dist.pdf(x)
-    cdf = dist.cdf(x)
-    ppf = dist.ppf(p)
-
-    assert pdf.shape == dist.shape
-    assert cdf.shape == dist.shape
-    assert ppf.shape == dist.shape
-    assert pdf.index.equals(dist.index)
-    assert cdf.index.equals(dist.index)
-    assert ppf.index.equals(dist.index)
-    assert pdf.columns.equals(dist.columns)
-    assert cdf.columns.equals(dist.columns)
-    assert ppf.columns.equals(dist.columns)
-
-    beta_np = np.asarray(beta)
-    assert_allclose(pdf.to_numpy(), halflogistic.pdf(x.to_numpy(), scale=beta_np), rtol=1e-12)
-    assert_allclose(cdf.to_numpy(), halflogistic.cdf(x.to_numpy(), scale=beta_np), rtol=1e-12)
-    assert_allclose(ppf.to_numpy(), halflogistic.ppf(p.to_numpy(), scale=beta_np), rtol=1e-12)
+    param_np = np.asarray(param_array)
+    assert_allclose(
+        pdf.to_numpy(), scipy_func.pdf(x.to_numpy(), scale=param_np), rtol=1e-10, atol=1e-14
+    )
+    assert_allclose(
+        cdf.to_numpy(), scipy_func.cdf(x.to_numpy(), scale=param_np), rtol=1e-10, atol=1e-14
+    )
+    assert_allclose(
+        ppf.to_numpy(), scipy_func.ppf(p.to_numpy(), scale=param_np), rtol=1e-10, atol=1e-14
+    )
