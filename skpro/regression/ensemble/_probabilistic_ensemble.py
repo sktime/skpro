@@ -156,17 +156,22 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
         n_cols = len(self._y_columns_)
         if mean.shape[1] > n_cols:
             mean = mean[:, :n_cols]
-        return pd.DataFrame(mean, columns=self._y_columns_, index=getattr(X, "index", None))
+        return pd.DataFrame(
+            mean, columns=self._y_columns_, index=getattr(X, "index", None)
+        )
 
     def _predict_interval(self, X, coverage=0.9):
         """Predict prediction intervals with correct shape and index."""
         dist = self._predict_proba(X)
         coverage_arr = np.atleast_1d(coverage)
-        n_cov = len(coverage_arr)
         lower, upper = None, None
         if hasattr(dist, "interval"):
-            lower, upper = dist.interval(coverage_arr)
-        else:
+            try:
+                lower, upper = dist.interval(coverage_arr)
+            except Exception:
+                lower, upper = None, None
+
+        if lower is None or upper is None:
             mean = np.asarray(dist.mean())
             if isinstance(mean, pd.DataFrame):
                 mean = mean.to_numpy()
@@ -183,19 +188,20 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
             lowers = []
             uppers = []
             for c in coverage_arr:
-                l, u = normal_dist.interval(c)
-                l = np.asarray(l)
-                u = np.asarray(u)
-                if l.ndim == 1:
-                    l = l[:, np.newaxis]
-                if u.ndim == 1:
-                    u = u[:, np.newaxis]
-                lowers.append(l)
-                uppers.append(u)
+                lower_bound, upper_bound = normal_dist.interval(c)
+                lower_bound = np.asarray(lower_bound)
+                upper_bound = np.asarray(upper_bound)
+                if lower_bound.ndim == 1:
+                    lower_bound = lower_bound[:, np.newaxis]
+                if upper_bound.ndim == 1:
+                    upper_bound = upper_bound[:, np.newaxis]
+                lowers.append(lower_bound)
+                uppers.append(upper_bound)
             lower = np.stack(lowers, axis=-1)  # (n_samples, n_cols, n_cov)
             upper = np.stack(uppers, axis=-1)
 
-        # Ensure lower/upper are arrays and have correct shape (n_samples, n_vars, n_cov)
+        # Ensure lower/upper are arrays with shape
+        # (n_samples, n_vars, n_cov)
         lower = np.asarray(lower)
         upper = np.asarray(upper)
         # Expand dims if needed
@@ -211,73 +217,18 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
         # Reshape to (n_samples, n_vars * n_cov * 2)
         data = data.reshape(n_samples, n_vars * n_cov * 2)
         bounds = ["lower", "upper"]
-        var_names = self._y_columns_ if hasattr(self, "_y_columns_") else ([0] if n_vars == 1 else list(range(n_vars)))
+        var_names = (
+            self._y_columns_
+            if hasattr(self, "_y_columns_")
+            else (
+                [0] if n_vars == 1 else list(range(n_vars))
+            )
+        )
         # Always build 3-level MultiIndex: (variable, coverage, bound)
         columns = pd.MultiIndex.from_tuples(
             [(v, c, b) for v in var_names for c in coverage_arr for b in bounds],
-            names=["variable", "coverage", "bound"]
+            names=["variable", "coverage", "bound"],
         )
-        return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
-    def _predict_proba(self, X):
-        if hasattr(self, "meta_learner_") and self.meta_learner_ is not None:
-            X_meta = self._get_meta_features(X)
-            dist = self.meta_learner_.predict_proba(X_meta)
-        else:
-            dists = [(name, est.predict_proba(X)) for name, est in self.fitted_estimators_]
-            weights = None
-            if self.weights is not None:
-                weights = np.asarray(self.weights, dtype=float)
-                weights = weights / weights.sum()
-            dist = Mixture(distributions=dists, weights=weights)
-        # Set index to match X if possible
-        if hasattr(X, "index") and hasattr(dist, "set_index"):
-            try:
-                dist = dist.set_index(X.index)
-            except Exception:
-                pass
-        return dist
-
-        lower = np.asarray(lower)
-        upper = np.asarray(upper)
-        n_samples = lower.shape[0]
-        n_vars = lower.shape[1] if lower.ndim > 1 else 1
-        # Handle (n_samples, n_vars) or (n_samples, n_vars, n_cov)
-        if lower.ndim == 1:
-            lower = lower[:, np.newaxis, np.newaxis]
-            upper = upper[:, np.newaxis, np.newaxis]
-        elif lower.ndim == 2:
-            if lower.shape[1] == n_cov:
-                lower = lower[:, np.newaxis, :]
-                upper = upper[:, np.newaxis, :]
-            else:
-                lower = lower[:, :, np.newaxis]
-                upper = upper[:, :, np.newaxis]
-        n_vars = lower.shape[1]
-        # Now lower/upper are (n_samples, n_vars, n_cov)
-        # Stack lower/upper along last axis (bound)
-        data = np.stack([lower, upper], axis=3)  # (n_samples, n_vars, n_cov, 2)
-        # Output shape logic:
-        # - If n_vars==1 and n_cov==1: columns=["lower", "upper"]
-        # - If n_vars==1 and n_cov>1: columns=MultiIndex [(coverage, bound)]
-        # - If n_vars>1: columns=MultiIndex [(var, coverage, bound)]
-        if n_vars == 1 and n_cov == 1:
-            data = data.reshape(n_samples, 2)
-            columns = ["lower", "upper"]
-        elif n_vars == 1:
-            data = data.reshape(n_samples, n_cov * 2)
-            bounds = ["lower", "upper"]
-            columns = pd.MultiIndex.from_tuples(
-                [(c, b) for c in coverage_arr for b in bounds],
-                names=["coverage", "bound"]
-            )
-        else:
-            data = data.reshape(n_samples, n_vars * n_cov * 2)
-            bounds = ["lower", "upper"]
-            var_names = self._y_columns_ if hasattr(self, "_y_columns_") else ([0] if n_vars == 1 else list(range(n_vars)))
-            columns = pd.MultiIndex.from_tuples(
-                [(v, c, b) for v in var_names for c in coverage_arr for b in bounds],
-                names=["variable", "coverage", "bound"]
-            )
         return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
 
     def _predict_quantiles(self, X, quantiles):
@@ -429,17 +380,22 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
         n_cols = len(self._y_columns_)
         if mean.shape[1] > n_cols:
             mean = mean[:, :n_cols]
-        return pd.DataFrame(mean, columns=self._y_columns_, index=getattr(X, "index", None))
+        return pd.DataFrame(
+            mean, columns=self._y_columns_, index=getattr(X, "index", None)
+        )
 
     def _predict_interval(self, X, coverage=0.9):
         """Predict prediction intervals with correct shape and index."""
         dist = self._predict_proba(X)
         coverage_arr = np.atleast_1d(coverage)
-        n_cov = len(coverage_arr)
         lower, upper = None, None
         if hasattr(dist, "interval"):
-            lower, upper = dist.interval(coverage_arr)
-        else:
+            try:
+                lower, upper = dist.interval(coverage_arr)
+            except Exception:
+                lower, upper = None, None
+
+        if lower is None or upper is None:
             mean = np.asarray(dist.mean())
             if isinstance(mean, pd.DataFrame):
                 mean = mean.to_numpy()
@@ -456,15 +412,15 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
             lowers = []
             uppers = []
             for c in coverage_arr:
-                l, u = normal_dist.interval(c)
-                l = np.asarray(l)
-                u = np.asarray(u)
-                if l.ndim == 1:
-                    l = l[:, np.newaxis]
-                if u.ndim == 1:
-                    u = u[:, np.newaxis]
-                lowers.append(l)
-                uppers.append(u)
+                lower_bound, upper_bound = normal_dist.interval(c)
+                lower_bound = np.asarray(lower_bound)
+                upper_bound = np.asarray(upper_bound)
+                if lower_bound.ndim == 1:
+                    lower_bound = lower_bound[:, np.newaxis]
+                if upper_bound.ndim == 1:
+                    upper_bound = upper_bound[:, np.newaxis]
+                lowers.append(lower_bound)
+                uppers.append(upper_bound)
             lower = np.stack(lowers, axis=-1)  # (n_samples, n_cols, n_cov)
             upper = np.stack(uppers, axis=-1)
 
@@ -480,63 +436,17 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
         data = np.stack([lower, upper], axis=3)  # (n_samples, n_vars, n_cov, 2)
         data = data.reshape(n_samples, n_vars * n_cov * 2)
         bounds = ["lower", "upper"]
-        var_names = self._y_columns_ if hasattr(self, "_y_columns_") else ([0] if n_vars == 1 else list(range(n_vars)))
+        var_names = (
+            self._y_columns_
+            if hasattr(self, "_y_columns_")
+            else (
+                [0] if n_vars == 1 else list(range(n_vars))
+            )
+        )
         columns = pd.MultiIndex.from_tuples(
             [(v, c, b) for v in var_names for c in coverage_arr for b in bounds],
-            names=["variable", "coverage", "bound"]
+            names=["variable", "coverage", "bound"],
         )
-        return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
-    def _predict_proba(self, X):
-        dists = [
-            (f"est{i}", est.predict_proba(X)) for i, est in enumerate(self.estimators_)
-        ]
-        weights = np.asarray(self.weights_, dtype=float)
-        weights = weights / weights.sum()
-        mixture = Mixture(distributions=dists, weights=weights)
-        # Set index to match X if possible
-        if hasattr(X, "index") and hasattr(mixture, "set_index"):
-            try:
-                mixture = mixture.set_index(X.index)
-            except Exception:
-                pass
-        if hasattr(self, "calibrator_") and self.calibrator_ is not None:
-            return self.calibrator_.predict_proba(mixture)
-        return mixture
-
-        lower = np.asarray(lower)
-        upper = np.asarray(upper)
-        n_samples = lower.shape[0]
-        n_vars = lower.shape[1] if lower.ndim > 1 else 1
-        if lower.ndim == 1:
-            lower = lower[:, np.newaxis, np.newaxis]
-            upper = upper[:, np.newaxis, np.newaxis]
-        elif lower.ndim == 2:
-            if lower.shape[1] == n_cov:
-                lower = lower[:, np.newaxis, :]
-                upper = upper[:, np.newaxis, :]
-            else:
-                lower = lower[:, :, np.newaxis]
-                upper = upper[:, :, np.newaxis]
-        n_vars = lower.shape[1]
-        data = np.stack([lower, upper], axis=3)  # (n_samples, n_vars, n_cov, 2)
-        if n_vars == 1 and n_cov == 1:
-            data = data.reshape(n_samples, 2)
-            columns = ["lower", "upper"]
-        elif n_vars == 1:
-            data = data.reshape(n_samples, n_cov * 2)
-            bounds = ["lower", "upper"]
-            columns = pd.MultiIndex.from_tuples(
-                [(c, b) for c in coverage_arr for b in bounds],
-                names=["coverage", "bound"]
-            )
-        else:
-            data = data.reshape(n_samples, n_vars * n_cov * 2)
-            bounds = ["lower", "upper"]
-            var_names = self._y_columns_ if hasattr(self, "_y_columns_") else ([0] if n_vars == 1 else list(range(n_vars)))
-            columns = pd.MultiIndex.from_tuples(
-                [(v, c, b) for v in var_names for c in coverage_arr for b in bounds],
-                names=["variable", "coverage", "bound"]
-            )
         return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
 
     def _predict_quantiles(self, X, quantiles):
