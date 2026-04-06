@@ -220,9 +220,7 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
         var_names = (
             self._y_columns_
             if hasattr(self, "_y_columns_")
-            else (
-                [0] if n_vars == 1 else list(range(n_vars))
-            )
+            else ([0] if n_vars == 1 else list(range(n_vars)))
         )
         # Always build 3-level MultiIndex: (variable, coverage, bound)
         columns = pd.MultiIndex.from_tuples(
@@ -439,9 +437,7 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
         var_names = (
             self._y_columns_
             if hasattr(self, "_y_columns_")
-            else (
-                [0] if n_vars == 1 else list(range(n_vars))
-            )
+            else ([0] if n_vars == 1 else list(range(n_vars)))
         )
         columns = pd.MultiIndex.from_tuples(
             [(v, c, b) for v in var_names for c in coverage_arr for b in bounds],
