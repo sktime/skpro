@@ -70,6 +70,7 @@ Continuous support - non-negative reals
     GumbelR
     Levy
     LogGamma
+    LogNormal
     HalfCauchy
     HalfLogistic
     HalfNormal
