@@ -241,17 +241,51 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
 
     def _predict_quantiles(self, X, alpha):
         dist = self._predict_proba(X)
-        if hasattr(dist, "quantile"):
-            return dist.quantile(alpha)
+        use_direct_quantile = hasattr(dist, "quantile") and not isinstance(
+            dist, Mixture
+        )
+        if use_direct_quantile:
+            quantiles = dist.quantile(alpha)
+            if isinstance(quantiles, pd.DataFrame):
+                quantiles.index = getattr(X, "index", None)
+            return quantiles
 
         # Fallback
         mean = np.asarray(dist.mean())
         if mean.ndim == 1:
             mean = mean.reshape(-1, 1)
-        sigma = np.full_like(mean, 1e-5, dtype=float)
+        n_cols = len(self._y_columns_)
+        if mean.shape[1] > n_cols:
+            mean = mean[:, :n_cols]
+        if hasattr(dist, "var") and callable(dist.var):
+            var = np.asarray(dist.var())
+            if var.ndim == 1:
+                var = var.reshape(-1, 1)
+            if var.shape[1] > n_cols:
+                var = var[:, :n_cols]
+            sigma = np.sqrt(np.clip(var, 1e-10, None))
+        else:
+            sigma = np.full_like(mean, 1e-5, dtype=float)
         idx = getattr(X, "index", None)
         cols = getattr(self, "_y_columns_", None)
         return Normal(mu=mean, sigma=sigma, index=idx, columns=cols).quantile(alpha)
+
+    def _predict_var(self, X):
+        var = self._predict_proba(X).var()
+        if isinstance(var, pd.DataFrame):
+            var_df = var.copy()
+        else:
+            var_arr = np.asarray(var)
+            if var_arr.ndim == 1:
+                var_arr = var_arr.reshape(-1, 1)
+            var_df = pd.DataFrame(var_arr)
+
+        n_cols = len(self._y_columns_)
+        if var_df.shape[1] > n_cols:
+            var_df = var_df.iloc[:, :n_cols]
+        var_df.columns = self._y_columns_
+        var_df.index = getattr(X, "index", None)
+        return var_df
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -470,16 +504,50 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
 
     def _predict_quantiles(self, X, alpha):
         dist = self._predict_proba(X)
-        if hasattr(dist, "quantile"):
-            return dist.quantile(alpha)
+        use_direct_quantile = hasattr(dist, "quantile") and not isinstance(
+            dist, Mixture
+        )
+        if use_direct_quantile:
+            quantiles = dist.quantile(alpha)
+            if isinstance(quantiles, pd.DataFrame):
+                quantiles.index = getattr(X, "index", None)
+            return quantiles
 
         mean = np.asarray(dist.mean())
         if mean.ndim == 1:
             mean = mean.reshape(-1, 1)
-        sigma = np.full_like(mean, 1e-5, dtype=float)
+        n_cols = len(self._y_columns_)
+        if mean.shape[1] > n_cols:
+            mean = mean[:, :n_cols]
+        if hasattr(dist, "var") and callable(dist.var):
+            var = np.asarray(dist.var())
+            if var.ndim == 1:
+                var = var.reshape(-1, 1)
+            if var.shape[1] > n_cols:
+                var = var[:, :n_cols]
+            sigma = np.sqrt(np.clip(var, 1e-10, None))
+        else:
+            sigma = np.full_like(mean, 1e-5, dtype=float)
         idx = getattr(X, "index", None)
         cols = getattr(self, "_y_columns_", None)
         return Normal(mu=mean, sigma=sigma, index=idx, columns=cols).quantile(alpha)
+
+    def _predict_var(self, X):
+        var = self._predict_proba(X).var()
+        if isinstance(var, pd.DataFrame):
+            var_df = var.copy()
+        else:
+            var_arr = np.asarray(var)
+            if var_arr.ndim == 1:
+                var_arr = var_arr.reshape(-1, 1)
+            var_df = pd.DataFrame(var_arr)
+
+        n_cols = len(self._y_columns_)
+        if var_df.shape[1] > n_cols:
+            var_df = var_df.iloc[:, :n_cols]
+        var_df.columns = self._y_columns_
+        var_df.index = getattr(X, "index", None)
+        return var_df
 
     def get_params(self, deep=True):
         """Get parameters for this estimator."""
