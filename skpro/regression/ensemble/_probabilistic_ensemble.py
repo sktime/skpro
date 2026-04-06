@@ -96,9 +96,9 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
             dist = est.predict_proba(X)
             mean_vals = np.asarray(dist.mean()).flatten()
 
-            try:
+            if hasattr(dist, "var") and callable(dist.var):
                 var_vals = np.asarray(dist.var()).flatten()
-            except (AttributeError, NotImplementedError, TypeError):
+            else:
                 var_vals = np.zeros_like(mean_vals)
 
             features.extend([mean_vals, var_vals])
@@ -134,18 +134,28 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
         return self
 
     def _predict_proba(self, X):
+        dist = None
         if hasattr(self, "meta_learner_") and self.meta_learner_ is not None:
             X_meta = self._get_meta_features(X)
-            return self.meta_learner_.predict_proba(X_meta)
+            dist = self.meta_learner_.predict_proba(X_meta)
+        else:
+            # Mixture path
+            dists = [
+                (name, est.predict_proba(X)) for name, est in self.fitted_estimators_
+            ]
+            weights = None
+            if self.weights is not None:
+                weights = np.asarray(self.weights, dtype=float)
+                weights = weights / weights.sum()
+            dist = Mixture(distributions=dists, weights=weights)
 
-        # Mixture path
-        dists = [(name, est.predict_proba(X)) for name, est in self.fitted_estimators_]
-        weights = None
-        if self.weights is not None:
-            weights = np.asarray(self.weights, dtype=float)
-            weights = weights / weights.sum()
+        if hasattr(X, "index") and hasattr(dist, "index"):
+            dist.index = X.index
 
-        return Mixture(distributions=dists, weights=weights)
+        if hasattr(dist, "columns"):
+            dist.columns = pd.Index(self._y_columns_)
+
+        return dist
 
     def _predict(self, X):
         mean = self._predict_proba(X).mean()
@@ -165,11 +175,11 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
         dist = self._predict_proba(X)
         coverage_arr = np.atleast_1d(coverage)
         lower, upper = None, None
-        if hasattr(dist, "interval"):
-            try:
-                lower, upper = dist.interval(coverage_arr)
-            except Exception:
-                lower, upper = None, None
+        can_vectorize_interval = not (
+            isinstance(dist, Normal) and len(coverage_arr) > 1
+        )
+        if hasattr(dist, "interval") and can_vectorize_interval:
+            lower, upper = dist.interval(coverage_arr)
 
         if lower is None or upper is None:
             mean = np.asarray(dist.mean())
@@ -229,17 +239,19 @@ class ProbabilisticStackingRegressor(BaseProbaRegressor):
         )
         return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
 
-    def _predict_quantiles(self, X, quantiles):
+    def _predict_quantiles(self, X, alpha):
         dist = self._predict_proba(X)
         if hasattr(dist, "quantile"):
-            return dist.quantile(quantiles)
+            return dist.quantile(alpha)
 
         # Fallback
         mean = np.asarray(dist.mean())
         if mean.ndim == 1:
             mean = mean.reshape(-1, 1)
         sigma = np.full_like(mean, 1e-5, dtype=float)
-        return Normal(mu=mean, sigma=sigma).quantile(quantiles)
+        idx = getattr(X, "index", None)
+        cols = getattr(self, "_y_columns_", None)
+        return Normal(mu=mean, sigma=sigma, index=idx, columns=cols).quantile(alpha)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -366,8 +378,19 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
 
         mixture = Mixture(distributions=dists, weights=weights)
 
+        if hasattr(X, "index") and hasattr(mixture, "index"):
+            mixture.index = X.index
+
+        if hasattr(mixture, "columns"):
+            mixture.columns = pd.Index(self._y_columns_)
+
         if hasattr(self, "calibrator_") and self.calibrator_ is not None:
-            return self.calibrator_.predict_proba(mixture)
+            calibrated = self.calibrator_.predict_proba(mixture)
+            if hasattr(X, "index") and hasattr(calibrated, "index"):
+                calibrated.index = X.index
+            if hasattr(calibrated, "columns"):
+                calibrated.columns = pd.Index(self._y_columns_)
+            return calibrated
         return mixture
 
     def _predict(self, X):
@@ -387,11 +410,11 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
         dist = self._predict_proba(X)
         coverage_arr = np.atleast_1d(coverage)
         lower, upper = None, None
-        if hasattr(dist, "interval"):
-            try:
-                lower, upper = dist.interval(coverage_arr)
-            except Exception:
-                lower, upper = None, None
+        can_vectorize_interval = not (
+            isinstance(dist, Normal) and len(coverage_arr) > 1
+        )
+        if hasattr(dist, "interval") and can_vectorize_interval:
+            lower, upper = dist.interval(coverage_arr)
 
         if lower is None or upper is None:
             mean = np.asarray(dist.mean())
@@ -445,16 +468,18 @@ class ProbabilisticBoostingRegressor(BaseProbaRegressor):
         )
         return pd.DataFrame(data, columns=columns, index=getattr(X, "index", None))
 
-    def _predict_quantiles(self, X, quantiles):
+    def _predict_quantiles(self, X, alpha):
         dist = self._predict_proba(X)
         if hasattr(dist, "quantile"):
-            return dist.quantile(quantiles)
+            return dist.quantile(alpha)
 
         mean = np.asarray(dist.mean())
         if mean.ndim == 1:
             mean = mean.reshape(-1, 1)
         sigma = np.full_like(mean, 1e-5, dtype=float)
-        return Normal(mu=mean, sigma=sigma).quantile(quantiles)
+        idx = getattr(X, "index", None)
+        cols = getattr(self, "_y_columns_", None)
+        return Normal(mu=mean, sigma=sigma, index=idx, columns=cols).quantile(alpha)
 
     def get_params(self, deep=True):
         """Get parameters for this estimator."""

@@ -54,19 +54,13 @@ def test_probabilistic_stacking_regressor_weights(simple_data):
 
 
 def test_probabilistic_stacking_regressor_error_on_mismatch(simple_data):
-    X, y = simple_data
     est1 = ResidualDouble(LinearRegression())
     est2 = ResidualDouble(LinearRegression())
     weights = [0.5]  # wrong length
-    stack = ProbabilisticStackingRegressor(
-        estimators=[("est1", est1), ("est2", est2)], weights=weights
-    )
-    stack.fit(X, y)
-    try:
-        stack.predict_proba(X)
-        raise AssertionError("Should raise error on weight/estimator mismatch")
-    except Exception:
-        pass
+    with pytest.raises(ValueError, match="weights must have the same length"):
+        ProbabilisticStackingRegressor(
+            estimators=[("est1", est1), ("est2", est2)], weights=weights
+        )
 
 
 def test_probabilistic_boosting_regressor_basic(simple_data):
