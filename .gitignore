@@ -49,3 +49,4 @@ MANIFEST
 venv/
 env/
 ENV/
+skpro-env/.python-version
