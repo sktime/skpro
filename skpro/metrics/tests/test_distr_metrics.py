@@ -249,7 +249,7 @@ class TestAllDistrMetrics(PackageConfig, BaseFixtureGenerator, QuickTester):
             loss = metric.set_params(alpha=0.3)
             loss(y_true=y_true, y_pred=y_pred)
 
-
+            
 def test_squared_distr_loss_uses_pdf():
     """SquaredDistrLoss must compute -2*pdf(y) + pdfnorm(a=2), not -2*log_pdf(y).
 
@@ -266,6 +266,17 @@ def test_squared_distr_loss_uses_pdf():
     1. Sign: at the mode of Normal(0, 1), the correct loss is negative
        (-2 * pdf(0) ≈ -0.798 dominates pdfnorm ≈ 0.282).
        The log_pdf formula gives +2.12 (positive) - a clear sign flip.
+        L(y, d) = -2 * p_d(y) + ||p_d||^2
+
+    where p_d(y) is the probability density, NOT the log-density.
+
+    pdfnorm uses a Monte Carlo approximation, so we cannot compare two independent
+    calls numerically. Instead, two behavioural properties that definitively
+    distinguish the correct formula from the log_pdf bug are tested:
+
+    1. Sign: at the mode of Normal(0, 1), the correct loss is negative
+       (-2 * pdf(0) ≈ -0.798 dominates pdfnorm ≈ 0.282).
+       The log_pdf formula gives +2.12 (positive) — a clear sign flip.
 
     2. Magnitude gap: the correct result (~-0.516) and the buggy result (~+2.12)
        differ by more than 2.5 units; any mix-up is caught with a 1.0-unit gap.
@@ -280,14 +291,14 @@ def test_squared_distr_loss_uses_pdf():
     assert isinstance(result, pd.DataFrame), "Result must be a DataFrame"
     obtained = result.values[0, 0]
 
-    # Check 1 - sign: correct formula at mode is negative; log_pdf formula is > 0.
+    # Check 1 — sign: correct formula at mode is negative; log_pdf formula is > 0.
     assert obtained < 0, (
         f"SquaredDistrLoss at mode of Normal(0,1) must be negative, "
         f"got {obtained:.6f}. "
         "A positive value indicates log_pdf is incorrectly used instead of pdf."
     )
 
-    # Check 2 - gap from log_pdf variant: correct≈-0.516, buggy≈+2.12.
+    # Check 2 — gap from log_pdf variant: correct ≈ -0.516, buggy ≈ +2.12.
     log_pdf_val = y_pred.log_pdf(y_true).values[0, 0]
     pdfnorm_val = y_pred.pdfnorm(a=2).values[0, 0]
     buggy = -2 * log_pdf_val + pdfnorm_val
@@ -298,7 +309,8 @@ def test_squared_distr_loss_uses_pdf():
 
 
 def test_squared_distr_loss_multivariate():
-    # SquaredDistrLoss in multivariate mode must return a single-column DataFrame
+    """SquaredDistrLoss in multivariate mode must return a single-column DataFrame."""
+
     y_pred = Normal(mu=[[0.0, 1.0], [2.0, 3.0]], sigma=1.0)
     y_true = y_pred.sample()
 

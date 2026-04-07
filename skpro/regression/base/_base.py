@@ -233,7 +233,7 @@ class BaseProbaRegressor(BaseEstimator):
             from_type=self.get_tag("y_inner_mtype"),
             to_type=self._y_metadata["mtype"],
             as_scitype="Table",
-            store=self._X_converter_store,
+            store=self._y_converter_store,
         )
 
         return y_pred

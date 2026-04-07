@@ -11,7 +11,7 @@ OBJECT_TAG_REGISTER - list of tuples
 each tuple corresponds to a tag, elements as follows:
     0 : string - name of the tag as used in the _tags dictionary
     1 : string - name of the scitype this tag applies to
-                 must be in _base_classes.BASE_CLASS_SCITYPE_LIST
+                 must be in get_obj_scitype_list()
     2 : string - expected type of the tag value
         should be one of:
             "bool" - valid values are True/False
@@ -181,7 +181,7 @@ class license_type(_BaseTag):
 # -----------------
 
 
-class tests_libs(_BaseTag):
+class tests__libs(_BaseTag):
     """Library dependencies required for tests."""
 
     _tags = {
@@ -192,7 +192,7 @@ class tests_libs(_BaseTag):
     }
 
 
-class tests_vm(_BaseTag):
+class tests__vm(_BaseTag):
     """Whether tests require their own VM."""
 
     _tags = {
@@ -203,7 +203,7 @@ class tests_vm(_BaseTag):
     }
 
 
-class tests_skip_by_name(_BaseTag):
+class tests__skip_by_name(_BaseTag):
     """Test names to skip on CI."""
 
     _tags = {
@@ -214,7 +214,7 @@ class tests_skip_by_name(_BaseTag):
     }
 
 
-class tests_python_dependencies(_BaseTag):
+class tests__python_dependencies(_BaseTag):
     """Additional dependencies for tests."""
 
     _tags = {
@@ -230,7 +230,7 @@ class tests_python_dependencies(_BaseTag):
 # ------------------
 
 
-class capability_survival(_BaseTag):
+class capability__survival(_BaseTag):
     """Capability for survival analysis."""
 
     _tags = {
@@ -242,7 +242,7 @@ class capability_survival(_BaseTag):
     }
 
 
-class capability_multioutput(_BaseTag):
+class capability__multioutput(_BaseTag):
     """Support for multioutput regression."""
 
     _tags = {
@@ -253,7 +253,7 @@ class capability_multioutput(_BaseTag):
     }
 
 
-class capability_missing(_BaseTag):
+class capability__missing(_BaseTag):
     """Support for missing values."""
 
     _tags = {
@@ -264,7 +264,7 @@ class capability_missing(_BaseTag):
     }
 
 
-class capability_update(_BaseTag):
+class capability__update(_BaseTag):
     """Support for online updates."""
 
     _tags = {
@@ -316,7 +316,7 @@ class C_inner_mtype(_BaseTag):
 # ----------------
 
 
-class capabilities_approx(_BaseTag):
+class capabilities__approx(_BaseTag):
     """Approximate methods of distribution."""
 
     _tags = {
@@ -327,7 +327,7 @@ class capabilities_approx(_BaseTag):
     }
 
 
-class capabilities_exact(_BaseTag):
+class capabilities__exact(_BaseTag):
     """Numerically exact methods of distribution."""
 
     _tags = {
@@ -338,7 +338,7 @@ class capabilities_exact(_BaseTag):
     }
 
 
-class capabilities_undefined(_BaseTag):
+class capabilities__undefined(_BaseTag):
     """Methods of distr that are mathematically undefined."""
 
     _tags = {
@@ -349,7 +349,7 @@ class capabilities_undefined(_BaseTag):
     }
 
 
-class distr_measuretype(_BaseTag):
+class distr__measuretype(_BaseTag):
     """Measure type of distribution."""
 
     _tags = {
@@ -360,7 +360,7 @@ class distr_measuretype(_BaseTag):
     }
 
 
-class distr_paramtype(_BaseTag):
+class distr__paramtype(_BaseTag):
     """Parametrization type of distribution."""
 
     _tags = {
@@ -464,7 +464,7 @@ class broadcast_inner(_BaseTag):
 # ---------------
 
 
-class scitype_y_pred(_BaseTag):
+class scitype__y_pred(_BaseTag):
     """Expected input type for y_pred."""
 
     _tags = {

@@ -233,6 +233,14 @@
       ]
     },
     {
+      "login": "patelchaitany93",
+      "name": "Chaitany Patel",
+      "profile": "https://github.com/patelchaitany93",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "Khushmagrawal",
       "name": "Khush Agrawal",
       "profile": "https://github.com/Khushmagrawal",
@@ -249,5 +257,13 @@
         "bug"
       ]
     },
+    {
+      "login": "kabirvashisht4-glitch",
+      "name": "Kabir Vashisht",
+      "contributions": [
+        "bug",
+        "doc"
+      ]
+    }
   ]
 }

@@ -108,7 +108,7 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
         regressor_ind = self._get_regressor_index(estimator_tuples)
 
         if not allow_postproc and regressor_ind != len(estimators) - 1:
-            TypeError(
+            raise TypeError(
                 f"in {self.name}, last estimator must be a regressor, "
                 f"but found a transformer"
             )
