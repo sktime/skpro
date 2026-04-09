@@ -9,7 +9,7 @@ from skpro.metrics.base import BaseDistrMetric
 
 
 class LinearizedLogLoss(BaseDistrMetric):
-    r"""Lineararized logarithmic loss for distributional predictions.
+    r"""Linearized logarithmic loss for distributional predictions.
 
     For a predictive distribution :math:`d` with pdf :math:`p_d`
     and a ground truth value :math:`y`, the linearized logarithmic loss is
@@ -70,7 +70,7 @@ class LinearizedLogLoss(BaseDistrMetric):
             return res
 
     @classmethod
-    def get_test_params(self):
+    def get_test_params(cls, parameter_set="default"):
         """Test parameter settings."""
         params1 = {}
         params2 = {"range": 0.1}
