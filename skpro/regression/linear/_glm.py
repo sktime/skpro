@@ -102,7 +102,7 @@ class GLMRegressor(BaseProbaRegressor):
         Set to True to have all available output in the Results object’s
         mle_retvals attribute. The output is dependent on the solver. See
         LikelihoodModelResults notes section for more information. Not used
-        if methhod is IRLS. This parameter is used inside the GLM fit() function.
+        if method is IRLS. This parameter is used inside the GLM fit() function.
 
     disp : bool, optional, default=False
         Set to True to print convergence messages. Not used if method
@@ -208,7 +208,7 @@ class GLMRegressor(BaseProbaRegressor):
     def _str_to_sm_family(self, family, link):
         """Convert the string to a statsmodel object.
 
-        If the link function is also explcitly mentioned then include then
+        If the link function is also explicitly mentioned then include then
         that must be passed to the family/distribution object.
         """
         from warnings import warn
