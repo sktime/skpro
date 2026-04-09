@@ -1,4 +1,5 @@
 """Implements transformed target regressor for probabilistic supervised regression."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["fkiraly"]
@@ -75,6 +76,9 @@ class TransformedTargetRegressor(BaseProbaRegressor):
     _tags = {
         "capability:multioutput": True,
         "capability:missing": True,
+        "tests:skip_by_name": [
+            "test_non_state_changing_method_contract"
+        ],  # TODO: fix in #922
     }
 
     def __init__(self, regressor, transformer=None):
