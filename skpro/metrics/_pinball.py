@@ -147,7 +147,10 @@ class PinballLoss(BaseProbaMetric):
             axis=0,
         )
 
-        y_true_np = np.repeat(y_true, axis=1, repeats=len(alphas))
+        y_true_np = np.asarray(y_true)
+        if y_true_np.ndim == 1:
+            y_true_np = y_true_np.reshape(-1, 1)
+        y_true_np = np.repeat(y_true_np, axis=1, repeats=len(alphas))
         diff = y_true_np - alpha_preds_np
         sign = (diff >= 0).astype(diff.dtype)
         loss = alpha_mat * sign * diff - (1 - alpha_mat) * (1 - sign) * diff
