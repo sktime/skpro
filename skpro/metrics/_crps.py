@@ -2,8 +2,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
-import pandas as pd
-
 from skpro.metrics.base import BaseDistrMetric
 
 
