@@ -87,7 +87,7 @@ class IntervalWidth(BaseProbaMetric):
         else:
             y_true_np = y_true
         if y_true_np.ndim == 1:
-            y_true_np = y_true.reshape(-1, 1)
+            y_true_np = y_true_np.reshape(-1, 1)
 
         scores = np.unique(np.round(y_pred.columns.get_level_values(1), 7))
         vars = np.unique(y_pred.columns.get_level_values(0))
