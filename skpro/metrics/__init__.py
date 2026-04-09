@@ -24,7 +24,7 @@ from skpro.metrics._constraint_violation import ConstraintViolation
 from skpro.metrics._crps import CRPS
 from skpro.metrics._empirical_coverage import EmpiricalCoverage
 from skpro.metrics._interval_width import IntervalWidth
-from skpro.metrics._logloss_linearlized import LinearizedLogLoss
+from skpro.metrics._logloss_linearized import LinearizedLogLoss
 from skpro.metrics._logloss import LogLoss
 from skpro.metrics._pinball import PinballLoss
 from skpro.metrics._squared_loss import SquaredDistrLoss
