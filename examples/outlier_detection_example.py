@@ -230,7 +230,7 @@ try:
 
     # Plot 4: Comparison of methods
     ax = axes[1, 1]
-    methods = ["Quantile", "Density", "Loss (log)"]
+    methods = ["Quantile", "Density", "Loss (interval_score)"]
     recalls = [recall, recall2, recall3]
     precisions = [precision, precision2, precision3]
 

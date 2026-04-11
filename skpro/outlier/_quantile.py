@@ -152,11 +152,21 @@ class QuantileOutlierDetector(BaseOutlierDetector):
         q_range = np.maximum(q_range, 1e-10)  # Avoid division by zero
 
         # Compute median (0.5 quantile)
-        median_pred = self.regressor_.predict(X)
-        if isinstance(median_pred, (pd.DataFrame, pd.Series)):
+        median_pred = self.regressor_.predict_quantiles(X, alpha=[0.5])
+        if isinstance(median_pred, pd.DataFrame):
+            if isinstance(median_pred.columns, pd.MultiIndex):
+                median_pred = median_pred.xs(0.5, axis=1, level=-1).values
+            else:
+                median_pred = median_pred.values
+        elif isinstance(median_pred, pd.Series):
             median_pred = median_pred.values
+        else:
+            median_pred = np.asarray(median_pred)
+
         if median_pred.ndim == 1:
             median_pred = median_pred.reshape(-1, 1)
+        elif median_pred.ndim == 3:
+            median_pred = median_pred[:, :, 0]
 
         # Compute normalized distance from median
         distance_from_median = np.abs(y_arr - median_pred)
