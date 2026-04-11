@@ -34,6 +34,21 @@ class BoundingRegressor(BaseProbaRegressor):
         * "clip_mean": clips the mean only, keeps original variance
         * "delta": replaces with delta distributions at the bounds (conservative)
 
+    Notes
+    -----
+    Edge cases and limitations:
+
+    * Works cleanly for Normal distributions but may yield probabilistically
+      inconsistent results for other families (t-distribution, Cauchy, etc.).
+      Only the mean is clipped; the variance is preserved unchanged.
+      For non-Normal targets, this can produce invalid parameter combinations.
+    * Truncation reduces probability mass but may not preserve the nominal
+      coverage level of intervals/quantiles perfectly, especially when
+      upper/lower bounds are far from the natural range.
+    * Interval predictions are clipped independently, which may create
+      invalid intervals (lower > upper) if bounds are very tight.
+      Nominal coverage will not be preserved after clipping.
+
     Attributes
     ----------
     estimator_ : skpro regressor
@@ -169,10 +184,28 @@ class BoundingRegressor(BaseProbaRegressor):
             # Try to create a new distribution with the clipped mean
             # This is a simplified approach - in practice might need
             # more sophisticated handling per distribution type
+            import warnings
+
             try:
                 from skpro.distributions.normal import Normal
 
                 std = y_dist.std()
+                # Only dispatch to Normal if the base distribution is already Normal
+                # For other dist types, warn and fall back to truncation
+                if type(y_dist).__name__ != "Normal":
+                    warnings.warn(
+                        f"clip_mean is not recommended for {type(y_dist).__name__} "
+                        "distributions. Clipping mean + keeping variance may produce "
+                        "inconsistent or invalid parameter combinations. "
+                        "Falling back to truncation instead.",
+                        UserWarning,
+                        stacklevel=2,
+                    )
+                    from skpro.distributions.truncated import TruncatedDistribution
+
+                    return TruncatedDistribution(
+                        y_dist, lower=self.lower, upper=self.upper
+                    )
                 return Normal(mu=mean, sigma=std, index=X.index, columns=self._y_cols)
             except Exception:
                 # Fallback: return truncated version
@@ -214,27 +247,45 @@ class BoundingRegressor(BaseProbaRegressor):
         -------
         pred_int : pandas DataFrame
             Interval predictions, clipped to bounds.
+
+        Notes
+        -----
+        Interval bounds are clipped independently. Nominal coverage will not be
+        preserved; resulting intervals may misrepresent the true coverage.
         """
+        import warnings
+
         pred_int = self.estimator_.predict_interval(X, coverage=coverage)
 
         # Clip interval bounds
-        if self.lower is not None:
-            # Clip lower bounds of intervals
+        if self.lower is not None or self.upper is not None:
+            # Identify lower and upper columns
             lower_cols = [col for col in pred_int.columns if "lower" in str(col)]
-            pred_int[lower_cols] = pred_int[lower_cols].clip(lower=self.lower)
-
-            # Also clip upper bounds
             upper_cols = [col for col in pred_int.columns if "upper" in str(col)]
-            pred_int[upper_cols] = pred_int[upper_cols].clip(lower=self.lower)
 
-        if self.upper is not None:
-            # Clip upper bounds of intervals
-            upper_cols = [col for col in pred_int.columns if "upper" in str(col)]
-            pred_int[upper_cols] = pred_int[upper_cols].clip(upper=self.upper)
+            if self.lower is not None:
+                for col in lower_cols:
+                    pred_int[col] = pred_int[col].clip(lower=self.lower)
+                for col in upper_cols:
+                    pred_int[col] = pred_int[col].clip(lower=self.lower)
 
-            # Also clip lower bounds
-            lower_cols = [col for col in pred_int.columns if "lower" in str(col)]
-            pred_int[lower_cols] = pred_int[lower_cols].clip(upper=self.upper)
+            if self.upper is not None:
+                for col in upper_cols:
+                    pred_int[col] = pred_int[col].clip(upper=self.upper)
+                for col in lower_cols:
+                    pred_int[col] = pred_int[col].clip(upper=self.upper)
+
+            # Check if any intervals became invalid (lower > upper)
+            if lower_cols and upper_cols:
+                for lcol, ucol in zip(lower_cols, upper_cols):
+                    if (pred_int[lcol] > pred_int[ucol]).any():
+                        warnings.warn(
+                            "Interval clipping resulted in invalid intervals "
+                            "(lower > upper). Coverage may not be preserved.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
+                        break
 
         return pred_int
 
