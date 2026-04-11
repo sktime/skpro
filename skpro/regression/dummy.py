@@ -298,16 +298,7 @@ def _isj_bw_factor_1d(y):
             stacklevel=2,
         )
 
-    try:
-        h = _bw_isj_1d(y)
-    except Exception as e:
-        warnings.warn(
-            f"ISJ bandwidth computation failed ({type(e).__name__}); "
-            "falling back to silverman.",
-            UserWarning,
-            stacklevel=2,
-        )
-        return "silverman"
+    h = _bw_isj_1d(y)
 
     if not np.isfinite(h) or h <= 0:
         warnings.warn(
@@ -434,11 +425,14 @@ def _root_isj(function, N, args):
     """Root finder for ISJ fixed-point equation, robust to difficult cases."""
     N = max(min(1050, N), 50)
     tol = 1e-11 + 0.01 * (N - 50) / 1000
+    lower = 0.0
+    f_lower = function(lower, *args)
 
     for _ in range(20):
-        try:
-            return brentq(function, 0, tol, args=args, xtol=tol)
-        except ValueError:
-            tol *= 2
+        upper = tol
+        f_upper = function(upper, *args)
+        if np.isfinite(f_lower) and np.isfinite(f_upper) and f_lower * f_upper <= 0:
+            return brentq(function, lower, upper, args=args, xtol=upper)
+        tol *= 2
 
-    raise ValueError("ISJ root solver did not converge")
+    return np.nan

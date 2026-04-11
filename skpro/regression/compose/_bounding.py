@@ -186,32 +186,23 @@ class BoundingRegressor(BaseProbaRegressor):
             # more sophisticated handling per distribution type
             import warnings
 
-            try:
-                from skpro.distributions.normal import Normal
+            from skpro.distributions.normal import Normal
+            from skpro.distributions.truncated import TruncatedDistribution
 
-                std = y_dist.std()
-                # Only dispatch to Normal if the base distribution is already Normal
-                # For other dist types, warn and fall back to truncation
-                if type(y_dist).__name__ != "Normal":
-                    warnings.warn(
-                        f"clip_mean is not recommended for {type(y_dist).__name__} "
-                        "distributions. Clipping mean + keeping variance may produce "
-                        "inconsistent or invalid parameter combinations. "
-                        "Falling back to truncation instead.",
-                        UserWarning,
-                        stacklevel=2,
-                    )
-                    from skpro.distributions.truncated import TruncatedDistribution
-
-                    return TruncatedDistribution(
-                        y_dist, lower=self.lower, upper=self.upper
-                    )
-                return Normal(mu=mean, sigma=std, index=X.index, columns=self._y_cols)
-            except Exception:
-                # Fallback: return truncated version
-                from skpro.distributions.truncated import TruncatedDistribution
-
+            std = y_dist.std()
+            # Only dispatch to Normal if the base distribution is already Normal
+            # For other dist types, warn and fall back to truncation
+            if type(y_dist).__name__ != "Normal":
+                warnings.warn(
+                    f"clip_mean is not recommended for {type(y_dist).__name__} "
+                    "distributions. Clipping mean + keeping variance may produce "
+                    "inconsistent or invalid parameter combinations. "
+                    "Falling back to truncation instead.",
+                    UserWarning,
+                    stacklevel=2,
+                )
                 return TruncatedDistribution(y_dist, lower=self.lower, upper=self.upper)
+            return Normal(mu=mean, sigma=std, index=X.index, columns=self._y_cols)
 
         elif self.method == "delta":
             # Replace out-of-bounds predictions with delta distributions
