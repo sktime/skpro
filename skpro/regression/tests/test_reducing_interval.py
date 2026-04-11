@@ -76,10 +76,7 @@ def test_predict_interval_and_quantiles_shapes_and_values():
                         np.full(
                             len(X_test),
                             mean
-                            + np.sign(a - 0.5)
-                            * abs(norm.ppf(a))
-                            * std
-                            / np.sqrt(n),
+                            + np.sign(a - 0.5) * abs(norm.ppf(a)) * std / np.sqrt(n),
                         )
                         if a != 0.5
                         else np.full(len(X_test), mean)
