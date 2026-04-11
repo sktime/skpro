@@ -233,6 +233,14 @@
       ]
     },
     {
+      "login": "patelchaitany93",
+      "name": "Chaitany Patel",
+      "profile": "https://github.com/patelchaitany93",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "Khushmagrawal",
       "name": "Khush Agrawal",
       "profile": "https://github.com/Khushmagrawal",
@@ -240,5 +248,22 @@
         "code",
       ]
     },
+    {
+      "login": "amaydixit11",
+      "name": "Amay Dixit",
+      "profile": "https://github.com/amaydixit11",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "kabirvashisht4-glitch",
+      "name": "Kabir Vashisht",
+      "contributions": [
+        "bug",
+        "doc"
+      ]
+    }
   ]
 }
