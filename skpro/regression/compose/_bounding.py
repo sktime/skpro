@@ -189,7 +189,6 @@ class BoundingRegressor(BaseProbaRegressor):
             from skpro.distributions.normal import Normal
             from skpro.distributions.truncated import TruncatedDistribution
 
-            std = y_dist.std()
             # Only dispatch to Normal if the base distribution is already Normal
             # For other dist types, warn and fall back to truncation
             if type(y_dist).__name__ != "Normal":
@@ -202,7 +201,9 @@ class BoundingRegressor(BaseProbaRegressor):
                     stacklevel=2,
                 )
                 return TruncatedDistribution(y_dist, lower=self.lower, upper=self.upper)
-            return Normal(mu=mean, sigma=std, index=X.index, columns=self._y_cols)
+
+            sigma = y_dist.sigma
+            return Normal(mu=mean, sigma=sigma, index=X.index, columns=self._y_cols)
 
         elif self.method == "delta":
             # Replace out-of-bounds predictions with delta distributions
