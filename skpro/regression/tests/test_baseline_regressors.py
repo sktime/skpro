@@ -1,11 +1,11 @@
+import importlib.util
+
 import numpy as np
 import pytest
 from sklearn.linear_model import LinearRegression
-import importlib.util
 
 from skpro.regression.deterministic_reduction import DeterministicReductionRegressor
 from skpro.regression.unconditional_distfit import UnconditionalDistfitRegressor
-
 
 HAS_DISTFIT = importlib.util.find_spec("distfit") is not None
 
@@ -49,7 +49,8 @@ def test_unconditional_distfit_distribution_parameters_and_mean():
     assert isinstance(model, dict)
     assert "loc" in model
     assert "scale" in model
-    # distfit is fit on y only; mean of returned distribution should match fitted location.
+    # distfit is fit on y only.
+    # mean of returned distribution should match fitted location.
     assert np.allclose(dist.mean().values, model["loc"])
 
 
