@@ -167,6 +167,7 @@ print(f"  Precision: {precision4:.2%}, Recall: {recall4:.2%}")
 # Visualization (optional - requires matplotlib)
 # -----------------------------------------------
 try:
+    import matplotlib.pyplot as plt
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
 
     # Plot 1: Outlier scores from QuantileOutlierDetector
