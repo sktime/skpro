@@ -1,11 +1,4 @@
-"""Shrinking normal interval regressor with a static quantile baseline.
-
-This regressor demonstrates two approaches for interval prediction:
-- ``mean_sd``: normal-approximation intervals that shrink as ``n`` increases
-- ``quantile``: static empirical-quantile baseline that does not shrink with ``n``
-
-Implements both ``_predict_interval`` and ``_predict_quantiles`` for demonstration.
-"""
+"""Shrinking normal interval regressor with a static quantile baseline."""
 
 from typing import Any, List, Optional
 
@@ -30,7 +23,7 @@ class ShrinkingNormalIntervalRegressor(BaseProbaRegressor):
     >>> import pandas as pd
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.model_selection import train_test_split
-    >>> from skpro.regression.reducing_interval import ShrinkingNormalIntervalRegressor
+    >>> from skpro.regression.shrinking_interval import ShrinkingNormalIntervalRegressor
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
     >>> y = pd.DataFrame(y)
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
