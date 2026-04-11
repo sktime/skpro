@@ -1,6 +1,8 @@
 """Base class for outlier detection using probabilistic regressors."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
+from copy import deepcopy
+
 import numpy as np
 import pandas as pd
 
@@ -34,6 +36,8 @@ class BaseOutlierDetector(BaseEstimator):
 
     Attributes
     ----------
+    regressor_ : skpro probabilistic regressor
+        Fitted clone (or deep copy fallback) of ``regressor`` used internally.
     decision_scores_ : numpy array of shape (n_samples,)
         The outlier scores of the training data. The higher the score, the
         more abnormal the sample.
@@ -80,11 +84,18 @@ class BaseOutlierDetector(BaseEstimator):
         if y is not None and not isinstance(y, pd.DataFrame):
             y = pd.DataFrame(y)
 
-        # Fit the regressor if not already fitted
-        if not self.regressor._is_fitted:
+        # Clone/copy the wrapped regressor to avoid mutating user-passed objects
+        self.regressor_ = (
+            self.regressor.clone()
+            if hasattr(self.regressor, "clone")
+            else deepcopy(self.regressor)
+        )
+
+        # Fit the cloned regressor if not already fitted
+        if not self.regressor_._is_fitted:
             if y is None:
                 raise ValueError("Target variable y is required for fitting.")
-            self.regressor.fit(X, y)
+            self.regressor_.fit(X, y)
 
         # Calculate decision scores on training data
         self.decision_scores_ = self._compute_decision_scores(X, y)
@@ -115,6 +126,8 @@ class BaseOutlierDetector(BaseEstimator):
             Anomaly scores for each sample. Higher scores indicate
             more anomalous samples.
         """
+        self.check_is_fitted()
+
         # Convert inputs to pandas if needed
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -141,6 +154,8 @@ class BaseOutlierDetector(BaseEstimator):
         is_outlier : numpy array of shape (n_samples,)
             Binary labels: 0 for inliers, 1 for outliers
         """
+        self.check_is_fitted()
+
         scores = self.decision_function(X, y)
         return (scores > self.threshold_).astype(int)
 

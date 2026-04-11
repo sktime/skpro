@@ -32,6 +32,10 @@ class LossOutlierDetector(BaseOutlierDetector):
           and returns array of losses
     alpha : float, default=0.05
         Significance level for interval-based losses.
+    output_agg : {"sum", "mean"}, default="sum"
+        Aggregation used when a loss returns multi-output scores of shape
+        ``(n_samples, n_outputs)``. Applied consistently to built-in and
+        callable losses.
 
     Attributes
     ----------
@@ -62,9 +66,21 @@ class LossOutlierDetector(BaseOutlierDetector):
         "authors": ["skpro developers"],
     }
 
-    def __init__(self, regressor, contamination=0.1, loss="log_loss", alpha=0.05):
+    def __init__(
+        self,
+        regressor,
+        contamination=0.1,
+        loss="log_loss",
+        alpha=0.05,
+        output_agg="sum",
+    ):
+        if output_agg not in {"sum", "mean"}:
+            raise ValueError(
+                f"Invalid output_agg={output_agg!r}. Must be 'sum' or 'mean'."
+            )
         self.loss = loss
         self.alpha = alpha
+        self.output_agg = output_agg
         super().__init__(regressor=regressor, contamination=contamination)
 
     def _compute_decision_scores(self, X, y=None):
@@ -99,8 +115,10 @@ class LossOutlierDetector(BaseOutlierDetector):
         else:
             y_df = pd.DataFrame(y)
 
-        # Get predictive distribution
-        y_pred_dist = self.regressor.predict_proba(X)
+        # Get predictive distribution from fitted clone if available,
+        # otherwise from the user-passed regressor (for direct unit-test calls).
+        regressor = self.regressor_ if hasattr(self, "regressor_") else self.regressor
+        y_pred_dist = regressor.predict_proba(X)
 
         # Compute loss based on specified loss type
         if callable(self.loss):
@@ -111,8 +129,6 @@ class LossOutlierDetector(BaseOutlierDetector):
             log_pdf = y_pred_dist.log_pdf(y_df)
             if isinstance(log_pdf, (pd.DataFrame, pd.Series)):
                 log_pdf = log_pdf.values
-            if log_pdf.ndim > 1:
-                log_pdf = np.sum(log_pdf, axis=1)
             scores = -log_pdf
         elif self.loss == "crps":
             # CRPS (Continuous Ranked Probability Score)
@@ -144,12 +160,7 @@ class LossOutlierDetector(BaseOutlierDetector):
                     f"of samples. Expected first dimension {n_samples}, got "
                     f"array with shape {scores.shape!r}."
                 )
-            # If there is a single output dimension, squeeze it
-            if scores.shape[1] == 1:
-                scores = scores.ravel()
-            else:
-                # Aggregate multi-output scores per sample (mean across outputs)
-                scores = np.mean(scores, axis=1)
+            scores = self._aggregate_multioutput_scores(scores)
         elif scores.ndim != 1:
             raise ValueError(
                 "Loss function must return scores of shape (n_samples,) or "
@@ -165,6 +176,16 @@ class LossOutlierDetector(BaseOutlierDetector):
             )
 
         return scores
+
+    def _aggregate_multioutput_scores(self, scores):
+        """Aggregate multi-output scores to one score per sample."""
+        if scores.shape[1] == 1:
+            return scores.ravel()
+
+        if self.output_agg == "sum":
+            return np.sum(scores, axis=1)
+
+        return np.mean(scores, axis=1)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -199,7 +220,12 @@ class LossOutlierDetector(BaseOutlierDetector):
             "regressor": ResidualDouble(RandomForestRegressor(n_estimators=2)),
             "loss": "crps",
         }
-        return [params1, params2, params3]
+        params4 = {
+            "regressor": ResidualDouble(RandomForestRegressor(n_estimators=2)),
+            "loss": "interval_score",
+            "output_agg": "mean",
+        }
+        return [params1, params2, params3, params4]
 
     def _compute_crps(self, y_true, y_pred_dist):
         """Compute Continuous Ranked Probability Score.
@@ -277,7 +303,7 @@ class LossOutlierDetector(BaseOutlierDetector):
         if crps.ndim == 2 and crps.shape[1] == 1:
             crps = crps.ravel()
         elif crps.ndim > 1:
-            crps = np.sum(crps, axis=1)
+            crps = self._aggregate_multioutput_scores(crps)
 
         return crps
 
@@ -303,7 +329,8 @@ class LossOutlierDetector(BaseOutlierDetector):
         """
         # Get prediction interval
         coverage = 1 - self.alpha
-        intervals = self.regressor.predict_interval(X, coverage=coverage)
+        regressor = self.regressor_ if hasattr(self, "regressor_") else self.regressor
+        intervals = regressor.predict_interval(X, coverage=coverage)
 
         # Extract lower and upper bounds
         if isinstance(intervals, pd.DataFrame):
@@ -344,9 +371,5 @@ class LossOutlierDetector(BaseOutlierDetector):
         violation_upper = np.maximum(0, y_true_arr - upper) * (2 / self.alpha)
 
         scores = width + violation_lower + violation_upper
-
-        # Sum over outputs if multi-output
-        if scores.ndim > 1:
-            scores = np.sum(scores, axis=1)
 
         return scores

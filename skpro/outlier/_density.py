@@ -93,7 +93,7 @@ class DensityOutlierDetector(BaseOutlierDetector):
             y_df = pd.DataFrame(y)
 
         # Get predictive distribution
-        y_pred_dist = self.regressor.predict_proba(X)
+        y_pred_dist = self.regressor_.predict_proba(X)
 
         # Compute log-pdf of observed values
         log_pdf = y_pred_dist.log_pdf(y_df)

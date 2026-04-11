@@ -95,7 +95,7 @@ class QuantileOutlierDetector(BaseOutlierDetector):
 
         # Get quantile predictions
         quantiles = sorted(self.alpha if self.alpha is not None else [0.05, 0.95])
-        q_pred = self.regressor.predict_quantiles(X, alpha=quantiles)
+        q_pred = self.regressor_.predict_quantiles(X, alpha=quantiles)
         # Convert quantile predictions to float if DataFrame or Series
         if isinstance(q_pred, pd.DataFrame):
             q_pred = q_pred.astype(float)
@@ -152,7 +152,7 @@ class QuantileOutlierDetector(BaseOutlierDetector):
         q_range = np.maximum(q_range, 1e-10)  # Avoid division by zero
 
         # Compute median (0.5 quantile)
-        median_pred = self.regressor.predict(X)
+        median_pred = self.regressor_.predict(X)
         if isinstance(median_pred, (pd.DataFrame, pd.Series)):
             median_pred = median_pred.values
         if median_pred.ndim == 1:

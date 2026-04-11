@@ -4,6 +4,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from skbase._exceptions import NotFittedError
 
 from skpro.outlier import (
     DensityOutlierDetector,
@@ -66,6 +67,22 @@ class _YRecordingOutlierDetector(BaseOutlierDetector):
         self.last_y_type_ = type(y)
         self.last_y_ = y
         return np.zeros(len(X))
+
+
+def test_base_outlier_detector_requires_fit_for_inference():
+    """decision_function and predict should raise a not-fitted error before fit."""
+    X = pd.DataFrame({"x": [0.0, 1.0, 2.0]})
+    y = pd.DataFrame({"y": [1.0, 2.0, 3.0]})
+
+    detector = _YRecordingOutlierDetector(
+        regressor=_DummyPredictProbaRegressor(), contamination=0.1
+    )
+
+    with pytest.raises(NotFittedError, match="has not been fitted yet"):
+        detector.decision_function(X, y)
+
+    with pytest.raises(NotFittedError, match="has not been fitted yet"):
+        detector.predict(X, y)
 
 
 @pytest.mark.skipif(
@@ -345,6 +362,30 @@ def test_loss_outlier_detector_custom_loss_multioutput_reduced_per_sample():
     scores = detector._compute_decision_scores(X_df, y_df)
 
     assert scores.shape == (len(X_df),)
+    expected = np.sum(
+        np.column_stack([y_df.iloc[:, 0].to_numpy(), np.ones(len(y_df))]), axis=1
+    )
+    np.testing.assert_allclose(scores, expected)
+
+
+def test_loss_outlier_detector_custom_loss_multioutput_mean_aggregation():
+    """Callable loss should support mean aggregation across outputs."""
+    X_df = pd.DataFrame({"x": [0.0, 1.0, 2.0]})
+    y_df = pd.DataFrame({"y": [1.0, 2.0, 3.0]})
+
+    def custom_loss(y_true, y_pred_dist):
+        del y_pred_dist
+        return np.column_stack([y_true.iloc[:, 0].to_numpy(), np.ones(len(y_true))])
+
+    detector = LossOutlierDetector(
+        _DummyPredictProbaRegressor(),
+        contamination=0.1,
+        loss=custom_loss,
+        output_agg="mean",
+    )
+    scores = detector._compute_decision_scores(X_df, y_df)
+
+    assert scores.shape == (len(X_df),)
     expected = np.mean(
         np.column_stack([y_df.iloc[:, 0].to_numpy(), np.ones(len(y_df))]), axis=1
     )
@@ -387,6 +428,27 @@ def test_base_outlier_detector_normalizes_y_to_dataframe():
     assert detector.last_y_type_ is pd.DataFrame
     assert detector.last_y_.shape == (len(y), 1)
     assert scores.shape == (len(y),)
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(DensityOutlierDetector),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
+def test_outlier_fit_clones_regressor_no_side_effect(simple_regression_data):
+    """fit should clone regressor and avoid mutating user-passed estimator."""
+    from sklearn.linear_model import LinearRegression
+
+    X_df, y_series, _ = simple_regression_data
+    regressor = ResidualDouble(LinearRegression())
+
+    assert not regressor._is_fitted
+
+    detector = DensityOutlierDetector(regressor, contamination=0.1)
+    detector.fit(X_df, y_series)
+
+    assert detector.regressor_ is not regressor
+    assert detector.regressor_._is_fitted
+    assert not regressor._is_fitted
 
 
 @pytest.mark.skipif(
