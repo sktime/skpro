@@ -59,6 +59,80 @@ class _DummyPredictProbaRegressor:
         return object()
 
 
+class _DummyQuantileRegressor:
+    """Minimal regressor stub for quantile outlier score shape/semantics tests."""
+
+    _is_fitted = True
+
+    def __init__(self, lower=0.0, upper=1.0):
+        self.lower = lower
+        self.upper = upper
+
+    def predict_quantiles(self, X, alpha):
+        n = len(X)
+        cols = pd.MultiIndex.from_tuples(
+            [
+                ("y", alpha[0]),
+                ("y", alpha[-1]),
+            ]
+        )
+        return pd.DataFrame(
+            np.column_stack(
+                [
+                    np.full(n, self.lower, dtype=float),
+                    np.full(n, self.upper, dtype=float),
+                ]
+            ),
+            index=X.index,
+            columns=cols,
+        )
+
+    def clone(self):
+        return _DummyQuantileRegressor(lower=self.lower, upper=self.upper)
+
+
+class _DummyIntervalRegressor:
+    """Minimal regressor stub producing 3-level MultiIndex interval output."""
+
+    _is_fitted = True
+
+    def predict_proba(self, X):
+        del X
+        return object()
+
+    def predict_interval(self, X, coverage):
+        n = len(X)
+        var_names = ["y0", "y1"]
+        cols = pd.MultiIndex.from_tuples(
+            [
+                (var, coverage, bound)
+                for var in var_names
+                for bound in ["lower", "upper"]
+            ]
+        )
+        data = np.column_stack(
+            [
+                np.full(n, 0.0),
+                np.full(n, 2.0),
+                np.full(n, 1.0),
+                np.full(n, 3.0),
+            ]
+        )
+        return pd.DataFrame(data, index=X.index, columns=cols)
+
+
+class _DummyIntervalRegressorMismatched(_DummyIntervalRegressor):
+    """Minimal regressor stub with interval output shape mismatched to y_true."""
+
+    def predict_interval(self, X, coverage):
+        n = len(X)
+        cols = pd.MultiIndex.from_tuples(
+            [("y0", coverage, "lower"), ("y0", coverage, "upper")]
+        )
+        data = np.column_stack([np.full(n, 0.0), np.full(n, 2.0)])
+        return pd.DataFrame(data, index=X.index, columns=cols)
+
+
 class _YRecordingOutlierDetector(BaseOutlierDetector):
     """Detector stub that records the internal y representation."""
 
@@ -144,6 +218,24 @@ def test_quantile_outlier_detector_decision_function(simple_regression_data):
 
     assert len(scores) == len(X_df)
     assert np.all(scores >= 0)  # Scores should be non-negative
+
+
+def test_quantile_outlier_detector_inside_interval_scores_zero():
+    """Samples inside quantile interval should receive zero outlier score."""
+    X = pd.DataFrame({"x": [0.0, 1.0, 2.0]})
+    y = pd.DataFrame({"y": [0.2, 0.8, 1.3]})
+
+    detector = QuantileOutlierDetector(
+        regressor=_DummyQuantileRegressor(lower=0.0, upper=1.0),
+        contamination=0.1,
+        alpha=[0.05, 0.95],
+    )
+    detector.fit(X, y)
+
+    scores = detector.decision_function(X, y)
+
+    np.testing.assert_allclose(scores[:2], np.zeros(2))
+    assert scores[2] > 0
 
 
 @pytest.mark.skipif(
@@ -316,6 +408,37 @@ def test_loss_outlier_detector_interval_score(simple_regression_data):
 
     assert len(predictions) == len(X_df)
     assert set(predictions).issubset({0, 1})
+
+
+def test_loss_outlier_detector_interval_score_multiindex_bounds_extraction():
+    """Interval-score path should extract bounds from 3-level MultiIndex columns."""
+    X_df = pd.DataFrame({"x": [0.0, 1.0, 2.0]})
+    y_df = pd.DataFrame({"y0": [0.5, 1.5, 2.5], "y1": [1.2, 2.2, 2.8]})
+
+    detector = LossOutlierDetector(
+        regressor=_DummyIntervalRegressor(),
+        contamination=0.1,
+        loss="interval_score",
+    )
+    scores = detector._compute_decision_scores(X_df, y_df)
+
+    assert scores.shape == (len(X_df),)
+    assert np.isfinite(scores).all()
+
+
+def test_loss_outlier_detector_interval_score_shape_mismatch_raises():
+    """Interval-score path should raise clearly on interval/y_true shape mismatch."""
+    X_df = pd.DataFrame({"x": [0.0, 1.0, 2.0]})
+    y_df = pd.DataFrame({"y0": [0.5, 1.5, 2.5], "y1": [1.2, 2.2, 2.8]})
+
+    detector = LossOutlierDetector(
+        regressor=_DummyIntervalRegressorMismatched(),
+        contamination=0.1,
+        loss="interval_score",
+    )
+
+    with pytest.raises(ValueError, match="not aligned with y_true shape"):
+        detector._compute_decision_scores(X_df, y_df)
 
 
 @pytest.mark.skipif(

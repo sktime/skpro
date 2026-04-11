@@ -14,8 +14,9 @@ class QuantileOutlierDetector(BaseOutlierDetector):
 
     Detects outliers based on the extremity of predictive quantiles. Samples
     that fall outside the expected quantile range are considered outliers.
-    The outlier score is computed as the distance from the predictive mean,
-    normalized by the quantile range.
+    The outlier score is zero for samples inside the quantile interval and
+    equals the normalized distance to the violated quantile bound for samples
+    outside the interval.
 
     Parameters
     ----------
@@ -64,9 +65,9 @@ class QuantileOutlierDetector(BaseOutlierDetector):
     def _compute_decision_scores(self, X, y=None):
         """Compute quantile-based outlier scores.
 
-        The score is computed as the distance of the observed value from
-        the median prediction, normalized by the quantile range. Higher
-        scores indicate samples that are further from the expected range.
+        The score is zero for observations inside the selected quantile
+        interval. For observations outside the interval, the score is the
+        normalized distance to the nearest violated quantile bound.
 
         Parameters
         ----------
@@ -103,7 +104,6 @@ class QuantileOutlierDetector(BaseOutlierDetector):
             q_pred = q_pred.astype(float)
 
         # Compute scores based on quantile extremity
-        # Score is the distance from median, normalized by quantile range
         n_samples = len(X)
         scores = np.zeros(n_samples)
 
@@ -151,29 +151,18 @@ class QuantileOutlierDetector(BaseOutlierDetector):
         q_range = q_upper - q_lower
         q_range = np.maximum(q_range, 1e-10)  # Avoid division by zero
 
-        # Compute median (0.5 quantile)
-        median_pred = self.regressor_.predict(X)
-        if isinstance(median_pred, (pd.DataFrame, pd.Series)):
-            median_pred = median_pred.values
-        if median_pred.ndim == 1:
-            median_pred = median_pred.reshape(-1, 1)
-
-        # Compute normalized distance from median
-        distance_from_median = np.abs(y_arr - median_pred)
-
         # Check if outside quantile range
         below_lower = y_arr < q_lower
         above_upper = y_arr > q_upper
 
-        # Score is distance from nearest quantile bound, normalized by range.
-        # Vectorized implementation preserving the original per-sample logic:
+        # Score is distance from nearest violated quantile bound, normalized by range.
+        # Vectorized implementation preserving per-sample logic:
         #   - if any output is below its lower quantile -> use distance to lower bound
         #   - elif any output is above its upper quantile -> use distance to upper bound
-        #   - else -> use distance from median
+        #   - else -> zero score
         below_any = np.any(below_lower, axis=1)
         # Ensure "below" has priority over "above" when both occur for different outputs
         above_any = np.logical_and(~below_any, np.any(above_upper, axis=1))
-        inside = ~(below_any | above_any)
 
         # Normalized distances for below/above cases (zero where condition is False)
         lower_excess = np.where(below_lower, (q_lower - y_arr) / q_range, 0.0)
@@ -181,11 +170,9 @@ class QuantileOutlierDetector(BaseOutlierDetector):
 
         scores_below = np.max(lower_excess, axis=1)
         scores_above = np.max(upper_excess, axis=1)
-        scores_inside = np.max(distance_from_median / q_range, axis=1)
 
         scores[below_any] = scores_below[below_any]
         scores[above_any] = scores_above[above_any]
-        scores[inside] = scores_inside[inside]
         return scores
 
     @classmethod

@@ -332,27 +332,7 @@ class LossOutlierDetector(BaseOutlierDetector):
         regressor = self.regressor_ if hasattr(self, "regressor_") else self.regressor
         intervals = regressor.predict_interval(X, coverage=coverage)
 
-        # Extract lower and upper bounds
-        if isinstance(intervals, pd.DataFrame):
-            # Assuming columns are like ('lower', 0) and ('upper', 0)
-            lower_cols = [
-                col for col in intervals.columns if "lower" in str(col).lower()
-            ]
-            upper_cols = [
-                col for col in intervals.columns if "upper" in str(col).lower()
-            ]
-
-            if len(lower_cols) == 0:
-                # Alternative: first half is lower, second half is upper
-                n_cols = len(intervals.columns)
-                lower = intervals.iloc[:, : n_cols // 2].values
-                upper = intervals.iloc[:, n_cols // 2 :].values
-            else:
-                lower = intervals[lower_cols].values
-                upper = intervals[upper_cols].values
-        else:
-            lower = intervals[:, 0]
-            upper = intervals[:, 1]
+        lower, upper = self._extract_interval_bounds(intervals)
 
         # Convert y_true to array
         if isinstance(y_true, (pd.DataFrame, pd.Series)):
@@ -362,6 +342,23 @@ class LossOutlierDetector(BaseOutlierDetector):
 
         if y_true_arr.ndim == 1:
             y_true_arr = y_true_arr.reshape(-1, 1)
+
+        if lower.ndim == 1:
+            lower = lower.reshape(-1, 1)
+        if upper.ndim == 1:
+            upper = upper.reshape(-1, 1)
+
+        if (
+            lower.shape[0] != y_true_arr.shape[0]
+            or upper.shape[0] != y_true_arr.shape[0]
+            or lower.shape[1] != y_true_arr.shape[1]
+            or upper.shape[1] != y_true_arr.shape[1]
+        ):
+            raise ValueError(
+                "predict_interval output is not aligned with y_true shape. "
+                f"Expected ({y_true_arr.shape[0]}, {y_true_arr.shape[1]}) for "
+                f"lower/upper, got lower={lower.shape!r}, upper={upper.shape!r}."
+            )
 
         # Compute interval score
         # IS = (upper - lower) + (2/alpha) * (lower - y) * I(y < lower)
@@ -373,3 +370,40 @@ class LossOutlierDetector(BaseOutlierDetector):
         scores = width + violation_lower + violation_upper
 
         return scores
+
+    def _extract_interval_bounds(self, intervals):
+        """Extract lower/upper interval bounds from common predict_interval formats."""
+        if isinstance(intervals, pd.DataFrame):
+            cols = intervals.columns
+
+            if isinstance(cols, pd.MultiIndex):
+                last_level = cols.get_level_values(-1)
+                if "lower" in last_level and "upper" in last_level:
+                    lower = intervals.xs("lower", axis=1, level=-1).to_numpy()
+                    upper = intervals.xs("upper", axis=1, level=-1).to_numpy()
+                    return lower, upper
+
+            lower_cols = [col for col in cols if "lower" in str(col).lower()]
+            upper_cols = [col for col in cols if "upper" in str(col).lower()]
+            if lower_cols and upper_cols:
+                return (
+                    intervals[lower_cols].to_numpy(),
+                    intervals[upper_cols].to_numpy(),
+                )
+
+            n_cols = len(cols)
+            return (
+                intervals.iloc[:, : n_cols // 2].to_numpy(),
+                intervals.iloc[:, n_cols // 2 :].to_numpy(),
+            )
+
+        intervals = np.asarray(intervals)
+        if intervals.ndim == 2:
+            return intervals[:, 0], intervals[:, 1]
+        if intervals.ndim == 3:
+            return intervals[:, :, 0], intervals[:, :, 1]
+
+        raise ValueError(
+            "Unsupported predict_interval output format. "
+            f"Got array-like with shape {intervals.shape!r}."
+        )
