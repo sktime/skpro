@@ -4,31 +4,31 @@
 __author__ = ["arnavk23"]
 __all__ = ["DistrPredictiveCalibration"]
 
+from sklearn.base import BaseEstimator
+
 from skpro.regression.base import BaseProbaRegressor
 
-# Dummy calibrators for testing (must be at module level for pickling)
 
+class _IdentityCalibrator(BaseEstimator):
+    """Identity calibrator used in estimator checks for test instance creation.
 
-class _DummyCalibrator(BaseProbaRegressor):
-    """A dummy calibrator for testing. Implements fit/transform but does nothing."""
-
-    _tags = {"exclude_from_registry": True}
+    Kept at module scope so sklearn cloning and serialization remain robust in tests.
+    """
 
     def fit(self, y_true, y_pred):
-        # No state mutation for test compatibility
         return self
 
     def transform(self, y_pred):
         return y_pred
 
 
-class _DummyCalibrator2(BaseProbaRegressor):
-    """Implements fit/transform but does nothing."""
+class _ScaleOnlyCalibrator(BaseEstimator):
+    """Simple deterministic calibrator for estimator check parametrization."""
 
-    _tags = {"exclude_from_registry": True}
+    def __init__(self, scale=1.1):
+        self.scale = scale
 
     def fit(self, y_true, y_pred):
-        # No state mutation for test compatibility
         return self
 
     def transform(self, y_pred):
@@ -123,13 +123,12 @@ class DistrPredictiveCalibration(BaseProbaRegressor):
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter sets for automated tests.
 
-        Returns two parameter sets: one with _DummyCalibrator,
-        one with _DummyCalibrator2 as calibrator.
+        Uses explicit calibrators to exercise constructor and set/get param checks.
         """
         from skpro.regression.residual import ResidualDouble
 
         reg = ResidualDouble.create_test_instance()
         return [
-            {"regressor": reg, "calibrator": _DummyCalibrator()},
-            {"regressor": reg, "calibrator": _DummyCalibrator2()},
+            {"regressor": reg, "calibrator": _IdentityCalibrator()},
+            {"regressor": reg, "calibrator": _ScaleOnlyCalibrator(scale=1.05)},
         ]
