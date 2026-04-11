@@ -180,6 +180,17 @@ Distributional boosting
 
     XGBoostLSS
 
+Deep learning based regression
+------------------------------
+
+.. currentmodule:: skpro.regression.mdn
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MDNRegressor
+
 Naive regressors and baselines
 ------------------------------
 
@@ -231,6 +242,17 @@ Gaussian process and kernel regression
     :template: class.rst
 
     GaussianProcess
+
+Non-parametric conditional density estimation
+-------------------------
+
+.. currentmodule:: skpro.regression.nonparametric
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    NadarayaWatsonCDE
 
 Bayesian regressors
 -------------------
