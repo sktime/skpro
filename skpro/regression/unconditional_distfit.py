@@ -34,7 +34,7 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
     >>> reg.fit(X, y)
     UnconditionalDistfitRegressor()
     >>> dist = reg.predict_proba(X)
-    >>> dist.mean()
+    >>> float(dist.mean().iloc[0, 0])
     3.0
 
     References
@@ -93,19 +93,30 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         # Import distfit only when needed for dependency isolation
         from distfit import distfit
 
-        y_arr = y.values.flatten() if hasattr(y, "values") else np.asarray(y).flatten()
-        if y_arr.ndim != 1:
+        y_arr_raw = y.values if hasattr(y, "values") else np.asarray(y)
+        if y_arr_raw.ndim > 2 or (y_arr_raw.ndim == 2 and y_arr_raw.shape[1] > 1):
             raise NotImplementedError(
                 "UnconditionalDistfitRegressor only supports univariate y. Got shape: "
-                + str(y.shape)
+                + str(y_arr_raw.shape)
             )
+
+        if hasattr(y, "columns"):
+            self._y_cols = y.columns
+        else:
+            self._y_cols = ["0"]
+
+        y_arr = np.asarray(y_arr_raw).reshape(-1)
         if self.distr_type == "kde":
             raise RuntimeError(
                 "KDE support is removed due to scipy.stats.kde deprecation in distfit. "
                 "Please use a different distribution type."
             )
         if self.fit_histogram:
-            self.distfit_ = distfit(distr="histogram", random_state=self.random_state)
+            raise RuntimeError(
+                "Histogram support is not available in distfit>=2.0.1. "
+                "Please set fit_histogram=False and use a parametric distr_type "
+                "such as 'norm' or 'laplace'."
+            )
         else:
             self.distfit_ = distfit(
                 distr=self.distr_type, random_state=self.random_state
@@ -114,8 +125,8 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
         return self
 
     def _predict_proba(self, X):
-        # Return a single distribution object for all samples
-        return _DistfitDistribution(self.distfit_)
+        # Return one-row-per-instance distribution with y-aligned columns.
+        return _DistfitDistribution(self.distfit_, index=X.index, columns=self._y_cols)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -129,37 +140,59 @@ class UnconditionalDistfitRegressor(BaseProbaRegressor):
 class _DistfitDistribution(BaseDistribution):
     """Wraps a distfit fitted object as a skpro distribution."""
 
-    def __init__(self, distfit_obj):
+    def __init__(self, distfit_obj, index=None, columns=None, distr_type=None):
+        if isinstance(distfit_obj, np.ndarray):
+            distfit_obj = distfit_obj.item()
+
         self.distfit_obj = distfit_obj
-        super().__init__()
+        if distr_type is None:
+            distr_type = getattr(self.distfit_obj, "distr", None)
+        self.distr_type = distr_type
+        super().__init__(index=index, columns=columns)
 
-    def sample(self, n_samples=1):
-        return self.distfit_obj.generate(n_samples)
-
-    def pdf(self, x):
-        return self.distfit_obj.model.pdf(x)
-
-    def mean(self):
+    def _get_fitted_model(self):
+        """Return fitted scipy frozen distribution when available."""
         model = self.distfit_obj.model
         if isinstance(model, dict):
-            # distfit returns 'loc' for normal/laplace, sometimes 'mean' for others
-            if "loc" in model:
-                return model["loc"]
-            if "mean" in model:
-                return model["mean"]
-            raise AttributeError(
-                "distfit dict has neither 'loc' nor 'mean' key; cannot determine mean."
-            )
-        return model.mean()
+            model = model.get("model", model)
+        return model
 
-    def var(self):
-        # For normal/laplace, variance is scale**2
+    def _get_scalar_mean(self):
+        """Return scalar mean for the fitted distribution."""
+        model = self.distfit_obj.model
+        if isinstance(model, dict):
+            if "loc" in model:
+                return float(model["loc"])
+            if "mean" in model:
+                return float(model["mean"])
+        fitted = self._get_fitted_model()
+        return float(fitted.mean())
+
+    def _get_scalar_var(self):
+        """Return scalar variance for the fitted distribution."""
         model = self.distfit_obj.model
         if isinstance(model, dict) and "scale" in model:
-            return model["scale"] ** 2
-        raise AttributeError(
-            "distfit model does not have a 'scale' (variance) attribute"
-        )
+            return float(model["scale"]) ** 2
+        fitted = self._get_fitted_model()
+        return float(fitted.var())
+
+    def _mean(self):
+        return np.full(self.shape, self._get_scalar_mean(), dtype=float)
+
+    def _var(self):
+        return np.full(self.shape, self._get_scalar_var(), dtype=float)
+
+    def _pdf(self, x):
+        fitted = self._get_fitted_model()
+        return fitted.pdf(x)
+
+    def _cdf(self, x):
+        fitted = self._get_fitted_model()
+        return fitted.cdf(x)
+
+    def _ppf(self, p):
+        fitted = self._get_fitted_model()
+        return fitted.ppf(p)
 
     def get_params(self, deep=True):
         """Return parameters of the distribution."""
