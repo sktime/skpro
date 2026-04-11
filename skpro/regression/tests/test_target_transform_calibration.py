@@ -27,7 +27,9 @@ class _ShiftScaleCalibrator(BaseEstimator):
         if hasattr(y_pred, "mu") and hasattr(y_pred, "sigma"):
             mu = np.asarray(y_pred.mu) + self.shift_
             sigma = np.asarray(y_pred.sigma) * self.spread_mult
-            return Normal(mu=mu, sigma=sigma, index=y_pred.index, columns=y_pred.columns)
+            return Normal(
+                mu=mu, sigma=sigma, index=y_pred.index, columns=y_pred.columns
+            )
         if isinstance(y_pred, pd.DataFrame):
             return y_pred * self.spread_mult + self.shift_
         return y_pred
