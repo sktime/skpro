@@ -155,7 +155,7 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
     :toctree: auto_generated/
     :template: class.rst
 
-    ShrinkingIntervalRegressor
+    ShrinkingNormalIntervalRegressor
 
 Reduction to probabilistic classification
 -----------------------------------------
