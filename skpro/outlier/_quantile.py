@@ -14,7 +14,7 @@ class QuantileOutlierDetector(BaseOutlierDetector):
 
     Detects outliers based on the extremity of predictive quantiles. Samples
     that fall outside the expected quantile range are considered outliers.
-    The outlier score is computed as the distance from the median quantile,
+    The outlier score is computed as the distance from the predictive mean,
     normalized by the quantile range.
 
     Parameters

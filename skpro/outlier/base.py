@@ -54,6 +54,8 @@ class BaseOutlierDetector(BaseEstimator):
     }
 
     def __init__(self, regressor, contamination=0.1):
+        if contamination < 0 or contamination > 1:
+            raise ValueError("contamination must be within [0, 1].")
         self.regressor = regressor
         self.contamination = contamination
         super().__init__()
@@ -82,7 +84,10 @@ class BaseOutlierDetector(BaseEstimator):
             X = pd.DataFrame(X)
 
         if y is not None and not isinstance(y, pd.DataFrame):
+            y_has_index = hasattr(y, "index")
             y = pd.DataFrame(y)
+            if not y_has_index and len(y) == len(X):
+                y.index = X.index
 
         # Clone/copy the wrapped regressor to avoid mutating user-passed objects
         self.regressor_ = (
