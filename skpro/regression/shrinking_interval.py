@@ -1,10 +1,10 @@
-"""Reducing Interval Regressor: produces intervals that shrink as more data is seen.
+"""Shrinking normal interval regressor with a static quantile baseline.
 
 This regressor demonstrates two approaches for interval prediction:
-- Using mean and standard deviation (Normal assumption)
-- Using quantile regression (empirical quantiles)
+- ``mean_sd``: normal-approximation intervals that shrink as ``n`` increases
+- ``quantile``: static empirical-quantile baseline that does not shrink with ``n``
 
-Implements both _predict_interval and _predict_quantiles for demonstration.
+Implements both ``_predict_interval`` and ``_predict_quantiles`` for demonstration.
 """
 
 from typing import Any, List, Optional
@@ -16,26 +16,27 @@ from scipy.stats import norm
 from skpro.regression.base import BaseProbaRegressor
 
 
-class ReducingIntervalRegressor(BaseProbaRegressor):
-    """Probabilistic regressor with reducing intervals as n increases.
+class ShrinkingNormalIntervalRegressor(BaseProbaRegressor):
+    """Probabilistic regressor with shrinking intervals in ``mean_sd`` mode.
 
     Parameters
     ----------
     method : str, default="mean_sd"
-        "mean_sd" for mean/sd-based intervals, "quantile" for empirical quantiles.
+        "mean_sd" for normal-approximation intervals that shrink with ``n``;
+        "quantile" for a static empirical-quantile baseline.
 
     Examples
     --------
     >>> import pandas as pd
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.model_selection import train_test_split
-    >>> from skpro.regression.reducing_interval import ReducingIntervalRegressor
+    >>> from skpro.regression.reducing_interval import ShrinkingNormalIntervalRegressor
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
     >>> y = pd.DataFrame(y)
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
-    >>> reg = ReducingIntervalRegressor(method="mean_sd")
+    >>> reg = ShrinkingNormalIntervalRegressor(method="mean_sd")
     >>> reg.fit(X_train, y_train)
-    ReducingIntervalRegressor(...)
+    ShrinkingNormalIntervalRegressor(...)
     >>> y_pred = reg.predict(X_test)
     >>> intervals = reg.predict_interval(X_test, coverage=[0.9])
     >>> quantiles = reg.predict_quantiles(X_test, alpha=[0.05, 0.5, 0.95])
@@ -65,6 +66,8 @@ class ReducingIntervalRegressor(BaseProbaRegressor):
         self._std = np.asarray(
             y.std(ddof=1).values if hasattr(y, "std") else np.std(y, ddof=1, axis=0)
         )
+        if np.any(~np.isfinite(self._std)):
+            self._std = np.nan_to_num(self._std, nan=0.0, posinf=0.0, neginf=0.0)
         self._n = len(y)
         self._y_cols = y.columns if hasattr(y, "columns") else ["y"]
         return self

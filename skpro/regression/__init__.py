@@ -7,7 +7,7 @@ from skpro.regression.conformal import (
 )
 from skpro.regression.jackknife import MapieJackknifeAfterBootstrapRegressor
 from skpro.regression.nonparametric import NadarayaWatsonCDE
-from skpro.regression.reducing_interval import ReducingIntervalRegressor
+from skpro.regression.shrinking_interval import ShrinkingNormalIntervalRegressor
 
 __all__ = [
     "MapieSplitConformalRegressor",
@@ -15,5 +15,5 @@ __all__ = [
     "MapieConformalizedQuantileRegressor",
     "MapieJackknifeAfterBootstrapRegressor",
     "NadarayaWatsonCDE",
-    "ReducingIntervalRegressor",
+    "ShrinkingNormalIntervalRegressor",
 ]
