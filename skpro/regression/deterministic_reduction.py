@@ -26,15 +26,18 @@ class DeterministicReductionRegressor(BaseProbaRegressor):
     >>> import pandas as pd
     >>> X = pd.DataFrame({"a": [1, 2, 3]})
     >>> y = pd.DataFrame([1, 2, 3])
-    >>> reg = DeterministicReductionRegressor(LinearRegression(), distr_type="gaussian")
-     >>> reg.fit(X, y)  # doctest: +ELLIPSIS
-     DeterministicReductionRegressor(...)
-     >>> dist = reg.predict_proba(X)
-     >>> dist.mean()  # doctest: +NORMALIZE_WHITESPACE
-         0
-     0  1.0
-     1  2.0
-     2  3.0
+    >>> reg = DeterministicReductionRegressor(
+    ...     LinearRegression(),
+    ...     distr_type="gaussian"
+    ... )
+    >>> reg.fit(X, y)  # doctest: +ELLIPSIS
+    DeterministicReductionRegressor(...)
+    >>> dist = reg.predict_proba(X)
+    >>> dist.mean()  # doctest: +NORMALIZE_WHITESPACE
+        0
+    0  1.0
+    1  2.0
+    2  3.0
 
     References
     ----------
