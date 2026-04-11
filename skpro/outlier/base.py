@@ -89,15 +89,20 @@ class BaseOutlierDetector(BaseEstimator):
             if not y_has_index and len(y) == len(X):
                 y.index = X.index
 
-        # Clone/copy the wrapped regressor to avoid mutating user-passed objects
-        self.regressor_ = (
-            self.regressor.clone()
-            if hasattr(self.regressor, "clone")
-            else deepcopy(self.regressor)
-        )
+        # Copy the wrapped regressor to avoid mutating user-passed objects.
+        # Preserve fitted state for pre-fitted regressors so fit(..., y=None)
+        # works as documented.
+        if getattr(self.regressor, "_is_fitted", False):
+            self.regressor_ = deepcopy(self.regressor)
+        else:
+            self.regressor_ = (
+                self.regressor.clone()
+                if hasattr(self.regressor, "clone")
+                else deepcopy(self.regressor)
+            )
 
-        # Fit the cloned regressor if not already fitted
-        if not self.regressor_._is_fitted:
+        # Fit the copied regressor if not already fitted
+        if not getattr(self.regressor_, "_is_fitted", False):
             if y is None:
                 raise ValueError("Target variable y is required for fitting.")
             self.regressor_.fit(X, y)
