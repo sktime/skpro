@@ -57,8 +57,9 @@ class TruncatedDistribution(BaseDistribution):
         "authors": ["tingiskhan"],
         # estimator tags
         # --------------
-        "capabilities:approx": ["energy", "mean", "var"],
+        "capabilities:approx": ["energy", "var"],
         "capabilities:exact": [
+            "mean",
             "ppf",
             "log_pmf",
             "log_pdf",
@@ -107,6 +108,13 @@ class TruncatedDistribution(BaseDistribution):
             if capa not in distr_exact_capas:
                 self_exact_capas.remove(capa)
                 self_approx_capas.append(capa)
+
+        # if inner distribution has exact truncated_mean, our mean is also exact
+        if "truncated_mean" in distr_exact_capas:
+            if "mean" not in self_exact_capas:
+                self_exact_capas.append("mean")
+            if "mean" in self_approx_capas:
+                self_approx_capas.remove("mean")
 
         self.set_tags(**{"capabilities:exact": self_exact_capas})
         self.set_tags(**{"capabilities:approx": self_approx_capas})
@@ -202,6 +210,20 @@ class TruncatedDistribution(BaseDistribution):
 
     def _log_pmf(self, x):
         return self._calculate_density(x, self.distribution.log_pmf, as_log=True)
+
+    def _mean(self):
+        """Return expected value of the truncated distribution.
+
+        Uses the inner distribution's truncated_mean method.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
+        """
+        lower = self.lower if self.lower is not None else -np.inf
+        upper = self.upper if self.upper is not None else np.inf
+        return self.distribution.truncated_mean(lower=lower, upper=upper)
 
     def _iloc(self, rowidx=None, colidx=None):
         distr = self.distribution.iloc[rowidx, colidx]
