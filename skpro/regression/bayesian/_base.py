@@ -457,13 +457,15 @@ class BaseBayesianRegressor(BaseProbaRegressor):
 
     def _get_posterior_summary_from_posterior(self, **kwargs):
         """Get summary statistics of the posterior distributions."""
-        import arviz as az
-
         if hasattr(self, "approx_"):
+            import arviz as az
+
             return az.summary(
                 self.approx_.sample(self.draws), kind="stats", extend=True
             )
         elif hasattr(self, "trace_"):
+            import arviz as az
+
             return az.summary(self.trace_, kind="diagnostics", extend=True, **kwargs)
         else:
             raise NotImplementedError("No posterior available for summary.")

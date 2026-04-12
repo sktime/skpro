@@ -129,7 +129,7 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         }
         return default_sampler_config
 
-    def _build_model(self, X, y):
+    def _build_model(self, X, y, prior_cfg=None):
         """Build the PyMC model for Bayesian linear regression.
 
         Parameters
@@ -139,11 +139,18 @@ class BayesianLinearRegressor(BaseBayesianRegressor):
         y : pandas DataFrame
             Labels.
 
+        prior_cfg : dict, optional
+            Prior configuration passed by ``BaseBayesianRegressor``. This
+            implementation keeps using ``self.prior_config`` for backwards
+            compatibility.
+
         Returns
         -------
         model : pymc.Model
             The constructed PyMC model.
         """
+        del prior_cfg
+
         import warnings
 
         import pymc as pm
