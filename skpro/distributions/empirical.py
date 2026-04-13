@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.distributions.base import BaseDistribution
+from skpro.distributions.base._set import FiniteSet
 
 
 class Empirical(BaseDistribution):
@@ -480,6 +481,39 @@ class Empirical(BaseDistribution):
         """Quantile function = percent point function = inverse cdf."""
         ppf_val = self._apply_per_ix(_ppf_np, {"assume_sorted": True}, x=p)
         return ppf_val
+
+    def _support(self):
+        r"""Return the support of the empirical distribution.
+
+        The support is the set of unique sample values in ``spl``.
+        For a weighted empirical distribution, the support is the unique
+        weighted sample values.
+
+        Returns
+        -------
+        FiniteSet
+            ``FiniteSet`` with values being the unique empirical support points.
+        """
+        spl = self.spl
+
+        if self.ndim == 0:
+            # Scalar case: extract unique values from samples
+            spl_values = spl.values.flatten()
+            unique_values = np.unique(spl_values)
+            return FiniteSet(unique_values, index=self.index, columns=self.columns)
+
+        # Array case: build tabular mapping per cell to avoid global flattening
+        shape = (len(self.index), len(self.columns))
+        vals_arr = np.empty(shape, dtype=object)
+
+        for i, idx in enumerate(self.index):
+            for j, col in enumerate(self.columns):
+                sl = (slice(None),) + self._coerce_tuple(idx)
+                spl_col = spl.loc[sl, col].values
+                unique_col = np.unique(spl_col)
+                vals_arr[i, j] = list(unique_col)
+
+        return FiniteSet(vals_arr, index=self.index, columns=self.columns)
 
     def _pmf_support(self, lower, upper, max_points=100):
         """Get support points for empirical distribution.
