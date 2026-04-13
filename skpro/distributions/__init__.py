@@ -12,6 +12,7 @@ __all__ = [
     "Cauchy",
     "ChiSquared",
     "Delta",
+    "Discrete",
     "Empirical",
     "Erlang",
     "Exponential",
@@ -72,6 +73,7 @@ from skpro.distributions.burr_xii import BurrXII
 from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.compose import IID
 from skpro.distributions.delta import Delta
+from skpro.distributions.discrete import Discrete
 from skpro.distributions.empirical import Empirical
 from skpro.distributions.erlang import Erlang
 from skpro.distributions.exponential import Exponential
