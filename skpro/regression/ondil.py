@@ -23,7 +23,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
 
     Parameters
     ----------
-    distribution : str, default="Normal"
+    dist : str, default="Normal"
         Name of distribution to expose via skpro. This is used to map
         parameter names returned by the upstream estimator to skpro's
         distribution constructors. Common value is "Normal".
@@ -48,22 +48,47 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, distribution="Normal", ondil_init_params=None):
+    # TODO (release 2.14.0)
+    # remove the 'distribution' argument from '__init__' signature
+    # remove the following 'if' check and deprecation warning
+    # de-indent the following 'else' check
+
+    def __init__(
+        self, distribution="deprecated", dist="Normal", ondil_init_params=None
+    ):
         """Initialize OndilOnlineGamlss.
 
         Parameters
         ----------
-        distribution : str, default="Normal"
+        dist : str, default="Normal"
             Name of distribution to expose via skpro.
         ondil_init_params : dict, optional
             Parameters to forward to ondil's OnlineGamlss constructor.
         """
         self.distribution = distribution
+        self.dist = dist
         self.ondil_init_params = ondil_init_params
         # explicit dict of kwargs forwarded to the ondil constructor.
         self._ondil_kwargs = dict(ondil_init_params or {})
 
         super().__init__()
+
+        # handle deprecation of distribution -> dist
+        if distribution != "deprecated":
+            from warnings import warn
+
+            warn(
+                "in `OndilOnlineGamlss`, parameter 'distribution' "
+                "will be renamed to 'dist' in version 2.14.0. "
+                "To keep current behaviour and to silence this warning, "
+                "use 'dist' instead of 'distribution', "
+                "set dist explicitly via kwarg, and do not set distribution.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self._dist = distribution
+        else:
+            self._dist = dist
 
     def _fit(self, X, y):
         """Fit the underlying ondil OnlineGamlss estimator.
@@ -188,7 +213,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
                 raise TypeError("Unrecognized predict output from ondil: %s" % e)
 
         # decide mapping based on requested distribution
-        dist = self.distribution
+        dist = self._dist
         # import skpro distributions lazily
         distr_mod = importlib.import_module("skpro.distributions")
 
