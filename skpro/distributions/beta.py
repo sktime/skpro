@@ -4,6 +4,7 @@
 import numpy as np
 import pandas as pd
 from scipy.integrate import quad
+from scipy.special import betaln
 from scipy.stats import beta, rv_continuous
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
@@ -72,6 +73,34 @@ class Beta(_ScipyAdapter):
         beta = self._bc_params["beta"]
 
         return [], {"a": alpha, "b": beta}
+
+    def _log_pdf(self, x):
+        r"""Logarithm of the probability density function.
+
+        For Beta(alpha, beta), the log-pdf is:
+
+        .. math::
+            \log f(x) = (\alpha-1)\log x + (\beta-1)\log(1-x)
+                        - \log B(\alpha, \beta)
+
+        for :math:`0 < x < 1`, and :math:`-\infty` otherwise.
+
+        Uses ``scipy.special.betaln`` for numerical stability, avoiding
+        ``RuntimeWarning: divide by zero`` from the base class fallback
+        ``np.log(self.pdf(x))``.
+        """
+        alpha = self._bc_params["alpha"]
+        beta_param = self._bc_params["beta"]
+
+        in_support = (x > 0) & (x < 1)
+        # Compute log-pdf only where in support; use 0.5 as safe fallback value
+        x_safe = np.where(in_support, x, 0.5)
+        log_pdf_val = (
+            (alpha - 1) * np.log(x_safe)
+            + (beta_param - 1) * np.log(1 - x_safe)
+            - betaln(alpha, beta_param)
+        )
+        return np.where(in_support, log_pdf_val, -np.inf)
 
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
