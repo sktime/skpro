@@ -7,6 +7,8 @@ from math import ceil
 
 import numpy as np
 import pandas as pd
+from sklearn.utils import check_random_state
+
 
 from skpro.distributions.mixture import Mixture
 from skpro.regression.base import BaseProbaRegressor
@@ -98,6 +100,7 @@ class BaggingRegressor(BaseProbaRegressor):
         self.bootstrap = bootstrap
         self.bootstrap_features = bootstrap_features
         self.random_state = random_state
+        self._random_state = check_random_state(random_state)
 
         super().__init__()
 
@@ -129,8 +132,8 @@ class BaggingRegressor(BaseProbaRegressor):
         n_features = self.n_features
         bootstrap = self.bootstrap
         bootstrap_ft = self.bootstrap_features
-        random_state = self.random_state
-        np.random.seed(random_state)
+        # removed np.random.seed(random_state) mutation
+
 
         inst_ix = X.index
         col_ix = X.columns
@@ -154,14 +157,17 @@ class BaggingRegressor(BaseProbaRegressor):
             esti = estimator.clone()
             row_iloc = pd.RangeIndex(n)
             row_ss = _random_ss_ix(
-                row_iloc, size=n_samples_, replace=bootstrap, random_state=random_state
+                row_iloc,
+                size=n_samples_,
+                replace=bootstrap,
+                random_state=self._random_state,
             )
             inst_ix_i = inst_ix[row_ss]
             col_ix_i = _random_ss_ix(
                 col_ix,
                 size=n_features_,
                 replace=bootstrap_ft,
-                random_state=random_state,
+                random_state=self._random_state,
             )
 
             # store column subset for use in predict

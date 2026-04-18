@@ -160,7 +160,6 @@ class EnbpiRegressor(BaseProbaRegressor):
         """
         estimator = self.estimator
         n_bootstrap_samples = self.n_bootstrap_samples
-        np.random.seed(self.random_state)
 
         inst_ix = X.index
         n = len(inst_ix)
