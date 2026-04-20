@@ -1023,6 +1023,51 @@ class BaseDistribution(BaseObject):
         spl = sply <= splx
         return self._sample_mean(spl)
 
+    def log_cdf(self, x):
+        r"""Logarithmic cumulative distribution function.
+
+        Numerically more stable than calling cdf and then taking logarithms,
+        in particular for tail probabilities close to zero.
+
+        Let :math:`X` be a random variables with the distribution of ``self``,
+        taking values in `(N, n)` ``DataFrame``-s
+        Let :math:`x\in \mathbb{R}^{N\times n}`.
+        By :math:`F_{X_{ij}}`, denote the marginal cdf of :math:`X` at the
+        :math:`(i,j)`-th entry.
+
+        The output of this method, for input ``x`` representing :math:`x`,
+        is a ``DataFrame`` with same columns and indices as ``self``,
+        and entries :math:`\log F_{X_{ij}}(x_{ij})`.
+
+        Parameters
+        ----------
+        x : ``pandas.DataFrame`` or 2D ``np.ndarray``
+            representing :math:`x`, as above
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same columns and index as ``self``
+            containing :math:`\log F_{X_{ij}}(x_{ij})`, as above
+        """
+        return self._boilerplate("_log_cdf", x=x)
+
+    def _log_cdf(self, x):
+        """Logarithmic cumulative distribution function.
+
+        Private method, to be implemented by subclasses.
+        """
+        approx_method = (
+            "by taking the logarithm of the output returned by the cdf method, "
+            "this may be numerically unstable for tail probabilities close to zero"
+        )
+        warn(self._method_error_msg("log_cdf", fill_in=approx_method))
+
+        x = self._coerce_to_self_index_df(x, flatten=False)
+        res = self.cdf(x=x)
+        if isinstance(res, pd.DataFrame):
+            res = res.values
+        return np.log(res)
+
     def surv(self, x):
         r"""Survival function.
 
