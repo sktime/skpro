@@ -37,7 +37,7 @@ class BaseDistribution(BaseObject):
         "approx_spl": 1000,  # sample size used in other MC estimates
         "bisect_iter": 1000,  # max iters for bisection method in ppf
         # which methods are approximate (not numerically exact) should be listed here
-        "capabilities:approx": ["energy", "mean", "var", "pdfnorm"],
+        "capabilities:approx": ["energy", "mean", "var", "pdfnorm", "truncated_mean"],
         # broadcasting and parameter settings
         # -----------------------------------
         # used to control broadcasting of parameters
@@ -1244,7 +1244,48 @@ class BaseDistribution(BaseObject):
         -------
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
+
+        Notes
+        -----
+        Uses an analytical shortcut when both ``"truncated_mean"`` and
+        ``"cdf"`` appear in the subclass's ``capabilities:exact`` tag.
+        In that case, the energy is computed via:
+
+        .. math::
+
+            \mathbb{E}[|X - c|]
+            = (\mathbb{E}[X \mid X > c] - c)(1 - F(c))
+            + (c - \mathbb{E}[X \mid X < c]) F(c)
+
+        When either capability is missing, falls back to Monte Carlo
+        via ``_energy_default``.
         """
+        exact_capas = self.get_tag("capabilities:exact", [])
+        has_exact_trunc = "truncated_mean" in exact_capas
+        has_exact_cdf = "cdf" in exact_capas
+
+        if has_exact_trunc and has_exact_cdf:
+            cdf_x = self._cdf(x)
+            x_float = np.asarray(x, dtype=float)
+            inf_arr = np.full_like(x_float, np.inf)
+            neg_inf_arr = np.full_like(x_float, -np.inf)
+
+            right_mean = self._truncated_mean(x_float, inf_arr)
+            left_mean = self._truncated_mean(neg_inf_arr, x_float)
+
+            right_mass = 1 - cdf_x
+            left_mass = cdf_x
+            zero_right = right_mass < 1e-15
+            zero_left = left_mass < 1e-15
+
+            right_term = np.where(zero_right, 0.0, (right_mean - x_float) * right_mass)
+            left_term = np.where(zero_left, 0.0, (x_float - left_mean) * left_mass)
+            energy_arr = right_term + left_term
+
+            if energy_arr.ndim > 0:
+                energy_arr = np.sum(energy_arr, axis=1)
+            return energy_arr
+
         return self._energy_default(x)
 
     def _energy_default(self, x=None):
@@ -1396,6 +1437,93 @@ class BaseDistribution(BaseObject):
 
         spl = self.sample(approx_spl_size)
         return self._sample_mean(spl)
+
+    def truncated_mean(self, lower=None, upper=None):
+        r"""Return expected value of the distribution truncated to [lower, upper].
+
+        Let :math:`X` be a random variable with the distribution of ``self``.
+        Returns :math:`\mathbb{E}[X \mid \text{lower} < X < \text{upper}]`.
+
+        If ``lower`` is None, it is treated as :math:`-\infty`.
+        If ``upper`` is None, it is treated as :math:`+\infty`.
+        If both are None, this is equivalent to ``mean()``.
+
+        Parameters
+        ----------
+        lower : float or array-like or None, optional, default=None
+            lower truncation bound
+        upper : float or array-like or None, optional, default=None
+            upper truncation bound
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same rows, columns as ``self``
+            truncated expected value of distribution (entry-wise)
+        """
+        if lower is None and upper is None:
+            return self.mean()
+        if lower is None:
+            lower = -np.inf
+        if upper is None:
+            upper = np.inf
+        return self._boilerplate("_truncated_mean", lower=lower, upper=upper)
+
+    def _truncated_mean(self, lower, upper):
+        r"""Return expected value of the distribution truncated to [lower, upper].
+
+        Private method, to be implemented by subclasses.
+
+        Parameters
+        ----------
+        lower : 2D np.ndarray, same shape as ``self``
+            lower truncation bound (entry-wise)
+        upper : 2D np.ndarray, same shape as ``self``
+            upper truncation bound (entry-wise)
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            truncated expected value of distribution (entry-wise)
+        """
+        approx_spl_size = self.get_tag("approx_spl")
+
+        if self._has_implementation_of("_cdf") and self._has_implementation_of("_ppf"):
+            approx_method = (
+                "by approximating the truncated mean via ppf integration "
+                f"over the truncated CDF region, with {approx_spl_size} nodes"
+            )
+            warn(self._method_error_msg("truncated_mean", fill_in=approx_method))
+
+            cdf_l = self._cdf(lower)
+            cdf_u = self._cdf(upper)
+
+            ps = np.linspace(0, 1, approx_spl_size + 2)[1:-1]
+            qs = [self._ppf(cdf_l + p * (cdf_u - cdf_l)) for p in ps]
+            np3D = np.array(qs)
+            result = np.mean(np3D, axis=0)
+
+            zero_mass = np.abs(cdf_u - cdf_l) < 1e-15
+            if np.any(zero_mass):
+                result = np.where(zero_mass, np.nan, result)
+
+            return result
+
+        approx_method = (
+            "by approximating the truncated mean by the arithmetic mean of "
+            f"{approx_spl_size} samples filtered to the truncation bounds"
+        )
+        warn(self._method_error_msg("truncated_mean", fill_in=approx_method))
+
+        spl = self.sample(approx_spl_size)
+        spl_arr = spl.values if hasattr(spl, "values") else np.asarray(spl)
+        spl_arr = spl_arr.reshape(approx_spl_size, *lower.shape)
+
+        mask = (spl_arr >= lower) & (spl_arr <= upper)
+        masked = np.where(mask, spl_arr, np.nan)
+        with np.errstate(all="ignore"):
+            result = np.nanmean(masked, axis=0)
+
+        return result
 
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
