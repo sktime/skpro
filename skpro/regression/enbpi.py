@@ -6,11 +6,11 @@ __all__ = ["EnbpiRegressor"]
 import numpy as np
 import pandas as pd
 from sklearn import clone
-from sklearn.utils import check_random_state
 
 from skpro.distributions.empirical import Empirical
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.numpy import flatten_to_1D_if_colvector
+from skpro.utils.random_state import check_random_state
 from skpro.utils.sampling import _random_ss_ix
 from skpro.utils.sklearn import prep_skl_df
 
@@ -160,7 +160,6 @@ class EnbpiRegressor(BaseProbaRegressor):
         """
         estimator = self.estimator
         n_bootstrap_samples = self.n_bootstrap_samples
-        np.random.seed(self.random_state)
 
         inst_ix = X.index
         n = len(inst_ix)
