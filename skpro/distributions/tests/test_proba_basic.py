@@ -112,8 +112,13 @@ def test_proba_index_coercion():
 @pytest.mark.parametrize("fun", ["pdf", "ppf", "cdf"])
 def test_proba_plotting(fun):
     """Test that plotting functions do not crash and return ax as expected."""
+    import matplotlib
+
+    matplotlib.use("Agg", force=True)
+
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
+    from matplotlib.pyplot import close
 
     from skpro.distributions.normal import Normal
 
@@ -125,6 +130,7 @@ def test_proba_plotting(fun):
     assert ax.shape == n.shape
     assert all([isinstance(a, Axes) for a in ax.flatten()])
     assert all([a.get_figure() == fig for a in ax.flatten()])
+    close(fig)
 
     # 1D case requires special treatment of axes
     n = Normal(mu=[[1], [2], [3]], sigma=1)
@@ -134,11 +140,13 @@ def test_proba_plotting(fun):
     assert ax.shape == (n.shape[0],)
     assert all([isinstance(a, Axes) for a in ax.flatten()])
     assert all([a.get_figure() == fig for a in ax.flatten()])
+    close(fig)
 
     # scalar case
     n = Normal(mu=1, sigma=1)
     ax = n.plot(fun=fun)
     assert isinstance(ax, Axes)
+    close(ax.figure)
 
 
 @pytest.mark.skip(reason="Undiagnosed failure. Skipping until resolved. See #918.")
