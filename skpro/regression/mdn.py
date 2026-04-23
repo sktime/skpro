@@ -4,12 +4,11 @@
 __author__ = ["joshdunnlime"]
 
 import numpy as np
-from sklearn.utils import check_random_state
-
 
 from skpro.distributions.normal_mixture import NormalMixture
 from skpro.regression._bandwidth import bw_isj_1d, bw_silverman_1d
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.random_state import check_random_state
 
 
 def _noise_scale_method_factor(n_samples, total_dim, method="silverman"):
@@ -245,7 +244,6 @@ class MDNRegressor(BaseProbaRegressor):
         self.random_state = random_state
         self._random_state = check_random_state(random_state)
 
-
         super().__init__()
 
     def _noise_scale(self, n_samples, total_dim, X=None, y=None):
@@ -443,7 +441,6 @@ class MDNRegressor(BaseProbaRegressor):
         if self.random_state is not None:
             torch.manual_seed(self.random_state)
             # removed np.random.seed(self.random_state) mutation
-
 
         input_noise_std = float(self.input_noise_std)
         target_noise_std = float(self.target_noise_std)

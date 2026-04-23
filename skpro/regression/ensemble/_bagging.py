@@ -7,11 +7,10 @@ from math import ceil
 
 import numpy as np
 import pandas as pd
-from sklearn.utils import check_random_state
-
 
 from skpro.distributions.mixture import Mixture
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.random_state import check_random_state
 from skpro.utils.sampling import _random_ss_ix
 
 
@@ -133,7 +132,6 @@ class BaggingRegressor(BaseProbaRegressor):
         bootstrap = self.bootstrap
         bootstrap_ft = self.bootstrap_features
         # removed np.random.seed(random_state) mutation
-
 
         inst_ix = X.index
         col_ix = X.columns
