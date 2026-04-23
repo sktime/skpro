@@ -52,6 +52,13 @@ class Normal(BaseDistribution):
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
+
+        if mu is None or sigma is None:
+           raise ValueError("mu and sigma must not be None")
+        if np.any(np.asarray(sigma) <= 0):
+           raise ValueError("sigma must be positive")
+    
+
         self.mu = mu
         self.sigma = sigma
 
