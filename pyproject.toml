@@ -1,12 +1,10 @@
 [project]
 name = "skpro"
-version = "2.11.0"
+version = "2.12.0"
 description = "A unified framework for tabular probabilistic regression, time-to-event prediction, and probability distributions in python"
 authors = [
     {name = "skpro developers", email = "info@sktime.net"},
     {name = "Franz Király"},
-    {name = "Frithjof Gressmann"},
-    {name = "Vitaly Davydov"},
 ]
 maintainers = [
     {name = "skpro developers", email = "info@sktime.net"},
@@ -42,7 +40,7 @@ dependencies = [
     "numpy>=1.21.0,<2.5",
     "pandas>=1.1.0,<3.1.0",
     "packaging",
-    "scikit-base>=0.6.1,<0.14.0",
+    "scikit-base>=0.6.1,<1.1.0",
     "scikit-learn>=0.24.0,<1.8.0",
     "scipy<2.0.0,>=1.2.0",
 ]
@@ -51,9 +49,7 @@ dependencies = [
 all_extras = [
     "distfit; python_version < '3.13'",
     "lifelines<0.31.0; python_version < '3.13'",
-    "mapie; python_version < '3.13'",
     "matplotlib>=3.3.2",
-    "ngboost<0.6.0; python_version < '3.13'",
     "polars<1.37.0",
     "pymc; python_version < '3.13'",
     "statsmodels>=0.12.1",
@@ -103,10 +99,10 @@ dependencies_2024 = [
 [project.urls]
 Homepage = "https://github.com/sktime/skpro"
 Repository = "https://github.com/sktime/skpro"
-Documentation = "https://github.com/sktime/skpro"
+Documentation = "https://skpro.readthedocs.io/en/latest/"
 Download = "https://pypi.org/project/skpro/#files"
-"API Reference" = "https://github.com/sktime/skpro"
-"Release Notes" = "https://github.com/sktime/skpro"
+"API Reference" = "https://skpro.readthedocs.io/en/latest/api_reference.html"
+"Release Notes" = "https://skpro.readthedocs.io/en/latest/changelog.html"
 
 [project.license]
 file = "LICENSE"

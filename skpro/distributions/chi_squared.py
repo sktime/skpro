@@ -54,7 +54,7 @@ class ChiSquared(BaseDistribution):
     Here, :math:`k=dof`
     :math:`x <= 0, \operatorname{energy}(x) = k + \vert x \vert`
     :math:`x > 0, \operatorname{energy}(x) =
-    x*(2*\operatorname{CDF}(k,x)-1)+k-2k*\operatorname{CDF}(k+1,x)`
+    x*(2*\operatorname{CDF}(k,x)-1)+k-2k*\operatorname{CDF}(k+2,x)`
     where :math:`\operatorname{CDF}(k,x)` represents the CDF of x
     for a chi-square distribution with k degrees of freedom.
     """
@@ -173,7 +173,7 @@ class ChiSquared(BaseDistribution):
 
         Closed form implementation based on the formula:
         For x <= 0: energy(x) = k + |x|
-        For x > 0: energy(x) = x*(2*CDF(k,x)-1) + k - 2*k*CDF(k+1,x)
+        For x > 0: energy(x) = x*(2*CDF(k,x)-1) + k - 2*k*CDF(k+2,x)
         where k = degrees of freedom.
         """
         dof = self._bc_params["dof"]
@@ -183,8 +183,8 @@ class ChiSquared(BaseDistribution):
                 return k + abs(xi)
             else:
                 cdf_k = chi2.cdf(xi, k)
-                cdf_k1 = chi2.cdf(xi, k + 1)
-                return xi * (2 * cdf_k - 1) + k - 2 * k * cdf_k1
+                cdf_k2 = chi2.cdf(xi, k + 2)
+                return xi * (2 * cdf_k - 1) + k - 2 * k * cdf_k2
 
         vec_energy = np.vectorize(energy_cell)
         energy_arr = vec_energy(dof, x)

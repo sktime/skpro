@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 
 from skpro.distributions import Normal
 from skpro.regression.residual import ResidualDouble
+from skpro.metrics import SquaredDistrLoss
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
 X_DIAB, y_DIAB = load_diabetes(return_X_y=True, as_frame=True)
