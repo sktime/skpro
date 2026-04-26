@@ -125,7 +125,10 @@ class MDNRegressor(BaseProbaRegressor):
         Number of training epochs.
 
     lr : float, optional, default=0.01
-        Learning rate for the optimiser.
+        Learning rate for the optimiser. When using ``loss="ngem"``, you may need
+        to reduce this value (e.g., to 0.005 instead of 0.01) as the natural gradient
+        preconditioning changes the effective gradient scale. This should also be
+        taken into account in grid or random hyperparameter searches.
 
     weight_decay : float, optional, default=0.0
         L2 regularisation coefficient (weight decay) for the optimiser.
@@ -150,10 +153,6 @@ class MDNRegressor(BaseProbaRegressor):
 
         * ``"nll"``: standard negative log-likelihood objective
         * ``"ngem"``: natural-gradient EM surrogate objective
-
-    ngem_lr_scale : float, optional, default=0.5
-        Learning-rate multiplier applied only when ``loss="ngem"``.
-        Useful because nGEM preconditioning changes effective gradient scale.
 
     ngem_grad_clip_norm : float or None, optional, default=1.0
         Global gradient clipping norm applied only when ``loss="ngem"``.
@@ -236,7 +235,6 @@ class MDNRegressor(BaseProbaRegressor):
         optimizer="ADAM",
         optimizer_kwargs=None,
         loss="nll",
-        ngem_lr_scale=0.5,
         ngem_grad_clip_norm=1.0,
         input_noise_std=0.0,
         target_noise_std=0.0,
@@ -254,7 +252,6 @@ class MDNRegressor(BaseProbaRegressor):
         self.optimizer = optimizer
         self.optimizer_kwargs = optimizer_kwargs
         self.loss = loss
-        self.ngem_lr_scale = ngem_lr_scale
         self.ngem_grad_clip_norm = ngem_grad_clip_norm
         self.input_noise_std = input_noise_std
         self.target_noise_std = target_noise_std
@@ -296,26 +293,18 @@ class MDNRegressor(BaseProbaRegressor):
 
     def _resolve_training_hparams(self, loss_name):
         """Resolve effective optimizer hparams for selected loss."""
-        base_lr = float(self.lr)
+        lr = float(self.lr)
 
-        if base_lr <= 0:
+        if lr <= 0:
             raise ValueError(f"lr must be positive, but found {self.lr}")
 
         if loss_name != "ngem":
-            return base_lr, None
+            return lr, None
 
-        ngem_lr_scale = float(self.ngem_lr_scale)
-        if ngem_lr_scale <= 0:
-            raise ValueError(
-                "ngem_lr_scale must be positive when loss='ngem', "
-                f"but found {self.ngem_lr_scale}"
-            )
-
-        effective_lr = base_lr * ngem_lr_scale
         clip_norm = self.ngem_grad_clip_norm
 
         if clip_norm is None:
-            return effective_lr, None
+            return lr, None
 
         clip_norm = float(clip_norm)
 
@@ -325,7 +314,7 @@ class MDNRegressor(BaseProbaRegressor):
                 f"but found {self.ngem_grad_clip_norm}"
             )
 
-        return effective_lr, clip_norm
+        return lr, clip_norm
 
     def _resolve_device(self):
         """Resolve the device to use for PyTorch tensors.
@@ -529,7 +518,7 @@ class MDNRegressor(BaseProbaRegressor):
         )
 
         loss_name = self._resolve_loss_name()
-        effective_lr, ngem_grad_clip_norm = self._resolve_training_hparams(loss_name)
+        lr, ngem_grad_clip_norm = self._resolve_training_hparams(loss_name)
         input_noise_std *= noise_scale
         target_noise_std *= noise_scale
 
@@ -563,7 +552,7 @@ class MDNRegressor(BaseProbaRegressor):
 
         optimiser = optimizer_cls(
             model.parameters(),
-            lr=effective_lr,
+            lr=lr,
             weight_decay=self.weight_decay,
             **optimizer_kwargs,
         )
@@ -764,7 +753,7 @@ class MDNRegressor(BaseProbaRegressor):
             "epochs": 5,
             "optimizer": "ADAM",
             "loss": "ngem",
-            "ngem_lr_scale": 0.5,
+            "lr": 0.005,  # reduced lr for ngem due to natural gradient preconditioning
             "ngem_grad_clip_norm": 1.0,
             "random_state": 42,
         }
