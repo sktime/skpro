@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Empirical distribution."""
 
-__author__ = ["fkiraly"]
-
 import numpy as np
 import pandas as pd
 
@@ -39,6 +37,14 @@ class Empirical(BaseDistribution):
     time_indep : bool, optional, default=True
         if True, ``sample`` will sample individual instance indices independently
         if False, ``sample`` will sample entire instances from ``spl``
+    row_indep : bool, optional, default=True
+        if True, rows are sampled independently when ``spl`` has multiple
+        instance-index levels; if False, sampled support points are shared
+        across rows within each time block
+    skip_init_sorted : bool, optional, default=False
+        if True, skips sorting of empirical samples on init and instead builds
+        sorted caches lazily when cdf/ppf/energy are first called.
+        Performance flag only, does not change statistical behavior.
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -65,24 +71,44 @@ class Empirical(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly", "marrov"],
+        # estimator tags
+        # --------------
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "energy", "cdf", "ppf"],
         "distr:measuretype": "discrete",
         "distr:paramtype": "nonparametric",
     }
 
-    def __init__(self, spl, weights=None, time_indep=True, row_indep=True, index=None, columns=None):
+    def __init__(
+        self,
+        spl,
+        weights=None,
+        time_indep=True,
+        row_indep=True,
+        skip_init_sorted=False,
+        index=None,
+        columns=None,
+    ):
         self.spl = spl
         self.weights = weights
         self.time_indep = time_indep
         self.row_indep = row_indep
+        self.skip_init_sorted = skip_init_sorted
 
         index, columns = self._init_index(index, columns)
 
         super().__init__(index=index, columns=columns)
 
+        self._sorted_initialized = False
+        self._spl_array = None
+        self._weights_array = None
+
         # initialized sorted samples
-        self._init_sorted()
+        if not skip_init_sorted:
+            self._init_sorted()
 
     def _init_index(self, index, columns):
         """Initialize index and columns.
@@ -134,6 +160,7 @@ class Empirical(BaseDistribution):
                 weights_sorted = np.ones_like(spl)
             self._sorted = spl_sorted
             self._weights = weights_sorted
+            self._sorted_initialized = True
             return None
 
         times = self._instances
@@ -160,14 +187,53 @@ class Empirical(BaseDistribution):
 
         self._sorted = sorted
         self._weights = weights
+        self._sorted_initialized = True
+
+    def _ensure_sorted(self):
+        """Ensure sorted samples are initialized."""
+        if not getattr(self, "_sorted_initialized", False):
+            self._init_sorted()
 
     def _coerce_tuple(self, x):
         if not isinstance(x, tuple):
             x = (x,)
         return x
 
+    def _get_spl_array(self):
+        """Return cached sample array of shape (n_samples, n_instances, n_cols)."""
+        if self.ndim == 0:
+            return None
+        if self._spl_array is not None:
+            return self._spl_array
+
+        spl_values = []
+        for spl_ix in self._spl_indices:
+            spl_i = self.spl.loc[spl_ix]
+            spl_i = spl_i.loc[self.index]
+            spl_values.append(spl_i.to_numpy())
+
+        self._spl_array = np.stack(spl_values, axis=0)
+        return self._spl_array
+
+    def _get_weights_array(self):
+        """Return cached weights array of shape (n_samples, n_instances)."""
+        if self.weights is None or self.ndim == 0:
+            return None
+        if self._weights_array is not None:
+            return self._weights_array
+
+        weights_values = []
+        for spl_ix in self._spl_indices:
+            weights_i = self.weights.loc[spl_ix]
+            weights_i = weights_i.loc[self.index]
+            weights_values.append(np.asarray(weights_i))
+
+        self._weights_array = np.stack(weights_values, axis=0)
+        return self._weights_array
+
     def _apply_per_ix(self, func, params, x=None):
         """Apply function per index."""
+        self._ensure_sorted()
         sorted = self._sorted
         weights = self._weights
 
@@ -270,6 +336,7 @@ class Empirical(BaseDistribution):
             row_indep=self.row_indep,
             index=subs_rowidx,
             columns=subs_colidx,
+            skip_init_sorted=self.skip_init_sorted,
         )
 
     def _loc(self, rowidx=None, colidx=None):
@@ -302,10 +369,11 @@ class Empirical(BaseDistribution):
             wts_subset = None
 
         subset_params = {
-            "spl": spl_subset, 
+            "spl": spl_subset,
             "weights": wts_subset,
             "time_indep": self.time_indep,
             "row_indep": self.row_indep,
+            "skip_init_sorted": self.skip_init_sorted,
         }
         return type(self)(**subset_params)
 
@@ -422,6 +490,36 @@ class Empirical(BaseDistribution):
         ppf_val = self._apply_per_ix(_ppf_np, {"assume_sorted": True}, x=p)
         return ppf_val
 
+    def _pmf_support(self, lower, upper, max_points=100):
+        """Get support points for empirical distribution.
+
+        Parameters
+        ----------
+        lower : float
+            Lower bound for support points
+        upper : float
+            Upper bound for support points
+        max_points : int, optional, default=100
+            Maximum number of support points to return
+
+        Returns
+        -------
+        np.ndarray
+            Array of support points within [lower, upper]
+        """
+        if self.ndim > 0:
+            raise NotImplementedError(
+                "_pmf_support only applies to scalar (0-dimensional) distributions."
+            )
+
+        self._ensure_sorted()
+
+        support_points = self._sorted
+        mask = (support_points >= lower) & (support_points <= upper)
+        filtered_points = support_points[mask]
+        unique_points = np.unique(filtered_points)
+        return unique_points[:max_points]
+
     def sample(self, n_samples=None):
         """Sample from the distribution.
 
@@ -445,67 +543,96 @@ class Empirical(BaseDistribution):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
-        # for now, always defaulting to the standard logic
-        # todo: address issue #283
+        if n_samples is None:
+            n_samples = 1
+            n_samples_was_none = True
+        else:
+            n_samples_was_none = False
+
+        rng = np.random.default_rng()
+
+        # scalar case
         if self.ndim == 0:
-            return super().sample(n_samples=n_samples)
+            spl_vals = self.spl.values.flatten()
+            if self.weights is not None:
+                weights = np.nan_to_num(self.weights.values.flatten(), nan=0.0)
+                w_sum = np.sum(weights)
+                if w_sum == 0:
+                    weights = None
+                else:
+                    weights = weights / w_sum
+            else:
+                weights = None
+            draws = rng.choice(spl_vals, size=n_samples, replace=True, p=weights)
+            if n_samples_was_none:
+                return draws[0]
+            return pd.DataFrame(draws)
 
+        spl_values = self._get_spl_array()
+        n_spl, n_instances, n_cols = spl_values.shape
+        sample_indices = np.zeros((n_samples, n_instances), dtype=int)
+        weights_arr = self._get_weights_array()
 
-        sample_ids = list(self._spl_indices)
-
-        sample_tables = {
-            sample: self.spl.xs(sample, level=0).reindex(self.index)
-            for sample in sample_ids
-        }
-
-        weights_matrix = None
-        if self.weights is not None:
-            weights_matrix = (
-                self.weights.unstack(level=0, fill_value=0)
-                .reindex(self.index)
-                .fillna(0.0)
+        group_positions = self._get_group_positions()
+        for positions in group_positions:
+            p = self._get_group_sample_probs(positions, weights_arr)
+            sampled_group = self._sample_group_indices(
+                rng=rng, n_spl=n_spl, n_samples=n_samples, p=p
             )
-            weights_matrix = weights_matrix[sample_ids]
+            sample_indices[:, positions] = sampled_group[:, np.newaxis]
 
+        instance_indices = np.arange(n_instances)[np.newaxis, :].repeat(
+            n_samples, axis=0
+        )
+        samples = spl_values[sample_indices, instance_indices, :]
+
+        if n_samples_was_none:
+            return pd.DataFrame(samples[0], index=self.index, columns=self.columns)
+
+        if isinstance(self.index, pd.MultiIndex):
+            frames = [
+                pd.DataFrame(samples[i], index=self.index, columns=self.columns)
+                for i in range(n_samples)
+            ]
+            return pd.concat(frames, keys=range(n_samples))
+
+        sample_idx = np.repeat(np.arange(n_samples), n_instances)
+        inst_idx = np.tile(self.index, n_samples)
+        multi_idx = pd.MultiIndex.from_arrays([sample_idx, inst_idx])
+        return pd.DataFrame(
+            samples.reshape(-1, n_cols), index=multi_idx, columns=self.columns
+        )
+
+    def _sample(self, n_samples=None):
+        """Private sampling implementation, delegates to ``sample``."""
+        return self.sample(n_samples=n_samples)
+
+    def _get_group_positions(self):
+        """Return instance-index positions that should share sampled support."""
         inst_df = self._make_index_frame()
         group_cols = self._group_columns(inst_df)
+
         if group_cols:
             grouped = inst_df.groupby(group_cols, sort=False, dropna=False)
-            group_positions = [np.array(g.index, dtype=int) for _, g in grouped]
-        else:
-            group_positions = [np.arange(len(inst_df), dtype=int)]
+            return [np.asarray(group.index, dtype=int) for _, group in grouped]
 
-        group_probs = [
-            self._group_probabilities(positions, weights_matrix) for positions in group_positions
-        ]
-
-        def draw_one():
-            draw_df = sample_tables[sample_ids[0]].copy().astype(float)
-            draw_df.iloc[:, :] = np.nan
-            for positions, probs in zip(group_positions, group_probs):
-                sample = self._choose_sample(sample_ids, probs)
-                draw_df.iloc[positions] = sample_tables[sample].iloc[positions].values
-            return draw_df
-
-        if n_samples is None:
-            return draw_one()
-
-        draws = [draw_one() for _ in range(n_samples)]
-        return pd.concat(draws, axis=0, keys=range(n_samples))
+        return [np.arange(len(inst_df), dtype=int)]
 
     def _make_index_frame(self):
-        """Return DataFrame describing the instance index."""
+        """Return a DataFrame view of the instance index."""
         if isinstance(self.index, pd.MultiIndex):
             inst_df = self.index.to_frame(index=False)
         else:
             inst_df = pd.DataFrame({self.index.name or "instance": self.index})
+
         inst_df.columns = [
-            col if col is not None else f"level_{i}" for i, col in enumerate(inst_df.columns)
+            col if col is not None else f"level_{i}"
+            for i, col in enumerate(inst_df.columns)
         ]
         return inst_df
 
     def _group_columns(self, inst_df):
-        """Determine grouping columns based on independence flags."""
+        """Determine which index columns define independent sampling blocks."""
         cols = list(inst_df.columns)
 
         if len(cols) == 1:
@@ -518,37 +645,39 @@ class Empirical(BaseDistribution):
         group_cols = []
         if row_cols and self.row_indep:
             group_cols.extend(row_cols)
-
         if time_col is not None and self.time_indep:
             group_cols.append(time_col)
 
         seen = set()
-        ordered = []
+        ordered_cols = []
         for col in group_cols:
             if col not in seen:
-                ordered.append(col)
+                ordered_cols.append(col)
                 seen.add(col)
-        return ordered
 
-    def _group_probabilities(self, positions, weights_matrix):
-        """Compute sampling probabilities for a set of index positions."""
-        if weights_matrix is None:
-            return None
-        pos = np.atleast_1d(positions)
-        block = weights_matrix.iloc[pos]
-        if block.ndim == 1:
-            block = block.to_frame().T
-        sums = block.to_numpy(dtype=float).sum(axis=0)
-        total = sums.sum()
-        if total <= 0:
-            return None
-        return sums / total
+        return ordered_cols
 
-    def _choose_sample(self, sample_ids, probs):
-        """Choose a support sample according to probabilities."""
-        if probs is None:
-            return np.random.choice(sample_ids)
-        return np.random.choice(sample_ids, p=probs)
+    def _get_group_sample_probs(self, positions, weights_arr):
+        """Return normalized support weights for one sampling block."""
+        if weights_arr is None:
+            return None
+
+        group_weights = np.nan_to_num(weights_arr[:, positions], nan=0.0)
+        if group_weights.ndim == 1:
+            group_weights = group_weights[:, np.newaxis]
+
+        support_weights = group_weights.sum(axis=1)
+        weight_sum = support_weights.sum()
+        if weight_sum == 0:
+            return None
+
+        return support_weights / weight_sum
+
+    def _sample_group_indices(self, rng, n_spl, n_samples, p):
+        """Sample support indices for one block shared across positions."""
+        if p is None:
+            return rng.integers(0, n_spl, size=n_samples)
+        return rng.choice(n_spl, size=n_samples, replace=True, p=p)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -567,6 +696,7 @@ class Empirical(BaseDistribution):
             "weights": None,
             "time_indep": True,
             "row_indep": True,
+            "skip_init_sorted": False,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }
@@ -577,6 +707,7 @@ class Empirical(BaseDistribution):
             "weights": pd.Series([0.5, 0.5, 0.5, 1, 1, 1.1], index=spl_idx),
             "time_indep": False,
             "row_indep": False,
+            "skip_init_sorted": True,
             "index": pd.RangeIndex(3),
             "columns": pd.Index(["a", "b"]),
         }

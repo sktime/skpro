@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Empirical quantile parametrized distribution."""
 
-__author__ = ["fkiraly"]
-
 import numpy as np
 import pandas as pd
 
@@ -54,6 +52,10 @@ class QPD_Empirical(Empirical):
     time_indep : bool, optional, default=True
         if True, ``sample`` will sample individual instance indices independently
         if False, ``sample`` will sample entire instances from ``spl``
+    row_indep : bool, optional, default=True
+        if True, rows are sampled independently when ``quantiles`` has multiple
+        instance-index levels; if False, sampled support points are shared
+        across rows within each time block
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
@@ -75,12 +77,19 @@ class QPD_Empirical(Empirical):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly"],
+        # estimator tags
+        # --------------
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "energy", "cdf", "ppf"],
         "distr:measuretype": "discrete",
     }
 
-    def __init__(self, quantiles, time_indep=True, row_indep=True, index=None, columns=None):
+    def __init__(
+        self, quantiles, time_indep=True, row_indep=True, index=None, columns=None
+    ):
         self.quantiles = quantiles
         self.time_indep = time_indep
         self.row_indep = row_indep
