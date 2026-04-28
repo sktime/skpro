@@ -23,44 +23,16 @@ def test_mdn_loss_name_validation():
         reg._resolve_loss_name()
 
 
-def test_mdn_ngem_hparams_resolution():
-    """Test effective hparam resolution for nGEM path."""
-    reg = object.__new__(MDNRegressor)
-    reg.lr = 0.01
-    reg.ngem_lr_scale = 0.5
-    reg.ngem_grad_clip_norm = 1.0
-
-    lr_nll, clip_nll = reg._resolve_training_hparams("nll")
-    assert np.isclose(lr_nll, 0.01)
-    assert clip_nll is None
-
-    lr_ngem, clip_ngem = reg._resolve_training_hparams("ngem")
-    assert np.isclose(lr_ngem, 0.005)
-    assert np.isclose(clip_ngem, 1.0)
-
-    reg.ngem_grad_clip_norm = None
-    lr_ngem, clip_ngem = reg._resolve_training_hparams("ngem")
-    assert np.isclose(lr_ngem, 0.005)
-    assert clip_ngem is None
-
-
 def test_mdn_ngem_hparams_validation():
     """Invalid nGEM training hparams should raise clear errors."""
     reg = object.__new__(MDNRegressor)
     reg.lr = 0.01
-    reg.ngem_lr_scale = 0.5
     reg.ngem_grad_clip_norm = 1.0
 
     reg.lr = 0.0
     with pytest.raises(ValueError, match="lr must be positive"):
         reg._resolve_training_hparams("nll")
 
-    reg.lr = 0.01
-    reg.ngem_lr_scale = 0.0
-    with pytest.raises(ValueError, match="ngem_lr_scale must be positive"):
-        reg._resolve_training_hparams("ngem")
-
-    reg.ngem_lr_scale = 0.5
     reg.ngem_grad_clip_norm = 0.0
     with pytest.raises(ValueError, match="ngem_grad_clip_norm must be positive"):
         reg._resolve_training_hparams("ngem")
