@@ -491,7 +491,8 @@ class GridSearchCV(BaseGridSearch):
             "scoring": PinballLoss(),
             "error_score": "raise",
         }
-        params = [param1, param2, params3]
+        param_no_backend = {**param1, "backend": "None"}
+        params = [param1, param2, params3, param_no_backend]
 
         return params
 
@@ -737,6 +738,7 @@ class RandomizedSearchCV(BaseGridSearch):
             "scoring": PinballLoss(),
             "error_score": "raise",
         }
-        params = [param1, param2, params3]
+        param_no_backend = {**param1, "backend": "None"}
+        params = [param1, param2, params3, param_no_backend]
 
         return params
