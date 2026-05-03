@@ -264,6 +264,12 @@
         "bug",
         "doc"
       ]
+    },
+    {
+      "login": "paramsureliya",
+      "name": "Param Sureliya",
+      "profile": "https://github.com/paramsureliya",
+      "contributions": ["code"]
     }
   ]
 }
