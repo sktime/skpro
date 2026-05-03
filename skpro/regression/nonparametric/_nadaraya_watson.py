@@ -7,6 +7,7 @@ __all__ = ["NadarayaWatsonCDE"]
 import numpy as np
 import pandas as pd
 
+from skpro.regression._bandwidth import bandwidth_1d
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -75,7 +76,7 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
         * If a ``BaseDistribution`` instance (must be scalar, zero-centered),
           it is used as a custom kernel in ``KernelMixture``.
 
-    y_bandwidth : float or {"scott", "silverman"}, default="scott"
+    y_bandwidth : float or {"scott", "silverman", "isj"}, default="scott"
         Bandwidth for the kernel in the target direction (Y).
         Only used when ``y_kernel`` is not ``"delta"``.
 
@@ -84,6 +85,8 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
           ``n**(-1/5) * std(y_train)``.
         * If ``"silverman"``, bandwidth is computed as
           ``(4/(3*n))**(1/5) * std(y_train)``.
+        * If ``"isj"``, bandwidth is computed by the 1D Improved
+          Sheather-Jones selector over ``y_train``.
 
     Attributes
     ----------
@@ -193,6 +196,8 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
                 self.y_bandwidth_ = n ** (-1.0 / 5.0) * std
             elif y_bw == "silverman":
                 self.y_bandwidth_ = (4.0 / (3.0 * n)) ** (1.0 / 5.0) * std
+            elif y_bw == "isj":
+                self.y_bandwidth_ = bandwidth_1d(y_vals, method="isj")
             else:
                 self.y_bandwidth_ = float(y_bw)
 
@@ -398,5 +403,11 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
             "y_kernel": "epanechnikov",
             "y_bandwidth": "silverman",
         }
+        params6 = {
+            "bandwidth": "scott",
+            "kernel": "gaussian",
+            "y_kernel": "gaussian",
+            "y_bandwidth": "isj",
+        }
 
-        return [params1, params2, params3, params4, params5]
+        return [params1, params2, params3, params4, params5, params6]
