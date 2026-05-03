@@ -42,6 +42,7 @@ sdist/*
 docs/api/*
 docs/_build/*
 cover/*
+.coverage.*
 MANIFEST
 
 # Virtual environments
