@@ -3,6 +3,8 @@
 
 __author__ = ["ShreeshaM07"]
 
+from skpro.regression._dist_utils import _normalize_dist_str
+
 
 class NGBoostAdapter:
     """Adapter to interconvert NGBoost and skpro BaseDistributions.
@@ -33,6 +35,9 @@ class NGBoostAdapter:
         NGBoost Distribution object.
         """
         from ngboost.distns import Exponential, Laplace, LogNormal, Normal, Poisson, T
+
+        # normalize aliases like "gaussian" -> "Normal", "lognormal" -> "LogNormal"
+        dist = _normalize_dist_str(dist)
 
         ngboost_dists = {
             "Normal": Normal,
@@ -77,6 +82,9 @@ class NGBoostAdapter:
         # Normal, Laplace, TDistribution and Poisson have not yet
         # been implemented for Survival analysis.
 
+        # normalize aliases so dict lookups below always use canonical names
+        dist = _normalize_dist_str(self.dist)
+
         dist_params = {
             "Normal": ["loc", "scale"],
             "Laplace": ["loc", "scale"],
@@ -95,14 +103,14 @@ class NGBoostAdapter:
             "Exponential": ["rate"],
         }
 
-        if self.dist in dist_params and self.dist in skpro_params:
-            ngboost_params = dist_params[self.dist]
-            skp_params = skpro_params[self.dist]
+        if dist in dist_params and dist in skpro_params:
+            ngboost_params = dist_params[dist]
+            skp_params = skpro_params[dist]
             for ngboost_param, skp_param in zip(ngboost_params, skp_params):
                 kwargs[skp_param] = pred_dist.params[ngboost_param]
-                if self.dist == "LogNormal" and ngboost_param == "scale":
+                if dist == "LogNormal" and ngboost_param == "scale":
                     kwargs[skp_param] = np.log(pred_dist.params[ngboost_param])
-                if self.dist == "Exponential" and ngboost_param == "scale":
+                if dist == "Exponential" and ngboost_param == "scale":
                     kwargs[skp_param] = 1 / pred_dist.params[ngboost_param]
 
                 kwargs[skp_param] = self._check_y(y=kwargs[skp_param])
@@ -132,6 +140,9 @@ class NGBoostAdapter:
         from skpro.distributions.poisson import Poisson
         from skpro.distributions.t import TDistribution
 
+        # normalize aliases so dict lookup uses the canonical name
+        dist = _normalize_dist_str(self.dist)
+
         ngboost_dists = {
             "Normal": Normal,
             "Laplace": Laplace,
@@ -143,7 +154,7 @@ class NGBoostAdapter:
 
         skpro_dist = None
 
-        if self.dist in ngboost_dists:
-            skpro_dist = ngboost_dists[self.dist](**kwargs)
+        if dist in ngboost_dists:
+            skpro_dist = ngboost_dists[dist](**kwargs)
 
         return skpro_dist

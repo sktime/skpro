@@ -1,4 +1,5 @@
 """class for NGBoost probabilistic survival regression."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["ShreeshaM07"]
@@ -22,11 +23,11 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
     ----------
     dist : string , default = "LogNormal"
         assumed distributional form of Y|X=x.
-        A distribution from ngboost.distns, e.g. LogNormal
-        Available distribution types:
+        The canonical names are case-insensitive and common aliases are
+        accepted. Available distributions:
 
-        1. "LogNormal"
-        2. "Exponential"
+        1. ``"LogNormal"`` (aliases: ``"lognormal"``, ``"log_normal"``)
+        2. ``"Exponential"`` (aliases: ``"exponential"``, ``"exp"``)
 
     score : string , default = "LogScore"
         rule to compare probabilistic predictions P̂ to the observed data y.
