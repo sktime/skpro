@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Histogram distribution."""
 
-__author__ = ["ShreeshaM07"]
-
 import numpy as np
 import pandas as pd
 
@@ -81,10 +79,7 @@ class Histogram(_BaseArrayDistribution):
         )
         all1Ds = (
             all1Ds
-            and isinstance(bin_mass[0], int)
-            or isinstance(bin_mass[0], np.integer)
-            or isinstance(bin_mass[0], float)
-            or isinstance(bin_mass[0], np.floating)
+            and isinstance(bin_mass[0], (int, np.integer, float, np.floating))
             and np.array(bin_mass).ndim == 1
         )
         return all1Ds

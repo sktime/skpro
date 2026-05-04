@@ -39,9 +39,6 @@ Testing - required for test framework and check_estimator usage:
 #       estimators contributed to skpro should have the copyright notice at the top
 #       estimators of your own do not need to have permissive or BSD-3 copyright
 
-# todo: uncomment the following line, enter authors' GitHub IDs
-# __author__ = [authorGitHubID, anotherAuthorGitHubID]
-
 from skpro.regression.base import BaseProbaRegressor
 
 # todo: add any necessary imports here

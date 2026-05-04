@@ -294,7 +294,7 @@ class IID(BaseDistribution):
         """
         return self._broadcast_iid("energy", x=x)
 
-    def sample(self, n_samples=None):
+    def _sample(self, n_samples=None):
         """Sample from the distribution.
 
         Parameters
@@ -320,7 +320,7 @@ class IID(BaseDistribution):
         # if delegate has ppf,
         dist_has_impl = self.distribution._has_implementation_of
         if dist_has_impl("_ppf") or dist_has_impl("ppf"):
-            return super().sample(n_samples=n_samples)
+            return super()._sample(n_samples=n_samples)
 
         # else we sample manually, this will be less efficient due to loops
         if n_samples is None:

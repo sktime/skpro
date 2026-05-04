@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Log-logistic aka Fisk probability distribution."""
 
-__author__ = ["fkiraly", "malikrafsan"]
-
 import pandas as pd
 from scipy.stats import fisk, rv_continuous
 
@@ -37,6 +35,11 @@ class Fisk(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly", "malikrafsan"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",

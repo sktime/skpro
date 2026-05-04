@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Half-Logistic probability distribution."""
 
-__author__ = ["SaiRevanth25"]
-
 import pandas as pd
 from scipy.stats import halflogistic, rv_continuous
 
@@ -48,6 +46,11 @@ class HalfLogistic(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["SaiRevanth25"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",

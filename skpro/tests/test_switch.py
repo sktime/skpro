@@ -46,7 +46,7 @@ def run_test_for_class(cls, return_reason=False):
     5. Condition 5:
 
       If the object is an skpro ``BaseObject``, and any of the modules
-      in the class tag ``tests:libs`` hvae changed, condition 5 is met.
+      in the class tag ``tests:libs`` have changed, condition 5 is met.
 
     cls can also be a list of classes or functions,
     in this case the test is run if and only if both of the following are True:
@@ -217,7 +217,7 @@ def _run_test_for_class(
 
     def _tests_covering_class_changed(cls):
         """Check if any of the tests covering cls have changed, return bool."""
-        from skpro.tests.test_class_register import get_test_classes_for_obj
+        from skpro.registry._base_classes_tests import get_test_classes_for_obj
 
         test_classes = get_test_classes_for_obj(cls)
         return any(is_class_changed(x) for x in test_classes)

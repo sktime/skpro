@@ -2,8 +2,6 @@
 
 """Skew-Normal probability distribution."""
 
-__author__ = ["Spinachboul"]
-
 from scipy.stats import skewnorm
 
 from skpro.distributions.adapters.scipy._distribution import _ScipyAdapter

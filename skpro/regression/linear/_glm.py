@@ -102,7 +102,7 @@ class GLMRegressor(BaseProbaRegressor):
         Set to True to have all available output in the Results object’s
         mle_retvals attribute. The output is dependent on the solver. See
         LikelihoodModelResults notes section for more information. Not used
-        if methhod is IRLS. This parameter is used inside the GLM fit() function.
+        if method is IRLS. This parameter is used inside the GLM fit() function.
 
     disp : bool, optional, default=False
         Set to True to print convergence messages. Not used if method
@@ -208,7 +208,7 @@ class GLMRegressor(BaseProbaRegressor):
     def _str_to_sm_family(self, family, link):
         """Convert the string to a statsmodel object.
 
-        If the link function is also explcitly mentioned then include then
+        If the link function is also explicitly mentioned then include then
         that must be passed to the family/distribution object.
         """
         from warnings import warn
@@ -454,7 +454,8 @@ class GLMRegressor(BaseProbaRegressor):
 
         if skp_dist == Normal:
             y_mu = y_predictions_df["mean"].rename("mu").to_frame()
-            y_sigma = y_predictions_df["mean_se"].rename("sigma").to_frame()
+            sigma_val = np.sqrt(self.scale_)
+            y_sigma = pd.Series(sigma_val, index=y_mu.index, name="sigma").to_frame()
             params["mu"] = y_mu
             params["sigma"] = y_sigma
         elif skp_dist == Poisson:
@@ -462,10 +463,13 @@ class GLMRegressor(BaseProbaRegressor):
             params["mu"] = y_mu
         elif skp_dist == Gamma:
             y_mean = y_predictions_df["mean"]
-            y_sd = y_predictions_df["mean_se"]
-            y_alpha = (y_mean / y_sd) ** 2
-            y_beta = (y_mean / (y_sd**2)).rename("beta").to_frame()
-            y_alpha = y_alpha.rename("alpha").to_frame()
+            scale = self.scale_
+
+            y_alpha = pd.Series(1 / scale, index=y_mean.index, name="alpha").to_frame()
+            y_beta = pd.Series(
+                1 / (scale * y_mean), index=y_mean.index, name="beta"
+            ).to_frame()
+
             params["alpha"] = y_alpha
             params["beta"] = y_beta
 
@@ -565,7 +569,7 @@ class GLMRegressor(BaseProbaRegressor):
             X = X.drop(columns_to_drop, axis=1)
 
         if self._add_constant:
-            X_ = add_constant(X)
+            X_ = add_constant(X, has_constant="add")
             if rtn_off_exp_arr:
                 return X_, offset_arr, exposure_arr
             return X_

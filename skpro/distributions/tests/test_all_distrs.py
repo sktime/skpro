@@ -48,8 +48,8 @@ def _has_capability(distr, method):
     return method in approx_methods or method in exact_methods
 
 
-METHODS_SCALAR = ["mean", "var", "energy"]
-METHODS_SCALAR_POS = ["var", "energy"]  # result always non-negative?
+METHODS_SCALAR = ["mean", "var", "energy", "pdfnorm"]
+METHODS_SCALAR_POS = ["var", "energy", "pdfnorm"]  # result always non-negative?
 METHODS_X = ["energy", "pdf", "log_pdf", "pmf", "log_pmf", "cdf"]
 METHODS_X_POS = ["energy", "pdf", "pmf", "cdf", "surv", "haz"]  # result non-negative?
 METHODS_P = ["ppf"]
@@ -273,6 +273,24 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             assert np.allclose(x.values, x_approx.values)
         else:
             assert np.allclose(x, x_approx)
+
+    def test_index_columns_last_args(self, object_class):
+        """Test that index and columns are the last arguments in __init__."""
+        params = object_class.get_param_names(sort=False)
+
+        has_index = "index" in params
+        has_columns = "columns" in params
+
+        assert has_index and has_columns, (
+            f"For {object_class.__name__}, both 'index' and 'columns' must be "
+            f"present in __init__. Current params: {params}"
+        )
+
+        assert params[-2:] == ["index", "columns"], (
+            f"For {object_class.__name__}, 'index' and 'columns' must be "
+            f"the last two arguments in __init__ in this order. "
+            f"Current order: {params}"
+        )
 
 
 def _check_output_format(res, dist, method):

@@ -78,3 +78,19 @@ def test_cyclic_boosting_with_manual_parameters():
     y_pred = reg_proba.predict_proba(X_test)
 
     assert y_pred.shape == y_test.shape
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(CyclicBoosting),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
+def test_cyclic_boosting_missing_feature_validation():
+    """Test that feature validation provides clear error messages."""
+    reg = CyclicBoosting(feature_groups=[("nonexistent1", "nonexistent2")])
+    X = pd.DataFrame({"existing": [1, 2, 3]})
+    y = pd.DataFrame({"target": [1, 2, 3]})
+
+    with pytest.raises(
+        ValueError, match="\\{'nonexistent1', 'nonexistent2'\\} are not in X"
+    ):
+        reg.fit(X, y)

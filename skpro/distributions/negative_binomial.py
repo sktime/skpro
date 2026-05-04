@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Negative binomial probability distribution."""
 
-__author__ = ["tingiskhan"]
-
 import pandas as pd
 from numpy.typing import ArrayLike
 from scipy.stats import nbinom, rv_discrete
@@ -33,6 +31,11 @@ class NegativeBinomial(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["tingiskhan"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy"],
         "capabilities:exact": ["mean", "var", "pmf", "log_pmf", "cdf", "ppf"],
         "distr:measuretype": "discrete",

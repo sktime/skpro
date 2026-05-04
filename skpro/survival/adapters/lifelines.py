@@ -1,5 +1,5 @@
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
-"""Implements adapter for lifelines models."""
+"""Adapter for lifelines models."""
 
 __all__ = ["_LifelinesAdapter"]
 __author__ = ["fkiraly"]
@@ -93,6 +93,9 @@ class _LifelinesAdapter:
             Training labels
         C: pd.DataFrame, optional (default=None)
             Censoring information for survival analysis.
+            Convention: C=0 (uncensored), C=1 (censored).
+            Internally converted to lifelines convention:
+            event_col=1 (uncensored), event_col=0 (censored).
 
         Returns
         -------

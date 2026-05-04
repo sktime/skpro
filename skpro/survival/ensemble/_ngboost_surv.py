@@ -62,6 +62,7 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
         "authors": ["ShreeshaM07"],
         "maintainers": ["ShreeshaM07"],
         "python_dependencies": "ngboost",
+        "tests:vm": True,
     }
 
     def __init__(
@@ -113,6 +114,8 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
             should have same column name as y, same length as X and y
             should have entries 0 and 1 (float or int)
             0 = uncensored, 1 = (right) censored
+            Internally converted to ngboost convention:
+            E=1 (uncensored/event observed), E=0 (censored)
             if None, all observations are assumed to be uncensored
 
         Returns

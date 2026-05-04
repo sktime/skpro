@@ -312,7 +312,7 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         # get quantile prediction for all fitted quantile regressors
         quantile_preds = self._predict_quantiles(X, alpha_sorted)
 
-        # format as emprical sample for empirical distr
+        # format as empirical sample for empirical distr
         # row multiindex: (alpha, X.index)
         # column index  : as y in fit
         empirical_spl = quantile_preds.stack(level=1).swaplevel(0, 1)

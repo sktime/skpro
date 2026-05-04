@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Delta (constant/certain) probability distribution."""
 
-__author__ = ["fkiraly"]
-
 import numpy as np
 import pandas as pd
 
@@ -39,6 +37,11 @@ class Delta(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["fkiraly"],
+        # estimator tags
+        # --------------
         "capabilities:approx": [],
         "capabilities:exact": ["mean", "var", "energy", "pmf", "log_pmf", "cdf", "ppf"],
         "distr:measuretype": "discrete",
@@ -188,6 +191,35 @@ class Delta(BaseDistribution):
         c = self._bc_params["c"]
         icdf_arr = c
         return icdf_arr
+
+    def _pmf_support(self, lower, upper, max_points=100):
+        """Get support points for delta distribution.
+
+        Parameters
+        ----------
+        lower : float
+            Lower bound for support points
+        upper : float
+            Upper bound for support points
+        max_points : int, optional, default=100
+            Maximum number of support points to return
+
+        Returns
+        -------
+        np.ndarray
+            Array of support points within [lower, upper]
+        """
+        if self.ndim > 0:
+            raise NotImplementedError(
+                "_pmf_support only applies to scalar (0-dimensional) distributions."
+            )
+
+        c = self._bc_params["c"]
+        c_val = c[()]
+        if lower <= c_val <= upper:
+            return np.array([c_val])
+        else:
+            return np.array([])
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
