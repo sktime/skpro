@@ -251,6 +251,14 @@ Bayesian regressors
 The below Bayesian regressors provide APIs
 for prior and posterior handling.
 
+.. currentmodule:: skpro.regression
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    BayesianProportionEstimator
+
 .. currentmodule:: skpro.regression.bayesian
 
 .. autosummary::
