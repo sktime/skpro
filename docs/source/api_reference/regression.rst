@@ -196,6 +196,21 @@ This section lists simple regressors which can be used as baselines.
     DeltaPointRegressor
     DummyProbaRegressor
 
+.. currentmodule:: skpro.regression.unconditional_distfit
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    UnconditionalDistfitRegressor
+
+.. currentmodule:: skpro.regression.deterministic_reduction
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    DeterministicReductionRegressor
 
 Linear regression
 -----------------
