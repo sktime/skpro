@@ -11,6 +11,7 @@ from skpro.distributions.binomial import Binomial
 from skpro.distributions.gamma import Gamma
 from skpro.distributions.normal import Normal
 from skpro.distributions.poisson import Poisson
+from skpro.regression._dist_utils import _normalize_dist_str
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -31,14 +32,10 @@ class GAMRegressor(BaseProbaRegressor):
         Can be a ``pygam`` terms expression for custom model specification.
 
     distribution : str or pygam.Distribution, optional (default='Normal')
-        Distribution family to use in the model.
-        Supported strings (case-insensitive):
-
-        * ``'Normal'`` or ``'Gaussian'`` - Normal/Gaussian distribution
-        * ``'Poisson'`` - Poisson distribution for count data
-        * ``'Gamma'`` - Gamma distribution for positive continuous data
-        * ``'Binomial'`` - Binomial distribution for binary/proportion data
-
+        Distribution family to use in the model. The canonical skpro class
+        name should be passed. Common aliases are accepted for backwards
+        compatibility. Available options: ``"Normal"``, ``"Poisson"``,
+        ``"Gamma"``, ``"Binomial"``.
         Alternatively, can pass a ``pygam.Distribution`` object directly.
 
     link : str or pygam.Link, optional (default='identity')
@@ -159,20 +156,12 @@ class GAMRegressor(BaseProbaRegressor):
             callbacks = ["deviance", "diffs"]
 
         dist_name = self._get_distribution_name(self.distribution)
-
-        # Map common names to skpro distribution names
-        dist_map = {
-            "normal": "normal",
-            "gaussian": "normal",
-            "poisson": "poisson",
-            "gamma": "gamma",
-            "binomial": "binomial",
-            "normaldist": "normal",
-            "poissondist": "poisson",
-            "gammadist": "gamma",
-            "binomialdist": "binomial",
-        }
-        dist_name = dist_map.get(dist_name, "normal")
+        # normalize to canonical skpro name, then lowercase for pygam
+        dist_name = _normalize_dist_str(dist_name).lower()
+        # pygam only supports these; fall back to "normal" if unrecognised
+        _pygam_supported = {"normal", "poisson", "gamma", "binomial"}
+        if dist_name not in _pygam_supported:
+            dist_name = "normal"
 
         self._dist_name = dist_name
 

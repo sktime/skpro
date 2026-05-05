@@ -19,17 +19,11 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
     Parameters
     ----------
     dist : string , default = "Normal"
-        Distribution for probabilistic prediction.
-        The canonical names are case-insensitive and common aliases are
-        accepted (e.g. ``"gaussian"`` and ``"normal"`` both map to
-        ``"Normal"``). Available distributions:
-
-        1. ``"Normal"`` (aliases: ``"gaussian"``, ``"norm"``)
-        2. ``"Laplace"`` (alias: ``"laplace"``)
-        3. ``"LogNormal"`` (aliases: ``"lognormal"``, ``"log_normal"``)
-        4. ``"Poisson"`` (alias: ``"poisson"``)
-        5. ``"TDistribution"`` (aliases: ``"t"``, ``"student_t"``)
-        6. ``"Exponential"`` (aliases: ``"exponential"``, ``"exp"``)
+        Distribution for probabilistic prediction. The canonical skpro class
+        name should be passed. Common aliases are accepted for backwards
+        compatibility. Available options: ``"Normal"``, ``"Laplace"``,
+        ``"LogNormal"``, ``"Poisson"``, ``"TDistribution"``,
+        ``"Exponential"``.
 
     score : string , default = "LogScore"
         A score from ngboost.scores for LogScore

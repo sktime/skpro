@@ -7,6 +7,7 @@ __author__ = ["ShreeshaM07", "julian-fong"]
 import numpy as np
 import pandas as pd
 
+from skpro.regression._dist_utils import _normalize_dist_str
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -25,6 +26,8 @@ class GLMRegressor(BaseProbaRegressor):
     family : string, default : "Normal"
         The family parameter denotes the type of distribution
         that will be used.
+        The canonical skpro class name should be passed.
+        Common aliases are accepted for backwards compatibility.
         Available family/distributions are
         1."Normal"
         2."Poisson"
@@ -214,6 +217,8 @@ class GLMRegressor(BaseProbaRegressor):
         from warnings import warn
 
         from statsmodels.genmod.families.family import Gamma, Gaussian, Poisson
+
+        family = _normalize_dist_str(family)
         from statsmodels.genmod.families.links import Identity, InversePower, Log, Sqrt
 
         sm_fmly = {
@@ -439,6 +444,8 @@ class GLMRegressor(BaseProbaRegressor):
         from skpro.distributions.gamma import Gamma
         from skpro.distributions.normal import Normal
         from skpro.distributions.poisson import Poisson
+
+        family = _normalize_dist_str(family)
 
         skpro_distr = {
             "Normal": Normal,

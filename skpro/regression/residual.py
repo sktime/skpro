@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn import clone
 
+from skpro.regression._dist_utils import _normalize_dist_str
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.numpy import flatten_to_1D_if_colvector
 from skpro.utils.sklearn import prep_skl_df
@@ -77,7 +78,9 @@ class ResidualDouble(BaseProbaRegressor):
 
     distr_type : str or BaseDistribution, default = "Normal"
         type of distribution to predict
-        str options are "Normal", "Laplace", "Cauchy", "t"
+        str options are ``"Normal"``, ``"Laplace"``, ``"Cauchy"``,
+        ``"TDistribution"``. Common aliases are accepted for backwards
+        compatibility.
     distr_loc_scale_name : tuple of length two, default = ("loc", "scale")
         names of the parameters in the distribution to use for location and scale
 
@@ -298,7 +301,7 @@ class ResidualDouble(BaseProbaRegressor):
         est = self.estimator_
         est_r = self.estimator_resid_
         use_y_pred = self.use_y_pred
-        distr_type = self.distr_type
+        distr_type = _normalize_dist_str(self.distr_type)
         distr_loc_scale_name = self.distr_loc_scale_name
         distr_params = self.distr_params
         min_scale = self.min_scale
@@ -343,7 +346,7 @@ class ResidualDouble(BaseProbaRegressor):
 
             distr_type = Laplace
             distr_loc_scale_name = ("mu", "scale")
-        elif distr_type in ["Cauchy", "t"]:
+        elif distr_type in ["Cauchy", "TDistribution"]:
             from skpro.distributions.t import TDistribution
 
             distr_type = TDistribution
@@ -402,7 +405,7 @@ class ResidualDouble(BaseProbaRegressor):
             "estimator_resid": RandomForestRegressor(),
             "min_scale": 1e-6,
             "use_y_pred": True,
-            "distr_type": "t",
+            "distr_type": "TDistribution",
             "distr_params": {"df": 3},
             "cv": KFold(n_splits=3),
         }

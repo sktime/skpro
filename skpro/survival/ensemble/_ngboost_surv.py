@@ -22,12 +22,9 @@ class NGBoostSurvival(BaseSurvReg, NGBoostAdapter):
     Parameters
     ----------
     dist : string , default = "LogNormal"
-        assumed distributional form of Y|X=x.
-        The canonical names are case-insensitive and common aliases are
-        accepted. Available distributions:
-
-        1. ``"LogNormal"`` (aliases: ``"lognormal"``, ``"log_normal"``)
-        2. ``"Exponential"`` (aliases: ``"exponential"``, ``"exp"``)
+        assumed distributional form of Y|X=x. The canonical skpro class
+        name should be passed. Common aliases are accepted for backwards
+        compatibility. Available options: ``"LogNormal"``, ``"Exponential"``.
 
     score : string , default = "LogScore"
         rule to compare probabilistic predictions P̂ to the observed data y.
