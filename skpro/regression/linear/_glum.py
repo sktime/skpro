@@ -375,6 +375,6 @@ class GlumRegressor(BaseProbaRegressor):
 
         else:
             raise NotImplementedError(
-                f"Distribution for family '{'family'}' not implemented in "
+                f"Distribution for family '{family}' not implemented in "
                 "skpro interface."
             )

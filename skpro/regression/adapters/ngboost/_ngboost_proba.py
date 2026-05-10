@@ -81,7 +81,6 @@ class NGBoostAdapter:
         # Exponential       | scale = 1/rate
         # Normal, Laplace, TDistribution and Poisson have not yet
         # been implemented for Survival analysis.
-
         # normalize aliases so dict lookups below always use canonical names
         dist = _normalize_dist_str(self.dist)
 
