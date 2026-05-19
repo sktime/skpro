@@ -33,6 +33,7 @@ def test_mdn_ngem_hparams_validation():
     with pytest.raises(ValueError, match="lr must be positive"):
         reg._resolve_training_hparams("nll")
 
+    reg.lr = 0.01
     reg.ngem_grad_clip_norm = 0.0
     with pytest.raises(ValueError, match="ngem_grad_clip_norm must be positive"):
         reg._resolve_training_hparams("ngem")
