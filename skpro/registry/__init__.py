@@ -10,6 +10,7 @@ from skpro.registry._base_classes import (
 )
 from skpro.registry._craft import craft, deps, imports
 from skpro.registry._lookup import all_objects, all_tags
+from skpro.registry._placeholder_rec import _placeholder_record
 from skpro.registry._scitype import scitype
 from skpro.registry._tags import (
     OBJECT_TAG_LIST,
@@ -33,4 +34,5 @@ __all__ = [
     "get_test_class_for_str",
     "imports",
     "scitype",
+    "_placeholder_record",
 ]
