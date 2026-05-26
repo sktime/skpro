@@ -176,7 +176,7 @@ jobs:
         run: make test
 
       - name: Publish code coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
 
   run-tests-all-extras:
     needs: code-quality
@@ -222,7 +222,7 @@ jobs:
         run: make test
 
       - name: Publish code coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
 
   test-est:
     needs: detect-changed-classes
