@@ -210,11 +210,26 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         assert (y_pred_test.index == X_test.index).all()
         assert (y_pred_test.columns == y_fit.columns).all()
 
-    def test_predict_proba_no_param_mutation(self, object_instance):
-        """Test that predict_proba does not mutate constructor parameters."""
-        import pandas as pd
+    @pytest.mark.parametrize(
+        "method",
+        [
+            "predict",
+            "predict_proba",
+            "predict_interval",
+            "predict_quantiles",
+            "predict_var",
+        ],
+    )
+    def test_non_state_changing_method_contract(self, object_instance, method):
+        """Test that predict methods do not mutate constructor parameters.
+
+        Checks this for all predict methods, and for parameters that are
+        component estimators, i.e., parameters inside parameters that are estimators.
+        """
         from sklearn.datasets import load_diabetes
         from sklearn.model_selection import train_test_split
+
+        from skpro.utils.deep_equals import deep_equals
 
         X, y = load_diabetes(return_X_y=True, as_frame=True)
         X = X.iloc[:50]
@@ -226,30 +241,14 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         regressor = object_instance
         regressor.fit(X_train, y_train)
 
-        params_before = copy.deepcopy(regressor.get_params())
+        params_before = copy.deepcopy(regressor.get_params(deep=True))
 
-        regressor.predict_proba(X_test)
-        regressor.predict_proba(X_test[:5])
+        getattr(regressor, method)(X_test)
+        getattr(regressor, method)(X_test[:5])
 
-        # constructor params must be unchanged after predict_proba calls
-        params_after = regressor.get_params()
+        params_after = regressor.get_params(deep=True)
 
-        for key in params_before:
-            before_val = params_before[key]
-            after_val = params_after[key]
-
-            # skip estimator objects - they have fitted state attrs
-            if hasattr(before_val, "fit"):
-                continue
-
-            assert type(before_val) == type(after_val), (  # noqa: E721
-                f"Parameter '{key}' type changed after predict_proba: "
-                f"before={type(before_val)}, after={type(after_val)}"
-            )
-            # We use repr() to compare values because they might contain estimators
-            #  which fail `==` checks after being deepcopied.
-
-            assert repr(before_val) == repr(after_val), (
-                f"Parameter '{key}' was mutated by predict_proba: "
-                f"before={before_val}, after={after_val}"
-            )
+        is_equal, msg = deep_equals(params_before, params_after, return_msg=True)
+        assert is_equal, (
+            f"Parameter mutation detected after calling {method}. " f"Reason: {msg}"
+        )
