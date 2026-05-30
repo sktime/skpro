@@ -16,6 +16,81 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.13.0] - 2026-05-30
+=====================
+
+Highlights
+~~~~~~~~~~
+
+* ``OnlineBatchMixture`` online mixture regression (:pr:`900`) :user:`patelchaitany`
+* new ``update`` capability in ``GridSearchCV`` and ``RandomizedSearchCV`` (:pr:`1053`) :user:`patelchaitany`
+* MDN regressor: Improved Losses (:pr:`1042`) :user:`joshdunnlime`
+* Gompertz distribution (:pr:`1043`) :user:`smilingprogrammer`
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] Refactor ``CyclicBoosting`` to eliminate feature validation code duplication (:pr:`917`) :user:`MayankSharma-2812`
+* [ENH] ``OnlineBatchMixture`` online mixture regression (:pr:`900`) :user:`patelchaitany`
+* [ENH] Remove redundant method overrides in ``Skellam`` and ``FDist`` (:pr:`963`) :user:`ANANYA542`
+* [ENH] Deduplicate ``_random_ss_ix`` helper function (:pr:`1004`) :user:`krsatyamthakur-droid`
+* [ENH] Migrate base class registry to a class based structure and lookup logic (:pr:`925`) :user:`codeit-ronit`
+* [ENH] Refactor metric classes to one class per file (:pr:`1035`) :user:`fkiraly`
+* [ENH] Gompertz distribution (:pr:`1043`) :user:`smilingprogrammer`
+* [ENH] MDN Improved Losses (:pr:`1042`) :user:`joshdunnlime`
+* [ENH] Added ``update`` capability in ``GridSearchCV`` and ``RandomizedSearchCV`` (:pr:`1053`) :user:`patelchaitany`
+
+Fixes
+~~~~~
+
+* [BUG] Fix GeneralizedPareto ``__dict__`` hack causing sklearn.clone() to return wrong parametersc (:pr:`893`) :user:`direkkakkar319-ops`
+* [BUG] Fix wrong chi-squared identity in ``ChiSquared._energy_x`` (:pr:`965`) :user:`ANANYA542`
+* [BUG] Fix incorrect handling of negative ``n`` in ``BaseDistribution.head`` (:pr:`923`) :user:`mohityadav8`
+* [BUG] Fix missing negative sign in SPLL metric calculates negative loss for censored data (:pr:`1032`) :user:`KaranSinghDev`
+* [BUG] Fix operator precedence in ``Histogram._check_single_array_distr`` (:pr:`1031`) :user:`Unknown-Shiva`
+* [BUG] Use ``pdf`` instead of ``log_pdf`` in ``SquaredDistrLoss`` (:pr:`935`) :user:`Mahaveerjain-18`, :user:`MayankSharma-2812`
+* [BUG] Fix ``SquaredDistrLoss``: use pdf instead of log_pdf in loss formula (:pr:`937`) :user:`MayankSharma-2812`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] in release workflow, require ``check_tag`` before releasing (:pr:`920`) :user:`fkiraly`
+* [MNT] Remove legacy test utilities module (#908) (:pr:`946`) :user:`krsatyamthakur-droid`
+* [MNT] [Dependabot](deps): Bump codecov/codecov-action from 5 to 6 (:pr:`1000`) :user:`dependabot[bot]`
+* [MNT] Fix project URLs in ``pyproject.toml`` (:pr:`1007`) :user:`kabirvashisht4-glitch`
+* [MNT] allow ``scikit-base<1.1`` in the dependencies (:pr:`1040`) :user:`fkiraly`
+* [MNT] add empty ``CONTRIBUTORS.md`` to initialize contributors workflow (:pr:`1044`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Bump actions/dependency-review-action from 4 to 5 (:pr:`1048`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] Add missing ``LogNormal`` distribution to API reference (:pr:`992`) :user:`maniktyagi04`
+* [DOC] delete dead documentation page docs/introduction.rst (:pr:`1026`) :user:`kabirvashisht4-glitch`
+* [DOC] Fix broken link in dependencies.rst (:pr:`1034`) :user:`kabirvashisht4-glitch`
+
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`ANANYA542`,
+:user:`codeit-ronit`,
+:user:`direkkakkar319-ops`,
+:user:`fkiraly`,
+:user:`joshdunnlime`,
+:user:`kabirvashisht4-glitch`,
+:user:`KaranSinghDev`,
+:user:`krsatyamthakur-droid`,
+:user:`Mahaveerjain-18`,
+:user:`maniktyagi04`,
+:user:`MayankSharma-2812`,
+:user:`mohityadav8`,
+:user:`patelchaitany`,
+:user:`smilingprogrammer`,
+:user:`Unknown-Shiva`
+
+
 [2.12.0] - 2026-03-14
 =====================
 
