@@ -35,25 +35,11 @@ code snippets below.
 
            pip install skpro
 
-    .. tab-item:: PyPi (all dependencies)
+    .. tab-item:: PyPi (all optional dependencies)
 
         .. code-block:: bash
 
            pip install skpro[all_extras]
-
-    .. tab-item:: Conda
-
-        .. note::
-
-            We are still working on creating releases of ``skpro`` on ``conda``.
-            If you would like to help, please open a pull request.
-
-    .. tab-item:: Conda (all dependencies)
-
-        .. note::
-
-            We are still working on creating releases of ``skpro`` on ``conda``.
-            If you would like to help, please open a pull request.
 
 
 Troubleshooting release installations
