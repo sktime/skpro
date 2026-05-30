@@ -23,6 +23,7 @@ Highlights
 ~~~~~~~~~~
 
 * ``OnlineBatchMixture`` online mixture regression (:pr:`900`) :user:`patelchaitany`
+* new ``update`` capability in ``GridSearchCV`` and ``RandomizedSearchCV`` (:pr:`1053`) :user:`patelchaitany`
 * MDN regressor: Improved Losses (:pr:`1042`) :user:`joshdunnlime`
 * Gompertz distribution (:pr:`1043`) :user:`smilingprogrammer`
 
@@ -38,6 +39,7 @@ Enhancements
 * [ENH] Refactor metric classes to one class per file (:pr:`1035`) :user:`fkiraly`
 * [ENH] Gompertz distribution (:pr:`1043`) :user:`smilingprogrammer`
 * [ENH] MDN Improved Losses (:pr:`1042`) :user:`joshdunnlime`
+* [ENH] Added ``update`` capability in ``GridSearchCV`` and ``RandomizedSearchCV`` (:pr:`1053`) :user:`patelchaitany`
 
 Fixes
 ~~~~~
