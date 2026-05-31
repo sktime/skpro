@@ -20,6 +20,7 @@ class ProbaRegOptCV(_DelegatedProbaRegressor):
         "capability:multioutput": True,
         "capability:missing": True,
         "python_dependencies": "hyperactive",
+        "tests:vm": True,
     }
 
     def __init__(
