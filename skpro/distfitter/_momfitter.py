@@ -78,35 +78,6 @@ class MOMFitter(BaseDistFitter):
 
         super().__init__()
 
-    def get_params(self, deep=True):
-        """Get parameters for this estimator.
-
-        Overrides base ``get_params`` to prevent deep recursion into
-        ``dist_cls``, which is a class (not an instance) and would cause
-        ``get_params`` to fail when called on it.
-
-        Parameters
-        ----------
-        deep : bool, default=True
-            If True, returns parameters of sub-objects that are estimators.
-
-        Returns
-        -------
-        params : dict
-            Parameter names mapped to their values.
-        """
-        return super().get_params(deep=False)
-
-    def _repr_html_(self):
-        """HTML representation, overridden to avoid recursion into dist_cls."""
-        return (
-            f"<pre>{self.__class__.__name__}"
-            f"(dist_cls={self.dist_cls.__name__}, "
-            f"mean_name={self.mean_name!r}, "
-            f"std_name={self.std_name!r}, "
-            f"dist_params={self.dist_params!r})</pre>"
-        )
-
     def _fit(self, X, C=None):
         """Fit distribution parameters using method of moments.
 
