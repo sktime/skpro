@@ -53,6 +53,8 @@ class Normal(BaseDistribution):
 
     def __init__(self, mu, sigma, index=None, columns=None):
         self.mu = mu
+        if np.any(np.asarray(sigma) <= 0) :
+            raise ValueError("sigma must be strictly positive.")
         self.sigma = sigma
 
         super().__init__(index=index, columns=columns)

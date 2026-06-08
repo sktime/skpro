@@ -56,6 +56,8 @@ class Laplace(BaseDistribution):
 
     def __init__(self, mu, scale, index=None, columns=None):
         self.mu = mu
+        if np.any(np.asarray(scale) <=0 ) :
+            raise ValueError("scale must be strictly positive .")
         self.scale = scale
 
         super().__init__(index=index, columns=columns)
