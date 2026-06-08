@@ -1,6 +1,6 @@
 [project]
 name = "skpro"
-version = "2.12.0"
+version = "2.13.0"
 description = "A unified framework for tabular probabilistic regression, time-to-event prediction, and probability distributions in python"
 authors = [
     {name = "skpro developers", email = "info@sktime.net"},
@@ -25,6 +25,7 @@ classifiers = [
     "Programming Language :: Python",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX",
     "Operating System :: Unix",
@@ -35,12 +36,12 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
-requires-python = ">=3.9,<3.15"
+requires-python = ">=3.10,<3.15"
 dependencies = [
     "numpy>=1.21.0,<2.5",
     "pandas>=1.1.0,<3.1.0",
     "packaging",
-    "scikit-base>=0.6.1,<0.14.0",
+    "scikit-base>=0.6.1,<1.1.0",
     "scikit-learn>=0.24.0,<1.8.0",
     "scipy<2.0.0,>=1.2.0",
 ]

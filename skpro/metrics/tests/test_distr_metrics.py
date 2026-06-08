@@ -5,7 +5,7 @@ import pytest
 from skbase.testing import QuickTester
 
 from skpro.distributions import Normal
-from skpro.metrics._classes import SquaredDistrLoss
+from skpro.metrics import SquaredDistrLoss
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
 TEST_DISTS = [Normal]

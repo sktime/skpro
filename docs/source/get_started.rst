@@ -13,7 +13,7 @@ Installation
 
 ``skpro`` currently supports:
 
-* environments with python version 3.8, 3.9, 3.10, 3.11, or 3.12.
+* environments with python version 3.10, 3.11, 3.12, 3.13, or 3.14.
 * operating systems Mac OS X, Unix-like OS, Windows 8.1 and higher
 * installation via ``PyPi`` or ``conda``
 

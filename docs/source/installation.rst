@@ -6,7 +6,7 @@ Installation
 
 ``skpro`` currently supports:
 
-* environments with python version 3.8, 3.9, 3.10, 3.11, or 3.12
+* environments with python version 3.10, 3.11, 3.12, 3.13, or 3.14
 * operating systems Mac OS X, Unix-like OS, Windows 8.1 and higher
 
 Checkout the full list of pre-compiled wheels on
@@ -35,25 +35,11 @@ code snippets below.
 
            pip install skpro
 
-    .. tab-item:: PyPi (all dependencies)
+    .. tab-item:: PyPi (all optional dependencies)
 
         .. code-block:: bash
 
            pip install skpro[all_extras]
-
-    .. tab-item:: Conda
-
-        .. note::
-
-            We are still working on creating releases of ``skpro`` on ``conda``.
-            If you would like to help, please open a pull request.
-
-    .. tab-item:: Conda (all dependencies)
-
-        .. note::
-
-            We are still working on creating releases of ``skpro`` on ``conda``.
-            If you would like to help, please open a pull request.
 
 
 Troubleshooting release installations
