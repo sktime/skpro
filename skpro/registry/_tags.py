@@ -38,7 +38,6 @@ OBJECT_TAG_LIST - list of string
 check_tag_is_valid(tag_name, tag_value) - checks whether tag_value is valid for tag_name
 """
 
-
 import inspect
 import sys
 
@@ -247,7 +246,7 @@ class capability__multioutput(_BaseTag):
 
     _tags = {
         "tag_name": "capability:multioutput",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "regressor_online"],
         "tag_type": "bool",
         "short_descr": "whether estimator supports multioutput regression",
     }
@@ -258,7 +257,7 @@ class capability__missing(_BaseTag):
 
     _tags = {
         "tag_name": "capability:missing",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "regressor_online"],
         "tag_type": "bool",
         "short_descr": "whether estimator supports missing values",
     }
@@ -269,9 +268,21 @@ class capability__update(_BaseTag):
 
     _tags = {
         "tag_name": "capability:update",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "regressor_online"],
         "tag_type": "bool",
         "short_descr": "whether estimator supports online updates via update",
+    }
+
+
+class capability__pred_int(_BaseTag):
+    """Support for probabilistic prediction methods."""
+
+    _tags = {
+        "tag_name": "capability:pred_int",
+        "parent_type": ["regressor_proba", "regressor_online"],
+        "tag_type": "bool",
+        "short_descr": "whether predict_proba, predict_interval, "
+        "and predict_quantiles are available",
     }
 
 
@@ -280,7 +291,7 @@ class X_inner_mtype(_BaseTag):
 
     _tags = {
         "tag_name": "X_inner_mtype",
-        "parent_type": ["regressor_proba", "distfitter"],
+        "parent_type": ["regressor_proba", "distfitter", "regressor_online"],
         "tag_type": ("list", "str"),
         "short_descr": "which machine type(s) is the"
         " internal _fit/_predict able to deal with?",
@@ -292,7 +303,7 @@ class y_inner_mtype(_BaseTag):
 
     _tags = {
         "tag_name": "y_inner_mtype",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "regressor_online"],
         "tag_type": ("list", "str"),
         "short_descr": "which machine type(s) is the"
         " internal _fit/_predict able to deal with?",
