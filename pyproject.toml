@@ -53,6 +53,7 @@ all_extras = [
     "matplotlib>=3.3.2",
     "polars<1.43.0",
     "pymc; python_version < '3.13'",
+    "river",
     "statsmodels>=0.12.1",
 ]
 

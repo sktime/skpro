@@ -132,6 +132,28 @@ class regressor_proba(_BaseScitypeOfObject):
         return TestAllRegressors
 
 
+class regressor_online(_BaseScitypeOfObject):
+    """Online regressor with point predictions and update support."""
+
+    _tags = {
+        "scitype_name": "regressor_online",
+        "short_descr": "online regressor",
+        "parent_scitype": "estimator",
+    }
+
+    @classmethod
+    def get_base_class(cls):
+        """Return base class for regressor_online scitype."""
+        from skpro.regression.base import BaseOnlineRegressor
+
+        return BaseOnlineRegressor
+
+    @classmethod
+    def get_test_class(cls):
+        """Return test class for regressor_online scitype."""
+        return None
+
+
 # ----------------------------------
 # Distribution scitypes
 # ----------------------------------
