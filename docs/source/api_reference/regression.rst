@@ -141,6 +141,7 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
 
     BaggingRegressor
     NGBoostRegressor
+    VotingProbaRegressor
 
 .. currentmodule:: skpro.regression.cyclic_boosting
 
