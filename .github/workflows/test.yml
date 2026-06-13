@@ -299,7 +299,7 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
 
-      - name: Install sktime and dependencies
+      - name: Install skpro and dependencies
         run: >
           uv pip install .[dev]
           --exclude-newer-package "setuptools=false"
