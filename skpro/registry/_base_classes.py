@@ -144,9 +144,9 @@ class regressor_online(_BaseScitypeOfObject):
     @classmethod
     def get_base_class(cls):
         """Return base class for regressor_online scitype."""
-        from skpro.regression.base import BaseOnlineRegressor
+        from skpro.regression.base import BaseProbaRegressor
 
-        return BaseOnlineRegressor
+        return BaseProbaRegressor
 
     @classmethod
     def get_test_class(cls):
