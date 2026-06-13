@@ -4,7 +4,7 @@
 __author__ = ["patelchaitany"]
 
 from skpro.regression.adapters.river._utils import is_river_estimator
-from skpro.regression.base import BaseOnlineRegressor
+from skpro.regression.base import BaseProbaRegressor
 
 
 def coerce_to_skpro_regressor(estimator):
@@ -22,7 +22,7 @@ def coerce_to_skpro_regressor(estimator):
         ``estimator`` unchanged if already an skpro regressor; otherwise a
         suitable adapter instance.
     """
-    if isinstance(estimator, BaseOnlineRegressor):
+    if isinstance(estimator, BaseProbaRegressor):
         return estimator
 
     if is_river_estimator(estimator):

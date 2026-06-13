@@ -14,10 +14,10 @@ from skpro.regression.adapters.river._utils import (
     _predict_batch,
     is_river_estimator,
 )
-from skpro.regression.base import BaseOnlineRegressor
+from skpro.regression.base import BaseProbaRegressor
 
 
-class RiverRegressor(BaseOnlineRegressor):
+class RiverRegressor(BaseProbaRegressor):
     """Adapter for River online regressors to the skpro point-prediction API.
 
     Wraps a River regressor and exposes ``fit``, ``update``, and ``predict``
@@ -60,6 +60,8 @@ class RiverRegressor(BaseOnlineRegressor):
     _tags = {
         "authors": ["patelchaitany"],
         "maintainers": ["patelchaitany", "fkiraly"],
+        "object_type": "regressor_online",
+        "estimator_type": "regressor",
         "python_dependencies": "river",
         "capability:update": True,
         "capability:pred_int": False,
