@@ -300,15 +300,16 @@ jobs:
         run: python -c "import sys; print(sys.version)"
 
       - name: Install sktime and dependencies
-        run: pip install .[dev,dependencies_2024]
+        run: >
+          uv pip install .[dev]
+          --exclude-newer-package "setuptools=false"
+          --exclude-newer-package "scikit-base=false"
         env:
           UV_SYSTEM_PYTHON: 1
+          UV_EXCLUDE_NEWER: "2024-09-01"
 
       - name: Show dependencies
-        run: python -m pip list
-
-      - name: Show available branches
-        run: git branch -a
+        run: uv pip list
 
       - name: Run tests
         run: make test
