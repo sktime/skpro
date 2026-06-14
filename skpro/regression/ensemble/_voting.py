@@ -41,6 +41,7 @@ class VotingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
     --------
     >>> from skpro.regression.ensemble import VotingProbaRegressor
     >>> from skpro.regression.residual import ResidualDouble
+    >>> from skpro.regression.linear import BayesianRidge
     >>> from sklearn.linear_model import LinearRegression
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.model_selection import train_test_split
@@ -49,7 +50,7 @@ class VotingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
     >>>
     >>> reg1 = ResidualDouble(LinearRegression())
-    >>> reg2 = ResidualDouble(LinearRegression())
+    >>> reg2 = BayesianRidge()
     >>>
     >>> voter = VotingProbaRegressor(
     ...     estimators=[("r1", reg1), ("r2", reg2)],
@@ -154,10 +155,11 @@ class VotingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
         """
         from sklearn.linear_model import LinearRegression
 
+        from skpro.regression.linear import BayesianRidge
         from skpro.regression.residual import ResidualDouble
 
         reg1 = ResidualDouble(LinearRegression())
-        reg2 = ResidualDouble(LinearRegression())
+        reg2 = BayesianRidge()
 
         params1 = {
             "estimators": [("r1", reg1), ("r2", reg2)],
