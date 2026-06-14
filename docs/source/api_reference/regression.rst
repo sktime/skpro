@@ -141,7 +141,6 @@ Formally, these algorithms are reduction algorithms, to tabular regression.
 
     BaggingRegressor
     NGBoostRegressor
-    VotingProbaRegressor
 
 .. currentmodule:: skpro.regression.cyclic_boosting
 
@@ -161,6 +160,18 @@ Reduction to probabilistic classification
     :template: class.rst
 
     HistBinnedProbaRegressor
+
+Heterogeneous ensembles of probabilistic regressors
+---------------------------------------------------
+
+.. currentmodule:: skpro.regression.ensemble
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    VotingProbaRegressor
+
 
 Distributional boosting
 -----------------------
