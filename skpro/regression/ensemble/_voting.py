@@ -74,13 +74,13 @@ class VotingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
 
         super().__init__()
 
-        # set capability tags as AND over all component estimators
-        # ensemble can only handle missing/survival if ALL components can
-        tags_to_and = ["capability:missing", "capability:survival"]
         est_list = self._estimators
-        for tag in tags_to_and:
-            tag_val = all(est.get_tag(tag, False) for _, est in est_list)
-            self.set_tags(**{tag: tag_val})
+
+        # self can handle missing data if and only if all components can
+        self._anytagis_then_set("capability:missing", False, True, est_list)
+
+        # self can handle survival data if and only if at least one component can
+        self._anytagis_then_set("capability:survival", True, False, est_list)
 
     @property
     def _estimators(self):
