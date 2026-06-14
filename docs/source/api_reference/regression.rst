@@ -161,6 +161,18 @@ Reduction to probabilistic classification
 
     HistBinnedProbaRegressor
 
+Heterogeneous ensembles of probabilistic regressors
+---------------------------------------------------
+
+.. currentmodule:: skpro.regression.ensemble
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    VotingProbaRegressor
+
+
 Distributional boosting
 -----------------------
 
