@@ -1,12 +1,18 @@
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import FunctionTransformer
 
 from skpro.regression.compose import Pipeline
 from skpro.regression.residual import ResidualDouble
+from skpro.tests.test_switch import run_test_for_class
 
 
+@pytest.mark.skipif(
+    not run_test_for_class([Pipeline, ResidualDouble]),
+    reason="run test only if tested object has changed",
+)
 def test_transformer_chaining_in_predict():
     """Ensure transformers are applied sequentially in pipeline."""
 

@@ -4,8 +4,13 @@ import pytest
 from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.regression.ondil import OndilOnlineGamlss
+from skpro.tests.test_switch import run_test_for_class
 
 
+@pytest.mark.skipif(
+    not run_test_for_class(OndilOnlineGamlss),
+    reason="run test only if tested object has changed",
+)
 @pytest.mark.skipif(
     not _check_soft_dependencies(["ondil"], severity="none"),
     reason="skip test if ondil is not installed in environment",
@@ -30,6 +35,10 @@ def test_ondil_instantiation_and_get_test_params():
     assert isinstance(est, OndilOnlineGamlss)
 
 
+@pytest.mark.skipif(
+    not run_test_for_class(OndilOnlineGamlss),
+    reason="run test only if tested object has changed",
+)
 @pytest.mark.skipif(
     not _check_soft_dependencies(["ondil"], severity="none"),
     reason="skip test if ondil is not installed in environment",
