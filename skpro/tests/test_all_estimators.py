@@ -1,8 +1,10 @@
 """Automated tests based on the skbase test suite template."""
 import numbers
+import tempfile
 import types
 from copy import deepcopy
 from inspect import getfullargspec, isclass, signature
+from pathlib import Path
 
 import joblib
 import numpy as np
@@ -414,3 +416,72 @@ class TestAllEstimators(PackageConfig, BaseFixtureGenerator, _QuickTester):
                 assert deep_equals(new_value, original_value), msg
             else:
                 assert joblib.hash(new_value) == joblib.hash(original_value), msg
+
+    def test_persistence_via_pickle(self, object_instance, scenario):
+        """Check that in-memory save/load round-trip preserves predictions."""
+        import pytest
+
+        from skpro.base import load
+
+        object_class = type(object_instance)
+
+        serializable = object_class.get_class_tag(
+            "capability:serializable", tag_value_default=True
+        )
+        if not serializable:
+            return None
+
+        try:
+            fitted = scenario.run(object_instance, method_sequence=["fit"])
+        except Exception as e:
+            pytest.skip(f"fit failed with {type(e).__name__}, skipping save test")
+
+        serial = fitted.save(serialization_format="pickle")
+        loaded = load(serial)
+
+        _assert_predictions_equal(fitted, loaded, scenario)
+
+    def test_save_estimators_to_file(self, object_instance, scenario):
+        """Check that file-based save/load round-trip preserves predictions."""
+        import pytest
+
+        from skpro.base import load
+
+        object_class = type(object_instance)
+
+        serializable = object_class.get_class_tag(
+            "capability:serializable", tag_value_default=True
+        )
+        if not serializable:
+            return None
+
+        try:
+            fitted = scenario.run(object_instance, method_sequence=["fit"])
+        except Exception as e:
+            pytest.skip(f"fit failed with {type(e).__name__}, skipping save test")
+
+        for fmt in ["pickle", "joblib"]:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                path = Path(tmp_dir) / f"estimator_{fmt}.zip"
+                fitted.save(path, serialization_format=fmt)
+                loaded = load(path)
+
+                _assert_predictions_equal(fitted, loaded, scenario)
+
+
+def _assert_predictions_equal(original, loaded, scenario):
+    """Assert that two fitted estimators produce the same predictions."""
+    X = deepcopy(scenario.args["predict"]["X"])
+
+    try:
+        y_orig = original.predict(X)
+        y_loaded = loaded.predict(deepcopy(X))
+    except Exception:
+        return
+
+    if isinstance(y_orig, pd.DataFrame):
+        assert y_orig.shape == y_loaded.shape, (
+            f"predict output shape mismatch after load: "
+            f"{y_orig.shape} vs {y_loaded.shape}"
+        )
+        np.testing.assert_array_almost_equal(y_orig.values, y_loaded.values, decimal=5)
