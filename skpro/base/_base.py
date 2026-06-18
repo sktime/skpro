@@ -14,12 +14,131 @@ class _CommonTags:
         "estimator_type": "estimator",
         "authors": "skpro developers",
         "maintainers": "skpro developers",
+        "capability:serializable": True,
     }
 
     @property
     def name(self):
         """Return the name of the object or estimator."""
         return self.__class__.__name__
+
+    def save(self, path=None, serialization_format="pickle"):
+        """Save serialized self to bytes-like object or to a (.zip) file.
+
+        Behaviour:
+            if ``path`` is None, returns an in-memory serialized ``(cls, bytes)``
+            tuple that can be deserialized with ``load``.
+            if ``path`` is a file location, writes a zip file to that location
+            containing the serialized object and class metadata.
+
+        Parameters
+        ----------
+        path : None or str or Path, optional (default=None)
+            if None, return the in-memory tuple ``(cls, bytes)``.
+            if str or Path, file location to write the zip archive to.
+            The path should end in ``.zip``; if it does not, ``.zip`` is appended.
+        serialization_format : str, optional (default="pickle")
+            The serialization backend to use. One of ``"pickle"`` or ``"joblib"``.
+
+        Returns
+        -------
+        If ``path`` is None: tuple ``(cls, bytes)``
+            where ``cls`` is the class of the object.
+        If ``path`` is str or Path: ``ZipFile``
+            reference to the written zip file.
+        """
+        import pickle
+        from io import BytesIO
+        from pathlib import Path as _Path
+        from zipfile import ZipFile
+
+        if serialization_format == "pickle":
+            serialized = pickle.dumps(self)
+        elif serialization_format == "joblib":
+            import joblib
+
+            buffer = BytesIO()
+            joblib.dump(self, buffer)
+            serialized = buffer.getvalue()
+        else:
+            raise ValueError(
+                f"serialization_format must be 'pickle' or 'joblib', "
+                f"but found: {serialization_format!r}"
+            )
+
+        if path is None:
+            return (type(self), serialized, serialization_format)
+
+        path = _Path(path)
+        if path.suffix != ".zip":
+            path = path.with_suffix(".zip")
+
+        with ZipFile(path, "w") as zf:
+            zf.writestr("_metadata", pickle.dumps(type(self)))
+            zf.writestr("_obj", serialized)
+            zf.writestr("_format", serialization_format)
+
+        return ZipFile(path, "r")
+
+    @classmethod
+    def load_from_serial(cls, serial, serialization_format="pickle"):
+        """Load object from serialized memory container.
+
+        Parameters
+        ----------
+        serial : bytes
+            In-memory serialized bytes of the object.
+        serialization_format : str, optional (default="pickle")
+            The format used to serialize. One of ``"pickle"`` or ``"joblib"``.
+
+        Returns
+        -------
+        Deserialized object.
+        """
+        if serialization_format == "joblib":
+            from io import BytesIO
+
+            import joblib
+
+            return joblib.load(BytesIO(serial))
+
+        import pickle
+
+        return pickle.loads(serial)
+
+    @classmethod
+    def load_from_path(cls, path):
+        """Load object from file location.
+
+        Parameters
+        ----------
+        path : str or Path
+            Path to the zip file containing the serialized object.
+
+        Returns
+        -------
+        Deserialized object.
+        """
+        import pickle
+        from pathlib import Path as _Path
+        from zipfile import ZipFile
+
+        path = _Path(path)
+        with ZipFile(path, "r") as zf:
+            fmt = "pickle"
+            if "_format" in zf.namelist():
+                fmt = zf.read("_format").decode("utf-8")
+
+            obj_bytes = zf.read("_obj")
+
+        if fmt == "joblib":
+            from io import BytesIO
+
+            import joblib
+
+            return joblib.load(BytesIO(obj_bytes))
+
+        return pickle.loads(obj_bytes)
 
 
 class BaseObject(_CommonTags, _BaseObject):
