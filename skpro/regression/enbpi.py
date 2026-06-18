@@ -32,9 +32,12 @@ class EnbpiRegressor(BaseProbaRegressor):
     The clones are aggregated to predict quantiles of the target distribution,
     following the original algorithms in [1]_ and [2]_.
 
-    Supports online learning via ``update``: each bootstrap clone is refit on a
-    bootstrap subsample of the new batch, and jackknife+ residuals are appended
-    to the conformity score pool.
+    Supports online learning via ``update``. On ``update``, the bootstrap
+    ensemble is not retrained. Instead, new non-conformity scores (residuals)
+    are computed from the incoming batch using the frozen ensemble, and a
+    sliding window of fixed size replaces the oldest scores with the new
+    ones. This allows the prediction intervals to adapt to distributional
+    changes over time without any model refitting.
 
     The parameters in the reference [2]_ are mapped to the parameters of the
     estimator as follows: :math:`\mathcal{A}` is ``estimator``, :math:`B` is
@@ -172,60 +175,16 @@ class EnbpiRegressor(BaseProbaRegressor):
         inst_ix = X.index
         n = len(inst_ix)
 
+        self.estimators_ = []
         self._cols = y.columns
-
-        estimators = [clone(estimator) for _ in range(n_bootstrap_samples)]
-        errs, bs_vs_ix, estimators = self._bootstrap_batch(X, y, estimators)
-
-        self.estimators_ = estimators
-        self._errs = errs
-        self._bs_vs_ix = bs_vs_ix
-        self._n_train = n
-
-        return self
-
-    def _update(self, X, y, C=None):
-        """Update regressor with a new batch of training data.
-
-        Each bootstrap clone is refit on a bootstrap subsample of the new batch.
-        Jackknife+ residuals from the new batch are appended to the stored
-        conformity scores, following the online EnbPI algorithm in [2]_.
-
-        Parameters
-        ----------
-        X : pandas DataFrame
-            feature instances to update with
-        y : pandas DataFrame, must be same length as X
-            labels to update with
-
-        Returns
-        -------
-        self : reference to self
-        """
-        errs, bs_vs_ix_new, estimators = self._bootstrap_batch(X, y, self.estimators_)
-        self.estimators_ = estimators
-
-        n_new = len(X)
-        self._bs_vs_ix = np.pad(self._bs_vs_ix, ((0, n_new), (0, 0)), constant_values=0)
-        self._bs_vs_ix[-n_new:, :] = bs_vs_ix_new
-        self._errs = np.concatenate([self._errs, errs], axis=0)
-        self._n_train += n_new
-
-        return self
-
-    def _bootstrap_batch(self, X, y, estimators):
-        """Bootstrap-fit clones on a batch and compute jackknife+ residuals."""
-        n_bootstrap_samples = self.n_bootstrap_samples
-        inst_ix = X.index
-        n = len(inst_ix)
 
         X = prep_skl_df(X, copy_df=True)
 
-        y_pred_bs = np.ones((n_bootstrap_samples, n, y.shape[1])) * np.nan
+        y_pred_bs = np.ones((n_bootstrap_samples,) + y.shape) * np.nan
         bs_vs_ix = np.zeros((n, n_bootstrap_samples))
 
         for i in range(n_bootstrap_samples):
-            esti = estimators[i]
+            esti = clone(estimator)
             row_iloc = pd.RangeIndex(n)
             row_ss = _random_ss_ix(
                 row_iloc, size=n, replace=self.replace, random_state=self._random_state
@@ -239,12 +198,12 @@ class EnbpiRegressor(BaseProbaRegressor):
             yi = y.loc[inst_ix_i].values
             yi = flatten_to_1D_if_colvector(yi)
 
-            estimators[i] = esti.fit(Xi, yi)
+            self.estimators_ += [esti.fit(Xi, yi)]
 
             y_pred = esti.predict(X)
-            y_pred_bs[i] = _coerce_numpy2d(y_pred)
+            y_pred_bs[[i]] = _coerce_numpy2d(y_pred)
 
-        y_pred_insample = np.ones((n, y.shape[1])) * np.nan
+        y_pred_insample = np.ones(y.shape) * np.nan
 
         for i in range(n):
             y_pred_insample[[i], :] = self._pred_phi_sans_i(
@@ -255,7 +214,55 @@ class EnbpiRegressor(BaseProbaRegressor):
         if self.symmetrize:
             errs = np.abs(errs)
 
-        return errs, bs_vs_ix, estimators
+        self._errs = errs
+        self._bs_vs_ix = bs_vs_ix
+        self._n_train = n
+
+        return self
+
+    def _update(self, X, y, C=None):
+        """Online update of conformity scores.
+
+        The bootstrap ensemble is kept frozen. New non-conformity scores
+        are computed from the incoming batch using the frozen ensemble
+        predictions. A sliding window of fixed size (equal to the original
+        training set size) is maintained: the oldest scores are discarded
+        and the new scores are appended, so that the prediction intervals
+        reflect recent data volatility.
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to update with
+        y : pandas DataFrame, must be same length as X
+            labels to update with
+
+        Returns
+        -------
+        self : reference to self
+        """
+        n_new = len(X)
+        n_cols = y.shape[1]
+        n_est = self.n_bootstrap_samples
+
+        X_skl = prep_skl_df(X, copy_df=True)
+
+        y_preds = np.zeros((n_est, n_new, n_cols))
+        for i, est in enumerate(self.estimators_):
+            y_preds[i] = _coerce_numpy2d(est.predict(X_skl))
+
+        y_pred_agg = self._agg_preds(y_preds)
+
+        errs = y.values - y_pred_agg
+        if self.symmetrize:
+            errs = np.abs(errs)
+
+        new_bs_vs_ix = np.zeros((n_new, n_est))
+
+        self._errs = np.concatenate([self._errs[n_new:], errs], axis=0)
+        self._bs_vs_ix = np.concatenate([self._bs_vs_ix[n_new:], new_bs_vs_ix], axis=0)
+
+        return self
 
     def _pred_phi_sans_i(self, y_preds, i, bs_vs_ix):
         # y_preds - (n_bootstrap_samples, n_samples, n_vars)
