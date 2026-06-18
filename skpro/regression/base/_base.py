@@ -298,7 +298,10 @@ class BaseProbaRegressor(BaseEstimator):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
+        # check that self is fitted, if not raise exception
+        self.check_is_fitted()
         self._check_pred_int_capability()
+
         X = self._check_X(X)
 
         y_pred = self._predict_proba(X)
