@@ -4,6 +4,7 @@
 __author__ = ["patelchaitany"]
 
 import pandas as pd
+from skbase.utils.dependencies import _check_soft_dependencies
 
 
 def is_river_estimator(obj):
@@ -19,19 +20,13 @@ def is_river_estimator(obj):
     bool
         True if ``obj`` is a River estimator, False otherwise.
     """
-    if obj is None:
+    # if river is not present, obj cannot be a river estimator
+    if not _check_soft_dependencies("river", severity="none"):
         return False
 
-    mod = getattr(type(obj), "__module__", "")
-    if not mod.startswith("river"):
-        return False
+    from river import base
 
-    try:
-        from river import base
-
-        return isinstance(obj, base.Estimator)
-    except ImportError:
-        return mod.startswith("river")
+    return isinstance(obj, base.Estimator)
 
 
 def _ensure_str_columns(X):

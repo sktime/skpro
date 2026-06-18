@@ -60,7 +60,7 @@ class RiverRegressor(BaseProbaRegressor):
     _tags = {
         "authors": ["patelchaitany"],
         "maintainers": ["patelchaitany", "fkiraly"],
-        "object_type": "regressor_online",
+        "object_type": "regressor_proba",
         "estimator_type": "regressor",
         "python_dependencies": "river",
         "capability:update": True,
