@@ -44,7 +44,7 @@ class Gumbel(_ScipyAdapter):
     _tags = {
         # packaging info
         # --------------
-        "authors": ["direkkakkar319"],
+        "authors": ["direkkakkar319-ops"],
         # estimator tags
         # --------------
         "capabilities:approx": ["energy", "pdfnorm"],
