@@ -3,7 +3,7 @@
 
 __author__ = ["fkiraly"]
 
-from sklearn.utils import check_random_state
+from skpro.utils.random_state import check_random_state
 
 
 def _random_ss_ix(ix, size, replace=True, random_state=None):
