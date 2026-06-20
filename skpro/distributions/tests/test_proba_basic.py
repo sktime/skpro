@@ -334,3 +334,28 @@ def test_pmf_support_method():
     support = delta._pmf_support(3, 4)
     assert isinstance(support, np.ndarray)
     assert len(support) == 0
+
+def test_none_required_numeric_params_rejected():
+    """Required numeric params should not accept None."""
+    import pytest
+
+    from skpro.distributions.cauchy import Cauchy
+    from skpro.distributions.gumbel_l import GumbelL
+    from skpro.distributions.gumbel_r import GumbelR
+    from skpro.distributions.laplace import Laplace
+    from skpro.distributions.normal import Normal
+
+    with pytest.raises(ValueError, match="must not be None"):
+        Normal(mu=None, sigma=None)
+
+    with pytest.raises(ValueError, match="must not be None"):
+        Laplace(mu=None, scale=None)
+
+    with pytest.raises(ValueError, match="must not be None"):
+        Cauchy(mu=None, scale=None)
+
+    with pytest.raises(ValueError, match="must not be None"):
+        GumbelL(mu=None, sigma=None)
+
+    with pytest.raises(ValueError, match="must not be None"):
+        GumbelR(mu=None, sigma=None)

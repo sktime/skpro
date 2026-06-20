@@ -52,6 +52,9 @@ class Normal(BaseDistribution):
     }
 
     def __init__(self, mu, sigma, index=None, columns=None):
+        if mu is None or sigma is None:
+           raise ValueError("mu and sigma must not be None")
+    
         self.mu = mu
         self.sigma = sigma
 
