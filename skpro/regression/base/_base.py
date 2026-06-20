@@ -223,6 +223,8 @@ class BaseProbaRegressor(BaseEstimator):
         y : pandas DataFrame, same length as `X`
             labels predicted for `X`
         """
+        self.check_is_fitted()
+
         X = self._check_X(X)
 
         y_pred = self._predict(X)
@@ -289,6 +291,8 @@ class BaseProbaRegressor(BaseEstimator):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
+        self.check_is_fitted()
+
         X = self._check_X(X)
 
         y_pred = self._predict_proba(X)
