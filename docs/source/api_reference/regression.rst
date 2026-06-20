@@ -224,6 +224,7 @@ Linear regression
     GLMRegressor
     GlumRegressor
     PoissonRegressor
+    StatsmodelsPoissonRegressor
 
 Generalized Additive Models
 ---------------------------
