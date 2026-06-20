@@ -5,6 +5,7 @@ import pandas as pd
 from scipy.stats import binom, rv_discrete
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
+from skpro.distributions.base._set import IntegerSet
 
 
 class Binomial(_ScipyAdapter):
@@ -58,6 +59,23 @@ class Binomial(_ScipyAdapter):
         p = self._bc_params["p"]
 
         return [], {"n": n, "p": p}
+
+    def _support(self):
+        r"""Return the support of the Binomial distribution.
+
+        The support is the set of integers :math:`\{0, 1, \ldots, n\}`.
+
+        Returns
+        -------
+        IntegerSet
+            ``IntegerSet(lower=0, upper=n)``.
+        """
+        return IntegerSet(
+            lower=0,
+            upper=self._bc_params["n"],
+            index=self.index,
+            columns=self.columns,
+        )
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
