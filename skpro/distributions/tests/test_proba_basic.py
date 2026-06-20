@@ -141,7 +141,6 @@ def test_proba_plotting(fun):
     assert isinstance(ax, Axes)
 
 
-@pytest.mark.skip(reason="Undiagnosed failure. Skipping until resolved. See #918.")
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip if matplotlib is not available",
@@ -149,12 +148,13 @@ def test_proba_plotting(fun):
 def test_discrete_pmf_plotting():
     """Test that discrete PMF plotting uses stem plots."""
     from matplotlib.axes import Axes
+    from matplotlib.container import StemContainer
 
     from skpro.distributions.binomial import Binomial
 
     # Test Binomial PMF plotting
     n = Binomial(n=10, p=0.5)
-    ax = n.plot(fun="pmf")
+    ax = n.plot(fun="pmf", x_bounds=(0, n.n))
     assert isinstance(ax, Axes)
 
     # Check that stem plot was used (should have containers)
@@ -163,11 +163,14 @@ def test_discrete_pmf_plotting():
     # For small distributions, check that all support points are plotted
     # Binomial(n=10) has support [0,1,2,...,10] = 11 points
     # The stem plot should have evaluated at these points
-    if hasattr(ax.containers[0], "get_children"):
-        # This is a rough check - the stem plot should have multiple elements
-        assert (
-            len(ax.containers[0].get_children()) > 5
-        ), "Should plot at multiple support points"
+    assert isinstance(ax.containers[0], StemContainer)
+    # A StemContainer has a markerline, stemlines, and baseline
+    # We check the number of markers to verify multiple points are plotted
+    x_data = ax.containers[0].markerline.get_xdata()
+    assert len(x_data) == n.n + 1, "Should plot at all support points"
+    assert all(
+        x_data == np.arange(n.n + 1)
+    ), "Stem plot x_data should cover full support [0,...,n]"
 
 
 def test_to_df_parametric():
