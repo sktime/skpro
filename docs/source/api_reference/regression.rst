@@ -22,6 +22,7 @@ Composition
     :toctree: auto_generated/
     :template: class.rst
 
+    JohnsonQPDRegressor
     Pipeline
     TransformedTargetRegressor
 
