@@ -12,6 +12,9 @@ from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.tests.test_switch import run_test_module_changed
 
+from skpro.distributions.normal import Normal
+from skpro.distributions.laplace import Laplace
+
 
 @pytest.mark.skip(reason="Undiagnosed failure. Skipping until resolved. See #918.")
 def test_proba_example():
@@ -334,3 +337,18 @@ def test_pmf_support_method():
     support = delta._pmf_support(3, 4)
     assert isinstance(support, np.ndarray)
     assert len(support) == 0
+
+
+def test_normal_nonpositive_sigma_rejected():
+    with pytest.raises(ValueError, match="sigma must be positive"):
+       Normal(mu=0, sigma=-1)
+
+    with pytest.raises(ValueError, match="sigma must be positive"):
+        Normal(mu=0, sigma=0)
+
+def test_laplace_nonpositive_scale_rejected():
+    with pytest.raises(ValueError, match="scale must be positive"):
+       Laplace(mu=0, scale=-1)
+
+    with pytest.raises(ValueError, match="scale must be positive"):
+        Laplace(mu=0, scale=0)
