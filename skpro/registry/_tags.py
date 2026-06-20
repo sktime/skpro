@@ -235,7 +235,7 @@ class capability__survival(_BaseTag):
 
     _tags = {
         "tag_name": "capability:survival",
-        "parent_type": ["regressor_proba", "metric"],
+        "parent_type": ["regressor_proba", "classifier_proba", "metric"],
         "tag_type": "bool",
         "short_descr": "whether estimator can use censoring information,"
         " for survival analysis",
@@ -247,9 +247,9 @@ class capability__multioutput(_BaseTag):
 
     _tags = {
         "tag_name": "capability:multioutput",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "classifier_proba"],
         "tag_type": "bool",
-        "short_descr": "whether estimator supports multioutput regression",
+        "short_descr": "whether estimator supports multioutput regression/classification",
     }
 
 
@@ -258,7 +258,7 @@ class capability__missing(_BaseTag):
 
     _tags = {
         "tag_name": "capability:missing",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "classifier_proba"],
         "tag_type": "bool",
         "short_descr": "whether estimator supports missing values",
     }
@@ -269,7 +269,7 @@ class capability__update(_BaseTag):
 
     _tags = {
         "tag_name": "capability:update",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "classifier_proba"],
         "tag_type": "bool",
         "short_descr": "whether estimator supports online updates via update",
     }
@@ -280,7 +280,7 @@ class X_inner_mtype(_BaseTag):
 
     _tags = {
         "tag_name": "X_inner_mtype",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "classifier_proba"],
         "tag_type": ("list", "str"),
         "short_descr": "which machine type(s) is the"
         " internal _fit/_predict able to deal with?",
@@ -292,7 +292,7 @@ class y_inner_mtype(_BaseTag):
 
     _tags = {
         "tag_name": "y_inner_mtype",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "classifier_proba"],
         "tag_type": ("list", "str"),
         "short_descr": "which machine type(s) is the"
         " internal _fit/_predict able to deal with?",
@@ -304,7 +304,7 @@ class C_inner_mtype(_BaseTag):
 
     _tags = {
         "tag_name": "C_inner_mtype",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "classifier_proba"],
         "tag_type": ("list", "str"),
         "short_descr": "which machine type(s) is the "
         "internal _fit/_predict able to deal with?",
