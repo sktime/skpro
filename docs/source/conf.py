@@ -271,7 +271,7 @@ nbsphinx_timeout = 600  # seconds, set to -1 to disable timeout
 current_file = "{{ env.doc2path( env.docname, base=None) }}"
 
 # make sure Binder points to latest stable release, not main
-binder_base = "https://mybinder.org/v2/gh//skpro/"
+binder_base = "https://mybinder.org/v2/gh/sktime/skpro/v2.11.0"
 binder_url = binder_base + f"{version_match}?filepath={current_file}"
 nbsphinx_prolog = f"""
 .. |binder| image:: https://mybinder.org/badge_logo.svg
