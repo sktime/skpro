@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 from skpro.distributions.qpd import QPD_Johnson
+from skpro.regression._dist_utils import _normalize_dist_str
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -83,11 +84,11 @@ class CyclicBoosting(BaseProbaRegressor):
         be on a bounded interval, with support between ``lower`` and ``upper``.
     maximal_iterations : int, default=10
         maximum number of iterations for the cyclic boosting algorithm
-    dist_type: str, one of ``'normal'`` (default), ``'logistic'``
+    dist_type: str, default ``'Normal'``
         inner base distribution to use for the Johnson QPD, i.e., before
-        arcosh and similar transformations.
-        Available options are ``'normal'`` (default), ``'logistic'``,
-        or ``'sinhlogistic'``.
+        arcosh and similar transformations. Common aliases are accepted for backwards
+        compatibility. Available options: ``"Normal"``, ``"Logistic"``,
+        ``"SinhLogistic"``.
 
     Attributes
     ----------
@@ -308,6 +309,8 @@ class CyclicBoosting(BaseProbaRegressor):
             self.quantile_values.append(yhat)
 
         # Johnson Quantile-Parameterized Distributions
+        # normalize alias to canonical name, then lowercase for QPD_Johnson
+        dist_type = _normalize_dist_str(self.dist_type).lower()
         params = {
             "alpha": self.alpha,
             "qv_low": self.quantile_values[0].reshape(-1, 1),
@@ -315,7 +318,7 @@ class CyclicBoosting(BaseProbaRegressor):
             "qv_high": self.quantile_values[2].reshape(-1, 1),
             "lower": self.lower,
             "upper": self.upper,
-            "base_dist": self.dist_type,
+            "base_dist": dist_type,
             "index": index,
             "columns": y_cols,
         }

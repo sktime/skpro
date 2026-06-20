@@ -1,4 +1,5 @@
 """Adapters to ngboost regressors with probabilistic components."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 __author__ = ["ShreeshaM07"]
@@ -18,16 +19,11 @@ class NGBoostRegressor(BaseProbaRegressor, NGBoostAdapter):
     Parameters
     ----------
     dist : string , default = "Normal"
-        distribution that must be used for
-        probabilistic prediction.
-        Available distribution types
-
-        1. "Normal"
-        2. "Laplace"
-        3. "LogNormal"
-        4. "Poisson"
-        5. "TDistribution"
-        6. "Exponential"
+        Distribution for probabilistic prediction. The canonical skpro class
+        name should be passed. Common aliases are accepted for backwards
+        compatibility. Available options: ``"Normal"``, ``"Laplace"``,
+        ``"LogNormal"``, ``"Poisson"``, ``"TDistribution"``,
+        ``"Exponential"``.
 
     score : string , default = "LogScore"
         A score from ngboost.scores for LogScore

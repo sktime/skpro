@@ -4,6 +4,7 @@ import warnings
 
 from skbase.utils.dependencies import _check_soft_dependencies
 
+from skpro.regression._dist_utils import _normalize_dist_str
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -15,17 +16,12 @@ class XGBoostLSS(BaseProbaRegressor):
     Parameters
     ----------
     dist: str, optional, default="Normal"
-        Form of predictive distribution, strings are same as in skpro.
+        Form of predictive distribution. The canonical name of the skpro
+        distribution class should be passed, e.g., ``"Normal"``, ``"Gamma"``.
+        Common aliases are accepted for backwards compatibility.
 
-        Valid options are:
-
-        * "Normal": Normal distribution.
-        * "Gamma": Gamma distribution.
-        * "Laplace": Laplace distribution.
-        * "LogNormal": LogNormal distribution.
-        * "TDistribution": Student's T distribution.
-        * "Weibull": Weibull distribution.
-        * "Beta": Beta distribution.
+        Valid options are: ``"Normal"``, ``"Gamma"``, ``"Laplace"``,
+        ``"LogNormal"``, ``"TDistribution"``, ``"Weibull"``, ``"Beta"``.
 
     stabilization: str, optional, default="None"
         Stabilization method for the Gradient and Hessian.
@@ -277,6 +273,8 @@ class XGBoostLSS(BaseProbaRegressor):
         """
         import importlib
 
+        distr = _normalize_dist_str(distr)
+
         SKPRO_TO_XGBLSS = {
             "Normal": "Gaussian",
             "TDistribution": "StudentT",
@@ -300,6 +298,7 @@ class XGBoostLSS(BaseProbaRegressor):
         """
         import importlib
 
+        distr = _normalize_dist_str(distr)
         module_str = "skpro.distributions"
         object_str = distr
 
@@ -318,6 +317,7 @@ class XGBoostLSS(BaseProbaRegressor):
         df : pd.DataFrame
             DataFrame of parameters as returned by predict, in xgboostlss.
         """
+        distr = _normalize_dist_str(distr)
         name_map = {
             "Normal": {"mu": "loc", "sigma": "scale"},
             "Gamma": {"alpha": "concentration", "beta": "rate"},

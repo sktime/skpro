@@ -15,6 +15,7 @@ parameters (e.g., columns for location/scale) these are converted to a
 ``skpro.distributions`` object; otherwise an informative error is raised.
 """
 
+from skpro.regression._dist_utils import _normalize_dist_str
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -188,7 +189,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
                 raise TypeError("Unrecognized predict output from ondil: %s" % e)
 
         # decide mapping based on requested distribution
-        dist = self.distribution
+        dist = _normalize_dist_str(self.distribution)
         # import skpro distributions lazily
         distr_mod = importlib.import_module("skpro.distributions")
 

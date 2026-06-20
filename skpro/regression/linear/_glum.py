@@ -11,6 +11,7 @@ from skpro.distributions.gamma import Gamma
 from skpro.distributions.negative_binomial import NegativeBinomial
 from skpro.distributions.normal import Normal
 from skpro.distributions.poisson import Poisson
+from skpro.regression._dist_utils import _normalize_dist_str
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -24,10 +25,11 @@ class GlumRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    family : str or ExponentialDispersionModel, default='normal'
-        The distributional assumption of the GLM.
-        One of: 'binomial', 'gamma', 'gaussian', 'inverse.gaussian',
-        'normal', 'poisson', 'tweedie', 'negative.binomial'.
+    family : str or ExponentialDispersionModel, default='Normal'
+        The distributional assumption of the GLM. The canonical skpro class
+        name should be passed. Common aliases are accepted for backwards
+        compatibility. Available options: ``"Normal"``, ``"Poisson"``,
+        ``"Gamma"``, ``"NegativeBinomial"``.
     link : str or Link, default='auto'
         The link function of the GLM.
         If 'auto', the canonical link for the family is used.
@@ -133,7 +135,7 @@ class GlumRegressor(BaseProbaRegressor):
 
     def __init__(
         self,
-        family="normal",
+        family="Normal",
         link="auto",
         alpha=None,
         l1_ratio=0,
@@ -196,11 +198,11 @@ class GlumRegressor(BaseProbaRegressor):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
-        params1 = {"family": "normal"}
-        params2 = {"family": "gamma", "link": "log"}
-        params3 = {"family": "poisson"}
-        params4 = {"family": "negative.binomial"}
-        params5 = {"family": "normal", "alpha": 0.1, "l1_ratio": 0.5}
+        params1 = {"family": "Normal"}
+        params2 = {"family": "Gamma", "link": "log"}
+        params3 = {"family": "Poisson"}
+        params4 = {"family": "NegativeBinomial"}
+        params5 = {"family": "Normal", "alpha": 0.1, "l1_ratio": 0.5}
         return [params1, params2, params3, params4, params5]
 
     def _fit(self, X, y):
@@ -312,30 +314,34 @@ class GlumRegressor(BaseProbaRegressor):
             The predicted distribution.
         """
         mu = self._predict(X)
-        family = self.family
 
-        if isinstance(family, str):
-            family_str = family.lower()
-        else:
-            # If family is an object, we need to infer the type
-            # This is tricky, but let's assume string for now as per init
-            family_str = str(family).lower()
+        # handle glum's 'negative.binomial(theta)' string format before normalizing
+        family_raw = self.family
+        theta_from_str = None
+        if isinstance(family_raw, str) and "(" in family_raw:
+            try:
+                theta_from_str = float(family_raw.split("(")[1].split(")")[0])
+                family_raw = family_raw.split("(")[0].strip()
+            except ValueError:
+                pass
 
-        if "normal" in family_str or "gaussian" in family_str:
+        family = _normalize_dist_str(family_raw)
+
+        if family == "Normal":
             # Normal distribution
             # Variance = dispersion * v(mu) = dispersion * 1 = dispersion
             # So sigma = sqrt(dispersion)
             sigma = np.sqrt(self.dispersion_)
             return Normal(mu=mu, sigma=sigma, index=X.index, columns=self._y_cols)
 
-        elif "poisson" in family_str:
+        elif family == "Poisson":
             # Poisson distribution
             # skpro Poisson takes mu.
             # If dispersion != 1, it's not standard Poisson.
             # But skpro Poisson is standard.
             return Poisson(mu=mu, index=X.index, columns=self._y_cols)
 
-        elif "gamma" in family_str:
+        elif family == "Gamma":
             # Gamma distribution
             # mu = alpha / beta
             # var = alpha / beta^2 = dispersion * mu^2
@@ -345,24 +351,17 @@ class GlumRegressor(BaseProbaRegressor):
             beta = 1.0 / (self.dispersion_ * mu)
             return Gamma(alpha=alpha, beta=beta, index=X.index, columns=self._y_cols)
 
-        elif "negative.binomial" in family_str:
+        elif family == "NegativeBinomial":
             # Negative Binomial
             # var = mu + theta * mu^2
             # skpro NB takes mu and alpha (where var = mu + mu^2/alpha)
             # So alpha_skpro = 1/theta_glum
 
-            # We need to extract theta from family string or object
-            # If family is string like 'negative.binomial(1.5)', theta is 1.5
-            # If family is 'negative.binomial', theta is default 1.0?
-
             theta = 1.0
-            if "(" in family_str:
-                try:
-                    theta = float(family_str.split("(")[1].split(")")[0])
-                except ValueError:
-                    pass
-
-            # Also check if family_instance has theta
+            # theta extracted from string like 'negative.binomial(1.5)'
+            if theta_from_str is not None:
+                theta = theta_from_str
+            # family_instance theta takes precedence if available
             if hasattr(self.estimator_.family_instance, "theta"):
                 theta = self.estimator_.family_instance.theta
 
