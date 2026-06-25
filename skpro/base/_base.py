@@ -28,8 +28,9 @@ class _CommonTags:
         Behaviour:
             if ``path`` is None, returns an in-memory serialized ``(cls, bytes)``
             tuple that can be deserialized with ``load``.
-            if ``path`` is a file location, writes a zip file to that location
-            containing the serialized object and class metadata.
+            if ``path`` is a file location, writes a zip file with recursive
+            structure: each sub-component in its own subfolder, plus a
+            ``manifest.json`` blueprint with topological load order.
 
         Parameters
         ----------
@@ -47,37 +48,37 @@ class _CommonTags:
         If ``path`` is str or Path: ``ZipFile``
             reference to the written zip file.
         """
-        import pickle
-        from io import BytesIO
-        from pathlib import Path as _Path
-        from zipfile import ZipFile
-
-        if serialization_format == "pickle":
-            serialized = pickle.dumps(self)
-        elif serialization_format == "joblib":
-            import joblib
-
-            buffer = BytesIO()
-            joblib.dump(self, buffer)
-            serialized = buffer.getvalue()
-        else:
+        if serialization_format not in ("pickle", "joblib"):
             raise ValueError(
                 f"serialization_format must be 'pickle' or 'joblib', "
                 f"but found: {serialization_format!r}"
             )
 
         if path is None:
+            import pickle
+            from io import BytesIO
+
+            if serialization_format == "pickle":
+                serialized = pickle.dumps(self)
+            else:
+                import joblib
+
+                buffer = BytesIO()
+                joblib.dump(self, buffer)
+                serialized = buffer.getvalue()
+
             return (type(self), serialized, serialization_format)
+
+        from pathlib import Path as _Path
+        from zipfile import ZipFile
+
+        from skpro.base._recursive_serialize import recursive_save_to_zip
 
         path = _Path(path)
         if path.suffix != ".zip":
             path = path.with_suffix(".zip")
 
-        with ZipFile(path, "w") as zf:
-            zf.writestr("_metadata", pickle.dumps(type(self)))
-            zf.writestr("_obj", serialized)
-            zf.writestr("_format", serialization_format)
-
+        recursive_save_to_zip(self, path, serialization_format)
         return ZipFile(path, "r")
 
     @classmethod
@@ -110,6 +111,8 @@ class _CommonTags:
     def load_from_path(cls, path):
         """Load object from file location.
 
+        Supports both v1 (flat) and v2 (recursive/manifest) zip formats.
+
         Parameters
         ----------
         path : str or Path
@@ -123,8 +126,15 @@ class _CommonTags:
         from pathlib import Path as _Path
         from zipfile import ZipFile
 
+        from skpro.base._recursive_serialize import is_v1_zip, recursive_load_from_zip
+
         path = _Path(path)
+
         with ZipFile(path, "r") as zf:
+            if not is_v1_zip(zf.namelist()):
+                return recursive_load_from_zip(path)
+
+            # v1 flat format (backward compatibility)
             fmt = "pickle"
             if "_format" in zf.namelist():
                 fmt = zf.read("_format").decode("utf-8")

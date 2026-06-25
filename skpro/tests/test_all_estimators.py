@@ -443,6 +443,8 @@ class TestAllEstimators(PackageConfig, BaseFixtureGenerator, _QuickTester):
 
     def test_save_estimators_to_file(self, object_instance, scenario):
         """Check that file-based save/load round-trip preserves predictions."""
+        import json
+
         import pytest
 
         from skpro.base import load
@@ -464,6 +466,20 @@ class TestAllEstimators(PackageConfig, BaseFixtureGenerator, _QuickTester):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 path = Path(tmp_dir) / f"estimator_{fmt}.zip"
                 fitted.save(path, serialization_format=fmt)
+
+                from zipfile import ZipFile
+
+                with ZipFile(path, "r") as zf:
+                    names = zf.namelist()
+                    assert "manifest.json" in names
+                    assert "_version" in names
+
+                    manifest = json.loads(zf.read("manifest.json"))
+                    assert manifest["version"] == 2
+                    assert "root" in manifest["components"]
+                    assert "load_order" in manifest
+                    assert manifest["load_order"][-1] == "root"
+
                 loaded = load(path)
 
                 _assert_predictions_equal(fitted, loaded, scenario)
@@ -484,4 +500,96 @@ def _assert_predictions_equal(original, loaded, scenario):
             f"predict output shape mismatch after load: "
             f"{y_orig.shape} vs {y_loaded.shape}"
         )
+        np.testing.assert_array_almost_equal(y_orig.values, y_loaded.values, decimal=5)
+
+
+def test_backward_compat_v1_load():
+    """Test that v1 flat zip files can still be loaded."""
+    import pickle
+    import tempfile
+    from zipfile import ZipFile
+
+    from sklearn.datasets import load_diabetes
+    from sklearn.model_selection import train_test_split
+
+    from skpro.base import load
+    from skpro.regression.residual import ResidualDouble
+
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
+    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=42)
+
+    est = ResidualDouble.create_test_instance()
+    est.fit(X_train, y_train)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        path = Path(tmp_dir) / "v1_estimator.zip"
+
+        # manually create a v1 flat zip (no manifest.json)
+        with ZipFile(path, "w") as zf:
+            zf.writestr("_metadata", pickle.dumps(type(est)))
+            zf.writestr("_obj", pickle.dumps(est))
+            zf.writestr("_format", "pickle")
+
+        loaded = load(path)
+
+        y_orig = est.predict(X_test.copy())
+        y_loaded = loaded.predict(X_test.copy())
+
+        np.testing.assert_array_almost_equal(y_orig.values, y_loaded.values, decimal=5)
+
+
+def test_recursive_serialization_composite():
+    """Test that composite objects produce correct recursive zip structure."""
+    import json
+    import tempfile
+    from zipfile import ZipFile
+
+    import pytest
+
+    from skpro.base import load
+
+    try:
+        from skpro.regression.ensemble import VotingProbaRegressor
+        from skpro.regression.residual import ResidualDouble
+    except ImportError:
+        pytest.skip("VotingProbaRegressor or ResidualDouble not available")
+
+    from sklearn.datasets import load_diabetes
+    from sklearn.linear_model import LinearRegression
+    from sklearn.model_selection import train_test_split
+
+    X, y = load_diabetes(return_X_y=True, as_frame=True)
+    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=42)
+
+    reg1 = ResidualDouble(LinearRegression())
+    reg2 = ResidualDouble(LinearRegression())
+    voter = VotingProbaRegressor(estimators=[("r1", reg1), ("r2", reg2)])
+    voter.fit(X_train, y_train)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        path = Path(tmp_dir) / "voter.zip"
+        voter.save(path)
+
+        with ZipFile(path, "r") as zf:
+            manifest = json.loads(zf.read("manifest.json"))
+
+            # root should be composite
+            assert manifest["components"]["root"]["is_leaf"] is False
+            assert len(manifest["components"]["root"]["children"]) > 0
+
+            # load order: root must be last
+            order = manifest["load_order"]
+            root_idx = order.index("root")
+            for child_id in manifest["components"]["root"]["children"]:
+                child_idx = order.index(child_id)
+                assert child_idx < root_idx, (
+                    f"Child {child_id} (idx={child_idx}) must come before "
+                    f"root (idx={root_idx}) in load_order"
+                )
+
+        loaded = load(path)
+
+        y_orig = voter.predict(X_test.copy())
+        y_loaded = loaded.predict(X_test.copy())
+
         np.testing.assert_array_almost_equal(y_orig.values, y_loaded.values, decimal=5)
