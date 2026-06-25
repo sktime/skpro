@@ -54,6 +54,12 @@ def load(serial):
                 "Files saved by skpro's save method have a .zip extension."
             )
         with ZipFile(path, "r") as zf:
+            if "manifest.json" in zf.namelist():
+                from skpro.base._recursive_serialize import recursive_load_from_zip
+
+                return recursive_load_from_zip(path)
+
+            # v1 flat format
             cls = pickle.loads(zf.read("_metadata"))
         return cls.load_from_path(path)
 
