@@ -183,6 +183,10 @@ class MOMFitter(BaseDistFitter):
             "std_name": "sigma",
             "dist_params": {"df": 5},
         }
-        params5 = {"dist": Laplace(mu=0.0, scale=1.0)}
-        params6 = {"dist": TDistribution(df=5), "mean_name": "mu", "std_name": "sigma"}
+        params5 = {"dist": Laplace(mu=0.0, scale=1.0), "mean_name": "mu"}
+        params6 = {
+            "dist": TDistribution(df=5, mu=0.0, sigma=1.0),
+            "mean_name": "mu",
+            "std_name": "sigma",
+        }
         return [params1, params2, params3, params4, params5, params6]
