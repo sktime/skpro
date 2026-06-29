@@ -12,5 +12,5 @@ def test_get_params_deep_with_dist_cls():
     fitter = MOMFitter(dist=Normal, mean_name="mu", std_name="sigma")
     params = fitter.get_params(deep=True)
 
-    assert params["dist_cls"] is Normal
-    assert "dist_cls__" not in params
+    assert params["dist"] is Normal
+    assert "dist__" not in params
