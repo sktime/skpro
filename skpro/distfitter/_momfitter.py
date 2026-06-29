@@ -122,7 +122,7 @@ class MOMFitter(BaseDistFitter):
         ValueError
             If no known standard deviation parameter is found.
         """
-        param_names = self._dist.get_param_names()  # list(sig.parameters.keys())
+        param_names = self.dist.get_param_names()  # list(sig.parameters.keys())
 
         candidates = ["sigma", "scale"]
         for candidate in candidates:
