@@ -4,8 +4,8 @@ from skpro.distfitter import MOMFitter
 from skpro.distributions.normal import Normal
 
 
-def test_get_params_deep_with_dist_cls(self):
-    """get_params(deep=True) works when dist_cls is a distribution class.
+def test_get_params_deep_with_dist_cls():
+    """get_params(deep=True) works when dist is a distribution class.
 
     Requires scikit-base>=1.0.1 (sktime/skbase#559).
     """
