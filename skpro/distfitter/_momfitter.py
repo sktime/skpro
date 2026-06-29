@@ -26,8 +26,7 @@ class MOMFitter(BaseDistFitter):
     std_name : str or None, optional (default=None)
         Name of the distribution parameter that corresponds to the
         standard deviation. If None, auto-detects by looking for
-        ``"sigma"`` or ``"scale"`` in the ``__init__`` signature of
-        ``dist``.
+        ``"sigma"`` or ``"scale"`` in the ``__init__`` signature of ``dist``.
     dist_params : dict or None, optional (default=None)
         Additional fixed parameters to pass to the distribution constructor.
         These are merged with the estimated mean and std parameters when
