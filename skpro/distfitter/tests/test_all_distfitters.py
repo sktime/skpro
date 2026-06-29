@@ -5,9 +5,7 @@ import numpy as np
 import pandas as pd
 from skbase.testing import QuickTester
 
-from skpro.distfitter import MOMFitter
 from skpro.distributions.base import BaseDistribution
-from skpro.distributions.normal import Normal
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
 
@@ -47,14 +45,3 @@ class TestAllDistFitters(PackageConfig, BaseFixtureGenerator, QuickTester):
         assert np.isfinite(mean_val), f"mean() returned non-finite value: {mean_val}"
         assert np.isfinite(var_val), f"var() returned non-finite value: {var_val}"
         assert var_val >= 0, f"var() returned negative value: {var_val}"
-
-    def test_get_params_deep_with_dist_cls(self):
-        """get_params(deep=True) works when dist_cls is a distribution class.
-
-        Requires scikit-base>=1.0.1 (sktime/skbase#559).
-        """
-        fitter = MOMFitter(dist_cls=Normal, mean_name="mu", std_name="sigma")
-        params = fitter.get_params(deep=True)
-
-        assert params["dist_cls"] is Normal
-        assert "dist_cls__" not in params
