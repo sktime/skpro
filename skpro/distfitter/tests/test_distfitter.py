@@ -3,6 +3,7 @@
 from skpro.distfitter import MOMFitter
 from skpro.distributions.normal import Normal
 
+
 def test_get_params_deep_with_dist_cls(self):
     """get_params(deep=True) works when dist_cls is a distribution class.
 
