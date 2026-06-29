@@ -97,6 +97,9 @@ class ResidualDouble(BaseProbaRegressor):
     min_scale : float, default=1e-10
         minimum scale parameter. If smaller scale parameter is predicted by
         ``estimator_resid``, will be clipped to this value
+    response_lb : float or None, default=None
+        optional lower bound for target support.
+        If provided, quantile and interval predictions are clipped below this value.
 
     Attributes
     ----------
@@ -136,6 +139,7 @@ class ResidualDouble(BaseProbaRegressor):
         use_y_pred=False,
         cv=None,
         min_scale=1e-10,
+        response_lb=None,
     ):
         self.estimator = estimator
         self.estimator_resid = estimator_resid
@@ -146,6 +150,7 @@ class ResidualDouble(BaseProbaRegressor):
         self.use_y_pred = use_y_pred
         self.cv = cv
         self.min_scale = min_scale
+        self.response_lb = response_lb
 
         super().__init__()
 
@@ -366,6 +371,15 @@ class ResidualDouble(BaseProbaRegressor):
         y_pred = distr_type(**params)
         return y_pred
 
+    def _predict_quantiles(self, X, alpha):
+        """Compute/return quantile predictions, with optional lower-bound clipping."""
+        quantiles = super()._predict_quantiles(X=X, alpha=alpha)
+
+        if self.response_lb is not None:
+            quantiles = quantiles.clip(lower=self.response_lb)
+
+        return quantiles
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator.
@@ -405,6 +419,7 @@ class ResidualDouble(BaseProbaRegressor):
             "distr_type": "t",
             "distr_params": {"df": 3},
             "cv": KFold(n_splits=3),
+            "response_lb": 0,
         }
         params4 = {"estimator": RandomForestRegressor(), "cv": KFold(n_splits=3)}
 
