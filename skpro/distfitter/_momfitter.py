@@ -78,14 +78,9 @@ class MOMFitter(BaseDistFitter):
         super().__init__()
 
         if dist_params is None:
-            _dist_params = {}
+            self._dist_params = {}
         else:
-            _dist_params = dist_params
-
-        if inspect.isclass(dist):
-            self._dist = dist(**_dist_params)
-        else:
-            self._dist = dist
+            self._dist_params = dist_params
 
     def _fit(self, X, C=None):
         """Fit distribution parameters using method of moments.
@@ -152,8 +147,13 @@ class MOMFitter(BaseDistFitter):
             self.mean_name: self.mean_,
             self._std_name_resolved: self.std_,
         }
-        dist_with_params = self._dist.clone()
-        dist_with_params.set_params(**params)
+        params.update(self._dist_params)
+
+        if inspect.isclass(self.dist):
+            dist_with_params = self.dist(**params)
+        else:
+            dist_with_params = self.dist.clone().set_params(**params)
+
         return dist_with_params
 
     @classmethod
