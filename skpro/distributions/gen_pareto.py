@@ -2,7 +2,7 @@
 from scipy.stats import genpareto
 
 from skpro.distributions.adapters.scipy import _ScipyAdapter
- 
+
 
 class GeneralizedPareto(_ScipyAdapter):
     r"""Generalized Pareto probability distribution.
