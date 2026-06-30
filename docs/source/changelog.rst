@@ -41,7 +41,7 @@ Inconsistent naming of "distribution" type arguments in various regressors has
 been changed to ``dist``. The old argument names are still accepted,
 but will be removed in version 2.15.0.
 Users should update their code to use ``dist`` instead of ``distribution`` or
-``distr_type``, in regressors ``ResidualDouble``, ``CyclicBoosting``, 
+``distr_type``, in regressors ``ResidualDouble``, ``CyclicBoosting``,
 ``OndilOnlineGamlss``, ``GLMRegressor``, and ``GlumRegressor``.
 
 Enhancements
