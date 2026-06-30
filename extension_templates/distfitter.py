@@ -1,0 +1,191 @@
+"""Extension template for distribution fitters.
+
+Purpose of this implementation template:
+    quick implementation of new estimators following the template
+    NOT a concrete class to import! This is NOT a base class or concrete class!
+    This is to be used as a "fill-in" coding template.
+
+How to use this implementation template to implement a new distribution fitter:
+- make a copy of the template in a suitable location, give it a descriptive name.
+- work through all the "todo" comments below
+- fill in code for mandatory methods, and optionally for optional methods
+- do not write to reserved attributes: is_fitted, _is_fitted, _X_metadata,
+  _tags, _tags_dynamic, _config, _config_dynamic
+- you can add more private methods, but do not override BaseEstimator's private methods
+    an easy way to be safe is to prefix your methods with "_custom"
+- change docstrings for functions and the file
+- ensure interface compatibility by skpro.utils.estimator_checks.check_estimator
+- once complete: use as a local library, or contribute to skpro via PR
+- more details:
+  https://www.sktime.net/en/stable/developer_guide/add_estimators.html
+
+Mandatory methods to implement:
+    fitting              - _fit(self, X, C=None)
+    returning the dist   - _proba(self)
+
+Testing - required for test framework and check_estimator usage:
+    get default parameters for test instance(s) - get_test_params()
+"""
+# todo: write an informative docstring for the file or module, remove the above
+# todo: add an appropriate copyright notice for your estimator
+#       estimators contributed to skpro should have the copyright notice at the top
+#       estimators of your own do not need to have permissive or BSD-3 copyright
+
+from skpro.distfitter.base import BaseDistFitter
+
+# todo: add any necessary imports here
+
+# todo: for imports of skpro soft dependencies:
+# make sure to fill in the "python_dependencies" tag with the package import name
+# import soft dependencies only inside methods of the class, not at the top of the file
+
+
+# todo: change class name and write docstring
+class ClassName(BaseDistFitter):
+    """Custom distribution fitter. todo: write docstring.
+
+    todo: describe your custom distribution fitter here
+
+    Parameters
+    ----------
+    parama : int
+        descriptive explanation of parama
+    paramb : string, optional (default='default')
+        descriptive explanation of paramb
+    and so on
+    """
+
+    # todo: fill out estimator tags here
+    #  tags are inherited from parent class if they are not set
+    # tags inherited from base are "safe defaults" which can usually be left as-is
+    _tags = {
+        # packaging info
+        # --------------
+        "authors": ["author1", "author2"],  # authors, GitHub handles
+        "maintainers": ["maintainer1", "maintainer2"],  # maintainers, GitHub handles
+        # author = significant contribution to code at some point
+        # maintainer = algorithm maintainer role, "owner"
+        # specify one or multiple authors and maintainers, only for skpro contribution
+        # remove maintainer tag if maintained by skpro/sktime core team
+        #
+        "python_version": None,  # PEP 440 python version specifier to limit versions
+        "python_dependencies": None,  # PEP 440 python dependencies specifier,
+        # e.g., "numba>0.53", or a list, e.g., ["numba>0.53", "numpy>=1.19.0"]
+        # delete if no python dependencies or version limitations
+        #
+        # estimator tags
+        # --------------
+        "capability:survival": False,  # can the fitter use censoring information?
+        "X_inner_mtype": "pd_DataFrame_Table",  # type seen in internal _fit
+    }
+
+    # todo: fill init
+    # params should be written to self and never changed
+    # super call must not be removed, change class name
+    # parameter checks can go after super call
+    def __init__(self, paramname, paramname2="paramname2default"):
+        # todo: write any hyper-parameters and components to self
+        self.paramname = paramname
+        self.paramname2 = paramname2
+
+        # leave this as is
+        super().__init__()
+
+        # todo: optional, parameter checking logic (if applicable) should happen here
+        # if writes derived values to self, should *not* overwrite self.parama etc
+        # instead, write to self._parama, self._newparam (starting with _)
+
+    # todo: implement this, mandatory
+    def _fit(self, X, C=None):
+        """Fit distribution to data.
+
+        Writes to self:
+            Sets fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            Data to fit the distribution to.
+        C : pandas DataFrame, optional (default=None)
+            Censoring indicator for survival analysis.
+            Only passed if ``capability:survival`` tag is True.
+
+        Returns
+        -------
+        self : reference to self
+        """
+        # insert logic for fitting distribution parameters here
+        # fitted parameters should be written to attributes ending in underscore
+        # e.g., self.mu_ = X.values.mean()
+
+        # self must be returned at the end
+        return self
+
+    # todo: implement this, mandatory
+    def _proba(self):
+        """Return fitted scalar distribution.
+
+        State required:
+            Requires state to be "fitted" = self.is_fitted=True
+
+        Accesses in self:
+            Fitted model attributes ending in "_"
+
+        Returns
+        -------
+        dist : skpro BaseDistribution (scalar)
+            Distribution fitted to data passed in ``fit``.
+        """
+        # construct and return a scalar distribution from fitted parameters
+        # example:
+        #
+        # from skpro.distributions.normal import Normal
+        # return Normal(mu=self.mu_, sigma=self.sigma_)
+
+        raise NotImplementedError("todo: implement _proba")
+
+    # todo: return default parameters, so that a test instance can be created
+    #   required for automated unit and integration testing of estimator
+    @classmethod
+    def get_test_params(cls, parameter_set="default"):
+        """Return testing parameter settings for the estimator.
+
+        Parameters
+        ----------
+        parameter_set : str, default="default"
+            Name of the set of test parameters to return, for use in tests. If no
+            special parameters are defined for a value, will return `"default"` set.
+
+        Returns
+        -------
+        params : dict or list of dict, default = {}
+            Parameters to create testing instances of the class
+            Each dict are parameters to construct an "interesting" test instance, i.e.,
+            ``MyClass(**params)`` or ``MyClass(**params[i])`` creates a valid test
+            instance.
+            ``create_test_instance`` uses the first (or only) dictionary in ``params``.
+        """
+        # todo: set the testing parameters for the estimator
+        # Testing parameters can be dictionary or list of dictionaries
+        #
+        # this can, if required, use:
+        #   class properties (e.g., inherited); parent class test case
+        #   imported objects such as distributions from skpro
+        # important: all such imports should be *inside get_test_params*, not at the top
+        #            since imports are used only at testing time
+        #
+        # A good parameter set should primarily satisfy two criteria,
+        #   1. Chosen set of parameters should have a low testing time,
+        #      ideally in the magnitude of few seconds for the entire test suite.
+        #   2. There should be a minimum two such parameter sets with different
+        #      sets of values to ensure a wide range of code coverage is provided.
+        #
+        # example 1: specify params as dictionary
+        # params = {"parama": value1, "paramb": value2}
+        #
+        # example 2: specify params as list of dictionary
+        # params = [{"parama": value1, "paramb": value2},
+        #           {"parama": value3, "paramb": value4}]
+        #
+        # return params
+        pass
