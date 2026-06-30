@@ -20,8 +20,8 @@ __all__ = [
     "Fisk",
     "Gamma",
     "GeneralizedPareto",
-    "LogGamma",
     "Geometric",
+    "Gompertz",
     "GumbelL",
     "GumbelR",
     "HalfCauchy",
@@ -37,6 +37,7 @@ __all__ = [
     "LeftTruncated",
     "Levy",
     "Logistic",
+    "LogGamma",
     "LogLaplace",
     "LogNormal",
     "MeanScale",
@@ -81,6 +82,7 @@ from skpro.distributions.fisk import Fisk
 from skpro.distributions.gamma import Gamma
 from skpro.distributions.gen_pareto import GeneralizedPareto
 from skpro.distributions.geometric import Geometric
+from skpro.distributions.gompertz import Gompertz
 from skpro.distributions.gumbel_l import GumbelL
 from skpro.distributions.gumbel_r import GumbelR
 from skpro.distributions.halfcauchy import HalfCauchy
