@@ -36,6 +36,7 @@ Continuous support - full reals
     :template: class.rst
 
     Cauchy
+    Gumbel
     Laplace
     Logistic
     Normal
