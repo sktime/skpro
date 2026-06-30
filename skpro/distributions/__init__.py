@@ -28,6 +28,7 @@ __all__ = [
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
+    "HalfT",
     "HistogramQPD",
     "Hurdle",
     "IID",
@@ -91,6 +92,7 @@ from skpro.distributions.gumbel_r import GumbelR
 from skpro.distributions.halfcauchy import HalfCauchy
 from skpro.distributions.halflogistic import HalfLogistic
 from skpro.distributions.halfnormal import HalfNormal
+from skpro.distributions.halft import HalfT
 from skpro.distributions.histogram import Histogram
 from skpro.distributions.hurdle import Hurdle
 from skpro.distributions.inversegamma import InverseGamma
