@@ -15,7 +15,7 @@ class GeneralizedPareto(_ScipyAdapter):
     The location :math:`\mu` is represented by the parameter ``mu``,
     the scale :math:`s` by the parameter ``scale``,
     and the shape by the parameter ``c``.
-
+ 
     Parameters
     ----------
     c : float
