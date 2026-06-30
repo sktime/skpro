@@ -10,6 +10,7 @@ import pandas as pd
 
 from skpro.distributions.mixture import Mixture
 from skpro.regression.base import BaseProbaRegressor
+from skpro.utils.sampling import _random_ss_ix
 
 
 class BaggingRegressor(BaseProbaRegressor):
@@ -19,6 +20,15 @@ class BaggingRegressor(BaseProbaRegressor):
     datasets which are instance sub-samples and/or variable sub-samples.
 
     On ``predict_proba``, the mixture of probabilistic predictions is returned.
+
+    In ``update``, each fitted clone is updated on a row subsample of the new
+    batch. The row subsample fraction is the same as in ``fit`` (for integer
+    ``n_samples``, the fraction ``n_samples / n_fit`` is stored at ``fit`` and
+    applied to each update batch). The same ``bootstrap`` setting and feature
+    subset ``cols_[i]`` as at ``fit`` are reused (column sampling is not
+    repeated). Meaningful online learning requires an inner regressor with true
+    ``update`` support (for example a River wrapper); batch-only inners ignore
+    the delegated update calls.
 
     The estimator allows to choose sample sizes for instances, variables,
     and whether sampling is with or without replacement.
@@ -78,6 +88,7 @@ class BaggingRegressor(BaseProbaRegressor):
     _tags = {
         "capability:missing": True,
         "capability:survival": True,
+        "capability:update": True,
     }
 
     def __init__(
@@ -136,10 +147,8 @@ class BaggingRegressor(BaseProbaRegressor):
         n = len(inst_ix)
         m = len(col_ix)
 
-        if isinstance(n_samples, float):
-            n_samples_ = ceil(n_samples * n)
-        else:
-            n_samples_ = n_samples
+        self.n_samples_frac_ = _as_sample_fraction(n_samples, n)
+        n_samples_ = _resolve_subsample_size(self.n_samples_frac_, n, bootstrap)
 
         if isinstance(n_features, float):
             n_features_ = ceil(n_features * m)
@@ -152,9 +161,16 @@ class BaggingRegressor(BaseProbaRegressor):
         for _i in range(n_estimators):
             esti = estimator.clone()
             row_iloc = pd.RangeIndex(n)
-            row_ss = _random_ss_ix(row_iloc, size=n_samples_, replace=bootstrap)
+            row_ss = _random_ss_ix(
+                row_iloc, size=n_samples_, replace=bootstrap, random_state=random_state
+            )
             inst_ix_i = inst_ix[row_ss]
-            col_ix_i = _random_ss_ix(col_ix, size=n_features_, replace=bootstrap_ft)
+            col_ix_i = _random_ss_ix(
+                col_ix,
+                size=n_features_,
+                replace=bootstrap_ft,
+                random_state=random_state,
+            )
 
             # store column subset for use in predict
             self.cols_ += [col_ix_i]
@@ -170,6 +186,56 @@ class BaggingRegressor(BaseProbaRegressor):
                 Ci = C.loc[inst_ix_i].reset_index(drop=True)
 
             self.estimators_ += [esti.fit(Xi, yi, Ci)]
+
+        return self
+
+    def _update(self, X, y, C=None):
+        """Update each bagged estimator on a subsample of the new batch.
+
+        Row subsampling mirrors ``_fit``: the stored ``n_samples_frac_`` and
+        ``bootstrap`` are applied to the update batch size. Feature subsets
+        ``cols_`` from ``fit`` are reused without resampling.
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances in the update batch
+        y : pandas DataFrame, must be same length as X
+            labels in the update batch
+        C : pandas DataFrame, optional (default=None)
+            censoring indicator
+
+        Returns
+        -------
+        self : reference to self
+        """
+        bootstrap = self.bootstrap
+        bootstrap_ft = self.bootstrap_features
+        random_state = self.random_state
+
+        inst_ix = X.index
+        n = len(inst_ix)
+        n_samples_ = _resolve_subsample_size(self.n_samples_frac_, n, bootstrap)
+        reset_cols = bootstrap_ft
+
+        for esti, col_ix_i in zip(self.estimators_, self.cols_):
+            row_iloc = pd.RangeIndex(n)
+            row_ss = _random_ss_ix(
+                row_iloc, size=n_samples_, replace=bootstrap, random_state=random_state
+            )
+            inst_ix_i = inst_ix[row_ss]
+
+            Xi = _subs_cols(X.loc[inst_ix_i], col_ix_i, reset_cols=reset_cols)
+            Xi = Xi.reset_index(drop=True)
+
+            yi = y.loc[inst_ix_i].reset_index(drop=True)
+
+            if C is None:
+                Ci = None
+            else:
+                Ci = C.loc[inst_ix_i].reset_index(drop=True)
+
+            esti.update(Xi, yi, Ci)
 
         return self
 
@@ -250,11 +316,19 @@ class BaggingRegressor(BaseProbaRegressor):
         return [params1, params2, params3, params4]
 
 
-def _random_ss_ix(ix, size, replace=True):
-    """Randomly uniformly sample indices from a list of indices."""
-    a = range(len(ix))
-    ixs = ix[np.random.choice(a, size=size, replace=replace)]
-    return ixs
+def _as_sample_fraction(n_samples, n):
+    """Convert ``n_samples`` (int or float) to a row subsample fraction."""
+    if isinstance(n_samples, float):
+        return n_samples
+    return n_samples / n
+
+
+def _resolve_subsample_size(n_samples_frac, n, bootstrap):
+    """Row subsample size for ``n`` rows from a fraction, respecting ``bootstrap``."""
+    n_samples_ = ceil(n_samples_frac * n)
+    if not bootstrap:
+        n_samples_ = min(n_samples_, n)
+    return n_samples_
 
 
 def _subs_cols(df, col_ix, reset_cols=False):

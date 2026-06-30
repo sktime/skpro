@@ -21,9 +21,10 @@ import pandas as pd
 from skbase.lookup import all_objects as _all_objects
 
 from skpro.base import BaseEstimator, BaseObject
+from skpro.registry._base_classes import get_obj_scitype_list
 from skpro.registry._tags import OBJECT_TAG_REGISTER
 
-VALID_OBJECT_TYPE_STRINGS = {x[1] for x in OBJECT_TAG_REGISTER}
+VALID_OBJECT_TYPE_STRINGS = set(get_obj_scitype_list())
 
 
 def all_objects(
@@ -50,8 +51,8 @@ def all_objects(
         if None, no filter is applied and all objects are returned.
         if str or list of str, strings define scitypes specified in search
         only objects that are of (at least) one of the scitypes are returned
-        possible str values are entries of registry.BASE_CLASS_REGISTER (first col)
-        for instance 'regrssor_proba', 'distribution, 'metric'
+        possible str values are entries of registry.get_obj_scitype_list()
+        for instance 'regressor_proba', 'distribution', 'metric'
 
     return_names: bool, optional (default=True)
 
@@ -307,7 +308,7 @@ def all_tags(
         in alphabetical order by a
         a : string - name of the tag as used in the _tags dictionary
         b : string - name of the scitype this tag applies to
-                    must be in _base_classes.BASE_CLASS_SCITYPE_LIST
+                    must be in registry.get_obj_scitype_list()
         c : string - expected type of the tag value
             should be one of:
                 "bool" - valid values are True/False
