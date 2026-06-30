@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: repository checkout step
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: python environment step
         uses: actions/setup-python@v6
@@ -44,7 +44,7 @@ jobs:
         run: python3 -m pip install pre-commit
 
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -75,7 +75,7 @@ jobs:
     needs: code-quality
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -96,7 +96,7 @@ jobs:
       obj_list_length: ${{ steps.get-change-list.outputs.obj_list_length }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - run: git remote set-branches origin 'main'
 
@@ -141,7 +141,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - run: git remote set-branches origin 'main'
 
@@ -176,7 +176,7 @@ jobs:
         run: make test
 
       - name: Publish code coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
 
   run-tests-all-extras:
     needs: code-quality
@@ -187,7 +187,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - run: git remote set-branches origin 'main'
 
@@ -222,7 +222,7 @@ jobs:
         run: make test
 
       - name: Publish code coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
 
   test-est:
     needs: detect-changed-classes
@@ -239,7 +239,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
@@ -280,7 +280,7 @@ jobs:
     needs: run-tests-no-extras
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - run: git remote set-branches origin 'main'
 
@@ -299,16 +299,17 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
 
-      - name: Install sktime and dependencies
-        run: pip install .[dev,dependencies_2024]
+      - name: Install skpro and dependencies
+        run: >
+          uv pip install .[dev]
+          --exclude-newer-package "setuptools=false"
+          --exclude-newer-package "scikit-base=false"
         env:
           UV_SYSTEM_PYTHON: 1
+          UV_EXCLUDE_NEWER: "2024-09-01"
 
       - name: Show dependencies
-        run: python -m pip list
-
-      - name: Show available branches
-        run: git branch -a
+        run: uv pip list
 
       - name: Run tests
         run: make test

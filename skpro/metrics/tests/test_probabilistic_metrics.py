@@ -4,7 +4,7 @@ import pytest
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
-from skpro.metrics._classes import (
+from skpro.metrics import (
     ConstraintViolation,
     EmpiricalCoverage,
     IntervalWidth,

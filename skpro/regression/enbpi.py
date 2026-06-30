@@ -11,6 +11,7 @@ from sklearn.utils import check_random_state
 from skpro.distributions.empirical import Empirical
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.numpy import flatten_to_1D_if_colvector
+from skpro.utils.sampling import _random_ss_ix
 from skpro.utils.sklearn import prep_skl_df
 
 
@@ -338,16 +339,6 @@ class EnbpiRegressor(BaseProbaRegressor):
         }
 
         return [params1, params2, params3]
-
-
-def _random_ss_ix(ix, size, replace=True, random_state=None):
-    """Randomly uniformly sample indices from a list of indices."""
-    if random_state is None:
-        random_state = np.random.RandomState()
-
-    a = range(len(ix))
-    ixs = ix[random_state.choice(a, size=size, replace=replace)]
-    return ixs
 
 
 def _coerce_numpy2d(x):
