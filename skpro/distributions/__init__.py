@@ -28,6 +28,7 @@ __all__ = [
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
+    "HistogramQPD",
     "Hurdle",
     "IID",
     "KernelMixture",
@@ -111,6 +112,7 @@ from skpro.distributions.pareto import Pareto
 from skpro.distributions.poisson import Poisson
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
 from skpro.distributions.qpd_empirical import QPD_Empirical
+from skpro.distributions.qpd_histogram import HistogramQPD
 from skpro.distributions.rayleigh import Rayleigh
 from skpro.distributions.skellam import Skellam
 from skpro.distributions.skew_normal import SkewNormal
