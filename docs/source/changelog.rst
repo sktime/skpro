@@ -16,6 +16,83 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.14.0] - 2026-07-01
+=====================
+
+Highlights
+~~~~~~~~~~
+
+* distribution fitters - framework and first examples (:pr:`924`) :user:`patelchaitany`
+* ``VotingProbaRegressor`` - heterogeneous ensemble compositor (:pr:`1069`) :user:`Ashish-Kumar-Dash`
+*  ``HistogramQPD`` - histogram quantile-parametrized distribution (:pr:`1078`) :user:`siddharth7113`
+* added online ``update`` to ``BaggingRegressor`` (:pr:`1064`) :user:`patelchaitany`
+* ``Gumbel`` (Type I Extreme Value) probability distribution (:pr:`840`) :user:`direkkakkar319-ops`
+
+Core interface changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+A new object type, distribution fitter (``distfitter``), has been added to ``skpro``.
+An extension template is available in ``extension_templates``.
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Inconsistent naming of "distribution" type arguments in various regressors has
+been changed to ``dist``. The old argument names are still accepted,
+but will be removed in version 2.15.0.
+Users should update their code to use ``dist`` instead of ``distribution`` or
+``distr_type``, in regressors ``ResidualDouble``, ``CyclicBoosting``,
+``OndilOnlineGamlss``, ``GLMRegressor``, and ``GlumRegressor``.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] ``VotingProbaRegressor`` - heterogeneous ensemble compositor (:pr:`1069`) :user:`Ashish-Kumar-Dash`
+* [ENH] distribution fitters - framework and first examples (:pr:`924`) :user:`patelchaitany`
+* [ENH] ``Gumbel`` (Type I Extreme Value) probability distribution (:pr:`840`) :user:`direkkakkar319-ops`
+* [ENH] ``HistogramQPD`` - histogram quantile-parametrized distribution (:pr:`1078`) :user:`siddharth7113`
+* [ENH] add online update to ``BaggingRegressor`` (:pr:`1064`) :user:`patelchaitany`
+* [ENH] all regressors to use ``dist`` kwarg for distribution inputs (:pr:`1008`) :user:`joshdunnlime`
+
+Fixes
+~~~~~
+
+* [BUG] Fixing bounds in ``cdf`` in ``TruncatedDistribution``  (:pr:`1081`) :user:`siddharth7113`
+* [BUG] fix ``HalfNormal``, ``HalfCauchy``, ``HalfLogistic`` passing scale as positional arg (:pr:`940`) :user:`ANANYA542`
+* [BUG] fix ``HalfCauchy`` scipy mapping and add dedicated tests (towards #22) (:pr:`954`) :user:`kunal14901`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Bump ``codecov/codecov-action`` from ``6`` to ``7`` (:pr:`1067`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update ``sphinx-gallery`` requirement from ``<0.21.0`` to ``<0.22.0`` (:pr:`1061`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update ``sphinx-issues`` requirement from ``<6.0.0`` to ``<7.0.0`` (:pr:`1060`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update ``polars`` requirement from ``<1.37.0`` to ``<1.42.0`` (:pr:`1063`) :user:`dependabot[bot]`
+* [MNT] move frozen 2024 dependencies test to ``uv`` dependency freeze mechanism from dedicated depset (:pr:`1070`) :user:`fkiraly`
+* [MNT] [Dependabot](deps-dev): Update ``polars`` requirement from ``<1.42.0`` to ``<1.43.0`` (:pr:`1080`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump ``actions/checkout`` from ``6`` to ``7`` (:pr:`1074`) :user:`dependabot[bot]`
+* [MNT] lint ``distributions`` import (:pr:`1089`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] update installation guide (:pr:`1058`) :user:`anhtnt90dev`
+* [DOC] add missing ``Gumbel`` distribution to distributions API reference (:pr:`1088`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`ANANYA542`,
+:user:`anhtnt90dev`,
+:user:`Ashish-Kumar-Dash`,
+:user:`direkkakkar319-ops`,
+:user:`fkiraly`,
+:user:`joshdunnlime`,
+:user:`kunal14901`,
+:user:`patelchaitany`,
+:user:`siddharth7113`
+
+
 [2.13.0] - 2026-05-30
 =====================
 
@@ -26,7 +103,6 @@ Highlights
 * new ``update`` capability in ``GridSearchCV`` and ``RandomizedSearchCV`` (:pr:`1053`) :user:`patelchaitany`
 * MDN regressor: Improved Losses (:pr:`1042`) :user:`joshdunnlime`
 * Gompertz distribution (:pr:`1043`) :user:`smilingprogrammer`
-
 
 Enhancements
 ~~~~~~~~~~~~
@@ -69,7 +145,6 @@ Documentation
 * [DOC] Add missing ``LogNormal`` distribution to API reference (:pr:`992`) :user:`maniktyagi04`
 * [DOC] delete dead documentation page docs/introduction.rst (:pr:`1026`) :user:`kabirvashisht4-glitch`
 * [DOC] Fix broken link in dependencies.rst (:pr:`1034`) :user:`kabirvashisht4-glitch`
-
 
 Contributors
 ~~~~~~~~~~~~
