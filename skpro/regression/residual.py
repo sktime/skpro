@@ -125,7 +125,7 @@ class ResidualDouble(BaseProbaRegressor):
 
     _tags = {"capability:missing": True}
 
-    # TODO (release 2.14.0)
+    # todo 2.15.0
     # remove the 'distr_type' argument from '__init__' signature
     # remove the following 'if' check and deprecation warning
     # de-indent the following 'else' check
@@ -136,12 +136,12 @@ class ResidualDouble(BaseProbaRegressor):
         estimator_resid=None,
         residual_trafo="absolute",
         distr_type="deprecated",
-        dist="Normal",
         distr_loc_scale_name=None,
         distr_params=None,
         use_y_pred=False,
         cv=None,
         min_scale=1e-10,
+        dist="Normal",
     ):
         self.estimator = estimator
         self.estimator_resid = estimator_resid
@@ -156,6 +156,7 @@ class ResidualDouble(BaseProbaRegressor):
 
         super().__init__()
 
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
         # handle deprecation of distr_type -> dist
         if distr_type != "deprecated":
             from warnings import warn

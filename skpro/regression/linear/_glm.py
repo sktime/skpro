@@ -26,9 +26,11 @@ class GLMRegressor(BaseProbaRegressor):
         The dist parameter denotes the type of distribution
         that will be used.
         Available distributions are
+
         1."Normal"
         2."Poisson"
         3."Gamma"
+
     link : string, default : None
         This parameter is used to represent the link function to be
         used with the distribution.
@@ -239,7 +241,7 @@ class GLMRegressor(BaseProbaRegressor):
 
         return sm_fmly[dist]()
 
-    # TODO (release 2.14.0)
+    # todo 2.15.0
     # remove the 'family' argument from '__init__' signature
     # remove the following 'if' check and deprecation warning
     # de-indent the following 'else' check
@@ -247,7 +249,6 @@ class GLMRegressor(BaseProbaRegressor):
     def __init__(
         self,
         family="deprecated",
-        dist="Normal",
         link=None,
         offset_var=None,
         exposure_var=None,
@@ -264,8 +265,8 @@ class GLMRegressor(BaseProbaRegressor):
         disp=False,
         max_start_irls=3,
         add_constant=False,
+        dist="Normal",
     ):
-        super().__init__()
 
         self.family = family
         self.dist = dist
@@ -286,6 +287,9 @@ class GLMRegressor(BaseProbaRegressor):
         self.max_start_irls = max_start_irls
         self.add_constant = add_constant
 
+        super().__init__()
+
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
         # handle deprecation of family -> dist
         if family != "deprecated":
             from warnings import warn

@@ -109,22 +109,23 @@ class GAMRegressor(BaseProbaRegressor):
         "tests:vm": True,
     }
 
-    # TODO (release 2.14.0)
+    # todo 2.15.0
     # remove the 'distribution' argument from '__init__' signature
     # remove the following 'if' check and deprecation warning
     # de-indent the following 'else' check
+    # replace distribution with dist arg
 
     def __init__(
         self,
         terms="auto",
         distribution="deprecated",
-        dist="normal",
         link="identity",
         max_iter=100,
         tol=1e-4,
         callbacks=None,
         fit_intercept=True,
         verbose=False,
+        dist="normal",
     ):
         self.terms = terms
         self.distribution = distribution
@@ -138,13 +139,14 @@ class GAMRegressor(BaseProbaRegressor):
 
         super().__init__()
 
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
         # handle deprecation of distribution -> dist
         if distribution != "deprecated":
             from warnings import warn
 
             warn(
                 "in `GAMRegressor`, parameter 'distribution' "
-                "will be renamed to 'dist' in version 2.14.0. "
+                "will be renamed to 'dist' in version 2.15.0. "
                 "To keep current behaviour and to silence this warning, "
                 "use 'dist' instead of 'distribution', "
                 "set dist explicitly via kwarg, and do not set distribution.",

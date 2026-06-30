@@ -48,13 +48,13 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    # TODO (release 2.14.0)
+    # todo 2.15.0
     # remove the 'distribution' argument from '__init__' signature
     # remove the following 'if' check and deprecation warning
     # de-indent the following 'else' check
 
     def __init__(
-        self, distribution="deprecated", dist="Normal", ondil_init_params=None
+        self, distribution="deprecated", ondil_init_params=None, dist="Normal"
     ):
         """Initialize OndilOnlineGamlss.
 
@@ -73,6 +73,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
 
         super().__init__()
 
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
         # handle deprecation of distribution -> dist
         if distribution != "deprecated":
             from warnings import warn

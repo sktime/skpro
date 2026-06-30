@@ -131,15 +131,15 @@ class GlumRegressor(BaseProbaRegressor):
         "tests:vm": True,
     }
 
-    # TODO (release 2.14.0)
+    # todo 2.15.0
     # remove the 'family' argument from '__init__' signature
     # remove the following 'if' check and deprecation warning
     # de-indent the following 'else' check
+    # move dist argument to position of family argument in signature
 
     def __init__(
         self,
         family="deprecated",
-        dist="normal",
         link="auto",
         alpha=None,
         l1_ratio=0,
@@ -167,6 +167,7 @@ class GlumRegressor(BaseProbaRegressor):
         drop_first=False,
         robust=False,
         expected_information=False,
+        dist="normal",
     ):
         self.family = family
         self.dist = dist
@@ -200,6 +201,7 @@ class GlumRegressor(BaseProbaRegressor):
 
         super().__init__()
 
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
         # handle deprecation of family -> dist
         if family != "deprecated":
             from warnings import warn

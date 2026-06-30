@@ -132,10 +132,11 @@ class CyclicBoosting(BaseProbaRegressor):
         "tests:vm": True,  # requires its own test VM to run
     }
 
-    # TODO (release 2.14.0)
+    # todo 2.15.0
     # remove the 'dist_type' argument from '__init__' signature
     # remove the following 'if' check and deprecation warning
     # de-indent the following 'else' check
+    # move dist argument to position of dist_type argument in signature
 
     def __init__(
         self,
@@ -147,8 +148,8 @@ class CyclicBoosting(BaseProbaRegressor):
         upper: Union[float, None] = None,
         maximal_iterations=10,
         dist_type: Union[str, None] = "deprecated",
-        dist: Union[str, None] = "normal",
         dist_shape: Union[float, None] = 0.0,
+        dist: Union[str, None] = "normal",
     ):
         self.feature_groups = feature_groups
         self.feature_properties = feature_properties
@@ -163,6 +164,7 @@ class CyclicBoosting(BaseProbaRegressor):
 
         super().__init__()
 
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
         # handle deprecation of dist_type -> dist
         if dist_type != "deprecated":
             from warnings import warn
