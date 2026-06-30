@@ -267,7 +267,6 @@ class GLMRegressor(BaseProbaRegressor):
         add_constant=False,
         dist="Normal",
     ):
-
         self.family = family
         self.dist = dist
         self.link = link
