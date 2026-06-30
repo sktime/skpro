@@ -295,7 +295,7 @@ class GLMRegressor(BaseProbaRegressor):
 
             warn(
                 "in `GLMRegressor`, parameter 'family' "
-                "will be renamed to 'dist' in version 2.14.0. "
+                "will be renamed to 'dist' in version 2.15.0. "
                 "To keep current behaviour and to silence this warning, "
                 "use 'dist' instead of 'family', "
                 "set dist explicitly via kwarg, and do not set family.",
