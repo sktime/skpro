@@ -2,13 +2,14 @@
 
 import warnings
 
+import numpy as np
 from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.regression.base import BaseProbaRegressor
 
 
 class XGBoostLSS(BaseProbaRegressor):
-    """Interface to xgboostlss regerssor from the xgboostlss package.
+    """Interface to xgboostlss regressor from the xgboostlss package.
 
     Direct interface to ``XGBoostLSS`` from ``xgboostlss`` package by ``StatMixedML``.
 
@@ -26,6 +27,8 @@ class XGBoostLSS(BaseProbaRegressor):
         * "TDistribution": Student's T distribution.
         * "Weibull": Weibull distribution.
         * "Beta": Beta distribution.
+        * "ZINB": Zero-Inflated Negative Binomial distribution.
+        * "ZIPoisson": Zero-Inflated Poisson distribution.
 
     stabilization: str, optional, default="None"
         Stabilization method for the Gradient and Hessian.
@@ -280,6 +283,8 @@ class XGBoostLSS(BaseProbaRegressor):
         SKPRO_TO_XGBLSS = {
             "Normal": "Gaussian",
             "TDistribution": "StudentT",
+            "ZINB": "ZINB",
+            "ZIPoisson": "ZIPoisson",
         }
 
         distr = SKPRO_TO_XGBLSS.get(distr, distr)
@@ -327,7 +332,39 @@ class XGBoostLSS(BaseProbaRegressor):
             "Weibull": {"scale": "scale", "k": "concentration"},
             "Beta": {"alpha": "concentration1", "beta": "concentration0"},
             "Logistic": {"mu": "loc", "scale": "scale"},
+            "ZIPoisson": {"mu": "rate", "pi": "gate"},
         }
+
+        # Special handling for ZINB which requires parameter transformation
+        # xgboostlss uses PyTorch convention (total_count, probs, gate) where:
+        #   total_count = number of failures until we stop (r)
+        #   probs = probability of SUCCESS per trial (p)
+        #   gate = zero-inflation probability
+        #
+        # PyTorch NegativeBinomial mean = total_count * probs / (1 - probs)
+        #   (counts successes before total_count failures)
+        #
+        # skpro ZINB uses (mu, alpha, pi) where:
+        #   mu = mean of the NB component
+        #   alpha = dispersion parameter (same as total_count)
+        #   pi = zero-inflation probability (same as gate)
+        if distr == "ZINB":
+            total_count = df.loc[:, ["total_count"]].values
+            probs = df.loc[:, ["probs"]].values
+            gate = df.loc[:, ["gate"]].values
+
+            # Clip probs to avoid numerical instability (div by 0 or inf)
+            eps = 1e-8
+            probs = np.clip(probs, eps, 1 - eps)
+
+            # Clip total_count (alpha) to avoid poor distributions.
+            alpha_min = 0.5
+            alpha = np.maximum(total_count, alpha_min)
+            # PyTorch NB mean formula: total_count * probs / (1 - probs)
+            mu = total_count * probs / (1 - probs)
+            pi = gate
+
+            return {"mu": mu, "alpha": alpha, "pi": pi}
 
         map = name_map.get(distr, {})
         vals = {k: df.loc[:, [v]].values for k, v in map.items()}
@@ -390,6 +427,16 @@ class XGBoostLSS(BaseProbaRegressor):
             "loss_fn": self.loss_fn,
             "initialize": self.initialize,
         }
+
+        # xgboostlss.ZINB expects separate response functions for total_count
+        # and probs instead of a single ``response_fn`` argument.
+        # Use "softplus" for total_count to avoid poor distributions.
+        # "relu" can produce very small values leading to severe under-coverage,
+        # while "exp" can cause numerical instability and training hangs.
+        if self.dist == "ZINB":
+            distr_params.pop("response_fn", None)
+            distr_params["response_fn_total_count"] = "softplus"
+            distr_params["response_fn_probs"] = "sigmoid"
 
         # initialize parameter was introduced in xgboostlss v0.6.1
         if _check_soft_dependencies("xgboostlss<0.6.1", severity="none"):
@@ -572,6 +619,8 @@ class XGBoostLSS(BaseProbaRegressor):
             "eta": 0.1,
             "max_depth": 3,
         }
+        params9 = {"dist": "ZIPoisson", "max_minutes": 1, "n_trials": 0}
+        params10 = {"dist": "ZINB", "max_minutes": 1, "n_trials": 0}
 
         return [
             params0,
@@ -583,4 +632,6 @@ class XGBoostLSS(BaseProbaRegressor):
             params6,
             params7,
             params8,
+            params9,
+            params10,
         ]
