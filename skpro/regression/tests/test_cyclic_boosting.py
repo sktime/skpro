@@ -35,7 +35,7 @@ def test_cyclic_boosting_simple_use():
 )
 def test_cyclic_boosting_with_manual_parameters():
     """Test use of cyclic boosting regressor with_manual_parameters."""
-    from cyclic_boosting import flags
+    from skpro.libs.cyclic_boosting import flags
     from sklearn.datasets import load_diabetes
     from sklearn.model_selection import train_test_split
 
@@ -91,6 +91,6 @@ def test_cyclic_boosting_missing_feature_validation():
     y = pd.DataFrame({"target": [1, 2, 3]})
 
     with pytest.raises(
-        ValueError, match="\\{'nonexistent1', 'nonexistent2'\\} are not in X"
+        ValueError, match="Features \\['nonexistent1', 'nonexistent2'\\] are not in X"
     ):
         reg.fit(X, y)
