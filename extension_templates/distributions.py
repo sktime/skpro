@@ -99,7 +99,8 @@ class ClassName(BaseDistribution):
     # todo: fill init
     # params should be written to self and never changed
     # super call must not be removed, change class name
-    # parameter checks can go after super call
+    # parameter checks and component initialization should go in __post_init__
+    # dynamic tag logic should go in __dynamic_tags__
     def __init__(self, param1, param2="param2default", index=None, columns=None):
         # all distributions must have index and columns arg with None defaults
         # this is to ensure pandas-like behaviour
@@ -111,9 +112,22 @@ class ClassName(BaseDistribution):
         # leave this as is
         super().__init__(index=index, columns=columns)
 
+    # todo: optional, for conditional tag setting
+    # tags set here override class-level _tags and are set
+    # after __init__ but before __post_init__
+    # if not needed, delete this method
+    def __dynamic_tags__(self):
+        """Set dynamic tags conditional on parameters."""
+        pass
+
+    # todo: optional, for parameter validation and derived quantities
+    # if not needed, delete this method
+    def __post_init__(self):
+        """Initialize non-parameter attributes and validate parameters."""
         # todo: optional, parameter checking logic (if applicable) should happen here
         # if writes derived values to self, should *not* overwrite self.parama etc
         # instead, write to self._parama, self._newparam (starting with _)
+        pass
 
     # todo: implement as many of the following methods as possible
     # if not implemented, the base class will try to fill it in
