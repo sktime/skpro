@@ -27,10 +27,53 @@ class BaseObject(_CommonTags, _BaseObject):
 
     def __init__(self):
         super().__init__()
+        self.__dynamic_tags__()
+        self.__post_init__()
+
+    def __dynamic_tags__(self):
+        """Set dynamic tags conditional on parameters.
+
+        Override this method to set tags that depend on the estimator's
+        parameters, e.g., cloning tags from a component estimator.
+        This is called at the end of ``__init__``, after ``super().__init__()``.
+        """
+
+    def __post_init__(self):
+        """Initialize non-parameter attributes and validate parameters.
+
+        Override this method to place parameter checks or initialization
+        of derived quantities that should not be constructor parameters.
+        This is called at the end of ``__init__``, after ``__dynamic_tags__``.
+
+        Avoid overriding ``__init__`` directly; place any such logic here.
+        """
 
 
 class BaseEstimator(_CommonTags, _BaseEstimator):
     """Base class for fittable objects."""
+
+    def __init__(self):
+        super().__init__()
+        self.__dynamic_tags__()
+        self.__post_init__()
+
+    def __dynamic_tags__(self):
+        """Set dynamic tags conditional on parameters.
+
+        Override this method to set tags that depend on the estimator's
+        parameters, e.g., cloning tags from a component estimator.
+        This is called at the end of ``__init__``, after ``super().__init__()``.
+        """
+
+    def __post_init__(self):
+        """Initialize non-parameter attributes and validate parameters.
+
+        Override this method to place parameter checks or initialization
+        of derived quantities that should not be constructor parameters.
+        This is called at the end of ``__init__``, after ``__dynamic_tags__``.
+
+        Avoid overriding ``__init__`` directly; place any such logic here.
+        """
 
 
 class BaseMetaEstimator(_CommonTags, _BaseMetaEstimator):
