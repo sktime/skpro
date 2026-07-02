@@ -112,6 +112,9 @@ def test_proba_index_coercion():
 @pytest.mark.parametrize("fun", ["pdf", "ppf", "cdf"])
 def test_proba_plotting(fun):
     """Test that plotting functions do not crash and return ax as expected."""
+    import matplotlib
+
+    matplotlib.use("Agg", force=True)
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
