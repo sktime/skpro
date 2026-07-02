@@ -12,7 +12,7 @@ All distribution fitters in ``skpro`` can be listed using the ``skpro.registry.a
 using ``object_types="distfitter"``, optionally filtered by tags.
 Valid tags can be listed using ``skpro.registry.all_tags``.
 
-Parmetric fitters
+Parametric fitters
 ------------------
 
 .. currentmodule:: skpro.distfitter
