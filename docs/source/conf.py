@@ -299,3 +299,43 @@ intersphinx_mapping = {
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
     "sktime": ("https://www.sktime.net/en/stable/", None),
 }
+
+
+# -- Generate estimator data for dynamic estimator overview page -----------
+
+
+def generate_estimator_data_hook(app, env, docnames=None):
+    """Generate estimator data before reading docs.
+
+    This hook runs after the build environment is initialized and generates
+    the JavaScript data file needed for the interactive estimator overview page.
+    The generated file is not committed to the repository.
+    """
+    import importlib.util
+    import os
+
+    # Load the generate_estimator_data module
+    spec = importlib.util.spec_from_file_location(
+        "generate_estimator_data",
+        os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "..",
+            "build_tools",
+            "generate_estimator_data.py",
+        ),
+    )
+    if spec and spec.loader:
+        gen_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gen_module)
+
+        # Generate the estimator data file in the _static directory for serving
+        static_dir = os.path.join(app.outdir, "_static")
+        os.makedirs(static_dir, exist_ok=True)
+        output_path = os.path.join(static_dir, "estimator_data.js")
+        gen_module.generate_estimator_data(output_path)
+
+
+def setup(app):
+    """Set up Sphinx app hooks."""
+    app.connect("env-before-read-docs", generate_estimator_data_hook)

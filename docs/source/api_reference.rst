@@ -11,6 +11,17 @@ It describes the classes and functions included in ``skpro``.
 
 .. include:: includes/api_css.rst
 
+Estimator Overview
+==================
+
+.. toctree::
+    :maxdepth: 1
+
+    estimator_overview
+
+API Documentation
+=================
+
 .. toctree::
     :maxdepth: 1
 
