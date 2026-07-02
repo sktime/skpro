@@ -1,10 +1,10 @@
 
-.. _distfitters_ref:
+.. _distfitter_ref:
 
 Distribution fitters
 ====================
 
-The :mod:`skpro.distfitters` module contains
+The :mod:`skpro.distfitter` module contains
 distribution fitters which combine a ``pandas.DataFrame``-like API
 with a ``scikit-base`` compatible object interface.
 
@@ -12,8 +12,8 @@ All distribution fitters in ``skpro`` can be listed using the ``skpro.registry.a
 using ``object_types="distfitter"``, optionally filtered by tags.
 Valid tags can be listed using ``skpro.registry.all_tags``.
 
-Distribution fitters
---------------------
+Parmetric fitters
+------------------
 
 .. currentmodule:: skpro.distfitter
 
