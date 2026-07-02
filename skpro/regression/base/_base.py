@@ -31,6 +31,7 @@ class BaseProbaRegressor(BaseEstimator):
         "capability:multioutput": False,
         "capability:missing": True,
         "capability:update": False,
+        "capability:pred_int": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
@@ -204,6 +205,14 @@ class BaseProbaRegressor(BaseEstimator):
         """
         raise NotImplementedError
 
+    def _check_pred_int_capability(self):
+        """Raise if probabilistic prediction methods are not supported."""
+        if not self.get_tag("capability:pred_int"):
+            raise NotImplementedError(
+                f"{self.__class__.__name__} does not implement probabilistic "
+                f"prediction methods (capability:pred_int=False)."
+            )
+
     def predict(self, X):
         """Predict labels for data from features.
 
@@ -289,6 +298,7 @@ class BaseProbaRegressor(BaseEstimator):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
+        self._check_pred_int_capability()
         X = self._check_X(X)
 
         y_pred = self._predict_proba(X)
@@ -381,6 +391,7 @@ class BaseProbaRegressor(BaseEstimator):
         """
         # check that self is fitted, if not raise exception
         self.check_is_fitted()
+        self._check_pred_int_capability()
 
         # check alpha and coerce to list
         coverage = self._check_alpha(coverage, name="coverage")
@@ -486,6 +497,7 @@ class BaseProbaRegressor(BaseEstimator):
         """
         # check that self is fitted, if not raise exception
         self.check_is_fitted()
+        self._check_pred_int_capability()
 
         # default alpha
         if alpha is None:
@@ -599,6 +611,7 @@ class BaseProbaRegressor(BaseEstimator):
         """
         # check that self is fitted, if not raise exception
         self.check_is_fitted()
+        self._check_pred_int_capability()
 
         # check and convert X
         X_inner = self._check_X(X=X)

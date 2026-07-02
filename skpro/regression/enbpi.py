@@ -32,6 +32,13 @@ class EnbpiRegressor(BaseProbaRegressor):
     The clones are aggregated to predict quantiles of the target distribution,
     following the original algorithms in [1]_ and [2]_.
 
+    Supports online learning via ``update``. On ``update``, the bootstrap
+    ensemble is not retrained. Instead, new non-conformity scores (residuals)
+    are computed from the incoming batch using the frozen ensemble, and a
+    sliding window of fixed size replaces the oldest scores with the new
+    ones. This allows the prediction intervals to adapt to distributional
+    changes over time without any model refitting.
+
     The parameters in the reference [2]_ are mapped to the parameters of the
     estimator as follows: :math:`\mathcal{A}` is ``estimator``, :math:`B` is
     ``n_bootstrap_samples``, :math:`x_i, i = 1, \dots, T` are the rows of
@@ -99,12 +106,15 @@ class EnbpiRegressor(BaseProbaRegressor):
     >>> reg_proba = EnbpiRegressor(reg_tabular)
     >>> reg_proba.fit(X_train, y_train)
     EnbpiRegressor(...)
+    >>> reg_proba.update(X_test[:10], y_test[:10].to_frame())
+    EnbpiRegressor(...)
     >>> y_pred = reg_proba.predict_proba(X_test)
     """
 
     _tags = {
         "authors": ["fkiraly", "hamrel-cxu"],
         "capability:missing": True,
+        "capability:update": True,
     }
 
     def __init__(
@@ -168,7 +178,6 @@ class EnbpiRegressor(BaseProbaRegressor):
         self.estimators_ = []
         self._cols = y.columns
 
-        # coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
         y_pred_bs = np.ones((n_bootstrap_samples,) + y.shape) * np.nan
@@ -208,6 +217,50 @@ class EnbpiRegressor(BaseProbaRegressor):
         self._errs = errs
         self._bs_vs_ix = bs_vs_ix
         self._n_train = n
+
+        return self
+
+    def _update(self, X, y, C=None):
+        """Online update of conformity scores.
+
+        The bootstrap ensemble is kept frozen. New non-conformity scores
+        are computed from the incoming batch using the frozen ensemble
+        predictions. A sliding window of fixed size (equal to the original
+        training set size) is maintained: the oldest scores are discarded
+        and the new scores are appended, so that the prediction intervals
+        reflect recent data volatility.
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to update with
+        y : pandas DataFrame, must be same length as X
+            labels to update with
+
+        Returns
+        -------
+        self : reference to self
+        """
+        n_new = len(X)
+        n_cols = y.shape[1]
+        n_est = self.n_bootstrap_samples
+
+        X_skl = prep_skl_df(X, copy_df=True)
+
+        y_preds = np.zeros((n_est, n_new, n_cols))
+        for i, est in enumerate(self.estimators_):
+            y_preds[i] = _coerce_numpy2d(est.predict(X_skl))
+
+        y_pred_agg = self._agg_preds(y_preds)
+
+        errs = y.values - y_pred_agg
+        if self.symmetrize:
+            errs = np.abs(errs)
+
+        new_bs_vs_ix = np.zeros((n_new, n_est))
+
+        self._errs = np.concatenate([self._errs[n_new:], errs], axis=0)
+        self._bs_vs_ix = np.concatenate([self._bs_vs_ix[n_new:], new_bs_vs_ix], axis=0)
 
         return self
 
