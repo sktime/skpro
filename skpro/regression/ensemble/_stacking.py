@@ -4,7 +4,6 @@
 __author__ = ["Ashish-Kumar-Dash"]
 __all__ = ["StackingProbaRegressor"]
 
-import numpy as np
 import pandas as pd
 
 from skpro.base import BaseMetaEstimator
@@ -15,10 +14,10 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
     """Stacking ensemble of heterogeneous probabilistic regressors.
 
     Fits multiple base probabilistic regressors and a final meta-learner.
-    During ``fit``, out-of-fold distributional predictions (mean and variance)
-    from the base regressors are used as meta-features to train the
-    final estimator. During ``predict_proba``, base regressor predictions are
-    transformed into meta-features and passed to the final estimator.
+    During ``fit``, out-of-fold distributional predictions from the base
+    regressors are converted to meta-features to train the final estimator.
+    During ``predict_proba``, base regressor predictions are transformed
+    into meta-features and passed to the final estimator.
 
     Generalizes ``sklearn``'s ``StackingRegressor`` to the probabilistic
     regression setting, where predictions are full distributions
@@ -37,6 +36,13 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
     cv : int or sklearn cv splitter, optional, default=5
         Cross-validation strategy for generating out-of-fold predictions.
         If int, uses ``KFold(n_splits=cv)``.
+    features : str, optional, default="meanvar"
+        Strategy for extracting meta-features from distributional predictions.
+
+        * ``"meanvar"`` - uses ``mean()`` and ``var()`` of the predicted
+          distributions. Sufficient statistics for location-scale families.
+        * ``"params"`` - uses ``to_df()`` to extract the raw distribution
+          parameters (e.g., ``mu``, ``sigma`` for Normal).
     passthrough : bool, optional, default=False
         If ``True``, the original features ``X`` are appended to the
         meta-features before training the final estimator.
@@ -81,10 +87,18 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
         "capability:survival": True,
     }
 
-    def __init__(self, estimators, final_estimator=None, cv=5, passthrough=False):
+    def __init__(
+        self,
+        estimators,
+        final_estimator=None,
+        cv=5,
+        features="meanvar",
+        passthrough=False,
+    ):
         self.estimators = estimators
         self.final_estimator = final_estimator
         self.cv = cv
+        self.features = features
         self.passthrough = passthrough
 
         super().__init__()
@@ -135,11 +149,7 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
 
         est_list = self._estimators
 
-        oof_means = {}
-        oof_vars = {}
-        for name, _ in est_list:
-            oof_means[name] = pd.DataFrame(np.nan, index=X.index, columns=y.columns)
-            oof_vars[name] = pd.DataFrame(np.nan, index=X.index, columns=y.columns)
+        oof_dists = {name: [] for name, _ in est_list}
 
         for tr_idx, tt_idx in cv.split(X):
             X_train = X.iloc[tr_idx]
@@ -150,11 +160,9 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
             for name, est in est_list:
                 fitted = est.clone().fit(X_train, y_train, C=C_train)
                 dist = fitted.predict_proba(X_test)
-                test_idx = X_test.index
-                oof_means[name].loc[test_idx] = dist.mean().values
-                oof_vars[name].loc[test_idx] = dist.var().values
+                oof_dists[name].append(dist)
 
-        X_meta = self._build_meta_features(oof_means, oof_vars)
+        X_meta = self._build_meta_features(oof_dists)
 
         if self.passthrough:
             X_meta = pd.concat([X, X_meta], axis=1)
@@ -183,14 +191,11 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as ``X``
             probabilistic predictions from the stacking meta-learner
         """
-        means = {}
-        vars_ = {}
+        dists = {}
         for name, est in self.estimators_:
-            dist = est.predict_proba(X)
-            means[name] = dist.mean()
-            vars_[name] = dist.var()
+            dists[name] = [est.predict_proba(X)]
 
-        X_meta = self._build_meta_features(means, vars_)
+        X_meta = self._build_meta_features(dists)
 
         if self.passthrough:
             X_meta = pd.concat([X, X_meta], axis=1)
@@ -198,29 +203,38 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
 
         return self.final_estimator_.predict_proba(X_meta)
 
-    def _build_meta_features(self, means, vars_):
-        """Build meta-feature DataFrame from distributional statistics.
+    def _build_meta_features(self, dists):
+        """Build meta-feature DataFrame from distributional predictions.
 
         Parameters
         ----------
-        means : dict of {str: pd.DataFrame}
-            Mean predictions keyed by estimator name.
-        vars_ : dict of {str: pd.DataFrame}
-            Variance predictions keyed by estimator name.
+        dists : dict of {str: list of BaseDistribution}
+            Distributional predictions keyed by estimator name.
+            Each list entry corresponds to one CV fold (or single predict call).
 
         Returns
         -------
         X_meta : pd.DataFrame
             Meta-feature matrix with columns named by estimator and statistic.
         """
+        features = self.features
         meta_dfs = []
-        for name in means:
-            m = means[name].copy()
-            v = vars_[name].copy()
-            m.columns = [f"{name}_mean_{c}" for c in m.columns]
-            v.columns = [f"{name}_var_{c}" for c in v.columns]
-            meta_dfs.append(m)
-            meta_dfs.append(v)
+
+        for name in dists:
+            fold_dfs = []
+            for dist in dists[name]:
+                if features == "meanvar":
+                    m = dist.mean()
+                    v = dist.var()
+                    m.columns = [f"{name}_mean_{c}" for c in m.columns]
+                    v.columns = [f"{name}_var_{c}" for c in v.columns]
+                    fold_dfs.append(pd.concat([m, v], axis=1))
+                elif features == "params":
+                    df = dist.to_df()
+                    df.columns = [f"{name}_{p}_{v}" for v, p in df.columns]
+                    fold_dfs.append(df)
+            meta_dfs.append(pd.concat(fold_dfs, axis=0))
+
         return pd.concat(meta_dfs, axis=1)
 
     @classmethod
@@ -264,5 +278,10 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
             "passthrough": True,
             "cv": 3,
         }
+        params4 = {
+            "estimators": [("r1", reg1), ("r2", reg2)],
+            "features": "params",
+            "cv": 3,
+        }
 
-        return [params1, params2, params3]
+        return [params1, params2, params3, params4]
