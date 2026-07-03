@@ -1,6 +1,8 @@
 """Empirical distribution fitter."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
+import pandas as pd
+
 from skpro.distfitter.base import BaseDistFitter
 
 
@@ -55,18 +57,8 @@ class EmpiricalFitter(BaseDistFitter):
         -------
         self : reference to self
         """
-        import pandas as pd
-
-        if X.shape[1] > 1:
-            n = len(X)
-            idx = pd.MultiIndex.from_arrays(
-                [range(n), [0] * n], names=["sample", None]
-            )
-            spl = X.copy()
-            spl.index = idx
-        else:
-            spl = X
-        self.spl_ = spl
+        vals = X.values.ravel()
+        self.spl_ = pd.DataFrame(vals, columns=["spl"])
         return self
 
     def _proba(self):
