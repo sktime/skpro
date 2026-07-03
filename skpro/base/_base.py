@@ -31,11 +31,9 @@ class BaseObject(_CommonTags, _BaseObject):
         self.__post_init__()
 
     def __dynamic_tags__(self):
-        """Set dynamic tags conditional on parameters.
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
 
-        Override this method to set tags that depend on the estimator's
-        parameters, e.g., cloning tags from a component estimator.
-        This is called at the end of ``__init__``, after ``super().__init__()``.
+        This method should be used for setting dynamic tags only.
         """
 
     def __post_init__(self):
@@ -58,11 +56,9 @@ class BaseEstimator(_CommonTags, _BaseEstimator):
         self.__post_init__()
 
     def __dynamic_tags__(self):
-        """Set dynamic tags conditional on parameters.
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
 
-        Override this method to set tags that depend on the estimator's
-        parameters, e.g., cloning tags from a component estimator.
-        This is called at the end of ``__init__``, after ``super().__init__()``.
+        This method should be used for setting dynamic tags only.
         """
 
     def __post_init__(self):

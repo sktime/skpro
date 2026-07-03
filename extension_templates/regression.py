@@ -117,7 +117,10 @@ class ClassName(BaseProbaRegressor):
     # after __init__ but before __post_init__
     # if not needed, delete this method
     def __dynamic_tags__(self):
-        """Set dynamic tags conditional on parameters."""
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
+
+        This method should be used for setting dynamic tags only.
+        """
         # example 1: conditional setting of a tag
         # if self.paramname == 42:
         #   self.set_tags(capability:missing=True)
