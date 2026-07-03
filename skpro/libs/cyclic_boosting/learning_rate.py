@@ -1,10 +1,13 @@
-
-import numpy as np
-from skpro.libs.cyclic_boosting.features import Feature
 from typing import Optional, Union
 
+import numpy as np
 
-def constant_learn_rate_one(iteration: int, maximal_iteration: int, feature: Optional[Feature] = None) -> float:
+from skpro.libs.cyclic_boosting.features import Feature
+
+
+def constant_learn_rate_one(
+    iteration: int, maximal_iteration: int, feature: Optional[Feature] = None
+) -> float:
     """Function to specify the learning rate of a cyclic boosting iteration.
     The learning rate returned is always 1.
 
@@ -23,7 +26,11 @@ def constant_learn_rate_one(iteration: int, maximal_iteration: int, feature: Opt
     return 1.0
 
 
-def linear_learn_rate(iteration: int, maximal_iteration: Union[int, float], feature: Optional[Feature] = None) -> float:
+def linear_learn_rate(
+    iteration: int,
+    maximal_iteration: Union[int, float],
+    feature: Optional[Feature] = None,
+) -> float:
     """Function to specify the learning rate of a cyclic boosting iteration.
     The learning rate is linear increasing each iteration until it reaches 1 in
     the last iteration.
@@ -44,7 +51,9 @@ def linear_learn_rate(iteration: int, maximal_iteration: Union[int, float], feat
     return iteration * (1.0 / maximal_iteration)
 
 
-def logistic_learn_rate(iteration: int, maximal_iteration: int, feature: Optional[Feature] = None) -> float:
+def logistic_learn_rate(
+    iteration: int, maximal_iteration: int, feature: Optional[Feature] = None
+) -> float:
     """Function to specify the learning rate of a cyclic boosting iteration.
     The learning rate has a logistic form.
 
@@ -65,7 +74,9 @@ def logistic_learn_rate(iteration: int, maximal_iteration: int, feature: Optiona
     return (1.0 / (1.0 + np.exp(iteration / x_t)) - 0.5) * 2
 
 
-def half_linear_learn_rate(iteration: int, maximal_iteration: int, feature: Optional[Feature] = None) -> float:
+def half_linear_learn_rate(
+    iteration: int, maximal_iteration: int, feature: Optional[Feature] = None
+) -> float:
     """Function to specify the learning rate of a cyclic boosting iteration.
     The learning rate is linear increasing each iteration until it reaches 1 in
     half of the iterations.
@@ -83,4 +94,6 @@ def half_linear_learn_rate(iteration: int, maximal_iteration: int, feature: Opti
     feature: :class:`cyclic_boosting.base.Feature`
         Feature
     """
-    return np.minimum(linear_learn_rate(iteration, maximal_iteration * 0.5, feature), 1.0)
+    return np.minimum(
+        linear_learn_rate(iteration, maximal_iteration * 0.5, feature), 1.0
+    )

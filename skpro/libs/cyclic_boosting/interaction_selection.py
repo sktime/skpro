@@ -1,13 +1,12 @@
 from itertools import combinations
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from sklearn.feature_selection import SelectKBest, f_regression, f_classif
+from sklearn.feature_selection import SelectKBest, f_classif, f_regression
 
 from skpro.libs.cyclic_boosting.binning import BinNumberTransformer
 from skpro.libs.cyclic_boosting.utils import multidim_binnos_to_lexicographic_binnos
-
-from typing import List, Tuple, Dict, Optional
 
 
 def create_interactions(features1D: List[str], dim: int) -> List[Tuple]:
@@ -56,7 +55,9 @@ def build_binned_interaction_features(
     pd.DataFrame
         data frame with different interaction terms as flattened (binned) multi-dimensional features
     """
-    binner = BinNumberTransformer(n_bins=number_of_bins, feature_properties=feature_properties, inplace=False)
+    binner = BinNumberTransformer(
+        n_bins=number_of_bins, feature_properties=feature_properties, inplace=False
+    )
     binned_1D = binner.fit_transform(X)
 
     features_multidim = pd.DataFrame()
@@ -65,7 +66,9 @@ def build_binned_interaction_features(
         for i in it:
             cols.append(binned_1D[i])
         binned_multidim = np.column_stack(tuple(cols))
-        features_multidim[it], _ = multidim_binnos_to_lexicographic_binnos(binned_multidim)
+        features_multidim[it], _ = multidim_binnos_to_lexicographic_binnos(
+            binned_multidim
+        )
 
     return features_multidim
 
@@ -98,13 +101,21 @@ def select_interaction_terms_anova(
     -------
         list of the names of the selected interaction terms
     """
-    interaction_terms = create_interactions(list(feature_properties.keys()), interaction_dim)
+    interaction_terms = create_interactions(
+        list(feature_properties.keys()), interaction_dim
+    )
 
-    interaction_term_features = build_binned_interaction_features(X, interaction_terms, feature_properties)
+    interaction_term_features = build_binned_interaction_features(
+        X, interaction_terms, feature_properties
+    )
 
     if classification:
         anova_est = SelectKBest(f_classif, k=k_best)
     else:
         anova_est = SelectKBest(f_regression, k=k_best)
     anova_est.fit(interaction_term_features, y)
-    return list(anova_est.get_feature_names_out(input_features=interaction_term_features.columns))
+    return list(
+        anova_est.get_feature_names_out(
+            input_features=interaction_term_features.columns
+        )
+    )

@@ -1,24 +1,32 @@
-
 import abc
 import logging
 import warnings
+from typing import Tuple, Union
 
 import numpy as np
 import pandas as pd
-
 import sklearn.base
 from scipy.optimize import minimize
 from scipy.stats import beta
 
-from skpro.libs.cyclic_boosting.base import CyclicBoostingBase, gaussian_matching_by_quantiles, Feature, CBLinkPredictionsFactors
-from skpro.libs.cyclic_boosting.link import LogLinkMixin, IdentityLinkMixin, LogitLinkMixin
-from skpro.libs.cyclic_boosting.utils import continuous_quantile_from_discrete_pdf, get_X_column
+from skpro.libs.cyclic_boosting.base import (
+    CBLinkPredictionsFactors,
+    CyclicBoostingBase,
+    Feature,
+    gaussian_matching_by_quantiles,
+)
 from skpro.libs.cyclic_boosting.classification import get_beta_priors
-
-from typing import Tuple, Union
+from skpro.libs.cyclic_boosting.link import (
+    IdentityLinkMixin,
+    LogitLinkMixin,
+    LogLinkMixin,
+)
+from skpro.libs.cyclic_boosting.utils import (
+    continuous_quantile_from_discrete_pdf,
+    get_X_column,
+)
 
 _logger = logging.getLogger(__name__)
-
 
 
 class CBGenericLoss(CyclicBoostingBase, metaclass=abc.ABCMeta):
@@ -31,11 +39,17 @@ class CBGenericLoss(CyclicBoostingBase, metaclass=abc.ABCMeta):
     ``CBNBinomRegressor``, or ``CBLocationRegressor``).
     """
 
-    def precalc_parameters(self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors) -> None:
+    def precalc_parameters(
+        self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors
+    ) -> None:
         pass
 
     def calc_parameters(
-        self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors, prefit_data
+        self,
+        feature: Feature,
+        y: np.ndarray,
+        pred: CBLinkPredictionsFactors,
+        prefit_data,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Calling of the optimization (loss minimization) for the different bins
@@ -69,7 +83,9 @@ class CBGenericLoss(CyclicBoostingBase, metaclass=abc.ABCMeta):
         bins, split_indices = np.unique(sorted_bins, return_index=True)
         split_indices = split_indices[1:]
 
-        y_pred = np.hstack((y[..., np.newaxis], self.unlink_func(pred.predict_link())[..., np.newaxis]))
+        y_pred = np.hstack(
+            (y[..., np.newaxis], self.unlink_func(pred.predict_link())[..., np.newaxis])
+        )
         y_pred = np.hstack((y_pred, self.weights[..., np.newaxis]))
         y_pred_bins = np.split(y_pred[sorting], split_indices)
 
@@ -96,7 +112,9 @@ class CBGenericLoss(CyclicBoostingBase, metaclass=abc.ABCMeta):
 
         return parameters, uncertainties
 
-    def optimization(self, y: np.ndarray, yhat_others: np.ndarray, weights: np.ndarray) -> Tuple[float, float]:
+    def optimization(
+        self, y: np.ndarray, yhat_others: np.ndarray, weights: np.ndarray
+    ) -> Tuple[float, float]:
         """
         Minimization of the costs (potentially including sample weights) for
         individual feature bins. The initial value for the parameters is set to
@@ -120,10 +138,14 @@ class CBGenericLoss(CyclicBoostingBase, metaclass=abc.ABCMeta):
             estimated parameter and its uncertainty
         """
         neutral_factor = self.unlink_func(np.array(self.neutral_factor_link))
-        res = minimize(self.objective_function, neutral_factor, args=(yhat_others, y, weights))
+        res = minimize(
+            self.objective_function, neutral_factor, args=(yhat_others, y, weights)
+        )
         return float(res.x[0]), self.uncertainty(y, weights)
 
-    def objective_function(self, param: float, yhat_others: np.ndarray, y: np.ndarray, weights: np.ndarray) -> float:
+    def objective_function(
+        self, param: float, yhat_others: np.ndarray, y: np.ndarray, weights: np.ndarray
+    ) -> float:
         """
         Calculation of the in-sample costs (potentially including sample
         weights) for individual feature bins according to a given loss
@@ -150,7 +172,9 @@ class CBGenericLoss(CyclicBoostingBase, metaclass=abc.ABCMeta):
         return self.costs(model, y, weights)
 
     @abc.abstractmethod
-    def costs(self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray) -> float:
+    def costs(
+        self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray
+    ) -> float:
         raise NotImplementedError("implement in subclass")
 
     @abc.abstractmethod
@@ -177,8 +201,9 @@ class CBGenericLoss(CyclicBoostingBase, metaclass=abc.ABCMeta):
         raise NotImplementedError("implement in subclass")
 
 
-
-class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=abc.ABCMeta):
+class CBQuantileRegressor(
+    CBGenericLoss, sklearn.base.RegressorMixin, metaclass=abc.ABCMeta
+):
     """
     Cyclic Boosting generic quantile regressor. A quantile loss,
     according to the desired quantile to be predicted, is minimized in each bin
@@ -251,15 +276,29 @@ class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=
         """
         return self.quantile_costs(prediction, y, weights, self.quantile)
 
-    def _init_global_scale(self, X: Union[pd.DataFrame, np.ndarray], y: np.ndarray) -> None:
-        self.global_scale_link_, self.prior_pred_link_offset_ = self.quantile_global_scale(
-            X, y, self.quantile, self.weights, self.prior_prediction_column, self.link_func
+    def _init_global_scale(
+        self, X: Union[pd.DataFrame, np.ndarray], y: np.ndarray
+    ) -> None:
+        (
+            self.global_scale_link_,
+            self.prior_pred_link_offset_,
+        ) = self.quantile_global_scale(
+            X,
+            y,
+            self.quantile,
+            self.weights,
+            self.prior_prediction_column,
+            self.link_func,
         )
 
-    def costs(self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray) -> float:
+    def costs(
+        self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray
+    ) -> float:
         return self.quantile_costs(prediction, y, weights, self.quantile)
 
-    def prepare_plots(self, X: np.ndarray, y: np.ndarray, prediction: np.ndarray) -> None:
+    def prepare_plots(
+        self, X: np.ndarray, y: np.ndarray, prediction: np.ndarray
+    ) -> None:
         for feature in self.features:
             if feature.feature_type is None:
                 weights = self.weights
@@ -269,13 +308,18 @@ class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=
             feature.bind_data(X, weights)
 
             sum_w, _, sum_pw = (
-                np.bincount(feature.lex_binned_data, weights=w) for w in [weights, weights * y, weights * prediction]
+                np.bincount(feature.lex_binned_data, weights=w)
+                for w in [weights, weights * y, weights * prediction]
             )
 
-            df = pd.DataFrame({"y": y, "weights": weights, "binnumbers": feature.lex_binned_data})
+            df = pd.DataFrame(
+                {"y": y, "weights": weights, "binnumbers": feature.lex_binned_data}
+            )
 
             def df_continuous_quantile_from_discrete_pdf(df, quantile):
-                return continuous_quantile_from_discrete_pdf(df["y"], quantile, df["weights"])
+                return continuous_quantile_from_discrete_pdf(
+                    df["y"], quantile, df["weights"]
+                )
 
             mean_target_binned = np.asarray(
                 df.groupby("binnumbers")[["y", "weights"]].apply(
@@ -284,7 +328,9 @@ class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=
             )
 
             mean_prediction_binned = sum_pw / sum_w
-            mean_prediction_binned = np.where(np.isfinite(mean_prediction_binned), mean_prediction_binned, 1.0)
+            mean_prediction_binned = np.where(
+                np.isfinite(mean_prediction_binned), mean_prediction_binned, 1.0
+            )
 
             # keep potential empty bins in multi-dimensional features
             all_bins = range(max(feature.lex_binned_data) + 1)
@@ -292,7 +338,9 @@ class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=
             for i in empty_bins:
                 mean_target_binned = np.insert(mean_target_binned, i, 1.0)
 
-            mean_y_finite = continuous_quantile_from_discrete_pdf(y, self.quantile, weights)
+            mean_y_finite = continuous_quantile_from_discrete_pdf(
+                y, self.quantile, weights
+            )
             mean_prediction_finite = np.sum(sum_pw) / np.sum(sum_w)
 
             if len(mean_target_binned) + 1 == feature.n_bins:
@@ -305,9 +353,13 @@ class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=
                 feature.y = mean_target_binned - mean_y_finite
                 feature.prediction = mean_prediction_binned - mean_prediction_finite
             else:
-                feature.mean_dev = np.log(mean_prediction_binned + 1e-12) - np.log(mean_target_binned + 1e-12)
+                feature.mean_dev = np.log(mean_prediction_binned + 1e-12) - np.log(
+                    mean_target_binned + 1e-12
+                )
                 feature.y = np.log(mean_target_binned / mean_y_finite + 1e-12)
-                feature.prediction = np.log(mean_prediction_binned / mean_prediction_finite + 1e-12)
+                feature.prediction = np.log(
+                    mean_prediction_binned / mean_prediction_finite + 1e-12
+                )
 
             feature.y_finite = mean_y_finite
             feature.prediction_finite = mean_prediction_finite
@@ -317,11 +369,20 @@ class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=
     def _call_observe_iterations(self, iteration, X, y, prediction, delta) -> None:
         for observer in self.observers:
             observer.observe_iterations(
-                iteration, X, y, prediction, self.weights, self.get_state(), delta, self.quantile
+                iteration,
+                X,
+                y,
+                prediction,
+                self.weights,
+                self.get_state(),
+                delta,
+                self.quantile,
             )
 
     @staticmethod
-    def quantile_costs(prediction: np.ndarray, y: np.ndarray, weights: np.ndarray, quantile: float) -> float:
+    def quantile_costs(
+        prediction: np.ndarray, y: np.ndarray, weights: np.ndarray, quantile: float
+    ) -> float:
         """
         Calculation of the in-sample quantile costs (potentially including sample
         weights).
@@ -344,7 +405,10 @@ class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=
         """
         if len(y) > 0:
             sum_weighted_error = np.nansum(
-                ((y < prediction) * (1 - quantile) * (prediction - y) + (y >= prediction) * quantile * (y - prediction))
+                (
+                    (y < prediction) * (1 - quantile) * (prediction - y)
+                    + (y >= prediction) * quantile * (y - prediction)
+                )
                 * weights
             )
             quantile_costs = sum_weighted_error / np.nansum(weights)
@@ -375,7 +439,9 @@ class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=
         if weights is None:
             raise RuntimeError("The weights have to be initialized.")
 
-        global_scale_link_ = link_func(continuous_quantile_from_discrete_pdf(y, quantile, weights))
+        global_scale_link_ = link_func(
+            continuous_quantile_from_discrete_pdf(y, quantile, weights)
+        )
 
         prior_pred_link_offset_ = None
         if prior_prediction_column is not None:
@@ -388,7 +454,9 @@ class CBQuantileRegressor(CBGenericLoss, sklearn.base.RegressorMixin, metaclass=
                     )
                 )
 
-            prior_pred_mean = np.sum(prior_pred[finite] * weights[finite]) / np.sum(weights[finite])
+            prior_pred_mean = np.sum(prior_pred[finite] * weights[finite]) / np.sum(
+                weights[finite]
+            )
 
             prior_pred_link_mean = link_func(prior_pred_mean)
 
@@ -590,7 +658,8 @@ def check_y_multiplicative(y: np.ndarray) -> None:
     """Check that y has no negative values."""
     if not (y >= 0.0).all():
         raise ValueError(
-            "The target y must be positive semi-definite " "and not NAN. y[~(y>=0)] = {0}".format(y[~(y >= 0)])
+            "The target y must be positive semi-definite "
+            "and not NAN. y[~(y>=0)] = {}".format(y[~(y >= 0)])
         )
 
 
@@ -604,11 +673,13 @@ def check_y_classification(y: np.ndarray) -> None:
     if not ((y == 0.0) | (y == 1.0)).all():
         raise ValueError(
             "The target y must be either 0 or 1 "
-            "and not NAN. y[(y != 0) & (y != 1)] = {0}".format(y[(y != 0) & (y != 1)])
+            "and not NAN. y[(y != 0) & (y != 1)] = {}".format(y[(y != 0) & (y != 1)])
         )
 
 
-class CBMultiplicativeGenericRegressor(CBGenericLoss, sklearn.base.RegressorMixin, LogLinkMixin):
+class CBMultiplicativeGenericRegressor(
+    CBGenericLoss, sklearn.base.RegressorMixin, LogLinkMixin
+):
     """
     Multiplicative regression mode allowing an arbitrary loss function to be
     minimized in each feature bin.This should be used for non-negative target
@@ -663,7 +734,9 @@ class CBMultiplicativeGenericRegressor(CBGenericLoss, sklearn.base.RegressorMixi
     def _check_y(self, y: np.ndarray) -> None:
         check_y_multiplicative(y)
 
-    def costs(self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray) -> float:
+    def costs(
+        self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray
+    ) -> float:
         return self.costs(prediction, y, weights)
 
     def model(self, param: float, yhat_others: np.ndarray) -> np.ndarray:
@@ -673,7 +746,9 @@ class CBMultiplicativeGenericRegressor(CBGenericLoss, sklearn.base.RegressorMixi
         return uncertainty_gamma(y, weights)
 
 
-class CBAdditiveGenericRegressor(CBGenericLoss, sklearn.base.RegressorMixin, IdentityLinkMixin):
+class CBAdditiveGenericRegressor(
+    CBGenericLoss, sklearn.base.RegressorMixin, IdentityLinkMixin
+):
     """
     Additive regression mode allowing an arbitrary loss function to be
     minimized in each feature bin. This should be used for unconstrained target
@@ -728,7 +803,9 @@ class CBAdditiveGenericRegressor(CBGenericLoss, sklearn.base.RegressorMixin, Ide
     def _check_y(self, y: np.ndarray) -> None:
         check_y_additive(y)
 
-    def costs(self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray) -> float:
+    def costs(
+        self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray
+    ) -> float:
         return self.costs(prediction, y, weights)
 
     def model(self, param: float, yhat_others: np.ndarray) -> np.ndarray:
@@ -792,7 +869,9 @@ class CBGenericClassifier(CBGenericLoss, sklearn.base.ClassifierMixin, LogitLink
     def _check_y(self, y: np.ndarray) -> None:
         check_y_classification(y)
 
-    def costs(self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray) -> float:
+    def costs(
+        self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray
+    ) -> float:
         return self.costs(prediction, y, weights)
 
     def model(self, param: float, yhat_others: np.ndarray) -> np.ndarray:

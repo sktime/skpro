@@ -18,7 +18,7 @@ class AbstractBinSmoother(sklearnb.BaseEstimator, sklearnb.RegressorMixin):
     supports_pandas = False
 
 
-class SetNBinsMixin(object):
+class SetNBinsMixin:
     """Mixin class for smoothers working on bins that saves binning
     information in ``fit`` to be available in ``predict``.
     """

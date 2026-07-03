@@ -1,5 +1,5 @@
-
 import logging
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -9,8 +9,6 @@ from skpro.libs.cyclic_boosting import flags
 from ._binary_search import eq_multi, ge_multi
 from ._utils import _read_feature_property, check_frame_empty
 from .ecdf_transformer import ECdfTransformer
-
-from typing import Union, Optional
 
 MISSING_VALUE_AS_BINNO = -1
 
@@ -201,7 +199,9 @@ class BinNumberTransformer(ECdfTransformer):
             if feature_prop is None:
                 pass
             else:
-                xt = self._transform_one_feature(X, feature_prop, col, epsilon, bins_and_cdfs)
+                xt = self._transform_one_feature(
+                    X, feature_prop, col, epsilon, bins_and_cdfs
+                )
                 column_setter(X, col, xt)
 
         if not isinstance(X, pd.DataFrame) and n_transformed_features == X.shape[1]:

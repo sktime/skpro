@@ -1,16 +1,13 @@
 import copy
 import logging
 import warnings
+from dataclasses import dataclass
+from typing import Iterable, List, Optional
 
 import decorator
 import numba as nb
 import numpy as np
 import pandas as pd
-
-
-from typing import Iterable, List, Optional
-
-from dataclasses import dataclass
 
 _logger = logging.getLogger(__name__)
 
@@ -238,7 +235,9 @@ def multidim_binnos_to_lexicographic_binnos(binnos, n_bins=None, binsteps=None):
         binsteps = bin_steps(n_bins)
 
     is_valid = np.isfinite(binnos).all(axis=1)
-    is_valid[is_valid] &= ((binnos[is_valid] >= 0) & (binnos[is_valid] < n_bins[None, :])).all(axis=1)
+    is_valid[is_valid] &= (
+        (binnos[is_valid] >= 0) & (binnos[is_valid] < n_bins[None, :])
+    ).all(axis=1)
 
     if not np.any(is_valid):
         result = np.repeat(0, len(binnos))
@@ -251,7 +250,9 @@ def multidim_binnos_to_lexicographic_binnos(binnos, n_bins=None, binsteps=None):
         _logger.warning(
             "Enumerating multidimensional bins: A multidimensional feature of "
             "shape {n_bins} requires {total_bins} unique bins in total. "
-            "Please consider whether this is what you want.".format(n_bins=n_bins, total_bins=n_bins.prod())
+            "Please consider whether this is what you want.".format(
+                n_bins=n_bins, total_bins=n_bins.prod()
+            )
         )
     result = result.astype(np.int64)
     return result, n_bins
@@ -691,7 +692,8 @@ def clone(estimator, safe=True):
             raise TypeError(
                 "Cannot clone object '%s' (type %s): "
                 "it does not seem to be a scikit-learn estimator as "
-                "it does not implement a 'get_params' methods." % (repr(estimator), type(estimator))
+                "it does not implement a 'get_params' methods."
+                % (repr(estimator), type(estimator))
             )
     klass = estimator.__class__
     new_object_params = estimator.get_params(deep=False)
@@ -710,7 +712,9 @@ def clone(estimator, safe=True):
     return new_object
 
 
-def regularize_to_prior_expectation(values, uncertainties, prior_expectation, threshold=2.5):
+def regularize_to_prior_expectation(
+    values, uncertainties, prior_expectation, threshold=2.5
+):
     r"""Regularize values with uncertainties to a prior expectation.
 
     :param values: measured values
@@ -885,7 +889,9 @@ def regularize_to_error_weighted_mean_neighbors(
 
     wx_incl = np.ones(len(x))
     for i in range(len(x)):
-        wx_incl[i] = (sum_wx / np.convolve(wx * np.square(x - x_mean[i]), window_arr, "same"))[i]
+        wx_incl[i] = (
+            sum_wx / np.convolve(wx * np.square(x - x_mean[i]), window_arr, "same")
+        )[i]
 
     res = (wx * x + wx_incl * x_mean) / (wx + wx_incl)
     return res

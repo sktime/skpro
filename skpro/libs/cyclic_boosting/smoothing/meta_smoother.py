@@ -7,7 +7,6 @@ from enum import Enum
 
 import numpy as np
 
-
 from skpro.libs.cyclic_boosting import utils
 from skpro.libs.cyclic_boosting.smoothing.base import AbstractBinSmoother, SetNBinsMixin
 
@@ -102,8 +101,10 @@ class NormalizationSmoother(AbstractBinSmoother):
 
         if not np.isfinite(self.norm_):
             _logger.info(
-                "The norm in smoother {0} is not finite: "
-                "norm= {1}; weights= {2}; target= {3}".format(self.__class__.__name__, self.norm_, X_for_smoother, y)
+                "The norm in smoother {} is not finite: "
+                "norm= {}; weights= {}; target= {}".format(
+                    self.__class__.__name__, self.norm_, X_for_smoother, y
+                )
             )
             self.norm_ = 0.0
 
@@ -169,9 +170,13 @@ class RegressionTypeSmoother(AbstractBinSmoother, SetNBinsMixin):
              Array that contains the result of the subsmoother.
         """
         if not_interpolating(self.reg_type):
-            selected_events = utils.not_seen_events(X_for_smoother[:, : self.ndim_], self.bin_weights_, self.n_bins_)
+            selected_events = utils.not_seen_events(
+                X_for_smoother[:, : self.ndim_], self.bin_weights_, self.n_bins_
+            )
         elif not_extrapolating(self.reg_type):
-            selected_events = _selected_events_interpolating(X_for_smoother, self.ndim_, self.n_bins_)
+            selected_events = _selected_events_interpolating(
+                X_for_smoother, self.ndim_, self.n_bins_
+            )
         else:
             return smoothed_y
 
@@ -188,7 +193,9 @@ class RegressionTypeSmoother(AbstractBinSmoother, SetNBinsMixin):
         return self.apply_cut(X_for_smoother, smoothed_y)
 
 
-class NormalizationRegressionTypeSmoother(NormalizationSmoother, RegressionTypeSmoother):
+class NormalizationRegressionTypeSmoother(
+    NormalizationSmoother, RegressionTypeSmoother
+):
     """Meta-smoother to constrain all values according to their
     :class:`~cyclic_boosting.smoothing.RegressionType` from the ``predict`` method
     of the subsmoother.
@@ -286,7 +293,7 @@ class SectionSmoother(AbstractBinSmoother):
 
     def predict(self, X_for_smoother):
         if not self.smoother_upper_fitted and not self.smoother_lower_fitted:
-            raise ValueError("The {} has not been fitted!".format(self.__class__.__name__))
+            raise ValueError(f"The {self.__class__.__name__} has not been fitted!")
 
         cond_lower = self._split_condition(X_for_smoother)
         pred = np.ones(len(X_for_smoother)) * self.nan_representation

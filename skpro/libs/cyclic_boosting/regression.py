@@ -1,23 +1,22 @@
-
 import abc
 import logging
+from typing import Tuple
 
 import numexpr
 import numpy as np
-
-import sklearn.base
 import scipy.special
+import sklearn.base
 
-from skpro.libs.cyclic_boosting.base import CyclicBoostingBase, CBLinkPredictionsFactors
+from skpro.libs.cyclic_boosting.base import CBLinkPredictionsFactors, CyclicBoostingBase
 from skpro.libs.cyclic_boosting.features import Feature
 from skpro.libs.cyclic_boosting.link import LogLinkMixin
-
-from typing import Tuple
 
 _logger = logging.getLogger(__name__)
 
 
-def _calc_factors_from_posterior(alpha_posterior: np.ndarray, beta_posterior: np.ndarray) -> np.ndarray:
+def _calc_factors_from_posterior(
+    alpha_posterior: np.ndarray, beta_posterior: np.ndarray
+) -> np.ndarray:
     # The posterior distribution of f_j (factor in bin j)
     # follows a Gamma distribution. We want to use the median as estimate
     # because it is more stable against the log transformation. But calculating
@@ -29,7 +28,8 @@ def _calc_factors_from_posterior(alpha_posterior: np.ndarray, beta_posterior: np
     noncritical_posterior = (alpha_posterior <= 1e12) & (beta_posterior <= 1e12)
     # Median of the gamma distribution
     posterior_gamma = (
-        scipy.special.gammaincinv(alpha_posterior[noncritical_posterior], 0.5) / beta_posterior[noncritical_posterior]
+        scipy.special.gammaincinv(alpha_posterior[noncritical_posterior], 0.5)
+        / beta_posterior[noncritical_posterior]
     )
 
     factors = alpha_posterior / beta_posterior
@@ -37,7 +37,9 @@ def _calc_factors_from_posterior(alpha_posterior: np.ndarray, beta_posterior: np
     return np.log(factors)
 
 
-def _calc_factors_and_uncertainties(alpha: np.ndarray, beta: np.ndarray, link_func: np.ndarray) -> Tuple[np.ndarray]:
+def _calc_factors_and_uncertainties(
+    alpha: np.ndarray, beta: np.ndarray, link_func: np.ndarray
+) -> Tuple[np.ndarray]:
     alpha_prior, beta_prior = get_gamma_priors()
     alpha_posterior = alpha + alpha_prior
     beta_posterior = beta + beta_prior
@@ -58,8 +60,9 @@ def get_gamma_priors() -> Tuple[int, float]:
     return alpha_prior, beta_prior
 
 
-
-class CBBaseRegressor(CyclicBoostingBase, sklearn.base.RegressorMixin, LogLinkMixin, metaclass=abc.ABCMeta):
+class CBBaseRegressor(
+    CyclicBoostingBase, sklearn.base.RegressorMixin, LogLinkMixin, metaclass=abc.ABCMeta
+):
     r"""This is the base regressor for all Cyclic Boosting regression problems.
     It implements :class:`cyclic_boosting.link.LogLinkMixin` and is usable
     for regression problems with a target range of: :math:`0 \leq y < \infty`.
@@ -69,15 +72,24 @@ class CBBaseRegressor(CyclicBoostingBase, sklearn.base.RegressorMixin, LogLinkMi
         """Check that y has no negative values."""
         if not (y >= 0.0).all():
             raise ValueError(
-                "The target y must be positive semi-definite " "and not NAN. y[~(y>=0)] = {0}".format(y[~(y >= 0)])
+                "The target y must be positive semi-definite "
+                "and not NAN. y[~(y>=0)] = {}".format(y[~(y >= 0)])
             )
 
     @abc.abstractmethod
-    def calc_parameters(self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors, prefit_data):
+    def calc_parameters(
+        self,
+        feature: Feature,
+        y: np.ndarray,
+        pred: CBLinkPredictionsFactors,
+        prefit_data,
+    ):
         raise NotImplementedError("implement in subclass")
 
     @abc.abstractmethod
-    def precalc_parameters(self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors) -> None:
+    def precalc_parameters(
+        self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors
+    ) -> None:
         return None
 
 
@@ -139,11 +151,17 @@ class CBNBinomRegressor(CBBaseRegressor):
         self.a = a  # TODO: a and c as variable names are too vague
         self.c = c
 
-    def precalc_parameters(self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors):
+    def precalc_parameters(
+        self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors
+    ):
         pass
 
     def calc_parameters(
-        self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors, prefit_data
+        self,
+        feature: Feature,
+        y: np.ndarray,
+        pred: CBLinkPredictionsFactors,
+        prefit_data,
     ) -> Tuple[np.ndarray]:
         a = self.a  # noqa: F841
         c = self.c  # noqa: F841
@@ -156,7 +174,10 @@ class CBNBinomRegressor(CBBaseRegressor):
 
         lex_binnumbers = feature.lex_binned_data
         minlength = feature.n_bins
-        alpha, beta = (np.bincount(lex_binnumbers, weights=w, minlength=minlength) for w in [alpha_w, beta_w])
+        alpha, beta = (
+            np.bincount(lex_binnumbers, weights=w, minlength=minlength)
+            for w in [alpha_w, beta_w]
+        )
         link_func = self.link_func
 
         return _calc_factors_and_uncertainties(alpha, beta, link_func)
@@ -171,10 +192,20 @@ class CBPoissonRegressor(CBBaseRegressor):
     Poisson-distributed target values.
     """
 
-    def precalc_parameters(self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors):
-        return np.bincount(feature.lex_binned_data, weights=y * self.weights, minlength=feature.n_bins)
+    def precalc_parameters(
+        self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors
+    ):
+        return np.bincount(
+            feature.lex_binned_data, weights=y * self.weights, minlength=feature.n_bins
+        )
 
-    def calc_parameters(self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors, prefit_data):
+    def calc_parameters(
+        self,
+        feature: Feature,
+        y: np.ndarray,
+        pred: CBLinkPredictionsFactors,
+        prefit_data,
+    ):
         prediction = self.unlink_func(pred.predict_link())
 
         prediction_sum_of_bins = np.bincount(
@@ -183,7 +214,9 @@ class CBPoissonRegressor(CBBaseRegressor):
             minlength=feature.n_bins,
         )
 
-        return _calc_factors_and_uncertainties(alpha=prefit_data, beta=prediction_sum_of_bins, link_func=self.link_func)
+        return _calc_factors_and_uncertainties(
+            alpha=prefit_data, beta=prediction_sum_of_bins, link_func=self.link_func
+        )
 
 
 __all__ = ["get_gamma_priors", "CBPoissonRegressor", "CBNBinomRegressor"]

@@ -206,9 +206,7 @@ class CyclicBoosting(BaseProbaRegressor):
 
             regressor = pipeline_CBMultiplicativeQuantileRegressor
         elif self.mode == "additive":
-            from skpro.libs.cyclic_boosting import (
-                pipeline_CBAdditiveQuantileRegressor,
-            )
+            from skpro.libs.cyclic_boosting import pipeline_CBAdditiveQuantileRegressor
 
             regressor = pipeline_CBAdditiveQuantileRegressor
         else:

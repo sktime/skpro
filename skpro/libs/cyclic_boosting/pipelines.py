@@ -1,21 +1,21 @@
+from sklearn.pipeline import Pipeline
+
 from skpro.libs.cyclic_boosting import (
-    CBLocationRegressor,
+    CBAdditiveGenericRegressor,
+    CBAdditiveQuantileRegressor,
+    CBClassifier,
     CBExponential,
+    CBGBSRegressor,
+    CBGenericClassifier,
+    CBLocationRegressor,
+    CBLocPoissonRegressor,
+    CBMultiplicativeGenericRegressor,
+    CBMultiplicativeQuantileRegressor,
+    CBNBinomC,
     CBNBinomRegressor,
     CBPoissonRegressor,
-    CBLocPoissonRegressor,
-    CBNBinomC,
-    CBClassifier,
-    CBGBSRegressor,
-    CBMultiplicativeQuantileRegressor,
-    CBAdditiveQuantileRegressor,
-    CBMultiplicativeGenericRegressor,
-    CBAdditiveGenericRegressor,
-    CBGenericClassifier,
     binning,
 )
-
-from sklearn.pipeline import Pipeline
 
 
 def pipeline_CB(
@@ -50,7 +50,12 @@ def pipeline_CB(
     costs=None,
     inplace=False,
 ):
-    if estimator in [CBPoissonRegressor, CBLocPoissonRegressor, CBLocationRegressor, CBClassifier]:
+    if estimator in [
+        CBPoissonRegressor,
+        CBLocPoissonRegressor,
+        CBLocationRegressor,
+        CBClassifier,
+    ]:
         estimatorCB = estimator(
             feature_groups=feature_groups,
             hierarchical_feature_groups=hierarchical_feature_groups,
@@ -153,7 +158,11 @@ def pipeline_CB(
             aggregate=aggregate,
             quantile=quantile,
         )
-    elif estimator in [CBMultiplicativeGenericRegressor, CBAdditiveGenericRegressor, CBGenericClassifier]:
+    elif estimator in [
+        CBMultiplicativeGenericRegressor,
+        CBAdditiveGenericRegressor,
+        CBGenericClassifier,
+    ]:
         estimatorCB = estimator(
             feature_groups=feature_groups,
             hierarchical_feature_groups=hierarchical_feature_groups,
@@ -172,7 +181,9 @@ def pipeline_CB(
         )
     else:
         raise Exception("No valid CB estimator.")
-    binner = binning.BinNumberTransformer(n_bins=number_of_bins, feature_properties=feature_properties, inplace=inplace)
+    binner = binning.BinNumberTransformer(
+        n_bins=number_of_bins, feature_properties=feature_properties, inplace=inplace
+    )
 
     return Pipeline([("binning", binner), ("CB", estimatorCB)])
 

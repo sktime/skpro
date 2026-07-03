@@ -11,9 +11,7 @@ import numexpr
 import numpy as np
 
 
-
-
-class LinkFunction(object, metaclass=abc.ABCMeta):
+class LinkFunction(metaclass=abc.ABCMeta):
     r"""Abstract base class for link function computations."""
 
     @abc.abstractmethod

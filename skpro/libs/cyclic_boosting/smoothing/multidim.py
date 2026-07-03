@@ -39,7 +39,10 @@ class PredictingBinValueMixin(SetNBinsMixin):
 
     def predict(self, X):
         if not hasattr(self, "n_bins_"):
-            raise ValueError('Please call the method "fit" before "predict" and ' '"set_n_bins" in your "fit" method')
+            raise ValueError(
+                'Please call the method "fit" before "predict" and '
+                '"set_n_bins" in your "fit" method'
+            )
 
         if self._bin_steps is None:
             self.n_bins_ = self.n_bins_[: X.shape[1]]
@@ -48,12 +51,16 @@ class PredictingBinValueMixin(SetNBinsMixin):
         binnos = X
         binnos_round = np.asarray(np.floor(X), dtype=int)
         is_valid = np.all(
-            np.isfinite(binnos) & (binnos >= 0) & (binnos_round < (self.n_bins_[None, :])),
+            np.isfinite(binnos)
+            & (binnos >= 0)
+            & (binnos_round < (self.n_bins_[None, :])),
             axis=1,
         )
 
         pred = utils.nans(len(binnos))
-        pred[is_valid] = self.smoothed_y_[np.dot(binnos_round[is_valid], self._bin_steps[1:])]
+        pred[is_valid] = self.smoothed_y_[
+            np.dot(binnos_round[is_valid], self._bin_steps[1:])
+        ]
 
         return pred
 
@@ -114,7 +121,9 @@ class BinValuesSmoother(AbstractBinSmoother, PredictingBinValueMixin):
         self.__dict__.update(state)
 
 
-class RegularizeToPriorExpectationSmoother(AbstractBinSmoother, PredictingBinValueMixin):
+class RegularizeToPriorExpectationSmoother(
+    AbstractBinSmoother, PredictingBinValueMixin
+):
     r"""Smoother of multidimensional bins regularizing values with uncertainties
     to a prior expectation.
 
@@ -194,7 +203,9 @@ class RegularizeToOneSmoother(RegularizeToPriorExpectationSmoother):
     """
 
     def __init__(self, threshold=2.5):
-        RegularizeToPriorExpectationSmoother.__init__(self, prior_expectation=1, threshold=threshold)
+        RegularizeToPriorExpectationSmoother.__init__(
+            self, prior_expectation=1, threshold=threshold
+        )
 
 
 class WeightedMeanSmoother(AbstractBinSmoother, PredictingBinValueMixin):
@@ -227,7 +238,9 @@ class WeightedMeanSmoother(AbstractBinSmoother, PredictingBinValueMixin):
 
     def fit(self, X_for_smoother, y):
         self.set_n_bins(X_for_smoother)
-        self.smoothed_y_ = utils.regularize_to_error_weighted_mean(y, X_for_smoother[:, -1], self.prior_prediction)
+        self.smoothed_y_ = utils.regularize_to_error_weighted_mean(
+            y, X_for_smoother[:, -1], self.prior_prediction
+        )
 
 
 class PriorExpectationMetaSmoother(AbstractBinSmoother, PredictingBinValueMixin):
@@ -328,7 +341,9 @@ class GroupBySmoother(AbstractBinSmoother):
             y = y[mask]
         X = pd.DataFrame(np.c_[X_for_smoother, y])
         self.group_cols = list(range(self.n_group_columns))
-        self.gb = X.groupby(self.group_cols, sort=False).apply(_fit_est_on_group, self.n_group_columns, self.est)
+        self.gb = X.groupby(self.group_cols, sort=False).apply(
+            _fit_est_on_group, self.n_group_columns, self.est
+        )
 
     def predict(self, X):
         X = pd.DataFrame(X)

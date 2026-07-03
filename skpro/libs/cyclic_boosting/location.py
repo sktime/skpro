@@ -16,7 +16,9 @@ from skpro.libs.cyclic_boosting.utils import weighted_stddev
 _logger = logging.getLogger(__name__)
 
 
-class CBLocPoissonRegressor(CyclicBoostingBase, sklearn.base.RegressorMixin, IdentityLinkMixin):
+class CBLocPoissonRegressor(
+    CyclicBoostingBase, sklearn.base.RegressorMixin, IdentityLinkMixin
+):
     def precalc_parameters(self, feature, y, pred):
         lex_binnumbers = feature.lex_binned_data
         minlength = feature.n_bins
@@ -62,19 +64,25 @@ class CBLocPoissonRegressor(CyclicBoostingBase, sklearn.base.RegressorMixin, Ide
             weights=weights * (y - prediction) / variance,
             minlength=minlength,
         )
-        denominator = np.bincount(lex_binnumbers, weights=weights / variance, minlength=minlength)
-        uncertainty_numerator = np.bincount(lex_binnumbers, weights=weights**2 / variance, minlength=minlength)
+        denominator = np.bincount(
+            lex_binnumbers, weights=weights / variance, minlength=minlength
+        )
+        uncertainty_numerator = np.bincount(
+            lex_binnumbers, weights=weights**2 / variance, minlength=minlength
+        )
 
         denominator = np.where(denominator > 0, denominator, 1)
         summands = factor_numerator / denominator
         uncertainties = uncertainty_numerator / denominator
         uncertainties = np.where(uncertainties > 0, uncertainties, global_std)
 
-        summands = self._regularize_summands(bincount, summands, uncertainties, global_std)
+        summands = self._regularize_summands(
+            bincount, summands, uncertainties, global_std
+        )
         return summands, uncertainties
 
     def predict(self, X, y=None):
-        result = super(CBLocPoissonRegressor, self).predict(X, y=y)
+        result = super().predict(X, y=y)
         return np.where(result > 0, result, 0)
 
 
@@ -108,7 +116,9 @@ def precalc_variance_y(feature, y, weights, n_prior=1):
     minlength = feature.n_bins
 
     weighted_mean_y = np.sum(y * weights) / np.sum(weights)
-    variance_prior = np.sum((y - weighted_mean_y) * (y - weighted_mean_y) * weights) / np.sum(weights)
+    variance_prior = np.sum(
+        (y - weighted_mean_y) * (y - weighted_mean_y) * weights
+    ) / np.sum(weights)
     if variance_prior <= 1e-9:  # No variation in y; happens only in tests
         variance_prior = 1.0
 
@@ -126,7 +136,9 @@ def precalc_variance_y(feature, y, weights, n_prior=1):
     return b / a
 
 
-def calc_parameters_intercept(lex_binnumbers, prediction, minlength, y, variance_y, weights):
+def calc_parameters_intercept(
+    lex_binnumbers, prediction, minlength, y, variance_y, weights
+):
     """Calculates intercepts and uncertainties for each bin of a feature group.
 
     Parameters
@@ -156,10 +168,14 @@ def calc_parameters_intercept(lex_binnumbers, prediction, minlength, y, variance
     w_x2 = w * (y - prediction) ** 2
     x0 = 0
     w0 = 1e-2
-    return calc_factors_generic(lex_binnumbers, w_x, w, w_x2, weights, minlength, x0, w0)
+    return calc_factors_generic(
+        lex_binnumbers, w_x, w, w_x2, weights, minlength, x0, w0
+    )
 
 
-class CBLocationRegressor(sklearn.base.RegressorMixin, CyclicBoostingBase, IdentityLinkMixin):
+class CBLocationRegressor(
+    sklearn.base.RegressorMixin, CyclicBoostingBase, IdentityLinkMixin
+):
     def _check_y(self, y):
         """Check that y has no negative values."""
         if not np.isfinite(y).all():
@@ -212,19 +228,25 @@ class CBLocationRegressor(sklearn.base.RegressorMixin, CyclicBoostingBase, Ident
         lex_binnumbers = feature.lex_binned_data
         minlength = feature.n_bins
         variance_y = prefit_data[lex_binnumbers]
-        return calc_parameters_intercept(lex_binnumbers, pred.predict_link(), minlength, y, variance_y, self.weights)
+        return calc_parameters_intercept(
+            lex_binnumbers, pred.predict_link(), minlength, y, variance_y, self.weights
+        )
 
     def calibrate_to_weighted_mean(self, feature):
         if feature.missing_not_learned:
             calibrated_factors_link = (
                 feature.factors_link[:-1]
-                - (feature.factors_link[:-1] * feature.bin_weightsums[:-1]).sum() / feature.bin_weightsums[:-1].sum()
+                - (feature.factors_link[:-1] * feature.bin_weightsums[:-1]).sum()
+                / feature.bin_weightsums[:-1].sum()
             )
-            calibrated_factors_link = np.append(calibrated_factors_link, self.neutral_factor_link)
+            calibrated_factors_link = np.append(
+                calibrated_factors_link, self.neutral_factor_link
+            )
         else:
             calibrated_factors_link = (
                 feature.factors_link
-                - (feature.factors_link * feature.bin_weightsums).sum() / feature.bin_weightsums.sum()
+                - (feature.factors_link * feature.bin_weightsums).sum()
+                / feature.bin_weightsums.sum()
             )
         return calibrated_factors_link
 

@@ -1,37 +1,41 @@
-
 import abc
 import logging
 import warnings
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numexpr
 import numpy as np
 import pandas as pd
-from pandas.api.extensions import ExtensionArray
 import scipy.special
-
+from pandas.api.extensions import ExtensionArray
 from sklearn import base as sklearnb
 
 from skpro.libs.cyclic_boosting import common_smoothers, learning_rate, link
 from skpro.libs.cyclic_boosting.binning import get_feature_column_names_or_indices
 from skpro.libs.cyclic_boosting.common_smoothers import SmootherChoice
-from skpro.libs.cyclic_boosting.features import create_features, Feature, FeatureList, FeatureTypes, create_feature_id
+from skpro.libs.cyclic_boosting.features import (
+    Feature,
+    FeatureList,
+    FeatureTypes,
+    create_feature_id,
+    create_features,
+)
 from skpro.libs.cyclic_boosting.link import IdentityLinkMixin, LogLinkMixin
 from skpro.libs.cyclic_boosting.utils import (
-    slice_finite_semi_positive,
-    nans,
-    get_X_column,
     ConvergenceError,
     ConvergenceParameters,
+    get_normalized_values,
+    get_X_column,
+    nans,
+    slice_finite_semi_positive,
 )
-
-from skpro.libs.cyclic_boosting.utils import get_normalized_values
-
-from typing import Any, Dict, Optional, Union, Tuple, List, Set
 
 _logger = logging.getLogger(__name__)
 
 
-def get_influence_category(feature: Feature, influence_categories: dict) -> Union[None, str]:
+def get_influence_category(
+    feature: Feature, influence_categories: dict
+) -> Union[None, str]:
     influence_category = None
     if influence_categories is not None:
         influence_category = influence_categories.get(feature.feature_group, None)
@@ -42,12 +46,18 @@ def get_influence_category(feature: Feature, influence_categories: dict) -> Unio
                 fg = feature.feature_group[0]
                 influence_category = influence_categories.get(fg, None)
         if influence_category is None:
-            raise KeyError(f"Please add {feature.feature_group} to influence_categories")
+            raise KeyError(
+                f"Please add {feature.feature_group} to influence_categories"
+            )
     return influence_category
 
 
-class UpdateMixin(object):
-    def __init__(self, df: Optional[pd.DataFrame] = None, price_feature_seen: Optional[bool] = None):
+class UpdateMixin:
+    def __init__(
+        self,
+        df: Optional[pd.DataFrame] = None,
+        price_feature_seen: Optional[bool] = None,
+    ):
         self.df = df
         self.price_feature_seen = price_feature_seen
 
@@ -55,7 +65,9 @@ class UpdateMixin(object):
         self.df["exponents"] += pred
         self.price_feature_seen = True
 
-    def include_factor_contrib(self, pred: np.ndarray, influence_category: Union[None, str]) -> None:
+    def include_factor_contrib(
+        self, pred: np.ndarray, influence_category: Union[None, str]
+    ) -> None:
         self.df["factors"] += pred
         if influence_category is not None:
             if influence_category in self.df.columns:
@@ -66,7 +78,9 @@ class UpdateMixin(object):
     def remove_price_contrib(self, pred) -> None:
         self.df["exponents"] -= pred
 
-    def remove_factor_contrib(self, pred: np.ndarray, influence_category: Union[None, str]) -> None:
+    def remove_factor_contrib(
+        self, pred: np.ndarray, influence_category: Union[None, str]
+    ) -> None:
         self.df["factors"] -= pred
         if influence_category is not None:
             if influence_category in self.df.columns:
@@ -75,20 +89,30 @@ class UpdateMixin(object):
                 self.df[influence_category] = pred
 
     def update_predictions(
-        self, pred: np.ndarray, feature: Feature, influence_categories: Optional[dict] = None
+        self,
+        pred: np.ndarray,
+        feature: Feature,
+        influence_categories: Optional[dict] = None,
     ) -> None:
         if feature.feature_type == FeatureTypes.external:
             self.include_price_contrib(pred)
         else:
-            self.include_factor_contrib(pred, get_influence_category(feature, influence_categories))
+            self.include_factor_contrib(
+                pred, get_influence_category(feature, influence_categories)
+            )
 
     def remove_predictions(
-        self, pred: np.ndarray, feature: Feature, influence_categories: Optional[dict] = None
+        self,
+        pred: np.ndarray,
+        feature: Feature,
+        influence_categories: Optional[dict] = None,
     ) -> None:
         if feature.feature_type == FeatureTypes.external:
             self.remove_price_contrib(pred)
         else:
-            self.remove_factor_contrib(pred, get_influence_category(feature, influence_categories))
+            self.remove_factor_contrib(
+                pred, get_influence_category(feature, influence_categories)
+            )
 
 
 class CBLinkPredictionsFactors(UpdateMixin):
@@ -105,19 +129,25 @@ class CBLinkPredictionsFactors(UpdateMixin):
 
 
 class ZeroSmoother(sklearnb.BaseEstimator, sklearnb.RegressorMixin):
-    def fit(self, X_for_smoother: np.ndarray, y: np.ndarray) -> Union[sklearnb.BaseEstimator, sklearnb.RegressorMixin]:
+    def fit(
+        self, X_for_smoother: np.ndarray, y: np.ndarray
+    ) -> Union[sklearnb.BaseEstimator, sklearnb.RegressorMixin]:
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         return np.repeat(0.0, len(X))
 
 
-def _predict_factors(feature: Feature, X_for_smoother: np.ndarray, neutral_factor: float) -> np.ndarray:
+def _predict_factors(
+    feature: Feature, X_for_smoother: np.ndarray, neutral_factor: float
+) -> np.ndarray:
     isfinite_all = slice_finite_semi_positive(X_for_smoother)
     prediction_smoother = nans(len(X_for_smoother))
 
     if isfinite_all.any() and (feature.smoother is not None):
-        prediction_smoother[isfinite_all] = feature.learn_rate * feature.smoother.predict(X_for_smoother[isfinite_all])
+        prediction_smoother[
+            isfinite_all
+        ] = feature.learn_rate * feature.smoother.predict(X_for_smoother[isfinite_all])
 
     prediction_smoother[~isfinite_all] = feature.factors_link[-1]
     prediction_smoother[~np.isfinite(prediction_smoother)] = neutral_factor
@@ -134,9 +164,11 @@ def _factors_deviation(features: FeatureList) -> float:
     features: :class:`~cyclic_boosting.base.FeatureList`
         Collection of all features.
     """
-    mean_factor_devs = [np.mean(np.abs(feature.factors_link - feature.factors_link_old)) for feature in features]
+    mean_factor_devs = [
+        np.mean(np.abs(feature.factors_link - feature.factors_link_old))
+        for feature in features
+    ]
     return np.mean(mean_factor_devs)
-
 
 
 class CyclicBoostingBase(
@@ -299,7 +331,9 @@ class CyclicBoostingBase(
             for fg in self.hierarchical_feature_groups:
                 hierarchical_feature = create_feature_id(fg)
                 self.hierarchical_features.append(hierarchical_feature.feature_group)
-        self.training_iterations_hierarchical_features = training_iterations_hierarchical_features
+        self.training_iterations_hierarchical_features = (
+            training_iterations_hierarchical_features
+        )
         self.feature_importances = {}
         self.aggregate = aggregate
 
@@ -330,11 +364,15 @@ class CyclicBoostingBase(
             self.learn_rate = learning_rate.constant_learn_rate_one
         self._init_features()
 
-    def loss(self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray) -> np.ndarray:
+    def loss(
+        self, prediction: np.ndarray, y: np.ndarray, weights: np.ndarray
+    ) -> np.ndarray:
         if not len(y) > 0:
             raise ValueError("Loss cannot be computed on empty data")
         else:
-            sum_weighted_error = numexpr.evaluate("sum((prediction - y) * (prediction - y) * weights)")
+            sum_weighted_error = numexpr.evaluate(
+                "sum((prediction - y) * (prediction - y) * weights)"
+            )
             sum_weights = numexpr.evaluate("sum(weights)")
             return sum_weighted_error / sum_weights
 
@@ -366,7 +404,9 @@ class CyclicBoostingBase(
         else:
             self.weights = get_X_column(X, self.weight_column)
 
-    def _init_external_column(self, X: Union[pd.DataFrame, np.ndarray], is_fit: bool) -> None:
+    def _init_external_column(
+        self, X: Union[pd.DataFrame, np.ndarray], is_fit: bool
+    ) -> None:
         """Init the external column.
 
         Parameters
@@ -390,9 +430,13 @@ class CyclicBoostingBase(
         if self.weight_column is not None:
             exclude_columns.append(self.weight_column)
 
-        self.feature_groups = get_feature_column_names_or_indices(X, exclude_columns=exclude_columns)
+        self.feature_groups = get_feature_column_names_or_indices(
+            X, exclude_columns=exclude_columns
+        )
 
-    def _init_global_scale(self, X: Union[pd.DataFrame, np.ndarray], y: np.ndarray) -> None:
+    def _init_global_scale(
+        self, X: Union[pd.DataFrame, np.ndarray], y: np.ndarray
+    ) -> None:
         """
         Initializes the ``global_scale_link_`` and the
         ``prior_pred_link_offset_``. The ``global_scale_link_`` is set to the
@@ -405,7 +449,9 @@ class CyclicBoostingBase(
             raise RuntimeError("The weights have to be initialized.")
 
         minimal_prediction = 0.001
-        self.global_scale_link_ = self.link_func(np.sum(y * self.weights) / np.sum(self.weights) + minimal_prediction)
+        self.global_scale_link_ = self.link_func(
+            np.sum(y * self.weights) / np.sum(self.weights) + minimal_prediction
+        )
 
         if self.prior_prediction_column is not None:
             prior_pred = get_X_column(X, self.prior_prediction_column)
@@ -418,12 +464,16 @@ class CyclicBoostingBase(
                     )
                 )
 
-            prior_pred_mean = np.sum(prior_pred[finite] * self.weights[finite]) / np.sum(self.weights[finite])
+            prior_pred_mean = np.sum(
+                prior_pred[finite] * self.weights[finite]
+            ) / np.sum(self.weights[finite])
 
             prior_pred_link_mean = self.link_func(prior_pred_mean)
 
             if np.isfinite(prior_pred_link_mean):
-                self.prior_pred_link_offset_ = self.global_scale_link_ - prior_pred_link_mean
+                self.prior_pred_link_offset_ = (
+                    self.global_scale_link_ - prior_pred_link_mean
+                )
             else:
                 warnings.warn(
                     "The mean prior prediction in link-space is not finite. "
@@ -441,20 +491,26 @@ class CyclicBoostingBase(
         Initializes the ``features`` and binds the data belonging to a feature
         to it.
         """
-        self.features = create_features(self.feature_groups, self.feature_properties, self.smoother_choice)
+        self.features = create_features(
+            self.feature_groups, self.feature_properties, self.smoother_choice
+        )
 
     def _get_prior_predictions(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         if self.prior_prediction_column is None:
             prior_prediction_link = np.repeat(self.global_scale_link_, X.shape[0])
         else:
             prior_pred = get_X_column(X, self.prior_prediction_column)
-            prior_prediction_link = self.link_func(prior_pred) + self.prior_pred_link_offset_
+            prior_prediction_link = (
+                self.link_func(prior_pred) + self.prior_pred_link_offset_
+            )
             finite = np.isfinite(prior_prediction_link)
             prior_prediction_link[~finite] = self.global_scale_link_
 
         return prior_prediction_link
 
-    def _feature_contribution(self, feature: Feature, contribution: np.ndarray) -> np.ndarray:
+    def _feature_contribution(
+        self, feature: Feature, contribution: np.ndarray
+    ) -> np.ndarray:
         """The contribution of a feature group to the full model in link space.
 
         The link spaces have been chosen such that contributions in link space
@@ -484,10 +540,12 @@ class CyclicBoostingBase(
     def _check_convergence(self) -> None:
         msg = (
             "Your cyclic boosting training seems to be "
-            "diverging. In the {0}. iteration the "
-            "current loss: {1}, is greater "
+            "diverging. In the {}. iteration the "
+            "current loss: {}, is greater "
             "than the trivial loss with just mean "
-            "predictions: {2}.".format(self.iteration_ + 1, self.insample_loss_, self.initial_loss_)
+            "predictions: {}.".format(
+                self.iteration_ + 1, self.insample_loss_, self.initial_loss_
+            )
         )
 
         if self.is_diverged(self.insample_loss_):
@@ -514,7 +572,9 @@ class CyclicBoostingBase(
 
         return loss_change
 
-    def _log_iteration_info(self, convergence_parameters: ConvergenceParameters) -> None:
+    def _log_iteration_info(
+        self, convergence_parameters: ConvergenceParameters
+    ) -> None:
         if self.iteration_ == 0:
             _logger.info("Factor model iteration 1")
         else:
@@ -529,14 +589,23 @@ class CyclicBoostingBase(
             )
 
     def _call_observe_feature_iterations(
-        self, iteration: int, i: int, X: np.ndarray, y: np.ndarray, prediction: np.ndarray
+        self,
+        iteration: int,
+        i: int,
+        X: np.ndarray,
+        y: np.ndarray,
+        prediction: np.ndarray,
     ) -> None:
         for observer in self.observers:
-            observer.observe_feature_iterations(iteration, i, X, y, prediction, self.weights, self.get_state())
+            observer.observe_feature_iterations(
+                iteration, i, X, y, prediction, self.weights, self.get_state()
+            )
 
     def _call_observe_iterations(self, iteration, X, y, prediction, delta) -> None:
         for observer in self.observers:
-            observer.observe_iterations(iteration, X, y, prediction, self.weights, self.get_state(), delta)
+            observer.observe_iterations(
+                iteration, X, y, prediction, self.weights, self.get_state(), delta
+            )
 
     def get_state(self) -> Dict[str, Any]:
         est_state = {
@@ -550,7 +619,9 @@ class CyclicBoostingBase(
             and self.iteration_ < self.training_iterations_hierarchical_features
         ):
             est_state["features"] = [
-                feature for feature in self.features if feature.feature_group in self.hierarchical_features
+                feature
+                for feature in self.features
+                if feature.feature_group in self.hierarchical_features
             ]
         return est_state
 
@@ -587,13 +658,20 @@ class CyclicBoostingBase(
         return min_f, max_f
 
     def visit_factors(
-        self, feature: Feature, unfitted_factors, X: np.ndarray, y: np.ndarray, pred: CBLinkPredictionsFactors
+        self,
+        feature: Feature,
+        unfitted_factors,
+        X: np.ndarray,
+        y: np.ndarray,
+        pred: CBLinkPredictionsFactors,
     ) -> None:
         clip = isinstance(self, LogLinkMixin)
 
         if clip and self.aggregate:
             # Maximal/Minimal updates
-            feature.factors_link = np.clip(feature.factors_link, np.log(0.5), np.log(2), out=feature.factors_link)
+            feature.factors_link = np.clip(
+                feature.factors_link, np.log(0.5), np.log(2), out=feature.factors_link
+            )
 
             # Absolute size of factors/exponents per feature
             if feature.is_fitted:
@@ -628,7 +706,7 @@ class CyclicBoostingBase(
                         feature.factors_link = -feature.fitted_aggregated
                         feature.smoother = ZeroSmoother()
                 elif check_diverged():
-                    msg = "Feature factors for {} will be clipped due to diverging loss".format(feature.feature_group)
+                    msg = f"Feature factors for {feature.feature_group} will be clipped due to diverging loss"
                     warnings.warn(msg)
                     np.clip(
                         feature.factors_link,
@@ -647,13 +725,20 @@ class CyclicBoostingBase(
             feature.is_fitted = True
 
     def feature_iteration(
-        self, X: np.ndarray, y: np.ndarray, feature: Feature, pred: CBLinkPredictionsFactors, prefit_data
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        feature: Feature,
+        pred: CBLinkPredictionsFactors,
+        prefit_data,
     ):
         if not self.aggregate:
             feature_predictions = self._pred_feature(X, feature, True)
             pred.remove_predictions(feature_predictions, feature)
 
-        factors_link, uncertainties_link = self.calc_parameters(feature, y, pred, prefit_data=prefit_data)
+        factors_link, uncertainties_link = self.calc_parameters(
+            feature, y, pred, prefit_data=prefit_data
+        )
 
         X_for_smoother = feature.update_factors(
             factors_link.copy(),
@@ -663,7 +748,9 @@ class CyclicBoostingBase(
         )
 
         feature.factors_link = _predict_factors(
-            feature=feature, X_for_smoother=X_for_smoother[:, : feature.dim], neutral_factor=self.neutral_factor_link
+            feature=feature,
+            X_for_smoother=X_for_smoother[:, : feature.dim],
+            neutral_factor=self.neutral_factor_link,
         )
 
         feature.factors_link = self.calibrate_to_weighted_mean(feature)
@@ -684,7 +771,9 @@ class CyclicBoostingBase(
                 weights = self.weights_external
             if self.iteration_ == 0:
                 feature.bind_data(X, weights)
-                feature.factors_link = np.ones(feature.n_bins) * self.neutral_factor_link
+                feature.factors_link = (
+                    np.ones(feature.n_bins) * self.neutral_factor_link
+                )
                 if prefit_data is not None:
                     prefit_data[i] = self.precalc_parameters(feature, y, pred)
             else:
@@ -710,11 +799,13 @@ class CyclicBoostingBase(
         self._init_features()
         self._init_global_scale(X, y)
 
-    def _fit_main(self, X: np.ndarray, y: np.ndarray, pred: CBLinkPredictionsFactors) -> np.ndarray:
+    def _fit_main(
+        self, X: np.ndarray, y: np.ndarray, pred: CBLinkPredictionsFactors
+    ) -> np.ndarray:
         self.diverging = 0
         self.is_diverging = False
 
-        _logger.info("Cyclic Boosting global scale {}".format(self.global_scale_))
+        _logger.info(f"Cyclic Boosting global scale {self.global_scale_}")
 
         prediction = self.unlink_func(pred.predict_link())
 
@@ -726,8 +817,12 @@ class CyclicBoostingBase(
 
         convergence_parameters = ConvergenceParameters()
 
-        while (not self._check_stop_criteria(self.iteration_, convergence_parameters)) or self.is_diverging:
-            self._call_observe_iterations(self.iteration_, X, y, prediction, convergence_parameters.delta)
+        while (
+            not self._check_stop_criteria(self.iteration_, convergence_parameters)
+        ) or self.is_diverging:
+            self._call_observe_iterations(
+                self.iteration_, X, y, prediction, convergence_parameters.delta
+            )
 
             self._log_iteration_info(convergence_parameters)
             for i, feature, pf_data in self.cb_features(X, y, pred, prefit_data):
@@ -739,7 +834,9 @@ class CyclicBoostingBase(
                     feature.factors_link_old = feature.factors_link.copy()
                     continue
                 pred = self.feature_iteration(X, y, feature, pred, pf_data)
-                self._call_observe_feature_iterations(self.iteration_, i, X, y, prediction)
+                self._call_observe_feature_iterations(
+                    self.iteration_, i, X, y, prediction
+                )
 
                 if feature.factor_sum is None:
                     feature.factor_sum = [np.sum(np.abs(feature.fitted_aggregated))]
@@ -749,7 +846,9 @@ class CyclicBoostingBase(
             prediction = self.unlink_func(pred.predict_link())
 
             updated_loss_change = self._update_loss(prediction, y)
-            convergence_parameters.set_loss_change(updated_loss_change=updated_loss_change)
+            convergence_parameters.set_loss_change(
+                updated_loss_change=updated_loss_change
+            )
 
             updated_delta = _factors_deviation(self.features)
             convergence_parameters.set_delta(updated_delta=updated_delta)
@@ -765,17 +864,21 @@ class CyclicBoostingBase(
         if len(self.observers) > 0:
             self.prepare_plots(X, y, prediction)
 
-        self._call_observe_iterations(-1, X, y, prediction, convergence_parameters.delta)
+        self._call_observe_iterations(
+            -1, X, y, prediction, convergence_parameters.delta
+        )
         self._check_convergence()
 
-        _logger.info("Cyclic Boosting, final global scale {}".format(self.global_scale_))
+        _logger.info(f"Cyclic Boosting, final global scale {self.global_scale_}")
 
         for feature in self.features:
             feature.clear_feature_reference(observers=self.observers)
 
         return prediction
 
-    def prepare_plots(self, X: np.ndarray, y: np.ndarray, prediction: np.ndarray) -> None:
+    def prepare_plots(
+        self, X: np.ndarray, y: np.ndarray, prediction: np.ndarray
+    ) -> None:
         for feature in self.features:
             if feature.feature_type is None:
                 weights = self.weights
@@ -785,7 +888,9 @@ class CyclicBoostingBase(
             feature.bind_data(X, weights)
 
             sum_w, sum_yw, sum_pw = (
-                np.bincount(feature.lex_binned_data, weights=w, minlength=feature.n_bins)
+                np.bincount(
+                    feature.lex_binned_data, weights=w, minlength=feature.n_bins
+                )
                 for w in [weights, weights * y, weights * prediction]
             )
 
@@ -805,16 +910,22 @@ class CyclicBoostingBase(
                 feature.y = mean_target_binned - mean_y_finite
                 feature.prediction = mean_prediction_binned - mean_prediction_finite
             else:
-                feature.mean_dev = np.log(mean_prediction_binned + 1e-12) - np.log(mean_target_binned + 1e-12)
+                feature.mean_dev = np.log(mean_prediction_binned + 1e-12) - np.log(
+                    mean_target_binned + 1e-12
+                )
                 feature.y = np.log(mean_target_binned / mean_y_finite + 1e-12)
-                feature.prediction = np.log(mean_prediction_binned / mean_prediction_finite + 1e-12)
+                feature.prediction = np.log(
+                    mean_prediction_binned / mean_prediction_finite + 1e-12
+                )
 
             feature.y_finite = mean_y_finite
             feature.prediction_finite = mean_prediction_finite
 
             feature.learn_rate = 1.0
 
-    def _fit_predict(self, X: Union[pd.DataFrame, np.ndarray], y: Optional[np.ndarray] = None) -> np.ndarray:
+    def _fit_predict(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         """Fit the estimator to the training samples.
 
         Iterate to calculate the factors and the global scale.
@@ -828,20 +939,28 @@ class CyclicBoostingBase(
 
         return prediction
 
-    def _pred_feature(self, X: Union[pd.DataFrame, np.ndarray], feature: Feature, is_fit: bool):
+    def _pred_feature(
+        self, X: Union[pd.DataFrame, np.ndarray], feature: Feature, is_fit: bool
+    ):
         if is_fit:
             return feature.factors_link[feature.lex_binned_data]
         else:
-            X_for_predict = get_X_column(X, feature.feature_group, array_for_1_dim=False)
+            X_for_predict = get_X_column(
+                X, feature.feature_group, array_for_1_dim=False
+            )
             pred = _predict_factors(feature, X_for_predict, self.neutral_factor_link)
             return pred
 
-    def predict(self, X: Union[pd.DataFrame, np.ndarray], y: Optional[np.ndarray] = None) -> np.ndarray:
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         pred = self.predict_extended(X, None)
         return self.unlink_func(pred.predict_link())
 
     def predict_extended(
-        self, X: Union[pd.DataFrame, np.ndarray], influence_categories: Optional[dict] = None
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        influence_categories: Optional[dict] = None,
     ) -> CBLinkPredictionsFactors:
         self._check_fitted()
         self._init_external_column(X, False)
@@ -855,29 +974,43 @@ class CyclicBoostingBase(
 
         return pred
 
-    def fit_transform(self, X: pd.DataFrame, y: Optional[np.ndarray] = None) -> pd.DataFrame:
+    def fit_transform(
+        self, X: pd.DataFrame, y: Optional[np.ndarray] = None
+    ) -> pd.DataFrame:
         if not self.output_column:
             raise KeyError("output_column not defined")
         try:
             if self.output_column in X.columns:
-                raise KeyError("""output_column "{}" exists already""".format(self.output_column))
+                raise KeyError(
+                    f"""output_column "{self.output_column}" exists already"""
+                )
         except AttributeError:
-            raise TypeError("data needs to be a dataframe for the usage as a fit_transformer")
+            raise TypeError(
+                "data needs to be a dataframe for the usage as a fit_transformer"
+            )
         X[self.output_column] = self._fit_predict(X, y)
         return X
 
-    def transform(self, X: pd.DataFrame, y: Optional[np.ndarray] = None) -> pd.DataFrame:
+    def transform(
+        self, X: pd.DataFrame, y: Optional[np.ndarray] = None
+    ) -> pd.DataFrame:
         if not self.output_column:
             raise KeyError("output_column not defined")
         try:
             if self.output_column in X.columns:
-                raise KeyError("""output_column "{}" exists already""".format(self.output_column))
+                raise KeyError(
+                    f"""output_column "{self.output_column}" exists already"""
+                )
         except AttributeError:
-            raise TypeError("data needs to be a dataframe for the usage as a transformer")
+            raise TypeError(
+                "data needs to be a dataframe for the usage as a transformer"
+            )
         X[self.output_column] = self.predict(X=X, y=y)
         return X
 
-    def _check_stop_criteria(self, iterations: int, convergence_parameters: ConvergenceParameters) -> bool:
+    def _check_stop_criteria(
+        self, iterations: int, convergence_parameters: ConvergenceParameters
+    ) -> bool:
         """
         Checks the stop criteria and returns True if at least one is satisfied.
 
@@ -904,16 +1037,18 @@ class CyclicBoostingBase(
         if delta <= self.minimal_factor_change:
             _logger.info(
                 "Cyclic Boosting stopped because the change of "
-                "the factors {0} was lower than the "
-                "required minimum {1}.".format(delta, self.minimal_factor_change)
+                "the factors {} was lower than the "
+                "required minimum {}.".format(delta, self.minimal_factor_change)
             )
             stop_factor_change = True
 
         if abs(loss_change) <= self.minimal_loss_change:
             _logger.info(
                 "Cyclic Boosting stopped because the change of "
-                "the loss {0} was lower "
-                "than the required minimum {1}.".format(loss_change, self.minimal_loss_change)
+                "the loss {} was lower "
+                "than the required minimum {}.".format(
+                    loss_change, self.minimal_loss_change
+                )
             )
             stop_loss_change = True
 
@@ -932,7 +1067,9 @@ class CyclicBoostingBase(
             veto_hierarchical = True
 
         self.stop_criteria_ = (stop_iterations, stop_factor_change, stop_loss_change)
-        return (stop_iterations or stop_factor_change or stop_loss_change) and not veto_hierarchical
+        return (
+            stop_iterations or stop_factor_change or stop_loss_change
+        ) and not veto_hierarchical
 
     def _check_parameters(self) -> None:
         if self.feature_groups is not None and len(self.feature_groups) == 0:
@@ -943,7 +1080,9 @@ class CyclicBoostingBase(
         if self.features is None:
             raise ValueError("fit must be called first.")
 
-    def _check_len_data(self, X: Union[pd.DataFrame, np.ndarray], y: np.ndarray) -> None:
+    def _check_len_data(
+        self, X: Union[pd.DataFrame, np.ndarray], y: np.ndarray
+    ) -> None:
         """Check that input arrays are not empty"""
         if len(X) == 0 | len(y) == 0:
             raise ValueError("Estimator should be applied on non-empty data")
@@ -953,7 +1092,8 @@ class CyclicBoostingBase(
         implemented by the child class.
         """
         raise NotImplementedError(
-            "You have to implement the function _check_y" " to ensure your target has correct values."
+            "You have to implement the function _check_y"
+            " to ensure your target has correct values."
         )
 
     def get_subestimators_as_items(self, prototypes=True) -> List[Tuple]:
@@ -978,7 +1118,9 @@ class CyclicBoostingBase(
         Returns the relative importance of each input feature.
         """
         if not self.feature_importances:
-            raise ValueError("_fit_main has to be called first to compute the feature importance.")
+            raise ValueError(
+                "_fit_main has to be called first to compute the feature importance."
+            )
         else:
             normalized_values = get_normalized_values(self.feature_importances.values())
             norm_feature_importances = {
@@ -987,7 +1129,9 @@ class CyclicBoostingBase(
             }
             return norm_feature_importances
 
-    def get_feature_contributions(self, X: Union[pd.DataFrame, np.ndarray]) -> Dict[str, np.ndarray]:
+    def get_feature_contributions(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Dict[str, np.ndarray]:
         """Returns the contributions of each feature for each individual
         prediction on a given data set, offering individual explainability of
         the model. That means the learned parameter, e.g., factor for
@@ -1009,13 +1153,21 @@ class CyclicBoostingBase(
         """
         contribution = {}
         for feature in self.features:
-            ft = "" if feature.feature_type is None else "_{}".format(feature.feature_type)
+            ft = "" if feature.feature_type is None else f"_{feature.feature_type}"
             fg = " ".join(feature.feature_group)
-            contribution[fg + ft] = self.unlink_func(self._pred_feature(X, feature, is_fit=False))
+            contribution[fg + ft] = self.unlink_func(
+                self._pred_feature(X, feature, is_fit=False)
+            )
         return contribution
 
     @abc.abstractmethod
-    def calc_parameters(self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors, prefit_data):
+    def calc_parameters(
+        self,
+        feature: Feature,
+        y: np.ndarray,
+        pred: CBLinkPredictionsFactors,
+        prefit_data,
+    ):
         """Calculates factors and uncertainties of the bins of a feature group
         in the original space (not the link space) and transforms them to the
         link space afterwards
@@ -1051,7 +1203,9 @@ class CyclicBoostingBase(
         raise NotImplementedError("implement in subclass")
 
     @abc.abstractmethod
-    def precalc_parameters(self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors):
+    def precalc_parameters(
+        self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors
+    ):
         """Calculations that are not  dependent on intermediate predictions. If
         these are not needed, return :obj:`None` in the subclass.
 
@@ -1366,7 +1520,8 @@ def calc_factors_generic(
     """
 
     sum_w_x, sum_w, sum_vw, sum_w_x2 = (
-        np.bincount(lex_binnumbers, weights=w, minlength=minlength) for w in [w_x, w, external_weights * w, w_x2]
+        np.bincount(lex_binnumbers, weights=w, minlength=minlength)
+        for w in [w_x, w, external_weights * w, w_x2]
     )
 
     sum_w_x += w0 * x0

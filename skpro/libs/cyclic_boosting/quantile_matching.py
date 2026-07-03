@@ -1,12 +1,12 @@
-import numpy as np
-from numpy import exp, sinh, arcsinh, arccosh
-import pandas as pd
-from scipy.optimize import curve_fit, minimize_scalar
-from scipy.stats import norm, gamma, nbinom, logistic, mstats
-from scipy.interpolate import InterpolatedUnivariateSpline
-from sklearn.base import BaseEstimator
+from typing import Optional, Tuple, Union
 
-from typing import Optional, Union, Tuple
+import numpy as np
+import pandas as pd
+from numpy import arccosh, arcsinh, exp, sinh
+from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.optimize import curve_fit, minimize_scalar
+from scipy.stats import gamma, logistic, mstats, nbinom, norm
+from sklearn.base import BaseEstimator
 
 
 class J_QPD_S:
@@ -67,7 +67,9 @@ class J_QPD_S:
         self.theta = np.where(self.L + self.H - 2 * self.B > 0, qv_low - l, qv_high - l)
 
         self.n = np.where(self.L + self.H - 2 * self.B == 0, 0, self.n)
-        self.theta = np.where(self.L + self.H - 2 * self.B == 0, qv_median - l, self.theta)
+        self.theta = np.where(
+            self.L + self.H - 2 * self.B == 0, qv_median - l, self.theta
+        )
 
         self.delta = (
             1.0
@@ -75,7 +77,14 @@ class J_QPD_S:
             * np.sinh(
                 np.arccosh(
                     (self.H - self.L)
-                    / (2 * np.where((self.B - self.L) < (self.H - self.B), (self.B - self.L), (self.H - self.B)))
+                    / (
+                        2
+                        * np.where(
+                            (self.B - self.L) < (self.H - self.B),
+                            (self.B - self.L),
+                            (self.H - self.B),
+                        )
+                    )
                 )
             )
         )
@@ -83,7 +92,11 @@ class J_QPD_S:
         self.kappa = (
             1.0
             / (self.delta * self.c)
-            * np.where((self.H - self.B) < (self.B - self.L), (self.H - self.B), (self.B - self.L))
+            * np.where(
+                (self.H - self.B) < (self.B - self.L),
+                (self.H - self.B),
+                (self.B - self.L),
+            )
         )
 
     def ppf(self, x: Union[float, np.ndarray], inner=False) -> Union[float, np.ndarray]:
@@ -107,12 +120,18 @@ class J_QPD_S:
         if inner:
             ppf_value = self.l + self.theta * exp(
                 self.kappa
-                * np.sinh(np.arcsinh(self.phi.ppf(x) * self.delta) + np.arcsinh(self.n * self.c * self.delta))
+                * np.sinh(
+                    np.arcsinh(self.phi.ppf(x) * self.delta)
+                    + np.arcsinh(self.n * self.c * self.delta)
+                )
             )
         else:
             ppf_value = self.l + self.theta * exp(
                 self.kappa
-                * np.sinh(np.arcsinh(np.outer(self.phi.ppf(x), self.delta)) + np.arcsinh(self.n * self.c * self.delta))
+                * np.sinh(
+                    np.arcsinh(np.outer(self.phi.ppf(x), self.delta))
+                    + np.arcsinh(self.n * self.c * self.delta)
+                )
             )
 
         if ppf_value.ndim == 0:
@@ -153,7 +172,11 @@ class J_QPD_S:
                 1.0
                 / self.delta
                 * np.sinh(
-                    np.arcsinh(1.0 / self.kappa * np.log(np.outer((x - self.l), 1.0 / self.theta)))
+                    np.arcsinh(
+                        1.0
+                        / self.kappa
+                        * np.log(np.outer((x - self.l), 1.0 / self.theta))
+                    )
                     - np.arcsinh(self.n * self.c * self.delta)
                 )
             )
@@ -234,7 +257,14 @@ class J_QPD_B:
             / self.c
             * np.arccosh(
                 (self.H - self.L)
-                / (2 * np.where((self.B - self.L) < (self.H - self.B), self.B - self.L, self.H - self.B))
+                / (
+                    2
+                    * np.where(
+                        (self.B - self.L) < (self.H - self.B),
+                        self.B - self.L,
+                        self.H - self.B,
+                    )
+                )
             )
         )
 
@@ -243,13 +273,18 @@ class J_QPD_B:
     def ppf(self, x: Union[float, np.ndarray], inner=False) -> Union[float, np.ndarray]:
         if inner:
             ppf_value = self.l + (self.u - self.l) * self.phi.cdf(
-                self.xi + self.kappa * np.sinh(self.delta * (self.phi.ppf(x) + self.n * self.c))
+                self.xi
+                + self.kappa * np.sinh(self.delta * (self.phi.ppf(x) + self.n * self.c))
             )
         else:
             if np.isscalar(x):
                 x = np.asarray([x])
             ppf_value = self.l + (self.u - self.l) * self.phi.cdf(
-                self.xi + self.kappa * np.sinh(self.delta * (self.phi.ppf(x[:, np.newaxis]) + self.n * self.c))
+                self.xi
+                + self.kappa
+                * np.sinh(
+                    self.delta * (self.phi.ppf(x[:, np.newaxis]) + self.n * self.c)
+                )
             )
 
         if ppf_value.ndim == 0:
@@ -263,7 +298,11 @@ class J_QPD_B:
             cdf_value = self.phi.cdf(
                 1.0
                 / self.delta
-                * np.arcsinh(1.0 / self.kappa * (self.phi.ppf((x - self.l) / (self.u - self.l)) - self.xi))
+                * np.arcsinh(
+                    1.0
+                    / self.kappa
+                    * (self.phi.ppf((x - self.l) / (self.u - self.l)) - self.xi)
+                )
                 - self.n * self.c
             )
         else:
@@ -273,7 +312,12 @@ class J_QPD_B:
                 1.0
                 / self.delta
                 * np.arcsinh(
-                    1.0 / self.kappa * (self.phi.ppf((x[:, np.newaxis] - self.l) / (self.u - self.l)) - self.xi)
+                    1.0
+                    / self.kappa
+                    * (
+                        self.phi.ppf((x[:, np.newaxis] - self.l) / (self.u - self.l))
+                        - self.xi
+                    )
                 )
                 - self.n * self.c
             )
@@ -327,10 +371,15 @@ class SinhLogistic:
 
     def pdf(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         if self.shape > 0:
-            return np.cosh(self.shape * x) / (np.cosh(2.0 / self.shape * np.sinh(self.shape * x))) ** 2
+            return (
+                np.cosh(self.shape * x)
+                / (np.cosh(2.0 / self.shape * np.sinh(self.shape * x))) ** 2
+            )
         elif self.shape < 0:
             return (
-                1.0 / np.sqrt((self.shape * x) ** 2 + 1) / (np.cosh(2.0 / self.shape * np.arcsinh(self.shape * x))) ** 2
+                1.0
+                / np.sqrt((self.shape * x) ** 2 + 1)
+                / (np.cosh(2.0 / self.shape * np.arcsinh(self.shape * x))) ** 2
             )
         else:
             return 1.0 / (np.cosh(2 * x)) ** 2
@@ -358,7 +407,9 @@ class BaseDist:
         return self.dist.pdf(x * self.width) * self.width
 
 
-def unconstrained_calc(L: float, B: float, H: float) -> Tuple[float, float, float, float]:
+def unconstrained_calc(
+    L: float, B: float, H: float
+) -> Tuple[float, float, float, float]:
     gamma = -np.sign(L + H - 2 * B)
 
     if gamma == 0:
@@ -427,7 +478,9 @@ class J_QPD_extended_U:
             raise ValueError("The SPT values need to be monotonically increasing.")
 
         # identity transformation
-        self.gamma, self.xi, self.kappa, self.delta = unconstrained_calc(qv_low, qv_median, qv_high)
+        self.gamma, self.xi, self.kappa, self.delta = unconstrained_calc(
+            qv_low, qv_median, qv_high
+        )
 
     def ppf(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         basequantiles = BaseDist(self.phi, self.alpha).ppf(x)
@@ -503,7 +556,9 @@ class J_QPD_extended_S:
         self.B = transform_from_semibound_lower(qv_median, self.l)
 
         # now handle like unconstrained
-        self.gamma, self.xi, self.kappa, self.delta = unconstrained_calc(self.L, self.B, self.H)
+        self.gamma, self.xi, self.kappa, self.delta = unconstrained_calc(
+            self.L, self.B, self.H
+        )
 
     def ppf(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         basequantiles = BaseDist(self.phi, self.alpha).ppf(x)
@@ -586,7 +641,9 @@ class J_QPD_extended_B:
         self.B = transform_from_bounds(qv_median, self.l, self.u)
 
         # now handle like unconstrained
-        self.gamma, self.xi, self.kappa, self.delta = unconstrained_calc(self.L, self.B, self.H)
+        self.gamma, self.xi, self.kappa, self.delta = unconstrained_calc(
+            self.L, self.B, self.H
+        )
 
     def ppf(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         basequantiles = BaseDist(self.phi, self.alpha).ppf(x)
@@ -652,7 +709,9 @@ def back_transform_in_semibound_upper(z: np.ndarray, u: float) -> np.ndarray:
     return u - np.exp(z)
 
 
-def fit_sinhlogistic_shape(alpha: float, l: float, u: float, bound: str, y: np.ndarray) -> float:
+def fit_sinhlogistic_shape(
+    alpha: float, l: float, u: float, bound: str, y: np.ndarray
+) -> float:
     """
     Fit of the shape parameter of our extended versions of the J-QPD mechanism,
     which modifies the logistic base distribution by sinh/arcsinh-scaling, on
@@ -801,30 +860,48 @@ class QPD_RegressorChain(BaseEstimator):
         if self.bound == "S":
             y_trans = transform_from_semibound_lower(y_trans, 0)
         elif self.bound == "B":
-            y_trans = transform_from_bounds(y_trans, 0, (self.u - pred_median) / (pred_median - pred_lowq))
+            y_trans = transform_from_bounds(
+                y_trans, 0, (self.u - pred_median) / (pred_median - pred_lowq)
+            )
         self.est_highq.fit(X[mask], y_trans)
 
         return self
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> tuple:
         if self.bound == "S":
-            pred_median = back_transform_in_semibound_lower(self.est_median.predict(X), self.l)
-            pred_lowq = back_transform_in_bounds(self.est_lowq.predict(X), self.l, pred_median)
-            pred_highq = back_transform_in_semibound_lower(self.est_highq.predict(X), pred_median)
+            pred_median = back_transform_in_semibound_lower(
+                self.est_median.predict(X), self.l
+            )
+            pred_lowq = back_transform_in_bounds(
+                self.est_lowq.predict(X), self.l, pred_median
+            )
+            pred_highq = back_transform_in_semibound_lower(
+                self.est_highq.predict(X), pred_median
+            )
         elif self.bound == "B":
-            pred_median = back_transform_in_bounds(self.est_median.predict(X), self.l, self.u)
-            pred_lowq = back_transform_in_bounds(self.est_lowq.predict(X), self.l, pred_median)
-            pred_highq = back_transform_in_bounds(self.est_highq.predict(X), pred_median, self.u)
+            pred_median = back_transform_in_bounds(
+                self.est_median.predict(X), self.l, self.u
+            )
+            pred_lowq = back_transform_in_bounds(
+                self.est_lowq.predict(X), self.l, pred_median
+            )
+            pred_highq = back_transform_in_bounds(
+                self.est_highq.predict(X), pred_median, self.u
+            )
 
         if self.bound == "S":
             qpd = J_QPD_S(self.alpha, pred_lowq, pred_median, pred_highq, self.l)
         elif self.bound == "B":
-            qpd = J_QPD_B(self.alpha, pred_lowq, pred_median, pred_highq, self.l, self.u)
+            qpd = J_QPD_B(
+                self.alpha, pred_lowq, pred_median, pred_highq, self.l, self.u
+            )
 
         return pred_lowq, pred_median, pred_highq, qpd
 
 
-def quantile_fit_gaussian(quantiles: np.ndarray, quantile_values: np.ndarray, mode: Optional[str] = "ppf") -> callable:
+def quantile_fit_gaussian(
+    quantiles: np.ndarray, quantile_values: np.ndarray, mode: Optional[str] = "ppf"
+) -> callable:
     """
     Interpolation of a quantile function (with quantiles estimated, e.g., by
     means of quantile regression) according to a Gaussian distribution as
@@ -863,7 +940,9 @@ def quantile_fit_gaussian(quantiles: np.ndarray, quantile_values: np.ndarray, mo
         raise Exception("Invalid mode.")
 
 
-def quantile_fit_gamma(quantiles: np.ndarray, quantile_values: np.ndarray, mode: Optional[str] = "ppf") -> callable:
+def quantile_fit_gamma(
+    quantiles: np.ndarray, quantile_values: np.ndarray, mode: Optional[str] = "ppf"
+) -> callable:
     """
     Interpolation of a quantile function (with quantiles estimated, e.g., by
     means of quantile regression) according to a Gamma distribution as assumed
@@ -926,7 +1005,9 @@ def _nbinom_cdf_mu_var(x: float, mu: float, var: float) -> callable:
     return nbinom(n, p).cdf(x)
 
 
-def quantile_fit_nbinom(quantiles: np.ndarray, quantile_values: np.ndarray, mode: Optional[str] = "ppf") -> callable:
+def quantile_fit_nbinom(
+    quantiles: np.ndarray, quantile_values: np.ndarray, mode: Optional[str] = "ppf"
+) -> callable:
     """
     Interpolation of a quantile function (with quantiles estimated, e.g., by
     means of quantile regression) according to a negative binomial distribution
@@ -950,7 +1031,9 @@ def quantile_fit_nbinom(quantiles: np.ndarray, quantile_values: np.ndarray, mode
     callable
         fitted negative binomial function (see mode)
     """
-    mu, var = curve_fit(_nbinom_cdf_mu_var, quantile_values, quantiles, p0=[2.2, 2.4])[0]
+    mu, var = curve_fit(_nbinom_cdf_mu_var, quantile_values, quantiles, p0=[2.2, 2.4])[
+        0
+    ]
     n = mu * mu / (var - mu)
     p = mu / var
     if mode == "ppf":
@@ -981,5 +1064,7 @@ def quantile_fit_spline(quantiles: np.ndarray, quantile_values: np.ndarray) -> c
     callable
         spline fitted to quantile function
     """
-    spl = InterpolatedUnivariateSpline(quantiles, quantile_values, k=3, bbox=[0, 1], ext=3)
+    spl = InterpolatedUnivariateSpline(
+        quantiles, quantile_values, k=3, bbox=[0, 1], ext=3
+    )
     return spl

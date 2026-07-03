@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Cyclic boosting exponential price model estimator
 """
@@ -9,10 +8,9 @@ import numpy as np
 import pandas as pd
 from numexpr import evaluate
 
-
 from skpro.libs.cyclic_boosting import CBNBinomRegressor
-from skpro.libs.cyclic_boosting.features import FeatureTypes, create_feature_id
 from skpro.libs.cyclic_boosting.base import UpdateMixin
+from skpro.libs.cyclic_boosting.features import FeatureTypes, create_feature_id
 from skpro.libs.cyclic_boosting.regression import _calc_factors_and_uncertainties
 from skpro.libs.cyclic_boosting.utils import get_X_column
 
@@ -28,7 +26,8 @@ def combine_lists_of_feature_groups(standard_feature_groups, external_feature_gr
     standard_feature_groups = [create_feature_id(fg) for fg in standard_feature_groups]
     if external_feature_groups is not None:
         external_feature_groups = [
-            create_feature_id(exfg, default_type=FeatureTypes.external) for exfg in external_feature_groups
+            create_feature_id(exfg, default_type=FeatureTypes.external)
+            for exfg in external_feature_groups
         ]
         _check_feature_groups(standard_feature_groups, external_feature_groups)
         return standard_feature_groups + external_feature_groups
@@ -141,7 +140,12 @@ def newton_bisect(
         l_new, jac, hess = newton_step(l, *args)
         finite = np.isfinite(jac) & np.isfinite(hess) & np.isfinite(l_new)
         valid = valid & finite
-        converged = (np.abs(jac) < epsilon) | (np.abs(l - x_l) < epsilon) | (np.abs(x_r - l) < epsilon) | (~valid)
+        converged = (
+            (np.abs(jac) < epsilon)
+            | (np.abs(l - x_l) < epsilon)
+            | (np.abs(x_r - l) < epsilon)
+            | (~valid)
+        )
         if np.all(converged):
             break
         x_l[valid & (jac < 0)] = l[valid & (jac < 0)]
@@ -188,23 +192,33 @@ def newton_step(
     mu = evaluate("p * exp((k * l1) * log_x)")  # noqa
     w = k * log_x  # noqa
 
-    bin_counts = np.bincount(lex_binnumbers, minlength=minlength)[lex_binnumbers]  # noqa
+    bin_counts = np.bincount(lex_binnumbers, minlength=minlength)[
+        lex_binnumbers
+    ]  # noqa
     # wolfram alpha: jacobian matrix ((y - p * x ** (l * k))^2 * s + ((l*k - c)^2 +
     # (l - 1)^2 + log(l)^2 + log(l*k / c)^2) / v) with respect to (l)
-    jac_prior = evaluate("2 * (k * (k * l1 - prior) + l1 - 1 + (log_k_prior + 2 * log_l1) / l1) / var_l / bin_counts")
+    jac_prior = evaluate(
+        "2 * (k * (k * l1 - prior) + l1 - 1 + (log_k_prior + 2 * log_l1) / l1) / var_l / bin_counts"
+    )
 
     jac_data = evaluate("- (2 * w * mu * (y - mu)) * s")
-    jacobian = np.bincount(lex_binnumbers, weights=jac_data + jac_prior, minlength=minlength)
+    jacobian = np.bincount(
+        lex_binnumbers, weights=jac_data + jac_prior, minlength=minlength
+    )
 
     if only_jac:
         return jacobian
 
     # wolfram alpha: hessian matrix ((y - p * x ** (l * k))^2 * s + ((l*k - c)^2 +
     # (l - 1)^2 + log(l)^2 + log(l*k / c)^2) / v) with respect to (l)
-    hess_prior = evaluate("2 * (k * k + 1 + (2 - (log_k_prior + 2 * log_l1) ) / l1 / l1) / var_l / bin_counts")
+    hess_prior = evaluate(
+        "2 * (k * k + 1 + (2 - (log_k_prior + 2 * log_l1) ) / l1 / l1) / var_l / bin_counts"
+    )
 
     hess_data = evaluate("(2 * w * w * mu * mu) * s + w * jac_data")
-    hessian = np.bincount(lex_binnumbers, weights=hess_data + hess_prior, minlength=minlength)
+    hessian = np.bincount(
+        lex_binnumbers, weights=hess_data + hess_prior, minlength=minlength
+    )
 
     lnew = np.full_like(l, np.nan)
     m_non_zero = hessian != 0
@@ -238,7 +252,9 @@ class CBExponential(CBNBinomRegressor):
         self.external_feature_groups = external_feature_groups
         self.prior_exponent_colname = prior_exponent_colname
 
-        feature_id_list = combine_lists_of_feature_groups(standard_feature_groups, external_feature_groups)
+        feature_id_list = combine_lists_of_feature_groups(
+            standard_feature_groups, external_feature_groups
+        )
 
         self.external_colname = external_colname
 
@@ -332,11 +348,11 @@ class CBExponential(CBNBinomRegressor):
             ``uncertainties`` in the **link space**.
         """
         if feature.feature_type == FeatureTypes.external:
-            _logger.debug("Price Feature {}".format(feature.feature_group))
+            _logger.debug(f"Price Feature {feature.feature_group}")
             expo, variance = self._calc_parameters_exponent(feature, y, pred)
             return expo, variance
         else:
-            _logger.debug("Demand Feature {}".format(feature.feature_group))
+            _logger.debug(f"Demand Feature {feature.feature_group}")
             return CBNBinomRegressor.calc_parameters(self, feature, y, pred, None)
 
     def _calc_parameters_exponent(self, feature, y, pred):
@@ -365,7 +381,9 @@ class CBExponential(CBNBinomRegressor):
         prior_exponents = pred.prior_exponents()
 
         bounds_l = np.zeros(feature.n_bins, dtype=np.float64)
-        feature.bounds_r = self.starting_bound_bisect * np.ones(feature.n_bins, dtype=np.float64)
+        feature.bounds_r = self.starting_bound_bisect * np.ones(
+            feature.n_bins, dtype=np.float64
+        )
         start_values = np.ones(feature.n_bins, dtype=np.float64)
 
         p = self.unlink_func(pred.predict_link())
@@ -406,7 +424,9 @@ class CBExponential(CBNBinomRegressor):
         self._init_external_column(X, False)
 
         prediction_link = self._get_prior_predictions(X)
-        pred = CBLinkPredictions(prediction_link, self._get_prior_exponent(X), self.external_col)
+        pred = CBLinkPredictions(
+            prediction_link, self._get_prior_exponent(X), self.external_col
+        )
 
         for feature in self.features:
             feature_predictions = self._pred_feature(X, feature, is_fit=False)

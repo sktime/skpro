@@ -9,9 +9,9 @@ import numpy as np
 from matplotlib import gridspec
 from matplotlib.backends.backend_pdf import PdfPages
 
+from skpro.libs.cyclic_boosting import CBNBinomC
 from skpro.libs.cyclic_boosting.features import create_feature_id
 from skpro.libs.cyclic_boosting.utils import get_bin_bounds
-from skpro.libs.cyclic_boosting import CBNBinomC
 
 from ._1dplots import plot_factor_1d
 from ._2dplots import plot_factor_2d
@@ -26,7 +26,9 @@ def _guess_suitable_number_of_histogram_bins(n):
     return np.clip(sturges, 5, 30)
 
 
-def _factor_plots_y_limits(factor_arr, uncert_arr=None, percentage=0.05, ymin_for_zero=1e-3):
+def _factor_plots_y_limits(
+    factor_arr, uncert_arr=None, percentage=0.05, ymin_for_zero=1e-3
+):
     """
     >>> y = np.array([0, 1e-5, 0.1, 0.5, 1, 2, 10, 100, 1e5])
     >>> np.allclose(_factor_plots_y_limits(y), (-1e-3, 1e5 * 1.05))
@@ -260,14 +262,19 @@ def plot_factors(
     if feature_groups_or_ids is None:
         features = plot_observer.features
     else:
-        feature_ids = [create_feature_id(feature_group_or_id) for feature_group_or_id in feature_groups_or_ids]
+        feature_ids = [
+            create_feature_id(feature_group_or_id)
+            for feature_group_or_id in feature_groups_or_ids
+        ]
         features = [plot_observer.features[feature_id] for feature_id in feature_ids]
 
     n_plots = len(features)
     grid = gridspec.GridSpec(int(np.ceil(n_plots / features_per_row)), features_per_row)
 
     for i, feature in enumerate(features):
-        _plot_one_feature_group(plot_observer, grid[i], feature, binners, use_tightlayout, plot_yp=plot_yp)
+        _plot_one_feature_group(
+            plot_observer, grid[i], feature, binners, use_tightlayout, plot_yp=plot_yp
+        )
 
 
 def _format_groupname_with_type(feature_group, feature_type):
@@ -275,10 +282,12 @@ def _format_groupname_with_type(feature_group, feature_type):
     if feature_type is None:
         return name
     else:
-        return "{0} ({1})".format(name, feature_type)
+        return f"{name} ({feature_type})"
 
 
-def _plot_one_feature_group(plot_observer, grid_item, feature, binners=None, use_tightlayout=True, plot_yp=True):
+def _plot_one_feature_group(
+    plot_observer, grid_item, feature, binners=None, use_tightlayout=True, plot_yp=True
+):
     if len(feature.feature_group) == 1:
         # treatment of one-dimensional features
         # no bin occupancy plot for too many bins
@@ -291,7 +300,9 @@ def _plot_one_feature_group(plot_observer, grid_item, feature, binners=None, use
                 plot_yp=plot_yp,
             )
         else:
-            gs = gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=grid_item, height_ratios=[2.5, 0.4])
+            gs = gridspec.GridSpecFromSubplotSpec(
+                2, 1, subplot_spec=grid_item, height_ratios=[2.5, 0.4]
+            )
             factor_plot = plt.subplot(gs[0, 0])
             plot_factor_1d(
                 feature,
@@ -342,7 +353,7 @@ def plot_factor_histogram(feature):
     gs = gridspec.GridSpec(nrows=2, ncols=1, figure=fig)
 
     fig.add_subplot(gs[0, 0])
-    plt.title("Unsmoothed-Factor Histogram for {0}".format(feat_group))
+    plt.title(f"Unsmoothed-Factor Histogram for {feat_group}")
     plt.xlabel("Factor")
     plt.ylabel("Count")
     plt.hist(factors, bins=n_bins, log=True)

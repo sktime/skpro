@@ -1,4 +1,3 @@
-
 from enum import Enum
 from typing import Optional, Union
 
@@ -285,7 +284,9 @@ def check_flags_consistency(feature_prop: int) -> None:
     ValueError: One feature can either be ...
     """
     if (
-        int(is_continuous_set(feature_prop)) + int(is_ordered_set(feature_prop)) + int(is_unordered_set(feature_prop))
+        int(is_continuous_set(feature_prop))
+        + int(is_ordered_set(feature_prop))
+        + int(is_unordered_set(feature_prop))
         != 1
     ):
         raise ValueError(
@@ -351,7 +352,9 @@ def flags_to_string(flags_value: Union[int, tuple]) -> Union[tuple, str]:
 
 
 def _convert_flags_to_string(
-    flags_value: int, alternative_flag_list: Optional[int] = None, alternative_flags: Optional[dict] = None
+    flags_value: int,
+    alternative_flag_list: Optional[int] = None,
+    alternative_flags: Optional[dict] = None,
 ) -> str:
     """
     This function converts the numeric flags to the corresponding strings
@@ -419,7 +422,10 @@ def read_feature_property(
     'HAS_MISSING'
     """
     if isinstance(feature_group, tuple):
-        return tuple(read_feature_property(feature_properties, col, default=default) for col in feature_group)
+        return tuple(
+            read_feature_property(feature_properties, col, default=default)
+            for col in feature_group
+        )
     else:
         feature_prop = None
         if feature_properties is not None:

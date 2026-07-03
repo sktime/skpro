@@ -4,6 +4,7 @@ Cyclic Boosting Classifier
 
 
 import logging
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -12,9 +13,8 @@ import sklearn.base
 
 from skpro.libs.cyclic_boosting import base as cyclic_boosting_base
 from skpro.libs.cyclic_boosting.base import CyclicBoostingBase
-from skpro.libs.cyclic_boosting.link import LogitLinkMixin
-from typing import Tuple, Optional, Union
 from skpro.libs.cyclic_boosting.features import Feature
+from skpro.libs.cyclic_boosting.link import LogitLinkMixin
 
 _logger = logging.getLogger(__name__)
 
@@ -67,7 +67,9 @@ class CBClassifier(sklearn.base.ClassifierMixin, CyclicBoostingBase, LogitLinkMi
         if not ((y == 0.0) | (y == 1.0)).all():
             raise ValueError(
                 "The target y must be either 0 or 1 "
-                "and not NAN. y[(y != 0) & (y != 1)] = {0}".format(y[(y != 0) & (y != 1)])
+                "and not NAN. y[(y != 0) & (y != 1)] = {}".format(
+                    y[(y != 0) & (y != 1)]
+                )
             )
 
     def precalc_parameters(self, feature: Feature, y: np.ndarray, pred):
@@ -101,7 +103,9 @@ class CBClassifier(sklearn.base.ClassifierMixin, CyclicBoostingBase, LogitLinkMi
         perc2 = 0.25 - shift
         return perc1, perc2
 
-    def calc_parameters(self, feature: Feature, y: np.ndarray, pred, prefit_data: np.ndarray) -> Tuple[float, float]:
+    def calc_parameters(
+        self, feature: Feature, y: np.ndarray, pred, prefit_data: np.ndarray
+    ) -> Tuple[float, float]:
         prediction = self.unlink_func(pred.predict_link())
         boosting_weights = boost_weights(y, prediction)
         event_weights = self.weights
@@ -109,7 +113,12 @@ class CBClassifier(sklearn.base.ClassifierMixin, CyclicBoostingBase, LogitLinkMi
 
         wsum, w2sum, alpha, beta = (
             np.bincount(feature.lex_binned_data, weights=w, minlength=feature.n_bins)
-            for w in [weights, weights * boosting_weights, weights * y, weights * (1 - y)]
+            for w in [
+                weights,
+                weights * boosting_weights,
+                weights * y,
+                weights * (1 - y),
+            ]
         )
 
         weight_factor = np.ones_like(wsum)
@@ -120,7 +129,11 @@ class CBClassifier(sklearn.base.ClassifierMixin, CyclicBoostingBase, LogitLinkMi
         beta *= weight_factor
         beta = np.where(beta < 0, 0, beta)
 
-        posterior, alpha_posterior, beta_posterior = self._get_posterior_dist_from_prior_dist(alpha=alpha, beta=beta)
+        (
+            posterior,
+            alpha_posterior,
+            beta_posterior,
+        ) = self._get_posterior_dist_from_prior_dist(alpha=alpha, beta=beta)
 
         perc1, perc2 = self._get_percentiles_from_distribution_parameters(
             alpha_posterior=alpha_posterior, beta_posterior=beta_posterior
@@ -136,12 +149,16 @@ class CBClassifier(sklearn.base.ClassifierMixin, CyclicBoostingBase, LogitLinkMi
 
         return factors_link, uncertainties_l
 
-    def predict_proba(self, X: Union[pd.DataFrame, np.ndarray], y: Optional[np.ndarray] = None) -> np.ndarray:
-        probability_signal = super(CBClassifier, self).predict(X, y=y)
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Optional[np.ndarray] = None
+    ) -> np.ndarray:
+        probability_signal = super().predict(X, y=y)
         return np.c_[1 - probability_signal, probability_signal]
 
-    def predict(self, X: Union[pd.DataFrame, np.ndarray], y: Optional[np.ndarray] = None) -> np.ndarray:
-        probability_signal = super(CBClassifier, self).predict(X, y=y)
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Optional[np.ndarray] = None
+    ) -> np.ndarray:
+        probability_signal = super().predict(X, y=y)
         return np.asarray(probability_signal > 0.5, dtype=np.float64)
 
 

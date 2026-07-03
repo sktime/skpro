@@ -4,14 +4,18 @@ Cyclic Boosting Regression for Generalized Background Subtraction regression.
 
 
 import logging
+from typing import Tuple, Union
 
 import numpy as np
-from sklearn.base import RegressorMixin
 import pandas as pd
+from sklearn.base import RegressorMixin
 
-from skpro.libs.cyclic_boosting.base import CyclicBoostingBase, Feature, CBLinkPredictionsFactors
+from skpro.libs.cyclic_boosting.base import (
+    CBLinkPredictionsFactors,
+    CyclicBoostingBase,
+    Feature,
+)
 from skpro.libs.cyclic_boosting.link import IdentityLinkMixin
-from typing import Tuple, Union
 
 _logger = logging.getLogger(__name__)
 
@@ -68,7 +72,11 @@ class CBGBSRegressor(RegressorMixin, CyclicBoostingBase, IdentityLinkMixin):
         self.regalpha = regalpha
 
     def calc_parameters(
-        self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors, prefit_data
+        self,
+        feature: Feature,
+        y: np.ndarray,
+        pred: CBLinkPredictionsFactors,
+        prefit_data,
     ) -> Tuple[np.ndarray, np.ndarray]:
         lex_binnumbers = feature.lex_binned_data
         minlength = feature.n_bins
@@ -78,21 +86,26 @@ class CBGBSRegressor(RegressorMixin, CyclicBoostingBase, IdentityLinkMixin):
         d = self.weights * (1 + self.regalpha)
 
         sum_n, sum_d, sum_nd, sum_n2, sum_d2 = (
-            np.bincount(lex_binnumbers, weights=w, minlength=minlength) for w in [n, d, n * d, n * n, d * d]
+            np.bincount(lex_binnumbers, weights=w, minlength=minlength)
+            for w in [n, d, n * d, n * n, d * d]
         )
 
         sum_d += 1
         sum_d2 += 1**2
 
         summand = sum_n / sum_d
-        variance_summand = (sum_d**2 * sum_n2 - 2.0 * sum_n * sum_d * sum_nd + sum_n**2 * sum_d2) / sum_d**4
+        variance_summand = (
+            sum_d**2 * sum_n2 - 2.0 * sum_n * sum_d * sum_nd + sum_n**2 * sum_d2
+        ) / sum_d**4
 
         return summand, np.sqrt(variance_summand)
 
     def _check_y(self, y: np.ndarray):
         pass
 
-    def _init_global_scale(self, X: Union[pd.DataFrame, np.ndarray], y: np.ndarray) -> None:
+    def _init_global_scale(
+        self, X: Union[pd.DataFrame, np.ndarray], y: np.ndarray
+    ) -> None:
         if self.weights is None:
             raise RuntimeError("The weights have to be initialized.")
         self.global_scale_link_ = (y * self.weights).sum() / self.weights.sum()
@@ -102,7 +115,9 @@ class CBGBSRegressor(RegressorMixin, CyclicBoostingBase, IdentityLinkMixin):
         loss = (weights * (prediction - y) ** 2).sum() / wvisitsum
         return loss
 
-    def precalc_parameters(self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors) -> None:
+    def precalc_parameters(
+        self, feature: Feature, y: np.ndarray, pred: CBLinkPredictionsFactors
+    ) -> None:
         return None
 
 

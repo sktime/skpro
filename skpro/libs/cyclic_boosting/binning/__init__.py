@@ -1,10 +1,11 @@
-
 from skpro.libs.cyclic_boosting.binning._utils import (
     get_bin_bounds,
     get_column_index,
     minimal_difference,
 )
-from skpro.libs.cyclic_boosting.binning.bin_number_transformer import BinNumberTransformer
+from skpro.libs.cyclic_boosting.binning.bin_number_transformer import (
+    BinNumberTransformer,
+)
 from skpro.libs.cyclic_boosting.binning.ecdf_transformer import (
     ECdfTransformer,
     get_feature_column_names_or_indices,
