@@ -5,6 +5,7 @@
 
 __all__ = [
     "Alpha",
+    "AsymmetricLaplace",
     "Beta",
     "Binomial",
     "BurrIII",
@@ -68,6 +69,7 @@ __all__ = [
 ]
 
 from skpro.distributions.alpha import Alpha
+from skpro.distributions.asymmetric_laplace import AsymmetricLaplace
 from skpro.distributions.beta import Beta
 from skpro.distributions.binomial import Binomial
 from skpro.distributions.burr_iii import BurrIII
