@@ -37,13 +37,17 @@ class BaseObject(_CommonTags, _BaseObject):
         """
 
     def __post_init__(self):
-        """Initialize non-parameter attributes and validate parameters.
+        """Post-init constructor logic, can be used by inheriting classes.
 
-        Override this method to place parameter checks or initialization
-        of derived quantities that should not be constructor parameters.
-        This is called at the end of ``__init__``, after ``__dynamic_tags__``.
+        This method should be used for:
 
-        Avoid overriding ``__init__`` directly; place any such logic here.
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * dynamic tag setting
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
         """
 
 
@@ -62,13 +66,17 @@ class BaseEstimator(_CommonTags, _BaseEstimator):
         """
 
     def __post_init__(self):
-        """Initialize non-parameter attributes and validate parameters.
+        """Post-init constructor logic, can be used by inheriting classes.
 
-        Override this method to place parameter checks or initialization
-        of derived quantities that should not be constructor parameters.
-        This is called at the end of ``__init__``, after ``__dynamic_tags__``.
+        This method should be used for:
 
-        Avoid overriding ``__init__`` directly; place any such logic here.
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * dynamic tag setting
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
         """
 
 
