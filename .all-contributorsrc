@@ -271,6 +271,14 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "molloyzak13",
+      "name": "Zak Molloy",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ]
 }
