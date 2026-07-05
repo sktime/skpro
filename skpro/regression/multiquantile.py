@@ -123,6 +123,22 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
 
         super().__init__()
 
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        alpha = self.alpha
+        quantile_regressor = self.quantile_regressor
+        mean_regressor = self.mean_regressor
+
         if alpha is None:
             _alpha = [0.1, 0.25, 0.5, 0.75, 0.9]
         elif len(alpha) == 0:
