@@ -43,7 +43,6 @@ class BaseObject(_CommonTags, _BaseObject):
 
         * parameter validation
         * initialization logic beyond self.param = param
-        * dynamic tag setting
         * any soft dependency imports in the constructor
 
         IMPORTANT: no significant compute or memory use should happen in __post_init__,
@@ -72,7 +71,6 @@ class BaseEstimator(_CommonTags, _BaseEstimator):
 
         * parameter validation
         * initialization logic beyond self.param = param
-        * dynamic tag setting
         * any soft dependency imports in the constructor
 
         IMPORTANT: no significant compute or memory use should happen in __post_init__,
