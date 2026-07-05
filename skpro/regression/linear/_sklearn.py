@@ -114,6 +114,32 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
         self.copy_X = copy_X
         self.verbose = verbose
 
+        super().__init__()
+
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        max_iter = self.max_iter
+        tol = self.tol
+        alpha_1 = self.alpha_1
+        alpha_2 = self.alpha_2
+        lambda_1 = self.lambda_1
+        lambda_2 = self.lambda_2
+        compute_score = self.compute_score
+        threshold_lambda = self.threshold_lambda
+        fit_intercept = self.fit_intercept
+        copy_X = self.copy_X
+        verbose = self.verbose
+
         from sklearn.linear_model import ARDRegression
 
         skl_estimator = ARDRegression(
@@ -132,8 +158,6 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
 
         skpro_est = SklearnProbaReg(skl_estimator, inner_type="np.ndarray")
         self._estimator = skpro_est.clone()
-
-        super().__init__()
 
     FITTED_PARAMS_TO_FORWARD = [
         "coef_",

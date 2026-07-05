@@ -40,10 +40,15 @@ class BaseDistFitter(BaseEstimator):
 
     def __init__(self):
         super().__init__()
-        _check_estimator_deps(self)
 
         self._X_converter_store = {}
         self._C_converter_store = {}
+
+        # this block has a double purpose:
+        # - emit a warning if dependencies are not met, but allow instantiation
+        # - if dependencies are met, call __post_init__ used by inheriting classes
+        if _check_estimator_deps(self, severity="warning"):
+            self.__post_init__()
 
     def fit(self, X, C=None):
         """Fit distribution to data.

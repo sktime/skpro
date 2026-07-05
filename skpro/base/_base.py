@@ -28,13 +28,13 @@ class BaseObject(_CommonTags, _BaseObject):
     def __init__(self):
         super().__init__()
         self.__dynamic_tags__()
-        self.__post_init__()
 
     def __dynamic_tags__(self):
         """Dynamic tag setter logic for setting tag values conditional on parameters.
 
         This method should be used for setting dynamic tags only.
         """
+        pass
 
     def __post_init__(self):
         """Post-init constructor logic, can be used by inheriting classes.
@@ -48,6 +48,7 @@ class BaseObject(_CommonTags, _BaseObject):
         IMPORTANT: no significant compute or memory use should happen in __post_init__,
         memory and compute intensive operations should be in _fit, not __post_init__.
         """
+        pass
 
 
 class BaseEstimator(_CommonTags, _BaseEstimator):
@@ -56,13 +57,13 @@ class BaseEstimator(_CommonTags, _BaseEstimator):
     def __init__(self):
         super().__init__()
         self.__dynamic_tags__()
-        self.__post_init__()
 
     def __dynamic_tags__(self):
         """Dynamic tag setter logic for setting tag values conditional on parameters.
 
         This method should be used for setting dynamic tags only.
         """
+        pass
 
     def __post_init__(self):
         """Post-init constructor logic, can be used by inheriting classes.
@@ -76,6 +77,7 @@ class BaseEstimator(_CommonTags, _BaseEstimator):
         IMPORTANT: no significant compute or memory use should happen in __post_init__,
         memory and compute intensive operations should be in _fit, not __post_init__.
         """
+        pass
 
 
 class BaseMetaEstimator(_CommonTags, _BaseMetaEstimator):
