@@ -159,7 +159,6 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
         skpro_est = SklearnProbaReg(skl_estimator, inner_type="np.ndarray")
         self._estimator = skpro_est.clone()
 
-
     FITTED_PARAMS_TO_FORWARD = [
         "coef_",
         "alpha_",

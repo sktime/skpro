@@ -164,7 +164,6 @@ class GaussianProcess(_DelegateWithFittedParamForwarding):
         skpro_est = SklearnProbaReg(skl_estimator)
         self._estimator = skpro_est.clone()
 
-
     FITTED_PARAMS_TO_FORWARD = [
         "kernel_",
         "L_",
