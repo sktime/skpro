@@ -52,6 +52,8 @@ class BaseDistribution(BaseObject):
         self.index = _coerce_to_pd_index_or_none(index)
         self.columns = _coerce_to_pd_index_or_none(columns)
 
+        super().__init__()
+
         # this block has a double purpose:
         # - emit a warning if dependencies are not met, but allow instantiation
         # - if dependencies are met, call __post_init__ used by inheriting classes
