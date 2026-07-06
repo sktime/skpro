@@ -1,0 +1,287 @@
+"""Generate estimator metadata for the dynamic estimator overview page.
+
+This script is called during the Sphinx documentation build process to generate
+JavaScript data containing estimator information for the interactive overview page.
+
+The generated file is NOT committed to the repository - it's created fresh during
+each build to ensure estimator registry changes are always reflected.
+"""
+
+import json
+import logging
+import os
+import sys
+
+# Add parent directory to path to import skpro
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from skpro.registry import all_objects  # noqa: E402
+
+# Set up logging for build output
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+AUTO_GENERATED_DIR = os.path.join(
+    REPO_ROOT, "docs", "source", "api_reference", "auto_generated"
+)
+
+
+def _filter_user_facing_tags(tags_dict):
+    """Filter tags to only include user-facing ones based on registry._tags.
+
+    Whether a tag is user-facing is determined by the 5th element (user_facing bool)
+    of each entry in OBJECT_TAG_REGISTER.
+
+    Parameters
+    ----------
+    tags_dict : dict
+        All tags from get_class_tags()
+
+    Returns
+    -------
+    dict
+        Filtered dictionary with only user-facing tags
+    """
+    from skpro.registry._tags import OBJECT_TAG_LIST_USER_FACING
+
+    user_facing_set = set(OBJECT_TAG_LIST_USER_FACING)
+
+    return {
+        tag_name: tag_value
+        for tag_name, tag_value in tags_dict.items()
+        if tag_name in user_facing_set
+        and tag_value is not None
+        and tag_value != ""
+        and tag_value != []
+    }
+
+
+def _serialize_value(value):
+    """Convert a value to JSON-serializable format.
+
+    Parameters
+    ----------
+    value : any
+        Value to serialize
+
+    Returns
+    -------
+    JSON-serializable value
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float, str)):
+        return value
+    if isinstance(value, (list, tuple)):
+        return [_serialize_value(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _serialize_value(v) for k, v in value.items()}
+    # For non-serializable types (classes, etc.), convert to string
+    return str(value)
+
+
+def _infer_object_type(tags_dict, module):
+    """Infer object type from tags and module path.
+
+    Parameters
+    ----------
+    tags_dict : dict
+        Class tag dictionary.
+    module : str
+        Python module path of the object.
+
+    Returns
+    -------
+    str
+        Inferred object type.
+    """
+    obj_type_val = tags_dict.get("object_type")
+    if obj_type_val:
+        if isinstance(obj_type_val, list):
+            return str(obj_type_val[0])
+        return str(obj_type_val)
+
+    estimator_type_val = tags_dict.get("estimator_type")
+    if estimator_type_val:
+        return str(estimator_type_val)
+
+    if module.startswith("skpro.distributions"):
+        return "distribution"
+    if module.startswith("skpro.metrics"):
+        return "metric"
+    if module.startswith("skpro.survival"):
+        return "survival"
+    if module.startswith("skpro.regression"):
+        return "regressor_proba"
+
+    return "unknown"
+
+
+def _infer_doc_path(module, name):
+    """Infer autosummary doc path used in api_reference/auto_generated.
+
+    Uses the same logic as sktime: strips the leaf module file name from the
+    full dotted path so that the path matches the Sphinx ``currentmodule``
+    used in the RST autosummary directives (which is the parent package, not
+    the individual ``.py`` file).
+
+    For example ``skpro.distributions.normal.Normal`` becomes
+    ``skpro.distributions.Normal``, matching the RST entry
+    ``.. currentmodule:: skpro.distributions``.
+
+    Parameters
+    ----------
+    module : str
+        Python module path of the object.
+    name : str
+        Class name.
+
+    Returns
+    -------
+    str
+        Dotted doc path without ``.html`` suffix.
+    """
+    if not module:
+        return f"skpro.{name}"
+    modpath = f"{module}.{name}"
+    path_parts = modpath.split(".")
+    if len(path_parts) > 2:
+        del path_parts[-2]  # remove leaf file module (e.g. 'normal', '_base')
+    return ".".join(path_parts)
+
+
+def _fallback_api_url(object_type):
+    """Fallback API URL if no auto-generated detail page is available."""
+    type_map = {
+        "regressor_proba": "regression",
+        "distribution": "distributions",
+        "metric": "metrics",
+        "survival": "survival",
+    }
+    section = type_map.get(object_type, "api_reference")
+    return f"api_reference/{section}.html"
+
+
+def generate_estimator_data(output_file):
+    """Generate estimator metadata JavaScript file.
+
+    Parameters
+    ----------
+    output_file : str
+        Path to output JavaScript file.
+    """
+    try:
+        # Get all registered objects (estimators, distributions, etc.)
+        estimators_df = all_objects(as_dataframe=True)
+
+        if estimators_df.empty:
+            logger.warning("No estimators found in registry")
+            estimators_data = []
+        else:
+            estimators_data = []
+
+            # Convert dataframe to list of dicts with necessary fields
+            for _idx, row in estimators_df.iterrows():
+                name = row.get("name", "Unknown")
+                estimator_class = row.get("object")
+                class_name = (
+                    estimator_class.__name__
+                    if hasattr(estimator_class, "__name__")
+                    else str(name)
+                )
+
+                # Extract module from class
+                module = (
+                    estimator_class.__module__
+                    if hasattr(estimator_class, "__module__")
+                    else "unknown"
+                )
+
+                # Initialize with object_type inferred from tags/module
+                object_type = "unknown"
+                tags = {}
+
+                # Extract tags via get_class_tags (includes inherited tags)
+                if hasattr(estimator_class, "get_class_tags"):
+                    tags_dict = estimator_class.get_class_tags() or {}
+                else:
+                    tags_dict = {}
+
+                object_type = _infer_object_type(tags_dict=tags_dict, module=module)
+
+                # Filter to user-facing tags only and serialize values
+                user_facing = _filter_user_facing_tags(tags_dict)
+                user_facing.pop("object_type", None)
+                tags = {
+                    tag_name: _serialize_value(tag_value)
+                    for tag_name, tag_value in user_facing.items()
+                }
+
+                est_info = {
+                    "name": name,
+                    "object_type": object_type,
+                    "module": module,
+                    "doc_path": _infer_doc_path(module=module, name=class_name),
+                    "tags": tags,
+                }
+
+                rst_path = os.path.join(
+                    AUTO_GENERATED_DIR, f"{est_info['doc_path']}.rst"
+                )
+                if os.path.exists(rst_path):
+                    est_info[
+                        "doc_url"
+                    ] = f"api_reference/auto_generated/{est_info['doc_path']}.html"
+                else:
+                    est_info["doc_url"] = _fallback_api_url(object_type)
+
+                estimators_data.append(est_info)
+
+        # Generate JavaScript file
+        estimator_json = json.dumps(estimators_data, indent=2)
+        comment_line = (
+            "// Auto-generated estimator data for the dynamic estimator overview page."
+        )
+        js_content = (
+            f"{comment_line}\n"
+            "// This file is regenerated during each documentation build.\n"
+            "\n"
+            f"var estimatorData = {estimator_json};\n"
+        )
+
+        # Ensure output directory exists
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+        # Write the file
+        with open(output_file, "w") as f:
+            f.write(js_content)
+
+        logger.info(f"Generated estimator data: {output_file}")
+        logger.info(f"Total estimators: {len(estimators_data)}")
+
+        return True
+
+    except Exception as e:  # noqa: B902
+        logger.error(f"Error generating estimator data: {e}")
+        logger.error("The estimator overview page may not function properly.")
+        import traceback
+
+        traceback.print_exc()
+        # Don't fail the build - just warn
+        return False
+
+
+if __name__ == "__main__":
+    # Default output location
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(script_dir)
+    output_path = os.path.join(repo_root, "docs", "_build", "estimator_data.js")
+
+    # Allow overriding via command-line argument
+    if len(sys.argv) > 1:
+        output_path = sys.argv[1]
+
+    generate_estimator_data(output_path)
