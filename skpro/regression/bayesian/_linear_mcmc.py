@@ -147,9 +147,13 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             y_data = pm.Data("y", self._y_vals, dims=("obs_id"))
 
             # Priors for model parameters, taken from self._prior_config
-            self.intercept = self._prior_config["intercept"].create_variable("intercept")
+            self.intercept = self._prior_config["intercept"].create_variable(
+                "intercept"
+            )
             self.slopes = self._prior_config["slopes"].create_variable("slopes")
-            self.noise_var = self._prior_config["noise_var"].create_variable("noise_var")
+            self.noise_var = self._prior_config["noise_var"].create_variable(
+                "noise_var"
+            )
             self.noise = pm.Deterministic("noise", self.noise_var**0.5)
 
             # Expected value of the target variable
