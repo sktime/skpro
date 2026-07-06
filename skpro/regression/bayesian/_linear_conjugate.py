@@ -1,11 +1,9 @@
 """Bayesian Conjugate Linear Regression Estimator."""
 
-__author__ = ["meraldoantonio"]
+__author__ = ["meraldoantonio", "arnavk23"]
 
 import numpy as np
-import pandas as pd
 
-from skpro.distributions import Normal
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -96,15 +94,26 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
     """
 
     _tags = {
-        "authors": ["meraldoantonio"],
+        "authors": ["meraldoantonio", "arnavk23"],
         "capability:multioutput": False,
         "capability:missing": True,
+        "capability:update": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, coefs_prior_cov, coefs_prior_mu=None, noise_precision=1):
-        """Initialize regressor by providing coefficient priors and noise precision.
+    def __init__(
+        self,
+        coefs_prior_cov,
+        coefs_prior_mu=None,
+        noise_precision=1,
+        noise_prior_shape=0.001,
+        noise_prior_rate=0.001,
+        forgetting_factor=1.0,
+        prior_tuning=None,
+        sparse=False,
+    ):
+        """Initialize regressor by providing coefficent priors and noise precision.
 
         Parameters
         ----------
@@ -145,6 +154,11 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             )
 
         self.noise_precision = noise_precision
+        self.noise_prior_shape = noise_prior_shape
+        self.noise_prior_rate = noise_prior_rate
+        self.forgetting_factor = forgetting_factor
+        self.prior_tuning = prior_tuning
+        self.sparse = sparse
 
         super().__init__()
 
@@ -169,12 +183,30 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         self._coefs_prior_cov = self.coefs_prior_cov
         self._coefs_prior_precision = np.linalg.inv(self._coefs_prior_cov)
 
+        # Normal-Gamma prior for unknown noise variance
+        n = X.shape[0]
+        y_arr = y.to_numpy(dtype=float)
+        X_arr = X.to_numpy(dtype=float)
+        # Initial posterior shape/rate
+        self._noise_shape_post = self.noise_prior_shape + n / 2
+        # Compute residuals for initial rate
+        mu_init = self._coefs_prior_mu.flatten()
+        y_pred = X_arr @ mu_init
+        resid = y_arr.flatten() - y_pred
+        self._noise_rate_post = self.noise_prior_rate + 0.5 * np.sum(resid**2)
+
+        X_arr = X.to_numpy(dtype=float)
+        y_arr = y.to_numpy(dtype=float)
+
         # Perform Bayesian inference
         (
             self._coefs_posterior_mu,
             self._coefs_posterior_cov,
         ) = self._perform_bayesian_inference(
-            X, y, self._coefs_prior_mu, self._coefs_prior_cov
+            X_arr,
+            y_arr,
+            coefs_prior_mu=self._coefs_prior_mu,
+            coefs_prior_precision=self._coefs_prior_precision,
         )
         return self
 
@@ -192,41 +224,43 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Predicted Normal distribution for outputs.
         """
         idx = X.index
-        if isinstance(X, pd.DataFrame):
-            X = X.values
+        X = X.to_numpy(dtype=float)
 
         # Predictive mean: X * posterior_mu
         pred_mu = X @ self._coefs_posterior_mu
 
-        # Compute predictive variance for each data point
+        # Student-t predictive for unknown variance
+        alpha = self._noise_shape_post
+        beta = self._noise_rate_post
+        df = 2 * alpha
         pred_var_all_x_i = []
         for i in range(X.shape[0]):
             x_i = X[i, :].reshape(1, -1)
-            pred_var_x_i = (
-                x_i @ self._coefs_posterior_cov @ x_i.T + 1 / self.noise_precision
-            )
+            pred_var_x_i = x_i @ self._coefs_posterior_cov @ x_i.T + 1
             pred_var_all_x_i.append(pred_var_x_i.item())
 
         pred_var_all_x_i = np.array(pred_var_all_x_i)
-        pred_sigma = np.sqrt(pred_var_all_x_i)  # Compute standard deviation
+        pred_sigma = np.sqrt(beta * pred_var_all_x_i / alpha)
 
         self._pred_mu = pred_mu
         self._pred_sigma = pred_sigma
         self._pred_var = pred_var_all_x_i
 
-        mus = pred_mu.reshape(-1, 1).tolist()  # Convert to list of lists
-        sigmas = pred_sigma.reshape(-1, 1).tolist()  # Convert to list of lists
+        mus = pred_mu.reshape(-1, 1).tolist()
+        sigmas = pred_sigma.reshape(-1, 1).tolist()
 
-        # Return results as skpro Normal distribution
-        self._y_pred = Normal(
+        from skpro.distributions.t import TDistribution
+
+        self._y_pred = TDistribution(
             mu=mus,
             sigma=sigmas,
+            df=df,
             columns=self._y_cols,
             index=idx,
         )
         return self._y_pred
 
-    def _perform_bayesian_inference(self, X, y, coefs_prior_mu, coefs_prior_cov):
+    def _perform_bayesian_inference(self, X, y, coefs_prior_mu, coefs_prior_precision):
         """Perform Bayesian inference for linear regression.
 
         Obtains the posterior distribution using normal conjugacy formula.
@@ -239,8 +273,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Observed target vector (n_samples,).
         coefs_prior_mu : np.ndarray
             Mean vector of the prior Normal distribution for coefficients.
-        coefs_prior_cov : np.ndarray
-            Covariance matrix of the prior Normal distribution for coefficients.
+        coefs_prior_precision : np.ndarray
+            Precision matrix of the prior Normal distribution for coefficients.
 
         Returns
         -------
@@ -249,46 +283,47 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         coefs_posterior_cov : np.ndarray
             Covariance matrix of the posterior Normal distribution for coefficients.
         """
-        X = np.array(X)
-        y = np.array(y)
-
-        # Compute prior precision from prior covariance
-        coefs_prior_precision = np.linalg.inv(coefs_prior_cov)
-
-        # Compute posterior precision and covariance
+        # Information-form update (precision + natural parameter)
         coefs_posterior_precision = coefs_prior_precision + self.noise_precision * (
             X.T @ X
         )
-        coefs_posterior_cov = np.linalg.inv(coefs_posterior_precision)
-        coefs_posterior_mu = coefs_posterior_cov @ (
-            coefs_prior_precision @ coefs_prior_mu + self.noise_precision * X.T @ y
+        prior_natural_param = coefs_prior_precision @ coefs_prior_mu
+        posterior_natural_param = prior_natural_param + self.noise_precision * (X.T @ y)
+
+        # Solve instead of multiplying by inverse for improved numerical stability
+        coefs_posterior_mu = np.linalg.solve(
+            coefs_posterior_precision, posterior_natural_param
         )
+        coefs_posterior_cov = np.linalg.inv(coefs_posterior_precision)
 
         return coefs_posterior_mu, coefs_posterior_cov
 
-    def update(self, X, y):
+    def _update(self, X, y):
         """Update the posterior with new data.
 
         Parameters
         ----------
         X : pandas DataFrame
             New feature matrix.
-        y : pandas Series or DataFrame
+        y : pandas DataFrame
             New target vector.
 
         Returns
         -------
         self : reference to self
         """
-        # Ensure y is a DataFrame
-        if isinstance(y, pd.Series):
-            y = y.to_frame(name="y_train")
+        X_arr = X.to_numpy(dtype=float)
+        y_arr = y.to_numpy(dtype=float)
+        coefs_prior_precision = np.linalg.inv(self._coefs_posterior_cov)
 
         (
             self._coefs_posterior_mu,
             self._coefs_posterior_cov,
         ) = self._perform_bayesian_inference(
-            X, y, self._coefs_posterior_mu, self._coefs_posterior_cov
+            X_arr,
+            y_arr,
+            coefs_prior_mu=self._coefs_posterior_mu,
+            coefs_prior_precision=coefs_prior_precision,
         )
         return self
 
