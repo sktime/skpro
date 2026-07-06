@@ -20,24 +20,25 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     probabilities so that each probability has one corresponding regressor. After
     fitting, all quantile regressors can be used to make probabilistic predictions.
 
-    In `fit`, for every probability in alpha, the quantile_regressor is cloned and the
+    In ``fit``, for every probability in alpha, the quantile_regressor is cloned and the
     probability is set. Subsequently all regressors are fitted.
 
-    In probabilistic predict-like methods, if predictions of a quantile are requested,
+    In probabilistic ``predict``-like methods,
+    if predictions of a quantile are requested,
     the fitted quantile regressor that is nearest to the desired quantile probability
     is used for the prediction, of the requested quantile.
 
     For instance, let :math:`\alpha = [\alpha_1, \alpha_2, \ldots, \alpha_n]`
-    be the `alpha` provided to `__init__`, and
+    be the ``alpha`` provided to ``__init__``, and
     let :math:`\alpha' = [\alpha'_1, \alpha'_2, \ldots, \alpha'_m]` be the quantiles
-    requested in `predict_quantiles`.
+    requested in ``predict_quantiles``.
     Then, we use the fitted quantile regressor at quantile :math:`\hat{\alpha}_j`,
     :math:`\hat{\alpha}_j := \underset{i = 1 \dots n}{\mathrm{argmin}}\ | \alpha'_j
     - \alpha_i |` to make the quantile prediction for the requested quantile
     probability :math:`\alpha'_j`.
 
-    Consistently, the `predict_proba` method returns an empirical
-    distribution with supports at quantile points corresponding to `alpha`,
+    Consistently, the ``predict_proba`` method returns an empirical
+    distribution with supports at quantile points corresponding to ``alpha``,
     and weights corresponding to the nearest quantile regressor.
 
     Parameters
@@ -51,9 +52,10 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
         A list of probabilities in the open interval (0, 1).
         For each probability, a quantile_regressor will be fit.
     mean_regressor : Sklearn compatible regressor, default=quantile_regressor, alpha=0.5
-        Tabular mean regressor for `predict`.
+        Tabular mean regressor for ``predict``.
     n_jobs : int or None, default=None
-        The number of jobs to run in parallel for `fit` and all probabilistic prediction
+        The number of jobs to run in parallel for ``fit``
+        and all probabilistic prediction
         methods. -1 means using all processors, -2 means using all except one processors
         and None means no parallelization.
     sort_quantiles : bool, default=False
