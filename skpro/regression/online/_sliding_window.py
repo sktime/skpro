@@ -1,6 +1,6 @@
 """Meta-strategy for online learning: sliding window refit."""
 
-__author__ = ["patelchaitany"]
+__author__ = ["utsab345"]
 __all__ = ["OnlineSlidingWindow"]
 
 import pandas as pd

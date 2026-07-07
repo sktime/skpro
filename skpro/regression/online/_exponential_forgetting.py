@@ -1,6 +1,6 @@
 """Meta-strategy for online learning: exponential forgetting."""
 
-__author__ = ["patelchaitany"]
+__author__ = ["utsab345"]
 __all__ = ["OnlineExponentialForgetting"]
 
 import numpy as np
@@ -18,7 +18,7 @@ class OnlineExponentialForgetting(_DelegatedProbaRegressor):
     In ``update``, decays the weight of all previously seen observations
     by ``alpha``. New observations enter with weight 1. Observations whose
     weight drops below ``min_weight`` are pruned. The regressor is then
-    refitted on the surviving (weighted) data.
+    refitted on the surviving data.
 
     Acts as a soft sliding window where the effective window length is
     approximately ``log(min_weight) / log(alpha)`` updates.
@@ -29,7 +29,7 @@ class OnlineExponentialForgetting(_DelegatedProbaRegressor):
     Parameters
     ----------
     estimator : skpro regressor, descendant of BaseProbaRegressor
-        regressor to be update-refitted on weighted data, blueprint
+        regressor to be refitted on data surviving the weight threshold, blueprint
     alpha : float, default=0.95
         decay factor applied to all existing observation weights at each update.
         Must be in (0, 1). Smaller values forget old data faster.
