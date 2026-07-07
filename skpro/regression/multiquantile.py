@@ -20,8 +20,10 @@ class MultipleQuantileRegressor(BaseProbaRegressor):
     probabilities so that each probability has one corresponding regressor. After
     fitting, all quantile regressors can be used to make probabilistic predictions.
 
-    In ``fit``, for every probability in alpha, the quantile_regressor is cloned and the
-    probability is set. Subsequently all regressors are fitted.
+    In ``fit``, for every probability in ``alpha``, a clone of the quantile regressor
+    ``quantile_regressor`` is created, and the quantile point for it is set
+    to the corresponding value in ``alpha``.
+    Subsequently, all regressors are fitted.
 
     In probabilistic ``predict``-like methods,
     if predictions of a quantile are requested,
