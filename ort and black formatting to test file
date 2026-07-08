@@ -1,0 +1,47 @@
+[1mdiff --git a/skpro/tests/test_plot_calibration.py b/skpro/tests/test_plot_calibration.py[m
+[1mindex 99352f1..93f3f52 100644[m
+[1m--- a/skpro/tests/test_plot_calibration.py[m
+[1m+++ b/skpro/tests/test_plot_calibration.py[m
+[36m@@ -1,15 +1,18 @@[m
+ import pandas as pd[m
+[32m+[m
+ from skpro.utils.plotting import plot_calibration[m
+ [m
+ [m
+ def test_plot_calibration_runs():[m
+     """Test that plot_calibration runs without errors."""[m
+     y_true = pd.Series([1, 2, 3, 4])[m
+[31m-    y_pred = pd.DataFrame({[m
+[31m-        (0, 0.1): [1, 2, 2, 3],[m
+[31m-        (0, 0.5): [2, 3, 3, 4],[m
+[31m-        (0, 0.9): [3, 4, 4, 5],[m
+[31m-    })[m
+[32m+[m[32m    y_pred = pd.DataFrame([m
+[32m+[m[32m        {[m
+[32m+[m[32m            (0, 0.1): [1, 2, 2, 3],[m
+[32m+[m[32m            (0, 0.5): [2, 3, 3, 4],[m
+[32m+[m[32m            (0, 0.9): [3, 4, 4, 5],[m
+[32m+[m[32m        }[m
+[32m+[m[32m    )[m
+     ax = plot_calibration(y_true, y_pred)[m
+     assert ax is not None[m
+ [m
+[36m@@ -17,11 +20,14 @@[m [mdef test_plot_calibration_runs():[m
+ def test_plot_calibration_with_ax():[m
+     """Test that plot_calibration accepts an existing ax."""[m
+     from matplotlib import pyplot as plt[m
+[32m+[m
+     y_true = pd.Series([1, 2, 3, 4])[m
+[31m-    y_pred = pd.DataFrame({[m
+[31m-        (0, 0.1): [1, 2, 2, 3],[m
+[31m-        (0, 0.9): [3, 4, 4, 5],[m
+[31m-    })[m
+[32m+[m[32m    y_pred = pd.DataFrame([m
+[32m+[m[32m        {[m
+[32m+[m[32m            (0, 0.1): [1, 2, 2, 3],[m
+[32m+[m[32m            (0, 0.9): [3, 4, 4, 5],[m
+[32m+[m[32m        }[m
+[32m+[m[32m    )[m
+     _, ax = plt.subplots()[m
+     result_ax = plot_calibration(y_true, y_pred, ax=ax)[m
+     assert result_ax is ax[m

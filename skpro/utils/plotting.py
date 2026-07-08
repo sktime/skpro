@@ -1,8 +1,15 @@
 """Utility functions for plotting."""
+
 import numpy as np
 import pandas as pd
 from skbase.utils.dependencies import _check_soft_dependencies
 
+__all__ = [
+    "plot_crossplot_interval",
+    "plot_crossplot_std",
+    "plot_crossplot_loss",
+    "plot_calibration",
+]
 __authors__ = ["fkiraly", "frthjf"]
 
 
@@ -235,3 +242,121 @@ def plot_crossplot_loss(y_true, y_pred, metric, ax=None):
     ax.tick_params(colors="y")
 
     return ax
+
+
+def plot_calibration(y_true, y_pred, ax=None):
+    r"""Plot the calibration curve for a sample of quantile predictions.
+
+    Visualizes calibration of the quantile predictions.
+
+    Computes the following calibration plot:
+
+    Let :math:`p_1, \dots, p_k` be the quantile points at which
+    predictions in ``y_pred`` were queried,
+    e.g., via ``alpha`` in ``predict_quantiles``.
+
+    Let :math:`y_1, \dots, y_N` be the actual values in ``y_true``,
+    and let :math:`\widehat{y}_{i,j}`, for :math:`i = 1, \dots, N, j = 1, \dots, k`
+    be quantile predictions at quantile point :math:`p_j`,
+    of the conditional distribution of :math:`y_i`, as contained in ``y_pred``.
+
+    We compute the calibration indicators :math:`c_{i, j},`
+    as :math:`c_{i, j} = 1, \text{ if } y_i \le \widehat{y}_{i,j} \text{ and } 0,
+    \text{otherwise},` and calibration fractions as
+
+    .. math:: \widehat{p}_j = \frac{1}{N} \sum_{i = 1}^N c_{i, j}.
+
+    If the quantile predictions are well-calibrated, we expect :math:`\widehat{p}_j`
+    to be close to :math:`p_j`.
+
+    x-axis: interval from 0 to 1, quantile points
+
+    y-axis: interval from 0 to 1, calibration fractions
+
+    plot elements: calibration curve of the quantile predictions (blue) and the ideal
+    calibration curve (orange), the curve with equation y = x.
+        Calibration curve are points :math:`(p_i, \widehat{p}_i), i = 1 \dots, k`;
+
+        Ideal curve is the curve with equation y = x,
+        containing points :math:`(p_i, p_i)`.
+
+    Parameters
+    ----------
+    y_true : pd.Series, single columned pd.DataFrame, or single columned np.array.
+        The actual values
+    y_pred : pd.DataFrame or BaseDistribution
+        The quantile predictions, formatted as returned by ``predict_quantiles``,
+        or a BaseDistribution object as returned by ``predict_proba``
+    ax : matplotlib.axes.Axes, optional (default=None)
+        Axes on which to plot. If None, axes will be created and returned.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure, returned only if ax is None
+        matplotlib figure object
+    ax : matplotlib.axes.Axes
+        matplotlib axes object with the figure
+
+    Examples
+    --------
+    >>> from skpro.utils.plotting import plot_calibration  # doctest: +SKIP
+    >>> from skpro.regression.residual import ResidualDouble  # doctest: +SKIP
+    >>> from sklearn.ensemble import RandomForestRegressor  # doctest: +SKIP
+    >>> from sklearn.linear_model import LinearRegression  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
+    >>> reg_mean = RandomForestRegressor()  # doctest: +SKIP
+    >>> reg_resid = LinearRegression()  # doctest: +SKIP
+    >>> reg_proba = ResidualDouble(reg_mean, reg_resid)  # doctest: +SKIP
+    >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
+    ResidualDouble(...)
+    >>> y_pred = reg_proba.predict_proba(X_test)  # doctest: +SKIP
+    >>> plot_calibration(y_test, y_pred)  # doctest: +SKIP
+    """
+    _check_soft_dependencies("matplotlib")
+
+    import matplotlib.pyplot as plt
+
+    # handle BaseDistribution input
+    if hasattr(y_pred, "quantile") and not isinstance(y_pred, pd.DataFrame):
+        alpha = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        y_pred = y_pred.quantile(alpha)
+
+    # ensure y_true is a pd.Series
+    if not isinstance(y_true, pd.Series):
+        y_true = pd.Series(y_true.squeeze())
+
+    _ax_kwarg_is_none = True if ax is None else False
+
+    if _ax_kwarg_is_none:
+        fig, ax = plt.subplots(1, figsize=plt.figaspect(0.25))
+
+    result = [0]
+    ideal_calibration = [0]
+
+    for col in y_pred.columns:
+        if isinstance(col, tuple):
+            q = col[1]
+        else:
+            q = col
+        pred_q = y_pred[col].to_numpy()
+        result.append(np.mean(y_true.to_numpy() < pred_q))
+        ideal_calibration.append(q)
+
+    result.append(1)
+    ideal_calibration.append(1)
+
+    df = pd.DataFrame(
+        {"Forecast's Calibration": result, "Ideal Calibration": ideal_calibration},
+        index=ideal_calibration,
+    )
+
+    df.plot(ax=ax)
+
+    if _ax_kwarg_is_none:
+        return fig, ax
+    else:
+        return ax
