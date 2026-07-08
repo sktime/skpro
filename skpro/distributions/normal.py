@@ -51,6 +51,58 @@ class Normal(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    # documentation hooks for formula injection
+    _pdf_formula_doc = r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}
+        {2\sigma^2}\right)
+    """
+
+    _log_pdf_formula_doc = r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = -\frac{(x - \mu)^2}{2\sigma^2} - \log(\sigma \sqrt{2\pi})
+    """
+
+    _cdf_formula_doc = r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = \frac{1}{2} \left[1 + \operatorname{erf}\left(\frac{x - \mu}
+        {\sigma\sqrt{2}}\right)\right]
+    """
+
+    _ppf_formula_doc = r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; \mu, \sigma) = \mu + \sigma \sqrt{2} \operatorname{erf}^{-1}(2p - 1)
+    """
+
+    _mean_formula_doc = r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \mu
+    """
+
+    _var_formula_doc = r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \sigma^2
+    """
+
+    _energy_formula_doc = r"""
+    The analytical self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = \frac{2\sigma}{\sqrt{\pi}}
+    """
+
     def __init__(self, mu, sigma, index=None, columns=None):
         self.mu = mu
         self.sigma = sigma
