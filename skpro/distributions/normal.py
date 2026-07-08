@@ -3,7 +3,7 @@
 
 import numpy as np
 import pandas as pd
-from scipy.special import erf, erfinv
+from scipy.special import erf, erfinv, log_ndtr
 
 from skpro.distributions.base import BaseDistribution
 
@@ -45,7 +45,7 @@ class Normal(BaseDistribution):
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "log_cdf", "ppf"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -181,6 +181,23 @@ class Normal(BaseDistribution):
 
         cdf_arr = 0.5 + 0.5 * erf((x - mu) / (sigma * np.sqrt(2)))
         return cdf_arr
+
+    def _log_cdf(self, x):
+        """Logarithmic cumulative distribution function.
+
+        Parameters
+        ----------
+        x : 2D np.ndarray, same shape as ``self``
+            values to evaluate the log cdf at
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            log cdf values at the given points
+        """
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+        return log_ndtr((x - mu) / sigma)
 
     def _ppf(self, p):
         """Quantile function = percent point function = inverse cdf.

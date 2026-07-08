@@ -35,7 +35,7 @@ class Levy(_ScipyAdapter):
     _tags = {
         "authors": ["direkkakkar319-ops", "arnavk23", "fkiraly"],
         "distr:measuretype": "continuous",
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "log_cdf", "ppf"],
         "broadcast_init": "on",
     }
 
