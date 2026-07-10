@@ -122,28 +122,8 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             Known precision of the Gaussian likelihood noise (beta)
             This is the inverse of the noise variance.
         """
-        if coefs_prior_cov is None:
-            raise ValueError("`coefs_prior_cov` must be provided.")
-        else:
-            self.coefs_prior_cov = coefs_prior_cov
-
-        # Set coefs_prior_mu to a zero vector if not provided
-        if coefs_prior_mu is None:
-            self.coefs_prior_mu = np.zeros((self.coefs_prior_cov.shape[0], 1))
-        # Ensure coefs_prior_mu is a column vector
-        elif coefs_prior_mu.ndim != 2 or coefs_prior_mu.shape[1] != 1:
-            raise ValueError(
-                "coefs_prior_mu must be a column vector with shape (n_features, 1)."
-            )
-        else:
-            self.coefs_prior_mu = coefs_prior_mu
-
-        # Validate dimensions of coefs_prior_mu and coefs_prior_cov
-        if self.coefs_prior_mu.shape[0] != self.coefs_prior_cov.shape[0]:
-            raise ValueError(
-                "Dimensionality of `coefs_prior_mu` and `coefs_prior_cov` must match."
-            )
-
+        self.coefs_prior_cov = coefs_prior_cov
+        self.coefs_prior_mu = coefs_prior_mu
         self.noise_precision = noise_precision
 
         super().__init__()
@@ -162,10 +142,28 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
         -------
         self : reference to self
         """
+        if self.coefs_prior_cov is None:
+            raise ValueError("`coefs_prior_cov` must be provided.")
+
+        # Resolve coefs_prior_mu: use zero vector if not provided
+        coefs_prior_mu = self.coefs_prior_mu
+        if coefs_prior_mu is None:
+            coefs_prior_mu = np.zeros((self.coefs_prior_cov.shape[0], 1))
+        elif coefs_prior_mu.ndim != 2 or coefs_prior_mu.shape[1] != 1:
+            raise ValueError(
+                "coefs_prior_mu must be a column vector with shape (n_features, 1)."
+            )
+
+        # Validate dimensions of coefs_prior_mu and coefs_prior_cov
+        if coefs_prior_mu.shape[0] != self.coefs_prior_cov.shape[0]:
+            raise ValueError(
+                "Dimensionality of `coefs_prior_mu` and `coefs_prior_cov` must match."
+            )
+
         self._y_cols = y.columns
 
         # Construct the prior mean and covariance
-        self._coefs_prior_mu = self.coefs_prior_mu
+        self._coefs_prior_mu = coefs_prior_mu
         self._coefs_prior_cov = self.coefs_prior_cov
         self._coefs_prior_precision = np.linalg.inv(self._coefs_prior_cov)
 
@@ -319,4 +317,10 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
             "noise_precision": 0.5,
         }
 
-        return [params1, params2]
+        params3 = {
+            "coefs_prior_mu": None,
+            "coefs_prior_cov": np.eye(10),
+            "noise_precision": 1.0,
+        }
+
+        return [params1, params2, params3]
