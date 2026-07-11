@@ -17,13 +17,6 @@ class EmpiricalFitter(BaseDistFitter):
     This is useful as a base component, e.g., for naive distribution fitting
     in ensemble or reduction strategies.
 
-    Parameters
-    ----------
-    time_indep : bool, optional (default=True)
-        If True, the empirical distribution will sample individual instance
-        indices independently. If False, it will sample entire instances.
-        Passed through to ``Empirical``.
-
     Examples
     --------
     >>> import pandas as pd
@@ -37,13 +30,8 @@ class EmpiricalFitter(BaseDistFitter):
     """
 
     _tags = {
-        "authors": ["fkiraly"],
+        "authors": ["utsab345"],
     }
-
-    def __init__(self, time_indep=True):
-        self.time_indep = time_indep
-
-        super().__init__()
 
     def _fit(self, X, C=None):
         """Fit empirical distribution by storing the data.
@@ -71,7 +59,7 @@ class EmpiricalFitter(BaseDistFitter):
         """
         from skpro.distributions.empirical import Empirical
 
-        return Empirical(spl=self.spl_, time_indep=self.time_indep)
+        return Empirical(spl=self.spl_)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
@@ -87,6 +75,4 @@ class EmpiricalFitter(BaseDistFitter):
         params : dict or list of dict
             Parameters to create testing instances of the class.
         """
-        params1 = {}
-        params2 = {"time_indep": False}
-        return [params1, params2]
+        return [{}]
