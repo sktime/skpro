@@ -388,7 +388,7 @@ class Empirical(BaseDistribution):
         """
         energy_arr = self._apply_per_ix(_energy_np, {"assume_sorted": True}, x=x)
         if energy_arr.ndim > 0:
-            energy_arr = np.sum(energy_arr, axis=1)
+            energy_arr = energy_arr.sum(axis=1, skipna=False)
         return energy_arr
 
     def _mean(self):
