@@ -85,7 +85,10 @@ class Hurdle(BaseDistribution):
         # if and only if the capabilities of the inner distribution are exact
         self_exact_capas = self.get_tag("capabilities:exact", []).copy()
         self_approx_capas = self.get_tag("capabilities:approx", []).copy()
-        distr_exact_capas = distribution.get_tag("capabilities:exact", []).copy()
+        
+        # We must inherit exactness from the truncated distribution, NOT the unbound base
+        distr_exact_capas = self._truncated_distribution.get_tag("capabilities:exact", []).copy()
+        
         for capa in self_exact_capas:
             if capa not in distr_exact_capas:
                 self_exact_capas.remove(capa)
@@ -181,7 +184,7 @@ class Hurdle(BaseDistribution):
         mean_positive = self._truncated_distribution.mean()
         var_positive = self._truncated_distribution.var()
 
-        return self.p * var_positive + mean_positive * self.p * (1.0 - self.p)
+        return self.p * var_positive + (mean_positive ** 2) * self.p * (1.0 - self.p)
 
     def _ppf(self, p):
         prob_zero = 1.0 - self.p
