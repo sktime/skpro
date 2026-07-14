@@ -14,10 +14,15 @@ def load(serial):
     Deserializes an object that was saved via the ``save`` method
     of a skpro ``BaseObject`` descendant.
 
+    Supports the in-memory tuple from ``save()``, recursive zip format
+    v2 (``manifest.json``), and legacy flat zip format v1. See
+    :ref:`serialization_ref` for the full file format specification.
+
     Parameters
     ----------
     serial : tuple or str or Path
-        If ``tuple``: in-memory serialized form ``(cls, bytes)``
+        If ``tuple``: in-memory serialized form
+            ``(cls, bytes)`` or ``(cls, bytes, format)``
             as returned by ``obj.save(None)``.
         If ``str`` or ``Path``: path to a ``.zip`` file
             as written by ``obj.save(path)``.
@@ -32,6 +37,10 @@ def load(serial):
     >>> from skpro.base import load  # doctest: +SKIP
     >>> obj = estimator.save()       # doctest: +SKIP
     >>> obj_loaded = load(obj)       # doctest: +SKIP
+
+    See Also
+    --------
+    skpro.base.BaseObject.save : Persist an object to memory or zip.
     """
     if isinstance(serial, tuple):
         if len(serial) not in (2, 3):

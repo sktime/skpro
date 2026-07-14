@@ -25,17 +25,35 @@ class _CommonTags:
     def save(self, path=None, serialization_format="pickle"):
         """Save serialized self to bytes-like object or to a (.zip) file.
 
-        Behaviour:
-            if ``path`` is None, returns an in-memory serialized ``(cls, bytes)``
-            tuple that can be deserialized with ``load``.
-            if ``path`` is a file location, writes a zip file with recursive
-            structure: each sub-component in its own subfolder, plus a
-            ``manifest.json`` blueprint with topological load order.
+        Behaviour
+        ---------
+        * if ``path`` is None, returns an in-memory serialized
+          ``(cls, bytes, serialization_format)`` tuple that can be
+          deserialized with ``load``.
+        * if ``path`` is a file location, writes a zip archive with the
+          recursive v2 layout: each sub-component in its own subfolder,
+          plus a ``manifest.json`` blueprint with topological load order
+          (leaves first, root last). Non-``BaseObject`` children fall back
+          to a single pickle/joblib blob
+          (``serialized_as: "pickle_fallback"``).
+
+        Saved zip contents (v2)
+        -----------------------
+        * ``manifest.json`` — component tree, paths, and load order
+        * ``_format`` — ``"pickle"`` or ``"joblib"``
+        * ``_version`` — format version (currently ``2``)
+        * ``root/_metadata``, ``root/_obj`` — root class and state
+        * ``components/<id>/_metadata``, ``components/<id>/_obj`` —
+          each nested component
+
+        Full format specification (in-memory tuple, zip v2, and legacy
+        flat v1) is documented at :ref:`serialization_ref`.
 
         Parameters
         ----------
         path : None or str or Path, optional (default=None)
-            if None, return the in-memory tuple ``(cls, bytes)``.
+            if None, return the in-memory tuple
+            ``(cls, bytes, serialization_format)``.
             if str or Path, file location to write the zip archive to.
             The path should end in ``.zip``; if it does not, ``.zip`` is appended.
         serialization_format : str, optional (default="pickle")
@@ -43,10 +61,14 @@ class _CommonTags:
 
         Returns
         -------
-        If ``path`` is None: tuple ``(cls, bytes)``
+        If ``path`` is None: tuple ``(cls, bytes, serialization_format)``
             where ``cls`` is the class of the object.
         If ``path`` is str or Path: ``ZipFile``
             reference to the written zip file.
+
+        See Also
+        --------
+        skpro.base.load : Load a saved object from memory or a zip path.
         """
         if serialization_format not in ("pickle", "joblib"):
             raise ValueError(
