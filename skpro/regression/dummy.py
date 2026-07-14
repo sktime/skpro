@@ -32,6 +32,9 @@ class DummyProbaRegressor(BaseProbaRegressor):
             of the training labels
         * "normal": always predicts a normal distribution, with mean and variance
             equal to the mean and variance of the training labels
+    variance_factor : float, default=1.0
+        Factor by which to multiply the variance of the training labels when
+        `strategy="normal"`. The standard deviation is scaled by `sqrt(variance_factor)`.
 
     Attributes
     ----------
@@ -53,8 +56,9 @@ class DummyProbaRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def __init__(self, strategy="empirical"):
+    def __init__(self, strategy="empirical", variance_factor=1.0):
         self.strategy = strategy
+        self.variance_factor = variance_factor
         super().__init__()
 
     def _fit(self, X, y):
@@ -78,10 +82,12 @@ class DummyProbaRegressor(BaseProbaRegressor):
         self._y_columns = y.columns
         self._mu = np.mean(y.values)
         self._sigma = np.std(y.values)
+        self._sigma_scaled = self._sigma * np.sqrt(self.variance_factor)
+
         if self.strategy == "empirical":
             self.distribution_ = Empirical(y)
         if self.strategy == "normal":
-            self.distribution_ = Normal(self._mu, self._sigma)
+            self.distribution_ = Normal(self._mu, self._sigma_scaled)
 
         return self
 
@@ -125,8 +131,15 @@ class DummyProbaRegressor(BaseProbaRegressor):
         """
         X_ind = X.index
         X_n_rows = X.shape[0]
+        
+        # Determine the prediction variance based on strategy
+        if self.strategy == "normal":
+            pred_var = self._sigma_scaled ** 2
+        else:
+            pred_var = self._sigma ** 2
+
         y_pred = pd.DataFrame(
-            np.ones(X_n_rows) * self._sigma, index=X_ind, columns=self._y_columns
+            np.ones(X_n_rows) * pred_var, index=X_ind, columns=self._y_columns
         )
         return y_pred
 
@@ -147,7 +160,7 @@ class DummyProbaRegressor(BaseProbaRegressor):
         if self.strategy == "normal":
             # broadcast the mu and sigma from fit to the length of X
             mu = np.reshape((np.ones(X_n_rows) * self._mu), (-1, 1))
-            sigma = np.reshape((np.ones(X_n_rows) * self._sigma), (-1, 1))
+            sigma = np.reshape((np.ones(X_n_rows) * self._sigma_scaled), (-1, 1))
             pred_dist = Normal(mu=mu, sigma=sigma, index=X_ind, columns=self._y_columns)
             return pred_dist
 
@@ -177,5 +190,6 @@ class DummyProbaRegressor(BaseProbaRegressor):
         """
         params1 = {}
         params2 = {"strategy": "normal"}
+        params3 = {"strategy": "normal", "variance_factor": 2.0}
 
-        return [params1, params2]
+        return [params1, params2, params3]
