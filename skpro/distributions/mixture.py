@@ -221,9 +221,9 @@ class Mixture(BaseMetaObject, BaseDistribution):
         rd_size[0] *= N
         full_size[0] *= N
 
-        if indep_rows:
+        if not indep_rows:
             rd_size[0] = 1
-        if indep_cols:
+        if not indep_cols:
             rd_size[1] = 1
 
         n_dist = len(self._distributions)
