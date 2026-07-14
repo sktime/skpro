@@ -165,7 +165,8 @@ def test_discrete_pmf_plotting():
     assert ax.containers, "Expected at least one stem container"
 
     container = ax.containers[0]
-    # For current matplotlib versions, StemContainer includes markerline/stemlines/baseline.
+    # For current matplotlib versions, StemContainer includes
+    # markerline/stemlines/baseline.
     # This check validates that the PMF is plotted at multiple support points.
     if hasattr(container, "markerline") and hasattr(container.markerline, "get_xdata"):
         assert len(container.markerline.get_xdata()) > 5
