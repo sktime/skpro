@@ -106,7 +106,10 @@ def recursive_load_from_zip(path):
                 cls_bytes = zf.read(prefix + "_metadata")
                 cls = pickle.loads(cls_bytes)  # noqa: S301
                 obj = cls.__new__(cls)
-                obj.__dict__.update(state_dict)
+                if hasattr(obj, "__setstate__"):
+                    obj.__setstate__(state_dict)
+                else:
+                    obj.__dict__.update(state_dict)
                 loaded[comp_id] = obj
 
         return loaded["root"]
