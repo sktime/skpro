@@ -22,13 +22,15 @@ class GLMRegressor(BaseProbaRegressor):
 
     Parameters
     ----------
-    family : string, default : "Normal"
-        The family parameter denotes the type of distribution
+    dist : string, default : "Normal"
+        The dist parameter denotes the type of distribution
         that will be used.
-        Available family/distributions are
+        Available distributions are
+
         1."Normal"
         2."Poisson"
         3."Gamma"
+
     link : string, default : None
         This parameter is used to represent the link function to be
         used with the distribution.
@@ -205,7 +207,7 @@ class GLMRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
     }
 
-    def _str_to_sm_family(self, family, link):
+    def _str_to_sm_family(self, dist, link):
         """Convert the string to a statsmodel object.
 
         If the link function is also explicitly mentioned then include then
@@ -232,16 +234,21 @@ class GLMRegressor(BaseProbaRegressor):
         if link in links:
             link_function = links[link]()
             try:
-                return sm_fmly[family](link_function)
+                return sm_fmly[dist](link_function)
             except Exception:
-                msg = "Invalid link for family, default link will be used"
+                msg = "Invalid link for distribution, default link will be used"
                 warn(msg)
 
-        return sm_fmly[family]()
+        return sm_fmly[dist]()
+
+    # todo 2.15.0
+    # remove the 'family' argument from '__init__' signature
+    # remove the following 'if' check and deprecation warning
+    # de-indent the following 'else' check
 
     def __init__(
         self,
-        family="Normal",
+        family="deprecated",
         link=None,
         offset_var=None,
         exposure_var=None,
@@ -258,10 +265,10 @@ class GLMRegressor(BaseProbaRegressor):
         disp=False,
         max_start_irls=3,
         add_constant=False,
+        dist="Normal",
     ):
-        super().__init__()
-
         self.family = family
+        self.dist = dist
         self.link = link
         self.offset_var = offset_var
         self.exposure_var = exposure_var
@@ -279,7 +286,40 @@ class GLMRegressor(BaseProbaRegressor):
         self.max_start_irls = max_start_irls
         self.add_constant = add_constant
 
-        self._family = self.family
+        super().__init__()
+
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        family = self.family
+        dist = self.dist
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
+        # handle deprecation of family -> dist
+        if family != "deprecated":
+            from warnings import warn
+
+            warn(
+                "in `GLMRegressor`, parameter 'family' "
+                "will be renamed to 'dist' in version 2.15.0. "
+                "To keep current behaviour and to silence this warning, "
+                "use 'dist' instead of 'family', "
+                "set dist explicitly via kwarg, and do not set family.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self._dist = family
+        else:
+            self._dist = dist
+
         self._link = self.link
         self._offset_var = self.offset_var
         self._exposure_var = self.exposure_var
@@ -325,12 +365,12 @@ class GLMRegressor(BaseProbaRegressor):
 
         # remove the offset and exposure columns which
         # was inserted to maintain the shape
-        family = self._family
+        dist = self._dist
         link = self._link
 
         # ensure numerical stability for Gamma by injecting an intercept
         self._auto_added_constant = False
-        if family == "Gamma" and not self._add_constant:
+        if dist == "Gamma" and not self._add_constant:
             self._add_constant = True
             self._auto_added_constant = True
 
@@ -341,7 +381,7 @@ class GLMRegressor(BaseProbaRegressor):
 
         y_col = y.columns
 
-        sm_family = self._str_to_sm_family(family=family, link=link)
+        sm_family = self._str_to_sm_family(dist=dist, link=link)
 
         glm_estimator = GLM(
             endog=y,
@@ -434,7 +474,7 @@ class GLMRegressor(BaseProbaRegressor):
 
         return y_pred
 
-    def _params_sm_to_skpro(self, y_predictions_df, index, columns, family):
+    def _params_sm_to_skpro(self, y_predictions_df, index, columns, dist):
         """Convert the statsmodels output to equivalent skpro distribution."""
         from skpro.distributions.gamma import Gamma
         from skpro.distributions.normal import Normal
@@ -449,8 +489,8 @@ class GLMRegressor(BaseProbaRegressor):
         params = {}
         skp_dist = Normal
 
-        if family in skpro_distr:
-            skp_dist = skpro_distr[family]
+        if dist in skpro_distr:
+            skp_dist = skpro_distr[dist]
 
         if skp_dist == Normal:
             y_mu = y_predictions_df["mean"].rename("mu").to_frame()
@@ -512,11 +552,11 @@ class GLMRegressor(BaseProbaRegressor):
         y_predictions_df = self.glm_fit_.get_prediction(X_).summary_frame()
 
         # convert the returned values to skpro equivalent distribution
-        family = self._family
+        dist = self._dist
         index = X_.index
         columns = y_column
 
-        y_pred = self._params_sm_to_skpro(y_predictions_df, index, columns, family)
+        y_pred = self._params_sm_to_skpro(y_predictions_df, index, columns, dist)
         return y_pred
 
     def _prep_x(self, X, offset_var, exposure_var, rtn_off_exp_arr):

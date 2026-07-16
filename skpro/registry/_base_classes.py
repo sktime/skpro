@@ -133,6 +133,35 @@ class regressor_proba(_BaseScitypeOfObject):
 
 
 # ----------------------------------
+# Distribution fitters scitypes
+# ----------------------------------
+
+
+class distfitter(_BaseScitypeOfObject):
+    """Distribution fitter."""
+
+    _tags = {
+        "scitype_name": "distfitter",
+        "short_descr": "distribution fitter",
+        "parent_scitype": "estimator",
+    }
+
+    @classmethod
+    def get_base_class(cls):
+        """Return base class for distfitter scitype."""
+        from skpro.distfitter.base import BaseDistFitter
+
+        return BaseDistFitter
+
+    @classmethod
+    def get_test_class(cls):
+        """Return test class for distfitter scitype."""
+        from skpro.distfitter.tests.test_all_distfitters import TestAllDistFitters
+
+        return TestAllDistFitters
+
+
+# ----------------------------------
 # Distribution scitypes
 # ----------------------------------
 

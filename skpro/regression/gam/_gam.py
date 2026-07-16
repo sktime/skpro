@@ -30,7 +30,7 @@ class GAMRegressor(BaseProbaRegressor):
         By default a univariate spline term will be allocated for each feature.
         Can be a ``pygam`` terms expression for custom model specification.
 
-    distribution : str or pygam.Distribution, optional (default='Normal')
+    dist : str or pygam.Distribution, optional (default='Normal')
         Distribution family to use in the model.
         Supported strings (case-insensitive):
 
@@ -81,17 +81,17 @@ class GAMRegressor(BaseProbaRegressor):
     >>> y_positive = y.abs() + 1  # ensure positive targets for Poisson/Gamma
     >>>
     >>> # Normal distribution (default)
-    >>> gam_normal = GAMRegressor(distribution='Normal')
+    >>> gam_normal = GAMRegressor(dist='Normal')
     >>> gam_normal.fit(X, y)
     GAMRegressor(...)
     >>>
     >>> # Poisson distribution for count data
-    >>> gam_poisson = GAMRegressor(distribution='Poisson', link='log')
+    >>> gam_poisson = GAMRegressor(dist='Poisson', link='log')
     >>> gam_poisson.fit(X, y_positive)
     GAMRegressor(...)
     >>>
     >>> # Gamma distribution for positive continuous data
-    >>> gam_gamma = GAMRegressor(distribution='Gamma', link='log')
+    >>> gam_gamma = GAMRegressor(dist='Gamma', link='log')
     >>> gam_gamma.fit(X, y_positive)
     GAMRegressor(...)
     """
@@ -109,19 +109,27 @@ class GAMRegressor(BaseProbaRegressor):
         "tests:vm": True,
     }
 
+    # todo 2.15.0
+    # remove the 'distribution' argument from '__init__' signature
+    # remove the following 'if' check and deprecation warning
+    # de-indent the following 'else' check
+    # replace distribution with dist arg
+
     def __init__(
         self,
         terms="auto",
-        distribution="normal",
+        distribution="deprecated",
         link="identity",
         max_iter=100,
         tol=1e-4,
         callbacks=None,
         fit_intercept=True,
         verbose=False,
+        dist="normal",
     ):
         self.terms = terms
         self.distribution = distribution
+        self.dist = dist
         self.link = link
         self.max_iter = max_iter
         self.tol = tol
@@ -130,6 +138,38 @@ class GAMRegressor(BaseProbaRegressor):
         self.verbose = verbose
 
         super().__init__()
+
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        distribution = self.distribution
+        dist = self.dist
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
+        # handle deprecation of distribution -> dist
+        if distribution != "deprecated":
+            from warnings import warn
+
+            warn(
+                "in `GAMRegressor`, parameter 'distribution' "
+                "will be renamed to 'dist' in version 2.15.0. "
+                "To keep current behaviour and to silence this warning, "
+                "use 'dist' instead of 'distribution', "
+                "set dist explicitly via kwarg, and do not set distribution.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self._dist = distribution
+        else:
+            self._dist = dist
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -158,7 +198,7 @@ class GAMRegressor(BaseProbaRegressor):
         if callbacks is None:
             callbacks = ["deviance", "diffs"]
 
-        dist_name = self._get_distribution_name(self.distribution)
+        dist_name = self._get_distribution_name(self._dist)
 
         # Map common names to skpro distribution names
         dist_map = {

@@ -36,6 +36,7 @@ Continuous support - full reals
     :template: class.rst
 
     Cauchy
+    Gumbel
     Laplace
     Logistic
     Normal
@@ -111,6 +112,7 @@ Non-parametric and empirical distributions
     Delta
     Empirical
     Histogram
+    HistogramQPD
     QPD_Empirical
     QPD_Johnson
     QPD_U

@@ -63,7 +63,7 @@ class HalfNormal(_ScipyAdapter):
 
     def _get_scipy_param(self):
         sigma = self._bc_params["sigma"]
-        return [sigma], {}
+        return [], {"scale": sigma}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

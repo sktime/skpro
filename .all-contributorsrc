@@ -280,6 +280,14 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "molloyzak13",
+      "name": "Zak Molloy",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ]
 }

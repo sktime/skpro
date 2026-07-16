@@ -1,189 +1,247 @@
 .. _full_install:
+.. _installation:
 
-============
 Installation
 ============
 
 ``skpro`` currently supports:
 
-* environments with python version 3.10, 3.11, 3.12, 3.13, or 3.14
-* operating systems Mac OS X, Unix-like OS, Windows 8.1 and higher
+* Python versions 3.10, 3.11, 3.12, 3.13, and 3.14.
+* Operating systems Mac OS X, Unix-like OS, Windows 8.1 and higher.
 
-Checkout the full list of pre-compiled wheels on
-`PyPI <https://pypi.org/simple/skpro/>`_.
+See the full list of `precompiled wheels available on PyPI`_.
 
-Release versions
-================
+.. contents::
+   :local:
 
-Most users will be interested in installing a released version of ``skpro``
-using one of the approaches outlined below. For common installation issues,
-see the `troubleshooting release installations`_ section.
+For frequent issues with installation, consult the `Troubleshooting`_ section.
 
-Installing ``skpro``
----------------------
+There are three different installation types, depending on your use case:
 
-``skpro`` releases are available via PyPI and can be installed via ``pip``. Users
-can choose whether to install the ``skpro`` with its standard dependencies or
-alternatively to install ``skpro`` with all its dependencies using the
-code snippets below.
+* Installing stable ``skpro`` releases - for most users and production environments.
+* Installing the latest unstable ``skpro`` development version - for pre-release tests.
+* Full developer setup - for contributors and extension developers.
 
-.. tab-set::
+Each setup is explained below.
 
-    .. tab-item:: PyPi
+Installing release versions
+---------------------------
 
-        .. code-block:: bash
+For:
 
-           pip install skpro
+* Most users
+* Use in production environments
 
-    .. tab-item:: PyPi (all optional dependencies)
+Installing skpro from PyPI
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        .. code-block:: bash
-
-           pip install skpro[all_extras]
-
-
-Troubleshooting release installations
--------------------------------------
-
-Missing soft dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Users may run into problems, when they install the core version of ``skpro``,
-but attempt to use functionality that requires soft dependencies to be installed.
-To resolve this, install the missing package, or install ``skpro``
-with maximum dependencies (see above).
-
-.. _dev_install:
-
-Development versions
-====================
-
-To install the latest development version of ``skpro``, the sequence
-of steps is as follows:
-
-
-1. Clone the ``skpro`` `GitHub repository`_
-2. Create a new virtual environment via ``conda`` and activate it.
-3. Use ``pip`` to build ``skpro`` from source and install development dependencies
-
-
-Detail instructions for each step is provided below.
-
-Step 1 - Clone GitHub repository
---------------------------------
-
-The ``skpro`` `GitHub repository`_ should be cloned to a local directory.
-
-To install the latest version using the ``git`` command line, use the following steps:
-
-1. Use your command line tool to navigate to the directory where you want to clone
-   ``skpro``
-2. Clone the repository: :code:`git clone https://github.com/sktime/skpro.git`
-3. Move into the root directory of the package's local clone: :code:`cd skpro`
-4. Make sure you are on the main branch: :code:`git checkout main`
-5. Make sure your local version is up-to-date: :code:`git pull`
-
-See GitHub's `repository clone documentation`_
-for additional details.
-
-.. hint::
-
-    If you want to checkout an earlier version of ``skpro`` you can use the
-    following git command line after cloning to run: :code:`git checkout <VERSION>`
-
-    Where ``<VERSION>`` is a valid version string that can be found by inspecting the
-    repository's ``git`` tags, by running ``git tag``.
-
-    You can also download a specific release version from the GitHub repository's
-    zip archive of `releases <https://github.com/sktime/skpro/releases>`_.
-
-Step 2 - Create a new virtual environment
------------------------------------------
-
-Setting a new virtual environment before building ``skpro`` ensures that
-no two conflicting package versions are installed in the same environment.
-You can choose your favorite env manager for this but we're showing the
-steps to create one using ``conda``:
-
-1. Use your command line tool to first confirm ``conda`` is present on your
-   system: :code:`conda --version`
-2. Create a new virtual environment named ``skpro-dev`` with python version ``3.9``:
-   :code:`conda create -n skpro-dev python=3.9`
-3. Activate this newly created environment: :code:`conda activate skpro-dev`
-
-Step 3 - Build ``skpro`` from source
--------------------------------------
-
-When contributing to the project, you will want to install ``skpro`` locally, along
-with additional dependencies used when developing the package.
-
-You can opt for a static install of ``skpro`` from your local source, but if you
-plan to contribute to the project you may be better served by installing ``skpro``
-in `editable mode`_ so that the the package updates each time the local source
-code is changed.
-
-Either way, including the "[dev,test]" modifier, makes sure that the additional
-developer dependencies and test dependencies specified in the ``skpro``
-pyproject.toml file are also installed.
-
-To use either approach:
-
-1. Use your command line tool to navigate to the root directory of your local
-   copy of the ``skpro`` project
-2. Copy the code snippet below that corresponds to the installation approach you
-   would like to use
-3. Paste the copied code snippet in your command line tool and run it
-
-.. tab-set::
-
-    .. tab-item:: Static installation
-
-        .. code-block:: bash
-
-           pip install .[dev,test]
-
-    .. tab-item:: Install in editable mode
-
-        .. code-block:: bash
-
-           pip install --editable .[dev,test]
-
-.. hint::
-
-    In either the static or editable installation, the ``.`` may be replaced
-    with a full or relative path to your local clone's root directory.
-
-.. hint::
-
-    Using the "[dev]" modifier installs developer dependencies, including
-    ``pre-commit`` and other tools you'll want to use when developing ``skpro``.
-    In most cases, you'll let ``pre-commit`` manage installation environments
-    for your linting tools. However, some integrated development environments
-    (for example, VS Code) will automatically apply linters (including
-    reformatting) on save. This may require the linters to be installed
-    directly in your development environment. If you want to easily Install all
-    the linters used by ``skpro`` in your development environment use
-    :code:`pip install .[dev,test,linters]`
-    or :code:`pip install --editable .[dev,test,linters]` instead.
-
-Building binary packages and installers
-=======================================
-
-The ``.whl`` package and ``.exe`` installers can be built with:
+``skpro`` releases are available via `PyPI`_. To install ``skpro`` with core
+dependencies, excluding soft dependencies, via ``pip`` type:
 
 .. code-block:: bash
 
-    pip install wheel
-    python setup.py bdist_wheel
+    pip install skpro
 
-The resulting packages are generated in the ``dist/`` folder.
+To install ``skpro`` with maximum dependencies, including soft dependencies,
+install with the ``all_extras`` modifier:
+
+.. code-block:: bash
+
+    pip install "skpro[all_extras]"
+
+.. warning::
+
+    The soft dependencies included in ``all_extras`` are only necessary to have
+    all optional estimators and integrations available, or to run all tests.
+    For most user or developer scenarios, installing ``all_extras`` is not
+    necessary. If you are unsure, install ``skpro`` with core dependencies and
+    install soft dependencies as needed.
+
+Installing skpro from conda
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``skpro`` releases are available via ``conda`` from `conda-forge`_. To install
+``skpro`` with core dependencies via ``conda`` type:
+
+.. code-block:: bash
+
+    conda install -c conda-forge skpro
+
+.. note::
+
+    The ``conda-forge`` package can lag behind the latest PyPI release and may
+    support a different set of Python versions. Check the `conda-forge package`_
+    metadata if you need a specific ``skpro`` or Python version.
+
+Installing latest unstable development version
+----------------------------------------------
+
+For:
+
+* pre-release tests, for example early testing of new features
+* not for reliable production use
+* not for contributors or extenders
+
+This type of ``skpro`` installation obtains a latest static snapshot of the
+repository. It is intended for users who want to build or test code using a
+version of the library that contains the latest updates.
+
+.. note::
+
+    For a full editable developer setup, read the section
+    `Full developer setup for contributors and extension developers`_ below.
+
+To install the latest version of ``skpro`` directly from the repository, use
+``pip``:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/sktime/skpro.git
+
+To install from a specific branch, use:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/sktime/skpro.git@<branch_name>
+
+Alternatively, install the latest version from a local clone of the repository.
+For steps on how to obtain a local clone, follow the :ref:`git workflow
+<git_workflow>`.
+
+.. code-block:: bash
+
+    pip install .
+
+The ``.`` may be replaced with a full or relative path to the root directory of
+the local clone.
+
+.. _dev_install:
+
+Full developer setup for contributors and extension developers
+--------------------------------------------------------------
+
+For:
+
+* contributors to the ``skpro`` project
+* developers of extensions in closed code bases
+* developers of 3rd party extensions released as open source
+
+To develop ``skpro`` locally, or to contribute to the project, set up:
+
+* a local clone of the ``skpro`` repository
+* a virtual environment with an editable install of ``skpro`` and its developer
+  dependencies
+
+The following steps guide you through the process.
+
+1. Follow the :ref:`git workflow <git_workflow>` to fork and clone the
+   repository.
+
+2. Set up a new virtual environment. The following commands use ``conda``,
+   which tends to be beginner friendly. The process is similar for ``venv`` or
+   other virtual environment managers.
+
+   .. warning::
+
+       Using ``conda`` via one of the commercial distributions such as Anaconda
+       is in general not free for commercial use and may incur costs or
+       liabilities. Consider using free distributions and channels for package
+       management, and be aware of applicable terms and conditions.
+
+In the ``conda`` terminal:
+
+3. Navigate to your local ``skpro`` folder:
+
+   .. code-block:: bash
+
+       cd skpro
+
+4. Create a new environment with a supported Python version:
+
+   .. code-block:: bash
+
+       conda create -n skpro-dev python=3.11
+
+   .. warning::
+
+       If you already have an environment called ``skpro-dev`` from a previous
+       attempt, remove it first or choose a different environment name.
+
+5. Activate the environment:
+
+   .. code-block:: bash
+
+       conda activate skpro-dev
+
+6. Build an editable version of ``skpro`` with developer dependencies:
+
+   .. code-block:: bash
+
+       pip install -e ".[dev]"
+
+   If you also want to install all optional soft dependencies, install them
+   individually after the developer install, or install all of them with:
+
+   .. code-block:: bash
+
+       pip install -e ".[all_extras,dev]"
+
+   If you are working on documentation, install the documentation dependencies:
+
+   .. code-block:: bash
+
+       pip install -e ".[dev,docs]"
+
+7. If everything has worked, you should see a message that ``skpro`` was
+   successfully installed.
+
+Troubleshooting
+---------------
+
+Module not found
+~~~~~~~~~~~~~~~~
+
+The most frequent reason for *module not found* errors is installing ``skpro``
+with minimum dependencies and using functionality that requires a soft
+dependency. To resolve this, install the missing package, or install ``skpro``
+with maximum dependencies as described above.
+
+ImportError
+~~~~~~~~~~~
+
+Import errors are often caused by an improperly linked virtual environment.
+Make sure that your environment is activated and linked to the IDE or notebook
+kernel you are using. If you are using Jupyter notebooks, follow the `Jupyter
+virtual environment instructions`_ for adding your virtual environment as a new
+kernel.
+
+Other Startup Resources
+-----------------------
+
+Virtual environments
+~~~~~~~~~~~~~~~~~~~~
+
+Two good options for virtual environment managers are:
+
+* `conda`_ - beginner friendly, but may incur license fees for commercial use
+  if using a commercial distribution.
+* `venv`_ - included with Python and suitable for many local workflows.
+
+Be sure to link your new virtual environment as the Python kernel in whatever
+IDE you are using. For VS Code, see the `VS Code Python environments`_
+documentation.
 
 References
 ----------
 
-The installation instruction are adapted from sktime's
+The installation instructions are adapted from ``sktime``'s
 `installation instructions <https://www.sktime.net/en/stable/installation.html>`_.
 
-.. _Github repository: https://github.com/sktime/skpro
-.. _repository clone documentation: https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository
-.. _editable mode: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
+.. _precompiled wheels available on PyPI: https://pypi.org/simple/skpro/
+.. _PyPI: https://pypi.org/project/skpro/
+.. _conda-forge: https://conda-forge.org/
+.. _conda-forge package: https://anaconda.org/conda-forge/skpro
+.. _Jupyter virtual environment instructions: https://janakiev.com/blog/jupyter-virtual-envs/
+.. _conda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
+.. _venv: https://docs.python.org/3/library/venv.html
+.. _VS Code Python environments: https://code.visualstudio.com/docs/python/environments

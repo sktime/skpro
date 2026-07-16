@@ -53,7 +53,12 @@ class BaseDistribution(BaseObject):
         self.columns = _coerce_to_pd_index_or_none(columns)
 
         super().__init__()
-        _check_estimator_deps(self)
+
+        # this block has a double purpose:
+        # - emit a warning if dependencies are not met, but allow instantiation
+        # - if dependencies are met, call __post_init__ used by inheriting classes
+        if _check_estimator_deps(self, severity="warning"):
+            self.__post_init__()
 
         self._init_shape_bc(index=index, columns=columns)
 
