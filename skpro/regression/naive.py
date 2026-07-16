@@ -4,8 +4,6 @@
 __author__ = ["patelchaitany"]
 __all__ = ["NaiveProbaRegressor"]
 
-import numpy as np
-
 from skpro.regression.base import BaseProbaRegressor
 
 
@@ -99,27 +97,11 @@ class NaiveProbaRegressor(BaseProbaRegressor):
 
         return self
 
-    def _predict(self, X):
-        """Predict labels for data from features.
-
-        Parameters
-        ----------
-        X : pandas DataFrame
-            Feature instances to predict for.
-
-        Returns
-        -------
-        y_pred : pandas DataFrame
-            Point predictions (mean of the fitted distribution).
-        """
-        dist = self._predict_proba(X)
-        return dist.mean()
-
     def _predict_proba(self, X):
         """Predict distribution for data from features.
 
         Broadcasts the scalar fitted distribution to match the number
-        of instances in ``X``.
+        of instances in ``X`` using the ``IID`` wrapper.
 
         Parameters
         ----------
@@ -131,25 +113,10 @@ class NaiveProbaRegressor(BaseProbaRegressor):
         y_pred_proba : skpro BaseDistribution
             Predicted distribution, same number of rows as ``X``.
         """
-        X_ind = X.index
-        X_n_rows = X.shape[0]
+        from skpro.distributions.compose import IID
 
         dist = self.distribution_
-        params = dist.get_params()
-
-        broadcast_params = {}
-        for key, val in params.items():
-            if key in ("index", "columns"):
-                continue
-            if isinstance(val, (int, float, np.integer, np.floating)):
-                broadcast_params[key] = np.full((X_n_rows, 1), val)
-            else:
-                broadcast_params[key] = val
-
-        broadcast_params["index"] = X_ind
-        broadcast_params["columns"] = self._y_columns
-
-        pred_dist = dist.__class__(**broadcast_params)
+        pred_dist = IID(dist, index=X.index, columns=self._y_columns)
         return pred_dist
 
     @classmethod
