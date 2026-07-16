@@ -24,6 +24,17 @@ Parametric fitters
     MOMFitter
     NormalFitter
 
+Non-parametric fitters
+----------------------
+
+.. currentmodule:: skpro.distfitter
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    EmpiricalFitter
+
 Base
 ----
 
