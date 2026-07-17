@@ -41,6 +41,12 @@ class DistfitFitter(BaseDistFitter):
     dist_name_ : str
         Name of the best-fitting ``scipy.stats`` distribution, as chosen by
         ``distfit``.
+    shape_args_ : tuple
+        Fitted shape parameters for ``dist_name_``, as returned by ``distfit``.
+    dist_loc_ : float
+        Fitted location parameter for ``dist_name_``.
+    dist_scale_ : float
+        Fitted scale parameter for ``dist_name_``.
     fit_summary_ : pandas.DataFrame
         Full ``distfit`` summary table of all candidate distributions tried,
         with their scores.
