@@ -125,6 +125,29 @@ class GaussianProcess(_DelegateWithFittedParamForwarding):
         self.n_targets = n_targets
         self.random_state = random_state
 
+        super().__init__()
+
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        kernel = self.kernel
+        alpha = self.alpha
+        optimizer = self.optimizer
+        n_restarts_optimizer = self.n_restarts_optimizer
+        normalize_y = self.normalize_y
+        copy_X_train = self.copy_X_train
+        n_targets = self.n_targets
+        random_state = self.random_state
+
         from sklearn.gaussian_process import GaussianProcessRegressor
 
         skl_estimator = GaussianProcessRegressor(
@@ -140,8 +163,6 @@ class GaussianProcess(_DelegateWithFittedParamForwarding):
 
         skpro_est = SklearnProbaReg(skl_estimator)
         self._estimator = skpro_est.clone()
-
-        super().__init__()
 
     FITTED_PARAMS_TO_FORWARD = [
         "kernel_",

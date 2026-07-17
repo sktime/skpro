@@ -281,6 +281,23 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "Kushagra651",
+      "name": "Kushagra",
+      "avatar_url": "https://avatars.githubusercontent.com/Kushagra651?v=4",
+      "profile": "https://github.com/Kushagra651",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "molloyzak13",
+      "name": "Zak Molloy",
+      "contributions": [
+        "bug",
+        "code"
+      ]
     }
   ]
 }

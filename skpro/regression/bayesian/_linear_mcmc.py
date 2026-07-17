@@ -62,12 +62,8 @@ class BayesianLinearRegressor(BaseProbaRegressor):
     }
 
     def __init__(self, prior_config=None, sampler_config=None):
-        if sampler_config is None:
-            sampler_config = {}
-        if prior_config is None:
-            prior_config = {}  # configuration for priors
-        self.sampler_config = {**self.default_sampler_config, **sampler_config}
-        self.prior_config = {**self.default_prior_config, **prior_config}
+        self.prior_config = prior_config
+        self.sampler_config = sampler_config
         self.model = None  # generated during fitting
         self.idata = None  # generated during fitting
         self._predict_done = False  # a flag indicating if a prediction has been done
@@ -127,6 +123,16 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         import pandas as pd
         import pymc as pm
 
+        # Resolve prior and sampler configs with class defaults
+        prior_config = self.prior_config
+        if prior_config is None:
+            prior_config = {}
+        sampler_config = self.sampler_config
+        if sampler_config is None:
+            sampler_config = {}
+        self._prior_config = {**self.default_prior_config, **prior_config}
+        self._sampler_config = {**self.default_sampler_config, **sampler_config}
+
         assert len(y.columns) == 1, "y must have only one column!"
         self._X = X
         self._y = y
@@ -140,10 +146,14 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             X_data = pm.Data("X", X, dims=("obs_id", "pred_id"))
             y_data = pm.Data("y", self._y_vals, dims=("obs_id"))
 
-            # Priors for model parameters, taken from self.prior_config
-            self.intercept = self.prior_config["intercept"].create_variable("intercept")
-            self.slopes = self.prior_config["slopes"].create_variable("slopes")
-            self.noise_var = self.prior_config["noise_var"].create_variable("noise_var")
+            # Priors for model parameters, taken from self._prior_config
+            self.intercept = self._prior_config["intercept"].create_variable(
+                "intercept"
+            )
+            self.slopes = self._prior_config["slopes"].create_variable("slopes")
+            self.noise_var = self._prior_config["noise_var"].create_variable(
+                "noise_var"
+            )
             self.noise = pm.Deterministic("noise", self.noise_var**0.5)
 
             # Expected value of the target variable
@@ -157,7 +167,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
             )
 
             # Constructing the posterior
-            self.idata = pm.sample(**self.sampler_config)
+            self.idata = pm.sample(**self._sampler_config)
 
         # Incorporation of training_data as a new group in self.idata
         training_data = pd.concat([X, y], axis=1)
@@ -295,7 +305,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                     # Create a new 'sample_id' column by
                     # combining the 'chain' and 'draw' columns
                     pred_proba_df["sample_id"] = (
-                        pred_proba_df["chain"] * self.sampler_config["draws"]
+                        pred_proba_df["chain"] * self._sampler_config["draws"]
                         + pred_proba_df["draw"]
                     )
                     pred_proba_df = pred_proba_df[["obs_id", "sample_id", "y_obs"]]
@@ -389,8 +399,8 @@ class BayesianLinearRegressor(BaseProbaRegressor):
                 )
             self.idata.extend(
                 pm.sample_prior_predictive(
-                    samples=self.sampler_config["draws"],
-                    random_seed=self.sampler_config["random_seed"],
+                    samples=self._sampler_config["draws"],
+                    random_seed=self._sampler_config["random_seed"],
                 )
             )  # todo: the keyword 'samples' will be changed to 'draws'
             # in pymc 5.16

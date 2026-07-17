@@ -18,6 +18,7 @@ It describes the classes and functions included in ``skpro``.
     api_reference/regression
     api_reference/survival
     api_reference/distributions
+    api_reference/distfitter
     api_reference/metrics
     api_reference/tags
     api_reference/base
