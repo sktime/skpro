@@ -46,6 +46,56 @@ class TruncatedPareto(BaseDistribution):
         self.upper = upper
         super().__init__(index=index, columns=columns)
 
+    def _raw_moment(self, k):
+        r"""Return the ``k``-th raw moment :math:`\mathbb{E}[X^k]`, entry-wise.
+
+        With shape ``b``, scale ``s`` and truncation ``[l, u]``,
+
+        .. math::
+            \mathbb{E}[X^k] = \frac{b s^b}{Z} \int_l^u x^{k-b-1} dx,
+            \quad Z = (s/l)^b - (s/u)^b.
+
+        The integral equals :math:`(u^{k-b} - l^{k-b}) / (k-b)` for
+        :math:`b \neq k`, and :math:`\ln(u/l)` at the removable singularity
+        :math:`b = k`.
+        """
+        b = self._bc_params["b"]
+        scale = self._bc_params["scale"]
+        lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
+
+        norm = (scale / lower) ** b - (scale / upper) ** b
+        exponent = k - b
+        # k - b == 0 is a removable singularity; avoid 0/0 in the unused branch
+        safe_exponent = np.where(exponent == 0, 1.0, exponent)
+        integral = np.where(
+            exponent == 0,
+            np.log(upper / lower),
+            (upper**exponent - lower**exponent) / safe_exponent,
+        )
+        return b * scale**b / norm * integral
+
+    def _mean(self):
+        """Return expected value of the distribution.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            expected value of distribution (entry-wise)
+        """
+        return self._raw_moment(1)
+
+    def _var(self):
+        r"""Return element/entry-wise variance of the distribution.
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            variance of the distribution (entry-wise)
+        """
+        mean = self._raw_moment(1)
+        return self._raw_moment(2) - mean**2
+
     def _pdf(self, x):
         b = self._bc_params["b"]
         scale = self._bc_params["scale"]
