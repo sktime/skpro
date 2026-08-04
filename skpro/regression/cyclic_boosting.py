@@ -120,7 +120,7 @@ class CyclicBoosting(BaseProbaRegressor):
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
         "estimator_type": "regressor_proba",
-        "python_dependencies": "cyclic_boosting>=1.4.0",
+        "python_dependencies": ["numba", "numexpr", "decorator"],
         # estimator tags
         # --------------
         "capability:multioutput": False,
@@ -129,6 +129,7 @@ class CyclicBoosting(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
         # CI and test flags
         # -----------------
+        "tests:libs": ["skpro.libs.cyclic_boosting"],
         "tests:vm": True,  # requires its own test VM to run
     }
 
@@ -218,11 +219,13 @@ class CyclicBoosting(BaseProbaRegressor):
 
         # build estimators
         if self.mode == "multiplicative":
-            from cyclic_boosting import pipeline_CBMultiplicativeQuantileRegressor
+            from skpro.libs.cyclic_boosting import (
+                pipeline_CBMultiplicativeQuantileRegressor,
+            )
 
             regressor = pipeline_CBMultiplicativeQuantileRegressor
         elif self.mode == "additive":
-            from cyclic_boosting import pipeline_CBAdditiveQuantileRegressor
+            from skpro.libs.cyclic_boosting import pipeline_CBAdditiveQuantileRegressor
 
             regressor = pipeline_CBAdditiveQuantileRegressor
         else:
