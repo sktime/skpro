@@ -171,6 +171,7 @@ class BaseProbaRegressor(BaseEstimator):
         capa_online = self.get_tag("capability:update")
         capa_surv = self.get_tag("capability:survival")
 
+        # TODO: Add the error message if the capability is not met
         if not capa_online:
             return self
 

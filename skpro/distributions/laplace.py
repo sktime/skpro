@@ -48,7 +48,16 @@ class Laplace(BaseDistribution):
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "energy", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": [
+            "mean",
+            "var",
+            "energy",
+            "pdf",
+            "log_pdf",
+            "cdf",
+            "ppf",
+            "truncated_mean",
+        ],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -114,6 +123,63 @@ class Laplace(BaseDistribution):
             expected value of distribution (entry-wise)
         """
         return self._bc_params["mu"]
+
+    def _truncated_mean(self, lower, upper):
+        r"""Return expected value of the distribution truncated to [lower, upper].
+
+        Uses the partial expectation formula for Laplace:
+
+        .. math::
+
+            \mathbb{E}[X \cdot \mathbf{1}(X < c)] =
+            \begin{cases}
+            \frac{c - s}{2} e^{(c - \mu)/s} & c \le \mu \\
+            \mu - \frac{c + s}{2} e^{-{(c - \mu)/s}} & c > \mu
+            \end{cases}
+
+        where :math:`s` is the scale parameter.
+
+        Parameters
+        ----------
+        lower : 2D np.ndarray, same shape as ``self``
+            lower truncation bound
+        upper : 2D np.ndarray, same shape as ``self``
+            upper truncation bound
+
+        Returns
+        -------
+        2D np.ndarray, same shape as ``self``
+            truncated expected value of distribution (entry-wise)
+        """
+        mu = self._bc_params["mu"]
+        s = self._bc_params["scale"]
+
+        def _partial_expectation(c):
+            """E[X * 1(X < c)] for Laplace(mu, s).
+
+            At c = -inf the result is 0, at c = +inf the result is mu.
+            """
+            c = np.asarray(c, dtype=float)
+            is_neginf = np.isneginf(c)
+            is_posinf = np.isposinf(c)
+            c_safe = np.where(np.isfinite(c), c, mu)
+
+            below_mu = c_safe <= mu
+            e_below = 0.5 * (c_safe - s) * np.exp((c_safe - mu) / s)
+            e_above = mu - 0.5 * (c_safe + s) * np.exp(-(c_safe - mu) / s)
+            finite_result = np.where(below_mu, e_below, e_above)
+
+            return np.where(is_neginf, 0.0, np.where(is_posinf, mu, finite_result))
+
+        pe_upper = _partial_expectation(upper)
+        pe_lower = _partial_expectation(lower)
+
+        cdf_lower = self._cdf(lower)
+        cdf_upper = self._cdf(upper)
+        denom = cdf_upper - cdf_lower
+        safe_denom = np.where(np.abs(denom) < 1e-15, np.nan, denom)
+
+        return (pe_upper - pe_lower) / safe_denom
 
     def _var(self):
         r"""Return element/entry-wise variance of the distribution.
