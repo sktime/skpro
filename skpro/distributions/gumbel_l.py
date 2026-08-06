@@ -48,6 +48,9 @@ class GumbelL(_ScipyAdapter):
     }
 
     def __init__(self, mu=0.0, sigma=1.0, index=None, columns=None):
+        if mu is None or sigma is None:
+            raise ValueError("mu and sigma must not be None")
+
         self.mu = mu
         self.sigma = sigma
         super().__init__(index=index, columns=columns)

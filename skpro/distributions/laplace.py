@@ -55,6 +55,9 @@ class Laplace(BaseDistribution):
     }
 
     def __init__(self, mu, scale, index=None, columns=None):
+        if mu is None or scale is None:
+            raise ValueError("mu and scale must not be None")
+
         self.mu = mu
         self.scale = scale
 
