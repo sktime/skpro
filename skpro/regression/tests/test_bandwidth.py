@@ -77,3 +77,13 @@ def test_legacy_aliases_rejected():
     """Legacy aliases should be rejected to enforce canonical naming."""
     with pytest.raises(ValueError, match="Unknown method"):
         bandwidth_1d(np.array([0.0, 1.0, 2.0]), method="sqrt_decay")
+
+
+def test_bw_isj_degenerate_data_falls_back_positive():
+    """Degenerate data should still yield a positive usable fallback bandwidth."""
+    y = np.ones(5)
+
+    h = bw_isj_1d(y)
+
+    assert np.isfinite(h)
+    assert h > 0
