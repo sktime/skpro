@@ -50,7 +50,7 @@ def _has_capability(distr, method):
 
 METHODS_SCALAR = ["mean", "var", "energy", "pdfnorm"]
 METHODS_SCALAR_POS = ["var", "energy", "pdfnorm"]  # result always non-negative?
-METHODS_X = ["energy", "pdf", "log_pdf", "pmf", "log_pmf", "cdf"]
+METHODS_X = ["energy", "pdf", "log_pdf", "pmf", "log_pmf", "cdf", "log_cdf"]
 METHODS_X_POS = ["energy", "pdf", "pmf", "cdf", "surv", "haz"]  # result non-negative?
 METHODS_P = ["ppf"]
 METHODS_ROWWISE = ["energy"]  # results in one column
@@ -259,6 +259,20 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         pmf = d.pmf(x)
         log_pmf = d.log_pmf(x)
         assert np.allclose(np.log(pmf), log_pmf)
+
+    def test_log_cdf_and_cdf(self, object_instance):
+        """Test that log_cdf matches log(cdf) when exact implementation exists."""
+        d = object_instance
+        capabilities_exact = d.get_tags()["capabilities:exact"]
+
+        if "log_cdf" not in capabilities_exact or "cdf" not in capabilities_exact:
+            return
+
+        x = d.sample()
+        cdf = d.cdf(x)
+        log_cdf = d.log_cdf(x)
+
+        assert np.allclose(np.log(cdf), log_cdf)
 
     def test_ppf_and_cdf(self, object_instance):
         """Test that the ppf is the inverse of the cdf."""
