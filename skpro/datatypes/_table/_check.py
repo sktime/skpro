@@ -457,9 +457,10 @@ def _check_list_of_dict_table(obj, return_metadata=False, var_name="obj"):
         return _ret(False, msg, None, return_metadata)
 
     if not np.all([isinstance(x, dict) for x in obj]):
+        invalid_indices = [i for i, x in enumerate(obj) if not isinstance(x, dict)]
         msg = (
             f"{var_name} must be a list of dict, but elements at following "
-            f"indices are not dict: {np.where(not isinstance(x, dict) for x in obj)}"
+            f"indices are not dict: {invalid_indices}"
         )
         return _ret(False, msg, None, return_metadata)
 
