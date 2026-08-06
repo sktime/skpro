@@ -30,7 +30,7 @@ class FatigueLife(_ScipyAdapter):
     _tags = {
         "authors": ["arnavk23"],
         "distr:measuretype": "continuous",
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "log_cdf", "ppf"],
         "broadcast_init": "on",
     }
 
