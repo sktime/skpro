@@ -214,3 +214,29 @@ def test_evaluate_alpha_negative(Metric, y_pred, y_true):
         # 0.3 not in test quantile data so raise error.
         Loss = Metric.create_test_instance().set_params(alpha=0.3)
         res = Loss(y_true=y_true, y_pred=y_pred)  # noqa
+
+
+@pytest.mark.parametrize("metric", all_metrics)
+@pytest.mark.parametrize("multioutput", ["uniform_average", "raw_values"])
+def test_evaluate_by_index_no_type_error(metric, multioutput):
+    """Regression test for GH#809: _evaluate_by_index must not raise TypeError.
+
+    Tests that evaluate_by_index runs without TypeError for both multioutput modes.
+    The bug was that self.multioutput was incorrectly passed as a positional arg
+    to evaluate(), and np.vstack was used instead of drop(), which broke the
+    pandas DataFrame validation inside evaluate().
+    """
+    loss = metric.create_test_instance()
+    loss.set_params(score_average=True, multioutput=multioutput)
+
+    # Use a small dataset to keep the jackknife fallback fast
+    y_pred_small = quantile_pred_uni_s.iloc[:5]
+    y_true_small = y_test_uni.iloc[:5]
+
+    # This should not raise TypeError
+    result = loss.evaluate_by_index(y_true_small, y_pred_small)
+
+    # Basic sanity checks on the output
+    assert result is not None
+    assert len(result) == len(y_true_small)
+
