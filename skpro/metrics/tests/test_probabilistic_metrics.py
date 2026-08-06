@@ -1,4 +1,5 @@
 """Tests for probabilistic quantile and interval metrics."""
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import load_diabetes
@@ -214,3 +215,49 @@ def test_evaluate_alpha_negative(Metric, y_pred, y_true):
         # 0.3 not in test quantile data so raise error.
         Loss = Metric.create_test_instance().set_params(alpha=0.3)
         res = Loss(y_true=y_true, y_pred=y_pred)  # noqa
+
+
+@pytest.mark.parametrize("metric", all_metrics)
+@pytest.mark.parametrize("score_average", [True, False])
+def test_sample_weight_probabilistic(metric, score_average):
+    """Test that sample_weight is correctly applied in probabilistic metrics."""
+    # Data generation
+    y_true = pd.Series([1.0, -1.0, 2.0, 3.0])
+    y_pred = pd.DataFrame(
+        {
+            0: [0.8, -0.9, 1.8, 2.7],
+            1: [1.2, -1.1, 2.2, 3.3],
+        }
+    )
+
+    if metric in interval_metrics:
+        # Use interval columns
+        y_pred.columns = pd.MultiIndex.from_tuples(
+            [("y", 0.9, "lower"), ("y", 0.9, "upper")],
+            names=["variable", "coverage", "lower_upper"],
+        )
+    else:
+        # Use quantile columns
+        y_pred.columns = pd.MultiIndex.from_tuples(
+            [("y", 0.05), ("y", 0.95)], names=["variable", "alpha"]
+        )
+
+    # Weights that heavily emphasize the first observation
+    sample_weight = np.array([10.0, 0.1, 0.1, 0.1])
+
+    # Instantiate metric
+    loss = metric.create_test_instance()
+    loss.set_params(score_average=score_average, multioutput="uniform_average")
+
+    eval_loss_unweighted = loss(y_true, y_pred)
+    eval_loss_weighted = loss(y_true, y_pred, sample_weight=sample_weight)
+
+    # Assert types remain identical
+    if score_average:
+        assert isinstance(eval_loss_weighted, float)
+    else:
+        assert isinstance(eval_loss_weighted, pd.Series)
+
+    # The weighted and unweighted loss should differ unless mathematically
+    # identical by coincidence
+    assert not np.all(np.isclose(eval_loss_unweighted, eval_loss_weighted))
