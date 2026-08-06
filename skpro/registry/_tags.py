@@ -275,6 +275,29 @@ class capability__update(_BaseTag):
     }
 
 
+class capability__pred_int(_BaseTag):
+    """Support for probabilistic prediction methods."""
+
+    _tags = {
+        "tag_name": "capability:pred_int",
+        "parent_type": ["regressor_proba", "regressor_online"],
+        "tag_type": "bool",
+        "short_descr": "whether predict_proba, predict_interval, "
+        "and predict_quantiles are available",
+    }
+
+
+class capability__serializable(_BaseTag):
+    """Whether object can be serialized via save/load."""
+
+    _tags = {
+        "tag_name": "capability:serializable",
+        "parent_type": "object",
+        "tag_type": "bool",
+        "short_descr": "whether object can be serialized via save/load",
+    }
+
+
 class X_inner_mtype(_BaseTag):
     """Internal X machine type."""
 
