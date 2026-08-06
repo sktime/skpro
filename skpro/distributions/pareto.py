@@ -108,6 +108,7 @@ class Pareto(BaseDistribution):
         scale = self._bc_params["scale"]
         pdf_arr = alpha * np.power(scale, alpha)
         pdf_arr /= np.power(x, alpha + 1)
+        pdf_arr = np.where(x >= scale, pdf_arr, 0.0)
         return pdf_arr
 
     def _log_pdf(self, x):
@@ -125,7 +126,8 @@ class Pareto(BaseDistribution):
         """
         alpha = self._bc_params["alpha"]
         scale = self._bc_params["scale"]
-        return np.log(alpha / x) + alpha * np.log(scale / x)
+        log_pdf_arr = np.log(alpha / x) + alpha * np.log(scale / x)
+        return np.where(x >= scale, log_pdf_arr, -np.inf)
 
     def _cdf(self, x):
         """Cumulative distribution function.
