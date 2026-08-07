@@ -139,7 +139,7 @@ class Rayleigh(BaseDistribution):
 
     .. math::
         \mathbb{E}[|X - Y|] = \sigma \sqrt{\pi} (\sqrt{2} - 1)
-    """
+    """,
     }
 
     def __init__(self, scale=1.0, index=None, columns=None):

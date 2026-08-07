@@ -96,7 +96,6 @@ class Laplace(BaseDistribution):
     .. math::
         \text{Var}(X) = 2b^2
     """,
-
         "energy": r"""
     The self-energy is:
 
