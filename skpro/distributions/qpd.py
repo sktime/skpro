@@ -56,7 +56,7 @@ class QPD_Johnson(_DelegatedDistribution):
     Examples
     --------
     >>> from skpro.distributions.qpd import QPD_Johnson  # doctest: +SKIP
-
+    >>>
     >>> qpd = QPD_Johnson(
     ...         alpha=0.2,
     ...         qv_low=[1, 2],
@@ -64,7 +64,7 @@ class QPD_Johnson(_DelegatedDistribution):
     ...         qv_high=[5, 6],
     ...         lower=0
     ...       )  # doctest: +SKIP
-
+    >>>
     >>> qpd.mean()  # doctest: +SKIP
     """
 

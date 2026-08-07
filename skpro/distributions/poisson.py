@@ -22,7 +22,7 @@ class Poisson(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions import Poisson
-
+    >>>
     >>> distr = Poisson(mu=[[1, 1], [2, 3], [4, 5]])
     """
 

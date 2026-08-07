@@ -59,7 +59,7 @@ class QPD_Empirical(Empirical):
     --------
     >>> import pandas as pd
     >>> from skpro.distributions import QPD_Empirical
-
+    >>>
     >>> spl_idx = pd.MultiIndex.from_product(
     ...     [[0.2, 0.5, 0.8], [0, 1, 2]], names=["alpha", "sample"]
     ... )
