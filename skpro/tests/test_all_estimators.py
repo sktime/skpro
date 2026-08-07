@@ -169,6 +169,14 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
 class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
     """Generic tests for all objects in the mini package."""
 
+    def test_class_has_doctest_example(self, object_class):
+        """Check that the class has a docstring, with doctest example in it."""
+        docstring = object_class.__doc__
+
+        assert docstring is not None, f"{object_class.__name__} has no docstring"
+        msg = f"{object_class.__name__} docstring has no doctest example"
+        assert ">>>" in docstring, msg
+
     def test_doctest_examples(self, object_class):
         """Runs doctests for estimator class."""
         run_doctest(object_class, name=f"class {object_class.__name__}")
