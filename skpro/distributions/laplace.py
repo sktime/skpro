@@ -37,7 +37,7 @@ class Laplace(BaseDistribution):
     Examples
     --------
     >>> from skpro.distributions import Laplace
-
+    >>>
     >>> n = Laplace(mu=[[0, 1], [2, 3], [4, 5]], scale=1)
     """
 

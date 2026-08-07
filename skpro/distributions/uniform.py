@@ -30,7 +30,7 @@ class Uniform(BaseDistribution):
     Examples
     --------
     >>> from skpro.distributions import Uniform
-
+    >>>
     >>> u = Uniform(lower=0, upper=5)
     """
 
