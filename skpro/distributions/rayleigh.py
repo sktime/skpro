@@ -105,41 +105,6 @@ class Rayleigh(BaseDistribution):
     .. math::
         \mathbb{E}[|X - Y|] = \sigma \sqrt{\pi} (\sqrt{2} - 1)
     """,
-        #
-        "log_pdf": r"""
-    The log-density is given by:
-
-    .. math::
-        \log f(x) = \log(x) - 2\log(\sigma) - \frac{x^2}{2\sigma^2}, \quad x > 0
-    """,
-        #
-        "ppf": r"""
-    The quantile function (inverse cdf) is:
-
-    .. math::
-        F^{-1}(p; \sigma) = \sigma \sqrt{-2 \ln(1 - p)}
-    """,
-        #
-        "mean": r"""
-    The expected value is:
-
-    .. math::
-        \mathbb{E}[X] = \sigma \sqrt{\frac{\pi}{2}}
-    """,
-        #
-        "var": r"""
-    The variance is:
-
-    .. math::
-        \text{Var}(X) = \frac{4 - \pi}{2} \sigma^2
-    """,
-        #
-        "energy": r"""
-    The self-energy is:
-
-    .. math::
-        \mathbb{E}[|X - Y|] = \sigma \sqrt{\pi} (\sqrt{2} - 1)
-    """,
     }
 
     def __init__(self, scale=1.0, index=None, columns=None):
