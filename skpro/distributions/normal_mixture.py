@@ -51,7 +51,7 @@ class NormalMixture(BaseDistribution):
     --------
     >>> from skpro.distributions.normal_mixture import NormalMixture
     >>> import numpy as np
-
+    >>>
     >>> # 3 samples, 2 components, 2 outputs
     >>> pi = np.array([[0.3, 0.7], [0.5, 0.5], [0.8, 0.2]])
     >>> mu = np.array([[[0, 1], [3, 4]],

@@ -83,11 +83,10 @@ class CyclicBoosting(BaseProbaRegressor):
         be on a bounded interval, with support between ``lower`` and ``upper``.
     maximal_iterations : int, default=10
         maximum number of iterations for the cyclic boosting algorithm
-    dist_type: str, one of ``'normal'`` (default), ``'logistic'``
-        inner base distribution to use for the Johnson QPD, i.e., before
-        arcosh and similar transformations.
-        Available options are ``'normal'`` (default), ``'logistic'``,
-        or ``'sinhlogistic'``.
+    dist: str, default='normal',
+        One of ``'normal'`` or ``'logistic'``inner base distribution to use for
+        the Johnson QPD, i.e., before arcosh and similar transformations. Available
+        options are ``'normal'`` (default), ``'logistic'`` or ``'sinhlogistic'``.
 
     Attributes
     ----------
@@ -133,6 +132,12 @@ class CyclicBoosting(BaseProbaRegressor):
         "tests:vm": True,  # requires its own test VM to run
     }
 
+    # todo 2.15.0
+    # remove the 'dist_type' argument from '__init__' signature
+    # remove the following 'if' check and deprecation warning
+    # de-indent the following 'else' check
+    # move dist argument to position of dist_type argument in signature
+
     def __init__(
         self,
         feature_groups: Union[List[str], List[Tuple[str, ...]], None] = None,
@@ -142,8 +147,9 @@ class CyclicBoosting(BaseProbaRegressor):
         lower: Union[float, None] = None,
         upper: Union[float, None] = None,
         maximal_iterations=10,
-        dist_type: Union[str, None] = "normal",
+        dist_type: Union[str, None] = "deprecated",
         dist_shape: Union[float, None] = 0.0,
+        dist: Union[str, None] = "normal",
     ):
         self.feature_groups = feature_groups
         self.feature_properties = feature_properties
@@ -153,9 +159,47 @@ class CyclicBoosting(BaseProbaRegressor):
         self.upper = upper
         self.maximal_iterations = maximal_iterations
         self.dist_type = dist_type
+        self.dist = dist
         self.dist_shape = dist_shape
 
         super().__init__()
+
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        dist_type = self.dist_type
+        dist = self.dist
+        feature_groups = self.feature_groups
+        feature_properties = self.feature_properties
+        alpha = self.alpha
+        maximal_iterations = self.maximal_iterations
+
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
+        # handle deprecation of dist_type -> dist
+        if dist_type != "deprecated":
+            from warnings import warn
+
+            warn(
+                "in `CyclicBoosting`, parameter 'dist_type' "
+                "will be renamed to 'dist' in version 2.15.0. "
+                "To keep current behaviour and to silence this warning, "
+                "use 'dist' instead of 'dist_type', "
+                "set dist explicitly via kwarg, and do not set dist_type.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self._dist = dist_type
+        else:
+            self._dist = dist
 
         self.quantiles = [self.alpha, 0.5, 1 - self.alpha]
         self.quantile_values = list()
@@ -315,7 +359,7 @@ class CyclicBoosting(BaseProbaRegressor):
             "qv_high": self.quantile_values[2].reshape(-1, 1),
             "lower": self.lower,
             "upper": self.upper,
-            "base_dist": self.dist_type,
+            "base_dist": self._dist,
             "index": index,
             "columns": y_cols,
         }

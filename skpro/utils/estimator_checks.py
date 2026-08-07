@@ -107,7 +107,7 @@ def check_estimator(
     )
     _check_soft_dependencies("pytest", msg=msg)
 
-    from skpro.tests.test_class_register import get_test_classes_for_obj
+    from skpro.registry._base_classes_tests import get_test_classes_for_obj
 
     test_clss_for_est = get_test_classes_for_obj(estimator)
 

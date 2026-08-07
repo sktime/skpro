@@ -46,31 +46,6 @@ class Skellam(_ScipyAdapter):
         mu2 = self._bc_params["mu2"]
         return [mu1, mu2], {}
 
-    def _pmf(self, x):
-        mu1 = self._bc_params["mu1"]
-        mu2 = self._bc_params["mu2"]
-        return skellam.pmf(x, mu1, mu2)
-
-    def _cdf(self, x):
-        mu1 = self._bc_params["mu1"]
-        mu2 = self._bc_params["mu2"]
-        return skellam.cdf(x, mu1, mu2)
-
-    def _ppf(self, p):
-        mu1 = self._bc_params["mu1"]
-        mu2 = self._bc_params["mu2"]
-        return skellam.ppf(p, mu1, mu2)
-
-    def _mean(self):
-        mu1 = self._bc_params["mu1"]
-        mu2 = self._bc_params["mu2"]
-        return skellam.mean(mu1, mu2)
-
-    def _var(self):
-        mu1 = self._bc_params["mu1"]
-        mu2 = self._bc_params["mu2"]
-        return skellam.var(mu1, mu2)
-
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for Skellam."""

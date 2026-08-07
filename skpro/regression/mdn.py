@@ -125,7 +125,10 @@ class MDNRegressor(BaseProbaRegressor):
         Number of training epochs.
 
     lr : float, optional, default=0.01
-        Learning rate for the optimiser.
+        Learning rate for the optimiser. When using ``loss="ngem"``, you may need
+        to reduce this value (e.g., to 0.005 instead of 0.01) as the natural gradient
+        preconditioning changes the effective gradient scale. This should also be
+        taken into account in grid or random hyperparameter searches.
 
     weight_decay : float, optional, default=0.0
         L2 regularisation coefficient (weight decay) for the optimiser.
@@ -144,6 +147,16 @@ class MDNRegressor(BaseProbaRegressor):
 
     optimizer_kwargs : dict or None, optional, default=None
         Additional keyword arguments forwarded to the optimizer constructor.
+
+    loss : str, optional, default="nll"
+        Training objective for MDN optimisation.
+
+        * ``"nll"``: standard negative log-likelihood objective
+        * ``"ngem"``: natural-gradient EM surrogate objective
+
+    ngem_grad_clip_norm : float or None, optional, default=1.0
+        Global gradient clipping norm applied only when ``loss="ngem"``.
+        Set to ``None`` to disable clipping.
 
     input_noise_std : float, optional, default=0.0
         Base standard deviation :math:`h_x` of Gaussian noise added to ``X`` during
@@ -208,6 +221,7 @@ class MDNRegressor(BaseProbaRegressor):
         # CI and test flags
         # -----------------
         "tests:vm": True,
+        "tests:python_dependencies": ["pytorch_optimizer"],
     }
 
     def __init__(
@@ -220,6 +234,8 @@ class MDNRegressor(BaseProbaRegressor):
         weight_decay=0.0,
         optimizer="ADAM",
         optimizer_kwargs=None,
+        loss="nll",
+        ngem_grad_clip_norm=1.0,
         input_noise_std=0.0,
         target_noise_std=0.0,
         noise_scale_method="constant",
@@ -235,6 +251,8 @@ class MDNRegressor(BaseProbaRegressor):
         self.weight_decay = weight_decay
         self.optimizer = optimizer
         self.optimizer_kwargs = optimizer_kwargs
+        self.loss = loss
+        self.ngem_grad_clip_norm = ngem_grad_clip_norm
         self.input_noise_std = input_noise_std
         self.target_noise_std = target_noise_std
         self.noise_scale_method = noise_scale_method
@@ -265,6 +283,38 @@ class MDNRegressor(BaseProbaRegressor):
             total_dim=total_dim,
             method=self.noise_scale_method,
         )
+
+    def _resolve_loss_name(self):
+        """Validate and normalize loss name."""
+        loss_name = str(self.loss).lower()
+        if loss_name not in {"nll", "ngem"}:
+            raise ValueError("loss must be 'nll' or 'ngem'")
+        return loss_name
+
+    def _resolve_training_hparams(self, loss_name):
+        """Resolve effective optimizer hparams for selected loss."""
+        lr = float(self.lr)
+
+        if lr <= 0:
+            raise ValueError(f"lr must be positive, but found {self.lr}")
+
+        if loss_name != "ngem":
+            return lr, None
+
+        clip_norm = self.ngem_grad_clip_norm
+
+        if clip_norm is None:
+            return lr, None
+
+        clip_norm = float(clip_norm)
+
+        if clip_norm <= 0:
+            raise ValueError(
+                "ngem_grad_clip_norm must be positive or None when loss='ngem', "
+                f"but found {self.ngem_grad_clip_norm}"
+            )
+
+        return lr, clip_norm
 
     def _resolve_device(self):
         """Resolve the device to use for PyTorch tensors.
@@ -466,6 +516,9 @@ class MDNRegressor(BaseProbaRegressor):
             X=X_arr,
             y=y_arr,
         )
+
+        loss_name = self._resolve_loss_name()
+        lr, ngem_grad_clip_norm = self._resolve_training_hparams(loss_name)
         input_noise_std *= noise_scale
         target_noise_std *= noise_scale
 
@@ -499,7 +552,7 @@ class MDNRegressor(BaseProbaRegressor):
 
         optimiser = optimizer_cls(
             model.parameters(),
-            lr=self.lr,
+            lr=lr,
             weight_decay=self.weight_decay,
             **optimizer_kwargs,
         )
@@ -520,9 +573,21 @@ class MDNRegressor(BaseProbaRegressor):
                     y_t_train = y_t + torch.randn_like(y_t) * target_noise_std
                 else:
                     y_t_train = y_t
-                pi, mu, sigma = model(X_t_train)
-                loss = _mdn_loss(pi, mu, sigma, y_t_train)
+
+                logits, mu, sigma = model(X_t_train)
+
+                if loss_name == "ngem":
+                    loss = _ngem_loss(logits, mu, sigma, y_t_train)
+                else:
+                    loss = _mdn_nll_loss(logits, mu, sigma, y_t_train)
+
                 loss.backward()
+
+                if ngem_grad_clip_norm is not None:
+                    torch.nn.utils.clip_grad_norm_(
+                        model.parameters(), max_norm=ngem_grad_clip_norm
+                    )
+
                 optimiser.step()
                 losses.append(loss.item())
 
@@ -545,9 +610,21 @@ class MDNRegressor(BaseProbaRegressor):
 
                     if target_noise_std > 0:
                         y_batch = y_batch + torch.randn_like(y_batch) * target_noise_std
-                    pi, mu, sigma = model(X_batch)
-                    loss = _mdn_loss(pi, mu, sigma, y_batch)
+
+                    logits, mu, sigma = model(X_batch)
+
+                    if loss_name == "ngem":
+                        loss = _ngem_loss(logits, mu, sigma, y_batch)
+                    else:
+                        loss = _mdn_nll_loss(logits, mu, sigma, y_batch)
+
                     loss.backward()
+
+                    if ngem_grad_clip_norm is not None:
+                        torch.nn.utils.clip_grad_norm_(
+                            model.parameters(), max_norm=ngem_grad_clip_norm
+                        )
+
                     optimiser.step()
                     epoch_loss += loss.item()
                     n_batches += 1
@@ -557,7 +634,6 @@ class MDNRegressor(BaseProbaRegressor):
         self.model_ = model
         self.losses_ = losses
         self._device = device
-
         return self
 
     def _predict_proba(self, X):  # type: ignore[override]
@@ -588,7 +664,8 @@ class MDNRegressor(BaseProbaRegressor):
 
         self.model_.eval()
         with torch.no_grad():
-            pi, mu, sigma = self.model_(X_t)
+            logits, mu, sigma = self.model_(X_t)
+            pi = torch.softmax(logits, dim=1)
 
         pi_np = pi.cpu().numpy()  # (n_samples, n_gaussians)
         mu_np = mu.cpu().numpy()  # (n_samples, n_gaussians, n_outputs)
@@ -669,7 +746,19 @@ class MDNRegressor(BaseProbaRegressor):
             "optimizer": "ADAM",
             "random_state": 42,
         }
-        return [params0, params1, params2, params3, params4, params5]
+
+        params6 = {
+            "n_gaussians": 2,
+            "hidden_dims": [8],
+            "epochs": 5,
+            "optimizer": "ADAM",
+            "loss": "ngem",
+            "lr": 0.005,  # reduced lr for ngem due to natural gradient preconditioning
+            "ngem_grad_clip_norm": 1.0,
+            "random_state": 42,
+        }
+
+        return [params0, params1, params2, params3, params4, params5, params6]
 
 
 def _build_mdn_model(
@@ -734,7 +823,14 @@ class _MixtureDensityNetwork:
         Number of Gaussian mixture components.
     """
 
-    pass  # defined dynamically to avoid top-level torch import
+    def __init__(self, backbone, backbone_out_dim, output_dim, n_gaussians):
+        pass  # defined dynamically to avoid top-level torch import
+
+
+class _NGEMPrecond:
+    """Placeholder for torch.autograd.Function used by nGEM loss."""
+
+    pass
 
 
 # We define the actual nn.Module class inside a function to avoid
@@ -791,60 +887,97 @@ def _ensure_mdn_class():
 
             Returns
             -------
-            pi : torch.Tensor of shape (batch_size, n_gaussians)
-                Mixing weights (softmax-normalised).
+            logits : torch.Tensor of shape (batch_size, n_gaussians)
+                Unnormalized mixing logits.
             mu : torch.Tensor of shape (batch_size, n_gaussians, output_dim)
                 Component means.
             sigma : torch.Tensor of shape (batch_size, n_gaussians, output_dim)
                 Component standard deviations (positive, via softplus).
             """
             h = self.backbone(x)
-            pi = F.softmax(self.pi_layer(h), dim=1)
+            logits = self.pi_layer(h)
             mu = self.mu_layer(h).view(-1, self.n_gaussians, self.output_dim)
             # clamp sigma to a minimum for numerical stability
             sigma = F.softplus(self.sigma_layer(h)).view(
                 -1, self.n_gaussians, self.output_dim
             )
+
             sigma = sigma + 1e-6
-            return pi, mu, sigma
+            return logits, mu, sigma
 
-    _MixtureDensityNetwork = _MixtureDensityNetworkImpl
+    _MixtureDensityNetwork = _MixtureDensityNetworkImpl  # type: ignore[assignment]
 
 
-def _mdn_loss(pi, mu, sigma, target):
-    """Compute the MDN negative log-likelihood loss.
+def _ensure_ngem_precond():
+    """Define the nGEM custom backward preconditioner."""
+    global _NGEMPrecond
 
-    Parameters
-    ----------
-    pi : torch.Tensor of shape (batch_size, n_gaussians)
-        Mixing weights.
-    mu : torch.Tensor of shape (batch_size, n_gaussians, output_dim)
-        Component means.
-    sigma : torch.Tensor of shape (batch_size, n_gaussians, output_dim)
-        Component standard deviations.
-    target : torch.Tensor of shape (batch_size, output_dim)
-        Target values.
+    if hasattr(_NGEMPrecond, "apply"):
+        return
 
-    Returns
-    -------
-    loss : torch.Tensor (scalar)
-        Negative log-likelihood loss.
-    """
     import torch
 
-    # expand target to (batch_size, 1, output_dim) for broadcasting
-    target_exp = target.unsqueeze(1).expand_as(mu)
+    class _NGEMPrecondImpl(torch.autograd.Function):
+        @staticmethod
+        def forward(ctx, logits, mu, sigma):
+            ctx.save_for_backward(sigma)
+            return logits, mu, sigma
 
-    # log probability of each component
-    normal = torch.distributions.Normal(mu, sigma)
-    log_prob = normal.log_prob(target_exp)  # (batch, n_gaussians, output_dim)
+        @staticmethod
+        def backward(ctx, *grad_outputs):
+            grad_logits, grad_mu, grad_sigma = grad_outputs
+            (sigma,) = ctx.saved_tensors
+            sigma2 = sigma * sigma
 
-    # sum log probs across output dims (assuming independence across outputs)
-    log_prob = log_prob.sum(dim=2)  # (batch, n_gaussians)
+            if grad_mu is not None:
+                grad_mu = grad_mu * sigma2
+            if grad_sigma is not None:
+                grad_sigma = grad_sigma * (sigma2 / 2.0)
 
-    # add log mixing weights
-    log_pi = torch.log(pi + 1e-10)  # (batch, n_gaussians)
-    weighted_log_prob = log_prob + log_pi  # (batch, n_gaussians)
+            return grad_logits, grad_mu, grad_sigma
 
-    # logsumexp over components, then mean over batch
-    return -torch.logsumexp(weighted_log_prob, dim=1).mean()
+    _NGEMPrecond = _NGEMPrecondImpl  # type: ignore[assignment]
+
+
+def _gaussian_log_prob_diag(target, mu, sigma):
+    """Log N(target; mu, diag(sigma^2)) summed over output dimensions."""
+    import math
+
+    import torch
+
+    t = target.unsqueeze(1)
+    z = (t - mu) / sigma
+    log_det = torch.log(sigma).sum(dim=2)
+    quad = 0.5 * (z * z).sum(dim=2)
+    const = 0.5 * mu.shape[2] * math.log(2.0 * math.pi)
+    return -(const + log_det + quad)
+
+
+def _mdn_nll_loss(logits, mu, sigma, target):
+    """MDN negative log-likelihood loss using logits."""
+    import torch
+    import torch.nn.functional as F
+
+    log_weights = F.log_softmax(logits, dim=1)
+    log_normal = _gaussian_log_prob_diag(target, mu, sigma)
+    return -torch.logsumexp(log_weights + log_normal, dim=1).mean()
+
+
+def _ngem_loss(logits, mu, sigma, target, eps=1e-12):
+    """Natural-gradient EM surrogate loss for diagonal-Gaussian MDN."""
+    import torch.nn.functional as F
+
+    _ensure_ngem_precond()
+    logits, mu, sigma = _NGEMPrecond.apply(  # type: ignore[attr-defined]
+        logits, mu, sigma
+    )
+
+    log_weights = F.log_softmax(logits, dim=1)
+    log_normal = _gaussian_log_prob_diag(target, mu, sigma)
+
+    log_rho = F.log_softmax(log_weights + log_normal, dim=1)
+    rho = log_rho.exp().detach()
+    pi = log_weights.exp().detach().clamp_min(eps)
+
+    loss_per_example = -((rho / pi) * (log_weights + log_normal)).sum(dim=1)
+    return loss_per_example.mean()

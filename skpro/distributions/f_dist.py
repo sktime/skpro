@@ -49,31 +49,6 @@ class FDist(_ScipyAdapter):
         dfd = self._bc_params["dfd"]
         return [], {"dfn": dfn, "dfd": dfd}
 
-    def _pdf(self, x):
-        dfn = self._bc_params["dfn"]
-        dfd = self._bc_params["dfd"]
-        return f.pdf(x, dfn, dfd)
-
-    def _cdf(self, x):
-        dfn = self._bc_params["dfn"]
-        dfd = self._bc_params["dfd"]
-        return f.cdf(x, dfn, dfd)
-
-    def _ppf(self, p):
-        dfn = self._bc_params["dfn"]
-        dfd = self._bc_params["dfd"]
-        return f.ppf(p, dfn, dfd)
-
-    def _mean(self):
-        dfn = self._bc_params["dfn"]
-        dfd = self._bc_params["dfd"]
-        return f.mean(dfn, dfd)
-
-    def _var(self):
-        dfn = self._bc_params["dfn"]
-        dfd = self._bc_params["dfd"]
-        return f.var(dfn, dfd)
-
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for FDist."""

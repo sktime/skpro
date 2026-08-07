@@ -40,7 +40,7 @@ class HalfCauchy(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.halfcauchy import HalfCauchy
-
+    >>>
     >>> hc = HalfCauchy(beta=1)
     """
 
@@ -67,7 +67,7 @@ class HalfCauchy(_ScipyAdapter):
 
     def _get_scipy_param(self):
         beta = self._bc_params["beta"]
-        return [beta], {}
+        return [], {"scale": beta}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

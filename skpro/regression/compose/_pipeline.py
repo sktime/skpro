@@ -25,6 +25,8 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
     # the fitted estimators should be in fitted_named_object_parameters
     # this must be an iterable of (name: str, estimator, ...) tuples for the default
     _tags = {
+        "object_type": "regressor_proba",  # type of object, e.g., "distribution"
+        "estimator_type": "regressor_proba",  # type of estimator, e.g., "regressor"
         "named_object_parameters": "_steps",
         "fitted_named_object_parameters": "steps_",
     }
