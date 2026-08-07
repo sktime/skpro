@@ -32,9 +32,8 @@ class Beta(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.beta import Beta
-
+    >>>
     >>> d = Beta(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
-
     """
 
     _tags = {

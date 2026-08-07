@@ -32,7 +32,7 @@ class InverseGamma(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.inversegamma import InverseGamma
-
+    >>>
     >>> d = InverseGamma(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
     """  # noqa: E501
 
