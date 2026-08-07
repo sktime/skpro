@@ -45,6 +45,7 @@ class MapieSplitConformalRegressor(BaseProbaRegressor):
         "maintainers": ["fkiraly", "Omswastik-11"],
         "python_dependencies": ["MAPIE>=1.0"],
         "capability:missing": True,
+        "tests:vm": True,
     }
 
     def __init__(

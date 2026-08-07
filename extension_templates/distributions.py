@@ -43,9 +43,6 @@ Testing - required for test framework and check_estimator usage:
 #       estimators contributed to skpro should have the copyright notice at the top
 #       estimators of your own do not need to have permissive or BSD-3 copyright
 
-# todo: uncomment the following line, enter authors' GitHub IDs
-# __author__ = [authorGitHubID, anotherAuthorGitHubID]
-
 from skpro.distributions.base import BaseDistribution
 
 # todo: add any necessary imports here - no soft dependency imports
@@ -102,7 +99,8 @@ class ClassName(BaseDistribution):
     # todo: fill init
     # params should be written to self and never changed
     # super call must not be removed, change class name
-    # parameter checks can go after super call
+    # parameter checks and component initialization should go in __post_init__
+    # dynamic tag logic should go in __dynamic_tags__
     def __init__(self, param1, param2="param2default", index=None, columns=None):
         # all distributions must have index and columns arg with None defaults
         # this is to ensure pandas-like behaviour
@@ -114,9 +112,35 @@ class ClassName(BaseDistribution):
         # leave this as is
         super().__init__(index=index, columns=columns)
 
+    # todo: optional, for conditional tag setting
+    # tags set here override class-level _tags and are set
+    # after __init__ but before __post_init__
+    # if not needed, delete this method
+    def __dynamic_tags__(self):
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
+
+        This method should be used for setting dynamic tags only.
+        """
+        pass
+
+    # todo: optional, for parameter validation and derived quantities
+    # if not needed, delete this method
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
         # todo: optional, parameter checking logic (if applicable) should happen here
         # if writes derived values to self, should *not* overwrite self.parama etc
         # instead, write to self._parama, self._newparam (starting with _)
+        pass
 
     # todo: implement as many of the following methods as possible
     # if not implemented, the base class will try to fill it in

@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Half-Normal probability distribution."""
 
-__author__ = ["SaiRevanth25"]
-
 import pandas as pd
 from scipy.stats import halfnorm, rv_continuous
 
@@ -43,6 +41,11 @@ class HalfNormal(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["SaiRevanth25"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
@@ -60,7 +63,7 @@ class HalfNormal(_ScipyAdapter):
 
     def _get_scipy_param(self):
         sigma = self._bc_params["sigma"]
-        return [sigma], {}
+        return [], {"scale": sigma}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

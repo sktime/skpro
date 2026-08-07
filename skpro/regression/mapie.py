@@ -18,7 +18,10 @@ class MapieRegressor(BaseProbaRegressor):
 
     NOTE: only for the "all-in-one" regressor present in ``mapie<1.0``. Later
     ``mapie`` versions have a more modular interface, this class is not
-    compatible with ``MAPIE>=1.0``.
+    compatible with ``MAPIE>=1.0``. For ``MAPIE>=1.0``, use the more specific conformal
+    regression classes ``MapieSplitConformalRegressor``,
+    ``MapieCrossConformalRegressor``, ``MapieConformalizedQuantileRegressor``, and
+    ``MapieJackknifeAfterBootstrapRegressor``.
 
     Uses jackknife+ to estimate prediction intervals on a per-sample basis.
 
@@ -175,6 +178,7 @@ class MapieRegressor(BaseProbaRegressor):
         # estimator tags
         # --------------
         "capability:missing": True,
+        "tests:vm": True,
     }
 
     def __init__(

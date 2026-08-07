@@ -1,8 +1,6 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 """Log-Gamma probability distribution."""
 
-__author__ = ["ali-john"]
-
 import pandas as pd
 from scipy.stats import loggamma, rv_continuous
 
@@ -42,6 +40,11 @@ class LogGamma(_ScipyAdapter):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["ali-john"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy", "pdfnorm"],
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "distr:measuretype": "continuous",
@@ -61,6 +64,77 @@ class LogGamma(_ScipyAdapter):
         c = self._bc_params["c"]
 
         return [c], {}
+
+    def _energy_self(self):
+        """Energy of self, w.r.t. self (expected |X-Y| for i.i.d. X,Y ~ LogGamma)."""
+        import numpy as np
+        from scipy.integrate import quad
+        from scipy.stats import loggamma
+
+        c = np.asarray(self._bc_params["c"])
+        c_b = np.broadcast_to(c, c.shape)
+        result = np.empty_like(c_b, dtype=float)
+        it = np.nditer(
+            [c_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["writeonly"]],
+        )
+        for cc, out in it:
+            cc_val = cc.item()
+
+            def cdf(x, cc_val=cc_val):
+                return loggamma.cdf(x, cc_val)
+
+            def integrand(x, cdf=cdf):
+                F = cdf(x)
+                return 2 * F * (1 - F)
+
+            val, _ = quad(integrand, -np.inf, np.inf, limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
+
+    def _energy_x(self, x):
+        """Energy of self, w.r.t. a constant frame x.
+
+        Expected |X-x| for X ~ LogGamma.
+        """
+        import numpy as np
+        from scipy.integrate import quad
+        from scipy.stats import loggamma
+
+        c = np.asarray(self._bc_params["c"])
+        x = np.asarray(x)
+        c_b, x_b = np.broadcast_arrays(c, x)
+        result = np.empty_like(c_b, dtype=float)
+        it = np.nditer(
+            [c_b, x_b, result],
+            flags=["multi_index"],
+            op_flags=[["readonly"], ["readonly"], ["writeonly"]],
+        )
+        for cc, x0, out in it:
+            cc_val = cc.item()
+            x0_val = x0.item()
+
+            def integrand(t, cc_val=cc_val, x0_val=x0_val):
+                return np.abs(t - x0_val) * loggamma.pdf(t, cc_val)
+
+            val, _ = quad(integrand, -np.inf, np.inf, limit=200)
+            out[...] = val
+        # Always flatten to 1D of length n_rows for DataFrame compatibility
+        n_rows = 1 if self.index is None else len(self.index)
+        result = np.asarray(result).reshape(-1)
+        if result.shape[0] != n_rows:
+            result = result.reshape(n_rows, -1).mean(axis=1)
+        if self.index is None and n_rows == 1:
+            return result.item()
+        return result
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

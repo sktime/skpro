@@ -52,6 +52,11 @@ class TruncatedDistribution(BaseDistribution):
     """
 
     _tags = {
+        # packaging info
+        # --------------
+        "authors": ["tingiskhan"],
+        # estimator tags
+        # --------------
         "capabilities:approx": ["energy", "mean", "var"],
         "capabilities:exact": [
             "ppf",
@@ -181,10 +186,10 @@ class TruncatedDistribution(BaseDistribution):
 
     def _cdf(self, x):
         prob_at_lower, prob_at_upper = self._get_low_high_prob()
-
-        return (self.distribution.cdf(x) - prob_at_lower) / (
+        cdf = (self.distribution.cdf(x) - prob_at_lower) / (
             prob_at_upper - prob_at_lower
         )
+        return np.clip(cdf, 0.0, 1.0)
 
     def _log_pdf(self, x):
         return self._calculate_density(x, self.distribution.log_pdf, as_log=True)

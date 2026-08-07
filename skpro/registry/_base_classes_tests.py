@@ -20,25 +20,18 @@ def get_test_class_registry():
         test class registry
         keys are scitypes, values are test classes TestAll[Scitype]
     """
-    from skpro.distributions.tests.test_all_distrs import TestAllDistributions
-    from skpro.metrics.tests.test_distr_metrics import TestAllDistrMetrics
-    from skpro.regression.tests.test_all_regressors import TestAllRegressors
-    from skpro.tests.test_all_estimators import TestAllEstimators, TestAllObjects
+    from skpro.registry._base_classes import (
+        get_obj_scitype_list,
+        get_test_class_for_str,
+    )
 
     testclass_dict = dict()
-    # every object in sktime inherits from BaseObject
-    # "object" tests are run for all objects
-    testclass_dict["object"] = TestAllObjects
-    # fittable objects inherit from BaseEstimator
-    # "estimator" tests are run for all estimators
-    # estimators are also objects
-    testclass_dict["estimator"] = TestAllEstimators
-    # more specific base classes
-    # these inherit either from BaseEstimator or BaseObject,
-    # so also imply estimator and object tests, or only object tests
-    testclass_dict["distribution"] = TestAllDistributions
-    testclass_dict["regressor_proba"] = TestAllRegressors
-    testclass_dict["metric_proba"] = TestAllDistrMetrics
+
+    # dynamically build registry from _base_classes
+    for scitype_str in get_obj_scitype_list():
+        test_cls = get_test_class_for_str(scitype_str)
+        if test_cls is not None:
+            testclass_dict[scitype_str] = test_cls
 
     return testclass_dict
 
@@ -48,7 +41,7 @@ def get_test_classes_for_obj(obj):
 
     Parameters
     ----------
-    obj : object or estimator, descendant of sktime BaseObject or BaseEstimator
+    obj : object or estimator, descendant of skpro BaseObject or BaseEstimator
         object or estimator for which to get test classes
 
     Returns
@@ -96,5 +89,9 @@ def get_test_classes_for_obj(obj):
     for obj_scitype in obj_scitypes:
         if obj_scitype in testclass_dict:
             test_clss += [testclass_dict[obj_scitype]]
+
+    # deduplicate test classes - edge case where scitype is object
+    # but object was hard-coded above
+    test_clss = list(set(test_clss))
 
     return test_clss

@@ -25,6 +25,8 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
     # the fitted estimators should be in fitted_named_object_parameters
     # this must be an iterable of (name: str, estimator, ...) tuples for the default
     _tags = {
+        "object_type": "regressor_proba",  # type of object, e.g., "distribution"
+        "estimator_type": "regressor_proba",  # type of estimator, e.g., "regressor"
         "named_object_parameters": "_steps",
         "fitted_named_object_parameters": "steps_",
     }
@@ -108,7 +110,7 @@ class _Pipeline(BaseMetaEstimator, BaseProbaRegressor):
         regressor_ind = self._get_regressor_index(estimator_tuples)
 
         if not allow_postproc and regressor_ind != len(estimators) - 1:
-            TypeError(
+            raise TypeError(
                 f"in {self.name}, last estimator must be a regressor, "
                 f"but found a transformer"
             )
@@ -589,13 +591,15 @@ class Pipeline(_Pipeline):
         # coerce X to pandas DataFrame with string column names
         X = prep_skl_df(X, copy_df=True)
 
+        Xt = X
         for _, _, transformer in self._iter_transformers():
             if self._has_y_arg(transformer.transform):
-                Xt = transformer.transform(X=X, y=y)
+                Xt = transformer.transform(X=Xt, y=y)
             else:
-                Xt = transformer.transform(X=X)
+                Xt = transformer.transform(X=Xt)
             if not isinstance(Xt, pd.DataFrame):
                 Xt = pd.DataFrame(Xt, index=X.index)
+
         return Xt
 
     def _has_y_arg(self, method):

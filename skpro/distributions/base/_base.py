@@ -142,7 +142,12 @@ class BaseDistribution(BaseObject):
         self.columns = _coerce_to_pd_index_or_none(columns)
 
         super().__init__()
-        _check_estimator_deps(self)
+
+        # this block has a double purpose:
+        # - emit a warning if dependencies are not met, but allow instantiation
+        # - if dependencies are met, call __post_init__ used by inheriting classes
+        if _check_estimator_deps(self, severity="warning"):
+            self.__post_init__()
 
         self._init_shape_bc(index=index, columns=columns)
 
@@ -282,10 +287,11 @@ class BaseDistribution(BaseObject):
         """
         if self.ndim < 2:
             return self
-        assert isinstance(n, int)
+        if not isinstance(n, int):
+            raise TypeError(f"head: n must be an integer, got {type(n).__name__}")
         N = len(self)
         if n < 0:
-            n = N - n
+            n = N + n
         n = min(n, N)
         return self.iloc[range(n)]
 
@@ -307,7 +313,8 @@ class BaseDistribution(BaseObject):
         """
         if self.ndim < 2:
             return self
-        assert isinstance(n, int)
+        if not isinstance(n, int):
+            raise TypeError(f"tail: n must be an integer, got {type(n).__name__}")
         N = len(self)
         if n < 0:
             start = n
@@ -348,6 +355,14 @@ class BaseDistribution(BaseObject):
         -------
         np.ndarray of positions (integers)
         """
+        # If keys is already a pd.Index, use get_indexer directly
+        if isinstance(keys, pd.Index):
+            is_multi_mismatch = isinstance(index, pd.MultiIndex) and not isinstance(
+                keys, pd.MultiIndex
+            )
+            if not is_multi_mismatch:
+                return index.get_indexer(keys)
+
         # regular index, not multiindex
         if not isinstance(index, pd.MultiIndex):
             return index.get_indexer_for(keys)
@@ -862,7 +877,7 @@ class BaseDistribution(BaseObject):
 
         {formula_doc}
 
-        Numerically more stable than calling pdf and then taking logartihms.
+        Numerically more stable than calling pdf and then taking logarithms.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in `(N, n)` ``DataFrame``-s
@@ -1014,7 +1029,7 @@ class BaseDistribution(BaseObject):
 
         {formula_doc}
 
-        Numerically more stable than calling pmf and then taking logartihms.
+        Numerically more stable than calling pmf and then taking logarithms.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in `(N, n)` ``DataFrame``-s
@@ -1520,7 +1535,7 @@ class BaseDistribution(BaseObject):
         approx_spl_size = self.get_tag("approx_var_spl")
         if self._has_implementation_of("_ppf"):
             approx_method = (
-                "by approximating the variancee integrals of the ppf, "
+                "by approximating the variance integrals of the ppf, "
                 "integral of ppf-squared minus square of integral of ppf, "
                 f"each with {approx_spl_size} equidistant nodes"
             )
@@ -1570,6 +1585,8 @@ class BaseDistribution(BaseObject):
         """
         # special case: if a == 1, this is just the integral of the pdf, which is 1
         if a == 1:
+            if self.ndim == 0:
+                return 1.0
             return pd.DataFrame(1.0, index=self.index, columns=self.columns)
 
         approx_spl_size = self.get_tag("approx_spl")
@@ -1581,6 +1598,8 @@ class BaseDistribution(BaseObject):
 
         # uses formula int p(x)^a dx = E[p(X)^{a-1}], and MC approximates the RHS
         spl = [self.pdf(self.sample()) ** (a - 1) for _ in range(approx_spl_size)]
+        if self.ndim == 0:
+            return np.mean(spl)
         spl_df = pd.concat(spl, keys=range(approx_spl_size))
         return spl_df.groupby(level=1, sort=False).mean()
 
@@ -1730,7 +1749,6 @@ class BaseDistribution(BaseObject):
             with same ``columns`` as ``self``, and row ``MultiIndex`` that is product
             of ``RangeIndex(n_samples)`` and ``self.index``
         """
-
         return self._sample(n_samples=n_samples)
 
     def _sample(self, n_samples=None):
@@ -1872,19 +1890,90 @@ class BaseDistribution(BaseObject):
         if fun == "ppf":
             lower, upper = 0.001, 0.999
 
-        x_arr = np.linspace(lower, upper, 1000)
+        is_discrete = self.get_tag("distr:measuretype", "mixed") == "discrete"
+
+        x_arr = self._get_x_for_plot(fun, lower, upper, is_discrete)
+
         y_arr = [getattr(self, fun)(x) for x in x_arr]
         y_arr = np.array(y_arr)
 
         if ax is None:
             ax = plt.gca()
 
-        ax.plot(x_arr, y_arr, **kwargs)
+        # Use stem plot for discrete PMF, line plot otherwise
+        if is_discrete and fun == "pmf":
+            ax.stem(x_arr, y_arr, basefmt=" ", **kwargs)
+        else:
+            ax.plot(x_arr, y_arr, **kwargs)
 
         if print_labels == "on":
             ax.set_xlabel(f"{x_argname}")
             ax.set_ylabel(f"{fun}({x_argname})")
         return ax
+
+    def _get_x_for_plot(self, fun, lower, upper, is_discrete):
+        """Get x values for plotting, handling discrete distributions for PMF."""
+        # general case: not discrete, or not pmf
+        if not is_discrete or fun != "pmf":
+            # in this case, the function is on a continuous domain,
+            # so we can plot on a dense grid of points
+            return np.linspace(lower, upper, 1000)
+
+        # special case: discrete distribution and pmf - plot at the support points
+
+        # Define fallback array construction (used when _pmf_support not available)
+        def _get_fallback_arr():
+            arr = np.linspace(lower, upper, 1000)
+            arr = np.round(arr).astype(int)
+            return np.unique(arr)
+
+        # Use _pmf_support if the method exists and is callable
+        if hasattr(self, "_pmf_support") and callable(self._pmf_support):
+            x_arr = self._pmf_support(lower, upper, max_points=1000)
+            if x_arr.size != 0:
+                return x_arr
+
+        return _get_fallback_arr()
+
+    def _pmf_support(self, lower, upper, max_points=100):
+        """Get support points for discrete distributions.
+
+        Returns the support points of the probability mass function (PMF)
+        within the given bounds.
+        Only applies to scalar (0-dimensional) distributions.
+
+        Parameters
+        ----------
+        lower : float
+            Lower bound for support points
+        upper : float
+            Upper bound for support points
+        max_points : int, optional, default=100
+            Maximum number of support points to return
+
+        Returns
+        -------
+        np.ndarray
+            Array of support points within [lower, upper]
+        """
+        if self.ndim > 0:
+            raise NotImplementedError(
+                "_pmf_support only applies to scalar (0-dimensional) distributions."
+            )
+
+        # For continuous distributions, return empty array
+        if self.get_tag("distr:measuretype", "mixed") == "continuous":
+            return np.array([])
+
+        # Default implementation assumes non-negative integer support
+        lower_int = max(0, int(np.floor(lower)))
+        upper_int = min(int(np.ceil(upper)) + 1, lower_int + max_points)
+        return np.arange(lower_int, upper_int)
+
+
+def _is_index_like(obj):
+    """Check if an object is pandas Index-like (Index, MultiIndex, etc.)."""
+    return isinstance(obj, (pd.Index, pd.MultiIndex))
 
 
 class _Indexer:
@@ -1920,8 +2009,10 @@ class _Indexer:
         # handle special case of multiindex in loc with single tuple key
         if isinstance(key, tuple) and not any(isinstance(k, tuple) for k in key):
             if isinstance(ref.index, pd.MultiIndex) and self.method == "_loc":
-                if type(ref).__name__ != "Empirical":
-                    return indexer(rowidx=key, colidx=None)
+                # Skip this special case if any element is Index-like
+                if not any(_is_index_like(k) for k in key):
+                    if type(ref).__name__ != "Empirical":
+                        return indexer(rowidx=key, colidx=None)
 
         # general case
         if isinstance(key, tuple):
@@ -1999,7 +2090,7 @@ class _BaseTFDistribution(BaseDistribution):
     def log_pdf(self, x):
         r"""Logarithmic probability density function.
 
-        Numerically more stable than calling pdf and then taking logartihms.
+        Numerically more stable than calling pdf and then taking logarithms.
 
         Let :math:`X` be a random variables with the distribution of `self`,
         taking values in `(N, n)` `DataFrame`-s

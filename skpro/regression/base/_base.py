@@ -38,11 +38,16 @@ class BaseProbaRegressor(BaseEstimator):
 
     def __init__(self):
         super().__init__()
-        _check_estimator_deps(self)
 
         self._X_converter_store = {}
         self._y_converter_store = {}
         self._C_converter_store = {}
+
+        # this block has a double purpose:
+        # - emit a warning if dependencies are not met, but allow instantiation
+        # - if dependencies are met, call __post_init__ used by inheriting classes
+        if _check_estimator_deps(self, severity="warning"):
+            self.__post_init__()
 
     def __rmul__(self, other):
         """Magic * method, return (left) concatenated Pipeline.
@@ -233,7 +238,7 @@ class BaseProbaRegressor(BaseEstimator):
             from_type=self.get_tag("y_inner_mtype"),
             to_type=self._y_metadata["mtype"],
             as_scitype="Table",
-            store=self._X_converter_store,
+            store=self._y_converter_store,
         )
 
         return y_pred
@@ -852,14 +857,14 @@ class BaseProbaRegressor(BaseEstimator):
         if not valid:
             check_is_error_msg(msg, var_name="C", raise_exception=True)
 
-        # convert y to y_inner_mtype
+        # convert C to C_inner_mtype
         C_inner_mtype = self.get_tag("C_inner_mtype")
         C_inner = convert(
             obj=C,
             from_type=metadata["mtype"],
             to_type=C_inner_mtype,
             as_scitype="Table",
-            store=self._y_converter_store,
+            store=self._C_converter_store,
         )
 
         return C_inner, metadata
@@ -933,8 +938,8 @@ class BaseProbaRegressor(BaseEstimator):
         Primarily used as helper for probabilistic predict-like methods.
         Assumes that _check_X_y has been called, and self._y_metadata set.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         method : str, optional (default="predict")
             method for which to return column names
             one of "predict", "predict_interval", "predict_quantiles", "predict_var"

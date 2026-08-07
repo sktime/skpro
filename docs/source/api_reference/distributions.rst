@@ -4,13 +4,13 @@
 Probability distributions
 =========================
 
-The :mod:`sktime.distributions` module contains
+The :mod:`skpro.distributions` module contains
 probability distributions which combine a ``pandas.DataFrame``-like API
 with a ``scikit-base`` compatible object interface.
 
 All distributions in ``skpro`` can be listed using the ``skpro.registry.all_objects`` utility,
 using ``object_types="distribution"``, optionally filtered by tags.
-Valid tags can be listed using ``sktime.registry.all_tags``.
+Valid tags can be listed using ``skpro.registry.all_tags``.
 
 Base
 ----
@@ -35,12 +35,15 @@ Continuous support - full reals
     :toctree: auto_generated/
     :template: class.rst
 
+    Cauchy
+    Gumbel
     Laplace
     Logistic
     Normal
     SkewNormal
     TDistribution
     TruncatedNormal
+    Uniform
 
 
 Continuous support - non-negative reals
@@ -54,12 +57,21 @@ Continuous support - non-negative reals
 
     Alpha
     Beta
+    BurrIII
+    BurrXII
     ChiSquared
     Exponential
     Erlang
+    FatigueLife
+    FDist
     Fisk
     Gamma
+    GeneralizedPareto
+    GumbelL
+    GumbelR
+    Levy
     LogGamma
+    LogNormal
     HalfCauchy
     HalfLogistic
     HalfNormal
@@ -67,6 +79,8 @@ Continuous support - non-negative reals
     InverseGaussian
     LogLaplace
     Pareto
+    Rayleigh
+    TruncatedPareto
     Weibull
 
 
@@ -81,9 +95,10 @@ Integer support
 
     Binomial
     Geometric
-    Hurdle
     NegativeBinomial
     Poisson
+    ZeroInflated
+    Skellam
 
 Non-parametric and empirical distributions
 ------------------------------------------
@@ -97,6 +112,7 @@ Non-parametric and empirical distributions
     Delta
     Empirical
     Histogram
+    HistogramQPD
     QPD_Empirical
     QPD_Johnson
     QPD_U
@@ -107,8 +123,8 @@ Non-parametric and empirical distributions
 Composite distributions
 -----------------------
 
-Parametric families
-~~~~~~~~~~~~~~~~~~~
+Transformation composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. currentmodule:: skpro.distributions
 
@@ -117,8 +133,21 @@ Parametric families
     :template: class.rst
 
     MeanScale
-    TruncatedDistribution
+    TransformedDistribution
+
+Truncated and inflated distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: skpro.distributions
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    Hurdle
     LeftTruncated
+    TruncatedDistribution
+    ZeroInflated
 
 Mixture composition
 ~~~~~~~~~~~~~~~~~~~
@@ -129,18 +158,9 @@ Mixture composition
     :toctree: auto_generated/
     :template: class.rst
 
+    KernelMixture
     Mixture
-
-Transformation composition
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. currentmodule:: skpro.distributions
-
-.. autosummary::
-    :toctree: auto_generated/
-    :template: class.rst
-
-    TransformedDistribution
+    NormalMixture
 
 Sampling and multivariate composition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

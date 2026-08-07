@@ -57,6 +57,7 @@ Online learning
     OnlineRefit
     OnlineRefitEveryN
     OnlineDontRefit
+    OnlineBatchMixture
 
 .. currentmodule:: skpro.regression.ondil
 
@@ -160,6 +161,19 @@ Reduction to probabilistic classification
 
     HistBinnedProbaRegressor
 
+Heterogeneous ensembles of probabilistic regressors
+---------------------------------------------------
+
+.. currentmodule:: skpro.regression.ensemble
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    VotingProbaRegressor
+    StackingProbaRegressor
+
+
 Distributional boosting
 -----------------------
 
@@ -170,6 +184,17 @@ Distributional boosting
     :template: class.rst
 
     XGBoostLSS
+
+Deep learning based regression
+------------------------------
+
+.. currentmodule:: skpro.regression.mdn
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    MDNRegressor
 
 Naive regressors and baselines
 ------------------------------
@@ -222,6 +247,17 @@ Gaussian process and kernel regression
     :template: class.rst
 
     GaussianProcess
+
+Non-parametric conditional density estimation
+-------------------------
+
+.. currentmodule:: skpro.regression.nonparametric
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    NadarayaWatsonCDE
 
 Bayesian regressors
 -------------------

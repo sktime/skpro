@@ -1,4 +1,7 @@
 """Automated tests based on the skbase test suite template."""
+
+import copy
+
 import pandas as pd
 import pytest
 from skbase.testing import QuickTester
@@ -206,3 +209,47 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         assert isinstance(y_pred_test, pd.DataFrame)
         assert (y_pred_test.index == X_test.index).all()
         assert (y_pred_test.columns == y_fit.columns).all()
+
+    def test_predict_proba_no_param_mutation(self, object_instance):
+        """Test that predict_proba does not mutate constructor parameters."""
+        import pandas as pd
+        from sklearn.datasets import load_diabetes
+        from sklearn.model_selection import train_test_split
+
+        X, y = load_diabetes(return_X_y=True, as_frame=True)
+        X = X.iloc[:50]
+        y = y.iloc[:50]
+        y = pd.DataFrame(y)
+
+        X_train, X_test, y_train, _ = train_test_split(X, y, random_state=42)
+
+        regressor = object_instance
+        regressor.fit(X_train, y_train)
+
+        params_before = copy.deepcopy(regressor.get_params())
+
+        regressor.predict_proba(X_test)
+        regressor.predict_proba(X_test[:5])
+
+        # constructor params must be unchanged after predict_proba calls
+        params_after = regressor.get_params()
+
+        for key in params_before:
+            before_val = params_before[key]
+            after_val = params_after[key]
+
+            # skip estimator objects - they have fitted state attrs
+            if hasattr(before_val, "fit"):
+                continue
+
+            assert type(before_val) == type(after_val), (  # noqa: E721
+                f"Parameter '{key}' type changed after predict_proba: "
+                f"before={type(before_val)}, after={type(after_val)}"
+            )
+            # We use repr() to compare values because they might contain estimators
+            #  which fail `==` checks after being deepcopied.
+
+            assert repr(before_val) == repr(after_val), (
+                f"Parameter '{key}' was mutated by predict_proba: "
+                f"before={before_val}, after={after_val}"
+            )

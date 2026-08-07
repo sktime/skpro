@@ -1,5 +1,5 @@
 # copyright: sktime developers, BSD-3-Clause License (see LICENSE file)
-"""Implements adapter for lifelines models."""
+"""Adapter for lifelines models."""
 
 __all__ = ["_LifelinesAdapter"]
 __author__ = ["fkiraly"]

@@ -17,8 +17,8 @@ import sys
 def _get_sys_info():
     """System information.
 
-    Return
-    ------
+    Returns
+    -------
     sys_info : dict
         system and Python version information
     """

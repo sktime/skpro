@@ -14,7 +14,7 @@ __author__ = [
 ]  # interface only. Cyclic boosting authors in cyclic_boosting package
 
 import warnings
-from typing import Union
+from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -83,11 +83,10 @@ class CyclicBoosting(BaseProbaRegressor):
         be on a bounded interval, with support between ``lower`` and ``upper``.
     maximal_iterations : int, default=10
         maximum number of iterations for the cyclic boosting algorithm
-    dist_type: str, one of ``'normal'`` (default), ``'logistic'``
-        inner base distribution to use for the Johnson QPD, i.e., before
-        arcosh and similar transformations.
-        Available options are ``'normal'`` (default), ``'logistic'``,
-        or ``'sinhlogistic'``.
+    dist: str, default='normal',
+        One of ``'normal'`` or ``'logistic'``inner base distribution to use for
+        the Johnson QPD, i.e., before arcosh and similar transformations. Available
+        options are ``'normal'`` (default), ``'logistic'`` or ``'sinhlogistic'``.
 
     Attributes
     ----------
@@ -133,17 +132,24 @@ class CyclicBoosting(BaseProbaRegressor):
         "tests:vm": True,  # requires its own test VM to run
     }
 
+    # todo 2.15.0
+    # remove the 'dist_type' argument from '__init__' signature
+    # remove the following 'if' check and deprecation warning
+    # de-indent the following 'else' check
+    # move dist argument to position of dist_type argument in signature
+
     def __init__(
         self,
-        feature_groups=None,
+        feature_groups: Union[List[str], List[Tuple[str, ...]], None] = None,
         feature_properties=None,
         alpha=0.2,
         mode="multiplicative",
-        lower=None,
-        upper=None,
+        lower: Union[float, None] = None,
+        upper: Union[float, None] = None,
         maximal_iterations=10,
-        dist_type: Union[str, None] = "normal",
+        dist_type: Union[str, None] = "deprecated",
         dist_shape: Union[float, None] = 0.0,
+        dist: Union[str, None] = "normal",
     ):
         self.feature_groups = feature_groups
         self.feature_properties = feature_properties
@@ -153,9 +159,47 @@ class CyclicBoosting(BaseProbaRegressor):
         self.upper = upper
         self.maximal_iterations = maximal_iterations
         self.dist_type = dist_type
+        self.dist = dist
         self.dist_shape = dist_shape
 
         super().__init__()
+
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        dist_type = self.dist_type
+        dist = self.dist
+        feature_groups = self.feature_groups
+        feature_properties = self.feature_properties
+        alpha = self.alpha
+        maximal_iterations = self.maximal_iterations
+
+        # todo 2.15.0: remove the following 'if' check and deprecation warning
+        # handle deprecation of dist_type -> dist
+        if dist_type != "deprecated":
+            from warnings import warn
+
+            warn(
+                "in `CyclicBoosting`, parameter 'dist_type' "
+                "will be renamed to 'dist' in version 2.15.0. "
+                "To keep current behaviour and to silence this warning, "
+                "use 'dist' instead of 'dist_type', "
+                "set dist explicitly via kwarg, and do not set dist_type.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self._dist = dist_type
+        else:
+            self._dist = dist
 
         self.quantiles = [self.alpha, 0.5, 1 - self.alpha]
         self.quantile_values = list()
@@ -164,13 +208,13 @@ class CyclicBoosting(BaseProbaRegressor):
 
         # check parameters
         if (not isinstance(feature_groups, list)) and feature_groups is not None:
-            raise ValueError("feature_groups needs to be list")
+            raise ValueError("feature_groups must be list")
         if (
             not isinstance(feature_properties, dict)
         ) and feature_properties is not None:
-            raise ValueError("feature_properties needs to be dict")
+            raise ValueError("feature_properties must be dict")
         if alpha >= 0.5 or alpha <= 0.0:
-            raise ValueError("alpha's range needs to be 0.0 < alpha < 0.5")
+            raise ValueError("alpha's range must be 0.0 < alpha < 0.5")
 
         # build estimators
         if self.mode == "multiplicative":
@@ -182,7 +226,7 @@ class CyclicBoosting(BaseProbaRegressor):
 
             regressor = pipeline_CBAdditiveQuantileRegressor
         else:
-            raise ValueError("mode needs to be 'multiplicative' or 'additive'")
+            raise ValueError("mode must be 'multiplicative' or 'additive'")
 
         for quantile in self.quantiles:
             self.quantile_est.append(
@@ -193,6 +237,34 @@ class CyclicBoosting(BaseProbaRegressor):
                     maximal_iterations=maximal_iterations,
                 )
             )
+
+    def _validate_feature_groups(self, X: pd.DataFrame) -> None:
+        """Validate that all feature groups exist in X columns.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Feature data to validate against
+
+        Raises
+        ------
+        ValueError
+            If any feature in feature_groups is not present in X.columns
+        """
+        if self.feature_groups is None:
+            return
+
+        feature_names = []
+        for feature in self.feature_groups:
+            if isinstance(feature, tuple):
+                feature_names.extend(feature)
+            else:
+                feature_names.append(feature)
+
+        missing_features = set(feature_names) - set(X.columns)
+        if missing_features:
+            missing_list = sorted(list(missing_features))
+            raise ValueError(f"Features {missing_list} are not in X")
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -211,16 +283,7 @@ class CyclicBoosting(BaseProbaRegressor):
         -------
         self : reference to self
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
+        self._validate_feature_groups(X)
 
         self._y_cols = y.columns
         y = y.to_numpy().flatten()
@@ -250,17 +313,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y : pandas DataFrame, same length as `X`, same columns as `y` in `fit`
             labels predicted for `X`
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         index = X.index
         y_cols = self._y_cols
 
@@ -290,17 +342,6 @@ class CyclicBoosting(BaseProbaRegressor):
         y_pred : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         index = X.index
         y_cols = self._y_cols
 
@@ -318,7 +359,7 @@ class CyclicBoosting(BaseProbaRegressor):
             "qv_high": self.quantile_values[2].reshape(-1, 1),
             "lower": self.lower,
             "upper": self.upper,
-            "base_dist": self.dist_type,
+            "base_dist": self._dist,
             "index": index,
             "columns": y_cols,
         }
@@ -353,17 +394,6 @@ class CyclicBoosting(BaseProbaRegressor):
             Upper/lower interval end are equivalent to
             quantile predictions at alpha = 0.5 - c/2, 0.5 + c/2 for c in coverage.
         """
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         index = X.index
         y_cols = self._y_cols
         columns = pd.MultiIndex.from_product(
@@ -405,17 +435,6 @@ class CyclicBoosting(BaseProbaRegressor):
         """
         quantiles = alpha
 
-        if self.feature_groups is not None:
-            feature_names = list()
-            for feature in self.feature_groups:
-                if isinstance(feature, tuple):
-                    for f in feature:
-                        feature_names.append(f)
-                else:
-                    feature_names.append(feature)
-            if not set(feature_names).issubset(set(X.columns)):
-                raise ValueError(f"{feature} is not in X")
-
         is_given_proba = False
         warning = (
             "{} percentile doesn't trained, return QPD's quantile value, "
@@ -433,7 +452,7 @@ class CyclicBoosting(BaseProbaRegressor):
                 warnings.warn(warning.format(quantiles), stacklevel=2)
                 is_given_proba = True
         else:
-            raise ValueError("quantile needs to be float or list of floats")
+            raise ValueError("quantile must be float or list of floats")
 
         index = X.index
         y_cols = self._y_cols
