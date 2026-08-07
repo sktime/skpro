@@ -54,6 +54,56 @@ class Laplace(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    # documentation hooks for formula injection
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{1}{2b} \exp \left( - \frac{|x - \mu|}{b} \right)
+    """,
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = - \log(2b) - \frac{|x - \mu|}{b}
+    """,
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) =
+        \begin{cases}
+            \frac{1}{2} \exp \left( \frac{x - \mu}{b} \right), & x < \mu \\
+            1 - \frac{1}{2} \exp \left( - \frac{x - \mu}{b} \right), & x \geq \mu
+        \end{cases}
+    """,
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; \mu, b) = \mu - b \operatorname{sgn}(p - 0.5) \ln(1 - 2|p - 0.5|)
+    """,
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \mu
+    """,
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = 2b^2
+    """,
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = \frac{3}{2} b
+    """,
+    }
+
     def __init__(self, mu, scale, index=None, columns=None):
         self.mu = mu
         self.scale = scale

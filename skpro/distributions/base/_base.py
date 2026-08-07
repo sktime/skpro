@@ -5,9 +5,8 @@ __author__ = ["fkiraly"]
 
 __all__ = ["BaseDistribution"]
 
-from warnings import warn
-import types
 import textwrap
+from warnings import warn
 
 import numpy as np
 import pandas as pd
@@ -15,96 +14,59 @@ from skbase.utils.dependencies import _check_estimator_deps, _check_soft_depende
 
 from skpro.base import BaseObject
 
-# mapping of public methods to formula doc hooks
-_DOC_METHODS = {
-    "pdf": "_pdf_formula_doc",
-    "cdf": "_cdf_formula_doc",
-    "log_pdf": "_log_pdf_formula_doc",
-    "pmf": "_pmf_formula_doc",
-    "log_pmf": "_log_pmf_formula_doc",
-    "ppf": "_ppf_formula_doc",
-    "surv": "_surv_formula_doc",
-    "haz": "_haz_formula_doc",
-    "mean": "_mean_formula_doc",
-    "var": "_var_formula_doc",
-    "energy": "_energy_formula_doc",
-    "pdfnorm": "_pdfnorm_formula_doc",
-}
-
-def _inject_formula_doc(method, formula_doc):
-    """Inject formula_doc into method.__doc__ at {formula_doc} placeholder."""
-    base_doc = method.__doc__ or ""
-    if "{formula_doc}" not in base_doc:
-        return base_doc
-
-    if formula_doc is None:
-        # Remove placeholder and surrounding empty lines cleanly
-        return (
-            base_doc
-            .replace("{formula_doc}\n\n", "")
-            .replace("\n\n{formula_doc}", "")
-            .replace("{formula_doc}", "")
-        )
-
-    clean_formula = textwrap.dedent(formula_doc).strip()
-    return base_doc.replace("{formula_doc}", clean_formula)
-
-def _clone_method_with_doc(method, new_doc):
-    """Clone a function and replace its docstring (safe pattern)."""
-    new_method = types.FunctionType(
-        method.__code__,
-        method.__globals__,
-        name=method.__name__,
-        argdefs=method.__defaults__,
-        closure=method.__closure__,
-    )
-    new_method.__dict__.update(method.__dict__)
-    new_method.__doc__ = new_doc
-    return new_method
-
 
 class BaseDistribution(BaseObject):
     """Base probability distribution."""
 
     # hooks for distribution-specific documentation
-    _pdf_formula_doc = None
-    _cdf_formula_doc = None
-    _log_pdf_formula_doc = None
-    _pmf_formula_doc = None
-    _log_pmf_formula_doc = None
-    _ppf_formula_doc = None
-    _surv_formula_doc = None
-    _haz_formula_doc = None
-    _mean_formula_doc = None
-    _var_formula_doc = None
-    _energy_formula_doc = None
-    _pdfnorm_formula_doc = None
-
+    _formula_docs = {}
 
     def __init_subclass__(cls, **kwargs):
+        """Inject distribution-specific math formulae into docstrings."""
         super().__init_subclass__(**kwargs)
 
-        if cls is BaseDistribution:
-            return
+        # inject formulae into docstrings, from _formula_docs
+        for method_name in cls._all_public_methods():
+            cls._inject_formula(method_name)
 
-        # Skip adapter classes
-        if cls.__name__.startswith("_BaseTF"):
-            return
+    @classmethod
+    def _all_public_methods(cls):
+        """Return all public methods of the class."""
+        return [
+            attr
+            for attr in dir(cls)
+            if callable(getattr(cls, attr)) and not attr.startswith("_")
+        ]
 
-        for method_name, hook_name in _DOC_METHODS.items():
-            method = getattr(cls, method_name, None)
-            if method is None:
-                continue
+    @classmethod
+    def _has_implementation_of(cls, method):
+        """Check if method has a concrete implementation, ignoring docstring wrapper."""
+        # 1. Ask the standard framework if it thinks the method is implemented
+        is_implemented = super()._has_implementation_of(method)
 
-            base_doc = method.__doc__ or ""
-            if "{formula_doc}" not in base_doc:
-                continue
+        if is_implemented:
+            # 2. If it says YES, let's peek underneath the wrapper (X-Ray Vision)
+            method_obj = getattr(cls, method, None)
 
-            formula_doc = getattr(cls, hook_name, None)
-            new_doc = _inject_formula_doc(method, formula_doc)
+            if hasattr(method_obj, "__wrapped__"):
+                base_method = getattr(BaseDistribution, method, None)
 
-            new_method = _clone_method_with_doc(method, new_doc)
-            setattr(cls, method_name, new_method)
+                # Unwrap the subclass method to find the real function
+                unwrapped = method_obj
+                while hasattr(unwrapped, "__wrapped__"):
+                    unwrapped = unwrapped.__wrapped__
+
+                # Unwrap the base method just in case
+                if base_method is not None:
+                    while hasattr(base_method, "__wrapped__"):
+                        base_method = base_method.__wrapped__
+
+                # 3. If the real function underneath is exactly the Base default,
+                # then the subclass didn't write custom math. It's just our doc wrapper!
+                if unwrapped is base_method:
+                    return False
+
+        return is_implemented
 
     # default tag values - these typically make the "safest" assumption
     _tags = {
@@ -142,12 +104,7 @@ class BaseDistribution(BaseObject):
         self.columns = _coerce_to_pd_index_or_none(columns)
 
         super().__init__()
-
-        # this block has a double purpose:
-        # - emit a warning if dependencies are not met, but allow instantiation
-        # - if dependencies are met, call __post_init__ used by inheriting classes
-        if _check_estimator_deps(self, severity="warning"):
-            self.__post_init__()
+        _check_estimator_deps(self)
 
         self._init_shape_bc(index=index, columns=columns)
 
@@ -806,7 +763,11 @@ class BaseDistribution(BaseObject):
     def pdf(self, x):
         r"""Probability density function.
 
-        {formula_doc}
+        {formula_hook}
+
+        The ``pdf`` method represents a 2D array of pdf values,
+        one for each entry of the distribution, evaluated at a
+        2D array-like ``x`` of same shape, as follows.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
@@ -875,9 +836,13 @@ class BaseDistribution(BaseObject):
     def log_pdf(self, x):
         r"""Logarithmic probability density function.
 
-        {formula_doc}
+        Numerically more stable than calling ``pdf`` and then taking logarithms.
 
-        Numerically more stable than calling pdf and then taking logarithms.
+        {formula_hook}
+
+        The ``log_pdf`` method represents a 2D array of logarithmic pdf values,
+        one for each entry of the distribution, evaluated at a
+        2D array-like ``x`` of same shape, as follows.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in `(N, n)` ``DataFrame``-s
@@ -969,7 +934,11 @@ class BaseDistribution(BaseObject):
     def pmf(self, x):
         r"""Probability mass function.
 
-        {formula_doc}
+        {formula_hook}
+
+        The ``pmf`` method represents a 2D array of pmf values,
+        one for each entry of the distribution, evaluated at a
+        2D array-like ``x`` of same shape, as follows.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
@@ -1027,9 +996,13 @@ class BaseDistribution(BaseObject):
     def log_pmf(self, x):
         r"""Logarithmic probability mass function.
 
-        {formula_doc}
+        Numerically more stable than calling ``pmf`` and then taking logarithms.
 
-        Numerically more stable than calling pmf and then taking logarithms.
+        {formula_hook}
+
+        The ``log_pmf`` method represents a 2D array of logarithmic pmf values,
+        one for each entry of the distribution, evaluated at a
+        2D array-like ``x`` of same shape, as follows.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in `(N, n)` ``DataFrame``-s
@@ -1069,7 +1042,7 @@ class BaseDistribution(BaseObject):
         """
         if self._has_implementation_of("pmf") or self._has_implementation_of("_pmf"):
             approx_method = (
-                "by taking the logarithm of the output returned by the pdf method, "
+                "by taking the logarithm of the output returned by the pmf method, "
                 "this may be numerically unstable"
             )
             warn(self._method_error_msg("log_pmf", fill_in=approx_method))
@@ -1085,7 +1058,11 @@ class BaseDistribution(BaseObject):
     def cdf(self, x):
         r"""Cumulative distribution function.
 
-        {formula_doc}
+        {formula_hook}
+
+        The ``cdf`` method represents a 2D array of cumulative distribution function
+        values, one for each entry of the distribution, evaluated at a
+        2D array-like ``x`` of same shape, as follows.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
@@ -1130,7 +1107,11 @@ class BaseDistribution(BaseObject):
     def surv(self, x):
         r"""Survival function.
 
-        {formula_doc}        
+        {formula_hook}
+
+        The ``surv`` method represents a 2D array of survival function
+        values, one for each entry of the distribution, evaluated at a
+        2D array-like ``x`` of same shape, as follows.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
@@ -1166,7 +1147,11 @@ class BaseDistribution(BaseObject):
     def haz(self, x):
         r"""Hazard function.
 
-        {formula_doc}
+        {formula_hook}
+
+        The ``haz`` method represents a 2D array of hazard function
+        values, one for each entry of the distribution, evaluated at a
+        2D array-like ``x`` of same shape, as follows.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
@@ -1204,7 +1189,11 @@ class BaseDistribution(BaseObject):
     def ppf(self, p):
         r"""Quantile function = percent point function = inverse cdf.
 
-        {formula_doc}
+        {formula_hook}
+
+        The ``ppf`` method represents a 2D array of quantile function values,
+        one for each entry of the distribution, evaluated at a
+        2D array-like ``p`` of same shape, as follows.
 
         Let :math:`X` be a random variables with the distribution of ``self``,
         taking values in ``(N, n)`` ``DataFrame``-s
@@ -1224,7 +1213,7 @@ class BaseDistribution(BaseObject):
         Returns
         -------
         ``pd.DataFrame`` with same columns and index as ``self``
-            containing :math:`F_{X_{ij}}(x_{ij})`, as above
+            containing :math:`F^{-1}_{X_{ij}}(p_{ij})`, as above
         """
         return self._boilerplate("_ppf", p=p)
 
@@ -1299,7 +1288,12 @@ class BaseDistribution(BaseObject):
     def energy(self, x=None):
         r"""Energy of self, w.r.t. self or a constant frame x.
 
-        {formula_doc}
+        {formula_hook}
+
+        The ``energy`` method represents a 2D array of energy values,
+        one for each entry of the distribution, as follows.
+        If ``x`` is passed, they are evaluated at a
+        2D array-like ``x`` of same shape.
 
         Let :math:`X, Y` be i.i.d. random variables with the distribution of ``self``.
 
@@ -1470,7 +1464,10 @@ class BaseDistribution(BaseObject):
     def mean(self):
         r"""Return expected value of the distribution.
 
-        {formula_doc}
+        {formula_hook}
+
+        The ``mean`` method represents a 2D array of expected values,
+        one for each entry of the distribution.
 
         Let :math:`X` be a random variable with the distribution of ``self``.
         Returns the expectation :math:`\mathbb{E}[X]`
@@ -1514,7 +1511,10 @@ class BaseDistribution(BaseObject):
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
 
-        {formula_doc}
+        {formula_hook}
+
+        The ``var`` method represents a 2D array of variances,
+        one for each entry of the distribution.
 
         Let :math:`X` be a random variable with the distribution of ``self``.
         Returns :math:`\mathbb{V}[X] = \mathbb{E}\left(X - \mathbb{E}[X]\right)^2`,
@@ -1567,7 +1567,10 @@ class BaseDistribution(BaseObject):
     def pdfnorm(self, a=2):
         r"""a-norm of pdf, defaults to 2-norm.
 
-        {formula_doc}        
+        {formula_hook}
+
+        The ``pdfnorm`` method represents a 2D array of a-norms of
+        the entry marginal pdf, one for each entry of the distribution.
 
         computes a-norm of the entry marginal pdf, i.e.,
         :math:`\mathbb{E}[p_X(X)^{a-1}] = \int p(x)^a dx`,
@@ -1970,6 +1973,45 @@ class BaseDistribution(BaseObject):
         upper_int = min(int(np.ceil(upper)) + 1, lower_int + max_points)
         return np.arange(lower_int, upper_int)
 
+    @classmethod
+    def _inject_formula(cls, method_name):
+        """Inject distribution-specific math formulae into docstrings."""
+        if cls is BaseDistribution:
+            return
+
+        # Skip adapters that might behave weirdly
+        if cls.__name__.startswith("_BaseTF"):
+            return
+
+        method_pristine = getattr(BaseDistribution, method_name, None)
+        method = getattr(cls, method_name, None)
+        if method_pristine is None or method_pristine.__doc__ is None:
+            return
+
+        if "{formula_hook}" not in method_pristine.__doc__:
+            return
+
+        formula_doc = cls._formula_docs.get(method_name, "")
+        new_doc = _inject_formula_doc(method_pristine.__doc__, formula_doc)
+
+        # Factory function to avoid Python's late-binding loop closure bug
+        def _make_wrapper(original_method, new_docstring):
+            import functools
+
+            # Unwrap to prevent deep wrapper chains from multi-level inheritance
+            while hasattr(original_method, "__wrapped__"):
+                original_method = original_method.__wrapped__
+
+            @functools.wraps(original_method)
+            def wrapper(self, *args, **kwargs_inner):
+                return original_method(self, *args, **kwargs_inner)
+
+            wrapper.__doc__ = new_docstring
+            return wrapper
+
+        # Safely attach the new wrapped method to the subclass
+        setattr(cls, method_name, _make_wrapper(method, new_doc))
+
 
 def _is_index_like(obj):
     """Check if an object is pandas Index-like (Index, MultiIndex, etc.)."""
@@ -2205,3 +2247,31 @@ def _coerce_to_pd_index_or_none(x):
     if isinstance(x, pd.Index):
         return x
     return pd.Index(x)
+
+
+def _inject_formula_doc(base_doc, formula_doc):
+    """Inject formula_doc into base_doc at {formula_hook} placeholder."""
+    if not base_doc or "{formula_hook}" not in base_doc:
+        return base_doc
+
+    if formula_doc is None:
+        # Cleanly remove the placeholder if no formula is provided
+        return base_doc.replace("        {formula_hook}\n\n", "").replace(
+            "{formula_hook}", ""
+        )
+
+    # 1. Find exactly how many spaces are before {formula_hook} in the base docstring
+    lines = base_doc.split("\n")
+    indent_spaces = ""
+    for line in lines:
+        if "{formula_hook}" in line:
+            indent_spaces = line[: line.find("{formula_hook}")]
+            break
+
+    # 2. Clean the user's formula (preserves relative indent inside the math block)
+    clean_formula = textwrap.dedent(formula_doc).strip()
+
+    # 3. Add the base indentation to every new line in the formula
+    indented_formula = clean_formula.replace("\n", "\n" + indent_spaces)
+
+    return base_doc.replace("{formula_hook}", indented_formula)

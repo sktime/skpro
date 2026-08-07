@@ -74,6 +74,52 @@ class Exponential(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
+    # documentation hooks for formula injection
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \lambda \exp(-\lambda x), \quad x \ge 0
+    """,
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = \log(\lambda) - \lambda x, \quad x \ge 0
+    """,
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = 1 - \exp(-\lambda x), \quad x \ge 0
+    """,
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; \lambda) = -\frac{\ln(1 - p)}{\lambda}
+    """,
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \lambda^{-1}
+    """,
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \lambda^{-2}
+    """,
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = \lambda^{-1}
+    """,
+    }
+
     def __init__(self, rate, index=None, columns=None):
         self.rate = rate
 
