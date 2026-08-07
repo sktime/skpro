@@ -25,8 +25,8 @@ class BaseDistribution(BaseObject):
         """Inject distribution-specific math formulae into docstrings."""
         super().__init_subclass__(**kwargs)
 
+        # inject formulae into docstrings, from _formula_docs
         for method_name in cls._formula_docs:
-            # ALWAYS use the pristine docstring from BaseDistribution as the template
             cls._inject_formula(method_name)
 
     @classmethod
@@ -1974,15 +1974,16 @@ class BaseDistribution(BaseObject):
         if cls.__name__.startswith("_BaseTF"):
             return
 
+        method_pristine = getattr(BaseDistribution, method_name, None)
         method = getattr(cls, method_name, None)
-        if method is None or method.__doc__ is None:
+        if method_pristine is None or method_pristine.__doc__ is None:
             return
 
-        if "{formula_hook}" not in method.__doc__:
+        if "{formula_hook}" not in method_pristine.__doc__:
             return
 
         formula_doc = cls._formula_docs.get(method_name, "")
-        new_doc = _inject_formula_doc(method.__doc__, formula_doc)
+        new_doc = _inject_formula_doc(method_pristine.__doc__, formula_doc)
 
         # Factory function to avoid Python's late-binding loop closure bug
         def _make_wrapper(original_method, new_docstring):
