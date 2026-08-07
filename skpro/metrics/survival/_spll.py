@@ -71,7 +71,7 @@ class SPLL(BaseSurvDistrMetric):
             res = -y_pred.log_pdf(y_true)
         else:
             cont_term = -y_pred.log_pdf(y_true) * (1 - C_true.to_numpy())
-            disc_term = np.log(1 - y_pred.cdf(y_true)) * C_true.to_numpy()
+            disc_term = -np.log(1 - y_pred.cdf(y_true)) * C_true.to_numpy()
             res = cont_term + disc_term
 
         if self.multivariate:

@@ -16,6 +16,156 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.14.0] - 2026-07-01
+=====================
+
+Highlights
+~~~~~~~~~~
+
+* distribution fitters - framework and first examples (:pr:`924`) :user:`patelchaitany`
+* ``VotingProbaRegressor`` - heterogeneous ensemble compositor (:pr:`1069`) :user:`Ashish-Kumar-Dash`
+*  ``HistogramQPD`` - histogram quantile-parametrized distribution (:pr:`1078`) :user:`siddharth7113`
+* added online ``update`` to ``BaggingRegressor`` (:pr:`1064`) :user:`patelchaitany`
+* ``Gumbel`` (Type I Extreme Value) probability distribution (:pr:`840`) :user:`direkkakkar319-ops`
+
+Core interface changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+A new object type, distribution fitter (``distfitter``), has been added to ``skpro``.
+An extension template is available in ``extension_templates``.
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Inconsistent naming of "distribution" type arguments in various regressors has
+been changed to ``dist``. The old argument names are still accepted,
+but will be removed in version 2.15.0.
+Users should update their code to use ``dist`` instead of ``distribution`` or
+``distr_type``, in regressors ``ResidualDouble``, ``CyclicBoosting``,
+``OndilOnlineGamlss``, ``GLMRegressor``, and ``GlumRegressor``.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] ``VotingProbaRegressor`` - heterogeneous ensemble compositor (:pr:`1069`) :user:`Ashish-Kumar-Dash`
+* [ENH] distribution fitters - framework and first examples (:pr:`924`) :user:`patelchaitany`
+* [ENH] ``Gumbel`` (Type I Extreme Value) probability distribution (:pr:`840`) :user:`direkkakkar319-ops`
+* [ENH] ``HistogramQPD`` - histogram quantile-parametrized distribution (:pr:`1078`) :user:`siddharth7113`
+* [ENH] add online update to ``BaggingRegressor`` (:pr:`1064`) :user:`patelchaitany`
+* [ENH] all regressors to use ``dist`` kwarg for distribution inputs (:pr:`1008`) :user:`joshdunnlime`
+
+Fixes
+~~~~~
+
+* [BUG] Fixing bounds in ``cdf`` in ``TruncatedDistribution``  (:pr:`1081`) :user:`siddharth7113`
+* [BUG] fix ``HalfNormal``, ``HalfCauchy``, ``HalfLogistic`` passing scale as positional arg (:pr:`940`) :user:`ANANYA542`
+* [BUG] fix ``HalfCauchy`` scipy mapping and add dedicated tests (towards #22) (:pr:`954`) :user:`kunal14901`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Bump ``codecov/codecov-action`` from ``6`` to ``7`` (:pr:`1067`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update ``sphinx-gallery`` requirement from ``<0.21.0`` to ``<0.22.0`` (:pr:`1061`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update ``sphinx-issues`` requirement from ``<6.0.0`` to ``<7.0.0`` (:pr:`1060`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update ``polars`` requirement from ``<1.37.0`` to ``<1.42.0`` (:pr:`1063`) :user:`dependabot[bot]`
+* [MNT] move frozen 2024 dependencies test to ``uv`` dependency freeze mechanism from dedicated depset (:pr:`1070`) :user:`fkiraly`
+* [MNT] [Dependabot](deps-dev): Update ``polars`` requirement from ``<1.42.0`` to ``<1.43.0`` (:pr:`1080`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump ``actions/checkout`` from ``6`` to ``7`` (:pr:`1074`) :user:`dependabot[bot]`
+* [MNT] lint ``distributions`` import (:pr:`1089`) :user:`fkiraly`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] update installation guide (:pr:`1058`) :user:`anhtnt90dev`
+* [DOC] add missing ``Gumbel`` distribution to distributions API reference (:pr:`1088`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`ANANYA542`,
+:user:`anhtnt90dev`,
+:user:`Ashish-Kumar-Dash`,
+:user:`direkkakkar319-ops`,
+:user:`fkiraly`,
+:user:`joshdunnlime`,
+:user:`kunal14901`,
+:user:`patelchaitany`,
+:user:`siddharth7113`
+
+
+[2.13.0] - 2026-05-30
+=====================
+
+Highlights
+~~~~~~~~~~
+
+* ``OnlineBatchMixture`` online mixture regression (:pr:`900`) :user:`patelchaitany`
+* new ``update`` capability in ``GridSearchCV`` and ``RandomizedSearchCV`` (:pr:`1053`) :user:`patelchaitany`
+* MDN regressor: Improved Losses (:pr:`1042`) :user:`joshdunnlime`
+* Gompertz distribution (:pr:`1043`) :user:`smilingprogrammer`
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] Refactor ``CyclicBoosting`` to eliminate feature validation code duplication (:pr:`917`) :user:`MayankSharma-2812`
+* [ENH] ``OnlineBatchMixture`` online mixture regression (:pr:`900`) :user:`patelchaitany`
+* [ENH] Remove redundant method overrides in ``Skellam`` and ``FDist`` (:pr:`963`) :user:`ANANYA542`
+* [ENH] Deduplicate ``_random_ss_ix`` helper function (:pr:`1004`) :user:`krsatyamthakur-droid`
+* [ENH] Migrate base class registry to a class based structure and lookup logic (:pr:`925`) :user:`codeit-ronit`
+* [ENH] Refactor metric classes to one class per file (:pr:`1035`) :user:`fkiraly`
+* [ENH] Gompertz distribution (:pr:`1043`) :user:`smilingprogrammer`
+* [ENH] MDN Improved Losses (:pr:`1042`) :user:`joshdunnlime`
+* [ENH] Added ``update`` capability in ``GridSearchCV`` and ``RandomizedSearchCV`` (:pr:`1053`) :user:`patelchaitany`
+
+Fixes
+~~~~~
+
+* [BUG] Fix GeneralizedPareto ``__dict__`` hack causing sklearn.clone() to return wrong parametersc (:pr:`893`) :user:`direkkakkar319-ops`
+* [BUG] Fix wrong chi-squared identity in ``ChiSquared._energy_x`` (:pr:`965`) :user:`ANANYA542`
+* [BUG] Fix incorrect handling of negative ``n`` in ``BaseDistribution.head`` (:pr:`923`) :user:`mohityadav8`
+* [BUG] Fix missing negative sign in SPLL metric calculates negative loss for censored data (:pr:`1032`) :user:`KaranSinghDev`
+* [BUG] Fix operator precedence in ``Histogram._check_single_array_distr`` (:pr:`1031`) :user:`Unknown-Shiva`
+* [BUG] Use ``pdf`` instead of ``log_pdf`` in ``SquaredDistrLoss`` (:pr:`935`) :user:`Mahaveerjain-18`, :user:`MayankSharma-2812`
+* [BUG] Fix ``SquaredDistrLoss``: use pdf instead of log_pdf in loss formula (:pr:`937`) :user:`MayankSharma-2812`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] in release workflow, require ``check_tag`` before releasing (:pr:`920`) :user:`fkiraly`
+* [MNT] Remove legacy test utilities module (#908) (:pr:`946`) :user:`krsatyamthakur-droid`
+* [MNT] [Dependabot](deps): Bump codecov/codecov-action from 5 to 6 (:pr:`1000`) :user:`dependabot[bot]`
+* [MNT] Fix project URLs in ``pyproject.toml`` (:pr:`1007`) :user:`kabirvashisht4-glitch`
+* [MNT] allow ``scikit-base<1.1`` in the dependencies (:pr:`1040`) :user:`fkiraly`
+* [MNT] add empty ``CONTRIBUTORS.md`` to initialize contributors workflow (:pr:`1044`) :user:`fkiraly`
+* [MNT] [Dependabot](deps): Bump actions/dependency-review-action from 4 to 5 (:pr:`1048`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] Add missing ``LogNormal`` distribution to API reference (:pr:`992`) :user:`maniktyagi04`
+* [DOC] delete dead documentation page docs/introduction.rst (:pr:`1026`) :user:`kabirvashisht4-glitch`
+* [DOC] Fix broken link in dependencies.rst (:pr:`1034`) :user:`kabirvashisht4-glitch`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`ANANYA542`,
+:user:`codeit-ronit`,
+:user:`direkkakkar319-ops`,
+:user:`fkiraly`,
+:user:`joshdunnlime`,
+:user:`kabirvashisht4-glitch`,
+:user:`KaranSinghDev`,
+:user:`krsatyamthakur-droid`,
+:user:`Mahaveerjain-18`,
+:user:`maniktyagi04`,
+:user:`MayankSharma-2812`,
+:user:`mohityadav8`,
+:user:`patelchaitany`,
+:user:`smilingprogrammer`,
+:user:`Unknown-Shiva`
+
+
 [2.12.0] - 2026-03-14
 =====================
 

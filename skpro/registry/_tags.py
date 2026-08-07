@@ -11,7 +11,7 @@ OBJECT_TAG_REGISTER - list of tuples
 each tuple corresponds to a tag, elements as follows:
     0 : string - name of the tag as used in the _tags dictionary
     1 : string - name of the scitype this tag applies to
-                 must be in _base_classes.BASE_CLASS_SCITYPE_LIST
+                 must be in get_obj_scitype_list()
     2 : string - expected type of the tag value
         should be one of:
             "bool" - valid values are True/False
@@ -235,7 +235,7 @@ class capability__survival(_BaseTag):
 
     _tags = {
         "tag_name": "capability:survival",
-        "parent_type": ["regressor_proba", "metric"],
+        "parent_type": ["regressor_proba", "metric", "distfitter"],
         "tag_type": "bool",
         "short_descr": "whether estimator can use censoring information,"
         " for survival analysis",
@@ -280,7 +280,7 @@ class X_inner_mtype(_BaseTag):
 
     _tags = {
         "tag_name": "X_inner_mtype",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "distfitter"],
         "tag_type": ("list", "str"),
         "short_descr": "which machine type(s) is the"
         " internal _fit/_predict able to deal with?",
@@ -304,7 +304,7 @@ class C_inner_mtype(_BaseTag):
 
     _tags = {
         "tag_name": "C_inner_mtype",
-        "parent_type": "regressor_proba",
+        "parent_type": ["regressor_proba", "distfitter"],
         "tag_type": ("list", "str"),
         "short_descr": "which machine type(s) is the "
         "internal _fit/_predict able to deal with?",

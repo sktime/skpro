@@ -14,10 +14,40 @@ from skpro.utils.parallel import parallelize
 
 
 class BaseGridSearch(_DelegatedProbaRegressor):
+    """Base class for hyperparameter search with cross-validation.
+
+    Parameters
+    ----------
+    estimator : estimator object
+        Probabilistic regressor to tune.
+    cv : cross-validation generator or an iterable
+        Cross-validation splitting strategy.
+    backend : str, optional (default="loky")
+        Parallel backend for candidate evaluation.
+    refit : bool, optional (default=True)
+        Whether to refit the best estimator on all data.
+    scoring : skpro metric, str, or callable, optional (default=None)
+        Metric used to score candidate parameter settings.
+    verbose : int, optional (default=0)
+        Verbosity level.
+    return_n_best_estimators : int, optional (default=1)
+        Number of top-ranked fitted estimators to retain.
+    error_score : numeric or "raise", optional (default=np.nan)
+        Score assigned when a candidate fit fails.
+    backend_params : dict, optional
+        Additional parameters passed to the parallel backend.
+    update_behaviour : str, optional (default="no_update")
+        one of ``{"no_update", "inner_only", "full_refit"}``
+
+        Controls behaviour when ``update`` is called on a fitted tuner.
+        See :class:`GridSearchCV` for a full description of each option.
+    """
+
     _tags = {
         "estimator_type": "regressor",
         "capability:multioutput": True,
         "capability:missing": True,
+        "capability:update": True,
     }
 
     def __init__(
@@ -31,6 +61,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         return_n_best_estimators=1,
         error_score=np.nan,
         backend_params=None,
+        update_behaviour="no_update",
     ):
         self.estimator = estimator
         self.cv = cv
@@ -41,6 +72,7 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         self.return_n_best_estimators = return_n_best_estimators
         self.error_score = error_score
         self.backend_params = backend_params
+        self.update_behaviour = update_behaviour
 
         super().__init__()
 
@@ -50,6 +82,22 @@ class BaseGridSearch(_DelegatedProbaRegressor):
             "capability:survival",
         ]
         self.clone_tags(estimator, tags_to_clone)
+        self._set_update_capability_tag(estimator)
+
+    def _set_update_capability_tag(self, estimator):
+        """Set ``capability:update`` from ``update_behaviour`` and inner estimator."""
+        behaviour = self.update_behaviour
+        if behaviour == "no_update":
+            self.set_tags(**{"capability:update": False})
+        elif behaviour == "full_refit":
+            self.set_tags(**{"capability:update": True})
+        elif behaviour == "inner_only":
+            self.clone_tags(estimator, ["capability:update"])
+        else:
+            raise ValueError(
+                f"Unknown update_behaviour={behaviour!r}, must be one of "
+                "'no_update', 'inner_only', 'full_refit'."
+            )
 
     # attribute for _DelegatedProbaRegressor, which then delegates
     #     all non-overridden methods are same as of getattr(self, _delegate_name)
@@ -222,7 +270,83 @@ class BaseGridSearch(_DelegatedProbaRegressor):
             score = results[f"mean_{scoring_name}"].iloc[i]
             self.n_best_scores_.append(score)
 
+        if self.update_behaviour == "full_refit":
+            self._X = X
+            self._y = y
+            self._C = C
+
         return self
+
+    def _update(self, X, y, C=None):
+        """Update fitted tuner with a new batch of training data.
+
+        Behaviour is controlled by ``update_behaviour``:
+
+        - ``"no_update"``: return without changing fitted state.
+        - ``"inner_only"``: call ``best_estimator_.update(X, y, C=C)``.
+        - ``"full_refit"``: concatenate new data with stored training data
+          and re-run ``_fit`` (requires ``update_behaviour="full_refit"`` at
+          construction and ``fit`` time so training data is retained).
+
+        State required:
+            Requires state to be "fitted".
+
+        Writes to self:
+            Updates fitted model attributes ending in "_".
+
+        Parameters
+        ----------
+        X : pandas DataFrame
+            feature instances to update regressor with
+        y : pd.DataFrame, must be same length as X
+            labels to update regressor with
+        C : pd.DataFrame, optional (default=None)
+            censoring information for survival analysis
+
+        Returns
+        -------
+        self : reference to self
+        """
+        behaviour = self.update_behaviour
+
+        if behaviour == "full_refit":
+            if not hasattr(self, "_X"):
+                raise RuntimeError(
+                    f"In {self.__class__.__name__}, update_behaviour='full_refit' "
+                    "requires training data to be stored at fit time. "
+                    "Set update_behaviour='full_refit' before calling fit."
+                )
+            self._X = self._update_data(self._X, X)
+            self._y = self._update_data(self._y, y)
+            self._C = self._update_data(self._C, C)
+            self._fit(self._X, self._y, C=self._C)
+        elif behaviour == "inner_only":
+            self.best_estimator_.update(X=X, y=y, C=C)
+        elif behaviour == "no_update":
+            pass
+
+        return self
+
+    def _update_data(self, X, X_new):
+        """Concatenate old and new data, resetting index.
+
+        Parameters
+        ----------
+        X : pandas DataFrame or None
+        X_new : pandas DataFrame or None
+
+        Returns
+        -------
+        X_updated : pandas DataFrame or None
+            concatenated data with reset index
+        """
+        if X is None and X_new is None:
+            return None
+        if X is None:
+            return X_new.reset_index(drop=True)
+        if X_new is None:
+            return X.reset_index(drop=True)
+        return pd.concat([X, X_new], ignore_index=True)
 
     def _get_delegate(self):
         if self.is_fitted and not self.refit:
@@ -332,6 +456,23 @@ class GridSearchCV(BaseGridSearch):
           will default to ``joblib`` defaults.
         - "dask": any valid keys for ``dask.compute`` can be passed, e.g., ``scheduler``
 
+    update_behaviour : str, optional (default="no_update")
+        one of ``{"no_update", "inner_only", "full_refit"}``
+
+        Behaviour of the tuner when calling ``update``.
+        Only has an effect if the inner estimator supports ``update``
+        (i.e., has the ``capability:update`` tag set to ``True``).
+
+        * ``"no_update"`` = neither tuning parameters nor inner estimator
+          are updated. This is the default and matches pre-update behaviour.
+        * ``"inner_only"`` = tuning parameters are not re-tuned; only the
+          inner estimator (``best_estimator_``) is updated via its ``update``
+          method.
+        * ``"full_refit"`` = accumulate all training data seen so far and
+          re-run the full hyperparameter search. Training data is stored in
+          memory at ``fit`` time; use only when incremental refitting is
+          required, as this can be memory-intensive for large datasets.
+
     Attributes
     ----------
     best_index_ : int
@@ -398,6 +539,7 @@ class GridSearchCV(BaseGridSearch):
         backend="loky",
         error_score=np.nan,
         backend_params=None,
+        update_behaviour="no_update",
     ):
         super().__init__(
             estimator=estimator,
@@ -409,6 +551,7 @@ class GridSearchCV(BaseGridSearch):
             backend=backend,
             error_score=error_score,
             backend_params=backend_params,
+            update_behaviour=update_behaviour,
         )
         self.param_grid = param_grid
 
@@ -488,7 +631,19 @@ class GridSearchCV(BaseGridSearch):
             "scoring": PinballLoss(),
             "error_score": "raise",
         }
-        params = [param1, param2, params3]
+
+        from skpro.regression.online._refit import OnlineRefit
+
+        params4 = {
+            "estimator": OnlineRefit(ResidualDouble(LinearRegression())),
+            "cv": KFold(n_splits=3),
+            "param_grid": {"estimator__fit_intercept": [True, False]},
+            "scoring": CRPS(),
+            "error_score": "raise",
+            "update_behaviour": "inner_only",
+        }
+
+        params = [param1, param2, params3, params4]
 
         return params
 
@@ -601,6 +756,23 @@ class RandomizedSearchCV(BaseGridSearch):
           will default to ``joblib`` defaults.
         - "dask": any valid keys for ``dask.compute`` can be passed, e.g., ``scheduler``
 
+    update_behaviour : str, optional (default="no_update")
+        one of ``{"no_update", "inner_only", "full_refit"}``
+
+        Behaviour of the tuner when calling ``update``.
+        Only has an effect if the inner estimator supports ``update``
+        (i.e., has the ``capability:update`` tag set to ``True``).
+
+        * ``"no_update"`` = neither tuning parameters nor inner estimator
+          are updated. This is the default and matches pre-update behaviour.
+        * ``"inner_only"`` = tuning parameters are not re-tuned; only the
+          inner estimator (``best_estimator_``) is updated via its ``update``
+          method.
+        * ``"full_refit"`` = accumulate all training data seen so far and
+          re-run the full hyperparameter search. Training data is stored in
+          memory at ``fit`` time; use only when incremental refitting is
+          required, as this can be memory-intensive for large datasets.
+
     Attributes
     ----------
     best_index_ : int
@@ -662,6 +834,7 @@ class RandomizedSearchCV(BaseGridSearch):
         random_state=None,
         error_score=np.nan,
         backend_params=None,
+        update_behaviour="no_update",
     ):
         super().__init__(
             estimator=estimator,
@@ -672,6 +845,7 @@ class RandomizedSearchCV(BaseGridSearch):
             return_n_best_estimators=return_n_best_estimators,
             error_score=error_score,
             backend_params=backend_params,
+            update_behaviour=update_behaviour,
         )
         self.param_distributions = param_distributions
         self.n_iter = n_iter
@@ -732,6 +906,18 @@ class RandomizedSearchCV(BaseGridSearch):
             "scoring": PinballLoss(),
             "error_score": "raise",
         }
-        params = [param1, param2, params3]
+
+        from skpro.regression.online._refit import OnlineRefit
+
+        params4 = {
+            "estimator": OnlineRefit(ResidualDouble(LinearRegression())),
+            "cv": KFold(n_splits=3),
+            "param_distributions": {"estimator__fit_intercept": [True, False]},
+            "scoring": CRPS(),
+            "error_score": "raise",
+            "update_behaviour": "inner_only",
+        }
+
+        params = [param1, param2, params3, params4]
 
         return params

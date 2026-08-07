@@ -42,6 +42,8 @@ def scitype(obj, force_single_scitype=True, coerce_to_list=False):
                 scitypes = [tag_type]
             else:
                 scitypes = tag_type
+        else:
+            scitypes = ["object"]
     else:
         scitypes = ["object"]
 
