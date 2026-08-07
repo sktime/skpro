@@ -55,21 +55,20 @@ class Laplace(BaseDistribution):
     }
 
     # documentation hooks for formula injection
-    _pdf_formula_doc = r"""
+    _formula_docs = {
+        "pdf": r"""
     The probability density function is given by:
 
     .. math::
         f(x) = \frac{1}{2b} \exp \left( - \frac{|x - \mu|}{b} \right)
-    """
-
-    _log_pdf_formula_doc = r"""
+    """,
+        "log_pdf": r"""
     The log-density is given by:
 
     .. math::
         \log f(x) = - \log(2b) - \frac{|x - \mu|}{b}
-    """
-
-    _cdf_formula_doc = r"""
+    """,
+        "cdf": r"""
     The cumulative distribution function is given by:
 
     .. math::
@@ -78,35 +77,33 @@ class Laplace(BaseDistribution):
             \frac{1}{2} \exp \left( \frac{x - \mu}{b} \right), & x < \mu \\
             1 - \frac{1}{2} \exp \left( - \frac{x - \mu}{b} \right), & x \geq \mu
         \end{cases}
-    """
-
-    _ppf_formula_doc = r"""
+    """,
+        "ppf": r"""
     The quantile function (inverse cdf) is:
 
     .. math::
         F^{-1}(p; \mu, b) = \mu - b \operatorname{sgn}(p - 0.5) \ln(1 - 2|p - 0.5|)
-    """
-
-    _mean_formula_doc = r"""
+    """,
+        "mean": r"""
     The expected value is:
 
     .. math::
         \mathbb{E}[X] = \mu
-    """
-
-    _var_formula_doc = r"""
+    """,
+        "var": r"""
     The variance is:
 
     .. math::
         \text{Var}(X) = 2b^2
-    """
+    """,
 
-    _energy_formula_doc = r"""
-    The analytical self-energy is:
+        "energy": r"""
+    The self-energy is:
 
     .. math::
-        \mathbb{E}[|X - Y|] = \frac{3}{2}b
-    """
+        \mathbb{E}[|X - Y|] = \frac{3}{2} b
+    """,
+    }
 
     def __init__(self, mu, scale, index=None, columns=None):
         self.mu = mu

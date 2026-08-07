@@ -55,55 +55,92 @@ class Rayleigh(BaseDistribution):
     }
 
     # documentation hooks for formula injection
-    _pdf_formula_doc = r"""
+    _formula_docs = {
+        "pdf": r"""
     The probability density function is given by:
 
     .. math::
         f(x; \sigma) = \frac{x}{\sigma^2} \exp\left(-\frac{x^2}{2\sigma^2}\right),
         \quad x \geq 0
-    """
-
-    _cdf_formula_doc = r"""
+    """,
+        #
+        "cdf": r"""
     The cumulative distribution function is given by:
 
     .. math::
         F(x; \sigma) = 1 - \exp\left(-\frac{x^2}{2\sigma^2}\right), \quad x \geq 0
-    """
-
-    _log_pdf_formula_doc = r"""
+        """,
+        #
+        "log_pdf": r"""
     The log-density is given by:
 
     .. math::
         \log f(x) = \log(x) - 2\log(\sigma) - \frac{x^2}{2\sigma^2}, \quad x > 0
-    """
-
-    _ppf_formula_doc = r"""
+    """,
+        #
+        "ppf": r"""
     The quantile function (inverse cdf) is:
 
     .. math::
         F^{-1}(p; \sigma) = \sigma \sqrt{-2 \ln(1 - p)}
-    """
-
-    _mean_formula_doc = r"""
+    """,
+        #
+        "mean": r"""
     The expected value is:
 
     .. math::
         \mathbb{E}[X] = \sigma \sqrt{\frac{\pi}{2}}
-    """
-
-    _var_formula_doc = r"""
+    """,
+        #
+        "var": r"""
     The variance is:
 
     .. math::
         \text{Var}(X) = \frac{4 - \pi}{2} \sigma^2
-    """
+    """,
+        #
+        "energy": r"""
+    The self-energy is:
 
-    _energy_formula_doc = r"""
-    The analytical self-energy is:
+    .. math::
+        \mathbb{E}[|X - Y|] = \sigma \sqrt{\pi} (\sqrt{2} - 1)
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = \log(x) - 2\log(\sigma) - \frac{x^2}{2\sigma^2}, \quad x > 0
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; \sigma) = \sigma \sqrt{-2 \ln(1 - p)}
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \sigma \sqrt{\frac{\pi}{2}}
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \frac{4 - \pi}{2} \sigma^2
+    """,
+        #
+        "energy": r"""
+    The self-energy is:
 
     .. math::
         \mathbb{E}[|X - Y|] = \sigma \sqrt{\pi} (\sqrt{2} - 1)
     """
+    }
 
     def __init__(self, scale=1.0, index=None, columns=None):
         self.scale = scale
