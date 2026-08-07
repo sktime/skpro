@@ -26,8 +26,17 @@ class BaseDistribution(BaseObject):
         super().__init_subclass__(**kwargs)
 
         # inject formulae into docstrings, from _formula_docs
-        for method_name in cls._formula_docs:
+        for method_name in cls._all_public_methods():
             cls._inject_formula(method_name)
+
+    @classmethod
+    def _all_public_methods(cls):
+        """Return all public methods of the class."""
+        return [
+            attr
+            for attr in dir(cls)
+            if callable(getattr(cls, attr)) and not attr.startswith("_")
+        ]
 
     @classmethod
     def _has_implementation_of(cls, method):
@@ -2238,23 +2247,6 @@ def _coerce_to_pd_index_or_none(x):
     if isinstance(x, pd.Index):
         return x
     return pd.Index(x)
-
-
-# mapping of public methods to formula doc hooks
-_DOC_METHODS = {
-    "pdf": "_pdf_formula_doc",
-    "cdf": "_cdf_formula_doc",
-    "log_pdf": "_log_pdf_formula_doc",
-    "pmf": "_pmf_formula_doc",
-    "log_pmf": "_log_pmf_formula_doc",
-    "ppf": "_ppf_formula_doc",
-    "surv": "_surv_formula_doc",
-    "haz": "_haz_formula_doc",
-    "mean": "_mean_formula_doc",
-    "var": "_var_formula_doc",
-    "energy": "_energy_formula_doc",
-    "pdfnorm": "_pdfnorm_formula_doc",
-}
 
 
 def _inject_formula_doc(base_doc, formula_doc):
