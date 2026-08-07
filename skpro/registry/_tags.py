@@ -38,7 +38,6 @@ OBJECT_TAG_LIST - list of string
 check_tag_is_valid(tag_name, tag_value) - checks whether tag_value is valid for tag_name
 """
 
-
 import inspect
 import sys
 
@@ -272,6 +271,18 @@ class capability__update(_BaseTag):
         "parent_type": "regressor_proba",
         "tag_type": "bool",
         "short_descr": "whether estimator supports online updates via update",
+    }
+
+
+class capability__pred_int(_BaseTag):
+    """Support for probabilistic prediction methods."""
+
+    _tags = {
+        "tag_name": "capability:pred_int",
+        "parent_type": "regressor_proba",
+        "tag_type": "bool",
+        "short_descr": "whether predict_proba, predict_interval, "
+        "and predict_quantiles are available",
     }
 
 
