@@ -34,6 +34,27 @@ class Exponential(_ScipyAdapter):
     >>> d = Exponential(rate=2)
     """
 
+    _pdf_formula_doc = r"""
+    For rate :math:`\lambda`, the probability density function is
+
+    .. math::
+        f(x) = \lambda e^{-\lambda x}, \quad x \ge 0
+    """
+
+    _log_pdf_formula_doc = r"""
+    For rate :math:`\lambda`, the log-density is
+
+    .. math::
+        \log f(x) = \log(\lambda) - \lambda x, \quad x \ge 0
+    """
+
+    _cdf_formula_doc = r"""
+    For rate :math:`\lambda`, the cumulative distribution function is
+
+    .. math::
+        F(x) = 1 - e^{-\lambda x}, \quad x \ge 0
+    """
+
     _tags = {
         # packaging info
         # --------------
