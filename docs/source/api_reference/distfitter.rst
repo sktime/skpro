@@ -21,6 +21,7 @@ Parametric fitters
     :toctree: auto_generated/
     :template: class.rst
 
+    DistfitFitter
     MOMFitter
     NormalFitter
 
