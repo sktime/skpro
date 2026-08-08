@@ -28,6 +28,7 @@ This file collects analytic formulae, derivations, and summary tables for energy
 | Poisson(3)                    | 1.907392  | 1.910830    | 0.003438  |
 | Rayleigh(1.0)                 | 0.734174  | 0.734174    | 0.000000  |
 | TruncatedNormal(0,1,-1,2)     | 0.824430  | 0.824881    | 0.000451  |
+| AsymmetricLaplace(2,0,1)      | 2.100000  | 2.096770    | 0.003230  |
 
 ## Example: Beta(2,3)
 
@@ -311,6 +312,37 @@ $$
 F(t)(1-F(t)) = \left( 1 - \exp\left(-\frac{t^2}{2\sigma^2}\right) \right) \exp\left(-\frac{t^2}{2\sigma^2}\right) = \exp\left(-\frac{t^2}{2\sigma^2}\right) - \exp\left(-\frac{t^2}{\sigma^2}\right)
 $$
 Integrating this yields $\sigma \sqrt{\frac{\pi}{2}} - \frac{\sigma \sqrt{\pi}}{2}$, which multiplied by 2 gives the analytical solution.
+
+---
+
+## Example: AsymmetricLaplace($\kappa$, $\mu$, $\sigma$)
+
+**PDF:**
+$$
+f(x) = \frac{\kappa}{\sigma(1+\kappa^2)}
+\begin{cases} e^{-\kappa (x-\mu)/\sigma}, & x \geq \mu \\ e^{(x-\mu)/(\kappa\sigma)}, & x < \mu \end{cases}
+$$
+
+**Energy:**
+$$
+\mathbb{E}|X-Y| = \sigma \, \frac{\kappa^4 + \kappa^2 + 1}{\kappa (1 + \kappa^2)}
+$$
+
+**Derivation:**
+Energy is shift-invariant and scales with $\sigma$, so take $\mu=0$, $\sigma=1$. The CDF is
+$$
+F(t) = \frac{\kappa^2 e^{t/\kappa}}{1+\kappa^2} \ (t < 0), \qquad
+F(t) = 1 - \frac{e^{-\kappa t}}{1+\kappa^2} \ (t \geq 0)
+$$
+Using the general formula and splitting at $0$:
+$$
+\mathbb{E}|X-Y| = 2 \int_{-\infty}^{\infty} F(t)(1-F(t)) dt
+$$
+The substitutions $u=e^{t/\kappa}$ (for $t<0$) and $v=e^{-\kappa t}$ (for $t \geq 0$) reduce each piece to a quadratic, giving
+$$
+\int_{-\infty}^{\infty} F(1-F) dt = \frac{\kappa A(2-A)}{2} + \frac{B(2-B)}{2\kappa}, \quad A=\frac{\kappa^2}{1+\kappa^2},\ B=\frac{1}{1+\kappa^2}
+$$
+Doubling and simplifying the numerator $\kappa^6+2\kappa^4+2\kappa^2+1=(\kappa^4+\kappa^2+1)(1+\kappa^2)$ yields the result. For $\kappa=1$ this is $\frac{3}{2}\sigma$.
 
 ---
 
