@@ -42,6 +42,7 @@ Continuous support - full reals
     Normal
     SkewNormal
     TDistribution
+    Triangular
     TruncatedNormal
     Uniform
 

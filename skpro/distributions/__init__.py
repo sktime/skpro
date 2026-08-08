@@ -59,6 +59,7 @@ __all__ = [
     "SkewNormal",
     "TDistribution",
     "TransformedDistribution",
+    "Triangular",
     "TruncatedDistribution",
     "TruncatedNormal",
     "TruncatedPareto",
@@ -118,6 +119,7 @@ from skpro.distributions.skellam import Skellam
 from skpro.distributions.skew_normal import SkewNormal
 from skpro.distributions.t import TDistribution
 from skpro.distributions.trafo import TransformedDistribution
+from skpro.distributions.triangular import Triangular
 from skpro.distributions.truncated import TruncatedDistribution
 from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.truncated_pareto import TruncatedPareto
