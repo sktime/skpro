@@ -16,7 +16,7 @@ class TestAllDistFitters(PackageConfig, BaseFixtureGenerator, QuickTester):
 
     def test_input_output_contract(self, object_instance):
         """Test that fit/proba follow the expected contract."""
-        X = pd.DataFrame(np.random.RandomState(42).randn(50, 1))
+        X = pd.DataFrame(np.abs(np.random.RandomState(42).randn(50, 1)) + 0.5)
 
         fitter = object_instance
         fitter.fit(X)
@@ -32,7 +32,7 @@ class TestAllDistFitters(PackageConfig, BaseFixtureGenerator, QuickTester):
 
     def test_proba_has_mean_var(self, object_instance):
         """Test that the returned distribution supports mean() and var()."""
-        X = pd.DataFrame(np.random.RandomState(42).randn(50, 1))
+        X = pd.DataFrame(np.abs(np.random.RandomState(42).randn(50, 1)) + 0.5)
 
         fitter = object_instance
         fitter.fit(X)

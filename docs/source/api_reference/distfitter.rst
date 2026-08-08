@@ -4,11 +4,12 @@
 Distribution fitters
 ====================
 
-The :mod:`skpro.distfitter` module contains
-distribution fitters which combine a ``pandas.DataFrame``-like API
-with a ``scikit-base`` compatible object interface.
+The :mod:`skpro.distfitter` module contains distribution fitters,
+which estimate distribution parameters from data and return
+a fitted scalar distribution object.
 
-All distribution fitters in ``skpro`` can be listed using the ``skpro.registry.all_objects`` utility,
+All distribution fitters in ``skpro`` can be listed using the
+``skpro.registry.all_objects`` utility,
 using ``object_types="distfitter"``, optionally filtered by tags.
 Valid tags can be listed using ``skpro.registry.all_tags``.
 
@@ -21,8 +22,12 @@ Parametric fitters
     :toctree: auto_generated/
     :template: class.rst
 
+    ExponentialFitter
+    LaplaceFitter
+    ScipyMLEFitter
     MOMFitter
     NormalFitter
+    UniformFitter
 
 Base
 ----
