@@ -50,7 +50,7 @@ class SkewNormal(_ScipyAdapter):
         "python_dependencies": ["scipy"],
         "distr:measuretype": "continuous",
         "capabilities:approx": ["energy"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "log_cdf", "ppf"],
         "broadcast_init": "on",
     }
 

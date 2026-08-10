@@ -43,7 +43,7 @@ class GumbelL(_ScipyAdapter):
     _tags = {
         "authors": ["an1k3sh"],
         "distr:measuretype": "continuous",
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "log_cdf", "ppf"],
         "broadcast_init": "on",
     }
 
