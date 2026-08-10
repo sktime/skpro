@@ -1,4 +1,4 @@
-"""Maximum likelihood distribution fitter via scipy."""
+"""Distribution fitter via scipy (MLE or Method of Moments)."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
 from skpro.distfitter.base import BaseDistFitter
@@ -43,7 +43,8 @@ _DEFAULT_PARAM_MAPS = {
 }
 
 _DEFAULT_FIT_KWARGS = {
-    "Alpha": {"floc": 0},
+    "Alpha": {"floc": 0, "fscale": 1},
+    "Beta": {"floc": 0, "fscale": 1},
     "ChiSquared": {"floc": 0, "fscale": 1},
     "Erlang": {"floc": 0},
     "Exponential": {"floc": 0},
@@ -56,8 +57,18 @@ _DEFAULT_FIT_KWARGS = {
     "HalfNormal": {"floc": 0},
     "InverseGamma": {"floc": 0},
     "InverseGaussian": {"floc": 0},
-    "LogGamma": {"floc": 0},
+    "LogGamma": {"floc": 0, "fscale": 1},
 }
+
+# distributions with a built-in param map that are not used to construct test
+# instances in get_test_params, with the reason for each
+#
+# * Beta: supported on the unit interval, whereas the generic test suite fits
+#   on data that is not confined to it
+# * TDistribution: maximum likelihood fits of near normal data drive df to very
+#   large values, where TDistribution.cdf returns nan, as the gamma ratio and
+#   hyp2f1 in its implementation both overflow
+_TEST_PARAMS_EXCLUDE = ["Beta", "TDistribution"]
 
 _DEFAULT_SCIPY_DIST = {
     "ChiSquared": "chi2",
@@ -68,11 +79,11 @@ _DEFAULT_SCIPY_DIST = {
 
 
 class ScipyMLEFitter(BaseDistFitter):
-    r"""Fit a distribution by maximum likelihood estimation via scipy.
+    r"""Fit a distribution via scipy using MLE or Method of Moments.
 
-    Uses ``scipy.stats.<dist>.fit(data)`` to obtain MLE parameter estimates,
-    then maps the fitted scipy parameters back to skpro distribution
-    constructor arguments using ``param_map``.
+    Uses ``scipy.stats.<dist>.fit(data, method=...)`` to obtain parameter
+    estimates, then maps the fitted scipy parameters back to skpro
+    distribution constructor arguments using ``param_map``.
 
     Scipy's ``fit`` method returns a tuple
     ``(*shape_params, loc, scale)`` where shape parameter names are given
@@ -81,18 +92,45 @@ class ScipyMLEFitter(BaseDistFitter):
     argument, optionally applying a simple transform.
 
     When ``param_map`` is not provided, built-in defaults are used for the
-    following distributions:
+    following distributions (default ``fit_kwargs`` and ``scipy_dist``
+    are also resolved automatically):
 
-    * ``Alpha``, ``Beta``, ``Cauchy``, ``ChiSquared``, ``Erlang``,
-      ``Exponential``, ``FatigueLife``, ``Fisk``, ``Gamma``,
-      ``GeneralizedPareto``, ``Gompertz``, ``GumbelL``, ``GumbelR``,
-      ``HalfCauchy``, ``HalfLogistic``, ``HalfNormal``, ``InverseGamma``,
-      ``InverseGaussian``, ``Laplace``, ``Levy``, ``LogGamma``, ``Normal``,
-      ``SkewNormal``, ``TDistribution``.
+    ============================  ============================  =============
+    Distribution                  ``param_map``                 ``fit_kwargs``
+    ============================  ============================  =============
+    ``Alpha``                     a -> a                        floc=0
+    ``Beta``                      alpha -> a, beta -> b
+    ``Cauchy``                    mu -> loc, scale -> scale
+    ``ChiSquared``                dof -> df                     floc=0,
+                                                                fscale=1
+    ``Erlang``                    rate -> 1/scale, k -> a       floc=0
+    ``Exponential``               rate -> 1/scale               floc=0
+    ``FatigueLife``               c -> c, scale -> scale        floc=0
+    ``Fisk``                      alpha -> scale, beta -> c     floc=0
+    ``Gamma``                     alpha -> a, beta -> 1/scale   floc=0
+    ``GeneralizedPareto``         c -> c, mu -> loc,
+                                  scale -> scale
+    ``Gompertz``                  c -> c, scale -> scale        floc=0
+    ``GumbelL``                   mu -> loc, sigma -> scale
+    ``GumbelR``                   mu -> loc, sigma -> scale
+    ``HalfCauchy``                beta -> scale                 floc=0
+    ``HalfLogistic``              beta -> scale                 floc=0
+    ``HalfNormal``                sigma -> scale                floc=0
+    ``InverseGamma``              alpha -> a, beta -> scale     floc=0
+    ``InverseGaussian``           mu -> mu, scale -> scale      floc=0
+    ``Laplace``                   mu -> loc, scale -> scale
+    ``Levy``                      mu -> loc, scale -> scale
+    ``LogGamma``                  c -> c                        floc=0
+    ``Normal``                    mu -> loc, sigma -> scale
+    ``SkewNormal``                mu -> loc, sigma -> scale,
+                                  alpha -> a
+    ``TDistribution``             mu -> loc, sigma -> scale,
+                                  df -> df
+    ============================  ============================  =============
 
-    Sensible ``fit_kwargs`` (e.g. ``floc=0``) and ``scipy_dist`` are also
-    supplied automatically for the distributions listed above when the
-    respective arguments are left at their default ``None``.
+    For ``Normal``, ``Laplace``, ``TDistribution``, and ``ChiSquared``,
+    the ``scipy_dist`` object is also auto-resolved (these are not
+    ``_ScipyAdapter`` subclasses in skpro).
 
     Parameters
     ----------
@@ -102,7 +140,7 @@ class ScipyMLEFitter(BaseDistFitter):
     param_map : dict or None, optional (default=None)
         Mapping from skpro parameter names to ``(scipy_key, transform)``
         pairs.  When ``None``, uses built-in defaults for supported
-        distributions (see list above).
+        distributions (see table above).
 
         - ``scipy_key`` is the name of the scipy parameter in the fit
           result. It can be one of the shape parameter names from
@@ -117,17 +155,22 @@ class ScipyMLEFitter(BaseDistFitter):
 
         Example for ``Gamma(alpha=..., beta=...)``:
         ``{"alpha": ("a", "identity"), "beta": ("scale", "inverse")}``
+    method : str, optional (default="MLE")
+        Estimation method passed to ``scipy.stats.<dist>.fit``.
+        Supported values are ``"MLE"`` (Maximum Likelihood Estimation)
+        and ``"MM"`` (Method of Moments).
     scipy_dist : scipy.stats distribution or None, optional (default=None)
         The scipy distribution object whose ``.fit()`` method will be
         called.  When ``None``, auto-detected from the skpro ``dist``
-        class (works for ``_ScipyAdapter`` subclasses and for supported
-        distributions listed above).
+        class for ``_ScipyAdapter`` subclasses and for the four
+        non-adapter distributions listed in the table above
+        (``Normal``, ``Laplace``, ``TDistribution``, ``ChiSquared``).
     fit_kwargs : dict or None, optional (default=None)
         Additional keyword arguments passed to ``scipy.stats.<dist>.fit``.
         When ``None``, sensible defaults are applied for supported
-        distributions (e.g. ``{"floc": 0}`` for distributions with
-        non-negative support).  Pass an empty dict ``{}`` to suppress
-        automatic defaults.
+        distributions as shown in the table above (e.g. ``{"floc": 0}``
+        for distributions with non-negative support).  Pass an empty
+        dict ``{}`` to suppress automatic defaults.
 
     Examples
     --------
@@ -142,13 +185,10 @@ class ScipyMLEFitter(BaseDistFitter):
     ScipyMLEFitter(...)
     >>> dist = fitter.proba()
 
-    With explicit ``param_map``:
+    Using Method of Moments instead of MLE:
 
     >>> from skpro.distributions.normal import Normal
-    >>> fitter = ScipyMLEFitter(
-    ...     dist=Normal,
-    ...     param_map={"mu": ("loc", "identity"), "sigma": ("scale", "identity")},
-    ... )
+    >>> fitter = ScipyMLEFitter(dist=Normal, method="MM")
     >>> fitter.fit(X)
     ScipyMLEFitter(...)
     """
@@ -158,9 +198,12 @@ class ScipyMLEFitter(BaseDistFitter):
         "reserved_params": ["dist"],
     }
 
-    def __init__(self, dist, param_map=None, scipy_dist=None, fit_kwargs=None):
+    def __init__(
+        self, dist, param_map=None, method="MLE", scipy_dist=None, fit_kwargs=None
+    ):
         self.dist = dist
         self.param_map = param_map
+        self.method = method
         self.scipy_dist = scipy_dist
         self.fit_kwargs = fit_kwargs
 
@@ -196,7 +239,7 @@ class ScipyMLEFitter(BaseDistFitter):
         return param_map, fit_kwargs, scipy_obj
 
     def _fit(self, X, C=None):
-        """Fit distribution parameters by maximum likelihood via scipy.
+        """Fit distribution parameters via scipy.
 
         Parameters
         ----------
@@ -211,7 +254,7 @@ class ScipyMLEFitter(BaseDistFitter):
         vals = X.values.ravel()
 
         param_map, fit_kwargs, scipy_obj = self._resolve_defaults()
-        fit_result = scipy_obj.fit(vals, **fit_kwargs)
+        fit_result = scipy_obj.fit(vals, method=self.method, **fit_kwargs)
 
         scipy_result_dict = self._fit_result_to_dict(scipy_obj, fit_result)
 
@@ -322,9 +365,15 @@ class ScipyMLEFitter(BaseDistFitter):
         params : dict or list of dict
             Parameters to create testing instances of the class.
         """
-        from skpro.distributions.exponential import Exponential
-        from skpro.distributions.normal import Normal
+        from skpro.registry import all_objects
 
-        params1 = {"dist": Normal}
-        params2 = {"dist": Exponential}
-        return [params1, params2]
+        # one instance per built-in param map, so that every supported
+        # distribution is exercised by the generic test suite, and maps added
+        # to _DEFAULT_PARAM_MAPS are covered without changes here
+        dists = dict(all_objects(object_types="distribution", return_names=True))
+
+        return [
+            {"dist": dists[name]}
+            for name in sorted(_DEFAULT_PARAM_MAPS)
+            if name not in _TEST_PARAMS_EXCLUDE
+        ]
