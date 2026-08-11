@@ -338,10 +338,13 @@ class Pipeline(_Pipeline):
 
         super().__init__()
 
+        # the pipeline delegates all prediction methods to the final regressor,
+        # so its capabilities are exactly those of the final regressor
         tags_to_clone = [
             "capability:multioutput",
             "capability:survival",
             "capability:update",
+            "capability:pred_int",
         ]
         self.clone_tags(self.regressor_, tags_to_clone)
 
