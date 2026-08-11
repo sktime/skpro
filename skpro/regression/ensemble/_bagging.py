@@ -8,6 +8,7 @@ from math import ceil
 import numpy as np
 import pandas as pd
 
+from skpro.distributions.empirical import Empirical
 from skpro.distributions.mixture import Mixture
 from skpro.regression.base import BaseProbaRegressor
 from skpro.utils.sampling import _random_ss_ix
@@ -20,6 +21,12 @@ class BaggingRegressor(BaseProbaRegressor):
     datasets which are instance sub-samples and/or variable sub-samples.
 
     On ``predict_proba``, the mixture of probabilistic predictions is returned.
+
+    If the bagged regressor is point prediction only, i.e., has the
+    ``capability:pred_int`` tag set to ``False``, the bootstrap sample of point
+    predictions is returned as an empirical distribution instead, same as in
+    ``BootstrapRegressor``. This allows lifting point prediction regressors,
+    e.g., online regressors such as ``RiverRegressor``, to probabilistic ones.
 
     In ``update``, each fitted clone is updated on a row subsample of the new
     batch. The row subsample fraction is the same as in ``fit`` (for integer
@@ -260,6 +267,14 @@ class BaggingRegressor(BaseProbaRegressor):
         """
         reset_cols = self.bootstrap_features
         Xis = [_subs_cols(X, col_ix_i, reset_cols) for col_ix_i in self.cols_]
+
+        # if the bagged estimator is point prediction only, the bootstrap sample
+        # of point predictions is returned as an empirical distribution,
+        # same as in BootstrapRegressor
+        if not self.estimator.get_tag("capability:pred_int", True, raise_error=False):
+            y_preds = [est.predict(Xi) for est, Xi in zip(self.estimators_, Xis)]
+            y_pred_df = pd.concat(y_preds, axis=0, keys=range(len(y_preds)))
+            return Empirical(y_pred_df)
 
         y_probas = [est.predict_proba(Xi) for est, Xi in zip(self.estimators_, Xis)]
 

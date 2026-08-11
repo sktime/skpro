@@ -213,6 +213,58 @@ class BaseProbaRegressor(BaseEstimator):
                 f"prediction methods (capability:pred_int=False)."
             )
 
+    def _check_proba_components(self, estimators, param_name="estimator"):
+        """Raise if any component regressor is point prediction only.
+
+        To be called by meta-estimators which invoke ``predict_proba``,
+        or another probabilistic prediction method, of their components.
+        Such meta-estimators cannot be used with components which have the
+        ``capability:pred_int`` tag set to ``False``.
+
+        Parameters
+        ----------
+        estimators : skpro regressor, or iterable of skpro regressor
+            component regressor(s) to check.
+            Entries may also be ``(name, estimator)`` pairs, in which case
+            the name is used in the error message.
+        param_name : str, optional, default="estimator"
+            name of the parameter holding ``estimators``, used in the error message
+
+        Raises
+        ------
+        ValueError
+            if any of ``estimators`` has ``capability:pred_int`` tag ``False``
+        """
+        if isinstance(estimators, BaseProbaRegressor):
+            estimators = [estimators]
+
+        offenders = []
+        for est in estimators:
+            if isinstance(est, tuple):
+                name, est = est[0], est[-1]
+            else:
+                name = type(est).__name__
+            # non-skpro components, e.g., sklearn estimators, carry no tags,
+            # their probabilistic capability is determined by the caller
+            if not hasattr(est, "get_tag"):
+                continue
+            if not est.get_tag("capability:pred_int", True, raise_error=False):
+                offenders.append(name)
+
+        if offenders:
+            raise ValueError(
+                f"Error in {type(self).__name__}: this estimator requires "
+                "probabilistic predictions from its components, but the "
+                f"following components passed in {param_name} are point "
+                f"prediction only, i.e., have the capability:pred_int tag "
+                f"set to False: {', '.join(offenders)}. "
+                "To obtain probabilistic predictions from a point prediction "
+                "regressor, wrap it in a regressor which adds a distributional "
+                "prediction, e.g., BaggingRegressor, BootstrapRegressor, "
+                "ResidualDouble, or EnbpiRegressor, and pass the wrapped "
+                "regressor instead."
+            )
+
     def predict(self, X):
         """Predict labels for data from features.
 

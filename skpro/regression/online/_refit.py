@@ -35,9 +35,11 @@ class OnlineRefit(_DelegatedProbaRegressor):
 
         super().__init__()
 
+        # all prediction methods are delegated to the wrapped regressor
         tags_to_clone = [
             "capability:missing",
             "capability:survival",
+            "capability:pred_int",
         ]
         self.clone_tags(estimator, tags_to_clone)
 
