@@ -36,7 +36,7 @@ class HalfNormal(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.halfnormal import HalfNormal
-
+    >>>
     >>> hn = HalfNormal(sigma=1)
     """
 

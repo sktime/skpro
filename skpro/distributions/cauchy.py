@@ -42,7 +42,7 @@ class Cauchy(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.cauchy import Cauchy
-
+    >>>
     >>> c = Cauchy(mu=0, scale=1)
     """
 

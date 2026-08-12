@@ -40,7 +40,7 @@ class HalfCauchy(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.halfcauchy import HalfCauchy
-
+    >>>
     >>> hc = HalfCauchy(beta=1)
     """
 

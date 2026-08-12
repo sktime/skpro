@@ -31,7 +31,7 @@ class Erlang(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.erlang import Erlang
-
+    >>>
     >>> d = Erlang(rate=[[1, 1], [2, 3], [4, 5]], k=2)
     """
 

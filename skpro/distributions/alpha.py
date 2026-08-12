@@ -39,7 +39,7 @@ class Alpha(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions import Alpha
-
+    >>>
     >>> distr = Alpha(a=[[1, 2], [3, 4]])
     """
 

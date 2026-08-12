@@ -164,6 +164,25 @@ class CyclicBoosting(BaseProbaRegressor):
 
         super().__init__()
 
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        dist_type = self.dist_type
+        dist = self.dist
+        feature_groups = self.feature_groups
+        feature_properties = self.feature_properties
+        alpha = self.alpha
+        maximal_iterations = self.maximal_iterations
+
         # todo 2.15.0: remove the following 'if' check and deprecation warning
         # handle deprecation of dist_type -> dist
         if dist_type != "deprecated":
