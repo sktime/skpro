@@ -34,22 +34,34 @@ class Uniform(BaseDistribution):
     >>> u = Uniform(lower=0, upper=5)
     """
 
-    _pdf_formula_doc = r"""
-    For lower bound :math:`a` and upper bound :math:`b`, the pdf is
+    _formula_docs = {
+        "pdf": r"""
+    For lower bound :math:`a` and upper bound :math:`b`,
+    the probability density function is given by:
 
     .. math::
-        f(x) = \frac{1}{b - a}, \quad a \le x \le b
-    """
-
-    _log_pdf_formula_doc = r"""
-    For lower bound :math:`a` and upper bound :math:`b`, the log-pdf is
+        f(x) =
+        \begin{cases}
+            \frac{1}{b - a}, & a \le x \le b \\
+            0, & \text{otherwise}
+        \end{cases}
+    """,
+        #
+        "log_pdf": r"""
+    For lower bound :math:`a` and upper bound :math:`b`,
+    the log-density is given by:
 
     .. math::
-        \log f(x) = -\log(b - a), \quad a \le x \le b
-    """
-
-    _cdf_formula_doc = r"""
-    For lower bound :math:`a` and upper bound :math:`b`, the cdf is
+        \log f(x) =
+        \begin{cases}
+            -\log(b - a), & a \le x \le b \\
+            -\infty, & \text{otherwise}
+        \end{cases}
+    """,
+        #
+        "cdf": r"""
+    For lower bound :math:`a` and upper bound :math:`b`,
+    the cumulative distribution function is given by:
 
     .. math::
         F(x) =
@@ -58,10 +70,48 @@ class Uniform(BaseDistribution):
             \frac{x - a}{b - a}, & a \le x \le b \\
             1, & x > b
         \end{cases}
-    """
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; a, b) = a + p (b - a), \quad 0 \le p \le 1
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \frac{a + b}{2}
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \frac{(b - a)^2}{12}
+    """,
+        #
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = \frac{b - a}{3}
+
+    The energy w.r.t. a constant :math:`x` is:
+
+    .. math::
+        \mathbb{E}[|X - x|] =
+        \begin{cases}
+            \left| x - \frac{a + b}{2} \right|, & x < a \text{ or } x > b \\
+            \frac{(b - x)^2 + (a - x)^2}{2(b - a)}, & a \le x \le b
+        \end{cases}
+    """,
+    }
 
     _tags = {
-        "authors": ["an20805"],
+        "authors": ["an20805", "Vidit-lab"],
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["pdf", "log_pdf", "cdf", "ppf", "mean", "var", "energy"],
         "distr:measuretype": "continuous",
