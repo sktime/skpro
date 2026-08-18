@@ -7,7 +7,6 @@ from skpro.distributions.exponential import Exponential
 from skpro.distributions.gamma import Gamma
 from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
-from skpro.distributions.lognormal import LogNormal
 from skpro.distributions.normal import Normal
 from skpro.distributions.rayleigh import Rayleigh
 from skpro.distributions.weibull import Weibull
@@ -36,7 +35,6 @@ HOOKED_CLASSES = [
     Laplace,
     Logistic,
     Weibull,
-    LogNormal,
 ]
 
 # 3. Classes where we DID NOT implement hooks (Control group)
