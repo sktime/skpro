@@ -4,7 +4,10 @@
 import pytest
 
 from skpro.distributions.exponential import Exponential
+from skpro.distributions.gamma import Gamma
 from skpro.distributions.laplace import Laplace
+from skpro.distributions.logistic import Logistic
+from skpro.distributions.lognormal import LogNormal
 from skpro.distributions.normal import Normal
 from skpro.distributions.rayleigh import Rayleigh
 from skpro.distributions.weibull import Weibull
@@ -26,10 +29,18 @@ TARGET_METHODS = [
 ]
 
 # 2. Classes where we implemented formula hooks
-HOOKED_CLASSES = [Normal, Rayleigh, Exponential, Laplace]
+HOOKED_CLASSES = [
+    Normal,
+    Rayleigh,
+    Exponential,
+    Laplace,
+    Logistic,
+    Weibull,
+    LogNormal,
+]
 
 # 3. Classes where we DID NOT implement hooks (Control group)
-UNHOOKED_CLASSES = [Weibull]
+UNHOOKED_CLASSES = [Gamma]
 
 
 @pytest.mark.parametrize("dist_cls", HOOKED_CLASSES + UNHOOKED_CLASSES)
