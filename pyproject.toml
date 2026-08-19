@@ -48,6 +48,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all_extras = [
+    "cloudpickle",
     "distfit; python_version < '3.13'",
     "lifelines<0.31.0; python_version < '3.13'",
     "matplotlib>=3.3.2",
