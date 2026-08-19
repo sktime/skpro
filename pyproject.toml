@@ -59,6 +59,7 @@ all_extras = [
 
 dev = [
     "backoff",
+    "cloudpickle",
     "httpx",
     "pre-commit",
     "pytest",
