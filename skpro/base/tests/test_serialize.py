@@ -8,6 +8,7 @@ The format is specified in `STEP 27
 import json
 import pickle
 import tempfile
+from importlib.util import find_spec
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -37,6 +38,9 @@ class _Holder(BaseObject):
         self.nested = nested
         self.peer = peer
         super().__init__()
+
+
+_HAS_CLOUDPICKLE = find_spec("cloudpickle") is not None
 
 
 def _round_trip(obj, serialization_format="pickle"):
@@ -412,3 +416,93 @@ def test_load_rejects_unsupported_type():
     """Loading an object of unsupported type fails with a clear error."""
     with pytest.raises(TypeError, match="must be a tuple, str, or Path"):
         load(42)
+
+
+# --------------------------------------------------------------------------- #
+# serialization formats
+# --------------------------------------------------------------------------- #
+
+
+@pytest.mark.skipif(not _HAS_CLOUDPICKLE, reason="cloudpickle is not installed")
+def test_cloudpickle_round_trip():
+    """A composite round-trips through the cloudpickle format."""
+    obj = _Holder(mapping={"outer": _Holder(mapping={"inner": _Leaf(42)})})
+
+    loaded, names = _round_trip(obj, serialization_format="cloudpickle")
+
+    assert "_components/index.json" in names
+    assert loaded.mapping["outer"].mapping["inner"].value == 42
+
+
+@pytest.mark.skipif(not _HAS_CLOUDPICKLE, reason="cloudpickle is not installed")
+def test_cloudpickle_format_recorded_and_inherited():
+    """Each node records its format, and children inherit the parent's."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        path = Path(tmp_dir) / "obj.zip"
+        _Holder(mapping={"a": _Leaf(1)}).save(path, serialization_format="cloudpickle")
+
+        with ZipFile(path, "r") as zf:
+            root = pickle.loads(zf.read("_metadata"))
+            child = pickle.loads(zf.read("_components/component-0000/_metadata"))
+
+    assert root["serialization_format"] == "cloudpickle"
+    assert child["serialization_format"] == "cloudpickle"
+
+
+@pytest.mark.skipif(not _HAS_CLOUDPICKLE, reason="cloudpickle is not installed")
+def test_cloudpickle_metadata_readable_with_plain_pickle():
+    """_metadata stays readable before the node's format is known."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        path = Path(tmp_dir) / "obj.zip"
+        _Leaf(1).save(path, serialization_format="cloudpickle")
+
+        with ZipFile(path, "r") as zf:
+            metadata = pickle.loads(zf.read("_metadata"))
+
+    assert metadata["format_version"] == FORMAT_VERSION
+
+
+@pytest.mark.skipif(not _HAS_CLOUDPICKLE, reason="cloudpickle is not installed")
+def test_cloudpickle_serializes_non_importable_class():
+    """cloudpickle handles classes that plain pickle cannot reach by name.
+
+    This is the case that motivates storing the class object in ``_metadata``
+    rather than a qualified name.
+    """
+
+    class _LocalLeaf(BaseObject):
+        """Class defined inside the test, so not importable by qualified name."""
+
+        def __init__(self, value=0):
+            self.value = value
+            super().__init__()
+
+    obj = _Holder(mapping={"a": _LocalLeaf(11)})
+
+    # plain pickle cannot serialize a locally defined class
+    with pytest.raises((AttributeError, pickle.PicklingError)):
+        obj.save(serialization_format="pickle")
+
+    loaded = load(obj.save(serialization_format="cloudpickle"))
+    assert loaded.mapping["a"].value == 11
+
+
+@pytest.mark.skipif(not _HAS_CLOUDPICKLE, reason="cloudpickle is not installed")
+def test_cloudpickle_in_memory_round_trip():
+    """The in-memory paths work for cloudpickle, both lightweight and zipped."""
+    leaf = _Leaf(1).save(serialization_format="cloudpickle")
+    assert not leaf[1].startswith(b"PK")
+    assert load(leaf).value == 1
+
+    composite = _Holder(mapping={"a": _Leaf(2)}).save(
+        serialization_format="cloudpickle"
+    )
+    assert composite[1].startswith(b"PK")
+    assert load(composite).mapping["a"].value == 2
+
+
+@pytest.mark.skipif(_HAS_CLOUDPICKLE, reason="cloudpickle is installed")
+def test_cloudpickle_missing_raises():
+    """Requesting cloudpickle without it installed fails with a clear error."""
+    with pytest.raises(ModuleNotFoundError, match="cloudpickle"):
+        _Leaf(1).save(serialization_format="cloudpickle")
