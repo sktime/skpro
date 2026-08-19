@@ -1,10 +1,12 @@
 """Automated tests based on the skbase test suite template."""
 import numbers
+import pickle
 import tempfile
 import types
 from copy import deepcopy
 from inspect import getfullargspec, isclass, signature
 from pathlib import Path
+from zipfile import ZipFile
 
 import joblib
 import numpy as np
@@ -14,6 +16,7 @@ from skbase.testing import QuickTester as _QuickTester
 from skbase.testing import TestAllObjects as _TestAllObjects
 from skbase.testing.utils.inspect import _get_args
 
+from skpro.base._serialize import FORMAT_VERSION
 from skpro.registry import OBJECT_TAG_LIST, all_objects
 from skpro.tests._config import EXCLUDE_ESTIMATORS, EXCLUDED_TESTS
 from skpro.tests.scenarios.scenarios_getter import retrieve_scenarios
@@ -418,17 +421,12 @@ class TestAllEstimators(PackageConfig, BaseFixtureGenerator, _QuickTester):
                 assert joblib.hash(new_value) == joblib.hash(original_value), msg
 
     def test_persistence_via_pickle(self, object_instance, scenario):
-        """Check that in-memory save/load round-trip preserves predictions."""
+        """Check in-memory save/load round trip preserves predictions."""
         import pytest
 
         from skpro.base import load
 
-        object_class = type(object_instance)
-
-        serializable = object_class.get_class_tag(
-            "capability:serializable", tag_value_default=True
-        )
-        if not serializable:
+        if not _is_serializable(object_instance):
             return None
 
         try:
@@ -436,25 +434,26 @@ class TestAllEstimators(PackageConfig, BaseFixtureGenerator, _QuickTester):
         except Exception as e:
             pytest.skip(f"fit failed with {type(e).__name__}, skipping save test")
 
-        serial = fitted.save(serialization_format="pickle")
+        serial = fitted.save()
+
+        assert isinstance(serial, tuple) and len(serial) == 2, (
+            "in-memory save must return a (cls, serialized_bytes) tuple, "
+            f"but returned {serial!r}"
+        )
+        assert serial[0] is type(fitted)
+
         loaded = load(serial)
+        assert type(loaded) is type(fitted)
 
         _assert_predictions_equal(fitted, loaded, scenario)
 
     def test_save_estimators_to_file(self, object_instance, scenario):
-        """Check that file-based save/load round-trip preserves predictions."""
-        import json
-
+        """Check file-based save/load round trip, and the serialization node layout."""
         import pytest
 
         from skpro.base import load
 
-        object_class = type(object_instance)
-
-        serializable = object_class.get_class_tag(
-            "capability:serializable", tag_value_default=True
-        )
-        if not serializable:
+        if not _is_serializable(object_instance):
             return None
 
         try:
@@ -462,27 +461,47 @@ class TestAllEstimators(PackageConfig, BaseFixtureGenerator, _QuickTester):
         except Exception as e:
             pytest.skip(f"fit failed with {type(e).__name__}, skipping save test")
 
-        for fmt in ["pickle", "joblib"]:
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                path = Path(tmp_dir) / f"estimator_{fmt}.zip"
-                fitted.save(path, serialization_format=fmt)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "estimator.zip"
+            fitted.save(path)
 
-                from zipfile import ZipFile
+            with ZipFile(path, "r") as zf:
+                names = zf.namelist()
 
-                with ZipFile(path, "r") as zf:
-                    names = zf.namelist()
-                    assert "manifest.json" in names
-                    assert "_version" in names
+                # every archive is a serialization node at its root
+                assert "_metadata" in names
+                assert "_obj" in names
 
-                    manifest = json.loads(zf.read("manifest.json"))
-                    assert manifest["version"] == 2
-                    assert "root" in manifest["components"]
-                    assert "load_order" in manifest
-                    assert manifest["load_order"][-1] == "root"
+                # the rejected v1 layout must not reappear
+                assert "manifest.json" not in names
+                assert "_version" not in names
+                assert "_format" not in names
+                assert not any(n.startswith("root/") for n in names)
+                assert not any(n.startswith("components/") for n in names)
 
-                loaded = load(path)
+                metadata = pickle.loads(zf.read("_metadata"))
+                assert isinstance(metadata, dict)
+                assert metadata["format_version"] == FORMAT_VERSION
+                assert metadata["class"] is type(fitted)
+                assert metadata["serialization_format"] == "pickle"
 
-                _assert_predictions_equal(fitted, loaded, scenario)
+                # optional directories carry an index whenever they are present
+                for optional in ("_artifacts", "_components"):
+                    entries = [n for n in names if n.startswith(f"{optional}/")]
+                    if entries:
+                        assert f"{optional}/index.json" in names
+
+            loaded = load(path)
+            assert type(loaded) is type(fitted)
+
+            _assert_predictions_equal(fitted, loaded, scenario)
+
+
+def _is_serializable(object_instance):
+    """Return whether the object opts in to serialization testing."""
+    return type(object_instance).get_class_tag(
+        "capability:serializable", tag_value_default=True
+    )
 
 
 def _assert_predictions_equal(original, loaded, scenario):
@@ -491,105 +510,23 @@ def _assert_predictions_equal(original, loaded, scenario):
 
     try:
         y_orig = original.predict(X)
-        y_loaded = loaded.predict(deepcopy(X))
-    except Exception:
-        return
+    except Exception as e:
+        # the original could not predict, so there is nothing to compare against
+        import pytest
+
+        pytest.skip(f"predict failed on the original with {type(e).__name__}: {e}")
+
+    # the loaded object must be able to do whatever the original could do
+    y_loaded = loaded.predict(deepcopy(X))
+
+    assert type(y_loaded) is type(y_orig), (
+        f"predict output type differs after load: "
+        f"{type(y_orig)} vs {type(y_loaded)}"
+    )
 
     if isinstance(y_orig, pd.DataFrame):
         assert y_orig.shape == y_loaded.shape, (
             f"predict output shape mismatch after load: "
             f"{y_orig.shape} vs {y_loaded.shape}"
         )
-        np.testing.assert_array_almost_equal(y_orig.values, y_loaded.values, decimal=5)
-
-
-def test_backward_compat_v1_load():
-    """Test that v1 flat zip files can still be loaded."""
-    import pickle
-    import tempfile
-    from zipfile import ZipFile
-
-    from sklearn.datasets import load_diabetes
-    from sklearn.model_selection import train_test_split
-
-    from skpro.base import load
-    from skpro.regression.residual import ResidualDouble
-
-    X, y = load_diabetes(return_X_y=True, as_frame=True)
-    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=42)
-
-    est = ResidualDouble.create_test_instance()
-    est.fit(X_train, y_train)
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        path = Path(tmp_dir) / "v1_estimator.zip"
-
-        # manually create a v1 flat zip (no manifest.json)
-        with ZipFile(path, "w") as zf:
-            zf.writestr("_metadata", pickle.dumps(type(est)))
-            zf.writestr("_obj", pickle.dumps(est))
-            zf.writestr("_format", "pickle")
-
-        loaded = load(path)
-
-        y_orig = est.predict(X_test.copy())
-        y_loaded = loaded.predict(X_test.copy())
-
-        np.testing.assert_array_almost_equal(y_orig.values, y_loaded.values, decimal=5)
-
-
-def test_recursive_serialization_composite():
-    """Test that composite objects produce correct recursive zip structure."""
-    import json
-    import tempfile
-    from zipfile import ZipFile
-
-    import pytest
-
-    from skpro.base import load
-
-    try:
-        from skpro.regression.ensemble import VotingProbaRegressor
-        from skpro.regression.residual import ResidualDouble
-    except ImportError:
-        pytest.skip("VotingProbaRegressor or ResidualDouble not available")
-
-    from sklearn.datasets import load_diabetes
-    from sklearn.linear_model import LinearRegression
-    from sklearn.model_selection import train_test_split
-
-    X, y = load_diabetes(return_X_y=True, as_frame=True)
-    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=42)
-
-    reg1 = ResidualDouble(LinearRegression())
-    reg2 = ResidualDouble(LinearRegression())
-    voter = VotingProbaRegressor(estimators=[("r1", reg1), ("r2", reg2)])
-    voter.fit(X_train, y_train)
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        path = Path(tmp_dir) / "voter.zip"
-        voter.save(path)
-
-        with ZipFile(path, "r") as zf:
-            manifest = json.loads(zf.read("manifest.json"))
-
-            # root should be composite
-            assert manifest["components"]["root"]["is_leaf"] is False
-            assert len(manifest["components"]["root"]["children"]) > 0
-
-            # load order: root must be last
-            order = manifest["load_order"]
-            root_idx = order.index("root")
-            for child_id in manifest["components"]["root"]["children"]:
-                child_idx = order.index(child_id)
-                assert child_idx < root_idx, (
-                    f"Child {child_id} (idx={child_idx}) must come before "
-                    f"root (idx={root_idx}) in load_order"
-                )
-
-        loaded = load(path)
-
-        y_orig = voter.predict(X_test.copy())
-        y_loaded = loaded.predict(X_test.copy())
-
         np.testing.assert_array_almost_equal(y_orig.values, y_loaded.values, decimal=5)

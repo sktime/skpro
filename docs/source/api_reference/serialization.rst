@@ -5,247 +5,327 @@ Serialization File Format
 =========================
 
 This page specifies how ``skpro`` objects are persisted by
-:meth:`skpro.base.BaseObject.save` and restored by
-:func:`skpro.base.load` (or the classmethods
-``load_from_path`` / ``load_from_serial``).
+:meth:`skpro.base.BaseObject.save` and restored by :func:`skpro.base.load`
+(or the classmethods ``load_from_path`` / ``load_from_serial``).
 
-There are two persistence modes:
+The format is the serialization-node format specified in
+`STEP 27 <https://github.com/sktime/enhancement-proposals/pull/52>`_,
+"Recursive composite and native serialization". It is shared with ``sktime``
+and other ``skbase``-based packages, so a composite mixing packages can be
+saved and loaded without either side needing package-specific handling.
 
-* **In-memory** (``path=None``): a Python tuple suitable for caching or
-  transfer within a process.
-* **On disk** (``path`` is a file location): a ``.zip`` archive.
+.. warning::
 
-Disk persistence uses the recursive **zip format v2** described below.
-A simpler **v1 flat** zip layout is still accepted on load for backward
-compatibility.
-
-
-In-memory format
-----------------
-
-When ``obj.save()`` (or ``obj.save(path=None)``) is called, the return
-value is a tuple:
-
-.. code-block:: text
-
-    (cls, serialized_bytes, serialization_format)
-
-where:
-
-* ``cls`` is ``type(obj)``
-* ``serialized_bytes`` is the full object blob encoded with
-  ``pickle`` or ``joblib`` (see ``serialization_format``)
-* ``serialization_format`` is ``"pickle"`` or ``"joblib"``
-
-Restore with ``load(serial)`` or ``cls.load_from_serial(...)``.
+    Loading is pickle-based, and therefore executes code contained in the
+    archive. Only load archives from sources you trust. Cross-version
+    compatibility is not guaranteed.
 
 
-Zip format v2 (recursive / manifest)
-------------------------------------
+The serialization node
+======================
 
-When ``obj.save(path)`` is called with a file location, ``skpro`` writes
-a zip archive (``.zip`` is appended if missing).
-
-The archive stores the object **tree** recursively:
-
-* each ``skpro`` / ``skbase`` ``BaseObject`` sub-component is written to
-  its own subfolder
-* a root ``manifest.json`` is the blueprint: every component, its class,
-  its path inside the zip, and the **topological load order**
-  (leaves first, root last)
-* on load, components are read in that order and reassembled
-
-Recursion and stop conditions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-``save`` walks the composite tree. Recursion stops when:
-
-1. A component is an ``skpro``/``skbase`` object with **no** nested
-   ``BaseObject`` children (leaf) — saved as a structured entry in its
-   own subfolder (``serialized_as: "structured"``).
-2. A component is **not** a ``BaseObject`` (e.g. an ``sklearn`` estimator
-   or other third-party object) — saved as a single pickle/joblib blob
-   and marked ``serialized_as: "pickle_fallback"`` in the manifest.
-3. If an object is not picklable / joblib-serializable — an error is
-   raised (there is no further fallback).
-
-Archive layout
-~~~~~~~~~~~~~~
-
-Top-level entries:
+Every ``BaseObject`` is serialized as a self-contained **serialization node**:
 
 .. code-block:: text
 
-    model.zip
-    ├── manifest.json      # blueprint (required for v2)
-    ├── _format            # "pickle" or "joblib"
-    ├── _version           # manifest version integer (currently 2)
-    ├── root/
-    │   ├── _metadata      # pickled class of the root object
-    │   └── _obj           # serialized root state (or full leaf blob)
-    └── components/
-        ├── <component_id>/
-        │   ├── _metadata
-        │   └── _obj
+    node/
+    ├── _metadata
+    ├── _obj
+    ├── _artifacts/        # optional
+    │   ├── index.json
+    │   └── ...
+    └── _components/       # optional
+        ├── index.json
         └── ...
 
-Example for a fitted ``VotingProbaRegressor`` with two residual
-sub-estimators (names are illustrative):
+The archive root is the root object's own node; there is no wrapper directory
+around it, and there is no global manifest anywhere in the archive. A node's
+``_metadata`` and its two index files describe that node completely, so any
+subtree can be understood by looking only inside its own directory.
+
+``_artifacts`` and ``_components`` are orthogonal, and both are optional:
+
+* a plain leaf object has only ``_metadata`` and ``_obj``
+* a leaf holding a deep-learning model adds ``_artifacts``
+* a composite adds ``_components``
+* a composite that also holds native state has both
+
+Because ``_components`` entries are themselves nodes, a child may repeat any of
+these possibilities recursively.
+
+
+State classification
+--------------------
+
+When a node is written, the object's attributes are classified in this order:
+
+1. attributes tagged ``serialization:skip`` are dropped entirely
+2. attributes tagged ``serialization:native_artifacts`` are written to
+   ``_artifacts``
+3. remaining ``BaseObject`` children become component references in
+   ``_components``
+4. everything left goes into ``_obj``
+
+An attribute may not carry both tags; doing so raises a ``ValueError``. Native
+artifact selection applies to the whole attribute that was selected — the
+serializer does not descend into it looking for further components.
+
+Saving never mutates the object being saved. Attributes removed for
+classification are restored even if saving fails part way through.
+
+
+``_metadata``
+-------------
+
+``_metadata`` identifies the loader class. It holds a mapping:
+
+.. code-block:: python
+
+    {
+        "format_version": 2,
+        "class": type(obj),
+        "serialization_format": "pickle",
+    }
+
+The actual class object is stored rather than a qualified name string, because
+that is what preserves ``cloudpickle`` support for classes that are not
+otherwise importable. ``_metadata`` is always readable with plain ``pickle``,
+so a reader can determine a node's format before it knows which serializer
+wrote it.
+
+A child always has authority over its own ``_metadata``; a parent never
+duplicates or overrides it.
+
+
+``_obj``
+--------
+
+``_obj`` holds whatever pickle-compatible state is left after skip, native
+artifact, and component extraction.
+
+Child components are referenced by **persistent IDs** of the form
+``("sktime-component", "component-0000")``, rather than by attribute paths.
+Using opaque IDs means children can live inside arbitrary container structures
+— lists, tuples, dicts, or nested combinations — with no path-parsing language
+to maintain, and it lets a child referenced twice inside one node resolve to a
+single shared component.
+
+Third-party, non-estimator objects — including plain ``scikit-learn`` objects —
+stay inside the parent's ``_obj`` unless explicitly marked as native artifacts.
+If such an object cannot be pickled and has no native backend, saving raises.
+
+
+``_artifacts``
+--------------
+
+``_artifacts`` holds attributes selected for framework-native serialization:
 
 .. code-block:: text
 
-    voter_model.zip
-    ├── manifest.json
-    ├── _format
-    ├── _version
-    ├── root/
-    │   ├── _metadata
-    │   └── _obj
-    └── components/
-        ├── estimators__0__1/     # first estimator (e.g. unfitted clone)
-        ├── estimators__1__1/     # second estimator
-        ├── estimators___0__1/    # first fitted estimator attribute
-        └── estimators___1__1/    # second fitted estimator attribute
+    _artifacts/
+    ├── index.json
+    ├── model_/
+    │   ├── config.json
+    │   └── model.safetensors
+    └── network_/
+        └── state_dict.pt
 
-Each component folder contains:
-
-* ``_metadata`` — ``pickle`` of the component's class (``type(obj)``)
-* ``_obj`` — serialized payload using the chosen backend
-  (``pickle`` or ``joblib``):
-
-  * for **leaf** nodes: the full object
-  * for **composite** nodes: a copy of ``__dict__`` in which nested
-    ``BaseObject`` references are replaced by placeholders that point
-    at child component IDs (so the tree can be rebuilt on load)
-
-``manifest.json``
-~~~~~~~~~~~~~~~~~
-
-Schema (conceptual):
+``index.json`` maps each attribute name to its backend, class, and path:
 
 .. code-block:: json
 
     {
-      "version": 2,
-      "serialization_format": "pickle",
-      "root_class": "skpro.regression.ensemble._voting.VotingProbaRegressor",
-      "is_fitted": true,
-      "components": {
-        "root": {
-          "class": "skpro.regression.ensemble._voting.VotingProbaRegressor",
-          "path": "root/",
-          "is_leaf": false,
-          "serialized_as": "structured",
-          "children": ["estimators__0__1", "estimators__1__1"],
-          "parent": null,
-          "attr_ref": ""
-        },
-        "estimators__0__1": {
-          "class": "skpro.regression.residual.ResidualDouble",
-          "path": "components/estimators__0__1/",
-          "is_leaf": true,
-          "serialized_as": "structured",
-          "children": [],
-          "parent": "root",
-          "attr_ref": "estimators_[0][1]"
-        }
+      "model_": {
+        "backend": "pretrained",
+        "class": "transformers.models.bert.modeling_bert.BertModel",
+        "path": "model_"
       },
-      "load_order": ["estimators__0__1", "estimators__1__1", "root"]
+      "network_": {
+        "backend": "torch_state_dict",
+        "class": "package.networks.Network",
+        "path": "network_"
+      }
     }
 
-Field meanings:
+The supported backends are:
 
-+-----------------------+--------------------------------------------------+
-| Field                 | Meaning                                          |
-+=======================+==================================================+
-| ``version``           | Manifest / format version (``2`` for this        |
-|                       | recursive layout).                               |
-+-----------------------+--------------------------------------------------+
-| ``serialization_format`` | Backend for ``_obj`` blobs: ``"pickle"`` or  |
-|                       | ``"joblib"``.                                    |
-+-----------------------+--------------------------------------------------+
-| ``root_class``        | Fully qualified class name of the saved root.    |
-+-----------------------+--------------------------------------------------+
-| ``is_fitted``         | Whether the root reported ``is_fitted`` at save  |
-|                       | time.                                            |
-+-----------------------+--------------------------------------------------+
-| ``components``        | Map from component ID to metadata (path, class,  |
-|                       | parent/children, leaf flag, serialization mode). |
-+-----------------------+--------------------------------------------------+
-| ``load_order``        | Component IDs in topological order: leaves       |
-|                       | first, ``"root"`` last.                          |
-+-----------------------+--------------------------------------------------+
+.. list-table::
+    :header-rows: 1
 
-Per-component fields:
+    * - Backend
+      - Save form
+      - Load form
+    * - ``pretrained``
+      - ``save_pretrained(path)``
+      - ``class.from_pretrained(path, **kwargs)``
+    * - ``keras``
+      - ``model.keras``
+      - ``keras.models.load_model``
+    * - ``lightning_checkpoint``
+      - ``model.ckpt``
+      - ``class.load_from_checkpoint``
+    * - ``torch_state_dict``
+      - CPU ``state_dict.pt``
+      - estimator builds the module, then loads the state dict
 
-+------------------+-------------------------------------------------------+
-| Field            | Meaning                                               |
-+==================+=======================================================+
-| ``class``        | Fully qualified class name.                           |
-+------------------+-------------------------------------------------------+
-| ``path``         | Prefix inside the zip for ``_metadata`` / ``_obj``.   |
-+------------------+-------------------------------------------------------+
-| ``is_leaf``      | ``true`` if no nested ``BaseObject`` children.        |
-+------------------+-------------------------------------------------------+
-| ``serialized_as``| ``"structured"`` for ``BaseObject`` nodes, or         |
-|                  | ``"pickle_fallback"`` for non-``BaseObject`` blobs.   |
-+------------------+-------------------------------------------------------+
-| ``children``     | List of child component IDs.                          |
-+------------------+-------------------------------------------------------+
-| ``parent``       | Parent component ID, or ``null`` for root.            |
-+------------------+-------------------------------------------------------+
-| ``attr_ref``     | Human-readable location in the parent                 |
-|                  | (e.g. ``estimators_[0][1]``).                         |
-+------------------+-------------------------------------------------------+
+If an artifact attribute is ``None`` or missing, nothing is written for it, and
+if ``_artifacts`` ends up empty it is omitted from the archive entirely.
 
-Component IDs are derived from attribute names and list/tuple indices
-(joined with ``__``), e.g. ``estimators__0__1``. Nested composites
-prefix the parent ID.
-
-Reconstruction on load
-~~~~~~~~~~~~~~~~~~~~~~
-
-Components are loaded in topological order (leaves first, root last).
-
-* **Leaf nodes** are deserialized directly from their ``_obj`` blob
-  using the chosen backend (``pickle`` or ``joblib``).
-
-* **Composite nodes** are reconstructed without calling ``__init__``:
-
-  1. The ``_obj`` blob is deserialized to recover the saved
-     ``__dict__`` (with placeholder references in place of children).
-  2. Placeholders are replaced with the already-loaded child objects.
-  3. The class is recovered from ``_metadata``.
-  4. A bare instance is created via ``cls.__new__(cls)``.
-  5. If the class defines ``__setstate__``, it is called with the
-     restored state dict; otherwise ``obj.__dict__`` is updated
-     directly.
-
-This mirrors Python's ``pickle`` protocol: ``pickle`` itself uses
-``__new__`` + ``__setstate__`` (falling back to ``__dict__`` assignment
-when no ``__setstate__`` is defined), so both the flat and recursive
-paths reconstruct objects in the same way. Classes that need
-post-deserialization setup (e.g. reopening file handles or rebuilding
-caches) can define ``__setstate__`` and both paths will honour it.
+Native backends always use their own framework formats, regardless of the
+``serialization_format`` setting.
 
 
-Zip format v1 (flat, load-only)
--------------------------------
+``_components``
+---------------
 
-Older flat archives (no ``manifest.json``) remain loadable. They contain:
+``_components`` holds a node's immediate children:
 
 .. code-block:: text
 
-    model.zip
-    ├── _metadata   # pickled class of the object
-    ├── _obj        # full object blob (pickle or joblib)
-    └── _format     # optional: "pickle" or "joblib" (default pickle)
+    _components/
+    ├── index.json
+    ├── component-0000/
+    │   ├── _metadata
+    │   ├── _obj
+    │   └── _artifacts/...
+    └── component-0001/
+        ├── _metadata
+        ├── _obj
+        └── _components/...
 
-``load`` detects v1 vs v2 by presence of ``manifest.json``.
+``index.json`` maps opaque local IDs to their directories:
+
+.. code-block:: json
+
+    {
+      "component-0000": {"path": "component-0000"},
+      "component-0001": {"path": "component-0001"}
+    }
+
+The index carries no class information — that lives in each child's own
+``_metadata`` — and no load order. Because loading is recursive, and a child is
+always fully loaded before it is handed back to the parent's unpickler, the
+order falls out of the recursion itself.
+
+Ownership cycles and cross-branch aliases are not supported in this version of
+the format. Both raise a clear error rather than looping forever or producing
+an ambiguous graph. A self-reference is not a cycle; it is handled by the
+pickle memo and round-trips normally.
+
+
+Complete example
+----------------
+
+A composite with a pretrained model at the root and a Keras model inside a
+child:
+
+.. code-block:: text
+
+    composite.zip
+    ├── _metadata
+    ├── _obj
+    ├── _artifacts/
+    │   ├── index.json
+    │   └── model_/
+    │       ├── config.json
+    │       └── model.safetensors
+    └── _components/
+        ├── index.json
+        └── component-0000/
+            ├── _metadata
+            ├── _obj
+            └── _artifacts/
+                ├── index.json
+                └── network_/
+                    └── model.keras
+
+
+In-memory format
+================
+
+When ``obj.save()`` is called with no path, the return value is a tuple:
+
+.. code-block:: text
+
+    (cls, serialized_bytes)
+
+where ``cls`` is ``type(obj)``. If the node has neither artifacts nor
+components, ``serialized_bytes`` is a plain pickle stream — the lightweight
+path. Otherwise it is an in-memory zip archive with exactly the same internal
+structure as an on-disk archive. Callers may treat the payload as opaque
+either way.
+
+Restore with ``load(serial)`` or ``cls.load_from_serial(serialized_bytes)``.
+
+
+Serialization formats
+=====================
+
+``serialization_format`` selects how ``_metadata`` and ``_obj`` are written at
+each node. The available options are ``"pickle"`` (default) and
+``"cloudpickle"``; ``cloudpickle`` is a soft dependency.
+
+The setting is independent of recursion and native serialization. Component
+references and native backends never inspect it, and ``_artifacts`` is
+unaffected, since native backends always use their framework formats. Children
+inherit the parent's format, and each node records its own format in its
+``_metadata``.
+
+
+Backward compatibility
+======================
+
+The older archive format is a strict subset of this one:
+
+.. code-block:: text
+
+    legacy-or-minimal-node/
+    ├── _metadata
+    └── _obj
+
+Readers accept all of the following:
+
+* legacy ``_metadata`` holding a bare pickled class
+* legacy in-memory ``(class, pickle_bytes)`` tuples
+* minimal nodes with neither ``_artifacts`` nor ``_components``
+* nodes carrying native artifacts
+* recursive nodes with components
+
+A node declaring a ``format_version`` newer than the running ``skpro`` supports
+is rejected up front with a clear error, rather than failing part way through
+an unpickle.
+
+
+Developer interface
+===================
+
+Two tags drive attribute classification:
+
+.. code-block:: python
+
+    _tags = {
+        "serialization:native_artifacts": ("model_",),
+        "serialization:skip": ("trainer_",),
+    }
+
+Both may be set dynamically, for instance to skip a cache only when it is
+reconstructable. Components need no tagging at all: any ``BaseObject`` child
+remaining after tag-based extraction is picked up automatically.
+
+A small number of hooks cover native formats that cannot reconstruct
+themselves:
+
+* ``_create_torch_artifact(name)`` — build a module before a state dict is
+  loaded into it
+* ``_get_native_artifact_load_kwargs(name)`` — supply arguments for
+  ``from_pretrained``
+* ``get_custom_objects()`` — supply custom Keras objects
+
+New backends belong at this layer, not inside the generic traversal logic.
 
 
 Usage
------
+=====
 
 .. code-block:: python
 
@@ -263,5 +343,5 @@ Usage
     serial = est.save()
     est3 = load(serial)
 
-Objects may opt out of serialization via the tag
+Objects may opt out of serialization testing via the tag
 ``capability:serializable=False``.
