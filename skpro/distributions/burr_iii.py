@@ -24,6 +24,12 @@ class BurrIII(_ScipyAdapter):
         Shape parameter
     scale : float
         Scale parameter
+
+    Examples
+    --------
+    >>> from skpro.distributions import BurrIII
+    >>>
+    >>> d = BurrIII(c=2, d=3, scale=1)
     """
 
     _tags = {

@@ -30,6 +30,12 @@ class TruncatedPareto(BaseDistribution):
         Lower truncation bound
     upper : float
         Upper truncation bound
+
+    Examples
+    --------
+    >>> from skpro.distributions import TruncatedPareto
+    >>>
+    >>> d = TruncatedPareto(b=2, scale=1, lower=1, upper=10)
     """
 
     _tags = {

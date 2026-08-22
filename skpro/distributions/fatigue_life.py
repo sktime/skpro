@@ -25,6 +25,12 @@ class FatigueLife(_ScipyAdapter):
         Shape parameter
     scale : float
         Scale parameter
+
+    Examples
+    --------
+    >>> from skpro.distributions import FatigueLife
+    >>>
+    >>> d = FatigueLife(c=2, scale=1)
     """
 
     _tags = {

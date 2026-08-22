@@ -13,7 +13,7 @@ class Uniform(BaseDistribution):
     The uniform distribution is parameterized by lower and upper bounds of interval,
     :math:`a` and :math`b`, such that the pdf is
 
-    .. math:: f(x) = \frac{1}{b - a} \text{ for } a \leq x \leq b, \text{ and } 0 \text{ otherwise}  # noqa E501
+    .. math:: f(x) = \frac{1}{b - a} \text{ for } a \leq x \leq b, \text{ and } 0 \text{ otherwise}
 
     The lower bound :math:`a` is represented by the parameter ``lower``,
     and the upper bound :math:`b` by the parameter ``upper``.
@@ -32,7 +32,7 @@ class Uniform(BaseDistribution):
     >>> from skpro.distributions import Uniform
     >>>
     >>> u = Uniform(lower=0, upper=5)
-    """
+    """  # noqa E501
 
     _formula_docs = {
         "pdf": r"""
