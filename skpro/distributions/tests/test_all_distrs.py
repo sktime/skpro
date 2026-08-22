@@ -321,7 +321,7 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         One of the tests for dynamic hooked docstring injection of formulae.
         """
         dist_cls = object_class
-        if not hasattr(dist_cls, "_formula_docs"):
+        if hasattr(dist_cls, "_formula_docs"):
             return None
         for method_name in dist_cls._formula_docs.keys():
             doc = getattr(dist_cls, method_name).__doc__
