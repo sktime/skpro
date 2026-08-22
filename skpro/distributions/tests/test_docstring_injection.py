@@ -9,6 +9,7 @@ from skpro.distributions.laplace import Laplace
 from skpro.distributions.logistic import Logistic
 from skpro.distributions.normal import Normal
 from skpro.distributions.rayleigh import Rayleigh
+from skpro.distributions.uniform import Uniform
 from skpro.distributions.weibull import Weibull
 
 # 1. The methods we modified in BaseDistribution
@@ -29,11 +30,12 @@ TARGET_METHODS = [
 
 # 2. Classes where we implemented formula hooks
 HOOKED_CLASSES = [
-    Normal,
-    Rayleigh,
     Exponential,
     Laplace,
     Logistic,
+    Normal,
+    Rayleigh,
+    Uniform,
     Weibull,
 ]
 

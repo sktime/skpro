@@ -67,6 +67,7 @@ Continuous support - non-negative reals
     Fisk
     Gamma
     GeneralizedPareto
+    Gompertz
     GumbelL
     GumbelR
     Levy
