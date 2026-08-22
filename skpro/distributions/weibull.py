@@ -57,6 +57,63 @@ class Weibull(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    # documentation hooks for formula injection
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{k}{\lambda} \left(\frac{x}{\lambda}\right)^{k - 1}
+        \exp\left(-\left(\frac{x}{\lambda}\right)^k\right), \quad x \ge 0
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = \log(k) - \log(\lambda)
+        + (k - 1) \log\left(\frac{x}{\lambda}\right)
+        - \left(\frac{x}{\lambda}\right)^k, \quad x \ge 0
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = 1 - \exp\left(-\left(\frac{x}{\lambda}\right)^k\right), \quad x \ge 0
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; \lambda, k) = \lambda \left(-\log(1 - p)\right)^{1/k}
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \lambda \Gamma\left(1 + \frac{1}{k}\right)
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \lambda^2 \left[\Gamma\left(1 + \frac{2}{k}\right)
+        - \Gamma\left(1 + \frac{1}{k}\right)^2\right]
+    """,
+        #
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = 2 \lambda \Gamma\left(1 + \frac{1}{k}\right)
+        \left(1 - 2^{-1/k}\right)
+    """,
+    }
+
     def __init__(self, scale, k, index=None, columns=None):
         self.scale = scale
         self.k = k
