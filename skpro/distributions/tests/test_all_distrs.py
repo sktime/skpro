@@ -316,7 +316,10 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             assert "f(x" in doc, f"Formula content missing in {dist_cls.__name__}.pdf"
 
     def test_unhooked_clean_fallback(self, object_class):
-        """Verify that unhooked classes remain generic and clean."""
+        """Verify that unhooked classes remain generic and clean.
+
+        One of the tests for dynamic hooked docstring injection of formulae.
+        """
         dist_cls = object_class
         if not hasattr(dist_cls, "_formula_docs"):
             return None
