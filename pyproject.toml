@@ -110,22 +110,11 @@ isort = "^docs/source/examples/"
 zip-safe = true
 
 [tool.setuptools.package-data]
-sktime = [
+skpro = [
     "*.csv",
     "*.csv.gz",
     "*.txt",
 ]
 
 [tool.setuptools.packages.find]
-exclude = [
-    "tests",
-    "tests.*",
-    "docs",
-    "docs.*",
-    "examples",
-    "examples.*",
-    "build_tools",
-    "build_tools.*",
-    "extension_templates",
-    "extension_templates.*",
-]
+include = ["skpro", "skpro.*"]
