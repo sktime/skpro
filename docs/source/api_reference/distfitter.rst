@@ -13,8 +13,28 @@ All distribution fitters in ``skpro`` can be listed using the
 using ``object_types="distfitter"``, optionally filtered by tags.
 Valid tags can be listed using ``skpro.registry.all_tags``.
 
-Parametric fitters
-------------------
+
+Parametric fitters - many distributions
+---------------------------------------
+
+These distribution fitters allow the user to select an arbitrary ``skpro`` distribution,
+or a distribution from a longer list of distributions, to fit parametrically.
+
+.. currentmodule:: skpro.distfitter
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    ScipyMLEFitter
+    MOMFitter
+
+
+Parametric fitters - single distributions
+-----------------------------------------
+
+These distribution fitters fit a single type of distribution, e.g., a normal
+or exponential distribution, to the data.
 
 .. currentmodule:: skpro.distfitter
 
@@ -24,10 +44,9 @@ Parametric fitters
 
     ExponentialFitter
     LaplaceFitter
-    ScipyMLEFitter
-    MOMFitter
     NormalFitter
     UniformFitter
+
 
 Base
 ----
