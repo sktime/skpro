@@ -6,6 +6,7 @@ from skpro.regression.linear._glm import GLMRegressor
 from skpro.regression.linear._glum import GlumRegressor
 from skpro.regression.linear._sklearn import ARDRegression, BayesianRidge
 from skpro.regression.linear._sklearn_poisson import PoissonRegressor
+from skpro.regression.linear._statsmodels_poisson import StatsmodelsPoissonRegressor
 
 __all__ = [
     "ARDRegression",
@@ -13,5 +14,6 @@ __all__ = [
     "GLMRegressor",
     "GlumRegressor",
     "PoissonRegressor",
+    "StatsmodelsPoissonRegressor",
     "DummyProbaRegressor",
 ]
