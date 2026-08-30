@@ -30,7 +30,7 @@ class Fisk(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.fisk import Fisk
-
+    >>>
     >>> d = Fisk(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
     """
 

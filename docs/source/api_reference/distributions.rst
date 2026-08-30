@@ -42,6 +42,7 @@ Continuous support - full reals
     Normal
     SkewNormal
     TDistribution
+    Triangular
     TruncatedNormal
     Uniform
 
@@ -67,6 +68,7 @@ Continuous support - non-negative reals
     Fisk
     Gamma
     GeneralizedPareto
+    Gompertz
     GumbelL
     GumbelR
     Levy

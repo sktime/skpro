@@ -41,7 +41,7 @@ class HalfLogistic(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.halflogistic import HalfLogistic
-
+    >>>
     >>> hl = HalfLogistic(beta=1)
     """
 

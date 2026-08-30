@@ -41,7 +41,7 @@ dependencies = [
     "numpy>=1.21.0,<2.5",
     "pandas>=1.1.0,<3.1.0",
     "packaging",
-    "scikit-base>=0.6.1,<1.1.0",
+    "scikit-base>=0.6.1,<1.2.0",
     "scikit-learn>=0.24.0,<1.8.0",
     "scipy<2.0.0,>=1.2.0",
 ]
@@ -51,7 +51,7 @@ all_extras = [
     "distfit; python_version < '3.13'",
     "lifelines<0.31.0; python_version < '3.13'",
     "matplotlib>=3.3.2",
-    "polars<1.43.0",
+    "polars<1.44.0",
     "pymc; python_version < '3.13'",
     "statsmodels>=0.12.1",
 ]
@@ -110,11 +110,11 @@ isort = "^docs/source/examples/"
 zip-safe = true
 
 [tool.setuptools.package-data]
-sktime = [
+skpro = [
     "*.csv",
     "*.csv.gz",
     "*.txt",
 ]
 
 [tool.setuptools.packages.find]
-exclude = ["tests", "tests.*"]
+include = ["skpro", "skpro.*"]

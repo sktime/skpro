@@ -28,6 +28,7 @@ This file collects analytic formulae, derivations, and summary tables for energy
 | Poisson(3)                    | 1.907392  | 1.910830    | 0.003438  |
 | Rayleigh(1.0)                 | 0.734174  | 0.734174    | 0.000000  |
 | TruncatedNormal(0,1,-1,2)     | 0.824430  | 0.824881    | 0.000451  |
+| Triangular(0,1,3)             | 0.711111  | 0.711957    | 0.000846  |
 
 ## Example: Beta(2,3)
 
@@ -311,6 +312,53 @@ $$
 F(t)(1-F(t)) = \left( 1 - \exp\left(-\frac{t^2}{2\sigma^2}\right) \right) \exp\left(-\frac{t^2}{2\sigma^2}\right) = \exp\left(-\frac{t^2}{2\sigma^2}\right) - \exp\left(-\frac{t^2}{\sigma^2}\right)
 $$
 Integrating this yields $\sigma \sqrt{\frac{\pi}{2}} - \frac{\sigma \sqrt{\pi}}{2}$, which multiplied by 2 gives the analytical solution.
+
+---
+
+## Example: Triangular(a, c, b)
+
+Lower limit $a$, mode $c$, upper limit $b$, with $a \leq c \leq b$. Write
+$d = b - a$, $p = c - a$, $q = b - c$ (so $d = p + q$), and mean
+$\mu = (a + b + c)/3$.
+
+**Self-energy** $\mathbb{E}|X-Y|$, using $\mathbb{E}|X-Y| = 2\int_S F(t)(1-F(t))\,dt$:
+
+The CDF is $F(t) = \frac{(t-a)^2}{d\,p}$ on $[a,c]$ and
+$F(t) = 1 - \frac{(b-t)^2}{d\,q}$ on $[c,b]$. Substituting $u=t-a$ on the left
+piece and $v=b-t$ on the right piece, both integrals reduce to
+$\int_0^r \frac{w^2}{d r}\left(1 - \frac{w^2}{d r}\right) dw
+= \frac{r^2}{3d} - \frac{r^3}{5 d^2}$ for $r \in \{p, q\}$. Hence
+
+$$
+\mathbb{E}|X-Y| = \frac{2(p^2 + q^2)}{3 d} - \frac{2(p^3 + q^3)}{5 d^2}.
+$$
+
+For the symmetric case $p = q = d/2$ this gives $\tfrac{7}{30} d$.
+
+**Cross-energy** $\mathbb{E}|X-x|$, using $\mathbb{E}|X-x| = \int_{-\infty}^{x} F(t)\,dt + \int_{x}^{\infty}(1-F(t))\,dt$:
+
+Let $I_F(x) = \int_a^{x} F(t)\,dt$. Then $\mathbb{E}|X-x| = 2 I_F(x) - I_F(b) + (b - x)$,
+with $I_F(b) = b - \mu$ and, piecewise,
+
+$$
+I_F(x) =
+\begin{cases}
+0, & x \leq a \\[1ex]
+\dfrac{(x-a)^3}{3 d p}, & a \leq x \leq c \\[1ex]
+\dfrac{p^2 - q^2}{3 d} + (x - c) + \dfrac{(b-x)^3}{3 d q}, & c \leq x \leq b \\[1ex]
+(b - \mu) + (x - b), & x \geq b.
+\end{cases}
+$$
+
+This is continuous at $x=c$ and reduces to $\mu - x$ for $x \leq a$ and
+$x - \mu$ for $x \geq b$. Degenerate triangles ($p=0$ or $q=0$) are covered:
+the vanishing-denominator branch corresponds to an empty region and is never
+evaluated on its own support.
+
+**MC cross-check** (2M samples per case, $\mathrm{rel} < 2\times10^{-3}$
+throughout): self-energy and cross-energy verified for asymmetric,
+symmetric, and both degenerate ($c=a$, $c=b$) parametrizations, and for $x$
+inside and outside $[a,b]$.
 
 ---
 

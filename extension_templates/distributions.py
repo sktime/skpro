@@ -96,6 +96,60 @@ class ClassName(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    # todo, optional: add documentation for explicit formulae if known;
+    # remove or replace the below example formulae for normal distribution with your own
+    #
+    # these formulae are inserted into methods of the same name in the docstring, e.g.,
+    # the docstring of pdf will contain the formula in _formula_docs["pdf"]
+    #
+    # below are the examples for the normal distribution
+    # remove or replace; optionally, add more formulae for other methods, e.g., energy
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}
+        {2\sigma^2}\right)
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = -\frac{(x - \mu)^2}{2\sigma^2} - \log(\sigma \sqrt{2\pi})
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = \frac{1}{2} \left[1 + \operatorname{erf}\left(\frac{x - \mu}
+        {\sigma\sqrt{2}}\right)\right]
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; \mu, \sigma) = \mu + \sigma \sqrt{2} \operatorname{erf}^{-1}(2p - 1)
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \mu
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \sigma^2
+    """,
+    }
+
     # todo: fill init
     # params should be written to self and never changed
     # super call must not be removed, change class name
