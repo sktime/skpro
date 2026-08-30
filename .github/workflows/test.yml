@@ -206,6 +206,9 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
 
+      - name: Install OSX packages
+        run: ./.github/scripts/install_osx_dependencies.sh
+
       - name: Install skpro and dependencies
         shell: bash
         run: uv pip install .[dev] --no-cache-dir
