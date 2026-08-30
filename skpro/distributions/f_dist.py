@@ -38,6 +38,7 @@ class FDist(_ScipyAdapter):
     _tags = {
         "authors": ["arnavk23"],
         "distr:measuretype": "continuous",
+        "distr:paramtype": "parametric",
         "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
         "broadcast_init": "on",
     }
