@@ -3,7 +3,7 @@
 
 from skpro.distfitter.base import BaseDistFitter
 
-__author__ = ["areychana"]
+__author__ = ["pyarchana"]
 
 
 class DistfitFitter(BaseDistFitter):
@@ -64,7 +64,7 @@ class DistfitFitter(BaseDistFitter):
     """
 
     _tags = {
-        "authors": ["areychana"],
+        "authors": ["pyarchana"],
         "python_dependencies": ["distfit"],
     }
 

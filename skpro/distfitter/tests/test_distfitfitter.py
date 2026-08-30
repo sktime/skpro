@@ -4,20 +4,18 @@
 import numpy as np
 import pandas as pd
 import pytest
-from skbase.utils.dependencies import _check_soft_dependencies
 
+from skpro.distfitter import DistfitFitter
 from skpro.distributions.base import BaseDistribution
-
-DISTFIT_AVAILABLE = _check_soft_dependencies("distfit", severity="none")
+from skpro.tests.test_switch import run_test_for_class
 
 
 @pytest.mark.skipif(
-    not DISTFIT_AVAILABLE, reason="skip test if required soft dependency not present"
+    not run_test_for_class(DistfitFitter),
+    reason="run test only if softdeps are present and incrementally (if requested)",
 )
 def test_distfitfitter_fits_known_normal():
     """DistfitFitter restricted to 'norm' recovers close to true mean/scale."""
-    from skpro.distfitter import DistfitFitter
-
     rng = np.random.RandomState(42)
     X = pd.DataFrame(rng.normal(loc=5.0, scale=2.0, size=1000))
 
@@ -39,12 +37,11 @@ def test_distfitfitter_fits_known_normal():
 
 
 @pytest.mark.skipif(
-    not DISTFIT_AVAILABLE, reason="skip test if required soft dependency not present"
+    not run_test_for_class(DistfitFitter),
+    reason="run test only if softdeps are present and incrementally (if requested)",
 )
 def test_distfitfitter_stores_fit_summary():
     """DistfitFitter stores a summary table of all candidate distributions."""
-    from skpro.distfitter import DistfitFitter
-
     rng = np.random.RandomState(0)
     X = pd.DataFrame(rng.normal(size=200))
 
@@ -57,12 +54,11 @@ def test_distfitfitter_stores_fit_summary():
 
 
 @pytest.mark.skipif(
-    not DISTFIT_AVAILABLE, reason="skip test if required soft dependency not present"
+    not run_test_for_class(DistfitFitter),
+    reason="run test only if softdeps are present and incrementally (if requested)",
 )
 def test_distfitfitter_proba_before_fit_raises():
     """Calling proba() before fit() must raise, per BaseDistFitter contract."""
-    from skpro.distfitter import DistfitFitter
-
     fitter = DistfitFitter(distr="norm")
 
     with pytest.raises(ValueError):
@@ -70,12 +66,11 @@ def test_distfitfitter_proba_before_fit_raises():
 
 
 @pytest.mark.skipif(
-    not DISTFIT_AVAILABLE, reason="skip test if required soft dependency not present"
+    not run_test_for_class(DistfitFitter),
+    reason="run test only if softdeps are present and incrementally (if requested)",
 )
 def test_distfitfitter_get_params_roundtrip():
     """get_params/set_params/clone round-trip as expected for skpro estimators."""
-    from skpro.distfitter import DistfitFitter
-
     fitter = DistfitFitter(distr="norm", stats="wasserstein")
     params = fitter.get_params()
 
