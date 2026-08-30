@@ -111,17 +111,27 @@ class _LifelinesAdapter:
         if hasattr(self, "X_col_subset"):
             X = X[self.X_col_subset]
 
-        to_concat = [X, y]
+        # use only the first column of y as duration
+        y_name = y.columns[0]
+        if y.shape[1] > 1:
+            import warnings
+            warnings.warn(
+                "Multiple columns in y detected. Only the first column is used as duration."
+            )
+        # start with feature dataframe
+        df = X.copy()
 
+        # add ONLY duration column
+        df[y_name] = y[y_name]
+
+        # handle censoring column (event_col)
         if C is not None:
-            C_col = 1 - C.copy()  # lifelines uses 1 for uncensored, 0 for censored
+            C_col = 1 - C.copy()  # lifelines convention
             C_col.columns = ["__C"]
-            to_concat.append(C_col)
-
-        df = pd.concat(to_concat, axis=1)
+            df["__C"] = C_col.iloc[:, 0]        
 
         self._y_cols = y.columns  # remember column names for later
-        y_name = y.columns[0]
+        
 
         fit_args = {
             "df": df,
