@@ -65,3 +65,47 @@ def test_empirical_skip_init_sorted():
     assert emp_sorted_scalar.mean() == emp_lazy_scalar.mean()
     assert emp_sorted_scalar.var() == emp_lazy_scalar.var()
     assert emp_sorted_scalar.cdf(2.5) == emp_lazy_scalar.cdf(2.5)
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_empirical_energy_nan():
+    """Test that energy returns NaN for all-NaN samples, not zero.
+
+    Regression test for https://github.com/sktime/skpro/issues/834.
+    np.sum on a pandas DataFrame dispatches to pd.DataFrame.sum with
+    skipna=True, which silently converts NaN energy values to 0.0.
+    This caused CRPS to report perfect scores for invalid distributions.
+    """
+    spl_idx = pd.MultiIndex.from_product(
+        [[0, 1, 2], ["A"]], names=["sample", "loc"]
+    )
+    y_true = pd.DataFrame(
+        {"qty": [10.0]}, index=pd.Index(["A"], name="loc")
+    )
+
+    # Distribution with all-NaN samples
+    spl_nan = pd.DataFrame({"qty": [np.nan, np.nan, np.nan]}, index=spl_idx)
+    dist_nan = Empirical(spl_nan)
+
+    # energy(self) should be NaN, not 0.0
+    energy_self = dist_nan.energy()
+    assert np.isnan(energy_self.values[0, 0]), (
+        f"energy(self) should be NaN for all-NaN samples, got {energy_self.values[0, 0]}"
+    )
+
+    # energy(y_true) should also be NaN, not 0.0
+    energy_x = dist_nan.energy(y_true)
+    assert np.isnan(energy_x.values[0, 0]), (
+        f"energy(x) should be NaN for all-NaN samples, got {energy_x.values[0, 0]}"
+    )
+
+    # Verify that valid (non-NaN) samples still produce finite energy
+    spl_valid = pd.DataFrame({"qty": [1.0, 2.0, 3.0]}, index=spl_idx)
+    dist_valid = Empirical(spl_valid)
+    energy_valid = dist_valid.energy()
+    assert np.isfinite(energy_valid.values[0, 0]), (
+        "energy(self) should be finite for valid samples"
+    )
