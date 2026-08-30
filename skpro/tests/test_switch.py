@@ -92,7 +92,7 @@ def run_test_for_class(cls, return_reason=False):
         * otherwise, any reasons to run cause the entire list to be run
         * otherwise, the list is not run due to "no change"
     """
-    from skpro.tests._config import ONLY_CHANGED_MODULES
+    from skpro.tests._config import ONLY_CHANGED_MODULES, SKIP_VM_TESTS
 
     def _return(run, reason):
         if return_reason:
@@ -144,7 +144,9 @@ def run_test_for_class(cls, return_reason=False):
 
     # now we know that cls is a class or function,
     # and not on the exclude list
-    run, reason = _run_test_for_class(cls, only_changed_modules=ONLY_CHANGED_MODULES)
+    run, reason = _run_test_for_class(
+        cls, only_changed_modules=ONLY_CHANGED_MODULES, skip_vm_tests=SKIP_VM_TESTS
+    )
     return _return(run, reason)
 
 
@@ -154,6 +156,7 @@ def _run_test_for_class(
     ignore_deps=False,
     only_changed_modules=True,
     only_vm_required=False,
+    skip_vm_tests=False,
 ):
     """Check if test should run - cached with hashable cls.
 
@@ -171,6 +174,10 @@ def _run_test_for_class(
         whether th return only classes that require their own VM.
         If True, will only return classes with tag "tests:vm"=True.
         If False, will only return classes with tag "tests:vm"=False.
+    skip_vm_tests : boolean, default=False
+        whether to skip tests for classes that require their own VM.
+        If True, will skip classes with tag "tests:vm"=True.
+        This is useful in CI/CD where VM tests are run separately.
 
     Returns
     -------
@@ -261,8 +268,8 @@ def _run_test_for_class(
         return False, "False_required_deps_missing"
     # otherwise, continue
 
-    # if only_vm_required=False, and the class requires a test vm, skip
-    if not only_vm_required and _requires_vm(cls):
+    # if skip_vm_tests=True, and the class requires a test vm, skip
+    if skip_vm_tests and _requires_vm(cls):
         return False, "False_requires_vm"
     # if only_vm_required=True, and the class does not require a test vm, skip
     if only_vm_required and not _requires_vm(cls):

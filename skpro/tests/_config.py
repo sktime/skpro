@@ -8,6 +8,11 @@
 # default is False, can be set to True by pytest --only_changed_modules True flag
 ONLY_CHANGED_MODULES = False
 
+# whether to skip tests for estimators with "tests:vm" tag
+# default is False, can be set to True by pytest --skip_vm_tests flag
+# useful in CI/CD where VM tests are run separately in dedicated VMs
+SKIP_VM_TESTS = False
+
 
 # list of str, names of estimators to exclude from testing
 # WARNING: tests for these estimators will be skipped
