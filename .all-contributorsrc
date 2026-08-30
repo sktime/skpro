@@ -184,7 +184,9 @@
       "contributions": [
         "bug",
         "code",
-        "doc"
+        "doc",
+        "example",
+        "tutorial"
       ]
     },
     {
