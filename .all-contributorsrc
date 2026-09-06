@@ -258,6 +258,14 @@
       ]
     },
     {
+      "login": "Vidit-lab",
+      "name": "Vidit Shrimali",
+      "profile": "https://github.com/Vidit-lab",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
       "login": "kabirvashisht4-glitch",
       "name": "Kabir Vashisht",
       "contributions": [
@@ -270,6 +278,23 @@
       "name": "Siddharth",
       "contributions": [
         "bug"
+      ]
+    },
+    {
+      "login": "Kushagra651",
+      "name": "Kushagra",
+      "avatar_url": "https://avatars.githubusercontent.com/Kushagra651?v=4",
+      "profile": "https://github.com/Kushagra651",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "molloyzak13",
+      "name": "Zak Molloy",
+      "contributions": [
+        "bug",
+        "code"
       ]
     }
   ]

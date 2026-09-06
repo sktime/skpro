@@ -37,7 +37,7 @@ class Gumbel(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.gumbel import Gumbel
-
+    >>>
     >>> d = Gumbel(mu=[[1, 1], [2, 3], [4, 5]], beta=2, skew="right")
     """
 

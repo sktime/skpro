@@ -103,6 +103,11 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
 
         super().__init__()
 
+    def __dynamic_tags__(self):
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
+
+        This method should be used for setting dynamic tags only.
+        """
         est_list = self._estimators
 
         self._anytagis_then_set("capability:missing", False, True, est_list)

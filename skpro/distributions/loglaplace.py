@@ -40,7 +40,7 @@ class LogLaplace(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.loglaplace import LogLaplace
-
+    >>>
     >>> ll = LogLaplace(scale=1)
     """
 

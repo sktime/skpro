@@ -111,6 +111,12 @@ class BaggingRegressor(BaseProbaRegressor):
 
         super().__init__()
 
+    def __dynamic_tags__(self):
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
+
+        This method should be used for setting dynamic tags only.
+        """
+        estimator = self.estimator
         tags_to_clone = ["capability:missing", "capability:survival"]
         self.clone_tags(estimator, tags_to_clone)
 
