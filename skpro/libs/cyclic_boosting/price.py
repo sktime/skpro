@@ -8,10 +8,12 @@ import numpy as np
 import pandas as pd
 from numexpr import evaluate
 
-from skpro.libs.cyclic_boosting import CBNBinomRegressor
 from skpro.libs.cyclic_boosting.base import UpdateMixin
 from skpro.libs.cyclic_boosting.features import FeatureTypes, create_feature_id
-from skpro.libs.cyclic_boosting.regression import _calc_factors_and_uncertainties
+from skpro.libs.cyclic_boosting.regression import (
+    CBNBinomRegressor,
+    _calc_factors_and_uncertainties,
+)
 from skpro.libs.cyclic_boosting.utils import get_X_column
 
 _logger = logging.getLogger(__name__)

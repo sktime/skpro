@@ -1,21 +1,22 @@
 from sklearn.pipeline import Pipeline
 
-from skpro.libs.cyclic_boosting import (
+from skpro.libs.cyclic_boosting import binning
+from skpro.libs.cyclic_boosting.classification import CBClassifier
+from skpro.libs.cyclic_boosting.GBSregression import CBGBSRegressor
+from skpro.libs.cyclic_boosting.generic_loss import (
     CBAdditiveGenericRegressor,
     CBAdditiveQuantileRegressor,
-    CBClassifier,
-    CBExponential,
-    CBGBSRegressor,
     CBGenericClassifier,
-    CBLocationRegressor,
-    CBLocPoissonRegressor,
     CBMultiplicativeGenericRegressor,
     CBMultiplicativeQuantileRegressor,
-    CBNBinomC,
-    CBNBinomRegressor,
-    CBPoissonRegressor,
-    binning,
 )
+from skpro.libs.cyclic_boosting.location import (
+    CBLocationRegressor,
+    CBLocPoissonRegressor,
+)
+from skpro.libs.cyclic_boosting.nbinom import CBNBinomC
+from skpro.libs.cyclic_boosting.price import CBExponential
+from skpro.libs.cyclic_boosting.regression import CBNBinomRegressor, CBPoissonRegressor
 
 
 def pipeline_CB(
