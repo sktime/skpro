@@ -10,9 +10,12 @@ from skpro.distfitter.base import BaseDistFitter
 class EmpiricalFitter(BaseDistFitter):
     """Fit an empirical distribution by wrapping data in an Empirical distribution.
 
-    Converts the full sample into an empirical distribution.
-    For the univariate case (empirical per variable), this simply wraps the
-    data in an ``Empirical`` distribution.
+    Converts the full sample into a scalar (0-dimensional) empirical
+    distribution by wrapping the data in an ``Empirical`` distribution.
+
+    If the data contains multiple columns, all entries are pooled into a
+    single empirical sample, i.e., the fitted distribution is always scalar,
+    independent of the number of columns in ``X``.
 
     This is useful as a base component, e.g., for naive distribution fitting
     in ensemble or reduction strategies.
