@@ -16,6 +16,16 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.15.1] - 2026-09-11
+=====================
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``scikit-learn`` bounds have been updated to ``>=0.24.0,<1.10.0``.
+* ``numpy`` bounds have been updated to ``>=1.21.0,<2.5``.
+
+
 [2.15.0] - 2026-09-10
 =====================
 
