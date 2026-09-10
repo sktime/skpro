@@ -56,7 +56,7 @@ Maintenance
 Documentation
 ~~~~~~~~~~~~~
 
-* [DOC] distributtion fitters API reference (:pr:`1099`) :user:`fkiraly`
+* [DOC] distribution fitters API reference (:pr:`1099`) :user:`fkiraly`
 * [DOC] fix ``MultipleQuantileRegressor`` docstring formatting issues (:pr:`1107`) :user:`fkiraly`
 * [DOC] Fix Histogram docstring formatting (:pr:`1101`) :user:`Kushagra651`
 * [DOC] fix docstring example formatting in distributions (:pr:`1118`) :user:`fkiraly`
