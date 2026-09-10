@@ -70,27 +70,27 @@ class BayesianConjugateLinearRegressor(BaseProbaRegressor):
     ... )  # doctest: +SKIP
     >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
     >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
-
+    >>>
     >>> # Load dataset
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
-
+    >>>
     >>> # Center the training data
     >>> X_train -= X_train.mean(axis=0)  # doctest: +SKIP
-
+    >>>
     >>> # Initialize model
     >>> bayes_model = BayesianConjugateLinearRegressor(
     ...     coefs_prior_mu=None,
     ...     coefs_prior_cov=np.eye(X_train.shape[1]),
     ...     noise_precision=1.0,
     ... )  # doctest: +SKIP
-
+    >>>
     >>> # Fit the model
     >>> bayes_model.fit(X_train, y_train)  # doctest: +SKIP
-
+    >>>
     >>> # Predict probabilities (returns an skpro Normal distribution)
     >>> y_test_pred_proba = bayes_model.predict_proba(X_test)  # doctest: +SKIP
-
+    >>>
     >>> # Predict point estimates (mean of the predicted distribution)
     >>> y_test_pred = bayes_model.predict(X_test)  # doctest: +SKIP
     """
