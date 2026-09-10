@@ -1,0 +1,63 @@
+name: Docs link check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release**'
+    paths:
+      - 'docs/**'
+      - 'skpro/**/*.py'
+      - 'pyproject.toml'
+      - '.github/workflows/linkcheck.yml'
+  schedule:
+    - cron: '0 0 * * 6'
+
+  # Allows workflows to be manually triggered
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linkcheck-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linkcheck:
+    name: docs link check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: repository checkout step
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: python environment step
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install skpro and docs dependencies
+        shell: bash
+        run: uv pip install .[docs] --no-cache-dir
+        env:
+          UV_SYSTEM_PYTHON: 1
+
+      - name: Show dependencies
+        run: uv pip list
+
+      - name: Run sphinx linkcheck
+        run: python -m sphinx -b linkcheck -j auto docs/source docs/_build/linkcheck
+
+      - name: Upload linkcheck report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: linkcheck-report
+          path: docs/_build/linkcheck/
+          retention-days: 7
