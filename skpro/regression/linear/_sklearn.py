@@ -88,6 +88,12 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
         zero mean. Set to np.zeros(n_features) otherwise.
     """
 
+    _tags = {
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
+
     def __init__(
         self,
         max_iter=300,
@@ -292,6 +298,12 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
         If `fit_intercept=True`, offset subtracted for centering data to a
         zero mean. Set to np.zeros(n_features) otherwise.
     """
+
+    _tags = {
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(
         self,

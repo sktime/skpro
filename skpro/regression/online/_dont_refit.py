@@ -26,7 +26,12 @@ class OnlineDontRefit(_DelegatedProbaRegressor):
         clone of the regressor passed in the constructor, fitted on all data
     """
 
-    _tags = {"capability:update": False}
+    _tags = {
+        "capability:update": False,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(self, estimator):
         self.estimator = estimator

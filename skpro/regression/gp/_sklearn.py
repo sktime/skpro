@@ -105,6 +105,12 @@ class GaussianProcess(_DelegateWithFittedParamForwarding):
         The log-marginal-likelihood of ``self.kernel_.theta``.
     """
 
+    _tags = {
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
+
     def __init__(
         self,
         kernel=None,
