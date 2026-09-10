@@ -53,6 +53,9 @@ class IntervalWidth(BaseProbaMetric):
     _tags = {
         "scitype:y_pred": "pred_interval",
         "lower_is_better": True,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(

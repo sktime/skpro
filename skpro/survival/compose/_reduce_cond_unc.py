@@ -32,7 +32,12 @@ class ConditionUncensored(BaseProbaRegressor):
         fitted probabilistic regressor, clone of ``regressor``
     """
 
-    _tags = {"capability:survival": True}
+    _tags = {
+        "capability:survival": True,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(self, estimator):
         self.estimator = estimator

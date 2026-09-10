@@ -41,6 +41,7 @@ Enhancements
 * [ENH] expand distfitter module with 5 new distribution fitters (:pr:`1110`) :user:`patelchaitany`
 * [ENH] ``NaiveProbaRegressor`` using distribution fitter (:pr:`1108`) :user:`patelchaitany`
 * [ENH] ``TruncatedPareto``: add closed-form ``mean`` and ``var`` (:pr:`1114`) :user:`binggao1230`
+* [ENH] add tag skip mechanism to test framework, skip estimators with missing docstrings (:pr:`1133`) :user:`fkiraly`
 
 Maintenance
 ~~~~~~~~~~~

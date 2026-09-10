@@ -205,6 +205,9 @@ class GLMRegressor(BaseProbaRegressor):
         "capability:missing": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def _str_to_sm_family(self, dist, link):

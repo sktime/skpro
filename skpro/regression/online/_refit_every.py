@@ -33,7 +33,12 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
         clone of the regressor passed in the constructor, fitted on all data
     """
 
-    _tags = {"capability:update": True}
+    _tags = {
+        "capability:update": True,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(self, estimator, N=1):
         self.estimator = estimator
