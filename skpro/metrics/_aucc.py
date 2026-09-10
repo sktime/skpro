@@ -61,10 +61,10 @@ class AUCalibration(BaseDistrMetric):
     """  # noqa: E501
 
     _tags = {
-          # CI and test flags
-          # -----------------
-          "tests:skip_by_name": ["test_class_has_doctest_example"],
-      }
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(self, multioutput="uniform_average", multivariate=False):
         self.multivariate = multivariate
