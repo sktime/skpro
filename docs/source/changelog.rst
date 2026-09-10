@@ -26,7 +26,6 @@ Highlights
 * ``NaiveProbaRegressor`` using distribution fitter (:pr:`1108`) :user:`patelchaitany`
 * ``StackingProbaRegressor`` - probabilistic stacking ensemble (:pr:`1075`) :user:`Ashish-Kumar-Dash`
 
-
 Enhancements
 ~~~~~~~~~~~~
 
@@ -52,6 +51,7 @@ Maintenance
 * [MNT] [Dependabot](deps): Update scikit-base requirement from ``<1.1.0,>=0.6.1`` to ``>=0.6.1,<1.2.0`` (:pr:`1117`) :user:`dependabot[bot]`
 * [MNT] remove extraneous material from package wheel (:pr:`1128`) :user:`fkiraly`
 * [MNT] [Dependabot](deps-dev): Update polars requirement from ``<1.44.0`` to ``<1.45.0`` (:pr:`1131`) :user:`dependabot[bot]`
+* [MNT] add documentation link checker to CI (:pr:`1130`) :user:`siddharth7113`
 
 Documentation
 ~~~~~~~~~~~~~
@@ -89,6 +89,7 @@ Contributors
 :user:`molloyzak13`,
 :user:`Mr-Neutr0n`,
 :user:`patelchaitany`,
+:user:`siddharth7113`,
 :user:`Tusharjamdade`,
 :user:`utsab345`,
 :user:`Vidit-lab`
