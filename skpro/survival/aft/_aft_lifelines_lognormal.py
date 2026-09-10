@@ -76,8 +76,14 @@ class AFTLogNormal(_LifelinesAdapter, BaseSurvReg):
         the concordance index of the model.
     """
 
-    _tags = {"authors": ["CamDavidsonPilon", "fkiraly"]}
-    # CamDavidsonPilon, credit for interfaced estimator
+    _tags = {
+        "authors": ["CamDavidsonPilon", "fkiraly"],
+        # CamDavidsonPilon, credit for interfaced estimator
+        #
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(
         self,

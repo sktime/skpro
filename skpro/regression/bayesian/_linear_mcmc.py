@@ -36,7 +36,7 @@ class BayesianLinearRegressor(BaseProbaRegressor):
     >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
-
+    >>>
     >>> bayes_model = BayesianLinearRegressor()  # doctest: +SKIP
     >>> bayes_model.fit(X_train, y_train)  # doctest: +SKIP
     >>> y_test_pred_proba = bayes_model.predict_proba(X_test)  # doctest: +SKIP
