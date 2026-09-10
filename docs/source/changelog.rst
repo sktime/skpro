@@ -16,6 +16,84 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.15.0] - 2026-09-10
+=====================
+
+Highlights
+~~~~~~~~~~
+
+* multiple new distribution fitters (:pr:`1110`) :user:`patelchaitany`
+* ``NaiveProbaRegressor`` using distribution fitter (:pr:`1108`) :user:`patelchaitany`
+* ``StackingProbaRegressor`` - probabilistic stacking ensemble (:pr:`1075`) :user:`Ashish-Kumar-Dash`
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] ``StackingProbaRegressor`` - probabilistic stacking ensemble (:pr:`1075`) :user:`Ashish-Kumar-Dash`
+* [ENH] Add ``distfitter`` scitype to base class registry (:pr:`1093`) :user:`utsab345`
+* [ENH] Add ``__dynamic_tags__`` and ``__post_init__`` to base framework (:pr:`1094`) :user:`utsab345`
+* [ENH] robustify ``__post_init__`` contract, move constructor code to ``__post_init__`` (:pr:`1103`) :user:`fkiraly`
+* [ENH] Add formula docstring injection hooks for distribution methods (:pr:`698`) :user:`Tusharjamdade`
+* [ENH] Implement dynamic docstring formula injection for distributions (:pr:`1024`) :user:`KaranSinghDev`, :user:`fkiraly`
+* [ENH] add test that all classes have docstrings and at least one doctest example (:pr:`1121`) :user:`fkiraly`
+* [ENH] Move docstring formula injection tests to ``TestAllDistributions`` (:pr:`1127`) :user:`fkiraly`
+* [ENH] ``Triangular`` distribution via ``_ScipyAdapter`` with exact energy (:pr:`1116`) :user:`Ashish-Kumar-Dash`
+* [ENH] expand distfitter module with 5 new distribution fitters (:pr:`1110`) :user:`patelchaitany`
+* [ENH] ``NaiveProbaRegressor`` using distribution fitter (:pr:`1108`) :user:`patelchaitany`
+* [ENH] ``TruncatedPareto``: add closed-form ``mean`` and ``var`` (:pr:`1114`) :user:`binggao1230`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Bump ``actions/setup-node`` from ``6`` to ``7`` (:pr:`1112`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Bump ``actions/setup-python`` from ``6`` to ``7`` (:pr:`1113`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update polars requirement from ``<1.43.0`` to ``<1.44.0`` (:pr:`1115`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps): Update scikit-base requirement from ``<1.1.0,>=0.6.1`` to ``>=0.6.1,<1.2.0`` (:pr:`1117`) :user:`dependabot[bot]`
+* [MNT] remove extraneous material from package wheel (:pr:`1128`) :user:`fkiraly`
+* [MNT] [Dependabot](deps-dev): Update polars requirement from ``<1.44.0`` to ``<1.45.0`` (:pr:`1131`) :user:`dependabot[bot]`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] distributtion fitters API reference (:pr:`1099`) :user:`fkiraly`
+* [DOC] fix ``MultipleQuantileRegressor`` docstring formatting issues (:pr:`1107`) :user:`fkiraly`
+* [DOC] Fix Histogram docstring formatting (:pr:`1101`) :user:`Kushagra651`
+* [DOC] fix docstring example formatting in distributions (:pr:`1118`) :user:`fkiraly`
+* [DOC] add distribution formula hooks to extension template (:pr:`1119`) :user:`fkiraly`
+* [DOC] Fix typo in introduction.rst: correct "hyperparamter" to "hyperparameter (:pr:`985`) :user:`AMAN-sharma07`
+* [DOC] Add formula docs for ``Uniform`` distribution (:pr:`1123`) :user:`Vidit-lab`
+* [DOC] add ``Gompertz`` to distributions API reference (:pr:`1125`) :user:`Ashish-Kumar-Dash`
+* [DOC] add explicit formulae to _formula_docs for Logistic and Weibull distributions (:pr:`1124`) :user:`itsnevu`
+* [DOC] add missing ``Examples`` sections to distribution docstrings (:pr:`1126`) :user:`Ashish-Kumar-Dash`
+
+Fixes
+~~~~~
+
+* [BUG] fix Bayesian regressors overwriting ``__init__`` parameters (:pr:`1104`) :user:`molloyzak13`
+* [BUG] fix ``test_discrete_pmf_plotting`` failing (:pr:`1106`) :user:`Mr-Neutr0n`
+* [BUG] burr iii implementation was using the wrong ``scipy`` method (:pr:`953`) :user:`hrshx3o5o6`
+* [BUG] fix missing ``Cauchy`` import in distributions ``__init__`` (:pr:`1122`) :user:`Ashish-Kumar-Dash`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`AMAN-sharma07`,
+:user:`Ashish-Kumar-Dash`,
+:user:`binggao1230`,
+:user:`fkiraly`,
+:user:`hrshx3o5o6`,
+:user:`itsnevu`,
+:user:`KaranSinghDev`,
+:user:`Kushagra651`,
+:user:`molloyzak13`,
+:user:`Mr-Neutr0n`,
+:user:`patelchaitany`,
+:user:`Tusharjamdade`,
+:user:`utsab345`,
+:user:`Vidit-lab`
+
+
 [2.14.0] - 2026-07-01
 =====================
 
