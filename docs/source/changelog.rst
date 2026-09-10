@@ -61,7 +61,7 @@ Documentation
 * [DOC] Fix Histogram docstring formatting (:pr:`1101`) :user:`Kushagra651`
 * [DOC] fix docstring example formatting in distributions (:pr:`1118`) :user:`fkiraly`
 * [DOC] add distribution formula hooks to extension template (:pr:`1119`) :user:`fkiraly`
-* [DOC] Fix typo in introduction.rst: correct "hyperparamter" to "hyperparameter (:pr:`985`) :user:`AMAN-sharma07`
+* [DOC] Fix typo in introduction.rst: correct "hyperparamter" to "hyperparameter" (:pr:`985`) :user:`AMAN-sharma07`
 * [DOC] Add formula docs for ``Uniform`` distribution (:pr:`1123`) :user:`Vidit-lab`
 * [DOC] add ``Gompertz`` to distributions API reference (:pr:`1125`) :user:`Ashish-Kumar-Dash`
 * [DOC] add explicit formulae to _formula_docs for Logistic and Weibull distributions (:pr:`1124`) :user:`itsnevu`
