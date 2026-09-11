@@ -24,13 +24,27 @@ class OnlineDontRefit(_DelegatedProbaRegressor):
     ----------
     estimator_ : skpro regressor, descendant of BaseProbaRegressor
         clone of the regressor passed in the constructor, fitted on all data
+
+    Examples
+    --------
+    ``OnlineDontRefit`` can wrap a probabilistic regressor to create a
+    no-op online regressor that can be fitted normally and used for
+    prediction without refitting during updates.
+
+    >>> import pandas as pd
+    >>> from skpro.regression.dummy import DummyProbaRegressor
+    >>> from skpro.regression.online import OnlineDontRefit
+    >>> X = pd.DataFrame({"x": [1, 2, 3]})
+    >>> y = pd.DataFrame({"y": [2, 4, 6]})
+    >>> estimator = DummyProbaRegressor()
+    >>> reg = OnlineDontRefit(estimator)
+    >>> reg.fit(X, y)
+    OnlineDontRefit(estimator=DummyProbaRegressor())
+    >>> y_pred_proba = reg.predict_proba(X)
     """
 
     _tags = {
         "capability:update": False,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, estimator):

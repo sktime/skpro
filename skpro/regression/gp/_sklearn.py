@@ -103,13 +103,20 @@ class GaussianProcess(_DelegateWithFittedParamForwarding):
 
     log_marginal_likelihood_value_ : float
         The log-marginal-likelihood of ``self.kernel_.theta``.
-    """
 
-    _tags = {
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
-    }
+    Examples
+    --------
+    ``GaussianProcess`` provides a probabilistic regression interface based on
+    scikit-learn's ``GaussianProcessRegressor``.
+
+    >>> import pandas as pd
+    >>> from skpro.regression.gp import GaussianProcess
+    >>> X = pd.DataFrame({"x": [1, 2, 3]})
+    >>> y = pd.DataFrame({"y": [2, 4, 6]})
+    >>> reg = GaussianProcess()
+    >>> reg = reg.fit(X, y)
+    >>> y_pred_proba = reg.predict_proba(X)
+    """
 
     def __init__(
         self,
