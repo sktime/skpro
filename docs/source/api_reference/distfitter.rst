@@ -26,6 +26,7 @@ or a distribution from a longer list of distributions, to fit parametrically.
     :toctree: auto_generated/
     :template: class.rst
 
+    DistfitFitter
     ScipyMLEFitter
     MOMFitter
 
