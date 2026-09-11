@@ -202,6 +202,8 @@ def evaluate(
 
     scoring = _check_scores(scoring)
 
+    _check_scoring_capability(estimator, scoring)
+
     _evaluate_fold_kwargs = {
         "estimator": estimator,
         "scoring": scoring,
@@ -433,3 +435,63 @@ def _check_scores(metrics):
         else:
             metrics_type[scitype].append(metric)
     return metrics_type
+
+
+def _check_scoring_capability(estimator, scoring):
+    """Raise if the metrics need predictions the estimator cannot make.
+
+    Some regressors only predict a single number, for example online
+    regressors adapted from ``river``. These have the ``capability:pred_int``
+    tag set to ``False``, and their ``predict_proba``, ``predict_interval``,
+    ``predict_quantiles`` and ``predict_var`` methods raise an exception.
+
+    Most metrics score a probabilistic prediction, so they cannot be used
+    with such a regressor. This is checked here, before any model is fitted,
+    because ``_evaluate_fold`` catches every exception and turns it into
+    ``error_score``. Without this check, ``evaluate`` would fit all folds
+    and then quietly return a table of ``NaN``.
+
+    Parameters
+    ----------
+    estimator : skpro regressor, BaseProbaRegressor descendant
+        regressor passed to ``evaluate``
+    scoring : dict
+        return of ``_check_scores``, metrics keyed by the ``scitype:y_pred``
+        tag, i.e., by the prediction method used to score them
+
+    Raises
+    ------
+    ValueError
+        if ``estimator`` has the ``capability:pred_int`` tag set to ``False``,
+        and any metric in ``scoring`` scores a probabilistic prediction
+    """
+    # metric scitypes which are scored against a probabilistic prediction
+    PROBA_SCITYPES = ["pred_proba", "pred_interval", "pred_quantiles"]
+
+    # non-skpro estimators carry no tags, their capability is not known here
+    if not hasattr(estimator, "get_tag"):
+        return
+
+    if estimator.get_tag("capability:pred_int", True, raise_error=False):
+        return
+
+    offenders = [
+        getattr(metric, "name", str(metric))
+        for scitype in PROBA_SCITYPES
+        for metric in scoring.get(scitype, [])
+    ]
+
+    # a point prediction only regressor can still be scored by point metrics
+    if not offenders:
+        return
+
+    raise ValueError(
+        f"Error in evaluate: the estimator {type(estimator).__name__} is "
+        "point prediction only, i.e., has the capability:pred_int tag set to "
+        "False, but the following metrics passed in scoring score "
+        f"probabilistic predictions: {', '.join(offenders)}. "
+        "To evaluate a point prediction regressor, wrap it in a regressor "
+        "which adds a distributional prediction, e.g., BaggingRegressor, "
+        "BootstrapRegressor, ResidualDouble, or EnbpiRegressor, and evaluate "
+        "the wrapped regressor."
+    )

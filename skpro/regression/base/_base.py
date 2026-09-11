@@ -31,6 +31,7 @@ class BaseProbaRegressor(BaseEstimator):
         "capability:multioutput": False,
         "capability:missing": True,
         "capability:update": False,
+        "capability:pred_int": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "C_inner_mtype": "pd_DataFrame_Table",
@@ -209,6 +210,66 @@ class BaseProbaRegressor(BaseEstimator):
         """
         raise NotImplementedError
 
+    def _check_pred_int_capability(self):
+        """Raise if probabilistic prediction methods are not supported."""
+        if not self.get_tag("capability:pred_int"):
+            raise NotImplementedError(
+                f"{self.__class__.__name__} does not implement probabilistic "
+                f"prediction methods (capability:pred_int=False)."
+            )
+
+    def _check_proba_components(self, estimators, param_name="estimator"):
+        """Raise if any component regressor is point prediction only.
+
+        To be called by meta-estimators which invoke ``predict_proba``,
+        or another probabilistic prediction method, of their components.
+        Such meta-estimators cannot be used with components which have the
+        ``capability:pred_int`` tag set to ``False``.
+
+        Parameters
+        ----------
+        estimators : skpro regressor, or iterable of skpro regressor
+            component regressor(s) to check.
+            Entries may also be ``(name, estimator)`` pairs, in which case
+            the name is used in the error message.
+        param_name : str, optional, default="estimator"
+            name of the parameter holding ``estimators``, used in the error message
+
+        Raises
+        ------
+        ValueError
+            if any of ``estimators`` has ``capability:pred_int`` tag ``False``
+        """
+        if isinstance(estimators, BaseProbaRegressor):
+            estimators = [estimators]
+
+        offenders = []
+        for est in estimators:
+            if isinstance(est, tuple):
+                name, est = est[0], est[-1]
+            else:
+                name = type(est).__name__
+            # non-skpro components, e.g., sklearn estimators, carry no tags,
+            # their probabilistic capability is determined by the caller
+            if not hasattr(est, "get_tag"):
+                continue
+            if not est.get_tag("capability:pred_int", True, raise_error=False):
+                offenders.append(name)
+
+        if offenders:
+            raise ValueError(
+                f"Error in {type(self).__name__}: this estimator requires "
+                "probabilistic predictions from its components, but the "
+                f"following components passed in {param_name} are point "
+                f"prediction only, i.e., have the capability:pred_int tag "
+                f"set to False: {', '.join(offenders)}. "
+                "To obtain probabilistic predictions from a point prediction "
+                "regressor, wrap it in a regressor which adds a distributional "
+                "prediction, e.g., BaggingRegressor, BootstrapRegressor, "
+                "ResidualDouble, or EnbpiRegressor, and pass the wrapped "
+                "regressor instead."
+            )
+
     def predict(self, X):
         """Predict labels for data from features.
 
@@ -294,6 +355,10 @@ class BaseProbaRegressor(BaseEstimator):
         y : skpro BaseDistribution, same length as `X`
             labels predicted for `X`
         """
+        # check that self is fitted, if not raise exception
+        self.check_is_fitted()
+        self._check_pred_int_capability()
+
         X = self._check_X(X)
 
         y_pred = self._predict_proba(X)
@@ -386,6 +451,7 @@ class BaseProbaRegressor(BaseEstimator):
         """
         # check that self is fitted, if not raise exception
         self.check_is_fitted()
+        self._check_pred_int_capability()
 
         # check alpha and coerce to list
         coverage = self._check_alpha(coverage, name="coverage")
@@ -491,6 +557,7 @@ class BaseProbaRegressor(BaseEstimator):
         """
         # check that self is fitted, if not raise exception
         self.check_is_fitted()
+        self._check_pred_int_capability()
 
         # default alpha
         if alpha is None:
@@ -604,6 +671,7 @@ class BaseProbaRegressor(BaseEstimator):
         """
         # check that self is fitted, if not raise exception
         self.check_is_fitted()
+        self._check_pred_int_capability()
 
         # check and convert X
         X_inner = self._check_X(X=X)

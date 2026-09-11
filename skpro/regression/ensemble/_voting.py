@@ -112,6 +112,10 @@ class VotingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
         -------
         self : reference to self
         """
+        # predict_proba mixes the distributional predictions of the components,
+        # so point prediction only components cannot be used
+        self._check_proba_components(self._estimators, param_name="estimators")
+
         self.estimators_ = []
 
         for name, est in self._estimators:
