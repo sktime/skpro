@@ -8,6 +8,12 @@ import pandas as pd
 import pytest
 
 from skpro.distributions.normal import Normal
+from skpro.tests.test_switch import run_test_module_changed
+
+pytestmark = pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 
 
 @pytest.fixture

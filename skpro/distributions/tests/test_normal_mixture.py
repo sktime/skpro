@@ -3,10 +3,16 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from skpro.distributions.normal_mixture import NormalMixture
+from skpro.tests.test_switch import run_test_for_class
 
 
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
 def test_pi_is_normalized_per_row():
     """Mixture weights should be normalized row-wise at construction."""
     pi = np.array([[0.3, 0.7], [1.0, 2.0]])
@@ -17,6 +23,10 @@ def test_pi_is_normalized_per_row():
     assert np.allclose(d._pi.sum(axis=1), 1.0)
 
 
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
 def test_mean_and_var_match_closed_form_scalar():
     """Mean/variance should match closed-form mixture formulas in scalar case."""
     pi = np.array([0.5, 0.5])
@@ -34,6 +44,10 @@ def test_mean_and_var_match_closed_form_scalar():
     assert np.isclose(d.var(), expected_var)
 
 
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
 def test_single_component_reduces_to_normal_pdf_and_cdf():
     """With one active component, pdf/cdf should match that Normal component."""
     pi = np.array([[1.0, 0.0]])
@@ -49,6 +63,10 @@ def test_single_component_reduces_to_normal_pdf_and_cdf():
     assert np.isclose(cdf, 0.5)
 
 
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
 def test_rowwise_weights_change_rowwise_mean():
     """Per-sample weights should produce different means per row."""
     pi = np.array([[0.9, 0.1], [0.1, 0.9]])
@@ -62,6 +80,10 @@ def test_rowwise_weights_change_rowwise_mean():
     assert np.isclose(means[1], 9.0)
 
 
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
 def test_sampling_mean_matches_theoretical_mean():
     """Large-sample mean should approximate theoretical mixture mean."""
     pi = np.array([[0.5, 0.5]])
@@ -78,6 +100,10 @@ def test_sampling_mean_matches_theoretical_mean():
     assert abs(sample_mean - theoretical_mean) < 0.1
 
 
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
 def test_energy_returns_non_negative_dataframe():
     """Energy outputs should be non-negative and keep expected tabular shape."""
     pi = np.array([[1.0, 0.0]])
