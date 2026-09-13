@@ -62,6 +62,82 @@ class Triangular(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
+    # documentation hooks for formula injection
+    _formula_docs = {
+        "pdf": r"""
+    For lower limit :math:`a`, mode :math:`c`, and upper limit :math:`b`,
+    the probability density function is given by:
+
+    .. math::
+        f(x) =
+        \begin{cases}
+            \frac{2(x - a)}{(b - a)(c - a)}, & a \le x < c \\
+            \frac{2(b - x)}{(b - a)(b - c)}, & c \le x \le b \\
+            0, & \text{otherwise}
+        \end{cases}
+    """,
+        #
+        "log_pdf": r"""
+    For lower limit :math:`a`, mode :math:`c`, and upper limit :math:`b`,
+    the log-density is given by:
+
+    .. math::
+        \log f(x) =
+        \begin{cases}
+            \log 2 + \log(x - a) - \log(b - a) - \log(c - a), & a \le x < c \\
+            \log 2 + \log(b - x) - \log(b - a) - \log(b - c), & c \le x \le b \\
+            -\infty, & \text{otherwise}
+        \end{cases}
+    """,
+        #
+        "cdf": r"""
+    For lower limit :math:`a`, mode :math:`c`, and upper limit :math:`b`,
+    the cumulative distribution function is given by:
+
+    .. math::
+        F(x) =
+        \begin{cases}
+            0, & x < a \\
+            \frac{(x - a)^2}{(b - a)(c - a)}, & a \le x < c \\
+            1 - \frac{(b - x)^2}{(b - a)(b - c)}, & c \le x \le b \\
+            1, & x > b
+        \end{cases}
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; a, c, b) =
+        \begin{cases}
+            a + \sqrt{p (b - a)(c - a)}, & 0 \le p < \frac{c - a}{b - a} \\
+            b - \sqrt{(1 - p)(b - a)(b - c)}, & \frac{c - a}{b - a} \le p \le 1
+        \end{cases}
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \frac{a + b + c}{3}
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \frac{a^2 + b^2 + c^2 - ab - ac - bc}{18}
+    """,
+        #
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = \frac{2\left[(c - a)^2 + (b - c)^2\right]}{3(b - a)}
+        - \frac{2\left[(c - a)^3 + (b - c)^3\right]}{5(b - a)^2}
+    """,
+    }
+
     def __init__(self, lower, mode, upper, index=None, columns=None):
         self.lower = lower
         self.mode = mode
