@@ -47,6 +47,69 @@ class GumbelL(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{1}{\sigma} \exp\left(\frac{x - \mu}{\sigma}\right)
+        \exp\left(-\exp\left(\frac{x - \mu}{\sigma}\right)\right)
+
+    See Johnson, Kotz & Balakrishnan, *Continuous Univariate Distributions*,
+    Vol. 1, Chapter 22 (negative extreme value distribution of type I).
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = -\log(\sigma) + \frac{x - \mu}{\sigma}
+        - \exp\left(\frac{x - \mu}{\sigma}\right)
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is:
+
+    .. math::
+        F(x) = 1 - \exp\left(-\exp\left(\frac{x - \mu}{\sigma}\right)\right)
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf), for probability :math:`p \in (0, 1)`, is:
+
+    .. math::
+        F^{-1}(p) = \mu + \sigma \log\left(-\log(1 - p)\right)
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \mu - \gamma \sigma
+
+    where :math:`\gamma` denotes the Euler-Mascheroni constant.
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \operatorname{Var}[X] = \frac{\pi^2}{6} \sigma^2
+    """,
+        #
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = 2 \sigma \log(2)
+
+    where :math:`X, Y` are independent random variables with the same
+    distribution. This follows because the difference :math:`X - Y` of two iid
+    Gumbel variables follows a logistic distribution with scale :math:`\sigma`,
+    whose mean absolute value is :math:`2 \sigma \log(2)`.
+    """,
+    }
+
     def __init__(self, mu=0.0, sigma=1.0, index=None, columns=None):
         self.mu = mu
         self.sigma = sigma

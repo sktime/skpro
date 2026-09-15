@@ -54,6 +54,96 @@ class Gumbel(_ScipyAdapter):
         "broadcast_init": "on",
     }
 
+    _formula_docs = {
+        "pdf": r"""
+    For ``skew="right"``, the probability density function is given by:
+
+    .. math::
+        f(x) = \frac{1}{\beta} \exp\left(-\frac{x - \mu}{\beta}\right)
+        \exp\left(-\exp\left(-\frac{x - \mu}{\beta}\right)\right)
+
+    For ``skew="left"``, it is given by:
+
+    .. math::
+        f(x) = \frac{1}{\beta} \exp\left(\frac{x - \mu}{\beta}\right)
+        \exp\left(-\exp\left(\frac{x - \mu}{\beta}\right)\right)
+
+    See Johnson, Kotz & Balakrishnan, *Continuous Univariate Distributions*,
+    Vol. 1, Chapter 22 (extreme value distribution of type I).
+    """,
+        #
+        "log_pdf": r"""
+    For ``skew="right"``, the log-density is given by:
+
+    .. math::
+        \log f(x) = -\log(\beta) - \frac{x - \mu}{\beta}
+        - \exp\left(-\frac{x - \mu}{\beta}\right)
+
+    For ``skew="left"``, it is given by:
+
+    .. math::
+        \log f(x) = -\log(\beta) + \frac{x - \mu}{\beta}
+        - \exp\left(\frac{x - \mu}{\beta}\right)
+    """,
+        #
+        "cdf": r"""
+    For ``skew="right"``, the cumulative distribution function is:
+
+    .. math::
+        F(x) = \exp\left(-\exp\left(-\frac{x - \mu}{\beta}\right)\right)
+
+    For ``skew="left"``, it is:
+
+    .. math::
+        F(x) = 1 - \exp\left(-\exp\left(\frac{x - \mu}{\beta}\right)\right)
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf), for probability :math:`p \in (0, 1)`, is:
+
+    .. math::
+        F^{-1}(p) = \mu - \beta \log\left(-\log(p)\right)
+
+    for ``skew="right"``, and the negated deviation from :math:`\mu`, i.e.,
+
+    .. math::
+        F^{-1}(p) = \mu + \beta \log\left(-\log(1 - p)\right)
+
+    for ``skew="left"``.
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \mu + \gamma \beta
+
+    for ``skew="right"``, and :math:`\mathbb{E}[X] = \mu - \gamma \beta` for
+    ``skew="left"``, where :math:`\gamma` denotes the Euler-Mascheroni constant.
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \operatorname{Var}[X] = \frac{\pi^2}{6} \beta^2
+
+    for either skew direction.
+    """,
+        #
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = 2 \beta \log(2)
+
+    where :math:`X, Y` are independent random variables with the same
+    distribution. This follows because the difference :math:`X - Y` of two iid
+    Gumbel variables follows a logistic distribution with scale :math:`\beta`,
+    whose mean absolute value is :math:`2 \beta \log(2)`.
+    """,
+    }
+
     def __init__(self, mu=0.0, beta=1.0, skew="right", index=None, columns=None):
         self.mu = mu
         self.beta = beta
