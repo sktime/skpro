@@ -273,6 +273,7 @@ for prior and posterior handling.
 
     BayesianConjugateLinearRegressor
     BayesianLinearRegressor
+    BayesianConjugateGLMRegressor
 
 Adapters to other interfaces
 ----------------------------
