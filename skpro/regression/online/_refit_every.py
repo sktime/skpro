@@ -31,13 +31,27 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
     ----------
     estimator_ : skpro regressor, descendant of BaseProbaRegressor
         clone of the regressor passed in the constructor, fitted on all data
+
+    Examples
+    --------
+    ``OnlineRefitEveryN`` wraps a probabilistic regressor so that ``update``
+    only refits the regressor once at least ``N`` new data points have been seen.
+
+    >>> import pandas as pd
+    >>> from skpro.regression.dummy import DummyProbaRegressor
+    >>> from skpro.regression.online import OnlineRefitEveryN
+    >>> X = pd.DataFrame({"x": [1, 2, 3]})
+    >>> y = pd.DataFrame({"y": [2, 4, 6]})
+    >>> reg = OnlineRefitEveryN(DummyProbaRegressor(), N=2)
+    >>> reg.fit(X, y)
+    OnlineRefitEveryN(N=2, estimator=DummyProbaRegressor())
+    >>> reg.update(X, y)
+    OnlineRefitEveryN(N=2, estimator=DummyProbaRegressor())
+    >>> y_pred_proba = reg.predict_proba(X)
     """
 
     _tags = {
         "capability:update": True,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, estimator, N=1):
