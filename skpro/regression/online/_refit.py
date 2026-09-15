@@ -26,13 +26,27 @@ class OnlineRefit(_DelegatedProbaRegressor):
     ----------
     estimator_ : skpro regressor, descendant of BaseProbaRegressor
         clone of the regressor passed in the constructor, fitted on all data
+
+    Examples
+    --------
+    ``OnlineRefit`` wraps a probabilistic regressor so that every ``update``
+    refits the regressor on all data seen so far.
+
+    >>> import pandas as pd
+    >>> from skpro.regression.dummy import DummyProbaRegressor
+    >>> from skpro.regression.online import OnlineRefit
+    >>> X = pd.DataFrame({"x": [1, 2, 3]})
+    >>> y = pd.DataFrame({"y": [2, 4, 6]})
+    >>> reg = OnlineRefit(DummyProbaRegressor())
+    >>> reg.fit(X, y)
+    OnlineRefit(estimator=DummyProbaRegressor())
+    >>> reg.update(X, y)
+    OnlineRefit(estimator=DummyProbaRegressor())
+    >>> y_pred_proba = reg.predict_proba(X)
     """
 
     _tags = {
         "capability:update": True,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, estimator):
