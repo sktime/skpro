@@ -48,6 +48,17 @@ or exponential distribution, to the data.
     UniformFitter
 
 
+Non-parametric fitters
+----------------------
+
+.. currentmodule:: skpro.distfitter
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: class.rst
+
+    EmpiricalFitter
+
 Base
 ----
 
