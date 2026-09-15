@@ -1,8 +1,12 @@
 """Automated tests based on the skbase test suite template."""
 import numbers
+import pickle
+import tempfile
 import types
 from copy import deepcopy
 from inspect import getfullargspec, isclass, signature
+from pathlib import Path
+from zipfile import ZipFile
 
 import joblib
 import numpy as np
@@ -12,6 +16,7 @@ from skbase.testing import QuickTester as _QuickTester
 from skbase.testing import TestAllObjects as _TestAllObjects
 from skbase.testing.utils.inspect import _get_args
 
+from skpro.base._serialize import FORMAT_VERSION
 from skpro.registry import OBJECT_TAG_LIST, all_objects
 from skpro.tests._config import EXCLUDE_ESTIMATORS, EXCLUDED_TESTS
 from skpro.tests.scenarios.scenarios_getter import retrieve_scenarios
@@ -435,3 +440,114 @@ class TestAllEstimators(PackageConfig, BaseFixtureGenerator, _QuickTester):
                 assert deep_equals(new_value, original_value), msg
             else:
                 assert joblib.hash(new_value) == joblib.hash(original_value), msg
+
+    def test_persistence_via_pickle(self, object_instance, scenario):
+        """Check in-memory save/load round trip preserves predictions."""
+        import pytest
+
+        from skpro.base import load
+
+        if not _is_serializable(object_instance):
+            return None
+
+        try:
+            fitted = scenario.run(object_instance, method_sequence=["fit"])
+        except Exception as e:
+            pytest.skip(f"fit failed with {type(e).__name__}, skipping save test")
+
+        serial = fitted.save()
+
+        assert isinstance(serial, tuple) and len(serial) == 2, (
+            "in-memory save must return a (cls, serialized_bytes) tuple, "
+            f"but returned {serial!r}"
+        )
+        assert serial[0] is type(fitted)
+
+        loaded = load(serial)
+        assert type(loaded) is type(fitted)
+
+        _assert_predictions_equal(fitted, loaded, scenario)
+
+    def test_save_estimators_to_file(self, object_instance, scenario):
+        """Check file-based save/load round trip, and the serialization node layout."""
+        import pytest
+
+        from skpro.base import load
+
+        if not _is_serializable(object_instance):
+            return None
+
+        try:
+            fitted = scenario.run(object_instance, method_sequence=["fit"])
+        except Exception as e:
+            pytest.skip(f"fit failed with {type(e).__name__}, skipping save test")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "estimator.zip"
+            fitted.save(path)
+
+            with ZipFile(path, "r") as zf:
+                names = zf.namelist()
+
+                # every archive is a serialization node at its root
+                assert "_metadata" in names
+                assert "_obj" in names
+
+                # the rejected v1 layout must not reappear
+                assert "manifest.json" not in names
+                assert "_version" not in names
+                assert "_format" not in names
+                assert not any(n.startswith("root/") for n in names)
+                assert not any(n.startswith("components/") for n in names)
+
+                metadata = pickle.loads(zf.read("_metadata"))
+                assert isinstance(metadata, dict)
+                assert metadata["format_version"] == FORMAT_VERSION
+                assert metadata["class"] is type(fitted)
+                assert metadata["serialization_format"] == "pickle"
+
+                # optional directories carry an index whenever they are present
+                for optional in ("_artifacts", "_components"):
+                    entries = [n for n in names if n.startswith(f"{optional}/")]
+                    if entries:
+                        assert f"{optional}/index.json" in names
+
+            loaded = load(path)
+            assert type(loaded) is type(fitted)
+
+            _assert_predictions_equal(fitted, loaded, scenario)
+
+
+def _is_serializable(object_instance):
+    """Return whether the object opts in to serialization testing."""
+    return type(object_instance).get_class_tag(
+        "capability:serializable", tag_value_default=True
+    )
+
+
+def _assert_predictions_equal(original, loaded, scenario):
+    """Assert that two fitted estimators produce the same predictions."""
+    X = deepcopy(scenario.args["predict"]["X"])
+
+    try:
+        y_orig = original.predict(X)
+    except Exception as e:
+        # the original could not predict, so there is nothing to compare against
+        import pytest
+
+        pytest.skip(f"predict failed on the original with {type(e).__name__}: {e}")
+
+    # the loaded object must be able to do whatever the original could do
+    y_loaded = loaded.predict(deepcopy(X))
+
+    assert type(y_loaded) is type(y_orig), (
+        f"predict output type differs after load: "
+        f"{type(y_orig)} vs {type(y_loaded)}"
+    )
+
+    if isinstance(y_orig, pd.DataFrame):
+        assert y_orig.shape == y_loaded.shape, (
+            f"predict output shape mismatch after load: "
+            f"{y_orig.shape} vs {y_loaded.shape}"
+        )
+        np.testing.assert_array_almost_equal(y_orig.values, y_loaded.values, decimal=5)
