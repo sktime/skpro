@@ -50,6 +50,10 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         for col in y_pred.columns:
             assert pd.api.types.is_float_dtype(y_pred[col])
 
+        # point-prediction-only estimators (capability:pred_int=False)
+        if not regressor.get_tag("capability:pred_int"):
+            return
+
         # test predict_proba output contract
         y_pred_proba = regressor.predict_proba(X_test)
 
@@ -155,6 +159,9 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         from sklearn.datasets import load_diabetes
         from sklearn.model_selection import train_test_split
 
+        if not object_instance.get_tag("capability:pred_int"):
+            return
+
         X, y = load_diabetes(return_X_y=True, as_frame=True)
         X = X.iloc[:50]
         y = y.iloc[:50]
@@ -215,6 +222,9 @@ class TestAllRegressors(PackageConfig, BaseFixtureGenerator, QuickTester):
         import pandas as pd
         from sklearn.datasets import load_diabetes
         from sklearn.model_selection import train_test_split
+
+        if not object_instance.get_tag("capability:pred_int"):
+            return
 
         X, y = load_diabetes(return_X_y=True, as_frame=True)
         X = X.iloc[:50]

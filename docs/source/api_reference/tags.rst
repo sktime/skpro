@@ -90,6 +90,7 @@ probabilistic regressors.
     capability__multioutput
     capability__missing
     capability__update
+    capability__pred_int
     X_inner_mtype
     y_inner_mtype
     C_inner_mtype

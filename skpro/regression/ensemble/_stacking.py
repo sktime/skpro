@@ -140,6 +140,15 @@ class StackingProbaRegressor(BaseMetaEstimator, BaseProbaRegressor):
         """
         from sklearn.model_selection import KFold
 
+        # meta-features are built from predict_proba of the base regressors,
+        # and the distributional prediction is produced by the final estimator,
+        # so point prediction only components cannot be used
+        self._check_proba_components(self._estimators, param_name="estimators")
+        if self.final_estimator is not None:
+            self._check_proba_components(
+                self.final_estimator, param_name="final_estimator"
+            )
+
         cv = self.cv
         if isinstance(cv, int):
             cv = KFold(n_splits=cv)
