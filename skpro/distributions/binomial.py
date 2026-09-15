@@ -27,7 +27,7 @@ class Binomial(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.binomial import Binomial
-
+    >>>
     >>> d = Binomial(n=[[10, 10], [20, 30], [40, 50]], p=0.5)
     """
 

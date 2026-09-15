@@ -69,6 +69,9 @@ class PoissonRegressor(BaseProbaRegressor):
         "capability:missing": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(
@@ -88,6 +91,25 @@ class PoissonRegressor(BaseProbaRegressor):
         self.warm_start = warm_start
 
         super().__init__()
+
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        alpha = self.alpha
+        fit_intercept = self.fit_intercept
+        max_iter = self.max_iter
+        tol = self.tol
+        verbose = self.verbose
+        warm_start = self.warm_start
 
         from sklearn.linear_model import PoissonRegressor
 

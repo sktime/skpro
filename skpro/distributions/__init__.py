@@ -19,6 +19,7 @@ __all__ = [
     "FatigueLife",
     "Fisk",
     "Gamma",
+    "Gumbel",
     "GeneralizedPareto",
     "Geometric",
     "Gompertz",
@@ -27,6 +28,7 @@ __all__ = [
     "HalfCauchy",
     "HalfLogistic",
     "HalfNormal",
+    "HistogramQPD",
     "Hurdle",
     "IID",
     "KernelMixture",
@@ -57,6 +59,7 @@ __all__ = [
     "SkewNormal",
     "TDistribution",
     "TransformedDistribution",
+    "Triangular",
     "TruncatedDistribution",
     "TruncatedNormal",
     "TruncatedPareto",
@@ -70,6 +73,7 @@ from skpro.distributions.beta import Beta
 from skpro.distributions.binomial import Binomial
 from skpro.distributions.burr_iii import BurrIII
 from skpro.distributions.burr_xii import BurrXII
+from skpro.distributions.cauchy import Cauchy
 from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.compose import IID
 from skpro.distributions.delta import Delta
@@ -83,6 +87,7 @@ from skpro.distributions.gamma import Gamma
 from skpro.distributions.gen_pareto import GeneralizedPareto
 from skpro.distributions.geometric import Geometric
 from skpro.distributions.gompertz import Gompertz
+from skpro.distributions.gumbel import Gumbel
 from skpro.distributions.gumbel_l import GumbelL
 from skpro.distributions.gumbel_r import GumbelR
 from skpro.distributions.halfcauchy import HalfCauchy
@@ -109,11 +114,13 @@ from skpro.distributions.pareto import Pareto
 from skpro.distributions.poisson import Poisson
 from skpro.distributions.qpd import QPD_B, QPD_S, QPD_U, QPD_Johnson
 from skpro.distributions.qpd_empirical import QPD_Empirical
+from skpro.distributions.qpd_histogram import HistogramQPD
 from skpro.distributions.rayleigh import Rayleigh
 from skpro.distributions.skellam import Skellam
 from skpro.distributions.skew_normal import SkewNormal
 from skpro.distributions.t import TDistribution
 from skpro.distributions.trafo import TransformedDistribution
+from skpro.distributions.triangular import Triangular
 from skpro.distributions.truncated import TruncatedDistribution
 from skpro.distributions.truncated_normal import TruncatedNormal
 from skpro.distributions.truncated_pareto import TruncatedPareto

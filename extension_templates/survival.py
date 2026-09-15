@@ -80,7 +80,8 @@ class ClassName(BaseSurvReg):
     # todo: fill init
     # params should be written to self and never changed
     # super call must not be removed, change class name
-    # parameter checks can go after super call
+    # parameter checks and component initialization should go in __post_init__
+    # dynamic tag logic should go in __dynamic_tags__
     def __init__(self, paramname, paramname2="paramname2default"):
         # estimators should precede parameters
         #  if estimators have default values, set None and initialize below
@@ -92,6 +93,36 @@ class ClassName(BaseSurvReg):
         # leave this as is
         super().__init__()
 
+    # todo: optional, for conditional tag setting
+    # tags set here override class-level _tags and are set
+    # after __init__ but before __post_init__
+    # if not needed, delete this method
+    def __dynamic_tags__(self):
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
+
+        This method should be used for setting dynamic tags only.
+        """
+        # example 1: conditional setting of a tag
+        # if self.paramname == 42:
+        #   self.set_tags(capability:survival=True)
+        # example 2: cloning tags from component
+        #   self.clone_tags(self.estimator, ["capability:survival"])
+        pass
+
+    # todo: optional, for parameter validation and derived quantities
+    # if not needed, delete this method
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
         # todo: optional, parameter checking logic (if applicable) should happen here
         # if writes derived values to self, should *not* overwrite self.parama etc
         # instead, write to self._parama, self._newparam (starting with _)
@@ -99,18 +130,9 @@ class ClassName(BaseSurvReg):
         # todo: default estimators should have None arg defaults
         #  and be initialized here
         #  do this only with default estimators, not with parameters
-        # if est2 is None:
+        # if self.paramname2 is None:
         #     self.estimator = MyDefaultEstimator()
-
-        # todo: if tags of estimator depend on component tags, set these here
-        #  only needed if estimator is a composite
-        #  tags set in the constructor apply to the object and override the class
-        #
-        # example 1: conditional setting of a tag
-        # if est.foo == 42:
-        #   self.set_tags(handles-missing-data=True)
-        # example 2: cloning tags from component
-        #   self.clone_tags(est2, ["enforce_index_type", "handles-missing-data"])
+        pass
 
     # todo: implement this, mandatory
     def _fit(self, X, y, C=None):

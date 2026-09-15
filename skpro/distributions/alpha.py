@@ -39,7 +39,7 @@ class Alpha(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions import Alpha
-
+    >>>
     >>> distr = Alpha(a=[[1, 2], [3, 4]])
     """
 
@@ -50,7 +50,8 @@ class Alpha(_ScipyAdapter):
         # estimator tags
         # --------------
         "capabilities:approx": ["pdfnorm"],
-        "capabilities:exact": ["mean", "var", "pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:exact": ["pdf", "log_pdf", "cdf", "ppf"],
+        "capabilities:undefined": ["mean", "var"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",

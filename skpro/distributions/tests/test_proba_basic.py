@@ -27,6 +27,10 @@ def test_proba_example():
     assert one_row.shape == (1, 2)
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 @pytest.mark.parametrize("subsetter", ["loc", "iloc"])
 def test_proba_subsetters_loc_iloc(subsetter):
     """Test one subsetting case for BaseDistribution."""
@@ -57,6 +61,10 @@ def test_proba_subsetters_loc_iloc(subsetter):
     assert nss.shape == ()
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_proba_subsetters_at_iat():
     """Test one subsetting case for BaseDistribution."""
     from skpro.distributions.normal import Normal
@@ -75,6 +83,10 @@ def test_proba_subsetters_at_iat():
     assert nss == n.loc[1, 1]
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_proba_index_coercion():
     """Test index coercion for BaseDistribution."""
     from skpro.distributions.normal import Normal
@@ -105,6 +117,10 @@ def test_proba_index_coercion():
     assert n.columns.equals(pd.Index([1, 2, 3]))
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip if matplotlib is not available",
@@ -141,7 +157,10 @@ def test_proba_plotting(fun):
     assert isinstance(ax, Axes)
 
 
-@pytest.mark.skip(reason="Undiagnosed failure. Skipping until resolved. See #918.")
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 @pytest.mark.skipif(
     not _check_soft_dependencies("matplotlib", severity="none"),
     reason="skip if matplotlib is not available",
@@ -164,12 +183,18 @@ def test_discrete_pmf_plotting():
     # Binomial(n=10) has support [0,1,2,...,10] = 11 points
     # The stem plot should have evaluated at these points
     if hasattr(ax.containers[0], "get_children"):
-        # This is a rough check - the stem plot should have multiple elements
-        assert (
-            len(ax.containers[0].get_children()) > 5
-        ), "Should plot at multiple support points"
+        # Check the number of data points in the marker line
+        # StemContainer always has 3 children (markerline, stemlines, baseline)
+        # regardless of data count, so check the data itself
+        children = ax.containers[0].get_children()
+        markerline = children[0]
+        assert len(markerline.get_xdata()) > 5, "Should plot at multiple support points"
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_to_df_parametric():
     """Tests coercion to DataFrame via get_params_df and to_df."""
     from skpro.distributions.normal import Normal
@@ -222,6 +247,10 @@ def test_to_df_parametric():
         assert ix not in ["index", "columns"]
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_head_tail():
     """Test head and tail utility functions."""
     from skpro.distributions.normal import Normal

@@ -56,6 +56,60 @@ class Logistic(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    # documentation hooks for formula injection
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{\exp\left(-\frac{x - \mu}{s}\right)}
+        {s \left(1 + \exp\left(-\frac{x - \mu}{s}\right)\right)^2}
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = -\frac{x - \mu}{s} - \log(s)
+        - 2 \log\left(1 + \exp\left(-\frac{x - \mu}{s}\right)\right)
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = \frac{1}{1 + \exp\left(-\frac{x - \mu}{s}\right)}
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; \mu, s) = \mu + s \log\left(\frac{p}{1 - p}\right)
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \mu
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \frac{s^2 \pi^2}{3}
+    """,
+        #
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = 2s
+    """,
+    }
+
     def __init__(self, mu, scale, index=None, columns=None):
         self.mu = mu
         self.scale = scale

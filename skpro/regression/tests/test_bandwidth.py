@@ -12,8 +12,13 @@ from skpro.regression._bandwidth import (
     bw_scott_1d,
     bw_silverman_1d,
 )
+from skpro.tests.test_switch import run_test_module_changed
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.regression"),
+    reason="run only if skpro.regression has been changed",
+)
 def test_bandwidth_1d_methods_return_finite_positive_values():
     """Test all methods return finite positive bandwidths on non-degenerate data."""
     rng = np.random.default_rng(42)
@@ -25,6 +30,10 @@ def test_bandwidth_1d_methods_return_finite_positive_values():
         assert h > 0
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.regression"),
+    reason="run only if skpro.regression has been changed",
+)
 def test_bandwidth_weight_handling():
     """Test weighted inputs for Scott and Silverman."""
     rng = np.random.default_rng(0)
@@ -39,6 +48,10 @@ def test_bandwidth_weight_handling():
     assert h_silverman > 0
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.regression"),
+    reason="run only if skpro.regression has been changed",
+)
 def test_bw_helpers_match_dispatcher():
     """Test helper functions match generic dispatcher outputs."""
     rng = np.random.default_rng(7)
@@ -49,6 +62,10 @@ def test_bw_helpers_match_dispatcher():
     assert np.isclose(bw_isj_1d(y), bandwidth_1d(y, method="isj"))
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.regression"),
+    reason="run only if skpro.regression has been changed",
+)
 def test_bandwidth_runtime_smoke_comparison():
     """Performance smoke test for selector runtime and ISJ comparison."""
     rng = np.random.default_rng(123)
@@ -73,6 +90,10 @@ def test_bandwidth_runtime_smoke_comparison():
     assert times["isj"] > min(times["scott"], times["silverman"])
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.regression"),
+    reason="run only if skpro.regression has been changed",
+)
 def test_legacy_aliases_rejected():
     """Legacy aliases should be rejected to enforce canonical naming."""
     with pytest.raises(ValueError, match="Unknown method"):

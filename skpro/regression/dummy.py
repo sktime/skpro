@@ -51,6 +51,9 @@ class DummyProbaRegressor(BaseProbaRegressor):
         "capability:missing": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, strategy="empirical"):

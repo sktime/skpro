@@ -24,6 +24,12 @@ class Skellam(_ScipyAdapter):
         Mean of the first Poisson distribution
     mu2 : float
         Mean of the second Poisson distribution
+
+    Examples
+    --------
+    >>> from skpro.distributions import Skellam
+    >>>
+    >>> d = Skellam(mu1=3, mu2=2)
     """
 
     _tags = {

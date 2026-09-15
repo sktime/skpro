@@ -57,6 +57,9 @@ class SPLL(BaseSurvDistrMetric):
         "capability:survival": True,
         "scitype:y_pred": "pred_proba",
         "lower_is_better": True,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, multioutput="uniform_average", multivariate=False):

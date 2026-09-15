@@ -35,7 +35,7 @@ class LogGamma(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.loggamma import LogGamma
-
+    >>>
     >>> d = LogGamma(c=[[1, 2], [3, 4], [5, 6]])
     """
 

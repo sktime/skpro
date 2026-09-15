@@ -36,11 +36,13 @@ Continuous support - full reals
     :template: class.rst
 
     Cauchy
+    Gumbel
     Laplace
     Logistic
     Normal
     SkewNormal
     TDistribution
+    Triangular
     TruncatedNormal
     Uniform
 
@@ -66,6 +68,7 @@ Continuous support - non-negative reals
     Fisk
     Gamma
     GeneralizedPareto
+    Gompertz
     GumbelL
     GumbelR
     Levy
@@ -111,6 +114,7 @@ Non-parametric and empirical distributions
     Delta
     Empirical
     Histogram
+    HistogramQPD
     QPD_Empirical
     QPD_Johnson
     QPD_U

@@ -42,7 +42,7 @@ class Cauchy(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.cauchy import Cauchy
-
+    >>>
     >>> c = Cauchy(mu=0, scale=1)
     """
 
@@ -50,7 +50,7 @@ class Cauchy(_ScipyAdapter):
         "authors": "patelchaitany",
         "capabilities:approx": ["pdfnorm"],
         "capabilities:exact": ["pdf", "log_pdf", "cdf", "ppf"],
-        "capabilities:undefined": ["mean"],
+        "capabilities:undefined": ["mean", "var"],
         "distr:measuretype": "continuous",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",

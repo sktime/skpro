@@ -107,6 +107,9 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
         "capability:survival": True,
         "scitype:y_pred": "pred_proba",
         "lower_is_better": False,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(

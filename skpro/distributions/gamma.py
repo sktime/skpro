@@ -35,9 +35,8 @@ class Gamma(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.gamma import Gamma
-
+    >>>
     >>> d = Gamma(beta=[[1, 1], [2, 3], [4, 5]], alpha=2)
-
     """  # noqa: E501
 
     _tags = {

@@ -26,19 +26,42 @@ class OnlineDontRefit(_DelegatedProbaRegressor):
         clone of the regressor passed in the constructor, fitted on all data
     """
 
-    _tags = {"capability:update": False}
+    _tags = {
+        "capability:update": False,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(self, estimator):
         self.estimator = estimator
 
         super().__init__()
 
+    def __dynamic_tags__(self):
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
+
+        This method should be used for setting dynamic tags only.
+        """
+        estimator = self.estimator
         tags_to_clone = [
             "capability:missing",
             "capability:survival",
         ]
         self.clone_tags(estimator, tags_to_clone)
 
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
         self.estimator_ = self.estimator.clone()
 
     def _update(self, X, y, C=None):

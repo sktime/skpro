@@ -27,6 +27,12 @@ class FDist(_ScipyAdapter):
         Degrees of freedom numerator
     dfd : float
         Degrees of freedom denominator
+
+    Examples
+    --------
+    >>> from skpro.distributions import FDist
+    >>>
+    >>> d = FDist(dfn=5, dfd=2)
     """
 
     _tags = {

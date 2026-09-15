@@ -41,7 +41,7 @@ class HalfLogistic(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.halflogistic import HalfLogistic
-
+    >>>
     >>> hl = HalfLogistic(beta=1)
     """
 
@@ -68,7 +68,7 @@ class HalfLogistic(_ScipyAdapter):
 
     def _get_scipy_param(self):
         beta = self._bc_params["beta"]
-        return [beta], {}
+        return [], {"scale": beta}
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

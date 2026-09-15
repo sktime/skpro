@@ -33,7 +33,7 @@ class Gompertz(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.gompertz import Gompertz
-
+    >>>
     >>> d = Gompertz(c=[[1, 1], [2, 3], [4, 5]], scale=2)
     """
 

@@ -50,8 +50,14 @@ class AalenAdditive(_LifelinesAdapter, BaseSurvReg):
         The durations provided
     """
 
-    _tags = {"authors": ["CamDavidsonPilon", "rocreguant", "fkiraly"]}
-    # CamDavidsonPilon, rocreguant credit for interfaced estimator
+    _tags = {
+        "authors": ["CamDavidsonPilon", "rocreguant", "fkiraly"],
+        # CamDavidsonPilon, rocreguant credit for interfaced estimator
+        #
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(
         self,

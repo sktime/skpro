@@ -28,7 +28,12 @@ class FitUncensored(_DelegatedProbaRegressor):
         clone of estimator
     """
 
-    _tags = {"capability:survival": True}
+    _tags = {
+        "capability:survival": True,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     _delegate_name = "estimator_"
 

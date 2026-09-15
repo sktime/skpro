@@ -31,7 +31,7 @@ class Delta(BaseDistribution):
     Examples
     --------
     >>> from skpro.distributions.delta import Delta
-
+    >>>
     >>> delta = Delta(c=[[0, 1], [2, 3], [4, 5]])
     >>> this_is_always_c = delta.sample()
     """

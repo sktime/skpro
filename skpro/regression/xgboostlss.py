@@ -228,10 +228,27 @@ class XGBoostLSS(BaseProbaRegressor):
 
         super().__init__()
 
+    def __dynamic_tags__(self):
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
+
+        This method should be used for setting dynamic tags only.
+        """
         # If n_trials is not zero, optuna is required for hyperparameter optimization
-        if n_trials != 0:
+        if self.n_trials != 0:
             self.set_tags(**{"python_dependencies": ["xgboostlss", "optuna"]})
 
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
         self._xgb_params = [
             "max_depth",
             "max_leaves",

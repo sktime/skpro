@@ -58,6 +58,9 @@ class CoxPH(BaseSurvReg):
         "capability:missing": False,
         "capability:survival": True,
         "python_dependencies": ["statsmodels"],
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(

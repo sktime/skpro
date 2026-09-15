@@ -291,6 +291,25 @@ Generated using nbsphinx_. The Jupyter notebook can be found here_.
 .. _nbsphinx: https://nbsphinx.readthedocs.io/
 """
 
+# -- Options for linkcheck builder -------------------------------------------
+
+# entries are regular expressions matched against the full URL, not globs
+linkcheck_ignore = [
+    # blocks non-browser clients with HTTP 999
+    r"https://www\.linkedin\.com/.*",
+]
+
+# the changelog links every pull request and contributor through sphinx-issues,
+# generated from numbers and user names.
+linkcheck_exclude_documents = [r"changelog"]
+
+linkcheck_retries = 3
+linkcheck_timeout = 30
+linkcheck_workers = 10
+
+# anchors on JS-rendered pages cannot be resolved from the raw HTML
+linkcheck_anchors = False
+
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.

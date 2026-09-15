@@ -18,6 +18,11 @@ class LeftTruncated(TruncatedDistribution):
     lower : int
         The lower bound below which values are truncated (excluded from sampling).
 
+    Examples
+    --------
+    >>> from skpro.distributions import LeftTruncated, Poisson
+    >>>
+    >>> d = LeftTruncated(Poisson(mu=2), lower=0)
     """
 
     def __init__(

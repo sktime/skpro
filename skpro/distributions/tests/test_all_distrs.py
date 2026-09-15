@@ -292,6 +292,46 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             f"Current order: {params}"
         )
 
+    def test_placeholder_removal_universal(self, object_class):
+        """Verify {formula_doc} is NEVER visible to users in any distribution.
+
+        One of the tests for dynamic hooked docstring injection of formulae.
+        """
+        cls = object_class
+        for method_name in METHODS_SCALAR + METHODS_X + METHODS_P:
+            method = getattr(cls, method_name)
+            doc = method.__doc__
+            assert "{formula_doc}" not in doc, f"Leak in {cls.__name__}.{method_name}"
+
+    def test_hooked_math_injection(self, object_class):
+        """Verify that distributions with hooks actually show LaTeX math.
+
+        One of the tests for dynamic hooked docstring injection of formulae.
+        """
+        dist_cls = object_class
+        if hasattr(dist_cls, "_formula_docs") and "pdf" in dist_cls._formula_docs:
+            doc = dist_cls.pdf.__doc__
+
+            assert ".. math::" in doc, f"Math missing in {dist_cls.__name__}.pdf"
+            assert "f(x" in doc, f"Formula content missing in {dist_cls.__name__}.pdf"
+
+    def test_unhooked_clean_fallback(self, object_class):
+        """Verify that unhooked classes remain generic and clean.
+
+        One of the tests for dynamic hooked docstring injection of formulae.
+        """
+        dist_cls = object_class
+        if hasattr(dist_cls, "_formula_docs"):
+            return None
+        for method_name in dist_cls._formula_docs.keys():
+            doc = getattr(dist_cls, method_name).__doc__
+            # Should not have math block
+            assert (
+                ".. math::" not in doc
+            ), f"Ghost math block in {dist_cls.__name__}.{method_name}"
+            # Should have the original generic preamble
+            assert "with the distribution of" in doc
+
 
 def _check_output_format(res, dist, method):
     """Check output format expectations for BaseDistribution tests."""
