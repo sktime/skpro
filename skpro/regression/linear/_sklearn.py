@@ -86,13 +86,18 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
     X_offset_ : float
         If `fit_intercept=True`, offset subtracted for centering data to a
         zero mean. Set to np.zeros(n_features) otherwise.
-    """
 
-    _tags = {
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
-    }
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>> from skpro.regression.linear import ARDRegression
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> reg = ARDRegression()
+    >>> reg = reg.fit(X_train, y_train)
+    >>> y_pred = reg.predict_proba(X_test)
+    """
 
     def __init__(
         self,
@@ -297,13 +302,18 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
     X_offset_ : ndarray of shape (n_features,)
         If `fit_intercept=True`, offset subtracted for centering data to a
         zero mean. Set to np.zeros(n_features) otherwise.
-    """
 
-    _tags = {
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
-    }
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>> from skpro.regression.linear import BayesianRidge
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> reg = BayesianRidge()
+    >>> reg = reg.fit(X_train, y_train)
+    >>> y_pred = reg.predict_proba(X_test)
+    """
 
     def __init__(
         self,
