@@ -3,6 +3,8 @@
 
 __author__ = ["Atishyy27"]
 
+from numbers import Number
+
 import numpy as np
 import pandas as pd
 
@@ -23,10 +25,15 @@ class Categorical(_BaseArrayDistribution):
     where ``K = len(p)``. With explicit ``values``, this is the finite analogue
     of ``scipy.stats.rv_discrete`` with ``values=(xk, pk)``.
 
+    As in ``rv_discrete``, ``pmf`` is non-zero only at points equal to a support
+    point, compared as floats. ``ppf`` returns the smallest support point ``v``
+    with ``cdf(v) >= q``, so for ``q`` in ``(0, 1]`` a support point with zero
+    mass is never returned.
+
     Parameters
     ----------
     p : 1D array-like, or 2D list of 1D array-like
-        Probability masses, non-negative and summing to 1.
+        Probability masses, finite, non-negative and summing to 1.
 
         1. 1D array-like of length ``K`` defines a single (scalar) distribution.
 
@@ -34,7 +41,8 @@ class Categorical(_BaseArrayDistribution):
 
         2. 2D list of size ``m x n``, where each entry is a 1D array-like as in
            case 1, defines an array-valued distribution with entry-wise masses.
-           Entries may have different support sizes.
+           Every row must have the same number of entries ``n``; the entries
+           themselves may have different support sizes.
 
            Example::
 
@@ -44,7 +52,8 @@ class Categorical(_BaseArrayDistribution):
                ]
 
     values : None, 1D array-like, or 2D list of 1D array-like, default=None
-        Numeric support points, one per entry of ``p``. Need not be sorted.
+        Finite, unique numeric support points, one per entry of ``p``.
+        Need not be sorted.
 
         1. ``None`` uses the integer category codes ``0, ..., K-1`` for every
            entry.
@@ -58,7 +67,9 @@ class Categorical(_BaseArrayDistribution):
            entry-wise, for the array-valued case with entry-wise supports.
 
     index : pd.Index, optional, default = RangeIndex
+        Only for the array-valued case.
     columns : pd.Index, optional, default = RangeIndex
+        Only for the array-valued case.
 
     Examples
     --------
@@ -86,26 +97,57 @@ class Categorical(_BaseArrayDistribution):
         self.p = p
         self.values = values
 
+        self._p_res, self._v_res, self._nested = self._resolve_params(p, values)
         self._check_params()
 
-        # array-valued case: base broadcasting needs concrete index and columns
-        if not self._check_single_arr_distr(p):
+        # masses sum to 1 within tolerance; rescale them so that every method
+        # uses the same distribution
+        if self._nested:
+            self._p_res = [[self._rescale(pk) for pk in row] for row in self._p_res]
+        else:
+            self._p_res = self._rescale(self._p_res)
+
+        if self._nested:
+            # base broadcasting needs concrete index and columns
             if index is None:
-                index = pd.RangeIndex(len(p))
+                index = pd.RangeIndex(len(self._p_res))
             if columns is None:
-                columns = pd.RangeIndex(len(p[0]))
+                columns = pd.RangeIndex(len(self._p_res[0]))
+        elif index is not None or columns is not None:
+            raise ValueError(
+                "index and columns are only supported for the array-valued case, "
+                "where p is a 2D list of 1D probability vectors; got a 1D p"
+            )
 
         super().__init__(index=index, columns=columns)
 
     # parameter handling
     # ------------------
     @staticmethod
+    def _is_number(x):
+        if isinstance(x, np.ndarray):
+            return x.ndim == 0
+        return isinstance(x, (Number, np.number, np.bool_))
+
+    @staticmethod
+    def _rescale(pk):
+        total = pk.sum()
+        # masses that already sum to 1 up to rounding are kept as passed
+        if abs(total - 1.0) <= 1e-12:
+            return pk
+        return pk / total
+
+    @staticmethod
     def _one_entry(pk, vk):
-        """Coerce one (masses, support) pair to sorted float arrays."""
+        """Coerce one (masses, support) pair to float arrays sorted by support."""
         pk = np.asarray(pk, dtype=float)
+        if pk.ndim != 1:
+            raise ValueError(f"each entry of p must be 1D, got {pk.ndim}D masses")
         if vk is None:
             vk = np.arange(len(pk))
         vk = np.asarray(vk, dtype=float)
+        if vk.ndim != 1:
+            raise ValueError(f"each entry of values must be 1D, got {vk.ndim}D values")
         if len(vk) != len(pk):
             raise ValueError(
                 f"values must have the same length as p, got {len(vk)} and {len(pk)}"
@@ -113,7 +155,8 @@ class Categorical(_BaseArrayDistribution):
         order = np.argsort(vk)
         return pk[order], vk[order]
 
-    def _resolve(self):
+    @classmethod
+    def _resolve_params(cls, p, values):
         """Return masses and support with defaults applied, sorted by support.
 
         Returns
@@ -122,31 +165,67 @@ class Categorical(_BaseArrayDistribution):
         values : 1D np.ndarray, or 2D list of 1D np.ndarray, same nesting as ``p``
         nested : bool, True iff array-valued
         """
-        p = self.p
-        values = self.values
+        if isinstance(p, pd.Series):
+            p = p.to_numpy()
+        if isinstance(values, pd.Series):
+            values = values.to_numpy()
 
-        if self._check_single_arr_distr(p):
-            pk, vk = self._one_entry(p, values)
+        if cls._is_number(p) or isinstance(p, str):
+            raise ValueError("p must be 1D, or a 2D list of 1D probability vectors")
+        if len(p) == 0:
+            raise ValueError("p must have at least one entry")
+
+        if cls._is_number(p[0]):
+            pk, vk = cls._one_entry(p, values)
             return pk, vk, False
 
-        shared_values = values is not None and self._check_single_arr_distr(values)
+        nesting_msg = (
+            "array-valued p must be nested as a 2D list of 1D probability "
+            "vectors, got a scalar at p{}; for a single distribution, pass a 1D p"
+        )
+        n_cols = len(p[0])
+        if n_cols == 0:
+            raise ValueError("p must have at least one entry")
+        for i, row in enumerate(p):
+            if cls._is_number(row):
+                raise ValueError(nesting_msg.format(f"[{i}]"))
+            if len(row) != n_cols:
+                raise ValueError(
+                    "every row of p must have the same number of entries, "
+                    f"got {n_cols} in row 0 and {len(row)} in row {i}"
+                )
+            for j, entry in enumerate(row):
+                if cls._is_number(entry):
+                    raise ValueError(nesting_msg.format(f"[{i}][{j}]"))
+
+        shared_values = values is not None and cls._is_number(values[0])
+        if values is not None and not shared_values:
+            if len(values) != len(p) or any(
+                cls._is_number(values[i]) or len(values[i]) != len(p[i])
+                for i in range(len(p))
+            ):
+                raise ValueError("entry-wise values must have the same nesting as p")
 
         p_out, v_out = [], []
         for i in range(len(p)):
             p_row, v_row = [], []
-            for j in range(len(p[i])):
+            for j in range(n_cols):
                 if values is None:
                     vk = None
                 elif shared_values:
                     vk = values
                 else:
                     vk = values[i][j]
-                pk, vk = self._one_entry(p[i][j], vk)
+                pk, vk = cls._one_entry(p[i][j], vk)
                 p_row.append(pk)
                 v_row.append(vk)
             p_out.append(p_row)
             v_out.append(v_row)
         return p_out, v_out, True
+
+    def _resolve(self):
+        """Return the masses and support resolved in ``__init__``."""
+        return self._p_res, self._v_res, self._nested
 
     def _check_params(self):
         """Validate masses and support, raising ValueError on invalid input."""
@@ -155,6 +234,10 @@ class Categorical(_BaseArrayDistribution):
         def _check_one(pk, vk, where):
             if len(pk) == 0:
                 raise ValueError(f"p{where} must have at least one entry")
+            if not np.all(np.isfinite(pk)):
+                raise ValueError(f"p{where} must be finite")
+            if not np.all(np.isfinite(vk)):
+                raise ValueError(f"values{where} must be finite")
             if np.any(pk < 0):
                 raise ValueError(f"p{where} must be non-negative")
             if not np.isclose(pk.sum(), 1.0):
@@ -173,8 +256,8 @@ class Categorical(_BaseArrayDistribution):
     def _get_dist_params(self):
         """Return resolved parameters, for broadcasting and subsetting.
 
-        Defaults and shared ``values`` are expanded to match ``p`` entry-wise,
-        so downstream base class logic never sees ``None``.
+        A shared 1D ``values`` is expanded to match ``p`` entry-wise, so that
+        subsetting keeps each entry attached to its own support.
         """
         p, values, _ = self._resolve()
         return {"p": p, "values": values}
@@ -182,38 +265,51 @@ class Categorical(_BaseArrayDistribution):
     # per-entry formulae
     # ------------------
     @staticmethod
+    def _cdf_steps(pk):
+        """Return the cdf at each support point, with the last step exactly 1."""
+        cs = np.cumsum(pk)
+        return cs / cs[-1]
+
+    @staticmethod
     def _mean_one(pk, vk):
         return float(np.dot(pk, vk))
 
     @staticmethod
     def _var_one(pk, vk):
-        mean = np.dot(pk, vk)
-        return float(np.dot(pk, vk**2) - mean**2)
+        # centre on the smallest support point before squaring, so that large
+        # support values do not cancel out the variance
+        vc = vk - vk[0]
+        mean_c = np.dot(pk, vc)
+        return float(np.dot(pk, (vc - mean_c) ** 2))
 
     @staticmethod
     def _pmf_one(pk, vk, x):
-        return float(pk[np.isclose(vk, x)].sum())
+        if np.isnan(x):
+            return np.nan
+        return float(pk[vk == x].sum())
 
-    @staticmethod
-    def _cdf_one(pk, vk, x):
-        # number of support points <= x; cumsum shared with _ppf_one for exactness
+    @classmethod
+    def _cdf_one(cls, pk, vk, x):
+        if np.isnan(x):
+            return np.nan
         k = int(np.searchsorted(vk, x, side="right")) - 1
         if k < 0:
             return 0.0
-        return float(np.cumsum(pk)[k])
+        return float(cls._cdf_steps(pk)[k])
 
-    @staticmethod
-    def _ppf_one(pk, vk, q):
-        if q < 0 or q > 1:
+    @classmethod
+    def _ppf_one(cls, pk, vk, q):
+        if not 0.0 <= q <= 1.0:  # also False for nan
             return np.nan
-        cs = np.cumsum(pk)
-        k = int(np.searchsorted(cs, q, side="left"))
-        k = min(k, len(vk) - 1)
-        return float(vk[k])
+        k = int(np.searchsorted(cls._cdf_steps(pk), q, side="left"))
+        return float(vk[min(k, len(vk) - 1)])
 
-    @staticmethod
-    def _energy_self_one(pk, vk):
-        return float(pk @ np.abs(vk[:, None] - vk[None, :]) @ pk)
+    @classmethod
+    def _energy_self_one(cls, pk, vk):
+        # E|X-Y| = 2 * integral of F(1-F), which for a step cdf is a sum over
+        # the gaps between consecutive support points; linear in K
+        cdf = cls._cdf_steps(pk)[:-1]
+        return float(2 * np.sum(cdf * (1 - cdf) * np.diff(vk)))
 
     @staticmethod
     def _energy_x_one(pk, vk, x):
@@ -272,7 +368,7 @@ class Categorical(_BaseArrayDistribution):
         Returns
         -------
         float, or 2D np.ndarray, same shape as ``self``
-            pmf values at the given points, 0 outside the support
+            pmf values at the given points, 0 unless ``x`` equals a support point
         """
         return self._apply(self._pmf_one, x)
 
@@ -328,7 +424,8 @@ class Categorical(_BaseArrayDistribution):
         r"""Energy of self, w.r.t. self.
 
         :math:`\mathbb{E}[|X-Y|] = \sum_{i,j} p_i p_j |v_i - v_j|`,
-        where :math:`X, Y` are i.i.d. copies of self.
+        where :math:`X, Y` are i.i.d. copies of self. Computed in linear time as
+        :math:`2 \sum_{k} F_k (1 - F_k) (v_{k+1} - v_k)` over sorted support.
 
         Returns
         -------
@@ -360,6 +457,49 @@ class Categorical(_BaseArrayDistribution):
         if np.ndim(res) > 0:
             res = np.sum(res, axis=1)
         return res
+
+    def _sample(self, n_samples=None):
+        """Sample from the distribution, by inverse transform on the support.
+
+        Draws all samples of each entry at once.
+
+        Parameters
+        ----------
+        n_samples : int, optional, default = None
+            number of samples to draw from the distribution
+
+        Returns
+        -------
+        pd.DataFrame, or float if ``self`` is scalar and ``n_samples`` is None
+            samples from the distribution, in the format of ``sample``
+        """
+        p, values, nested = self._resolve()
+        n = 1 if n_samples is None else n_samples
+
+        def draw(pk, vk):
+            # u in (0, 1], so that a leading zero-mass point is never drawn
+            u = 1 - np.random.uniform(size=n)
+            k = np.searchsorted(self._cdf_steps(pk), u, side="left")
+            return vk[np.minimum(k, len(vk) - 1)]
+
+        if not nested:
+            spl = draw(p, values)
+            if n_samples is None:
+                return float(spl[0])
+            return pd.DataFrame(spl.tolist())
+
+        spl = np.empty((n, len(p), len(p[0])))
+        for i in range(len(p)):
+            for j in range(len(p[0])):
+                spl[:, i, j] = draw(p[i][j], values[i][j])
+
+        frames = [
+            pd.DataFrame(spl[s], index=self.index, columns=self.columns)
+            for s in range(n)
+        ]
+        if n_samples is None:
+            return frames[0]
+        return pd.concat(frames, keys=range(n))
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
