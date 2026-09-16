@@ -372,3 +372,26 @@ $$
 ---
 
 *This file is a temporary collection of analytic energy distance formulae and derivations for skpro distributions, until a more permanent documentation solution is implemented (see #689).*
+
+## Example: Categorical(p, values)
+
+Finite discrete distribution with masses $p_k$ on support points $v_k$,
+$k = 0, \dots, K-1$. Both energies are finite sums, so they are exact.
+
+**Self-energy** $\mathbb{E}|X-Y|$, with $X, Y$ i.i.d.:
+
+$$
+\mathbb{E}|X-Y| = \sum_{i=0}^{K-1} \sum_{j=0}^{K-1} p_i \, p_j \, |v_i - v_j|.
+$$
+
+For $p = (0.2, 0.5, 0.3)$ on $v = (0, 1, 2)$ this gives
+$2 \cdot (0.2 \cdot 0.5 \cdot 1 + 0.2 \cdot 0.3 \cdot 2 + 0.5 \cdot 0.3 \cdot 1) = 0.74$.
+
+**Cross-energy** $\mathbb{E}|X-x|$ for a constant $x$:
+
+$$
+\mathbb{E}|X-x| = \sum_{k=0}^{K-1} p_k \, |v_k - x|.
+$$
+
+For $x$ below the support this reduces to $\mu - x$, and above it to $x - \mu$,
+with $\mu = \sum_k p_k v_k$ the mean.
