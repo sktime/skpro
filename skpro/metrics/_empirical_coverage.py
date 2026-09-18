@@ -55,14 +55,27 @@ class EmpiricalCoverage(BaseProbaMetric):
         Can be specified if no explicit coverages are present in the direct use of
         the metric, for instance in benchmarking via ``evaluate``, or tuning
         via ``ForecastingGridSearchCV``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from skpro.metrics import EmpiricalCoverage
+    >>> y_true = pd.Series([3, -0.5, 2, 7, 2])
+    >>> y_pred = pd.DataFrame({
+    ...     ("Coverage", 0.9, "lower"): [2.5, -2.0, 1.0, 8.0, 0.0],
+    ...     ("Coverage", 0.9, "upper"): [4.0, 0.0, 3.0, 9.0, 1.5],
+    ... })
+    >>> coverage = EmpiricalCoverage()
+    >>> coverage(y_true, y_pred)  # doctest: +SKIP
+    0.6
+    >>> coverage = EmpiricalCoverage(score_average=False)
+    >>> coverage(y_true, y_pred).to_numpy()  # doctest: +SKIP
+    array([0.6])
     """
 
     _tags = {
         "scitype:y_pred": "pred_interval",
         "lower_is_better": False,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(
