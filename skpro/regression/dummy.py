@@ -38,6 +38,16 @@ class DummyProbaRegressor(BaseProbaRegressor):
     distribution_ : skpro.distribution
         Normal distribution or Empirical distribution, depending on chosen strategy.
         Scalar version of the distribution that is returned by ``predict_proba``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from skpro.regression.dummy import DummyProbaRegressor
+    >>> X = pd.DataFrame({"feature": [0, 1, 2]})
+    >>> y = pd.DataFrame({"target": [1.0, 2.0, 3.0]})
+    >>> reg = DummyProbaRegressor(strategy="normal").fit(X, y)
+    >>> reg.predict_proba(X).shape
+    (3, 1)
     """
 
     _tags = {
@@ -53,7 +63,6 @@ class DummyProbaRegressor(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
         # CI and test flags
         # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, strategy="empirical"):
