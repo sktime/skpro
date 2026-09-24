@@ -175,6 +175,32 @@ def bw_silverman_1d(y, weights=None):
     return float(sigma * ((3.0 * n_eff / 4.0) ** (-1.0 / 5.0)))
 
 
+def _fallback_reference_bandwidth_1d(y, method, weights=None):
+    """Return positive Scott/Silverman-style fallback bandwidth.
+
+    This mirrors the auto-bandwidth behavior used in public estimator APIs:
+    if the sample scale is degenerate, use a unit scale so the resulting
+    bandwidth remains positive and the downstream kernel smoother stays usable.
+    """
+    method = _resolve_method(method, valid=("silverman", "scott"))
+
+    y_arr = _as_1d_float_array(y)
+    w_norm, mask = _normalize_weights(weights, y_arr.shape[0])
+    y_use = y_arr[mask]
+
+    sigma = _weighted_std(y_use, w_norm)
+    if not np.isfinite(sigma) or sigma < 1e-15:
+        sigma = 1.0
+
+    n_eff = _effective_sample_size(w_norm) if w_norm is not None else y_use.size
+    n_eff = max(float(n_eff), 1.0)
+
+    if method == "scott":
+        return float(sigma * (n_eff ** (-1.0 / 5.0)))
+
+    return float(sigma * ((3.0 * n_eff / 4.0) ** (-1.0 / 5.0)))
+
+
 def _autogrid_1d(y, n_grid, boundary_abs, boundary_rel):
     """Create an equidistant padded grid for DCT-based selectors.
 
@@ -397,18 +423,35 @@ def bw_isj_1d(
 
     Notes
     -----
-    If the data are degenerate (zero range), returns ``0.0`` directly.
+    If the data are degenerate (zero range), the configured fallback selector
+    is used immediately. With the default ``fallback="silverman"``, this
+    returns a small positive smoothing bandwidth.
     """
     y_arr = _as_1d_float_array(y)
     w_norm, mask = _normalize_weights(weights, y_arr.shape[0])
     y_use = y_arr[mask]
+
+    fallback = _resolve_method(fallback, valid=("silverman", "scott", "none"))
 
     y_min = float(np.min(y_use))
     y_max = float(np.max(y_use))
     data_range = y_max - y_min
 
     if not np.isfinite(data_range) or data_range <= 0:
-        return 0.0
+        if fallback == "none":
+            return 0.0
+
+        return _fallback_reference_bandwidth_1d(
+            y_use, method=fallback, weights=w_norm
+        )
+
+    if w_norm is not None and _effective_sample_size(w_norm) <= 1:
+        if fallback == "none":
+            return 0.0
+
+        return _fallback_reference_bandwidth_1d(
+            y_use, method=fallback, weights=w_norm
+        )
 
     if int(n_grid) < 16 or int(n_grid) & (int(n_grid) - 1):
         raise ValueError("n_grid must be a power of two and >= 16 for ISJ stability.")
@@ -429,12 +472,10 @@ def bw_isj_1d(
         t_star = _isj_root(n_eff=max(2, int(round(n_eff))), i_sq=i_sq, a2=a2)
         return float(np.sqrt(t_star) * data_range)
     except Exception as exc:
-        fallback = _resolve_method(fallback, valid=("silverman", "scott", "none"))
-
         if fallback == "none":
             raise ValueError("ISJ bandwidth estimation failed to converge.") from exc
 
-        return bandwidth_1d(y_use, method=fallback, weights=w_norm)
+        return _fallback_reference_bandwidth_1d(y_use, method=fallback, weights=w_norm)
 
 
 def bandwidth_1d(y, method="silverman", weights=None, **kwargs):
