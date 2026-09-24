@@ -51,6 +51,7 @@ class Rayleigh(BaseDistribution):
             "energy",
         ],
         "distr:measuretype": "continuous",
+        "distr:paramtype": "parametric",
         "broadcast_init": "on",
     }
 
