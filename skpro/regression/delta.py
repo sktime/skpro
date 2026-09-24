@@ -1,4 +1,4 @@
-"""Probabilistic predictiins by point prediction."""
+"""Probabilistic predictions by point prediction."""
 
 __author__ = ["fkiraly"]
 __all__ = ["DeltaPointRegressor"]
@@ -23,12 +23,12 @@ class DeltaPointRegressor(BaseProbaRegressor):
     Parameters
     ----------
     estimator : sklearn regressor
-        regressor to use in the bootstrap
+        regressor to use as the base for the delta distribution.
 
     Attributes
     ----------
     estimator_ : fitted sklearn regressor
-        clones of regressor ``estimator``, fitted to the data
+        The fitted clone of the ``estimator`` provided in the constructor.
 
     Examples
     --------
@@ -41,14 +41,21 @@ class DeltaPointRegressor(BaseProbaRegressor):
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
     >>>
     >>> reg_tabular = LinearRegression()
-    >>>
     >>> reg_proba = DeltaPointRegressor(reg_tabular)
     >>> reg_proba.fit(X_train, y_train)
-    DeltaPointRegressor(...)
-    >>> y_pred = reg_proba.predict_proba(X_test)
+    DeltaPointRegressor(estimator=LinearRegression())
+    >>>
+    >>> # predict_proba returns a skpro Delta distribution object
+    >>> y_proba = reg_proba.predict_proba(X_test)
+    >>> # You can then access distribution properties like mean
+    >>> y_mean = y_proba.mean()
     """
 
-    _tags = {"authors": "fkiraly", "capability:missing": True}
+    _tags = {
+        "authors": "fkiraly",
+        "capability:missing": True,
+        "python_dependencies": "scikit-learn",
+    }
 
     def __init__(self, estimator):
         self.estimator = estimator
