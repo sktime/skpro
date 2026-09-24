@@ -65,3 +65,93 @@ def test_empirical_skip_init_sorted():
     assert emp_sorted_scalar.mean() == emp_lazy_scalar.mean()
     assert emp_sorted_scalar.var() == emp_lazy_scalar.var()
     assert emp_sorted_scalar.cdf(2.5) == emp_lazy_scalar.cdf(2.5)
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_empirical_time_indep():
+    """Test that time_indep controls independence across time steps (columns).
+
+    When time_indep=True, each time step independently draws a sample index.
+    When time_indep=False, all time steps share the same sample index.
+    Both modes should produce samples with the correct shape.
+    """
+    spl_idx = pd.MultiIndex.from_product(
+        [[0, 1, 2, 3, 4], [0, 1, 2]], names=["sample", "time"]
+    )
+    np.random.seed(42)
+    spl = pd.DataFrame(
+        np.random.randn(15, 2),
+        index=spl_idx,
+        columns=["a", "b"],
+    )
+
+    emp_ti = Empirical(spl, time_indep=True)
+    emp_notI = Empirical(spl, time_indep=False)
+
+    n_samples = 10
+    # Both should produce a DataFrame with correct multi-index shape
+    result_ti = emp_ti.sample(n_samples)
+    result_notI = emp_notI.sample(n_samples)
+
+    # Shape: (n_samples * n_instances, n_cols)
+    assert result_ti.shape == (n_samples * 3, 2)
+    assert result_notI.shape == (n_samples * 3, 2)
+
+    # Values must come from the original sample pool
+    all_spl_vals = set(spl.values.flatten().round(8))
+    for val in result_ti.values.flatten():
+        assert round(val, 8) in all_spl_vals
+    for val in result_notI.values.flatten():
+        assert round(val, 8) in all_spl_vals
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_empirical_row_indep():
+    """Test that row_indep controls independence across rows (instances).
+
+    Tests all 4 combinations of time_indep x row_indep and checks
+    that all return samples of the correct shape and with values drawn
+    from the original sample pool.
+    """
+    spl_idx = pd.MultiIndex.from_product(
+        [[0, 1, 2, 3], [0, 1, 2]], names=["sample", "time"]
+    )
+    np.random.seed(0)
+    spl = pd.DataFrame(
+        np.arange(24, dtype=float).reshape(12, 2),
+        index=spl_idx,
+        columns=["a", "b"],
+    )
+
+    n_samples = 5
+    all_spl_vals = set(spl.values.flatten())
+
+    for time_indep in [True, False]:
+        for row_indep in [True, False]:
+            emp = Empirical(spl, time_indep=time_indep, row_indep=row_indep)
+            result = emp.sample(n_samples)
+            # shape: (n_samples * n_instances, n_cols) = (5*3, 2) = (15, 2)
+            assert result.shape == (n_samples * 3, 2), (
+                f"Wrong shape for time_indep={time_indep}, row_indep={row_indep}: "
+                f"{result.shape}"
+            )
+            for val in result.values.flatten():
+                assert val in all_spl_vals, (
+                    f"Value {val} not in sample pool for "
+                    f"time_indep={time_indep}, row_indep={row_indep}"
+                )
+
+    # Single sample (n_samples_was_none=True path)
+    emp = Empirical(spl, time_indep=True, row_indep=True)
+    single = emp.sample()
+    assert single.shape == (3, 2)
+
+    emp2 = Empirical(spl, time_indep=False, row_indep=True)
+    single2 = emp2.sample()
+    assert single2.shape == (3, 2)
