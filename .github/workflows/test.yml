@@ -276,9 +276,23 @@ jobs:
         shell: bash
         run: python -c "from skpro.tests._test_vm import run_test_vm; run_test_vm('${{ matrix.flag }}')"
 
-  test-deps-2024:
+  test-historical-deps:
     needs: run-tests-no-extras
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false  # do not fail all combinations if just one fails
+      matrix:
+        include:
+          - exclude-newer: "2023-07-01"
+            python-version: "3.11"
+          - exclude-newer: "2024-09-01"
+            python-version: "3.12"
+          - exclude-newer: "2025-09-01"
+            python-version: "3.13"
+          - exclude-newer: "2026-09-01"
+            python-version: "3.14"
+
     steps:
       - uses: actions/checkout@v7
 
@@ -294,7 +308,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: 3.12
+          python-version: ${{ matrix['python-version'] }}
 
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
@@ -306,7 +320,7 @@ jobs:
           --exclude-newer-package "scikit-base=false"
         env:
           UV_SYSTEM_PYTHON: 1
-          UV_EXCLUDE_NEWER: "2024-09-01"
+          UV_EXCLUDE_NEWER: ${{ matrix['exclude-newer'] }}
 
       - name: Show dependencies
         run: uv pip list
