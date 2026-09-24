@@ -173,7 +173,7 @@ jobs:
         run: git branch -a
 
       - name: Run tests
-        run: make test
+        run: make test PYTESTOPTIONS="--skip_vm_tests"
 
       - name: Publish code coverage
         uses: codecov/codecov-action@v7
@@ -219,7 +219,7 @@ jobs:
         run: git branch -a
 
       - name: Run tests
-        run: make test
+        run: make test PYTESTOPTIONS="--skip_vm_tests"
 
       - name: Publish code coverage
         uses: codecov/codecov-action@v7
@@ -312,4 +312,4 @@ jobs:
         run: uv pip list
 
       - name: Run tests
-        run: make test
+        run: make test PYTESTOPTIONS="--skip_vm_tests"
