@@ -46,9 +46,11 @@ class OnlineRefit(_DelegatedProbaRegressor):
         This method should be used for setting dynamic tags only.
         """
         estimator = self.estimator
+        # all prediction methods are delegated to the wrapped regressor
         tags_to_clone = [
             "capability:missing",
             "capability:survival",
+            "capability:pred_int",
         ]
         self.clone_tags(estimator, tags_to_clone)
 
