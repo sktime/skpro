@@ -95,6 +95,7 @@ class QPD_Empirical(Empirical):
             time_indep=time_indep,
             index=index,
             columns=columns,
+            skip_init_sorted=True,
         )
 
     def _get_empirical_weighted_sample(self, empirical_spl):
