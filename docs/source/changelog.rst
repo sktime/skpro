@@ -16,8 +16,21 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.16.0] - 2026-09-26
+=====================
+
+Python 3.15 compatibility update.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``skpro`` now permits ``Python 3.15``.
+
+
 [2.15.1] - 2026-09-11
 =====================
+
+Patch with dependency bound updates.
 
 Dependency changes
 ~~~~~~~~~~~~~~~~~~
