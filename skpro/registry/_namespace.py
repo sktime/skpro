@@ -30,12 +30,12 @@ def _namespace(include_deps=False):
     from skpro.registry._lookup_sklearn import _all_sklearn_estimators
 
     # retrieve all estimators from sktime and sklearn for namespace resolution
-    namespace_dict_sktime = dict(all_estimators())  # noqa: F841
+    namespace_dict_skpro = dict(all_estimators())  # noqa: F841
 
     if include_deps:
         namespace_dict_sklearn = dict(_all_sklearn_estimators())  # noqa: F841
-        namespace_dict = {**namespace_dict_sklearn, **namespace_dict_sktime}
+        namespace_dict = {**namespace_dict_sklearn, **namespace_dict_skpro}
     else:
-        namespace_dict = namespace_dict_sktime
+        namespace_dict = namespace_dict_skpro
 
     return namespace_dict
