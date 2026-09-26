@@ -27,6 +27,17 @@ Dependency changes
 * ``skpro`` now permits ``Python 3.15``.
 
 
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Inconsistent naming of "distribution" type arguments in various regressors has
+been changed to ``dist``. The old argument names have now been removed.
+
+Users should update their code to use ``dist`` instead of ``distribution`` or
+``distr_type``, in regressors ``ResidualDouble``, ``CyclicBoosting``,
+``OndilOnlineGamlss``, ``GLMRegressor``, and ``GlumRegressor``.
+
+
 [2.15.1] - 2026-09-11
 =====================
 
@@ -142,7 +153,7 @@ Deprecations and removals
 
 Inconsistent naming of "distribution" type arguments in various regressors has
 been changed to ``dist``. The old argument names are still accepted,
-but will be removed in version 2.15.0.
+but will be removed in version 2.16.0.
 Users should update their code to use ``dist`` instead of ``distribution`` or
 ``distr_type``, in regressors ``ResidualDouble``, ``CyclicBoosting``,
 ``OndilOnlineGamlss``, ``GLMRegressor``, and ``GlumRegressor``.
