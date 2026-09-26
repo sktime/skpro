@@ -31,6 +31,9 @@ class SklearnProbaReg(BaseProbaRegressor):
     _tags = {
         "capability:multioutput": False,
         "capability:missing": True,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, estimator, inner_type="pd.DataFrame"):

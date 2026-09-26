@@ -30,8 +30,8 @@ class GumbelL(_ScipyAdapter):
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
 
-    Example
-    -------
+    Examples
+    --------
     >>> from skpro.distributions import GumbelL
     >>> gumbel_l_dist = GumbelL(mu=0.0, sigma=1.0)
     >>> gumbel_l_dist.mean()

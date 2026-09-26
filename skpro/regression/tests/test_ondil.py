@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 import pytest
-from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.regression.ondil import OndilOnlineGamlss
+from skpro.tests.test_switch import run_test_for_class
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["ondil"], severity="none"),
-    reason="skip test if ondil is not installed in environment",
+    not run_test_for_class(OndilOnlineGamlss),
+    reason="run test only if tested object has changed",
 )
 def test_ondil_instantiation_and_get_test_params():
     """Basic smoke test for the Ondil wrapper.
@@ -31,8 +31,8 @@ def test_ondil_instantiation_and_get_test_params():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies(["ondil"], severity="none"),
-    reason="skip test if ondil is not installed in environment",
+    not run_test_for_class(OndilOnlineGamlss),
+    reason="run test only if tested object has changed",
 )
 def test_ondil_fit_smoke():
     """Try a light-weight fit call on tiny data to validate wiring.

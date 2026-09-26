@@ -45,6 +45,12 @@ class LinearizedLogLoss(BaseDistrMetric):
           the score is computed per variable marginal, results in many scores per row
     """
 
+    _tags = {
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
+
     def __init__(self, range=1, multioutput="uniform_average", multivariate=False):
         self.range = range
         self.multivariate = multivariate

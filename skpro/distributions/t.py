@@ -29,7 +29,7 @@ class TDistribution(BaseDistribution):
     Examples
     --------
     >>> from skpro.distributions.t import TDistribution
-
+    >>>
     >>> n = TDistribution(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, df=10)
     """
 

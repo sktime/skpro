@@ -171,6 +171,7 @@ Heterogeneous ensembles of probabilistic regressors
     :template: class.rst
 
     VotingProbaRegressor
+    StackingProbaRegressor
 
 
 Distributional boosting

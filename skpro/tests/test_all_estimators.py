@@ -116,6 +116,19 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
 
         return obj_list
 
+    def is_excluded(self, test_name, est):
+        """Shorthand to check whether test test_name is excluded for estimator est."""
+        # there are two conditions for exclusion:
+        # 1. the estimator is excluded in the legacy excluded_tests list
+        # 2. the excluded test appears in the "tests:skip_by_name" tag
+        cond1 = test_name in self.excluded_tests.get(est.__name__, [])
+        excl_tag = est.get_class_tag("tests:skip_by_name", [])
+        if excl_tag is None:
+            excl_tag = []
+        cond2 = test_name in excl_tag
+        excluded = cond1 or cond2
+        return excluded
+
     # which sequence the conditional fixtures are generated in
     fixture_sequence = [
         "object_class",
@@ -168,6 +181,14 @@ class BaseFixtureGenerator(_BaseFixtureGenerator):
 
 class TestAllObjects(PackageConfig, BaseFixtureGenerator, _TestAllObjects):
     """Generic tests for all objects in the mini package."""
+
+    def test_class_has_doctest_example(self, object_class):
+        """Check that the class has a docstring, with doctest example in it."""
+        docstring = object_class.__doc__
+
+        assert docstring is not None, f"{object_class.__name__} has no docstring"
+        msg = f"{object_class.__name__} docstring has no doctest example"
+        assert ">>>" in docstring, msg
 
     def test_doctest_examples(self, object_class):
         """Runs doctests for estimator class."""

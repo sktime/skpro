@@ -32,7 +32,12 @@ class ConditionUncensored(BaseProbaRegressor):
         fitted probabilistic regressor, clone of ``regressor``
     """
 
-    _tags = {"capability:survival": True}
+    _tags = {
+        "capability:survival": True,
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(self, estimator):
         self.estimator = estimator
@@ -80,6 +85,11 @@ class ConditionUncensored(BaseProbaRegressor):
         else:
             C = C.copy().astype("float")
         X_and_C = pd.concat([X, C], axis=1)
+
+        X_colnames = [f"X__{col}" for col in X.columns]
+        C_colnames = [f"C__{col}" for col in C.columns]
+
+        X_and_C.columns = X_colnames + C_colnames
         return X_and_C
 
     def _predict(self, X):

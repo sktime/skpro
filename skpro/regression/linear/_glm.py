@@ -205,6 +205,9 @@ class GLMRegressor(BaseProbaRegressor):
         "capability:missing": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def _str_to_sm_family(self, dist, link):
@@ -288,6 +291,20 @@ class GLMRegressor(BaseProbaRegressor):
 
         super().__init__()
 
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        family = self.family
+        dist = self.dist
         # todo 2.15.0: remove the following 'if' check and deprecation warning
         # handle deprecation of family -> dist
         if family != "deprecated":

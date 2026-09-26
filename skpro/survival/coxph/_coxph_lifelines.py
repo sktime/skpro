@@ -145,8 +145,14 @@ class CoxPHlifelines(_LifelinesAdapter, BaseSurvReg):
       Statistics in Medicine, 21(15), 2175–2197. doi:10.1002/sim.1203
     """
 
-    _tags = {"authors": ["CamDavidsonPilon", "JoseLlanes", "mathurinm", "fkiraly"]}
-    # CamDavidsonPilon, JoseLlanes, mathurinm credit for interfaced estimator
+    _tags = {
+        "authors": ["CamDavidsonPilon", "JoseLlanes", "mathurinm", "fkiraly"],
+        # CamDavidsonPilon, JoseLlanes, mathurinm credit for interfaced estimator
+        #
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
 
     def __init__(
         self,

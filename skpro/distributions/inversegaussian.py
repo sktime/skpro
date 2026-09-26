@@ -35,7 +35,7 @@ class InverseGaussian(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions.inversegaussian import InverseGaussian
-
+    >>>
     >>> d = InverseGaussian(mu=1.0, scale=1.0)
     """
 

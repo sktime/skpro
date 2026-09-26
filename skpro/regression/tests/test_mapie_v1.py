@@ -1,13 +1,27 @@
 import pandas as pd
 import pytest
-from skbase.utils.dependencies import _check_soft_dependencies
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression
 
+from skpro.regression.conformal import (
+    MapieConformalizedQuantileRegressor,
+    MapieCrossConformalRegressor,
+    MapieSplitConformalRegressor,
+)
+from skpro.regression.jackknife import MapieJackknifeAfterBootstrapRegressor
+from skpro.tests.test_switch import run_test_for_class
+
+MAPIE_REGRESSORS = [
+    MapieSplitConformalRegressor,
+    MapieCrossConformalRegressor,
+    MapieJackknifeAfterBootstrapRegressor,
+    MapieConformalizedQuantileRegressor,
+]
+
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("mapie>=1.0", severity="none"),
-    reason="mapie>=1.0 not installed",
+    not run_test_for_class(MAPIE_REGRESSORS),
+    reason="run test only if tested object has changed",
 )
 def test_mapie_v1_imports():
     """Test imports from the new conformal/jackknife modules."""
@@ -25,8 +39,8 @@ def test_mapie_v1_imports():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("mapie>=1.0", severity="none"),
-    reason="mapie>=1.0 not installed",
+    not run_test_for_class(MAPIE_REGRESSORS),
+    reason="run test only if tested object has changed",
 )
 def test_mapie_v1_imports_from_top_level():
     """Test imports from top-level regression module."""
@@ -44,8 +58,8 @@ def test_mapie_v1_imports_from_top_level():
 
 
 @pytest.mark.skipif(
-    not _check_soft_dependencies("mapie>=1.0", severity="none"),
-    reason="mapie>=1.0 not installed",
+    not run_test_for_class(MAPIE_REGRESSORS),
+    reason="run test only if tested object has changed",
 )
 @pytest.mark.parametrize(
     "estimator_class",

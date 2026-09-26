@@ -99,7 +99,7 @@ class CoxNet(_SksurvAdapter, BaseSurvReg):
     >>> from sklearn.model_selection import train_test_split  # doctest: +SKIP
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)  # doctest: +SKIP
-
+    >>>
     >>> reg_proba = CoxNet()  # doctest: +SKIP
     >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
     >>> y_pred = reg_proba.predict_proba(X_test)  # doctest: +SKIP

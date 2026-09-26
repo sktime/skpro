@@ -34,6 +34,27 @@ class Exponential(_ScipyAdapter):
     >>> d = Exponential(rate=2)
     """
 
+    _pdf_formula_doc = r"""
+    For rate :math:`\lambda`, the probability density function is
+
+    .. math::
+        f(x) = \lambda e^{-\lambda x}, \quad x \ge 0
+    """
+
+    _log_pdf_formula_doc = r"""
+    For rate :math:`\lambda`, the log-density is
+
+    .. math::
+        \log f(x) = \log(\lambda) - \lambda x, \quad x \ge 0
+    """
+
+    _cdf_formula_doc = r"""
+    For rate :math:`\lambda`, the cumulative distribution function is
+
+    .. math::
+        F(x) = 1 - e^{-\lambda x}, \quad x \ge 0
+    """
+
     _tags = {
         # packaging info
         # --------------
@@ -51,6 +72,52 @@ class Exponential(_ScipyAdapter):
         ],
         "distr:measuretype": "continuous",
         "broadcast_init": "on",
+    }
+
+    # documentation hooks for formula injection
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \lambda \exp(-\lambda x), \quad x \ge 0
+    """,
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = \log(\lambda) - \lambda x, \quad x \ge 0
+    """,
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = 1 - \exp(-\lambda x), \quad x \ge 0
+    """,
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; \lambda) = -\frac{\ln(1 - p)}{\lambda}
+    """,
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \lambda^{-1}
+    """,
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \lambda^{-2}
+    """,
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = \lambda^{-1}
+    """,
     }
 
     def __init__(self, rate, index=None, columns=None):

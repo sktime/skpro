@@ -96,10 +96,65 @@ class ClassName(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    # todo, optional: add documentation for explicit formulae if known;
+    # remove or replace the below example formulae for normal distribution with your own
+    #
+    # these formulae are inserted into methods of the same name in the docstring, e.g.,
+    # the docstring of pdf will contain the formula in _formula_docs["pdf"]
+    #
+    # below are the examples for the normal distribution
+    # remove or replace; optionally, add more formulae for other methods, e.g., energy
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}
+        {2\sigma^2}\right)
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = -\frac{(x - \mu)^2}{2\sigma^2} - \log(\sigma \sqrt{2\pi})
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = \frac{1}{2} \left[1 + \operatorname{erf}\left(\frac{x - \mu}
+        {\sigma\sqrt{2}}\right)\right]
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p; \mu, \sigma) = \mu + \sigma \sqrt{2} \operatorname{erf}^{-1}(2p - 1)
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = \mu
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \sigma^2
+    """,
+    }
+
     # todo: fill init
     # params should be written to self and never changed
     # super call must not be removed, change class name
-    # parameter checks can go after super call
+    # parameter checks and component initialization should go in __post_init__
+    # dynamic tag logic should go in __dynamic_tags__
     def __init__(self, param1, param2="param2default", index=None, columns=None):
         # all distributions must have index and columns arg with None defaults
         # this is to ensure pandas-like behaviour
@@ -111,9 +166,35 @@ class ClassName(BaseDistribution):
         # leave this as is
         super().__init__(index=index, columns=columns)
 
+    # todo: optional, for conditional tag setting
+    # tags set here override class-level _tags and are set
+    # after __init__ but before __post_init__
+    # if not needed, delete this method
+    def __dynamic_tags__(self):
+        """Dynamic tag setter logic for setting tag values conditional on parameters.
+
+        This method should be used for setting dynamic tags only.
+        """
+        pass
+
+    # todo: optional, for parameter validation and derived quantities
+    # if not needed, delete this method
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
         # todo: optional, parameter checking logic (if applicable) should happen here
         # if writes derived values to self, should *not* overwrite self.parama etc
         # instead, write to self._parama, self._newparam (starting with _)
+        pass
 
     # todo: implement as many of the following methods as possible
     # if not implemented, the base class will try to fill it in

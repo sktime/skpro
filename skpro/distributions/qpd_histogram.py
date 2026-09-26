@@ -68,7 +68,7 @@ class HistogramQPD(_DelegatedDistribution):
     --------
     >>> import pandas as pd
     >>> from skpro.distributions import HistogramQPD
-
+    >>>
     >>> quantile_idx = pd.MultiIndex.from_product(
     ...     [[0.1, 0.5, 0.9], [0, 1, 2]], names=["quantile", "sample"]
     ... )

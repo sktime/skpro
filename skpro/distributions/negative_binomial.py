@@ -26,7 +26,7 @@ class NegativeBinomial(_ScipyAdapter):
     Examples
     --------
     >>> from skpro.distributions import NegativeBinomial
-
+    >>>
     >>> distr = NegativeBinomial(mu=1.0, alpha=1.0)
     """
 

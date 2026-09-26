@@ -8,48 +8,65 @@ from skpro.distributions.base import _BaseArrayDistribution
 
 
 class Histogram(_BaseArrayDistribution):
-    """Histogram Probability Distribution.
+    """Histogram probability distribution.
 
     The histogram probability distribution is parameterized
-    by the ``bins`` and ``bin_mass``.
+    by ``bins`` and ``bin_mass``, which together define
+    the bin edges and probability mass per bin.
 
     Parameters
     ----------
-    bins : tuple(float, float, int) or numpy.array of float 1D or 2D list of size m x n
-        1. tuple(first bin's start point, last bin's end point, number of bins)
-           Used when ``bin widths`` are ``equal``.
-            example:
-                    bins:(0,4,4)
-        2. array has the bin boundaries with 1st element the first bin's
-           starting point and rest are the bin ending points of all bins
-            example:
-                    bins:[0, 1, 2, 3, 4]
-        3. 2D list of size m x n containing m*n float numpy.arrays or tuple
-           like ``case 1``.
-            example:
-                bins:
-                [
-                        [[0, 1, 2, 3, 4], [5, 5.5, 5.8, 6.5, 7, 7.5]],
-                        [(2, 12, 5), [0, 1, 2, 3, 4]],
-                        [[1.5, 2.5, 3.1, 4, 5.4], [-4, -2, -1.5, 5, 10]]
-                ]
-    bin_mass : array of float 1D or 2D list of size m x n
-        1. Array has the mass of the bins or area of the bins.
-           example:
-                bin_mass:[0.1, 0.2, 0.3, 0.4]
-           ``Note``: ``len(bin_mass)`` will be ``(len(bins)-1)``.
-           ``Note``: ``sum(bin_mass)`` must be ``1``.
-        2. 2D list of size m x n containing m*n float numpy.arrays
-           each satisfying ``case 1``.
-            example:
-                bin_mass:
-                [
-                        [[0.1, 0.2, 0.3, 0.4], [0.25, 0.1, 0, 0.4, 0.25]],
-                        [[0.1, 0.2, 0.4, 0.2, 0.1], [0.4, 0.3, 0.2, 0.1]],
-                        [[0.06, 0.15, 0.09, 0.7], [0.4, 0.15, 0.325, 0.125]]
-                ]
+    bins : tuple, 1D array-like, or 2D list of array-like
+        Specifies the bin edges. Three forms are supported:
+
+        1. ``tuple(start, end, n_bins)`` - used when bin widths are
+           equal. The bins are generated automatically.
+
+           Example: ``bins = (0, 4, 4)``
+
+        2. 1D array-like of bin edges, where the first element is the
+           start of the first bin and the remaining elements are the
+           end points of each bin.
+
+           Example: ``bins = [0, 1, 2, 3, 4]``
+
+        3. 2D list of size ``m x n``, where each entry is a tuple or
+           array as in case 1 or 2, used for the array-valued case.
+
+           Example::
+
+               bins = [
+                   [[0, 1, 2, 3, 4], [5, 5.5, 5.8, 6.5, 7, 7.5]],
+                   [(2, 12, 5), [0, 1, 2, 3, 4]],
+                   [[1.5, 2.5, 3.1, 4, 5.4], [-4, -2, -1.5, 5, 10]],
+               ]
+
+    bin_mass : 1D array-like or 2D list of array-like
+        Specifies the probability mass of each bin.
+
+        1. 1D array-like of bin masses, with length
+           ``len(bins) - 1``, summing to 1.
+
+           Example: ``bin_mass = [0.1, 0.2, 0.3, 0.4]``
+
+        2. 2D list of size ``m x n``, where each entry is a 1D
+           array-like as in case 1, used for the array-valued case.
+
+           Example::
+
+               bin_mass = [
+                   [[0.1, 0.2, 0.3, 0.4], [0.25, 0.1, 0, 0.4, 0.25]],
+                   [[0.1, 0.2, 0.4, 0.2, 0.1], [0.4, 0.3, 0.2, 0.1]],
+                   [[0.06, 0.15, 0.09, 0.7], [0.4, 0.15, 0.325, 0.125]],
+               ]
+
     index : pd.Index, optional, default = RangeIndex
     columns : pd.Index, optional, default = RangeIndex
+
+    Examples
+    --------
+    >>> from skpro.distributions.histogram import Histogram
+    >>> hist = Histogram(bins=(0, 4, 4), bin_mass=[0.1, 0.2, 0.3, 0.4])
     """
 
     _tags = {

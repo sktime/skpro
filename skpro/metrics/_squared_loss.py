@@ -46,6 +46,12 @@ class SquaredDistrLoss(BaseDistrMetric):
           the score is computed per variable marginal, results in many scores per row
     """
 
+    _tags = {
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
+    }
+
     def __init__(self, multioutput="uniform_average", multivariate=False):
         self.multivariate = multivariate
         super().__init__(multioutput=multioutput)

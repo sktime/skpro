@@ -86,6 +86,17 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
     X_offset_ : float
         If `fit_intercept=True`, offset subtracted for centering data to a
         zero mean. Set to np.zeros(n_features) otherwise.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>> from skpro.regression.linear import ARDRegression
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> reg = ARDRegression()
+    >>> reg = reg.fit(X_train, y_train)
+    >>> y_pred = reg.predict_proba(X_test)
     """
 
     def __init__(
@@ -114,6 +125,32 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
         self.copy_X = copy_X
         self.verbose = verbose
 
+        super().__init__()
+
+    def __post_init__(self):
+        """Post-init constructor logic, can be used by inheriting classes.
+
+        This method should be used for:
+
+        * parameter validation
+        * initialization logic beyond self.param = param
+        * any soft dependency imports in the constructor
+
+        IMPORTANT: no significant compute or memory use should happen in __post_init__,
+        memory and compute intensive operations should be in _fit, not __post_init__.
+        """
+        max_iter = self.max_iter
+        tol = self.tol
+        alpha_1 = self.alpha_1
+        alpha_2 = self.alpha_2
+        lambda_1 = self.lambda_1
+        lambda_2 = self.lambda_2
+        compute_score = self.compute_score
+        threshold_lambda = self.threshold_lambda
+        fit_intercept = self.fit_intercept
+        copy_X = self.copy_X
+        verbose = self.verbose
+
         from sklearn.linear_model import ARDRegression
 
         skl_estimator = ARDRegression(
@@ -132,8 +169,6 @@ class ARDRegression(_DelegateWithFittedParamForwarding):
 
         skpro_est = SklearnProbaReg(skl_estimator, inner_type="np.ndarray")
         self._estimator = skpro_est.clone()
-
-        super().__init__()
 
     FITTED_PARAMS_TO_FORWARD = [
         "coef_",
@@ -267,6 +302,17 @@ class BayesianRidge(_DelegateWithFittedParamForwarding):
     X_offset_ : ndarray of shape (n_features,)
         If `fit_intercept=True`, offset subtracted for centering data to a
         zero mean. Set to np.zeros(n_features) otherwise.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>> from skpro.regression.linear import BayesianRidge
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> reg = BayesianRidge()
+    >>> reg = reg.fit(X_train, y_train)
+    >>> y_pred = reg.predict_proba(X_test)
     """
 
     def __init__(
