@@ -120,7 +120,7 @@ class CyclicBoosting(BaseProbaRegressor):
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
         "estimator_type": "regressor_proba",
-        "python_dependencies": "cyclic_boosting>=1.4.0",
+        "python_dependencies": ["cyclic_boosting>=1.4.0", "numpy<2"],
         # estimator tags
         # --------------
         "capability:multioutput": False,
