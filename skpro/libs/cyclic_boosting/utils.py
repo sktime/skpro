@@ -988,9 +988,8 @@ def generator_to_decorator(gen):
                 gen_instance.close()
 
         wrapper.__doc__ = (
-            (func.__doc__ or "")
-            + "\n    This is the corresponding decorator."
-        )
+            func.__doc__ or ""
+        ) + "\n    This is the corresponding decorator."
         return wrapper
 
     return created_decorator
