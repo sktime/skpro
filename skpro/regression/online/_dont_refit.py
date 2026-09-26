@@ -41,6 +41,11 @@ class OnlineDontRefit(_DelegatedProbaRegressor):
     >>> reg.fit(X, y)
     OnlineDontRefit(estimator=DummyProbaRegressor())
     >>> y_pred_proba = reg.predict_proba(X)
+    >>> X_new = pd.DataFrame({"x": [4, 5]})
+    >>> y_new = pd.DataFrame({"y": [8, 10]})
+    >>> reg.update(X_new, y_new)
+    OnlineDontRefit(estimator=DummyProbaRegressor())
+    >>> y_pred_proba = reg.predict_proba(X_new)
     """
 
     _tags = {
