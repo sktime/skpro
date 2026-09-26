@@ -4,7 +4,6 @@ import warnings
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
-import decorator
 import numba as nb
 import numpy as np
 import pandas as pd
@@ -963,10 +962,7 @@ def generator_to_decorator(gen):
     """Turn a generator into a decorator.
 
     The mechanism is similar to :func:`contextlib.contextmanager` which turns
-    a generator into a contextmanager. :mod:`decorator` is used internally.
-
-    Thanks to :mod:`decorator`, this function preserves the docstring and the
-    signature of the function to be decorated.
+    a generator into a contextmanager.
 
     The docstring of the resulting decorator will include the original
     docstring of the generator and an additional remark stating
@@ -981,17 +977,22 @@ def generator_to_decorator(gen):
     :func:`generator_to_decorator_and_contextmanager`.
     """
 
-    @decorator.decorator
-    def created_decorator(func, *args, **kwargs):
-        gen_instance = gen()
-        try:
-            next(gen_instance)
-            return func(*args, **kwargs)
-        finally:
-            gen_instance.close()
+    def created_decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            gen_instance = gen()
+            try:
+                next(gen_instance)
+                return func(*args, **kwargs)
+            finally:
+                gen_instance.close()
 
-    doc = gen.__doc__ or ""
-    created_decorator.__doc__ = doc + "\n    This is the corresponding decorator."
+        wrapper.__doc__ = (
+            (func.__doc__ or "")
+            + "\n    This is the corresponding decorator."
+        )
+        return wrapper
+
     return created_decorator
 
 
