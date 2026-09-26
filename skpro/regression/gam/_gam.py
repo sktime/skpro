@@ -101,6 +101,7 @@ class GAMRegressor(BaseProbaRegressor):
         # dswah for pygam package
         "maintainers": ["fkiraly", "Omswastik-11", "dswah"],
         "python_dependencies": ["pygam"],
+        "python_version": "<3.15",
         "capability:multioutput": False,
         "capability:missing": True,
         "capability:update": False,
