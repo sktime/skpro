@@ -1,6 +1,11 @@
 """This package contains the Cyclic Boosting family of machine learning
 algorithms.
 
+Vendored from https://github.com/Blue-Yonder-OSS/cyclic-boosting
+(unmaintained upstream), with imports and internal references adapted to
+run inside ``skpro`` and to be compatible with current ``numpy``.
+See ``LICENSE`` in this directory for the upstream license (EPL-2.0).
+
 If you are looking for conceptional explanations of the Cyclic Boosting
 algorithm, you might have a look at the two papers
 https://arxiv.org/abs/2002.03425 and https://arxiv.org/abs/2009.07052.
@@ -35,7 +40,6 @@ Background Subtraction
 
 - :class:`~.CBGBSRegressor`
 """
-
 
 from skpro.libs.cyclic_boosting.base import CyclicBoostingBase
 from skpro.libs.cyclic_boosting.classification import CBClassifier
