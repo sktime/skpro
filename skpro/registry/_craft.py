@@ -25,6 +25,7 @@ import re
 from skpro.registry._lookup import all_objects
 from skpro.registry._namespace import _namespace
 
+
 def _extract_class_names(spec):
     """Get all maximal alphanumeric substrings that start with a capital letter.
 
