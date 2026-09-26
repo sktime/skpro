@@ -4,6 +4,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 from skpro.distributions.base import BaseDistribution
+from skpro.distributions.base._set import FiniteSet, UnionSet
 
 
 class ZeroInflated(BaseDistribution):
@@ -91,6 +92,26 @@ class ZeroInflated(BaseDistribution):
         inner_paramtype = distribution.get_tag("distr:paramtype", "parametric")
         if inner_paramtype != "parametric":
             self.set_tags(**{"distr:paramtype": inner_paramtype})
+
+    def _support(self):
+        r"""Return the support of the zero-inflated distribution.
+
+        The support is :math:`\{0\} \cup \text{supp}(f)`, where
+        :math:`f` is the base distribution.
+
+        Returns
+        -------
+        UnionSet
+            Union of ``FiniteSet([0])`` and the base distribution's support.
+        """
+        zero_set = FiniteSet([0], index=self.index, columns=self.columns)
+        base_support = self.distribution.support
+        return UnionSet(
+            zero_set,
+            base_support,
+            index=self.index,
+            columns=self.columns,
+        )
 
     def _log_pmf(self, x):
         p = self._bc_params["p"]
@@ -237,6 +258,15 @@ class ZeroInflated(BaseDistribution):
 
     # TODO: Replace with default behavior after PR #644 is merged.
     def _iloc(self, rowidx=None, colidx=None):
+        # delegate scalar-scalar case to _iat, matching BaseDistribution._iloc
+        if (
+            rowidx is not None
+            and np.isscalar(rowidx)
+            and colidx is not None
+            and np.isscalar(colidx)
+        ):
+            return self._iat(rowidx, colidx)
+
         distr = self.distribution.iloc[rowidx, colidx]
         p = self.p
 
