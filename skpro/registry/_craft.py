@@ -53,15 +53,79 @@ def _extract_class_names(spec):
 def craft(spec):
     """Instantiate an object from the specification string.
 
+    The ``craft`` utility can be used to deserialize an estimator specification string,
+    including composites such as pipelines.
+
+    It takes a specification string and returns an ``sktime`` estimator, class,
+    or object, corresponding to that string.
+
+    Specification strings can be:
+
+    * simple expressions such as ``"NaiveForecaster"`` or ``"NaiveForecaster(sp=2)"``
+    * compositions such as ``"Deseasonalizer() * NaiveForecaster()"``
+    * a longer block of code, closing with a return statement, e.g., the string block
+
+    .. code-block:: python
+
+        deseason = Deseasonalizer()
+        naive = NaiveForecaster()
+        return deseason * naive
+
+    The ``craft`` utility is useful as a serialization / deserialization pair,
+    together with ``str`` coercion (or commandline printing) of an
+    unfitted estimator.
+
+    ``craft`` recognizes estimators present in ``sktime`` and ``scikit-learn``,
+    and base python (built-in types and functions).
+
+    If ``safe=True`` mode is enabled, only simple propositional expressions are allowed.
+
+    The accepted "safe" grammar is intentionally small:
+
+    .. code-block:: text
+
+        expression ::= NAME | NAME "(" arguments ")" | expression BINOP expression
+                        | UNARYOP expression
+
+        arguments  ::= positional_argument | keyword_argument | arguments "," arguments
+
+        positional_argument ::= expression | CONSTANT
+        keyword_argument    ::= NAME "=" (expression | CONSTANT)
+
+    Where
+
+    .. code-block:: text
+
+        NAME       ::= valid Python identifier, object name in ``sktime`` or ``sklearn``
+        CONSTANT   ::= literal value (e.g., number, string, boolean)
+        BINOP      ::= valid Python binary operator (e.g., +, -, *, /)
+        UNARYOP    ::= valid Python unary operator (e.g., +, -, ~)
+
+    This permits simple constructor calls such as ``A(a=42)``,
+    or nested constructor calls such as ``A(a=42, b=B("test"))``, and only such calls.
+
+    In particular, does not permit attribute access, lambdas, comprehensions,
+    imports, assignments, function calls through arbitrary expressions, etc,
+    which are "unsafe" in the sense of allowing arbitrary code injection.
+
     Parameters
     ----------
-    spec : str, skpro/skbase compatible object specification
+    spec : str, sktime/skbase compatible object specification
         i.e., a string that executes to construct an object if all imports were present
-        imports inferred are of any classes in the scope of ``all_objects``
-        option 1: a string that evaluates to an estimator
-        option 2: a sequence of assignments in valid python code,
-            with the object to be defined preceded by a "return"
-            assignments can use names of classes as if all imports were present
+        imports inferred are of any classes in the scope of ``all_estimators``
+
+        * option 1: a string that evaluates to an estimator
+        * option 2: a sequence of assignments in valid python code,
+          with the object to be defined preceded by a "return".
+          assignments can use names of classes as if all imports were present.
+          Option 2 is not available in ``safe=True`` mode.
+
+    safe : bool, optional (default=False)
+        whether to enforce safe expressions according to the safe specification rules.
+
+        * if True, only allow safe expressions according to the safe specification
+          rules, see above for the exact rules.
+        * if False, allow all expressions (default behavior).
 
     Returns
     -------
