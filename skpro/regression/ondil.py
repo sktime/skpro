@@ -51,7 +51,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
     def __init__(
         self,
         dist="Normal",
-        ondil_init_params=None, 
+        ondil_init_params=None,
     ):
         """Initialize OndilOnlineGamlss.
 
