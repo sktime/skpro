@@ -3,7 +3,10 @@ import logging
 import warnings
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-import numexpr
+from skbase.utils.dependencies import _safe_import
+
+numexpr = _safe_import("numexpr")
+
 import numpy as np
 import pandas as pd
 import scipy.special

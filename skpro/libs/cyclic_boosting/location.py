@@ -5,7 +5,10 @@ Cyclic Boosting Regression for a location parameter target.
 
 import logging
 
-import numexpr
+from skbase.utils.dependencies import _safe_import
+
+numexpr = _safe_import("numexpr")
+
 import numpy as np
 import sklearn.base
 

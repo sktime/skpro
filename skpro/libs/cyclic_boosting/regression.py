@@ -2,7 +2,10 @@ import abc
 import logging
 from typing import Tuple
 
-import numexpr
+from skbase.utils.dependencies import _safe_import
+
+numexpr = _safe_import("numexpr")
+
 import numpy as np
 import scipy.special
 import sklearn.base

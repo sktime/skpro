@@ -6,7 +6,10 @@ import logging
 
 import numpy as np
 import pandas as pd
-from numexpr import evaluate
+
+from skbase.utils.dependencies import _safe_import
+
+evaluate = _safe_import("numexpr.evaluate")
 
 from skpro.libs.cyclic_boosting.base import UpdateMixin
 from skpro.libs.cyclic_boosting.features import FeatureTypes, create_feature_id
