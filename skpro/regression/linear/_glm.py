@@ -616,16 +616,16 @@ class GLMRegressor(BaseProbaRegressor):
         params1 = {}
         params2 = {"add_constant": True}
         params3 = {
-            "family": "Poisson",
+            "dist": "Poisson",
             "add_constant": True,
         }
-        params4 = {"family": "Gamma"}
+        params4 = {"dist": "Gamma"}
         params5 = {
-            "family": "Normal",
+            "dist": "Normal",
             "link": "InversePower",
         }
         params6 = {
-            "family": "Poisson",
+            "dist": "Poisson",
             "link": "Log",
             "add_constant": True,
         }

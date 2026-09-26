@@ -151,7 +151,6 @@ class CyclicBoosting(BaseProbaRegressor):
         self.lower = lower
         self.upper = upper
         self.maximal_iterations = maximal_iterations
-        self.dist_type = dist_type
         self.dist = dist
         self.dist_shape = dist_shape
 

@@ -320,18 +320,18 @@ class GAMRegressor(BaseProbaRegressor):
 
         # if pygam isn't installed, return a marker so tests know to skip
         if not _check_soft_dependencies("pygam", severity="none"):
-            return {"distribution": "runtests-no-pygam"}
+            return {"dist": "runtests-no-pygam"}
         params = [
-            {"distribution": "normal", "terms": "auto"},
-            {"distribution": "poisson", "terms": "auto", "link": "log"},
-            {"distribution": "gamma", "terms": "auto", "link": "log"},
+            {"dist": "normal", "terms": "auto"},
+            {"dist": "poisson", "terms": "auto", "link": "log"},
+            {"dist": "gamma", "terms": "auto", "link": "log"},
             {
-                "distribution": "normal",
+                "dist": "normal",
                 "terms": "auto",
                 "max_iter": 50,
                 "fit_intercept": False,
             },
-            {"distribution": "poisson", "link": "identity", "max_iter": 50},
-            {"distribution": "gamma", "link": "inverse", "tol": 1e-3},
+            {"dist": "poisson", "link": "identity", "max_iter": 50},
+            {"dist": "gamma", "link": "inverse", "tol": 1e-3},
         ]
         return params

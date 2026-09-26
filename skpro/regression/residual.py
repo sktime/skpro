@@ -21,7 +21,7 @@ class ResidualDouble(BaseProbaRegressor):
     The mean is predicted by ``estimator``. The residual is predicted by
     ``estimator_resid``. The residual is transformed by ``residual_trafo``.
     The predicted mean and residual are passed to a distribution specified by
-    ``distr_type``, and possibly ``distr_params``, ``distr_loc_scale_name``.
+    ``dist``, and possibly ``distr_params``, ``distr_loc_scale_name``.
 
     The residuals predicted on the training data are used to fit
     ``estimator_resid``. If ``cv`` is passed, the residuals are out-of-sample

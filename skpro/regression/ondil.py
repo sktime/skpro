@@ -271,6 +271,6 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         # minimal constructor params; provide two small parameter sets so
         # the package-level tests exercise different constructor paths.
         return [
-            {"distribution": "Normal"},
-            {"distribution": "Normal", "ondil_init_params": {"verbose": 0}},
+            {"dist": "Normal"},
+            {"dist": "Normal", "ondil_init_params": {"verbose": 0}},
         ]
