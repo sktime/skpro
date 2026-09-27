@@ -41,6 +41,7 @@ class DummyProbaRegressor(BaseProbaRegressor):
 
     Examples
     --------
+    >>> import pandas as pd
     >>> from skpro.regression.dummy import DummyProbaRegressor
     >>> X = pd.DataFrame({"x": [1, 2, 3]})
     >>> y = pd.DataFrame({"y": [2, 4, 6]})
