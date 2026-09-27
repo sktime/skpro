@@ -324,9 +324,21 @@ class QPD_S(BaseDistribution):
 
         phi = self.phi
 
-        in_arcsinh = np.log((x - lower) / theta) / kappa
+        # Only compute cdf for x > lower
+        valid_mask = x > lower
+        
+        cdf_arr = np.zeros_like(x, dtype=float)
+
+        if not np.any(valid_mask):
+            return cdf_arr
+
+        x_valid = np.where(valid_mask, (x - lower) / theta, 1.0)
+        
+        in_arcsinh = np.log(x_valid) / kappa
         in_sinh = np.arcsinh(in_arcsinh) - np.arcsinh(n * c * delta)
-        cdf_arr = phi.cdf(np.sinh(in_sinh) / delta)
+        cdf_valid = phi.cdf(np.sinh(in_sinh) / delta)
+        
+        cdf_arr = np.where(valid_mask, cdf_valid, 0.0)
 
         return cdf_arr
 
