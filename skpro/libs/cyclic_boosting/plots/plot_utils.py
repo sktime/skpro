@@ -4,10 +4,10 @@ from skbase.utils.dependencies import _safe_import
 
 mpl = _safe_import("matplotlib")
 plt = _safe_import("matplotlib.pyplot")
+ScalarMappable = _safe_import("matplotlib.cm.ScalarMappable")
+Normalize = _safe_import("matplotlib.colors.Normalize")
 
 import numpy as np
-from matplotlib.cm import ScalarMappable
-from matplotlib.colors import Normalize
 
 from skpro.libs.cyclic_boosting import utils
 
