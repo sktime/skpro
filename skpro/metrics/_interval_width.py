@@ -48,14 +48,29 @@ class IntervalWidth(BaseProbaMetric):
         Can be specified if no explicit coverages are present in the direct use of
         the metric, for instance in benchmarking via ``evaluate``, or tuning
         via ``ForecastingGridSearchCV``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from skpro.metrics import IntervalWidth
+    >>> y_true = pd.Series([3, -0.5, 2, 7, 2])
+    >>> y_pred = pd.DataFrame({
+    ...     ("y", 0.5, "lower"): [2.0, -1.0, 1.0, 6.0, 1.0],
+    ...     ("y", 0.5, "upper"): [4.0, 0.0, 3.0, 8.0, 3.0],
+    ...     ("y", 0.9, "lower"): [1.0, -2.0, 0.0, 5.0, 0.0],
+    ...     ("y", 0.9, "upper"): [5.0, 1.0, 4.0, 9.0, 4.0],
+    ... })
+    >>> iw = IntervalWidth()
+    >>> iw(y_true, y_pred)  # doctest: +SKIP
+    np.float64(2.8)
+    >>> iw = IntervalWidth(score_average=False)
+    >>> iw(y_true, y_pred).to_numpy()
+    array([1.8, 3.8])
     """
 
     _tags = {
         "scitype:y_pred": "pred_interval",
         "lower_is_better": True,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(
