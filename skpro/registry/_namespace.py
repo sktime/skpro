@@ -26,11 +26,11 @@ def _namespace(include_deps=False):
         Contains pointers to classes and functions from the respective namespaces.
         The keys are names, and the values are pointers.
     """
-    from skpro.registry._lookup import all_estimators
+    from skpro.registry._lookup import all_objects
     from skpro.registry._lookup_sklearn import _all_sklearn_estimators
 
     # retrieve all estimators from sktime and sklearn for namespace resolution
-    namespace_dict_skpro = dict(all_estimators())  # noqa: F841
+    namespace_dict_skpro = dict(all_objects())  # noqa: F841
 
     if include_deps:
         namespace_dict_sklearn = dict(_all_sklearn_estimators())  # noqa: F841
