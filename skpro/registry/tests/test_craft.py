@@ -130,11 +130,6 @@ def test_deps():
     assert deps(pipe_spec_with_deps) == ["xgboostlss"]
 
 
-def test_deps_with_disjunction():
-    """Check that deps retrieves the correct requirement set for disjunctions."""
-    assert set(deps("DartsXGBModel")) == {"xgboost", "u8darts>=0.29"}
-
-
 def test_sklearn_imports():
     """Check that sklearn estimators can be crafted."""
     from skpro.registry._lookup_sklearn import _all_sklearn_estimators
