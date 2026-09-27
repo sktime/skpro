@@ -6,8 +6,6 @@ import contextlib
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import gridspec
-from matplotlib.backends.backend_pdf import PdfPages
 
 from skpro.libs.cyclic_boosting import CBNBinomC
 from skpro.libs.cyclic_boosting.features import create_feature_id
@@ -184,6 +182,9 @@ def plot_analysis(
     use_tightlayout: bool
         If true the tightlayout option of matplotlib is used.
     """
+    from matplotlib import gridspec
+    from matplotlib.backends.backend_pdf import PdfPages
+
     filepath_or_object = append_extension(file_obj, ".pdf")
     dpi = 200
     with contextlib.closing(PdfPages(filepath_or_object)) as pdf_pages:
@@ -258,6 +259,8 @@ def plot_factors(
     use_tightlayout: bool
         If true the tightlayout option of matplotlib is used.
     """
+    from matplotlib import gridspec
+
     plot_observer.check_fitted()
     if feature_groups_or_ids is None:
         features = plot_observer.features
@@ -288,6 +291,8 @@ def _format_groupname_with_type(feature_group, feature_type):
 def _plot_one_feature_group(
     plot_observer, grid_item, feature, binners=None, use_tightlayout=True, plot_yp=True
 ):
+    from matplotlib import gridspec
+
     if len(feature.feature_group) == 1:
         # treatment of one-dimensional features
         # no bin occupancy plot for too many bins
@@ -342,6 +347,8 @@ def plot_factor_histogram(feature):
         Feature object from as it can be obtained from a plotting
         observer
     """
+    from matplotlib import gridspec
+
     factors = feature.unfitted_factors_link
     smoothed_factors = feature.factors_link
     feat_group = feature.feature_group
