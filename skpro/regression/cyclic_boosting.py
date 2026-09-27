@@ -41,7 +41,7 @@ class CyclicBoosting(BaseProbaRegressor):
     form of the Johnson QPD.
 
     The model allows to select unbounded, left semi-bounded, and bounded
-    predictive distribution support.
+    predictive distribution support, via the ``bound`` parameter.
 
     Parameters
     ----------
