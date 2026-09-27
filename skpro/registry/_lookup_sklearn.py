@@ -34,7 +34,7 @@ def _all_sklearn_estimators(
     NOTE: this class retrieves only ``scikit-learn`` estimator classes in ``skpro``,
     if ``skpro`` is included in the scope, not children of ``skpro``
     native base classes.
-    
+
     Parameters
     ----------
     return_names: bool, optional (default=True)
