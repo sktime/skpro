@@ -2,9 +2,13 @@ import copy
 import logging
 import warnings
 from dataclasses import dataclass
+from functools import wraps
 from typing import Iterable, List, Optional
 
-import numba as nb
+from skbase.utils.dependencies import _safe_import
+    
+nb = _safe_import("numba")
+
 import numpy as np
 import pandas as pd
 
