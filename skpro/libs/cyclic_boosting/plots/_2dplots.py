@@ -1,4 +1,3 @@
-
 from skbase.utils.dependencies import _safe_import
 
 plt = _safe_import("matplotlib.pyplot")
