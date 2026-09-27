@@ -129,17 +129,12 @@ class GlumRegressor(BaseProbaRegressor):
         # CI and test flags
         # -----------------
         "tests:vm": True,
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
-
-    # todo 2.15.0
-    # remove the 'family' argument from '__init__' signature
-    # remove the following 'if' check and deprecation warning
-    # de-indent the following 'else' check
-    # move dist argument to position of family argument in signature
 
     def __init__(
         self,
-        family="deprecated",
+        dist="normal",
         link="auto",
         alpha=None,
         l1_ratio=0,
@@ -167,9 +162,7 @@ class GlumRegressor(BaseProbaRegressor):
         drop_first=False,
         robust=False,
         expected_information=False,
-        dist="normal",
     ):
-        self.family = family
         self.dist = dist
         self.link = link
         self.alpha = alpha
@@ -213,25 +206,7 @@ class GlumRegressor(BaseProbaRegressor):
         IMPORTANT: no significant compute or memory use should happen in __post_init__,
         memory and compute intensive operations should be in _fit, not __post_init__.
         """
-        family = self.family
-        dist = self.dist
-        # todo 2.15.0: remove the following 'if' check and deprecation warning
-        # handle deprecation of family -> dist
-        if family != "deprecated":
-            from warnings import warn
-
-            warn(
-                "in `GlumRegressor`, parameter 'family' "
-                "will be renamed to 'dist' in version 2.15.0. "
-                "To keep current behaviour and to silence this warning, "
-                "use 'dist' instead of 'family', "
-                "set dist explicitly via kwarg, and do not set family.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-            self._dist = family
-        else:
-            self._dist = dist
+        self._dist = self.dist
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):

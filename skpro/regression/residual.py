@@ -21,7 +21,7 @@ class ResidualDouble(BaseProbaRegressor):
     The mean is predicted by ``estimator``. The residual is predicted by
     ``estimator_resid``. The residual is transformed by ``residual_trafo``.
     The predicted mean and residual are passed to a distribution specified by
-    ``distr_type``, and possibly ``distr_params``, ``distr_loc_scale_name``.
+    ``dist``, and possibly ``distr_params``, ``distr_loc_scale_name``.
 
     The residuals predicted on the training data are used to fit
     ``estimator_resid``. If ``cv`` is passed, the residuals are out-of-sample
@@ -125,29 +125,22 @@ class ResidualDouble(BaseProbaRegressor):
 
     _tags = {"capability:missing": True}
 
-    # todo 2.15.0
-    # remove the 'distr_type' argument from '__init__' signature
-    # remove the following 'if' check and deprecation warning
-    # de-indent the following 'else' check
-
     def __init__(
         self,
         estimator,
         estimator_resid=None,
         residual_trafo="absolute",
-        distr_type="deprecated",
+        dist="Normal",
         distr_loc_scale_name=None,
         distr_params=None,
         use_y_pred=False,
         cv=None,
         min_scale=1e-10,
-        dist="Normal",
     ):
         self.estimator = estimator
         self.estimator_resid = estimator_resid
         self.residual_trafo = residual_trafo
         self.dist = dist
-        self.distr_type = distr_type
         self.distr_loc_scale_name = distr_loc_scale_name
         self.distr_params = distr_params
         self.use_y_pred = use_y_pred
@@ -168,27 +161,9 @@ class ResidualDouble(BaseProbaRegressor):
         IMPORTANT: no significant compute or memory use should happen in __post_init__,
         memory and compute intensive operations should be in _fit, not __post_init__.
         """
-        dist = self.dist
-        distr_type = self.distr_type
+        self._dist = self.dist
         estimator = self.estimator
         estimator_resid = self.estimator_resid
-        # todo 2.15.0: remove the following 'if' check and deprecation warning
-        # handle deprecation of distr_type -> dist
-        if distr_type != "deprecated":
-            from warnings import warn
-
-            warn(
-                "in `ResidualDouble`, parameter 'distr_type' "
-                "will be renamed to 'dist' in version 2.15.0. "
-                "To keep current behaviour and to silence this warning, "
-                "use 'dist' instead of 'distr_type', "
-                "set dist explicitly via kwarg, and do not set distr_type.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-            self._dist = distr_type
-        else:
-            self._dist = dist
 
         self.estimator_ = clone(estimator)
 

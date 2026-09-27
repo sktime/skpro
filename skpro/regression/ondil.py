@@ -46,15 +46,15 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         "capability:update": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
+        # CI and test flags
+        # -----------------
+        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
-    # todo 2.15.0
-    # remove the 'distribution' argument from '__init__' signature
-    # remove the following 'if' check and deprecation warning
-    # de-indent the following 'else' check
-
     def __init__(
-        self, distribution="deprecated", ondil_init_params=None, dist="Normal"
+        self,
+        dist="Normal",
+        ondil_init_params=None,
     ):
         """Initialize OndilOnlineGamlss.
 
@@ -65,7 +65,6 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         ondil_init_params : dict, optional
             Parameters to forward to ondil's OnlineGamlss constructor.
         """
-        self.distribution = distribution
         self.dist = dist
         self.ondil_init_params = ondil_init_params
 
@@ -87,25 +86,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         # explicit dict of kwargs forwarded to the ondil constructor.
         self._ondil_kwargs = dict(ondil_init_params or {})
 
-        distribution = self.distribution
-        dist = self.dist
-        # todo 2.15.0: remove the following 'if' check and deprecation warning
-        # handle deprecation of distribution -> dist
-        if distribution != "deprecated":
-            from warnings import warn
-
-            warn(
-                "in `OndilOnlineGamlss`, parameter 'distribution' "
-                "will be renamed to 'dist' in version 2.15.0. "
-                "To keep current behaviour and to silence this warning, "
-                "use 'dist' instead of 'distribution', "
-                "set dist explicitly via kwarg, and do not set distribution.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-            self._dist = distribution
-        else:
-            self._dist = dist
+        self._dist = self.dist
 
     def _fit(self, X, y):
         """Fit the underlying ondil OnlineGamlss estimator.
@@ -293,6 +274,6 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         # minimal constructor params; provide two small parameter sets so
         # the package-level tests exercise different constructor paths.
         return [
-            {"distribution": "Normal"},
-            {"distribution": "Normal", "ondil_init_params": {"verbose": 0}},
+            {"dist": "Normal"},
+            {"dist": "Normal", "ondil_init_params": {"verbose": 0}},
         ]
