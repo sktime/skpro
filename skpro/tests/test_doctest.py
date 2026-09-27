@@ -10,7 +10,7 @@ from skpro.tests._config import ONLY_CHANGED_MODULES
 from skpro.tests.test_switch import run_test_module_changed
 from skpro.utils._doctest import run_doctest
 
-EXCLUDE_MODULES_STARTING_WITH = ("all", "test")
+EXCLUDE_MODULES = ("all", "test", "libs")
 
 
 def _all_functions(module_name):
@@ -67,11 +67,11 @@ def _all_functions_cached(module_name, only_changed_modules=False):
 
     # Walk through the package's modules
     package_path = package.__path__[0]
-    for _, modname, _ in pkgutil.walk_packages(
+    for _, modname, _ in pkgutil.iter_modules(
         path=[package_path], prefix=package.__name__ + "."
     ):
         # Skip modules starting with 'all' or 'test'
-        if modname.split(".")[-1].startswith(EXCLUDE_MODULES_STARTING_WITH):
+        if any(part in EXCLUDE_MODULES for part in modname):
             continue
 
         # Skip modules that have not changed
