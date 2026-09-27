@@ -13,7 +13,7 @@ def _namespace(include_deps=False):
     include_deps : bool, optional (default=False)
         Whether to include dependent namespaces.
 
-        * If False, returns namespace of ``sktime`` only.
+        * If False, returns namespace of ``skpro`` only.
         * If True, includes the following dependent namespaces:
 
             * ``scikit-learn``
@@ -29,7 +29,7 @@ def _namespace(include_deps=False):
     from skpro.registry._lookup import all_objects
     from skpro.registry._lookup_sklearn import _all_sklearn_estimators
 
-    # retrieve all estimators from sktime and sklearn for namespace resolution
+    # retrieve all estimators from skpro and sklearn for namespace resolution
     namespace_dict_skpro = dict(all_objects())  # noqa: F841
 
     if include_deps:
