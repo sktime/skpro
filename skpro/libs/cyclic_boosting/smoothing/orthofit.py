@@ -1,4 +1,7 @@
-import numba as nb
+from skbase.utils.dependencies import _safe_import
+
+nb = _safe_import("numba")
+
 import numpy as np
 
 N_COEFFICIENTS = 5
