@@ -6,7 +6,7 @@ from functools import wraps
 from typing import Iterable, List, Optional
 
 from skbase.utils.dependencies import _safe_import
-    
+
 nb = _safe_import("numba")
 
 import numpy as np
