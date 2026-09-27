@@ -1,7 +1,9 @@
 import math
 
 import numpy as np
-from numba import jit
+from skbase.utils.dependencies import _safe_import
+
+jit = _safe_import("numba.jit")
 
 
 @jit(nopython=True)
