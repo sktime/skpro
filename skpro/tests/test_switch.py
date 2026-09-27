@@ -327,7 +327,7 @@ def run_test_module_changed(module, only_changed_modules=None):
     only_changed_modules : boolean or None, default=_config.ONLY_CHANGED_MODULES
         whether to run tests only for classes impacted by changed modules.
         If False, will only check active "False" conditions to skip.
-        If True, always returns True.
+        If True, only run the test when one of the specified modules has changed.
         if None, uses the global setting from
         skpro.tests._config.ONLY_CHANGED_MODULES
 
