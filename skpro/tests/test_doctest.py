@@ -10,7 +10,7 @@ from skpro.tests._config import ONLY_CHANGED_MODULES
 from skpro.tests.test_switch import run_test_module_changed
 from skpro.utils._doctest import run_doctest
 
-EXCLUDE_MODULES_STARTING_WITH = ("all", "test", "cyclic_boosting")
+EXCLUDE_MODULES_STARTING_WITH = ("all", "test", "libs")
 
 
 def _all_functions(module_name):
