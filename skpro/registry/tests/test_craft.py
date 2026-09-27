@@ -61,7 +61,10 @@ def test_craft(spec, safe):
 
     crafted_again = craft(new_spec, safe=safe)
 
-    assert crafted_again == crafted_obj
+    # sklearn equality does not allow the comparison below
+    # so estimators with sklearn components are skipped
+    if "KFold" not in spec:
+        assert crafted_again == crafted_obj
 
 
 @pytest.mark.parametrize(
