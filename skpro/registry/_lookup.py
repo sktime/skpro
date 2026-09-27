@@ -22,6 +22,7 @@ from skbase.lookup import all_objects as _all_objects
 
 from skpro.base import BaseEstimator, BaseObject
 from skpro.registry._base_classes import get_obj_scitype_list
+from skpro.registry._config import MODULES_TO_IGNORE
 from skpro.registry._tags import OBJECT_TAG_REGISTER
 
 VALID_OBJECT_TYPE_STRINGS = set(get_obj_scitype_list())
@@ -139,15 +140,6 @@ def all_objects(
     Adapted version of sktime's ``all_estimators``,
     which is an evolution of scikit-learn's ``all_estimators``
     """
-    MODULES_TO_IGNORE = (
-        "tests",
-        "setup",
-        "contrib",
-        "utils",
-        "all",
-    )
-
-    result = []
     ROOT = str(Path(__file__).parent.parent)  # skpro package root directory
 
     def _coerce_to_str(obj):
