@@ -373,7 +373,7 @@ def deps(spec, include_test_deps=False):
         each str is PEP 440 compatible requirement string for craft(spec)
         if spec has no requirements, return is [], the length 0 list
     """
-    register = dict(all_objects())
+    register = _namespace(include_deps=True)
 
     dep_strs = []
 
@@ -435,7 +435,7 @@ def imports(spec):
         python code consisting of all import statements required for spec
         imports cover object/estimator classes found as sub-strings of spec
     """
-    register = dict(all_objects())
+    register = _namespace(include_deps=True)
 
     import_strs = []
 
