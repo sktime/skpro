@@ -275,6 +275,66 @@ class capability__update(_BaseTag):
     }
 
 
+class capability__serializable(_BaseTag):
+    """Whether object can be serialized via save/load."""
+
+    _tags = {
+        "tag_name": "capability:serializable",
+        "parent_type": "object",
+        "tag_type": "bool",
+        "short_descr": "whether object can be serialized via save/load",
+    }
+
+
+class serialization__native_artifacts(_BaseTag):
+    """Attributes saved through native artifact backends.
+
+    - String name: ``"serialization:native_artifacts"``
+    - Private tag, developer and framework facing
+    - Values: list or tuple of attribute names
+    - Default: empty tuple
+
+    This tag identifies estimator attributes that should be omitted from the
+    pickled object state and saved in framework-native formats, such as
+    ``transformers`` ``save_pretrained`` artifacts.
+
+    An attribute may not carry both this tag and ``"serialization:skip"``.
+    """
+
+    _tags = {
+        "tag_name": "serialization:native_artifacts",
+        "parent_type": "object",
+        "tag_type": "list",
+        "short_descr": "attribute names saved through native serialization backends",
+        "user_facing": False,
+    }
+
+
+class serialization__skip(_BaseTag):
+    """Attributes skipped by estimator serialization.
+
+    - String name: ``"serialization:skip"``
+    - Private tag, developer and framework facing
+    - Values: list or tuple of attribute names
+    - Default: empty tuple
+
+    This tag identifies estimator attributes that should be omitted from the
+    pickled object state because they are caches or can be reconstructed from
+    other serialized estimator state.
+
+    An attribute may not carry both this tag and
+    ``"serialization:native_artifacts"``.
+    """
+
+    _tags = {
+        "tag_name": "serialization:skip",
+        "parent_type": "object",
+        "tag_type": "list",
+        "short_descr": "attribute names skipped by estimator serialization",
+        "user_facing": False,
+    }
+
+
 class X_inner_mtype(_BaseTag):
     """Internal X machine type."""
 
