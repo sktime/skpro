@@ -12,6 +12,8 @@ from skbase.lookup import all_objects
 from skpro.registry._config import MODULES_TO_IGNORE as MODULES_TO_IGNORE_SKPRO
 from skpro.registry._config import MODULES_TO_IGNORE_SKLEARN
 
+__all__ = ["_all_sklearn_estimators"]
+
 
 def _all_sklearn_estimators(
     return_names=True,
@@ -90,11 +92,11 @@ def _all_sklearn_estimators(
     if package_scope not in [None, "scikit-learn", "skpro"]:
         raise ValueError(f"Invalid package_scope: {package_scope}")
     if package_scope is None:
-        package_scope = ["sklearn", "skpro"]
+        package_scope = ("sklearn", "skpro")
     elif package_scope == "scikit-learn":
-        package_scope = ["sklearn"]
+        package_scope = ("sklearn",)
     else:
-        package_scope = [package_scope]
+        package_scope = (package_scope,)
 
     return _all_sklearn_estimators_cached(
         return_names=return_names,
