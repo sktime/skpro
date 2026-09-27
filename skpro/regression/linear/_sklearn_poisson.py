@@ -62,6 +62,17 @@ class PoissonRegressor(BaseProbaRegressor):
 
     feature_names_in_ : ndarray of shape (n_features,)
         Names of features seen during :term:'fit'.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>> from skpro.regression.linear import PoissonRegressor
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> reg = PoissonRegressor()
+    >>> reg = reg.fit(X_train, y_train)
+    >>> y_pred = reg.predict_proba(X_test)
     """
 
     _tags = {
@@ -69,9 +80,6 @@ class PoissonRegressor(BaseProbaRegressor):
         "capability:missing": False,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(
