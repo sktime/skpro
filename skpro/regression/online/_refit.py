@@ -30,19 +30,27 @@ class OnlineRefit(_DelegatedProbaRegressor):
     Examples
     --------
     ``OnlineRefit`` wraps a probabilistic regressor so that every ``update``
-    refits the regressor on all data seen so far.
+    refits the wrapped regressor on all data seen so far. Below, the regressor
+    is fitted on a larger initial batch and then updated with a smaller, later
+    batch of previously unseen observations.
 
-    >>> import pandas as pd
-    >>> from skpro.regression.dummy import DummyProbaRegressor
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from sklearn.model_selection import train_test_split
     >>> from skpro.regression.online import OnlineRefit
-    >>> X = pd.DataFrame({"x": [1, 2, 3]})
-    >>> y = pd.DataFrame({"y": [2, 4, 6]})
-    >>> reg = OnlineRefit(DummyProbaRegressor())
-    >>> reg.fit(X, y)
-    OnlineRefit(estimator=DummyProbaRegressor())
-    >>> reg.update(X, y)
-    OnlineRefit(estimator=DummyProbaRegressor())
-    >>> y_pred_proba = reg.predict_proba(X)
+    >>> from skpro.regression.residual import ResidualDouble
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_init, X_new, y_init, y_new = train_test_split(
+    ...     X, y, train_size=0.8, random_state=42
+    ... )
+    >>>
+    >>> reg = OnlineRefit(ResidualDouble(LinearRegression()))
+    >>> reg.fit(X_init, y_init)  # initial fit on the larger batch
+    OnlineRefit(...)
+    >>> # refit on all data seen so far, incl. the smaller, unseen new batch
+    >>> _ = reg.update(X_new, y_new)
+    >>> y_pred_proba = reg.predict_proba(X_new)
     """
 
     _tags = {

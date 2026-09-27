@@ -35,19 +35,34 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
     Examples
     --------
     ``OnlineRefitEveryN`` wraps a probabilistic regressor so that ``update``
-    only refits the regressor once at least ``N`` new data points have been seen.
+    only updates the wrapped regressor once at least ``N`` new data points have
+    been seen. A smaller update batch is buffered until the threshold is reached,
+    which can be observed via the ``n_seen_since_last_update_`` attribute.
 
-    >>> import pandas as pd
-    >>> from skpro.regression.dummy import DummyProbaRegressor
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from sklearn.model_selection import train_test_split
     >>> from skpro.regression.online import OnlineRefitEveryN
-    >>> X = pd.DataFrame({"x": [1, 2, 3]})
-    >>> y = pd.DataFrame({"y": [2, 4, 6]})
-    >>> reg = OnlineRefitEveryN(DummyProbaRegressor(), N=2)
-    >>> reg.fit(X, y)
-    OnlineRefitEveryN(N=2, estimator=DummyProbaRegressor())
-    >>> reg.update(X, y)
-    OnlineRefitEveryN(N=2, estimator=DummyProbaRegressor())
-    >>> y_pred_proba = reg.predict_proba(X)
+    >>> from skpro.regression.residual import ResidualDouble
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_init, X_new, y_init, y_new = train_test_split(
+    ...     X, y, train_size=0.8, random_state=42
+    ... )
+    >>>
+    >>> # only update once at least N=32 new data points have been seen
+    >>> reg = OnlineRefitEveryN(ResidualDouble(LinearRegression()), N=32)
+    >>> reg.fit(X_init, y_init)
+    OnlineRefitEveryN(...)
+    >>> # a small batch is buffered; the wrapped regressor is not updated yet
+    >>> _ = reg.update(X_new.iloc[:16], y_new.iloc[:16])
+    >>> reg.n_seen_since_last_update_
+    16
+    >>> # once the buffer reaches N, the regressor updates and the counter resets
+    >>> _ = reg.update(X_new.iloc[16:48], y_new.iloc[16:48])
+    >>> reg.n_seen_since_last_update_
+    0
+    >>> y_pred_proba = reg.predict_proba(X_new)
     """
 
     _tags = {
