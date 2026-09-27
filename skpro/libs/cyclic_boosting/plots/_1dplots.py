@@ -1,4 +1,6 @@
-import matplotlib.pyplot as plt
+from skbase.utils.dependencies import _safe_import
+
+plt = _safe_import("matplotlib.pyplot")
 import numpy as np
 
 from skpro.libs.cyclic_boosting import flags

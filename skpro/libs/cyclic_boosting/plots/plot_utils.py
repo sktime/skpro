@@ -1,7 +1,10 @@
 import contextlib
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+from skbase.utils.dependencies import _safe_import
+
+mpl = _safe_import("matplotlib")
+plt = _safe_import("matplotlib.pyplot")
+
 import numpy as np
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize

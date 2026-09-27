@@ -4,8 +4,11 @@ Plots for the Cyclic Boosting family
 
 import contextlib
 
-import matplotlib.pyplot as plt
 import numpy as np
+
+from skbase.utils.dependencies import _safe_import
+
+plt = _safe_import("matplotlib.pyplot")
 
 from skpro.libs.cyclic_boosting import CBNBinomC
 from skpro.libs.cyclic_boosting.features import create_feature_id

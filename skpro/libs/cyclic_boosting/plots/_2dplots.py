@@ -1,6 +1,10 @@
-import matplotlib.pyplot as plt
+
+from skbase.utils.dependencies import _safe_import
+
+plt = _safe_import("matplotlib.pyplot")
+gridspec = _safe_import("matplotlib.gridspec")
+
 import numpy as np
-from matplotlib import gridspec
 
 from skpro.libs.cyclic_boosting.plots._1dplots import _get_y_axis
 
