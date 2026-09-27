@@ -80,6 +80,9 @@ class BaseGridSearch(_DelegatedProbaRegressor):
             "capability:multioutput",
             "capability:missing",
             "capability:survival",
+            # prediction is delegated to best_estimator_, a clone of estimator,
+            # so the tuner is point prediction only iff estimator is
+            "capability:pred_int",
         ]
         self.clone_tags(estimator, tags_to_clone)
         self._set_update_capability_tag(estimator)
@@ -98,6 +101,33 @@ class BaseGridSearch(_DelegatedProbaRegressor):
                 f"Unknown update_behaviour={behaviour!r}, must be one of "
                 "'no_update', 'inner_only', 'full_refit'."
             )
+
+    def _check_scoring_capability(self, scoring):
+        """Raise if ``scoring`` needs predictions the tuned estimator cannot make.
+
+        All ``skpro`` metrics score a probabilistic prediction, i.e., the return
+        of ``predict_proba``, ``predict_interval``, or ``predict_quantiles``.
+        Tuning an estimator which is point prediction only, i.e., which has the
+        ``capability:pred_int`` tag set to ``False``, is therefore not possible.
+        """
+        if self.get_tag("capability:pred_int"):
+            return
+
+        pred_scitype = None
+        if hasattr(scoring, "get_tag"):
+            pred_scitype = scoring.get_tag("scitype:y_pred", None, raise_error=False)
+
+        raise ValueError(
+            f"Error in {type(self).__name__}: the estimator to tune, "
+            f"{type(self.estimator).__name__}, is point prediction only, "
+            "i.e., has the capability:pred_int tag set to False, but the "
+            f"scoring metric {getattr(scoring, 'name', scoring)} scores "
+            f"probabilistic predictions of scitype {pred_scitype}. "
+            "To tune a point prediction regressor, wrap it in a regressor "
+            "which adds a distributional prediction, e.g., BaggingRegressor, "
+            "BootstrapRegressor, ResidualDouble, or EnbpiRegressor, and tune "
+            "the wrapped regressor."
+        )
 
     # attribute for _DelegatedProbaRegressor, which then delegates
     #     all non-overridden methods are same as of getattr(self, _delegate_name)
@@ -157,6 +187,8 @@ class BaseGridSearch(_DelegatedProbaRegressor):
         # scoring = check_scoring(self.scoring, obj=self)
         scoring = self.scoring
         scoring_name = f"test_{scoring.name}"
+
+        self._check_scoring_capability(scoring)
 
         backend = self.backend
         backend_params = self.backend_params if self.backend_params else {}

@@ -85,10 +85,13 @@ class TransformedTargetRegressor(BaseProbaRegressor):
         self.regressor_ = regressor.clone()
         self.transformer_ = clone(transformer) if transformer else None
 
+        # prediction methods are delegated to the inner regressor,
+        # so the composite is point prediction only iff the inner regressor is
         tags_to_clone = [
             "capability:multioutput",
             "capability:survival",
             "capability:update",
+            "capability:pred_int",
         ]
         self.clone_tags(self.regressor_, tags_to_clone)
 
