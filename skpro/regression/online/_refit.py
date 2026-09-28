@@ -32,7 +32,8 @@ class OnlineRefit(_DelegatedProbaRegressor):
     ``OnlineRefit`` wraps a probabilistic regressor so that every ``update``
     refits the wrapped regressor on all data seen so far. Below, the regressor
     is fitted on a larger initial batch and then updated with a smaller, later
-    batch of previously unseen observations.
+    batch of previously unseen observations. Predictions are made on a held-out
+    test set that is used in neither ``fit`` nor ``update``.
 
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.linear_model import LinearRegression
@@ -41,16 +42,22 @@ class OnlineRefit(_DelegatedProbaRegressor):
     >>> from skpro.regression.residual import ResidualDouble
     >>>
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> # hold out a test set that is never used in fit or update
+    >>> X_rest, X_test, y_rest, y_test = train_test_split(
+    ...     X, y, test_size=0.2, random_state=42
+    ... )
+    >>> # split the rest into a larger fit batch and a smaller update batch
     >>> X_init, X_new, y_init, y_new = train_test_split(
-    ...     X, y, train_size=0.8, random_state=42
+    ...     X_rest, y_rest, train_size=0.75, random_state=42
     ... )
     >>>
     >>> reg = OnlineRefit(ResidualDouble(LinearRegression()))
     >>> reg.fit(X_init, y_init)  # initial fit on the larger batch
     OnlineRefit(...)
-    >>> # refit on all data seen so far, incl. the smaller, unseen new batch
+    >>> # refit on all data seen so far, incl. the smaller, unseen update batch
     >>> _ = reg.update(X_new, y_new)
-    >>> y_pred_proba = reg.predict_proba(X_new)
+    >>> # predict on the held-out test set, unseen in fit or update
+    >>> y_pred_proba = reg.predict_proba(X_test)
     """
 
     _tags = {

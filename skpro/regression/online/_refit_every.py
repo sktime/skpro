@@ -38,6 +38,8 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
     only updates the wrapped regressor once at least ``N`` new data points have
     been seen. A smaller update batch is buffered until the threshold is reached,
     which can be observed via the ``n_seen_since_last_update_`` attribute.
+    Predictions are made on a held-out test set that is used in neither ``fit``
+    nor ``update``.
 
     >>> from sklearn.datasets import load_diabetes
     >>> from sklearn.linear_model import LinearRegression
@@ -46,8 +48,13 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
     >>> from skpro.regression.residual import ResidualDouble
     >>>
     >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> # hold out a test set that is never used in fit or update
+    >>> X_rest, X_test, y_rest, y_test = train_test_split(
+    ...     X, y, test_size=0.2, random_state=42
+    ... )
+    >>> # split the rest into a fit batch and a later update batch
     >>> X_init, X_new, y_init, y_new = train_test_split(
-    ...     X, y, train_size=0.8, random_state=42
+    ...     X_rest, y_rest, train_size=0.75, random_state=42
     ... )
     >>>
     >>> # only update once at least N=32 new data points have been seen
@@ -62,7 +69,8 @@ class OnlineRefitEveryN(_DelegatedProbaRegressor):
     >>> _ = reg.update(X_new.iloc[16:48], y_new.iloc[16:48])
     >>> reg.n_seen_since_last_update_
     0
-    >>> y_pred_proba = reg.predict_proba(X_new)
+    >>> # predict on the held-out test set, unseen in fit or update
+    >>> y_pred_proba = reg.predict_proba(X_test)
     """
 
     _tags = {
