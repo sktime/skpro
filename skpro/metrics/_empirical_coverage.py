@@ -66,10 +66,10 @@ class EmpiricalCoverage(BaseProbaMetric):
     ...     ("Coverage", 0.9, "upper"): [4.0, 0.0, 3.0, 9.0, 1.5],
     ... })
     >>> coverage = EmpiricalCoverage()
-    >>> coverage(y_true, y_pred)  # doctest: +SKIP
+    >>> coverage(y_true, y_pred)
     0.6
     >>> coverage = EmpiricalCoverage(score_average=False)
-    >>> coverage(y_true, y_pred).to_numpy()  # doctest: +SKIP
+    >>> coverage(y_true, y_pred).to_numpy()
     array([0.6])
     """
 
