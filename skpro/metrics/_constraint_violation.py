@@ -69,8 +69,8 @@ class ConstraintViolation(BaseProbaMetric):
     ...     ("Coverage", 0.9, "upper"): [4.0, 0.0, 3.0, 9.0, 1.5],
     ... })
     >>> cv = ConstraintViolation()
-    >>> cv(y_true, y_pred)  # doctest: +SKIP
-    np.float64(0.3)
+    >>> float(cv(y_true, y_pred))
+    0.3
     >>> cv = ConstraintViolation(score_average=False)
     >>> cv(y_true, y_pred).to_numpy()
     array([0.3])
