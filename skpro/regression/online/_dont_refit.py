@@ -24,13 +24,28 @@ class OnlineDontRefit(_DelegatedProbaRegressor):
     ----------
     estimator_ : skpro regressor, descendant of BaseProbaRegressor
         clone of the regressor passed in the constructor, fitted on all data
+
+    Examples
+    --------
+    >>> from skpro.regression.online import OnlineDontRefit
+    >>> from skpro.regression.residual import ResidualDouble
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from sklearn.datasets import load_diabetes
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_update = X.iloc[:200], X.iloc[200:]
+    >>> y_train, y_update = y.iloc[:200], y.iloc[200:]
+    >>>
+    >>> reg_online = OnlineDontRefit(ResidualDouble(LinearRegression()))
+    >>> reg_online.fit(X_train, y_train)
+    OnlineDontRefit(...)
+    >>> reg_online = reg_online.update(X_update, y_update)  # no-op, does not refit
+    >>> y_pred = reg_online.predict(X_update)
+    >>> y_pred_proba = reg_online.predict_proba(X_update)
     """
 
     _tags = {
         "capability:update": False,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, estimator):
