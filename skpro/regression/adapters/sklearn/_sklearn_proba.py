@@ -26,14 +26,25 @@ class SklearnProbaReg(BaseProbaRegressor):
     inner_type : str, one of "pd.DataFrame", "np.ndarray", default="pd.DataFrame"
         Type of X passed to ``fit`` and ``predict`` methods of the wrapped estimator.
         Type of y passed to ``fit`` method of the wrapped estimator.
+
+    Examples
+    --------
+    ``SklearnProbaReg`` adapts a scikit-learn regressor that provides
+    predictive uncertainty to the ``skpro`` probabilistic regression interface.
+
+    >>> import pandas as pd
+    >>> from sklearn.gaussian_process import GaussianProcessRegressor
+    >>> from skpro.regression.adapters.sklearn import SklearnProbaReg
+    >>> X = pd.DataFrame({"x": [1, 2, 3]})
+    >>> y = pd.DataFrame({"y": [2, 4, 6]})
+    >>> reg = SklearnProbaReg(GaussianProcessRegressor())
+    >>> reg = reg.fit(X, y)
+    >>> y_pred = reg.predict_proba(X)
     """
 
     _tags = {
         "capability:multioutput": False,
         "capability:missing": True,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, estimator, inner_type="pd.DataFrame"):
