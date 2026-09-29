@@ -7,6 +7,14 @@ this allows to turn on/off differential testing (for shorter runtime)
     more precisely, only estimators whose class is in a module
     that has changed compared to the main branch
 by default, this is off, including for default local runs of pytest
+
+adds an --only_vm_estimators option to pytest
+this allows to turn on/off testing of estimators that require their own VM,
+    i.e., estimators with the tag "tests:vm" set to True
+"on" condition ensures that only such estimators are tested, and no others
+it is used in the VM based CI runs, to execute the pytest modules
+    listed in the "tests:specific" tag of the estimator
+by default, this is off, including for default local runs of pytest
 """
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
@@ -31,6 +39,11 @@ def pytest_addoption(parser):
         default=False,
         help="test only estimators from modules that have changed compared to main",
     )
+    parser.addoption(
+        "--only_vm_estimators",
+        default=False,
+        help="flag for test runs on VM - tests only estimators that require a VM run",
+    )
 
 
 def pytest_configure(config):
@@ -39,3 +52,5 @@ def pytest_configure(config):
 
     if config.getoption("--only_changed_modules") in [True, "True"]:
         _config.ONLY_CHANGED_MODULES = True
+    if config.getoption("--only_vm_estimators") in [True, "True"]:
+        _config.ONLY_VM_ESTIMATORS = True

@@ -208,6 +208,7 @@ class GLMRegressor(BaseProbaRegressor):
         # CI and test flags
         # -----------------
         "tests:skip_by_name": ["test_class_has_doctest_example"],
+        "tests:specific": ["skpro.regression.tests.test_glm"],
     }
 
     def _str_to_sm_family(self, dist, link):

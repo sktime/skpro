@@ -129,6 +129,7 @@ class GlumRegressor(BaseProbaRegressor):
         # CI and test flags
         # -----------------
         "tests:vm": True,
+        "tests:specific": ["skpro.regression.tests.test_glum"],
         "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
