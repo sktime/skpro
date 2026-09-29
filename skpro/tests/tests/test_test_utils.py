@@ -1,5 +1,6 @@
 """Tests for the test utilities."""
 
+import pytest
 from skbase.utils.dependencies import _check_estimator_deps
 
 from skpro.tests._config import EXCLUDE_ESTIMATORS
@@ -143,3 +144,83 @@ def test_run_test_for_class():
         assert reason == "False_no_change"
         assert reason_wdep == "False_no_change"
         assert reason_nodep == "False_no_change"
+
+
+def _make_dummy_with_tag(tag_value):
+    """Create a dummy object class with ``tests:specific`` set to ``tag_value``."""
+    from skpro.base import BaseObject
+
+    class DummyWithSpecificTests(BaseObject):
+        _tags = {"tests:specific": tag_value}
+
+    return DummyWithSpecificTests
+
+
+@pytest.mark.parametrize(
+    "tag_value",
+    [None, [], ["skpro.regression.tests.test_gam"]],
+    ids=["none", "empty", "populated"],
+)
+def test_get_estimator_specific_test_modules_valid(monkeypatch, tag_value):
+    """Test that valid tests:specific tag values are returned or resolve to None."""
+    import skpro.registry
+    from skpro.tests._test_vm import _get_estimator_specific_test_modules
+
+    cls = _make_dummy_with_tag(tag_value)
+    monkeypatch.setattr(skpro.registry, "craft", lambda cls_name: cls)
+
+    modules = _get_estimator_specific_test_modules("DummyWithSpecificTests")
+
+    # None and the empty list both mean "no estimator specific test modules"
+    if tag_value is None or tag_value == []:
+        assert modules is None
+    else:
+        assert modules == tag_value
+
+
+@pytest.mark.parametrize(
+    "tag_value",
+    [
+        "skpro.regression.tests.test_gam",  # str instead of list of str
+        [42],  # not a str
+        ["not_skpro.tests.test_foo"],  # not an skpro module path
+        ["skpro.regression.tests.test_does_not_exist"],  # module does not exist
+    ],
+    ids=["str_not_list", "not_str", "not_skpro_module", "missing_module"],
+)
+def test_get_estimator_specific_test_modules_invalid(monkeypatch, tag_value):
+    """Test that invalid tests:specific tag values are rejected."""
+    import skpro.registry
+    from skpro.tests._test_vm import _get_estimator_specific_test_modules
+
+    cls = _make_dummy_with_tag(tag_value)
+    monkeypatch.setattr(skpro.registry, "craft", lambda cls_name: cls)
+
+    with pytest.raises(AssertionError):
+        _get_estimator_specific_test_modules("DummyWithSpecificTests")
+
+
+def test_tests_specific_tag_modules_resolve():
+    """Test that tests:specific tags in the package point to existing modules.
+
+    This guards against typos in the tag, which would otherwise surface
+    only in the VM based CI runs of the estimator.
+    """
+    from skpro.registry import all_objects
+    from skpro.tests._test_vm import _get_estimator_specific_test_modules
+
+    objs = all_objects(return_names=True)
+
+    tagged = {
+        name: obj.get_class_tag("tests:specific", None)
+        for name, obj in objs
+        if obj.get_class_tag("tests:specific", None)
+    }
+
+    # the mechanism is of no use if no object populates the tag
+    assert len(tagged) > 0, "no object in skpro populates the tests:specific tag"
+
+    for name in tagged:
+        # raises AssertionError if any module path is invalid or does not exist
+        modules = _get_estimator_specific_test_modules(name)
+        assert modules == tagged[name]

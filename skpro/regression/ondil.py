@@ -43,6 +43,7 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         "capability:multioutput": False,
         "capability:missing": True,
         "tests:vm": True,
+        "tests:specific": ["skpro.regression.tests.test_ondil"],
         "capability:update": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",

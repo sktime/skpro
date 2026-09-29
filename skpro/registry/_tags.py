@@ -203,6 +203,43 @@ class tests__vm(_BaseTag):
     }
 
 
+class tests__specific(_BaseTag):
+    """Object specific pytest test modules.
+
+    Part of packaging metadata for the object, used only in ``skpro`` CI.
+
+    - String name: ``"tests:specific"``
+    - Private tag, developer and framework facing
+    - Values: list of str, or None
+    - Example: ``["skpro.regression.tests.test_gam"]``
+    - Default: ``None``
+
+    ``skpro``'s CI framework regularly tests estimators in pull requests,
+    usually only estimators that have changed.
+
+    The ``tests:specific`` tag of an object is a list of strings,
+    it specifies modules that contain estimator specific pytest tests.
+
+    Setting this tag has two effects:
+
+    * testing the estimator is triggered whenever any listed module has changed,
+      in addition to the other test trigger conditions, e.g., via ``tests:libs``.
+    * CI VM runs of estimators with ``tests:vm`` set to ``True`` execute the listed
+      pytest test modules for that estimator, see
+      ``skpro.tests._test_vm._get_estimator_specific_test_modules``.
+
+    The ``tests:specific`` tag is not used in user facing checks, error messages,
+    or recommended build processes otherwise.
+    """
+
+    _tags = {
+        "tag_name": "tests:specific",
+        "parent_type": "object",
+        "tag_type": ("list", "str"),
+        "short_descr": "object specific pytest modules for trigger and execution",
+    }
+
+
 class tests__skip_by_name(_BaseTag):
     """Test names to skip on CI."""
 
