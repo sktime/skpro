@@ -50,6 +50,23 @@ class SPLL(BaseSurvDistrMetric):
     ----------
     .. [1] Daley DJ, Vere-Jones. An Introduction to the Theory of Point Processes,
         2nd Edition, 2003, Springer, New York. Formula 7.1.2.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from skpro.distributions import Normal
+    >>> from skpro.metrics.survival import SPLL
+    >>> y_true = pd.DataFrame({"y": [2.0, 3.5, 1.0, 4.0]})
+    >>> C_true = pd.DataFrame({"y": [0, 1, 0, 1]})  # 1 = censored, 0 = event observed
+    >>> y_pred = Normal(mu=[[2.5], [3.0], [1.5], [3.5]], sigma=1.0, columns=["y"])
+    >>> spll = SPLL()
+    >>> spll(y_true, y_pred, C_true=C_true)  # doctest: +SKIP
+    1.1099251473991454
+    >>> spll.evaluate_by_index(y_true, y_pred, C_true=C_true).to_numpy()
+    array([[1.04393853],
+           [1.17591176],
+           [1.04393853],
+           [1.17591176]])
     """
 
     _tags = {
@@ -57,9 +74,6 @@ class SPLL(BaseSurvDistrMetric):
         "capability:survival": True,
         "scitype:y_pred": "pred_proba",
         "lower_is_better": True,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(self, multioutput="uniform_average", multivariate=False):
