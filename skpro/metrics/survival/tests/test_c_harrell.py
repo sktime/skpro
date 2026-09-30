@@ -56,3 +56,45 @@ def test_charrell_logic(concordant, pass_c, normalization):
 
     if normalization == "index":
         assert (res_by_index == concordant).all().all()
+
+
+def test_charrell_score_options():
+    """Test score parameter options for ConcordanceHarrell."""
+    from skpro.distributions import Normal
+    from skpro.metrics.survival import ConcordanceHarrell
+
+    y_true = pd.DataFrame({"time": [2.0, 4.0, 6.0, 8.0]})
+    y_pred = Normal(mu=[[3.0], [4.5], [7.0], [5.0]], sigma=1.0, columns=["time"])
+
+    # score='median' should work and produce the same result as ppf at 0.5
+    res_median = ConcordanceHarrell(score="median")(y_true, y_pred)
+    res_ppf = ConcordanceHarrell(score="ppf", score_args={"p": 0.5})(y_true, y_pred)
+    res_quantile = ConcordanceHarrell(
+        score="quantile", score_args={"alpha": 0.5}
+    )(y_true, y_pred)
+    res_mean = ConcordanceHarrell(score="mean")(y_true, y_pred)
+
+    assert res_median == res_ppf
+    assert res_median == res_quantile
+    assert res_median == res_mean
+
+
+def test_charrell_invalid_score():
+    """Test that invalid score method raises an informative AttributeError."""
+    from skpro.distributions import Normal
+    from skpro.metrics.survival import ConcordanceHarrell
+
+    y_true = pd.DataFrame({"time": [2.0, 4.0, 6.0, 8.0]})
+    y_pred = Normal(mu=[[3.0], [4.5], [7.0], [5.0]], sigma=1.0, columns=["time"])
+
+    with pytest.raises(AttributeError, match="Valid score options include"):
+        ConcordanceHarrell(score="nonexistent_score")(y_true, y_pred)
+
+
+def test_base_distribution_median():
+    """Test median method on BaseDistribution."""
+    from skpro.distributions import Normal
+
+    dist = Normal(mu=[[1.0], [2.0]], sigma=1.0, columns=["val"])
+    assert hasattr(dist, "median")
+    pd.testing.assert_frame_equal(dist.median(), dist.ppf(0.5))
