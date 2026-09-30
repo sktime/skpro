@@ -45,10 +45,16 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
     score : str, optional, default='mean'
         The type of inverse risk score to use.
         Calls predict_proba, then the method of the same name as `score`.
-        Examples include 'mean', 'median', 'quantile', 'cdf'.
+        Examples include:
+
+        * 'mean': predictive mean survival time (default)
+        * 'median': predictive median survival time
+        * 'quantile': predictive quantile (requires `score_args`, e.g., {'alpha': 0.5})
+        * 'ppf': percent point function / inverse CDF (requires `score_args`, e.g., {'p': 0.5})
+        * 'cdf': cumulative distribution function (requires `score_args`, e.g., {'x': 10.0})
 
     score_args : dict, optional, default=None
-        Additional arguments to pass to the score method, e.g., quantiles.
+        Additional arguments to pass to the score method, e.g., quantiles or evaluation points.
 
     higher_score_is_lower_risk : bool, optional, default=True
         If True, higher score is considered lower risk, and vice versa,
@@ -150,7 +156,28 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
         else:
             C_true = np.zeros_like(y_true)
 
-        risk_scores = getattr(y_pred, self.score)(**score_args)
+        if self.score == "median":
+            if hasattr(y_pred, "median"):
+                risk_scores = y_pred.median(**score_args)
+            elif hasattr(y_pred, "ppf"):
+                score_args_inner = {"p": 0.5, **score_args}
+                risk_scores = y_pred.ppf(**score_args_inner)
+            elif hasattr(y_pred, "quantile"):
+                score_args_inner = {"alpha": 0.5, **score_args}
+                risk_scores = y_pred.quantile(**score_args_inner)
+            else:
+                raise AttributeError(
+                    f"{type(y_pred).__name__} has neither 'median', 'ppf', nor 'quantile' method."
+                )
+        elif hasattr(y_pred, self.score):
+            risk_scores = getattr(y_pred, self.score)(**score_args)
+        else:
+            raise AttributeError(
+                f"Metric '{self.__class__.__name__}' was configured with score='{self.score}', "
+                f"but {type(y_pred).__name__} does not have a '{self.score}' method. "
+                "Valid score options include methods of the predictive distribution, "
+                "such as 'mean', 'median', 'quantile', 'ppf', or 'cdf' (with appropriate score_args)."
+            )
         if not self.higher_score_is_lower_risk:
             risk_scores = -risk_scores
         risk_scores = risk_scores.to_numpy()
@@ -230,5 +257,6 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
         params1 = {}
         params2 = {"score": "quantile", "score_args": {"alpha": 0.5}}
         params3 = {"normalization": "index"}
+        params4 = {"score": "median"}
 
-        return [params1, params2, params3]
+        return [params1, params2, params3, params4]
