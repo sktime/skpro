@@ -87,6 +87,65 @@ def test_proba_subsetters_at_iat():
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
 )
+def test_proba_subsetters_missing_label_raises():
+    """Test that loc and at raise KeyError for labels not in index or columns.
+
+    Previously, missing labels were silently mapped to the last row or column.
+    """
+    from skpro.distributions.normal import Normal
+
+    n = Normal(mu=[[0, 1], [2, 3], [4, 5]], sigma=1, columns=["foo", "bar"])
+
+    with pytest.raises(KeyError):
+        n.loc[[0, 42]]
+    with pytest.raises(KeyError):
+        n.loc[:, ["foo", "baz"]]
+    with pytest.raises(KeyError):
+        n.loc[42, "foo"]
+    with pytest.raises(KeyError):
+        n.at[42, "foo"]
+    with pytest.raises(KeyError):
+        n.at[0, "baz"]
+
+    # labels that are present still work
+    assert n.loc[[2], ["bar"]].mu[0, 0] == 5
+    assert n.at[2, "foo"].mu == 4
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_transformed_distribution_index_differs_from_inner():
+    """Test TransformedDistribution with index/columns different from the inner one.
+
+    Entries correspond to the inner distribution by position, so ppf and cdf
+    must not depend on the labels of the inner distribution.
+    """
+    from skpro.distributions.normal import Normal
+    from skpro.distributions.trafo import TransformedDistribution
+
+    mu = np.array([[1.0, 2.0], [3.0, 4.0]])
+    inner = Normal(mu=mu, sigma=1, columns=["c", "d"])
+    d = TransformedDistribution(
+        distribution=inner,
+        transform=lambda x: 2 * x,
+        inverse_transform=lambda x: x / 2,
+        index=pd.Index([1, 2]),
+        columns=pd.Index(["a", "b"]),
+    )
+
+    ppf = d.ppf(0.5)
+    assert ppf.index.equals(d.index)
+    assert ppf.columns.equals(d.columns)
+    np.testing.assert_allclose(ppf.values, 2 * mu)
+    np.testing.assert_allclose(d.cdf(2 * mu).values, 0.5)
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_proba_index_coercion():
     """Test index coercion for BaseDistribution."""
     from skpro.distributions.normal import Normal
