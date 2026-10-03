@@ -636,13 +636,16 @@ class QPD_U(BaseDistribution):
         gamma = self._qpd_params["gamma"]
         delta = self._qpd_params["delta"]
         kappa = self._qpd_params["kappa"]
+        sym = self._qpd_params["symmetric"]
 
         phi = self.phi
 
         width = phi.ppf(1 - alpha)
         qs = phi.ppf(p) / width
 
-        ppf_arr = xi + kappa * np.sinh((qs - gamma) / delta)
+        # in the symmetric case, sinh is replaced by its limit, the identity
+        in_sinh = (qs - gamma) / delta
+        ppf_arr = xi + kappa * np.where(sym, in_sinh, np.sinh(in_sinh))
         return ppf_arr
 
     def _pdf(self, x: np.ndarray):
@@ -652,16 +655,20 @@ class QPD_U(BaseDistribution):
         gamma = self._qpd_params["gamma"]
         delta = self._qpd_params["delta"]
         kappa = self._qpd_params["kappa"]
+        sym = self._qpd_params["symmetric"]
 
         phi = self.phi
 
         width = phi.ppf(1 - alpha)
 
-        qs = gamma + delta * np.arcsinh((x - xi) / kappa)
-        qs_der = delta * arcsinh_der((x - xi) / kappa) / kappa
+        # in the symmetric case, arcsinh is replaced by its limit, the identity
+        in_arcsinh = (x - xi) / kappa
+        qs = gamma + delta * np.where(sym, in_arcsinh, np.arcsinh(in_arcsinh))
+        qs_der = delta * np.where(sym, 1.0, arcsinh_der(in_arcsinh)) / kappa
 
-        # cdf_arr = phi.cdf(qs * width)
-        pdf_arr = phi.pdf(qs * width) * qs_der
+        # cdf_arr = phi.cdf(qs * width), so by the chain rule
+        # the derivative of the inner term is qs_der * width
+        pdf_arr = phi.pdf(qs * width) * qs_der * width
         return pdf_arr
 
     def _cdf(self, x: np.ndarray):
@@ -671,11 +678,15 @@ class QPD_U(BaseDistribution):
         gamma = self._qpd_params["gamma"]
         delta = self._qpd_params["delta"]
         kappa = self._qpd_params["kappa"]
+        sym = self._qpd_params["symmetric"]
 
         phi = self.phi
 
         width = phi.ppf(1 - alpha)
-        qs = gamma + delta * np.arcsinh((x - xi) / kappa)
+
+        # in the symmetric case, arcsinh is replaced by its limit, the identity
+        in_arcsinh = (x - xi) / kappa
+        qs = gamma + delta * np.where(sym, in_arcsinh, np.arcsinh(in_arcsinh))
 
         cdf_arr = phi.cdf(qs * width)
         return cdf_arr
@@ -827,6 +838,9 @@ def _prep_qpd_vars(
         params["xi"] = xi
     if mode == "U":
         params["gamma"] = -np.sign(LH2B)
+        # symmetric SPT, the limit of the U distribution is linear in phi.ppf,
+        # with delta = 1 and kappa = H - B as set above
+        params["symmetric"] = LH2B == 0
 
     return params
 
