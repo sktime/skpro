@@ -660,8 +660,9 @@ class QPD_U(BaseDistribution):
         qs = gamma + delta * np.arcsinh((x - xi) / kappa)
         qs_der = delta * arcsinh_der((x - xi) / kappa) / kappa
 
-        # cdf_arr = phi.cdf(qs * width)
-        pdf_arr = phi.pdf(qs * width) * qs_der
+        # cdf_arr = phi.cdf(qs * width), so by the chain rule
+        # the derivative of the inner term is qs_der * width
+        pdf_arr = phi.pdf(qs * width) * qs_der * width
         return pdf_arr
 
     def _cdf(self, x: np.ndarray):
