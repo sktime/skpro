@@ -254,6 +254,14 @@ class HistogramQPD(_DelegatedDistribution):
             columns=subs_colidx,
         )
 
+    def _iat(self, rowidx=None, colidx=None):
+        # HistogramQPD has no scalar parametrization, as quantiles are a frame
+        # indexed by quantile point and instance, so return the scalar entry
+        # of the distribution it delegates to
+        if rowidx is None or colidx is None:
+            raise ValueError("iat method requires both row and column index")
+        return self.delegate_.iat[rowidx, colidx]
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
