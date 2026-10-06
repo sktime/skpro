@@ -1,4 +1,5 @@
 """Concrete performance metrics for probabilistic supervised regression."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
@@ -36,13 +37,22 @@ class LogLoss(BaseDistrMetric):
           the log-loss is computed for entire row, results one score per row
         * if False, is univariate log-loss:
           the log-loss is computed per variable marginal, results in many scores per row
-    """
 
-    _tags = {
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
-    }
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>> from skpro.regression.naive import NaiveProbaRegressor
+    >>> from skpro.metrics import LogLoss
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
+    >>> reg = NaiveProbaRegressor()
+    >>> reg.fit(X_train, y_train)
+    NaiveProbaRegressor()
+    >>> y_pred_proba = reg.predict_proba(X_test)
+    >>> loss = LogLoss()
+    >>> loss_value = loss(y_test, y_pred_proba)
+    """
 
     def __init__(self, multioutput="uniform_average", multivariate=False):
         self.multivariate = multivariate
