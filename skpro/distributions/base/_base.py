@@ -908,7 +908,7 @@ class BaseDistribution(BaseObject):
 
     @staticmethod
     def _approx_derivative(x, fun, h=1e-7):
-        """Approximate the derivative of the log PDF using finite differences.
+        """Approximate the derivative of a function using finite differences.
 
         Uses sixth-degree central difference formula.
 
@@ -924,12 +924,12 @@ class BaseDistribution(BaseObject):
         Returns
         -------
         ``pandas.DataFrame`` or 2D ``np.ndarray``
-            The approximate derivative of the log PDF at the given points.
+            The approximate derivative of ``fun`` at the given points.
         """
         offsets = np.array([-3, -2, -1, 1, 2, 3]) * h
         coeffs = np.array([-1, 9, -45, 45, -9, 1]) / 60.0
         shifted_vals = [fun(x + offset) for offset in offsets]
-        return sum(c * v for c, v in zip(coeffs, shifted_vals))
+        return sum(c * v for c, v in zip(coeffs, shifted_vals)) / h
 
     def pmf(self, x):
         r"""Probability mass function.

@@ -363,3 +363,35 @@ def test_pmf_support_method():
     support = delta._pmf_support(3, 4)
     assert isinstance(support, np.ndarray)
     assert len(support) == 0
+
+
+def test_approx_derivative():
+    """Test that ``_approx_derivative`` returns the derivative, not derivative * h."""
+    from skpro.distributions.base import BaseDistribution
+
+    x = np.array([[0.5, 1.0], [-1.5, 2.0]])
+    for h in [1e-7, 1e-4]:
+        res = BaseDistribution._approx_derivative(x, np.sin, h=h)
+        np.testing.assert_allclose(res, np.cos(x), rtol=1e-5, atol=1e-6)
+
+
+def test_pdf_approximated_from_cdf():
+    """Test that the cdf-derivative fallback of ``pdf`` agrees with the exact pdf.
+
+    ``TransformedDistribution`` with ``inverse_transform`` has an exact ``cdf``
+    but no ``pdf``, so ``pdf`` is approximated by differentiating the ``cdf``.
+    """
+    from skpro.distributions.normal import Normal
+    from skpro.distributions.trafo import TransformedDistribution
+
+    mu = [[1, 2], [3, 4]]
+    n = Normal(mu=mu, sigma=1)
+    d = TransformedDistribution(
+        n, transform=lambda x: 2 * x, inverse_transform=lambda x: x / 2
+    )
+    expected = Normal(mu=[[2, 4], [6, 8]], sigma=2)
+
+    x = pd.DataFrame([[1.5, 3.0], [5.0, 9.0]])
+    with pytest.warns(UserWarning):
+        res = d.pdf(x)
+    np.testing.assert_allclose(res, expected.pdf(x), rtol=1e-4)
