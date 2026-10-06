@@ -49,6 +49,62 @@ class Delta(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    _formula_docs = {
+        "pmf": r"""
+    The probability mass function is given by:
+
+    .. math::
+        f(x) = \begin{cases} 1 & x = c \\ 0 & x \neq c \end{cases}
+    """,
+        #
+        "log_pmf": r"""
+    The log-probability mass function is given by:
+
+    .. math::
+        \log f(x) = \begin{cases} 0 & x = c \\ -\infty & x \neq c \end{cases}
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = \begin{cases} 0 & x < c \\ 1 & x \geq c \end{cases}
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p) = c, \quad \text{for all } p \in (0, 1)
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = c
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = 0
+    """,
+        #
+        "energy": r"""
+    The self-energy is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = 0
+
+    The energy with respect to a constant ``x`` is:
+
+    .. math::
+        \mathbb{E}[|X - x|] = |c - x|
+    """,
+    }
+
     def __init__(self, c, index=None, columns=None):
         self.c = c
         if index is None and hasattr(c, "index") and isinstance(c.index, pd.Index):
