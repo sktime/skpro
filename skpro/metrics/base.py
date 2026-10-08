@@ -251,15 +251,21 @@ class BaseProbaMetric(BaseObject):
             must have same index and columns as ``y_true``.
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
         """
+        multioutput = self.multioutput
         n = y_true.shape[0]
-        out_series = pd.Series(index=y_pred.index)
+        if isinstance(multioutput, str) and multioutput == "raw_values":
+            out_series = pd.DataFrame(
+                index=y_true.index, columns=y_true.columns, dtype="float64"
+            )
+        else:
+            out_series = pd.Series(index=y_true.index, dtype="float64")
         try:
-            x_bar = self.evaluate(y_true, y_pred, self.multioutput, **kwargs)
+            x_bar = self.evaluate(y_true, y_pred, **kwargs)
             for i in range(n):
-                out_series[i] = n * x_bar - (n - 1) * self.evaluate(
-                    np.vstack((y_true[:i, :], y_true[i + 1 :, :])),  # noqa
-                    np.vstack((y_pred[:i, :], y_pred[i + 1 :, :])),  # noqa
-                    self.multioutput,
+                idx = y_true.index[i]
+                out_series.loc[idx] = n * x_bar - (n - 1) * self.evaluate(
+                    y_true.drop(idx),
+                    y_pred.drop(idx),
                     **kwargs,
                 )
             return out_series
