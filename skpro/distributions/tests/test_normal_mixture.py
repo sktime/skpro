@@ -120,3 +120,86 @@ def test_energy_returns_non_negative_dataframe():
     assert e_x.shape == (1, 1)
     assert e_self.iloc[0, 0] >= 0
     assert e_x.iloc[0, 0] >= 0
+
+
+def _energy_by_quadrature(pi, mu, sigma):
+    """E|X - Y| for i.i.d. mixture draws, as 2 * integral of F (1 - F)."""
+    from scipy import integrate, stats
+
+    def cdf(x):
+        return sum(p * stats.norm.cdf(x, m, s) for p, m, s in zip(pi, mu, sigma))
+
+    value, _ = integrate.quad(lambda x: cdf(x) * (1 - cdf(x)), -np.inf, np.inf)
+    return 2 * value
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
+@pytest.mark.parametrize(
+    "pi, mu, sigma",
+    [
+        ([1.0], [0.0], [1.0]),
+        ([0.4, 0.6], [0.0, 3.0], [1.0, 2.0]),
+        ([0.5, 0.5], [-10.0, 10.0], [1.0, 1.0]),
+        ([0.2, 0.3, 0.5], [-1.0, 0.5, 4.0], [0.5, 2.0, 1.0]),
+    ],
+)
+def test_energy_matches_quadrature_scalar(pi, mu, sigma):
+    """Energy of self should be E|X - Y|, including the component means."""
+    d = NormalMixture(pi=np.array(pi), mu=np.array(mu), sigma=np.array(sigma))
+
+    assert np.isclose(float(d.energy()), _energy_by_quadrature(pi, mu, sigma))
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
+def test_energy_single_component_is_normal_energy():
+    """One component is a Normal, whose energy is 2 sigma / sqrt(pi)."""
+    d = NormalMixture(pi=np.array([1.0]), mu=np.array([3.0]), sigma=np.array([2.5]))
+
+    assert np.isclose(float(d.energy()), 2 * 2.5 / np.sqrt(np.pi))
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
+def test_energy_rowwise_weights_and_outputs():
+    """Energy sums over outputs and uses each row's own weights and components."""
+    pi = np.array([[0.3, 0.7], [0.5, 0.5]])
+    mu = np.array([[[0, 1], [3, 4]], [[1, 2], [4, 5]]])
+    sigma = np.array([[[1, 2], [1, 1]], [[0.5, 1], [2, 1]]])
+
+    d = NormalMixture(pi=pi, mu=mu, sigma=sigma)
+
+    expected = [
+        sum(_energy_by_quadrature(pi[i], mu[i, :, j], sigma[i, :, j]) for j in range(2))
+        for i in range(2)
+    ]
+    assert np.allclose(np.asarray(d.energy()).ravel(), expected)
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(NormalMixture),
+    reason="run test only if tested object has changed",
+)
+def test_crps_from_energy_matches_quadrature():
+    """CRPS = E|X - y| - E|X - Y| / 2 should match its defining integral."""
+    from scipy import integrate, stats
+
+    pi, mu, sigma, y = [0.4, 0.6], [0.0, 3.0], [1.0, 2.0], 1.0
+    d = NormalMixture(pi=np.array(pi), mu=np.array(mu), sigma=np.array(sigma))
+
+    crps = float(d.energy(y)) - float(d.energy()) / 2
+
+    def cdf(x):
+        return sum(p * stats.norm.cdf(x, m, s) for p, m, s in zip(pi, mu, sigma))
+
+    expected, _ = integrate.quad(
+        lambda x: (cdf(x) - (x >= y)) ** 2, -40, 40, points=[y], limit=300
+    )
+    assert np.isclose(crps, expected)
