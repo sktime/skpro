@@ -379,16 +379,23 @@ class NormalMixture(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             energy values w.r.t. the given points
         """
-        pi = self._pi[:, :, np.newaxis]
+        pi = self._pi
+        mu = self._mu
         sigma = self._sigma
 
         # For mixture of normals: E[|X-Y|] = sum_k sum_l pi_k pi_l E[|N_k - N_l|]
-        # E[|N(mu1,sig1) - N(mu2,sig2)|] = 2*sqrt(sig1^2 + sig2^2)/sqrt(pi)
-        # when mu1=mu2 (simplified for same means)
+        # N_k - N_l is normal with mean d = mu_k - mu_l and variance
+        # s^2 = sigma_k^2 + sigma_l^2, so E[|N_k - N_l|] is the mean of a folded
+        # normal: d * erf(d / (s * sqrt(2))) + s * sqrt(2 / pi) * exp(-d^2 / (2 s^2))
+        # arrays below are (n_samples, n_components, n_components, n_outputs)
+        d = mu[:, :, np.newaxis, :] - mu[:, np.newaxis, :, :]
+        s = np.sqrt(sigma[:, :, np.newaxis, :] ** 2 + sigma[:, np.newaxis, :, :] ** 2)
+        weights = (pi[:, :, np.newaxis] * pi[:, np.newaxis, :])[..., np.newaxis]
 
-        # Approximate using mean variance across components
-        avg_sigma_sq = np.sum(pi * sigma**2, axis=1)
-        energy_arr = 2 * np.sqrt(2 * avg_sigma_sq / np.pi)
+        pair_energy = d * erf(d / (s * np.sqrt(2))) + s * np.sqrt(2 / np.pi) * np.exp(
+            -(d**2) / (2 * s**2)
+        )
+        energy_arr = np.sum(weights * pair_energy, axis=(1, 2))
 
         if self.ndim == 0:
             return float(np.sum(energy_arr))
