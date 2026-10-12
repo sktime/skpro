@@ -24,8 +24,8 @@ class QPD_Johnson(_DelegatedDistribution):
     A Johnson QPD distribution is parameterized by a symmetric-percentile triplet (SPT),
     at quantiles alpha, 0.5, and 1-alpha, respectively.
 
-    see https://repositories.lib.utexas.edu/bitstream/handle/2152
-        /63037/HADLOCK-DISSERTATION-2017.pdf
+    see
+    https://repositories.lib.utexas.edu/bitstream/handle/2152/63037/HADLOCK-DISSERTATION-2017.pdf
     Parameter names are as in the reference, except for the parameter lambda,
     which is renamed to kappa, as lambda is a reserved keyword in python.
 
@@ -172,8 +172,8 @@ class QPD_Johnson(_DelegatedDistribution):
 class QPD_S(BaseDistribution):
     """Johnson Quantile-Parameterized Distributions with semi-bounded mode.
 
-    see https://repositories.lib.utexas.edu/bitstream/handle/2152
-        /63037/HADLOCK-DISSERTATION-2017.pdf
+    see
+    https://repositories.lib.utexas.edu/bitstream/handle/2152/63037/HADLOCK-DISSERTATION-2017.pdf
     (Due to the Python keyword, the parameter lambda from
     this reference is named kappa below.)
     A distribution is parameterized by a symmetric-percentile triplet (SPT).
@@ -359,8 +359,8 @@ class QPD_S(BaseDistribution):
 class QPD_B(BaseDistribution):
     """Johnson Quantile-Parameterized Distributions with bounded mode.
 
-    see https://repositories.lib.utexas.edu/bitstream/handle/2152
-        /63037/HADLOCK-DISSERTATION-2017.pdf
+    see
+    https://repositories.lib.utexas.edu/bitstream/handle/2152/63037/HADLOCK-DISSERTATION-2017.pdf
     (Due to the Python keyword, the parameter lambda from
     this reference is named kappa below).
     A distribution is parameterized by a symmetric-percentile triplet (SPT).
@@ -549,8 +549,8 @@ class QPD_B(BaseDistribution):
 class QPD_U(BaseDistribution):
     """Johnson Quantile-Parameterized Distributions with unbounded mode.
 
-    see https://repositories.lib.utexas.edu/bitstream/handle/2152
-        /63037/HADLOCK-DISSERTATION-2017.pdf
+    see
+    https://repositories.lib.utexas.edu/bitstream/handle/2152/63037/HADLOCK-DISSERTATION-2017.pdf
     (Due to the Python keyword, the parameter lambda from
     this reference is named kappa below).
     A distribution is parameterized by a symmetric-percentile triplet (SPT).

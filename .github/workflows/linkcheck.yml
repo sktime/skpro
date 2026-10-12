@@ -54,6 +54,22 @@ jobs:
       - name: Run sphinx linkcheck
         run: python -m sphinx -b linkcheck -j auto docs/source docs/_build/linkcheck
 
+      - name: Report broken links
+        if: failure()
+        shell: bash
+        run: |
+          report=docs/_build/linkcheck/output.txt
+          broken=$(grep -F '[broken]' "$report" || true)
+          if [ -z "$broken" ]; then
+            echo "No broken links in $report, see the log of the linkcheck step."
+            exit 0
+          fi
+          echo "## Broken links" >> "$GITHUB_STEP_SUMMARY"
+          while IFS= read -r line; do
+            echo "::error title=Broken link::$line"
+            echo "- \`$line\`" >> "$GITHUB_STEP_SUMMARY"
+          done <<< "$broken"
+
       - name: Upload linkcheck report
         if: always()
         uses: actions/upload-artifact@v7
