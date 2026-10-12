@@ -58,14 +58,27 @@ class ConstraintViolation(BaseProbaMetric):
         Can be specified if no explicit coverages are present in the direct use of
         the metric, for instance in benchmarking via ``evaluate``, or tuning
         via ``ForecastingGridSearchCV``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from skpro.metrics import ConstraintViolation
+    >>> y_true = pd.Series([3, -0.5, 2, 7, 2])
+    >>> y_pred = pd.DataFrame({
+    ...     ("Coverage", 0.9, "lower"): [2.5, -2.0, 1.0, 8.0, 0.0],
+    ...     ("Coverage", 0.9, "upper"): [4.0, 0.0, 3.0, 9.0, 1.5],
+    ... })
+    >>> cv = ConstraintViolation()
+    >>> float(cv(y_true, y_pred))
+    0.3
+    >>> cv = ConstraintViolation(score_average=False)
+    >>> cv(y_true, y_pred).to_numpy()
+    array([0.3])
     """
 
     _tags = {
         "scitype:y_pred": "pred_interval",
         "lower_is_better": True,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(
