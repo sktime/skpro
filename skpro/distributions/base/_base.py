@@ -408,11 +408,19 @@ class BaseDistribution(BaseObject):
         arr = np.array(val)
         # if len(arr.shape) == 0:
         # do nothing with arr
+        # an axis of length 1 is broadcast over the rows or columns of self,
+        # so it is repeated by the subsetting, rather than indexed by position
         if len(arr.shape) == 2 and rowidx is not None:
+            if arr.shape[0] == 1:
+                rowidx = _broadcast_index(rowidx, self.shape[0])
             arr = arr[rowidx, :]
         if len(arr.shape) == 1 and colidx is not None:
+            if arr.shape[0] == 1:
+                colidx = _broadcast_index(colidx, self.shape[1])
             arr = arr[colidx]
         if len(arr.shape) >= 2 and colidx is not None:
+            if arr.shape[1] == 1:
+                colidx = _broadcast_index(colidx, self.shape[1])
             arr = arr[:, colidx]
         if np.issubdtype(arr.dtype, np.integer):
             arr = arr.astype("float")
@@ -2231,6 +2239,21 @@ def _prod_multiindex(ix1, ix2):
 def is_scalar_notnone(obj):
     """Check if obj is scalar and not None."""
     return obj is not None and np.isscalar(obj)
+
+
+def _broadcast_index(idx, size):
+    """Index into a length 1 axis, picking as many entries as ``idx`` does.
+
+    Parameters
+    ----------
+    idx : scalar, slice, or array-like
+        index into an axis of length ``size``
+    size : int
+        length of the axis of the distribution that ``idx`` indexes
+    """
+    if np.isscalar(idx):
+        return 0
+    return np.zeros(len(np.arange(size)[idx]), dtype=int)
 
 
 def _get_first_argname(fun):
