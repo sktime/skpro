@@ -65,6 +65,7 @@ These tags are typically used for typing, packaging and documentation purposes.
     authors
     python_version
     python_dependencies
+    env_marker
     python_dependencies_alias
     license_type
 
