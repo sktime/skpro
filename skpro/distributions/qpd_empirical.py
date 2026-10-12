@@ -145,6 +145,17 @@ class QPD_Empirical(Empirical):
             columns=subs_colidx,
         )
 
+    def _iat(self, rowidx=None, colidx=None):
+        if rowidx is None or colidx is None:
+            raise ValueError("iat method requires both row and column index")
+        quantiles_subset = self.iloc[[rowidx], [colidx]].quantiles
+
+        # scalar case: quantiles indexed by the quantile points only
+        levels_to_drop = list(range(1, quantiles_subset.index.nlevels))
+        quantiles_subset = quantiles_subset.droplevel(levels_to_drop)
+
+        return QPD_Empirical(quantiles_subset, time_indep=self.time_indep)
+
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return testing parameter settings for the estimator."""
