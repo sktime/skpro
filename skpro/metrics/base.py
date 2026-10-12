@@ -43,6 +43,7 @@ class BaseProbaMetric(BaseObject):
         "reserved_params": ["multioutput", "score_average"],
         "scitype:y_pred": "pred_proba",
         "lower_is_better": True,
+        "tests:specific": [],
     }
 
     def __init__(self, multioutput="uniform_average", score_average=True):
@@ -419,6 +420,7 @@ class BaseDistrMetric(BaseProbaMetric):
         "object_type": ["metric", "metric_distr"],  # type of object
         "scitype:y_pred": "pred_proba",
         "lower_is_better": True,
+        "tests:specific": [],
     }
 
     def evaluate(self, y_true, y_pred, **kwargs):
@@ -574,7 +576,7 @@ class BaseSurvDistrMetric(BaseDistrMetric):
     Same as BaseSurvDistrMetric, except for tag set and docstring overrides.
     """
 
-    _tags = {"capability:survival": True}
+    _tags = {"capability:survival": True, "tests:specific": []}
 
     def evaluate(self, y_true, y_pred, **kwargs):
         """Evaluate the  metric on given inputs.
