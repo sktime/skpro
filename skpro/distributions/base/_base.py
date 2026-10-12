@@ -318,11 +318,11 @@ class BaseDistribution(BaseObject):
                 keys, pd.MultiIndex
             )
             if not is_multi_mismatch:
-                return index.get_indexer(keys)
+                return _check_indexer_found(index.get_indexer(keys), keys)
 
         # regular index, not multiindex
         if not isinstance(index, pd.MultiIndex):
-            return index.get_indexer_for(keys)
+            return _check_indexer_found(index.get_indexer_for(keys), keys)
 
         # if isinstance(index, pd.MultiIndex):
 
@@ -345,11 +345,13 @@ class BaseDistribution(BaseObject):
 
     def _at(self, rowidx=None, colidx=None):
         if rowidx is not None:
-            row_iloc = self.index.get_indexer_for([rowidx])[0]
+            row_iloc = self.index.get_indexer_for([rowidx])
+            row_iloc = _check_indexer_found(row_iloc, [rowidx])[0]
         else:
             row_iloc = None
         if colidx is not None:
-            col_iloc = self.columns.get_indexer_for([colidx])[0]
+            col_iloc = self.columns.get_indexer_for([colidx])
+            col_iloc = _check_indexer_found(col_iloc, [colidx])[0]
         else:
             col_iloc = None
         return self._iat(rowidx=row_iloc, colidx=col_iloc)
@@ -2231,6 +2233,21 @@ def _prod_multiindex(ix1, ix2):
 def is_scalar_notnone(obj):
     """Check if obj is scalar and not None."""
     return obj is not None and np.isscalar(obj)
+
+
+def _check_indexer_found(indexer, keys):
+    """Raise KeyError if indexer from get_indexer contains not found keys.
+
+    ``pd.Index.get_indexer`` returns -1 for keys not in the index, which would
+    otherwise be used as a valid position (the last element) in ``iloc``.
+    Mimics the ``KeyError`` raised by ``pandas`` ``loc`` for missing keys.
+    """
+    indexer = np.asarray(indexer)
+    not_found = indexer == -1
+    if not_found.any():
+        missing = list(np.asarray(keys, dtype=object)[not_found])
+        raise KeyError(f"{missing} not in index")
+    return indexer
 
 
 def _get_first_argname(fun):
