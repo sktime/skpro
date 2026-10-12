@@ -68,6 +68,23 @@ class GeneralizedPareto(_ScipyAdapter):
     @classmethod
     def get_test_params(cls, parameter_set="default"):
         """Return test parameters for GeneralizedPareto."""
-        params1 = {"c": 0.5, "scale": 1.0, "mu": 0.0}
-        params2 = {"c": 1.0, "scale": 2.0, "mu": 1.0}
-        return [params1, params2]
+        import pandas as pd
+
+        # array case
+        params1 = {
+            "c": [[0.2, 0.4], [0.3, 0.1], [0.25, 0.35]],
+            "scale": [[1.0, 2.0], [3.0, 1.5], [0.5, 2.5]],
+            "mu": [[0.0, 1.0], [2.0, 3.0], [4.0, 5.0]],
+        }
+        # index and columns case
+        params2 = {
+            "c": 0.3,
+            "scale": 2.0,
+            "mu": 1.0,
+            "index": pd.Index([1, 2, 5]),
+            "columns": pd.Index(["a", "b"]),
+        }
+        # scalar cases
+        params3 = {"c": 0.5, "scale": 1.0, "mu": 0.0}
+        params4 = {"c": 1.0, "scale": 2.0, "mu": 1.0}
+        return [params1, params2, params3, params4]
