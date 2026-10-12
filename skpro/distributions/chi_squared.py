@@ -37,6 +37,60 @@ class ChiSquared(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{x^{k/2 - 1} e^{-x/2}}{2^{k/2} \Gamma(k/2)},
+        \quad x > 0
+
+    where :math:`k` is the degrees of freedom ``dof``.
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = \left(\frac{k}{2} - 1\right) \log x - \frac{x}{2}
+        - \frac{k}{2} \log 2 - \log \Gamma(k/2)
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = \frac{\gamma(k/2, x/2)}{\Gamma(k/2)}, \quad x \geq 0
+
+    where :math:`\gamma` is the lower incomplete gamma function.
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p) = 2 P^{-1}(k/2, p)
+
+    where :math:`P^{-1}` is the inverse, in its second argument, of the
+    regularized lower incomplete gamma function
+    :math:`P(a, x) = \gamma(a, x) / \Gamma(a)`.
+    """,
+        #
+        "mean": r"""
+    The expected value is:
+
+    .. math::
+        \mathbb{E}[X] = k
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = 2k
+    """,
+    }
+
     def __init__(self, dof, index=None, columns=None):
         self.dof = dof
 
