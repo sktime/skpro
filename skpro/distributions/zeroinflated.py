@@ -1,9 +1,11 @@
 """Zero-Inflated distribution."""
 
 import numpy as np
+import pandas as pd
 from numpy.typing import ArrayLike
 
 from skpro.distributions.base import BaseDistribution
+from skpro.distributions.base._base import is_scalar_notnone
 
 
 class ZeroInflated(BaseDistribution):
@@ -237,6 +239,13 @@ class ZeroInflated(BaseDistribution):
 
     # TODO: Replace with default behavior after PR #644 is merged.
     def _iloc(self, rowidx=None, colidx=None):
+        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
+            return self._iat(rowidx, colidx)
+        if is_scalar_notnone(rowidx):
+            rowidx = pd.Index([rowidx])
+        if is_scalar_notnone(colidx):
+            colidx = pd.Index([colidx])
+
         distr = self.distribution.iloc[rowidx, colidx]
         p = self.p
 
