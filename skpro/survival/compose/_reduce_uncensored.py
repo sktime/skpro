@@ -26,13 +26,37 @@ class FitUncensored(_DelegatedProbaRegressor):
     estimator_ : skpro regressor, BaseProbaRegressor descendant
         fitted probabilistic regressor, fit on uncensored subsample
         clone of estimator
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from sklearn.model_selection import train_test_split
+    >>> from skpro.regression.residual import ResidualDouble
+    >>> from skpro.survival.compose import FitUncensored
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> y = pd.DataFrame(y)
+    >>> X_train, X_test, y_train, _ = train_test_split(X, y, random_state=42)
+
+    Censoring indicator, 0 = uncensored, 1 = right censored.
+    Censored rows are dropped before fitting:
+
+    >>> C_train = pd.DataFrame(
+    ...     (np.arange(len(y_train)) % 4 == 0).astype(int),
+    ...     index=y_train.index,
+    ...     columns=y_train.columns,
+    ... )
+    >>> reg = FitUncensored(estimator=ResidualDouble(LinearRegression()))
+    >>> reg.fit(X_train, y_train, C=C_train)
+    FitUncensored(...)
+    >>> y_pred_proba = reg.predict_proba(X_test)
     """
 
     _tags = {
         "capability:survival": True,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     _delegate_name = "estimator_"
