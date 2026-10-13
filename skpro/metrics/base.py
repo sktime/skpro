@@ -90,6 +90,9 @@ class BaseProbaMetric(BaseObject):
             must have same index and columns as y_true
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
+        sample_weight : 1D array-like, optional, default=None
+            Sample weights for each instance/time point.
+
         Returns
         -------
         loss : float or 1-column pd.DataFrame with calculated metric value(s)
@@ -155,6 +158,9 @@ class BaseProbaMetric(BaseObject):
             must have same index and columns as y_true
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
+        sample_weight : 1D array-like, optional, default=None
+            Sample weights for each instance/time point.
+
         Returns
         -------
         loss : pd.DataFrame of shape (, n_outputs), calculated loss metric.
@@ -162,7 +168,13 @@ class BaseProbaMetric(BaseObject):
         # Default implementation relies on implementation of evaluate_by_index
         try:
             index_df = self._evaluate_by_index(y_true, y_pred)
-            out_df = pd.DataFrame(index_df.mean(axis=0)).T
+            sample_weight = kwargs.get("sample_weight", None)
+            if sample_weight is not None:
+                out_df = pd.DataFrame(
+                    np.average(index_df, weights=sample_weight, axis=0)
+                ).T
+            else:
+                out_df = pd.DataFrame(index_df.mean(axis=0)).T
             out_df.columns = index_df.columns
             return out_df
         except RecursionError as _err:
@@ -183,6 +195,9 @@ class BaseProbaMetric(BaseObject):
         y_pred : return object of probabilistic predictition method scitype:y_pred
             must have same index and columns as y_true
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
+
+        sample_weight : 1D array-like, optional, default=None
+            Sample weights for each instance/time point.
 
         Returns
         -------
@@ -250,6 +265,9 @@ class BaseProbaMetric(BaseObject):
         y_pred : return object of probabilistic predictition method scitype:y_pred
             must have same index and columns as ``y_true``.
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
+
+        sample_weight : 1D array-like, optional, default=None
+            Sample weights for each instance/time point.
         """
         n = y_true.shape[0]
         out_series = pd.Series(index=y_pred.index)
@@ -433,6 +451,9 @@ class BaseDistrMetric(BaseProbaMetric):
             must have same index and columns as y_true
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
 
+        sample_weight : 1D array-like, optional, default=None
+            Sample weights for each instance/time point.
+
         Returns
         -------
         loss : float or 1-column pd.DataFrame with calculated metric value(s)
@@ -446,7 +467,11 @@ class BaseDistrMetric(BaseProbaMetric):
         multivariate = self.multivariate
 
         index_df = self.evaluate_by_index(y_true, y_pred, **kwargs)
-        out_df = pd.DataFrame(index_df.mean(axis=0)).T
+        sample_weight = kwargs.get("sample_weight", None)
+        if sample_weight is not None:
+            out_df = pd.DataFrame(np.average(index_df, weights=sample_weight, axis=0)).T
+        else:
+            out_df = pd.DataFrame(index_df.mean(axis=0)).T
         out_df.columns = index_df.columns
 
         if multioutput == "uniform_average" and not multivariate:
@@ -595,6 +620,9 @@ class BaseSurvDistrMetric(BaseDistrMetric):
             0 = uncensored, 1 = (right) censored
             if None, all observations are assumed to be uncensored
 
+        sample_weight : 1D array-like, optional, default=None
+            Sample weights for each instance/time point.
+
         Returns
         -------
         loss : float or 1-column pd.DataFrame with calculated metric value(s)
@@ -622,6 +650,9 @@ class BaseSurvDistrMetric(BaseDistrMetric):
             should have entries 0 and 1 (float or int)
             0 = uncensored, 1 = (right) censored
             if None, all observations are assumed to be uncensored
+
+        sample_weight : 1D array-like, optional, default=None
+            Sample weights for each instance/time point.
 
         Returns
         -------
