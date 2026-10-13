@@ -115,6 +115,10 @@ class OnlineBatchMixture(BaseProbaRegressor):
         -------
         self : reference to self
         """
+        # predict_proba mixes the distributional predictions of the batch clones,
+        # so a point prediction only estimator cannot be used
+        self._check_proba_components(self.estimator)
+
         estimator = self.estimator.clone()
         estimator.fit(X=X, y=y, C=C)
 

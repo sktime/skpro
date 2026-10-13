@@ -44,6 +44,10 @@ class ConditionUncensored(BaseProbaRegressor):
 
         super().__init__()
 
+        # all prediction methods are delegated to the wrapped regressor,
+        # applied to the padded feature frame
+        self.clone_tags(estimator, ["capability:pred_int"])
+
     def _fit(self, X, y, C=None):
         """Fit regressor to training data.
 
