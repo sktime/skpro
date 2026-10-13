@@ -274,6 +274,45 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         else:
             assert np.allclose(x, x_approx)
 
+    def test_mean_unbounded_equals_plain_mean(self, object_instance):
+        """Test that mean() with None bounds equals mean() with no args."""
+        d = object_instance
+        if not _has_capability(d, "truncated_mean") or not _has_capability(d, "mean"):
+            return None
+
+        mean_val = d.mean()
+        trunc_mean_val = d.mean(lower=None, upper=None)
+
+        if d.ndim > 0:
+            assert np.allclose(
+                mean_val.values, trunc_mean_val.values, rtol=1e-4, atol=1e-6
+            )
+        else:
+            assert np.allclose(mean_val, trunc_mean_val, rtol=1e-4, atol=1e-6)
+
+    def test_mean_with_bounds(self, object_instance):
+        """Test mean output format when called with truncation bounds."""
+        d = object_instance
+        if not _has_capability(d, "truncated_mean"):
+            return None
+
+        x = d.sample()
+        if d.ndim > 0:
+            lower = x.values
+            upper = lower + 1.0
+            res = d.mean(lower=lower, upper=upper)
+            assert res.shape == d.shape
+            assert (res.index == d.index).all()
+            assert (res.columns == d.columns).all()
+            assert isinstance(res, pd.DataFrame)
+            assert res.apply(pd.api.types.is_numeric_dtype).all()
+        else:
+            lower = x - 1.0
+            upper = x + 1.0
+            res = d.mean(lower=lower, upper=upper)
+            assert np.isscalar(res)
+            assert np.isreal(res)
+
     def test_index_columns_last_args(self, object_class):
         """Test that index and columns are the last arguments in __init__."""
         params = object_class.get_param_names(sort=False)
