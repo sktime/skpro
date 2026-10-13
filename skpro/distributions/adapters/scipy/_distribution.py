@@ -72,6 +72,11 @@ class _ScipyAdapter(BaseDistribution):
         args, kwds = self._get_scipy_param()
         return obj.cdf(x, *args, **kwds)
 
+    def _log_cdf(self, x: pd.DataFrame):
+        obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
+        args, kwds = self._get_scipy_param()
+        return obj.logcdf(x, *args, **kwds)
+
     def _ppf(self, p: pd.DataFrame):
         obj: Union[rv_continuous, rv_discrete] = getattr(self, self._distribution_attr)
         args, kwds = self._get_scipy_param()
