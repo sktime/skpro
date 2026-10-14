@@ -25,7 +25,7 @@ get stuck, please don't hesitate to chat with us or raise an issue.
 
         +++
 
-        .. button-ref:: contribute/how_to_contribute
+        .. button-link:: https://github.com/sktime/skpro/blob/main/CONTRIBUTING.md
             :color: primary
             :click-parent:
             :expand:
