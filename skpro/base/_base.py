@@ -3,8 +3,10 @@ from skbase.base import BaseEstimator as _BaseEstimator
 from skbase.base import BaseMetaEstimator as _BaseMetaEstimator
 from skbase.base import BaseObject as _BaseObject
 
+from skpro.base._serialize import _SerializationMixin
 
-class _CommonTags:
+
+class _CommonTags(_SerializationMixin):
     """Mixin for common tag definitions to all estimator base classes."""
 
     # config common to all estimators
@@ -14,6 +16,10 @@ class _CommonTags:
         "estimator_type": "estimator",
         "authors": "skpro developers",
         "maintainers": "skpro developers",
+        "capability:serializable": True,
+        # default serialization tags
+        "serialization:native_artifacts": (),
+        "serialization:skip": (),
     }
 
     @property

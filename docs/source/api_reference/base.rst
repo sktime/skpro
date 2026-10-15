@@ -5,6 +5,9 @@ Base
 
 The :mod:`skpro.base` module contains abstract base classes.
 
+Persistence via :meth:`~skpro.base.BaseObject.save` / :func:`~skpro.base.load`
+is documented in :ref:`serialization_ref`.
+
 .. automodule:: skpro.base
     :no-members:
     :no-inherited-members:
@@ -21,3 +24,14 @@ Base classes
     BaseObject
     BaseEstimator
     BaseMetaEstimator
+
+Serialization
+-------------
+
+.. currentmodule:: skpro.base
+
+.. autosummary::
+    :toctree: auto_generated/
+    :template: function.rst
+
+    load
