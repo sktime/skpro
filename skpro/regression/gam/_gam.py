@@ -108,6 +108,7 @@ class GAMRegressor(BaseProbaRegressor):
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
         "tests:vm": True,
+        "tests:specific": ["skpro.regression.tests.test_gam"],
     }
 
     def __init__(

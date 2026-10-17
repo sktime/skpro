@@ -131,6 +131,7 @@ class CyclicBoosting(BaseProbaRegressor):
         # -----------------
         "tests:libs": ["skpro.libs.cyclic_boosting"],
         "tests:vm": True,  # requires its own test VM to run
+        "tests:specific": ["skpro.regression.tests.test_cyclic_boosting"],
     }
 
     def __init__(

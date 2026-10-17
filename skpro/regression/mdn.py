@@ -221,6 +221,7 @@ class MDNRegressor(BaseProbaRegressor):
         # CI and test flags
         # -----------------
         "tests:vm": True,
+        "tests:specific": ["skpro.regression.tests.test_mdn"],
         "tests:python_dependencies": ["pytorch_optimizer"],
     }
 

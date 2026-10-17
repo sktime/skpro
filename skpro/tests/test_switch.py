@@ -24,7 +24,7 @@ def run_test_for_class(cls, return_reason=False):
        If yes, behaviour depends on ONLY_CHANGED_MODULES setting:
        if off (False), always runs the test (return True);
        if on (True), runs test if and only if
-       at least one of conditions 2, 3, 4 below are met.
+       at least one of conditions 2, 3, 4, 5, 6 below are met.
 
     2. Condition 2:
 
@@ -48,13 +48,18 @@ def run_test_for_class(cls, return_reason=False):
       If the object is an skpro ``BaseObject``, and any of the modules
       in the class tag ``tests:libs`` have changed, condition 5 is met.
 
+    6. Condition 6:
+
+      If the object is an skpro ``BaseObject``, and any of the modules
+      in the class tag ``tests:specific`` have changed, condition 6 is met.
+
     cls can also be a list of classes or functions,
     in this case the test is run if and only if both of the following are True:
 
     * all required soft dependencies are present
     * if ``ONLY_CHANGED_MODULES`` is True, additionally,
       if any of the estimators in the list should be tested by
-      at least one of criteria 2-4 above.
+      at least one of criteria 2-6 above.
       If ``ONLY_CHANGED_MODULES`` is False, this condition is always True.
 
     Also checks whether the class or function is on the exclude override list,
@@ -83,6 +88,7 @@ def run_test_for_class(cls, return_reason=False):
         * "True_changed_tests" - run reason, test(s) covering class have changed
         * "True_changed_class" - run reason, module(s) containing class changed
         * "True_changed_libs" - run reason, library dependencies have changed
+        * "True_changed_specific" - run reason, object specific test module(s) changed
 
         If multiple reasons are present, the first one in the above list is returned.
 
@@ -92,7 +98,7 @@ def run_test_for_class(cls, return_reason=False):
         * otherwise, any reasons to run cause the entire list to be run
         * otherwise, the list is not run due to "no change"
     """
-    from skpro.tests._config import ONLY_CHANGED_MODULES
+    from skpro.tests._config import ONLY_CHANGED_MODULES, ONLY_VM_ESTIMATORS
 
     def _return(run, reason):
         if return_reason:
@@ -127,6 +133,7 @@ def run_test_for_class(cls, return_reason=False):
             "True_changed_tests",
             "True_changed_class",
             "True_changed_libs",
+            "True_changed_specific",
         ]
         for pos_reason in POS_REASONS:
             if any(reason == pos_reason for reason in reasons):
@@ -144,7 +151,11 @@ def run_test_for_class(cls, return_reason=False):
 
     # now we know that cls is a class or function,
     # and not on the exclude list
-    run, reason = _run_test_for_class(cls, only_changed_modules=ONLY_CHANGED_MODULES)
+    run, reason = _run_test_for_class(
+        cls,
+        only_changed_modules=ONLY_CHANGED_MODULES,
+        only_vm_required=ONLY_VM_ESTIMATORS,
+    )
     return _return(run, reason)
 
 
@@ -186,6 +197,7 @@ def _run_test_for_class(
         * "True_changed_tests" - run reason, test(s) covering class have changed
         * "True_changed_class" - run reason, module(s) containing class changed
         * "True_changed_libs" - run reason, library dependencies changed
+        * "True_changed_specific" - run reason, object specific test module(s) changed
 
         If multiple reasons are present, the first one in the above list is returned.
     """
@@ -244,16 +256,32 @@ def _run_test_for_class(
 
         return any(x in PACKAGE_REQ_CHANGED for x in package_deps)
 
-    def _is_impacted_by_lib_dep_change(cls, only_changed_modules):
-        """Check if library dependencies have changed, return bool."""
+    def _is_impacted_by_module_tag_change(cls, only_changed_modules, tag_name):
+        """Check if modules listed in the tag ``tag_name`` have changed.
+
+        Parameters
+        ----------
+        cls : class or function
+            class for which to check the tag
+        only_changed_modules : boolean
+            whether to check only changed modules, passed on to the module switch
+        tag_name : str
+            name of the tag containing the module list, e.g., ``"tests:libs"``
+
+        Returns
+        -------
+        bool : True if any of the modules in the tag have changed, False otherwise
+        """
         if not isclass(cls) or not hasattr(cls, "get_class_tags"):
             return False
 
-        libs = cls.get_class_tag("tests:libs", [])
-        if libs is None or libs == []:
+        modules = cls.get_class_tag(tag_name, [])
+        if modules is None or modules == []:
             return False
 
-        return run_test_module_changed(libs, only_changed_modules=only_changed_modules)
+        return run_test_module_changed(
+            modules, only_changed_modules=only_changed_modules
+        )
 
     # Condition 1:
     # if any of the required soft dependencies are not present, do not run the test
@@ -296,10 +324,19 @@ def _run_test_for_class(
     if cond2:
         return True, "True_changed_class"
 
-    # Condition 6:
+    # Condition 5:
     # any of the specified library dependencies within skpro have changed
-    if _is_impacted_by_lib_dep_change(cls, only_changed_modules=only_changed_modules):
+    if _is_impacted_by_module_tag_change(
+        cls, only_changed_modules=only_changed_modules, tag_name="tests:libs"
+    ):
         return True, "True_changed_libs"
+
+    # Condition 6:
+    # any of the specified estimator specific test modules have changed
+    if _is_impacted_by_module_tag_change(
+        cls, only_changed_modules=only_changed_modules, tag_name="tests:specific"
+    ):
+        return True, "True_changed_specific"
 
     # if none of the conditions are met, do not run the test
     # reason is that there was no change

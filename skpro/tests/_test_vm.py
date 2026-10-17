@@ -4,6 +4,7 @@ __all__ = ["run_test_vm"]
 
 import os
 import platform
+import re
 
 from skbase.utils.dependencies import _check_estimator_deps, _check_soft_dependencies
 
@@ -53,3 +54,63 @@ def run_test_vm(cls_name):
             f"Skipping estimator: {cls} due to incompatibility "
             "with python or OS version."
         )  # noqa: T201
+
+
+def _get_estimator_specific_test_modules(cls_name):
+    """Get the list of estimator specific test modules to run for an estimator.
+
+    Returns the content of the ``tests:specific`` tag of the class ``cls_name``,
+    after validating that the entries are importable ``skpro`` module paths.
+
+    Used in the VM based CI test runs, to execute the pytest modules
+    that contain tests specific to the estimator, in addition to the
+    general API conformance tests run by ``run_test_vm``.
+
+    Parameters
+    ----------
+    cls_name : str
+        Name of the estimator class to test, e.g., "ExampleRegressor".
+
+    Returns
+    -------
+    modules_to_run : list of str, or None
+        List of module paths to run for the estimator,
+        or None if the estimator specifies no such modules.
+
+    Raises
+    ------
+    AssertionError
+        if the ``tests:specific`` tag is not a list of strings,
+        or if any of its entries is not an importable ``skpro`` module path.
+    """
+    from importlib.util import find_spec
+
+    from skpro.registry import craft
+
+    cls = craft(cls_name)
+
+    modules = cls.get_class_tag("tests:specific", None)
+    if modules is None:
+        return None
+
+    msg = f"{cls.__name__}.tests:specific must be a list of strings, found: {modules}"
+    assert isinstance(modules, list), msg
+    assert all(isinstance(module, str) for module in modules), msg
+
+    if len(modules) == 0:
+        return None
+
+    module_pat = re.compile(r"^skpro(?:\.[a-z_][a-z0-9_]*)*$")
+    bad_modules = [module for module in modules if not module_pat.fullmatch(module)]
+    msg_bad = (
+        f"{cls.__name__}.tests:specific contains invalid module paths: {bad_modules}"
+    )
+    assert len(bad_modules) == 0, msg_bad
+
+    missing_modules = [module for module in modules if find_spec(module) is None]
+    msg_missing = (
+        f"{cls.__name__}.tests:specific contains missing modules: {missing_modules}"
+    )
+    assert len(missing_modules) == 0, msg_missing
+
+    return modules.copy()

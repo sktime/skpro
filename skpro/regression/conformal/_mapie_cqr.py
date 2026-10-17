@@ -50,6 +50,7 @@ class MapieConformalizedQuantileRegressor(BaseProbaRegressor):
         "python_dependencies": ["MAPIE>=1.0"],
         "capability:missing": True,
         "tests:vm": True,
+        "tests:specific": ["skpro.regression.tests.test_mapie_v1"],
     }
 
     def __init__(
