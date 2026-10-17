@@ -1,7 +1,7 @@
 """Interface adapter to statsmodels cox proportional hazards models."""
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 
-__author__ = ["fkiraly"]
+__author__ = ["fkiraly", "KrishChadha001"]
 
 import numpy as np
 
@@ -160,21 +160,37 @@ class CoxPH(BaseSurvReg):
         # get results from statsmodels
         results = self.results_
         params = results.params
-        exog = X.to_numpy()
-        n_exog = exog.shape[0]
+        n_exog = X.shape[0]
 
         # unreported bug in statsmodels PHReg.get_distribution
         # stratum_rows is not set correctly, uses rows from fit
         # we set it manually here
         model = self.model_
         model = deepcopy(model)
-        model.surv.stratum_rows = [np.array([ix for ix in range(n_exog)])]
 
         if self.strata is not None:
-            exog, strata = self._get_strata(exog)
-            kwargs = {"params": params, "exog": exog, "strata": strata}
+            # _get_strata requires a pandas DataFrame; call before to_numpy()
+            # Bug fix for GitHub issue #1216: previously X.to_numpy() was called
+            # first, causing AttributeError when _get_strata tried to use .loc/.drop
+            X_exog, strata_vals = self._get_strata(X)
+            exog = X_exog.to_numpy()
+
+            # PHReg.get_distribution does not accept a strata kwarg; instead the
+            # strata information must be encoded in model.surv.stratum_rows, mapping
+            # row indices of the prediction set to each stratum in the same order as
+            # model.surv.stratum_names (established during fit).
+            stratum_names = model.surv.stratum_names
+            stratum_rows = [
+                np.where(strata_vals == sn)[0] for sn in stratum_names
+            ]
+            model.surv.stratum_rows = stratum_rows
+            # model.endog length must match n_exog for output allocation
+            model.endog = np.zeros(n_exog)
         else:
-            kwargs = {"params": params, "exog": exog}
+            exog = X.to_numpy()
+            model.surv.stratum_rows = [np.array([ix for ix in range(n_exog)])]
+
+        kwargs = {"params": params, "exog": exog}
 
         # produce predictions from statsmodels
         # contrary to the documentation, this returns rv_discrete_float
@@ -185,6 +201,7 @@ class CoxPH(BaseSurvReg):
         # convert results to skpro BaseDistribution child instance
         y_pred = empirical_from_rvdf(dist=dist, index=index, columns=columns)
         return y_pred
+
 
     def _get_strata(self, X):
         """Get strata from X.
