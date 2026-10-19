@@ -2,10 +2,9 @@
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
-import numpy as np
 import pandas as pd
 
-from skpro.metrics.base import BaseProbaMetric
+from skpro.metrics.base import BaseProbaMetric, _align_interval_bounds
 
 
 class IntervalWidth(BaseProbaMetric):
@@ -82,24 +81,11 @@ class IntervalWidth(BaseProbaMetric):
         multioutput : string "uniform_average" or "raw_values" determines how \
             multioutput results will be treated.
         """
-        lower = y_pred.iloc[:, y_pred.columns.get_level_values(2) == "lower"].to_numpy()
-        upper = y_pred.iloc[:, y_pred.columns.get_level_values(2) == "upper"].to_numpy()
-
-        if not isinstance(y_true, np.ndarray):
-            y_true_np = y_true.to_numpy()
-        else:
-            y_true_np = y_true
-        if y_true_np.ndim == 1:
-            y_true_np = y_true_np.reshape(-1, 1)
-
-        scores = np.unique(np.round(y_pred.columns.get_level_values(1), 7))
-        vars = np.unique(y_pred.columns.get_level_values(0))
+        _, lower, upper, columns = _align_interval_bounds(y_true, y_pred)
 
         metric_array = upper - lower
 
-        out_df = pd.DataFrame(
-            metric_array, columns=pd.MultiIndex.from_product([vars, scores])
-        )
+        out_df = pd.DataFrame(metric_array, columns=columns)
 
         return out_df
 

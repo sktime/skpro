@@ -1,4 +1,5 @@
 """Tests for probabilistic quantile and interval metrics."""
+
 import pandas as pd
 import pytest
 from sklearn.datasets import load_diabetes
@@ -214,3 +215,84 @@ def test_evaluate_alpha_negative(Metric, y_pred, y_true):
         # 0.3 not in test quantile data so raise error.
         Loss = Metric.create_test_instance().set_params(alpha=0.3)
         res = Loss(y_true=y_true, y_pred=y_pred)  # noqa
+
+
+def _make_two_variable_interval_data():
+    """Two variables, two coverages; every interval contains the truth."""
+    y_true = pd.DataFrame({"a": [0.0, 0.0, 0.0], "b": [10.0, 10.0, 10.0]})
+    cols = pd.MultiIndex.from_tuples(
+        [
+            ("a", 0.5, "lower"),
+            ("a", 0.5, "upper"),
+            ("a", 0.9, "lower"),
+            ("a", 0.9, "upper"),
+            ("b", 0.5, "lower"),
+            ("b", 0.5, "upper"),
+            ("b", 0.9, "lower"),
+            ("b", 0.9, "upper"),
+        ]
+    )
+    y_pred = pd.DataFrame([[-1, 1, -2, 2, 9, 11, 8, 12]] * 3, columns=cols, dtype=float)
+    return y_true, y_pred
+
+
+def test_interval_metrics_multiple_variables_and_coverages():
+    """Interval metrics align each interval with the right variable of y_true.
+
+    With two variables and two coverages, the columns of the interval bounds
+    are ordered by variable, then coverage, so the ground truth has to be
+    matched per interval rather than tiled over coverages.
+    """
+    y_true, y_pred = _make_two_variable_interval_data()
+    kwargs = {"multioutput": "raw_values", "score_average": False}
+    expected_columns = [("a", 0.5), ("a", 0.9), ("b", 0.5), ("b", 0.9)]
+
+    coverage = EmpiricalCoverage(**kwargs).evaluate_by_index(y_true, y_pred)
+    assert coverage.columns.tolist() == expected_columns
+    assert (coverage.to_numpy() == 1).all()
+
+    violation = ConstraintViolation(**kwargs).evaluate_by_index(y_true, y_pred)
+    assert violation.columns.tolist() == expected_columns
+    assert (violation.to_numpy() == 0).all()
+
+    width = IntervalWidth(**kwargs).evaluate_by_index(y_true, y_pred)
+    assert width.columns.tolist() == expected_columns
+    assert (width.to_numpy() == [[2.0, 4.0, 2.0, 4.0]] * 3).all()
+
+    assert EmpiricalCoverage().evaluate(y_true, y_pred) == 1.0
+    assert ConstraintViolation().evaluate(y_true, y_pred) == 0.0
+    assert IntervalWidth().evaluate(y_true, y_pred) == 3.0
+
+
+def test_interval_metrics_unsorted_coverage_columns():
+    """Interval metrics label scores by the coverage of the column, not sorted order.
+
+    ``predict_interval(coverage=[0.9, 0.5])`` returns the 0.9 interval first.
+    """
+    y_true = pd.DataFrame({"a": [1.0, 2.0, 3.0]})
+    cols = pd.MultiIndex.from_tuples(
+        [
+            ("a", 0.9, "lower"),
+            ("a", 0.9, "upper"),
+            ("a", 0.5, "lower"),
+            ("a", 0.5, "upper"),
+        ]
+    )
+    # 0.9 intervals have width 4 and contain the truth, 0.5 intervals have
+    # width 1 and lie above the truth
+    y_pred = pd.DataFrame(
+        [[-1, 3, 2, 3], [0, 4, 3, 4], [1, 5, 4, 5]], columns=cols, dtype=float
+    )
+    kwargs = {"multioutput": "raw_values", "score_average": False}
+
+    width = IntervalWidth(**kwargs).evaluate_by_index(y_true, y_pred)
+    assert width[("a", 0.9)].tolist() == [4.0, 4.0, 4.0]
+    assert width[("a", 0.5)].tolist() == [1.0, 1.0, 1.0]
+
+    coverage = EmpiricalCoverage(**kwargs).evaluate_by_index(y_true, y_pred)
+    assert coverage[("a", 0.9)].tolist() == [1, 1, 1]
+    assert coverage[("a", 0.5)].tolist() == [0, 0, 0]
+
+    violation = ConstraintViolation(**kwargs).evaluate_by_index(y_true, y_pred)
+    assert violation[("a", 0.9)].tolist() == [0.0, 0.0, 0.0]
+    assert violation[("a", 0.5)].tolist() == [1.0, 1.0, 1.0]

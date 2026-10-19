@@ -1,4 +1,5 @@
 """Base classes for probabilistic metrics."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
@@ -541,6 +542,58 @@ class BaseDistrMetric(BaseProbaMetric):
             res = pd.concat(res_by_col, axis=1)
 
         return res
+
+
+def _align_interval_bounds(y_true, y_pred):
+    """Align lower/upper interval bounds of y_pred with the columns of y_true.
+
+    Parameters
+    ----------
+    y_true : np.ndarray of shape (n, n_vars), or 1D of shape (n,)
+        ground truth, j-th column corresponds to j-th variable in ``y_pred``,
+        in order of first appearance of variables in ``y_pred.columns``
+    y_pred : pd.DataFrame in ``pred_interval`` mtype
+        columns are a 3-level MultiIndex (variable, coverage, "lower"/"upper")
+
+    Returns
+    -------
+    y_true_cols : np.ndarray of shape (n, n_intervals)
+        ``y_true`` column of the variable of each interval, one column per interval
+    lower, upper : np.ndarray of shape (n, n_intervals)
+        lower and upper bounds of each interval
+    columns : pd.MultiIndex with levels (variable, coverage), length n_intervals
+        labels of the intervals, in the column order of ``y_pred``
+    """
+    if not isinstance(y_true, np.ndarray):
+        y_true = y_true.to_numpy()
+    if y_true.ndim == 1:
+        y_true = y_true.reshape(-1, 1)
+
+    columns = y_pred.columns
+    lower_cols = columns[columns.get_level_values(2) == "lower"]
+    upper_cols = columns[columns.get_level_values(2) == "upper"]
+
+    # pair lower and upper bounds by variable and coverage, rounded to avoid
+    # mismatches from floating point noise in coverages computed from quantiles
+    def _key(var, cov):
+        return var, np.round(cov, 7)
+
+    upper_by_key = {_key(var, cov): (var, cov, "upper") for var, cov, _ in upper_cols}
+    pairs = [_key(var, cov) for var, cov, _ in lower_cols]
+
+    lower = y_pred[list(lower_cols)].to_numpy()
+    upper = y_pred[[upper_by_key[pair] for pair in pairs]].to_numpy()
+
+    var_position = {
+        var: i for i, var in enumerate(pd.unique(columns.get_level_values(0)))
+    }
+    y_true_cols = y_true[:, [var_position[var] for var, _ in pairs]]
+
+    out_columns = pd.MultiIndex.from_arrays(
+        [[var for var, _ in pairs], [cov for _, cov in pairs]]
+    )
+
+    return y_true_cols, lower, upper, out_columns
 
 
 def _groupby_dot(df, weights):
