@@ -252,21 +252,22 @@ class BaseProbaMetric(BaseObject):
             Predicted values, i-th row is prediction for i-th row of ``y_true``.
         """
         n = y_true.shape[0]
-        out_series = pd.Series(index=y_pred.index)
         try:
-            x_bar = self.evaluate(y_true, y_pred, self.multioutput, **kwargs)
+            x_bar = self._evaluate(y_true, y_pred, **kwargs)
+            pseudo_values = []
             for i in range(n):
-                out_series[i] = n * x_bar - (n - 1) * self.evaluate(
-                    np.vstack((y_true[:i, :], y_true[i + 1 :, :])),  # noqa
-                    np.vstack((y_pred[:i, :], y_pred[i + 1 :, :])),  # noqa
-                    self.multioutput,
-                    **kwargs,
+                x_minus_i = self._evaluate(
+                    _drop_row(y_true, i), _drop_row(y_pred, i), **kwargs
                 )
-            return out_series
-        except RecursionError:
+                pseudo_values.append(n * x_bar - (n - 1) * x_minus_i)
+        except RecursionError as _err:
             raise RecursionError(
                 "Must implement one of _evaluate or _evaluate_by_index"
-            )
+            ) from _err
+
+        out = pd.concat(pseudo_values, axis=0)
+        out.index = y_pred.index
+        return out
 
     def _check_consistent_input(self, y_true, y_pred, multioutput):
         check_consistent_length(y_true, y_pred)
@@ -541,6 +542,27 @@ class BaseDistrMetric(BaseProbaMetric):
             res = pd.concat(res_by_col, axis=1)
 
         return res
+
+
+def _drop_row(obj, i):
+    """Return obj without its i-th row, for jackknife pseudo-values.
+
+    Parameters
+    ----------
+    obj : np.ndarray, pd.DataFrame, pd.Series, or object with ``iloc`` indexer
+        such as skpro ``BaseDistribution``
+    i : int
+        positional index of the row to drop
+
+    Returns
+    -------
+    obj without its i-th row, same type as obj
+    """
+    n = obj.shape[0]
+    keep = np.r_[0:i, i + 1 : n]
+    if isinstance(obj, np.ndarray):
+        return obj[keep]
+    return obj.iloc[keep]
 
 
 def _groupby_dot(df, weights):
