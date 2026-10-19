@@ -295,11 +295,14 @@ class QPD_S(BaseDistribution):
             return pdf_arr
 
         # we work through the chain rule for the entire nested expression in cdf
-        x_ = (x - lower) / theta
+        # outside of the support, x is replaced by a value inside the support,
+        # to avoid warnings; the result is masked to zero below
+        x_safe = np.where(valid_mask, x, lower + theta)
+        x_ = (x_safe - lower) / theta
         x_der = 1 / theta
 
-        in_arcsinh = np.where(valid_mask, np.log(x_) / kappa, 0)
-        in_arcsinh_der = np.where(valid_mask, x_der / (kappa * x_), 0)
+        in_arcsinh = np.log(x_) / kappa
+        in_arcsinh_der = x_der / (kappa * x_)
 
         in_sinh = np.arcsinh(in_arcsinh) - np.arcsinh(n * c * delta)
         in_sinh_der = arcsinh_der(in_arcsinh) * in_arcsinh_der
@@ -324,10 +327,16 @@ class QPD_S(BaseDistribution):
 
         phi = self.phi
 
-        in_arcsinh = np.log((x - lower) / theta) / kappa
+        # cdf is zero at or below lower; outside of the support, x is replaced
+        # by a value inside the support to avoid warnings, and masked below
+        valid_mask = x > lower
+        x_safe = np.where(valid_mask, x, lower + theta)
+
+        in_arcsinh = np.log((x_safe - lower) / theta) / kappa
         in_sinh = np.arcsinh(in_arcsinh) - np.arcsinh(n * c * delta)
         cdf_arr = phi.cdf(np.sinh(in_sinh) / delta)
 
+        cdf_arr = np.where(valid_mask, cdf_arr, 0.0)
         return cdf_arr
 
     @classmethod
@@ -480,8 +489,12 @@ class QPD_B(BaseDistribution):
         # Only compute pdf for lower < x < upper (support of bounded distribution)
         valid_mask = (x > lower) & (x < upper)
 
+        # outside of the support, x is replaced by the midpoint of the support,
+        # to avoid warnings; the result is masked to zero below
+        x_safe = np.where(valid_mask, x, lower + rnge / 2)
+
         # we work through the chain rule for the entire nested expression in cdf
-        x_ = (x - lower) / rnge
+        x_ = (x_safe - lower) / rnge
         x_der = 1 / rnge
 
         phi_ppf = phi.ppf(x_)
@@ -503,6 +516,7 @@ class QPD_B(BaseDistribution):
     def _cdf(self, x: np.ndarray):
         """Cumulative distribution function."""
         lower = self._bc_params["lower"]
+        upper = self._bc_params["upper"]
         rnge = self._qpd_params["rnge"]
         delta = self._qpd_params["delta"]
         kappa = self._qpd_params["kappa"]
@@ -512,10 +526,18 @@ class QPD_B(BaseDistribution):
 
         phi = self.phi
 
-        phi_ppf = phi.ppf((x - lower) / rnge)
+        # cdf is zero at or below lower, and one at or above upper; outside of
+        # the support, x is replaced by the midpoint of the support to avoid
+        # warnings, and masked below
+        below = x <= lower
+        above = x >= upper
+        x_safe = np.where(below | above, lower + rnge / 2, x)
+
+        phi_ppf = phi.ppf((x_safe - lower) / rnge)
         in_cdf = np.arcsinh((phi_ppf - xi) / kappa) / delta - n * c
         cdf_arr = phi.cdf(in_cdf)
 
+        cdf_arr = np.where(below, 0.0, np.where(above, 1.0, cdf_arr))
         return cdf_arr
 
     @classmethod
