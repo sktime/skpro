@@ -15,6 +15,23 @@ from skbase.utils.dependencies import _check_estimator_deps, _check_soft_depende
 from skpro.base import BaseObject
 
 
+def _shape_placeholder(shape):
+    """Return a placeholder array of the given shape, for use in broadcasting.
+
+    Used in place of the index and columns of a distribution when broadcasting
+    the distribution parameters, since only their lengths matter there.
+
+    Parameters
+    ----------
+    shape : tuple of int
+
+    Returns
+    -------
+    np.ndarray of the given shape and dtype int8, filled with zeros
+    """
+    return np.zeros(shape, dtype=np.int8)
+
+
 class BaseDistribution(BaseObject):
     """Base probability distribution."""
 
@@ -491,7 +508,8 @@ class BaseDistribution(BaseObject):
         else:
             bc_params = self._get_bc_params_dict()
 
-        paramnames = list(bc_params.keys())
+        drop_keys = ["index", "columns"]
+        paramnames = [k for k in bc_params.keys() if k not in drop_keys]
 
         def to_df(x):
             if self.ndim > 0:
@@ -499,8 +517,6 @@ class BaseDistribution(BaseObject):
             return pd.DataFrame([[x]])
 
         params_df = {k: to_df(bc_params[k]) for k in paramnames}
-        drop_keys = ["index", "columns"]
-        params_df = {k: params_df[k] for k in params_df if k not in drop_keys}
         return params_df
 
     def to_df(self):
@@ -671,10 +687,14 @@ class BaseDistribution(BaseObject):
 
         kwargs_as_np = {k: row_to_col(np.array(v)) for k, v in kwargs.items()}
 
+        # index and columns take part in the broadcast only through their
+        # lengths, so cheap placeholder arrays of the right shape are used
+        # instead of converting the index to numpy, which is slow for
+        # tz-aware datetime, period or interval indices, see #597
         if hasattr(self, "index") and self.index is not None:
-            kwargs_as_np["index"] = self.index.to_numpy().reshape(-1, 1)
+            kwargs_as_np["index"] = _shape_placeholder((len(self.index), 1))
         if hasattr(self, "columns") and self.columns is not None:
-            kwargs_as_np["columns"] = self.columns.to_numpy()
+            kwargs_as_np["columns"] = _shape_placeholder((len(self.columns),))
 
         bc_params = self.get_tags()["broadcast_params"]
         if bc_params is None:

@@ -363,3 +363,51 @@ def test_pmf_support_method():
     support = delta._pmf_support(3, 4)
     assert isinstance(support, np.ndarray)
     assert len(support) == 0
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+@pytest.mark.parametrize(
+    "index",
+    [
+        pd.RangeIndex(4),
+        pd.Index(["a", "b", "c", "d"]),
+        pd.date_range("2020-01-01", periods=4, freq="h", tz="UTC"),
+        pd.period_range("2020-01-01", periods=4, freq="D"),
+        pd.interval_range(0, 4),
+        pd.MultiIndex.from_product([["x", "y"], pd.period_range("2020", periods=2)]),
+    ],
+)
+def test_broadcasting_with_non_standard_index(index):
+    """Broadcasting of parameters works for any index type, see #597.
+
+    The index only contributes its length to the broadcast, so the result
+    must not depend on the index type, and index and columns are kept.
+    """
+    from skpro.distributions.normal import Normal
+
+    columns = pd.Index(["foo", "bar"])
+    mu = np.arange(8.0).reshape(4, 2)
+    n = Normal(mu=mu, sigma=1.0, index=index, columns=columns)
+
+    assert n.shape == (4, 2)
+    np.testing.assert_array_equal(n._bc_params["mu"], mu)
+    np.testing.assert_array_equal(n._bc_params["sigma"], np.ones((4, 2)))
+    # index and columns are broadcast to the shape of the distribution
+    assert n._bc_params["index"].shape == (4, 2)
+    assert n._bc_params["columns"].shape == (4, 2)
+
+    mean = n.mean()
+    assert mean.index.equals(index)
+    assert mean.columns.equals(columns)
+    np.testing.assert_array_equal(mean.to_numpy(), mu)
+
+    params_df = n.get_params_df()
+    assert set(params_df.keys()) == {"mu", "sigma"}
+    assert params_df["mu"].index.equals(index)
+
+    # row vector of parameters broadcasts to a 1 x n_columns distribution
+    n_row = Normal(mu=[0.0, 1.0], sigma=1.0, index=index[:1], columns=columns)
+    assert n_row.shape == (1, 2)

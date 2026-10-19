@@ -12,6 +12,7 @@ from skpro.base import BaseObject
 from skpro.distributions.base import BaseDistribution
 from skpro.distributions.base._base import (
     _coerce_to_pd_index_or_none,
+    _shape_placeholder,
     is_scalar_notnone,
 )
 
@@ -193,10 +194,14 @@ class _BaseArrayDistribution(BaseDistribution, BaseObject):
         # kwargs_as_np = {k: row_to_col(np.array(v)) for k, v in kwargs.items()}
         kwargs_as_np = {k: v for k, v in kwargs.items()}
 
+        # index and columns take part in the broadcast only through their
+        # lengths, so cheap placeholder arrays of the right shape are used
+        # instead of converting the index to numpy, which is slow for
+        # tz-aware datetime, period or interval indices, see #597
         if hasattr(self, "index") and self.index is not None:
-            kwargs_as_np["index"] = self.index.to_numpy().reshape(-1, 1)
+            kwargs_as_np["index"] = _shape_placeholder((len(self.index), 1))
         if hasattr(self, "columns") and self.columns is not None:
-            kwargs_as_np["columns"] = self.columns.to_numpy()
+            kwargs_as_np["columns"] = _shape_placeholder((len(self.columns),))
 
         bc_params = self.get_tags()["broadcast_params"]
 
