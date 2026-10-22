@@ -2,6 +2,7 @@
 
 import warnings
 
+import numpy as np
 from skbase.utils.dependencies import _check_soft_dependencies
 
 from skpro.regression.base import BaseProbaRegressor
@@ -23,6 +24,7 @@ class XGBoostLSS(BaseProbaRegressor):
         * "Gamma": Gamma distribution.
         * "Laplace": Laplace distribution.
         * "LogNormal": LogNormal distribution.
+        * "NegativeBinomial": Negative binomial distribution for count data.
         * "TDistribution": Student's T distribution.
         * "Weibull": Weibull distribution.
         * "Beta": Beta distribution.
@@ -34,12 +36,15 @@ class XGBoostLSS(BaseProbaRegressor):
     response_fn: str, optional, default="exp"
         Response function for transforming the distributional parameters to the
         support of the distribution. Options are "exp" (exponential) or
-        "softplus" (softplus).
+        "softplus" (softplus). For ``dist="NegativeBinomial"``, this transforms
+        ``total_count`` and also accepts "relu" (rectified linear unit);
+        ``probs`` always uses "sigmoid".
 
     loss_fn: str, optional, default="nll"
         Loss function used in tuning and fitting.
         Options are "nll" (negative log-likelihood)
         or "crps" (continuous ranked probability score).
+        For ``dist="NegativeBinomial"``, only "nll" is supported.
 
     initialize: bool, optional, default=True
         Whether to initialize the distribution parameters.
@@ -318,6 +323,16 @@ class XGBoostLSS(BaseProbaRegressor):
         df : pd.DataFrame
             DataFrame of parameters as returned by predict, in xgboostlss.
         """
+        if distr == "NegativeBinomial":
+            total_count = df.loc[:, ["total_count"]].values
+            # Convert to float64 so the upper clipping bound stays below 1,
+            # including when xgboostlss returns float32 probabilities.
+            probs = df.loc[:, ["probs"]].to_numpy(dtype=float)
+            probs = np.clip(probs, 1e-8, 1 - 1e-8)
+            # PyTorch uses mean = total_count * probs / (1 - probs), whereas
+            # skpro uses mean = mu and variance = mu + mu**2 / alpha.
+            return {"mu": total_count * probs / (1 - probs), "alpha": total_count}
+
         name_map = {
             "Normal": {"mu": "loc", "sigma": "scale"},
             "Gamma": {"alpha": "concentration", "beta": "rate"},
@@ -390,6 +405,10 @@ class XGBoostLSS(BaseProbaRegressor):
             "loss_fn": self.loss_fn,
             "initialize": self.initialize,
         }
+
+        if self.dist == "NegativeBinomial":
+            distr_params["response_fn_total_count"] = distr_params.pop("response_fn")
+            distr_params["response_fn_probs"] = "sigmoid"
 
         # initialize parameter was introduced in xgboostlss v0.6.1
         if _check_soft_dependencies("xgboostlss<0.6.1", severity="none"):
@@ -573,6 +592,13 @@ class XGBoostLSS(BaseProbaRegressor):
             "max_depth": 3,
         }
 
+        params9 = {
+            "dist": "NegativeBinomial",
+            "n_trials": 0,
+            "num_boost_round": 5,
+            "n_cpu": 1,
+        }
+
         return [
             params0,
             params1,
@@ -583,4 +609,5 @@ class XGBoostLSS(BaseProbaRegressor):
             params6,
             params7,
             params8,
+            params9,
         ]
