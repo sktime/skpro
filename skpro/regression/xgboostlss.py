@@ -100,6 +100,18 @@ class XGBoostLSS(BaseProbaRegressor):
         Keyword arguments of xgboost parameters to pass to the model.
         Used only if n_trials=0 (i.e., no hyperparameter optimization).
         See https://xgboost.readthedocs.io/en/stable/parameter.html for valid params.
+
+    Examples
+    --------
+    >>> from skpro.regression.xgboostlss import XGBoostLSS  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> reg_proba = XGBoostLSS(n_trials=0, num_boost_round=5)  # doctest: +SKIP
+    >>> reg_proba.fit(X_train, y_train)  # doctest: +SKIP
+    XGBoostLSS(...)
+    >>> y_pred = reg_proba.predict_proba(X_test)  # doctest: +SKIP
     """
 
     _tags = {
