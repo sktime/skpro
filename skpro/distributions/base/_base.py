@@ -1508,6 +1508,19 @@ class BaseDistribution(BaseObject):
         spl = self.sample(approx_spl_size)
         return self._sample_mean(spl)
 
+    def median(self):
+        r"""Return median of the distribution.
+
+        The ``median`` method represents a 2D array of median values,
+        one for each entry of the distribution.
+
+        Returns
+        -------
+        ``pd.DataFrame`` with same rows, columns as ``self``
+            median of distribution (entry-wise)
+        """
+        return self.ppf(0.5)
+
     def var(self):
         r"""Return element/entry-wise variance of the distribution.
 
