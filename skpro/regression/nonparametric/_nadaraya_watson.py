@@ -260,8 +260,12 @@ class NadarayaWatsonCDE(BaseProbaRegressor):
 
             y_spl = y_train.copy()
             y_spl.index = pd.MultiIndex.from_arrays(
-                [np.arange(n_train), np.full(n_train, X.index[i])],
-                names=["sample", y_train.index.name],
+                [np.arange(n_train)]
+                + [
+                    X.index.get_level_values(level).take([i] * n_train)
+                    for level in range(X.index.nlevels)
+                ],
+                names=["sample", *X.index.names],
             )
 
             w_ser = pd.Series(w_i, index=y_spl.index)
