@@ -45,6 +45,59 @@ class TruncatedPareto(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{b \, \text{scale}^b \, x^{-(b+1)}}{Z}
+        \text{ for } \text{lower} \leq x \leq \text{upper}, \quad
+        Z = (\text{scale}/\text{lower})^b - (\text{scale}/\text{upper})^b
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = \log(b) + b \log(\text{scale}) - (b+1)\log(x) - \log(Z)
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = \frac{\left[1-(\text{scale}/x)^b\right] -
+        \left[1-(\text{scale}/\text{lower})^b\right]}{Z}
+        \text{ for } \text{lower} \leq x \leq \text{upper}
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p) = \text{scale} \cdot \left[(\text{scale}/\text{lower})^b -
+        p \, Z\right]^{-1/b}
+    """,
+        #
+        "mean": r"""
+    The expected value, for :math:`b \neq 1`, is:
+
+    .. math::
+        \mathbb{E}[X] = \frac{b \, \text{scale}^b}{Z} \cdot
+        \frac{\text{upper}^{1-b} - \text{lower}^{1-b}}{1-b}
+    """,
+        #
+        "var": r"""
+    The variance is:
+
+    .. math::
+        \text{Var}(X) = \mathbb{E}[X^2] - \mathbb{E}[X]^2, \quad
+        \mathbb{E}[X^2] = \frac{b \, \text{scale}^b}{Z} \cdot
+        \frac{\text{upper}^{2-b} - \text{lower}^{2-b}}{2-b}
+        \text{ for } b \neq 2
+    """,
+    }
+
     def __init__(self, b, scale=1.0, lower=1.0, upper=10.0, index=None, columns=None):
         self.b = b
         self.scale = scale
