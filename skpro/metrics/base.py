@@ -1,4 +1,5 @@
 """Base classes for probabilistic metrics."""
+
 # copyright: skpro developers, BSD-3-Clause License (see LICENSE file)
 # adapted from sktime
 
@@ -130,11 +131,12 @@ class BaseProbaMetric(BaseObject):
             if not self.score_average and multioutput == "raw_values":
                 out = out  # don't average
         else:  # is np.array with weights
+            weights = _normalize_weights(multioutput)
             if self.score_average:
                 out_raw = out.T.groupby(level=0).mean().T
-                out = out_raw.dot(multioutput)[0]
+                out = out_raw.dot(weights).iloc[0]
             else:
-                out = _groupby_dot(out, multioutput)
+                out = _groupby_dot(out, weights)
 
         if isinstance(out, pd.DataFrame):
             out = out.squeeze(axis=0)
@@ -226,11 +228,12 @@ class BaseProbaMetric(BaseObject):
             if not self.score_average and multioutput == "raw_values":
                 out = out  # don't average
         else:  # is np.array with weights
+            weights = _normalize_weights(multioutput)
             if self.score_average:
                 out_raw = out.T.groupby(level=0).mean().T
-                out = out_raw.dot(multioutput)[0]
+                out = out_raw.dot(weights)
             else:
-                out = _groupby_dot(out, multioutput)
+                out = _groupby_dot(out, weights)
 
         return out
 
@@ -446,6 +449,9 @@ class BaseDistrMetric(BaseProbaMetric):
         multivariate = self.multivariate
 
         index_df = self.evaluate_by_index(y_true, y_pred, **kwargs)
+        if isinstance(index_df, pd.Series):
+            # array-like multioutput, already a weighted average over variables
+            return float(index_df.mean())
         out_df = pd.DataFrame(index_df.mean(axis=0)).T
         out_df.columns = index_df.columns
 
@@ -540,7 +546,37 @@ class BaseDistrMetric(BaseProbaMetric):
                 res_by_col += [res_for_col]
             res = pd.concat(res_by_col, axis=1)
 
+        if not isinstance(multioutput, str) and multioutput is not None:
+            res = res.dot(_normalize_weights(multioutput, n_outputs=res.shape[1]))
+
         return res
+
+
+def _normalize_weights(weights, n_outputs=None):
+    """Turn array-like ``multioutput`` into weights that sum to 1.
+
+    Parameters
+    ----------
+    weights : array-like
+        ``multioutput`` weights, one per variable
+    n_outputs : int, optional
+        number of variables, checked against the length of ``weights``
+
+    Returns
+    -------
+    weights : np.ndarray
+        1D float array, normalized to sum to 1
+    """
+    weights = np.asarray(weights, dtype=float).ravel()
+    if n_outputs is not None and len(weights) != n_outputs:
+        raise ValueError(
+            f"There must be equally many custom weights ({len(weights)}) "
+            f"as outputs ({n_outputs})."
+        )
+    total = weights.sum()
+    if total == 0:
+        raise ValueError("multioutput weights must not sum to zero.")
+    return weights / total
 
 
 def _groupby_dot(df, weights):

@@ -1,11 +1,12 @@
 """Tests for probabilistic metrics for distribution predictions."""
+
 import numpy as np
 import pandas as pd
 import pytest
 from skbase.testing import QuickTester
 
 from skpro.distributions import Normal
-from skpro.metrics import SquaredDistrLoss
+from skpro.metrics import CRPS, LogLoss, SquaredDistrLoss
 from skpro.tests.test_all_estimators import BaseFixtureGenerator, PackageConfig
 
 TEST_DISTS = [Normal]
@@ -123,3 +124,34 @@ def test_squared_distr_loss_multivariate():
     assert isinstance(result, pd.DataFrame)
     assert list(result.columns) == ["density"]
     assert result.shape == (2, 1)
+
+
+# SquaredDistrLoss is left out, its pdfnorm is estimated by sampling for Normal
+@pytest.mark.parametrize("Metric", [CRPS, LogLoss])
+def test_distr_metric_multioutput_weights(Metric):
+    """Array-like multioutput gives the weighted average over variables."""
+    rng = np.random.default_rng(0)
+    y_true = pd.DataFrame(rng.normal(size=(7, 3)), columns=list("abc"))
+    y_pred = Normal(
+        mu=rng.normal(size=(7, 3)),
+        sigma=1.0,
+        index=y_true.index,
+        columns=y_true.columns,
+    )
+    weights = [1, 2, 3]
+
+    raw = Metric(multioutput="raw_values")
+    raw_by_index = raw.evaluate_by_index(y_true, y_pred)
+    expected = np.average(raw(y_true, y_pred).values.ravel(), weights=weights)
+
+    metric = Metric(multioutput=weights)
+    res = metric(y_true, y_pred)
+    assert np.isscalar(res)
+    assert np.isclose(res, expected)
+    # scaling the weights does not change the result
+    assert np.isclose(Metric(multioutput=[2, 4, 6])(y_true, y_pred), expected)
+
+    res_by_index = metric.evaluate_by_index(y_true, y_pred)
+    assert isinstance(res_by_index, pd.Series)
+    expected_by_index = np.average(raw_by_index.values, axis=1, weights=weights)
+    np.testing.assert_allclose(res_by_index.values, expected_by_index)

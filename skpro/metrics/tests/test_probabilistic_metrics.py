@@ -1,4 +1,6 @@
 """Tests for probabilistic quantile and interval metrics."""
+
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.datasets import load_diabetes
@@ -214,3 +216,33 @@ def test_evaluate_alpha_negative(Metric, y_pred, y_true):
         # 0.3 not in test quantile data so raise error.
         Loss = Metric.create_test_instance().set_params(alpha=0.3)
         res = Loss(y_true=y_true, y_pred=y_pred)  # noqa
+
+
+def test_pinball_loss_multioutput_weights():
+    """Array-like multioutput gives the weighted average over variables."""
+    from skpro.distributions import Normal
+
+    rng = np.random.default_rng(0)
+    y_true = pd.DataFrame(rng.normal(size=(7, 3)), columns=list("abc"))
+    y_pred = Normal(
+        mu=rng.normal(size=(7, 3)),
+        sigma=1.0,
+        index=y_true.index,
+        columns=y_true.columns,
+    ).quantile([0.1, 0.9])
+    weights = [1, 2, 3]
+
+    raw = PinballLoss(multioutput="raw_values")
+    expected = np.average(np.ravel(raw(y_true, y_pred)), weights=weights)
+
+    res = PinballLoss(multioutput=weights)(y_true, y_pred)
+    assert np.isclose(res, expected)
+    # scaling the weights does not change the result
+    assert np.isclose(PinballLoss(multioutput=[2, 4, 6])(y_true, y_pred), expected)
+
+    raw_by_index = raw.evaluate_by_index(y_true, y_pred)
+    res_by_index = PinballLoss(multioutput=weights).evaluate_by_index(y_true, y_pred)
+    assert isinstance(res_by_index, pd.Series)
+    assert len(res_by_index) == len(y_true)
+    expected_by_index = np.average(raw_by_index.values, axis=1, weights=weights)
+    np.testing.assert_allclose(res_by_index.values, expected_by_index)
