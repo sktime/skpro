@@ -4,11 +4,14 @@
 __all__ = ["_SksurvAdapter"]
 __author__ = ["fkiraly"]
 
+import inspect
+from warnings import warn
+
 import numpy as np
 import pandas as pd
 
 from skpro.distributions.empirical import Empirical
-from skpro.survival.adapters._common import _get_fitted_params_default_safe
+from skpro.survival.adapters._common import _clip_surv, _get_fitted_params_default_safe
 from skpro.utils.sklearn import prep_skl_df
 
 
@@ -53,7 +56,17 @@ class _SksurvAdapter:
         with self.get_params.
         """
         cls = self._get_sksurv_class()
-        return cls(**self.get_params())
+        params = self.get_params()
+        # Drop parameters the installed scikit-survival class no longer accepts.
+        # GradientBoostingSurvivalAnalysis removed ``criterion`` in 0.28, while
+        # older releases still require it to be forwarded.
+        accepted = inspect.signature(cls.__init__).parameters
+        has_var_keyword = any(
+            param.kind == inspect.Parameter.VAR_KEYWORD for param in accepted.values()
+        )
+        if not has_var_keyword:
+            params = {key: value for key, value in params.items() if key in accepted}
+        return cls(**params)
 
     def _init_sksurv_object(self):
         """Abstract method to initialize sksurv object and set to _estimator_attr.
@@ -137,17 +150,39 @@ class _SksurvAdapter:
         X = prep_skl_df(X)
 
         # predict on X
-        sksurv_survf = sksurv_est.predict_survival_function(X, return_array=True)
+        # copy: _clip_surv edits the array in place
+        sksurv_survf = np.asarray(
+            sksurv_est.predict_survival_function(X, return_array=True),
+            dtype=float,
+        ).copy()
 
-        times = sksurv_est.unique_times_[:-1]
+        # Full event-time grid. Dropping the last time (and a raw np.diff)
+        # discarded the initial drop from 1 and the residual tail mass, so
+        # some predictive distributions had weights summing to 0.
+        times = np.asarray(sksurv_est.unique_times_, dtype=float)
 
         nt = len(times)
+        # Index order is instance-major, time-minor, matching C-order flatten.
         mi = pd.MultiIndex.from_product([X.index, range(nt)]).swaplevel()
 
-        times_val = np.repeat(times, repeats=len(X))
+        times_val = np.tile(times, len(X))
         times_df = pd.DataFrame(times_val, index=mi, columns=self._y_cols)
 
-        weights = -np.diff(sksurv_survf, axis=1).flatten()
+        _, surv_diff, clipped = _clip_surv(sksurv_survf)
+
+        if clipped:
+            warn(
+                f"Warning from {self.__class__.__name__}: "
+                f"Interfaced scikit-survival class {sksurv_est.__class__.__name__} "
+                "produced improper survival function predictions, i.e., "
+                "not monotonically decreasing or not in [0, 1]. "
+                "skpro has clipped the predictions to enforce proper range and "
+                "valid predictive distributions. "
+                "However, predictions may still be unreliable.",
+                stacklevel=2,
+            )
+
+        weights = -surv_diff.flatten()
         weights_df = pd.Series(weights, index=mi)
 
         dist = Empirical(
