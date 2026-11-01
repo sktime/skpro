@@ -100,8 +100,21 @@ def _get_fitted_params_default_safe(obj=None):
     # and returns them with keys that have the "_" removed
     #
     # get all attributes ending in "_", exclude any that start with "_" (private)
+    #
+    # dir() on scikit-learn estimators calls hasattr, which only suppresses
+    # AttributeError. Properties that raise other exceptions, such as
+    # feature_importances_ on scikit-survival forests (NotImplementedError),
+    # then abort introspection. Fall back to object.__dir__, which lists
+    # names without evaluating properties.
+    try:
+        attr_names = dir(obj)
+    except Exception:
+        attr_names = object.__dir__(obj)
+
     fitted_params = [
-        attr for attr in dir(obj) if attr.endswith("_") and not attr.startswith("_")
+        attr
+        for attr in attr_names
+        if attr.endswith("_") and not attr.startswith("_")
     ]
 
     def hasattr_safe(obj, attr):

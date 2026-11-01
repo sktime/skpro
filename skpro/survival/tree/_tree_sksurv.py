@@ -108,6 +108,15 @@ class SurvivalTree(_SksurvAdapter, BaseSurvReg):
 
     .. [3] Ishwaran, H., Kogalur, U. B. (2007). Random survival forests for R.
            R News, 7(2), 25–31. https://cran.r-project.org/doc/Rnews/Rnews_2007-2.pdf.
+
+    Examples
+    --------
+    >>> from skpro.survival.tree import SurvivalTree  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> reg = SurvivalTree()  # doctest: +SKIP
+    >>> reg.fit(X, y.abs())  # doctest: +SKIP
+    >>> y_pred = reg.predict_proba(X)  # doctest: +SKIP
     """
 
     _tags = {

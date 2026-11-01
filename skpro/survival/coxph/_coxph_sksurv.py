@@ -50,6 +50,15 @@ class CoxPHSkSurv(_SksurvAdapter, BaseSurvReg):
 
     unique_times_ : array of shape = (n_unique_times,)
         Unique time points.
+
+    Examples
+    --------
+    >>> from skpro.survival.coxph import CoxPHSkSurv  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> reg = CoxPHSkSurv()  # doctest: +SKIP
+    >>> reg.fit(X, y.abs())  # doctest: +SKIP
+    >>> y_pred = reg.predict_proba(X)  # doctest: +SKIP
     """
 
     _tags = {"authors": ["sebp", "fkiraly"]}  # sebp credit for interfaced estimator
