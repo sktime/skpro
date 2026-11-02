@@ -43,6 +43,78 @@ class TDistribution(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \frac{\Gamma\left(\frac{\nu+1}{2}\right)}
+        {\sigma \sqrt{\nu \pi} \, \Gamma\left(\frac{\nu}{2}\right)}
+        \left(1 + \frac{1}{\nu}\left(\frac{x - \mu}{\sigma}\right)^2
+        \right)^{-\frac{\nu + 1}{2}}
+
+    where :math:`\mu` is ``mu``, :math:`\sigma` is ``sigma``,
+    and :math:`\nu` is ``df``.
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = \log\Gamma\left(\frac{\nu+1}{2}\right)
+        - \log\Gamma\left(\frac{\nu}{2}\right)
+        - \frac{1}{2}\log(\nu \pi) - \log\sigma
+        - \frac{\nu+1}{2}
+        \log\left(1 + \frac{1}{\nu}\left(\frac{x-\mu}{\sigma}\right)^2\right)
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = \begin{cases}
+        1 - \frac{1}{2} I_z\left(\frac{\nu}{2}, \frac{1}{2}\right)
+        & x \geq \mu \\
+        \frac{1}{2} I_z\left(\frac{\nu}{2}, \frac{1}{2}\right)
+        & x < \mu
+        \end{cases}
+
+    where :math:`w = (x - \mu)/\sigma`, :math:`z = \nu/(\nu + w^2)`,
+    and :math:`I_z(a, b)` is the regularized incomplete beta function.
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p) = \mu + \sigma \, \operatorname{sgn}\left(p - \tfrac{1}{2}\right)
+        \sqrt{\nu \left(\frac{1}{z_p} - 1\right)}
+
+    where :math:`z_p` is the solution :math:`z` of
+    :math:`I_z\left(\frac{\nu}{2}, \frac{1}{2}\right) = 2\min(p, 1-p)`,
+    and :math:`I_z(a, b)` is the regularized incomplete beta function.
+    """,
+        #
+        "mean": r"""
+    The expected value, for :math:`\nu > 1`, is:
+
+    .. math::
+        \mathbb{E}[X] = \mu
+
+    For :math:`\nu \leq 1` the expected value is undefined.
+    """,
+        #
+        "var": r"""
+    The variance, for :math:`\nu > 2`, is:
+
+    .. math::
+        \text{Var}(X) = \sigma^2 \, \frac{\nu}{\nu - 2}
+
+    For :math:`1 < \nu \leq 2` the variance is infinite,
+    and for :math:`\nu \leq 1` it is undefined.
+    """,
+    }
+
     def __init__(self, mu, sigma, df=1, index=None, columns=None):
         self.mu = mu
         self.sigma = sigma
