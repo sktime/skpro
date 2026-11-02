@@ -4,6 +4,7 @@ from typing import Tuple, Union
 import numpy as np
 
 from skpro.distributions.base import BaseDistribution
+from skpro.distributions.base._set import IntersectionSet, IntervalSet
 
 
 class TruncatedDistribution(BaseDistribution):
@@ -121,6 +122,35 @@ class TruncatedDistribution(BaseDistribution):
         inner_paramtype = distribution.get_tag("distr:paramtype", "parametric")
         if inner_paramtype != "parametric":
             self.set_tags(**{"distr:paramtype": inner_paramtype})
+
+    def _support(self):
+        r"""Return the support of the truncated distribution.
+
+        The support is :math:`\text{supp}(f) \cap I`, where
+        :math:`f` is the base distribution and :math:`I` is the
+        truncation interval defined by ``lower``, ``upper``, and
+        ``interval_type``.
+
+        Returns
+        -------
+        IntersectionSet
+            Intersection of the base support and the truncation interval.
+        """
+        lower = self.lower if self.lower is not None else -np.inf
+        upper = self.upper if self.upper is not None else np.inf
+        trunc_interval = IntervalSet(
+            lower=lower,
+            upper=upper,
+            interval_type=self.interval_type,
+            index=self.index,
+            columns=self.columns,
+        )
+        return IntersectionSet(
+            self.distribution.support,
+            trunc_interval,
+            index=self.index,
+            columns=self.columns,
+        )
 
     def _get_low_high_prob(self) -> Tuple[float, float]:
         prob_at_lower = (
