@@ -9,6 +9,7 @@ __all__ = [
     "Binomial",
     "BurrIII",
     "BurrXII",
+    "Categorical",
     "Cauchy",
     "ChiSquared",
     "Delta",
@@ -73,6 +74,7 @@ from skpro.distributions.beta import Beta
 from skpro.distributions.binomial import Binomial
 from skpro.distributions.burr_iii import BurrIII
 from skpro.distributions.burr_xii import BurrXII
+from skpro.distributions.categorical import Categorical
 from skpro.distributions.cauchy import Cauchy
 from skpro.distributions.chi_squared import ChiSquared
 from skpro.distributions.compose import IID

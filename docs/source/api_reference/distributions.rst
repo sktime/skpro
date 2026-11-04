@@ -96,6 +96,7 @@ Integer support
     :template: class.rst
 
     Binomial
+    Categorical
     Geometric
     NegativeBinomial
     Poisson
