@@ -244,14 +244,9 @@ class GLMRegressor(BaseProbaRegressor):
 
         return sm_fmly[dist]()
 
-    # todo 2.15.0
-    # remove the 'family' argument from '__init__' signature
-    # remove the following 'if' check and deprecation warning
-    # de-indent the following 'else' check
-
     def __init__(
         self,
-        family="deprecated",
+        dist="Normal",
         link=None,
         offset_var=None,
         exposure_var=None,
@@ -268,9 +263,7 @@ class GLMRegressor(BaseProbaRegressor):
         disp=False,
         max_start_irls=3,
         add_constant=False,
-        dist="Normal",
     ):
-        self.family = family
         self.dist = dist
         self.link = link
         self.offset_var = offset_var
@@ -303,26 +296,7 @@ class GLMRegressor(BaseProbaRegressor):
         IMPORTANT: no significant compute or memory use should happen in __post_init__,
         memory and compute intensive operations should be in _fit, not __post_init__.
         """
-        family = self.family
-        dist = self.dist
-        # todo 2.15.0: remove the following 'if' check and deprecation warning
-        # handle deprecation of family -> dist
-        if family != "deprecated":
-            from warnings import warn
-
-            warn(
-                "in `GLMRegressor`, parameter 'family' "
-                "will be renamed to 'dist' in version 2.15.0. "
-                "To keep current behaviour and to silence this warning, "
-                "use 'dist' instead of 'family', "
-                "set dist explicitly via kwarg, and do not set family.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-            self._dist = family
-        else:
-            self._dist = dist
-
+        self._dist = self.dist
         self._link = self.link
         self._offset_var = self.offset_var
         self._exposure_var = self.exposure_var
@@ -642,16 +616,16 @@ class GLMRegressor(BaseProbaRegressor):
         params1 = {}
         params2 = {"add_constant": True}
         params3 = {
-            "family": "Poisson",
+            "dist": "Poisson",
             "add_constant": True,
         }
-        params4 = {"family": "Gamma"}
+        params4 = {"dist": "Gamma"}
         params5 = {
-            "family": "Normal",
+            "dist": "Normal",
             "link": "InversePower",
         }
         params6 = {
-            "family": "Poisson",
+            "dist": "Poisson",
             "link": "Log",
             "add_constant": True,
         }

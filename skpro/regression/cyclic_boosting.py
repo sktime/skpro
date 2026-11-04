@@ -41,7 +41,7 @@ class CyclicBoosting(BaseProbaRegressor):
     form of the Johnson QPD.
 
     The model allows to select unbounded, left semi-bounded, and bounded
-    predictive distribution support.
+    predictive distribution support, via the ``bound`` parameter.
 
     Parameters
     ----------
@@ -120,7 +120,7 @@ class CyclicBoosting(BaseProbaRegressor):
         "authors": ["setoguchi-naoki", "felix-wick"],
         "maintainers": ["setoguchi-naoki"],
         "estimator_type": "regressor_proba",
-        "python_dependencies": "cyclic_boosting>=1.4.0",
+        "python_dependencies": ["numba", "numexpr", "decorator"],
         # estimator tags
         # --------------
         "capability:multioutput": False,
@@ -129,14 +129,9 @@ class CyclicBoosting(BaseProbaRegressor):
         "y_inner_mtype": "pd_DataFrame_Table",
         # CI and test flags
         # -----------------
+        "tests:libs": ["skpro.libs.cyclic_boosting"],
         "tests:vm": True,  # requires its own test VM to run
     }
-
-    # todo 2.15.0
-    # remove the 'dist_type' argument from '__init__' signature
-    # remove the following 'if' check and deprecation warning
-    # de-indent the following 'else' check
-    # move dist argument to position of dist_type argument in signature
 
     def __init__(
         self,
@@ -147,9 +142,8 @@ class CyclicBoosting(BaseProbaRegressor):
         lower: Union[float, None] = None,
         upper: Union[float, None] = None,
         maximal_iterations=10,
-        dist_type: Union[str, None] = "deprecated",
-        dist_shape: Union[float, None] = 0.0,
         dist: Union[str, None] = "normal",
+        dist_shape: Union[float, None] = 0.0,
     ):
         self.feature_groups = feature_groups
         self.feature_properties = feature_properties
@@ -158,7 +152,6 @@ class CyclicBoosting(BaseProbaRegressor):
         self.lower = lower
         self.upper = upper
         self.maximal_iterations = maximal_iterations
-        self.dist_type = dist_type
         self.dist = dist
         self.dist_shape = dist_shape
 
@@ -176,31 +169,12 @@ class CyclicBoosting(BaseProbaRegressor):
         IMPORTANT: no significant compute or memory use should happen in __post_init__,
         memory and compute intensive operations should be in _fit, not __post_init__.
         """
-        dist_type = self.dist_type
-        dist = self.dist
         feature_groups = self.feature_groups
         feature_properties = self.feature_properties
         alpha = self.alpha
         maximal_iterations = self.maximal_iterations
 
-        # todo 2.15.0: remove the following 'if' check and deprecation warning
-        # handle deprecation of dist_type -> dist
-        if dist_type != "deprecated":
-            from warnings import warn
-
-            warn(
-                "in `CyclicBoosting`, parameter 'dist_type' "
-                "will be renamed to 'dist' in version 2.15.0. "
-                "To keep current behaviour and to silence this warning, "
-                "use 'dist' instead of 'dist_type', "
-                "set dist explicitly via kwarg, and do not set dist_type.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-            self._dist = dist_type
-        else:
-            self._dist = dist
-
+        self._dist = self.dist
         self.quantiles = [self.alpha, 0.5, 1 - self.alpha]
         self.quantile_values = list()
         self.quantile_est = list()
@@ -218,11 +192,13 @@ class CyclicBoosting(BaseProbaRegressor):
 
         # build estimators
         if self.mode == "multiplicative":
-            from cyclic_boosting import pipeline_CBMultiplicativeQuantileRegressor
+            from skpro.libs.cyclic_boosting import (
+                pipeline_CBMultiplicativeQuantileRegressor,
+            )
 
             regressor = pipeline_CBMultiplicativeQuantileRegressor
         elif self.mode == "additive":
-            from cyclic_boosting import pipeline_CBAdditiveQuantileRegressor
+            from skpro.libs.cyclic_boosting import pipeline_CBAdditiveQuantileRegressor
 
             regressor = pipeline_CBAdditiveQuantileRegressor
         else:

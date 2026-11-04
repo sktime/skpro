@@ -23,7 +23,7 @@ class _CommonTags:
 
 
 class BaseObject(_CommonTags, _BaseObject):
-    """Base class for fittable objects."""
+    """Base class for parametric objects."""
 
     def __init__(self):
         super().__init__()

@@ -1,6 +1,6 @@
 """skpro."""
 
-__version__ = "2.15.1"
+__version__ = "2.16.0"
 
 __all__ = ["show_versions"]
 

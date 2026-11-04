@@ -101,6 +101,7 @@ class GAMRegressor(BaseProbaRegressor):
         # dswah for pygam package
         "maintainers": ["fkiraly", "Omswastik-11", "dswah"],
         "python_dependencies": ["pygam"],
+        "python_version": "<3.15",
         "capability:multioutput": False,
         "capability:missing": True,
         "capability:update": False,
@@ -109,26 +110,18 @@ class GAMRegressor(BaseProbaRegressor):
         "tests:vm": True,
     }
 
-    # todo 2.15.0
-    # remove the 'distribution' argument from '__init__' signature
-    # remove the following 'if' check and deprecation warning
-    # de-indent the following 'else' check
-    # replace distribution with dist arg
-
     def __init__(
         self,
         terms="auto",
-        distribution="deprecated",
+        dist="normal",
         link="identity",
         max_iter=100,
         tol=1e-4,
         callbacks=None,
         fit_intercept=True,
         verbose=False,
-        dist="normal",
     ):
         self.terms = terms
-        self.distribution = distribution
         self.dist = dist
         self.link = link
         self.max_iter = max_iter
@@ -151,25 +144,7 @@ class GAMRegressor(BaseProbaRegressor):
         IMPORTANT: no significant compute or memory use should happen in __post_init__,
         memory and compute intensive operations should be in _fit, not __post_init__.
         """
-        distribution = self.distribution
-        dist = self.dist
-        # todo 2.15.0: remove the following 'if' check and deprecation warning
-        # handle deprecation of distribution -> dist
-        if distribution != "deprecated":
-            from warnings import warn
-
-            warn(
-                "in `GAMRegressor`, parameter 'distribution' "
-                "will be renamed to 'dist' in version 2.15.0. "
-                "To keep current behaviour and to silence this warning, "
-                "use 'dist' instead of 'distribution', "
-                "set dist explicitly via kwarg, and do not set distribution.",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-            self._dist = distribution
-        else:
-            self._dist = dist
+        self._dist = self.dist
 
     def _fit(self, X, y):
         """Fit regressor to training data.
@@ -346,18 +321,18 @@ class GAMRegressor(BaseProbaRegressor):
 
         # if pygam isn't installed, return a marker so tests know to skip
         if not _check_soft_dependencies("pygam", severity="none"):
-            return {"distribution": "runtests-no-pygam"}
+            return {"dist": "runtests-no-pygam"}
         params = [
-            {"distribution": "normal", "terms": "auto"},
-            {"distribution": "poisson", "terms": "auto", "link": "log"},
-            {"distribution": "gamma", "terms": "auto", "link": "log"},
+            {"dist": "normal", "terms": "auto"},
+            {"dist": "poisson", "terms": "auto", "link": "log"},
+            {"dist": "gamma", "terms": "auto", "link": "log"},
             {
-                "distribution": "normal",
+                "dist": "normal",
                 "terms": "auto",
                 "max_iter": 50,
                 "fit_intercept": False,
             },
-            {"distribution": "poisson", "link": "identity", "max_iter": 50},
-            {"distribution": "gamma", "link": "inverse", "tol": 1e-3},
+            {"dist": "poisson", "link": "identity", "max_iter": 50},
+            {"dist": "gamma", "link": "inverse", "tol": 1e-3},
         ]
         return params

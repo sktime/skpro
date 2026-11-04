@@ -57,6 +57,65 @@ class Pareto(BaseDistribution):
         "broadcast_init": "on",
     }
 
+    # documentation hooks for formula injection
+    _formula_docs = {
+        "pdf": r"""
+    The probability density function is given by:
+
+    .. math::
+        f(x) = \begin{cases}
+        \dfrac{\alpha \, \text{scale}^\alpha}{x^{\alpha + 1}} & x \geq \text{scale} \\
+        0 & x < \text{scale}
+        \end{cases}
+    """,
+        #
+        "log_pdf": r"""
+    The log-density is given by:
+
+    .. math::
+        \log f(x) = \log(\alpha) + \alpha \log(\text{scale}) -
+        (\alpha + 1) \log(x)
+    """,
+        #
+        "cdf": r"""
+    The cumulative distribution function is given by:
+
+    .. math::
+        F(x) = 1 - \left(\frac{\text{scale}}{x}\right)^\alpha
+        \text{ for } x \geq \text{scale}
+    """,
+        #
+        "ppf": r"""
+    The quantile function (inverse cdf) is:
+
+    .. math::
+        F^{-1}(p) = \frac{\text{scale}}{(1 - p)^{1/\alpha}}
+    """,
+        #
+        "mean": r"""
+    The expected value, for :math:`\alpha > 1`, is:
+
+    .. math::
+        \mathbb{E}[X] = \frac{\alpha \, \text{scale}}{\alpha - 1}
+    """,
+        #
+        "var": r"""
+    The variance, for :math:`\alpha > 2`, is:
+
+    .. math::
+        \text{Var}(X) = \frac{\alpha \, \text{scale}^2}
+        {(\alpha - 1)^2 (\alpha - 2)}
+    """,
+        #
+        "energy": r"""
+    The self-energy (Gini mean difference), for :math:`\alpha > 1`, is:
+
+    .. math::
+        \mathbb{E}[|X - Y|] = \frac{2 \alpha \, \text{scale}}
+        {(\alpha - 1)(2\alpha - 1)}
+    """,
+    }
+
     def __init__(self, scale, alpha, index=None, columns=None):
         self.scale = scale
         self.alpha = alpha

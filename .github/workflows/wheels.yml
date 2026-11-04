@@ -62,13 +62,14 @@ jobs:
       fail-fast: false  # to not fail all combinations if just one fail
       matrix:
         os: [windows-latest, ubuntu-latest, macOS-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: ${{ matrix.python-version == '3.15' }}
 
       - uses: actions/download-artifact@v8
         with:

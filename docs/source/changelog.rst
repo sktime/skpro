@@ -16,8 +16,66 @@ For planned changes and upcoming releases, see roadmap in the
 `issue tracker <https://github.com/sktime/skpro/issues>`_.
 
 
+[2.16.0] - 2026-09-27
+=====================
+
+Python 3.15 and ``pandas 3`` compatibility update.
+
+Dependency changes
+~~~~~~~~~~~~~~~~~~
+
+* ``skpro`` now supports ``Python 3.15``.
+* The ``cyclic_boosting`` package is now maintained in ``skpro.libs``.
+  ``cyclic_boosting`` is no longer a soft dependency of the ``CyclicBoosting`` regressor.
+
+Deprecations and removals
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Inconsistent naming of "distribution" type arguments in various regressors has
+been changed to ``dist``. The old argument names have now been removed.
+
+Users should update their code to use ``dist`` instead of ``distribution`` or
+``distr_type``, in regressors ``ResidualDouble``, ``CyclicBoosting``,
+``OndilOnlineGamlss``, ``GLMRegressor``, and ``GlumRegressor``.
+
+Enhancements
+~~~~~~~~~~~~
+
+* [ENH] ensure conditional execution of object-specific tests (:pr:`1143`) :user:`adity1raut`
+* [ENH] make string coercion in ``scikit-learn`` adapter ``pandas 3`` compatible (:pr:`1147`) :user:`fkiraly`
+* [ENH] upgraded ``craft`` utility, namespace hook (:pr:`1169`) :user:`fkiraly`
+* [ENH] Fork ``cyclic_boosting`` package into ``skpro`` and update ``NumPy`` compatibility (:pr:`1092`) :user:`utsab345`
+
+Documentation
+~~~~~~~~~~~~~
+
+* [DOC] add usage examples to ``ARDRegression`` and ``BayesianRidge`` docstrings (:pr:`1139`) :user:`cnYui`
+* [DOC] add explicit formulae to docstrings of Pareto distribution (:pr:`1156`) :user:`AliaaNasser7`
+
+Maintenance
+~~~~~~~~~~~
+
+* [MNT] [Dependabot](deps): Bump ``actions/setup-python`` from ``6`` to ``7`` (:pr:`1141`) :user:`dependabot[bot]`
+* [MNT] [Dependabot](deps-dev): Update ``sphinx-gallery`` requirement from ``<0.22.0`` to ``<0.23.0`` (:pr:`1159`) :user:`dependabot[bot]`
+* [MNT] add historical dependencies test matrix (:pr:`1163`) :user:`fkiraly`
+* [MNT] python 3.15 support and testing (:pr:`1162`) :user:`fkiraly`
+* [MNT] dependency upper bound monitor (:pr:`1170`) :user:`fkiraly`
+* [MNT] 2.16.0 deprecations and change actions (:pr:`1167`) :user:`fkiraly`
+
+Contributors
+~~~~~~~~~~~~
+
+:user:`adity1raut`,
+:user:`AliaaNasser7`,
+:user:`cnYui`,
+:user:`fkiraly`,
+:user:`utsab345`
+
+
 [2.15.1] - 2026-09-11
 =====================
+
+Patch with dependency bound updates.
 
 Dependency changes
 ~~~~~~~~~~~~~~~~~~
@@ -129,7 +187,7 @@ Deprecations and removals
 
 Inconsistent naming of "distribution" type arguments in various regressors has
 been changed to ``dist``. The old argument names are still accepted,
-but will be removed in version 2.15.0.
+but will be removed in version 2.16.0.
 Users should update their code to use ``dist`` instead of ``distribution`` or
 ``distr_type``, in regressors ``ResidualDouble``, ``CyclicBoosting``,
 ``OndilOnlineGamlss``, ``GLMRegressor``, and ``GlumRegressor``.

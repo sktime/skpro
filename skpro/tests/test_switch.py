@@ -306,7 +306,7 @@ def _run_test_for_class(
     return False, "False_no_change"
 
 
-def run_test_module_changed(module):
+def run_test_module_changed(module, only_changed_modules=None):
     """Check if test should run based on module changes
 
     This switch can be used to decorate tests not pertaining to a specific class.
@@ -317,27 +317,38 @@ def run_test_module_changed(module):
     This checks whether the module ``module``, or any of its child modules,
     have changed.
 
-    If ``ONLY_CHANGED_MODULES`` is False, the test is always run,
+    If ``only_changed_modules`` is False, the test is always run,
     i.e., this function always returns True.
 
     Parameters
     ----------
     module : string, or list of strings
         modules to check for changes, e.g., ``skpro.regression``
+    only_changed_modules : boolean or None, default=_config.ONLY_CHANGED_MODULES
+        whether to run tests only for classes impacted by changed modules.
+        If False, will only check active "False" conditions to skip.
+        If True, only run the test when one of the specified modules has changed.
+        if None, uses the global setting from
+        skpro.tests._config.ONLY_CHANGED_MODULES
 
     Returns
     -------
     bool : switch to run or skip the test
         True iff: at least one of the modules or its submodules have changed,
-        or if ``ONLY_CHANGED_MODULES`` is False
+        or if ``only_changed_modules`` is False
     """
-    from skpro.tests._config import ONLY_CHANGED_MODULES
-    from skpro.utils.git_diff import is_module_changed
+    # default value for only_changed_modules
+    if only_changed_modules is None:
+        from skpro.tests._config import ONLY_CHANGED_MODULES
+
+        only_changed_modules = ONLY_CHANGED_MODULES
 
     # if ONLY_CHANGED_MODULES is off: always True
     # tests are always run if soft dependencies are present
-    if not ONLY_CHANGED_MODULES:
+    if not only_changed_modules:
         return True
+
+    from skpro.utils.git_diff import is_module_changed
 
     if not isinstance(module, (list, tuple)):
         module = [module]

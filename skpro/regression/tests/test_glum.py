@@ -20,7 +20,7 @@ def test_glum_simple_use():
     y = y.iloc[:200]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
-    reg = GlumRegressor(family="normal")
+    reg = GlumRegressor(dist="normal")
     reg.fit(X_train, y_train)
     y_pred = reg.predict(X_test)
     y_pred_proba = reg.predict_proba(X_test)
