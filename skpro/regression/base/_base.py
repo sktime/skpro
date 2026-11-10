@@ -769,6 +769,11 @@ class BaseProbaRegressor(BaseEstimator):
             req_metadata = ["n_instances", "feature_names"]
         else:
             req_metadata = ["feature_names"]
+
+        capa_missing = self.get_tag("capability:missing")
+        if not capa_missing:
+            req_metadata = req_metadata + ["has_nans"]
+
         # input validity check for X
         valid, msg, X_metadata = check_is_mtype(
             X,
@@ -786,6 +791,9 @@ class BaseProbaRegressor(BaseEstimator):
         # update with clearer message
         if not valid:
             check_is_error_msg(msg, var_name="X", raise_exception=True)
+
+        if not capa_missing:
+            self._raise_if_has_nans(X_metadata, var_name="X")
 
         # if we have seen X before, check against columns
         if hasattr(self, "feature_names_in_"):
@@ -819,13 +827,47 @@ class BaseProbaRegressor(BaseEstimator):
         else:
             return X_inner
 
+    def _raise_if_has_nans(self, metadata, var_name):
+        """Raise informative error if data has missing values, but not supported.
+
+        To be called only if the ``capability:missing`` tag is False.
+
+        Parameters
+        ----------
+        metadata : dict
+            metadata returned by ``check_is_mtype``, must contain ``"has_nans"``.
+            If ``"has_nans"`` could not be determined (e.g., lazy containers),
+            no error is raised.
+        var_name : str
+            name of the variable checked, used in the error message
+        """
+        has_nans = metadata.get("has_nans", "NA")
+        # has_nans may be "NA" if it cannot be inferred, e.g., for lazy containers
+        if not isinstance(has_nans, str) and bool(has_nans):
+            raise ValueError(
+                f"{type(self).__name__} does not support missing values, "
+                f"but {var_name} passed to {type(self).__name__} contains "
+                "missing values (NaN). This is indicated by the "
+                '"capability:missing" tag of the estimator being False. '
+                f"Either remove or impute missing values in {var_name} before "
+                "passing it, e.g., by using an imputer such as sklearn's "
+                "SimpleImputer in an skpro Pipeline, as in "
+                "Pipeline([('imputer', SimpleImputer()), ('reg', regressor)]), "
+                'or use an estimator with the "capability:missing" tag being True.'
+            )
+
     def _check_y(self, y):
+        capa_missing = self.get_tag("capability:missing")
+        req_metadata = ["n_instances", "feature_names"]
+        if not capa_missing:
+            req_metadata = req_metadata + ["has_nans"]
+
         # input validity check for y
         valid, msg, metadata = check_is_mtype(
             y,
             ALLOWED_MTYPES,
             "Table",
-            return_metadata=["n_instances", "feature_names"],
+            return_metadata=req_metadata,
             var_name="y",
             msg_return_dict="list",
         )
@@ -833,6 +875,9 @@ class BaseProbaRegressor(BaseEstimator):
         # update with clearer message
         if not valid:
             check_is_error_msg(msg, var_name="y", raise_exception=True)
+
+        if not capa_missing:
+            self._raise_if_has_nans(metadata, var_name="y")
 
         # convert y to y_inner_mtype
         y_inner_mtype = self.get_tag("y_inner_mtype")
