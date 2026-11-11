@@ -561,7 +561,7 @@ class Histogram(_BaseArrayDistribution):
             P = p
             cum_bin_index_P = np.where(P >= cum_sum_mass)[0]
             if P < 0 or P > 1:
-                X = np.NaN
+                X = np.nan
             elif len(cum_bin_index_P) == 0:
                 X = bins[0] + P / pdf_bins[len(cum_bin_index_P)]
             elif len(cum_bin_index_P) > 0:
@@ -598,7 +598,7 @@ class Histogram(_BaseArrayDistribution):
                 # find a way to calculate pdf for 1D array ...
                 cum_bin_index_P = np.where(P >= cum_sum_mass)[0]
                 if P < 0 or P > 1:
-                    ppf_row.append(np.NaN)
+                    ppf_row.append(np.nan)
                 elif len(cum_bin_index_P) == 0:
                     X = bins_hist[0] + P / pdf_bins[len(cum_bin_index_P)]
                     ppf_row.append(round(X, 4))
