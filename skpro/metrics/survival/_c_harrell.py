@@ -100,6 +100,31 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
       Multivariable prognostic models: issues in developing models,
       evaluating assumptions and adequacy, and measuring and reducing errors.
       Statistics in Medicine, 15(4), 361-87, 1996.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from skpro.distributions import Normal
+    >>> from skpro.metrics.survival import ConcordanceHarrell
+    >>> y_true = pd.DataFrame({"time": [2.0, 4.0, 6.0, 8.0]})
+    >>> C_true = pd.DataFrame({"time": [0, 1, 0, 0]})  # second sample is censored
+    >>> y_pred = Normal(mu=[[3.0], [4.5], [7.0], [5.0]], sigma=1.0, columns=["time"])
+    >>> metric = ConcordanceHarrell()
+    >>> float(metric(y_true, y_pred, C_true=C_true))
+    0.75
+    >>> metric.evaluate_by_index(y_true, y_pred, C_true=C_true).to_numpy().ravel()
+    array([1.5, 0.5, 0.5, 0.5])
+
+    Without ``C_true``, all samples are treated as uncensored:
+
+    >>> float(metric(y_true, y_pred))  # doctest: +ELLIPSIS
+    0.8333...
+
+    Averaging per-index fractions instead of pooling all comparable pairs:
+
+    >>> metric = ConcordanceHarrell(normalization="index")
+    >>> float(metric(y_true, y_pred, C_true=C_true))
+    0.625
     """
 
     _tags = {
@@ -107,9 +132,6 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
         "capability:survival": True,
         "scitype:y_pred": "pred_proba",
         "lower_is_better": False,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(
