@@ -195,6 +195,34 @@ def test_base_default_minimal_cdf():
     assert minimal_n.cdf(0) < minimal_n.cdf(100)
 
 
+def test_ppf_fallback_out_of_range_probabilities():
+    """The generic ppf fallback returns NaN for invalid probabilities."""
+    from skpro.distributions.mixture import Mixture
+    from skpro.distributions.normal import Normal
+
+    scalar = Mixture(
+        distributions=[
+            ("n1", Normal(mu=0, sigma=1)),
+            ("n2", Normal(mu=1, sigma=1)),
+        ]
+    )
+    array = Mixture(
+        distributions=[
+            ("n1", Normal(mu=[[0, 1]], sigma=1)),
+            ("n2", Normal(mu=[[1, 2]], sigma=1)),
+        ]
+    )
+
+    for probability in (-0.1, 1.1):
+        assert np.isnan(scalar.ppf(probability))
+        ppf = array.ppf(np.full(array.shape, probability))
+        assert np.isnan(ppf.to_numpy()).all()
+
+    mixed_ppf = array.ppf(np.array([[-0.1, 0.5]]))
+    assert np.isnan(mixed_ppf.iloc[0, 0])
+    assert np.isfinite(mixed_ppf.iloc[0, 1])
+
+
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
