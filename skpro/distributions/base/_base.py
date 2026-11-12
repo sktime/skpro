@@ -1253,10 +1253,13 @@ class BaseDistribution(BaseObject):
                 return bisect(opt_fun, left_bd, right_bd, maxiter=max_iter, **kwargs)
 
             shape = self.shape
+            valid_p = np.isfinite(p) & (p >= 0) & (p <= 1)
 
             # TODO: remove duplications in the code below
             # requires cdf to accept numpy, or allow subsetting to produce scalar
             if len(shape) == 0:
+                if not valid_p:
+                    return np.nan
 
                 def opt_fun(x):
                     """Optimization function, to find x s.t. cdf(x) = p_ix."""
@@ -1274,6 +1277,9 @@ class BaseDistribution(BaseObject):
                     col = self.columns[j]
                     d_ix = self.loc[[ix], [col]]
                     p_ix = p[i, j]
+                    if not valid_p[i, j]:
+                        result[i, j] = np.nan
+                        continue
 
                     def opt_fun(x):
                         """Optimization function, to find x s.t. cdf(x) = p_ix."""
