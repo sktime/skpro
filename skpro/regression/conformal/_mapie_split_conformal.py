@@ -32,7 +32,26 @@ class MapieSplitConformalRegressor(BaseProbaRegressor):
         "gamma": GammaConformityScore
     random_state : int, RandomState instance or None, default=None
         Controls the shuffling applied to the data before applying the split.
+
+Examples
+    --------
+    >>> from skpro.regression.conformal import MapieSplitConformalRegressor
+    >>> from sklearn.linear_model import LinearRegression
+    >>> from sklearn.datasets import load_diabetes
+    >>> from sklearn.model_selection import train_test_split
+    >>>
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>>
+    >>> reg_base = LinearRegression()
+    >>>
+    >>> reg_proba = MapieSplitConformalRegressor(reg_base, test_size=0.2, random_state=42)
+    >>> reg_proba.fit(X_train, y_train)
+    MapieSplitConformalRegressor(...)
+    >>> y_pred_int = reg_proba.predict_interval(X_test)
+    >>> y_pred_dist = reg_proba.predict_proba(X_test)
     """
+
 
     _tags = {
         "authors": [
