@@ -76,3 +76,40 @@ def test_qpd_u_simple_use():
     )
 
     qpd.mean()
+
+
+@pytest.mark.skipif(
+    not run_test_for_class(QPD_S),
+    reason="run test only if softdeps are present and incrementally (if requested)",
+)
+def test_qpd_s_bounds():
+    """Test QPD_S behavior at or below the lower bound avoids RuntimeWarnings."""
+    import warnings
+
+    qpd = QPD_S(
+        alpha=0.2,
+        qv_low=[-0.3],
+        qv_median=[0.0],
+        qv_high=[0.3],
+        lower=-0.5,
+    )
+    
+    # Test values below or exactly at the lower bound
+    import pandas as pd
+    x = pd.DataFrame([[-1.0], [-0.5], [0.1]])
+    
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        
+        pdf_res = qpd.pdf(x)
+        cdf_res = qpd.cdf(x)
+        
+        # Verify no RuntimeWarning was raised (specifically division by zero or invalid log)
+        warning_messages = [str(warn.message) for warn in w]
+        assert len(warning_messages) == 0, f"Warnings raised: {warning_messages}"
+        
+        # Verify correct outputs for out-of-bounds values
+        assert pdf_res.iloc[0, 0] == 0.0
+        assert pdf_res.iloc[1, 0] == 0.0
+        assert cdf_res.iloc[0, 0] == 0.0
+        assert cdf_res.iloc[1, 0] == 0.0
