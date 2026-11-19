@@ -58,6 +58,32 @@ def test_scalar_distribution():
     not run_test_module_changed("skpro.distributions"),
     reason="run only if skpro.distributions has been changed",
 )
+def test_scalar_distribution_vectorized_eval():
+    """Vectorized evaluation of scalar continuous distributions."""
+    mu = 0.0
+    sigma = 1.5
+    d = Normal(mu=mu, sigma=sigma)
+    x = np.linspace(-2, 2, 9)
+
+    pdf_vec = d.pdf(x)
+    pdf_expected = np.array([d.pdf(float(val)) for val in x])
+    assert isinstance(pdf_vec, np.ndarray)
+    assert pdf_vec.shape == x.shape
+    np.testing.assert_allclose(pdf_vec, pdf_expected)
+
+    log_pdf_vec = d.log_pdf(x)
+    log_pdf_expected = np.array([d.log_pdf(float(val)) for val in x])
+    np.testing.assert_allclose(log_pdf_vec, log_pdf_expected)
+
+    cdf_vec = d.cdf(x)
+    cdf_expected = np.array([d.cdf(float(val)) for val in x])
+    np.testing.assert_allclose(cdf_vec, cdf_expected)
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_broadcast_ambiguous():
     """Test broadcasting in cases of ambiguous parameter dimensions."""
     mu = [1]
@@ -99,6 +125,31 @@ def test_broadcast_ambiguous():
     assert isinstance(spl_mult.index, pd.MultiIndex)
     assert spl_mult.index.nlevels == 2
     assert spl_mult.columns.equals(pd.RangeIndex(1))
+
+
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
+def test_scalar_discrete_vectorized_eval():
+    """Vectorized evaluation of scalar discrete distributions."""
+    mu = 3.0
+    d = Poisson(mu=mu)
+    x = np.arange(0, 6)
+
+    pmf_vec = d.pmf(x)
+    pmf_expected = np.array([d.pmf(int(val)) for val in x])
+    assert isinstance(pmf_vec, np.ndarray)
+    assert pmf_vec.shape == x.shape
+    np.testing.assert_allclose(pmf_vec, pmf_expected)
+
+    log_pmf_vec = d.log_pmf(x)
+    log_pmf_expected = np.array([d.log_pmf(int(val)) for val in x])
+    np.testing.assert_allclose(log_pmf_vec, log_pmf_expected)
+
+    cdf_vec = d.cdf(x)
+    cdf_expected = np.array([d.cdf(int(val)) for val in x])
+    np.testing.assert_allclose(cdf_vec, cdf_expected)
 
 
 @pytest.mark.skipif(
