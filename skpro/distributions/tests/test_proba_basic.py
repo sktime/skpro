@@ -141,6 +141,20 @@ def test_transformed_distribution_index_differs_from_inner():
     np.testing.assert_allclose(ppf.values, 2 * mu)
     np.testing.assert_allclose(d.cdf(2 * mu).values, 0.5)
 
+    # index and columns not passed: they default to a RangeIndex,
+    # which also differs from the columns of the inner distribution
+    d_default = TransformedDistribution(
+        distribution=inner,
+        transform=np.exp,
+        inverse_transform=np.log,
+    )
+
+    ppf = d_default.ppf(0.5)
+    assert ppf.index.equals(d_default.index)
+    assert ppf.columns.equals(d_default.columns)
+    np.testing.assert_allclose(ppf.values, np.exp(mu))
+    np.testing.assert_allclose(d_default.cdf(np.exp(mu)).values, 0.5)
+
 
 @pytest.mark.skipif(
     not run_test_module_changed("skpro.distributions"),
