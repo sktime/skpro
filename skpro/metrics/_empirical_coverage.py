@@ -55,14 +55,45 @@ class EmpiricalCoverage(BaseProbaMetric):
         Can be specified if no explicit coverages are present in the direct use of
         the metric, for instance in benchmarking via ``evaluate``, or tuning
         via ``ForecastingGridSearchCV``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from skpro.metrics import EmpiricalCoverage
+    >>> y_true = pd.Series([3, -0.5, 2, 7, 2])
+    >>> columns = pd.MultiIndex.from_tuples([(0, 0.9, "lower"), (0, 0.9, "upper")])
+    >>> y_pred = pd.DataFrame(
+    ...     [[2, 4], [0, 1], [1, 3], [5, 6], [1, 3]], columns=columns
+    ... )
+    >>> ec = EmpiricalCoverage()
+    >>> float(ec(y_true, y_pred))
+    0.6
+    >>> ec.evaluate_by_index(y_true, y_pred).to_numpy()
+    array([1., 0., 1., 0., 1.])
+
+    With multiple coverages, ``score_average=False`` returns one score per coverage:
+
+    >>> columns = pd.MultiIndex.from_tuples(
+    ...     [(0, 0.5, "lower"), (0, 0.5, "upper"), (0, 0.9, "lower"), (0, 0.9, "upper")]
+    ... )
+    >>> y_pred = pd.DataFrame(
+    ...     [
+    ...         [2.5, 3.5, 2, 4],
+    ...         [0, 1, -1, 1],
+    ...         [2.5, 3, 1, 3],
+    ...         [5, 6, 4, 8],
+    ...         [1, 3, 0, 4],
+    ...     ],
+    ...     columns=columns,
+    ... )
+    >>> ec = EmpiricalCoverage(score_average=False)
+    >>> ec(y_true, y_pred).to_numpy()
+    array([0.4, 1. ])
     """
 
     _tags = {
         "scitype:y_pred": "pred_interval",
         "lower_is_better": False,
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(
