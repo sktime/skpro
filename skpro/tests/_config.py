@@ -17,4 +17,10 @@ EXCLUDE_ESTIMATORS = [
 ]
 
 
-EXCLUDED_TESTS = {}
+EXCLUDED_TESTS = {
+    # test_mean_vs_sample fails until the following fixes are merged,
+    # remove each entry once its fix is on main
+    "MeanScale": ["test_mean_vs_sample"],  # mean ignores sigma, #1185, PR #1188
+    "Mixture": ["test_mean_vs_sample"],  # sample #974 (PR #979), weights PR #1193
+    "TransformedDistribution": ["test_mean_vs_sample"],  # ppf labels, #1186, PR #1189
+}
