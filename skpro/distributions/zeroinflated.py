@@ -164,14 +164,16 @@ class ZeroInflated(BaseDistribution):
         p_zi = self._bc_params["p"]
         prob_structural_zero = 1.0 - p_zi
 
-        q_rescaled = (p - prob_structural_zero) / p_zi
+        is_invalid = (p < 0.0) | (p > 1.0)
 
-        eps = np.finfo(q_rescaled.dtype).eps
-        q_rescaled = np.clip(q_rescaled - eps, 0.0, 1.0)
+        safe_p_zi = np.where(p_zi == 0, 1.0, p_zi)
+        q_rescaled = (p - prob_structural_zero) / safe_p_zi
+        q_rescaled = np.clip(q_rescaled, 0.0, 1.0)
 
         y_base = self.distribution.ppf(q_rescaled)
 
-        return np.where(p <= prob_structural_zero, 0.0, y_base)
+        res = np.where(p_zi == 0, 0.0, np.where(p <= prob_structural_zero, 0.0, y_base))
+        return np.where(is_invalid, np.nan, res)
 
     def _cdf(self, x):
         p = self._bc_params["p"]
