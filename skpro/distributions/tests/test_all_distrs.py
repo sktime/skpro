@@ -282,17 +282,19 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
     def test_mean_vs_sample(self, object_instance):
         """Test that mean agrees with the mean of samples drawn with sample.
 
-        Draws ``MEAN_SAMPLE_N`` samples with a fixed seed and allows a deviation of
-        ``MEAN_SAMPLE_K`` standard errors per entry. The standard error is estimated
-        from the sample variance, so a wrong ``var`` does not affect this test.
-        If ``mean`` is approximate, its own Monte Carlo error is added.
-        Entries with non-finite ``mean``, e.g., for heavy tails, are not checked.
+        Draws ``MEAN_SAMPLE_N`` samples and allows a deviation of ``MEAN_SAMPLE_K``
+        standard errors per entry. The standard error is estimated from the sample
+        variance, so the value returned by ``var`` does not enter the tolerance.
+        If ``mean`` is approximate, an extra error term is added.
+        Only entries with finite ``mean`` and finite ``var`` are checked, since for
+        heavy tails the sample variance does not give a reliable standard error.
         """
         d = object_instance
         n = MEAN_SAMPLE_N
 
         mean = np.asarray(d.mean(), dtype=float)
-        if not np.all(np.isfinite(mean)):
+        checked = np.isfinite(mean) & np.isfinite(np.asarray(d.var(), dtype=float))
+        if not np.any(checked):
             return
 
         rng_state = np.random.get_state()
@@ -318,9 +320,10 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
         tol = MEAN_SAMPLE_K * np.sqrt(std_err_sq) + 1e-8
 
         deviation = np.abs(spl_mean - mean)
-        assert np.all(deviation <= tol), (
+        tol = np.broadcast_to(tol, deviation.shape)
+        assert np.all(deviation[checked] <= tol[checked]), (
             f"mean of {type(d).__name__} disagrees with the mean of {n} samples: "
-            f"largest deviation {np.max(deviation)}, mean {mean}, "
+            f"largest deviation {np.max(deviation[checked])}, mean {mean}, "
             f"sample mean {spl_mean}, tolerance {tol}"
         )
 
