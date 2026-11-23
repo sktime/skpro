@@ -47,7 +47,16 @@ class ZeroInflated(BaseDistribution):
         # estimator tags
         # --------------
         "capabilities:approx": ["energy"],
-        "capabilities:exact": ["ppf", "mean", "var", "log_pmf", "pmf", "cdf"],
+        "capabilities:exact": [
+            "ppf",
+            "mean",
+            "var",
+            "log_pmf",
+            "pmf",
+            "cdf",
+            "pdf",
+            "log_pdf",
+        ],
         "distr:measuretype": "mixed",
         "distr:paramtype": "parametric",
         "broadcast_init": "on",
@@ -74,13 +83,14 @@ class ZeroInflated(BaseDistribution):
         self_exact_capas = self.get_tag("capabilities:exact", []).copy()
         self_approx_capas = self.get_tag("capabilities:approx", []).copy()
         distr_exact_capas = distribution.get_tag("capabilities:exact", []).copy()
-        for capa in self_exact_capas:
-            if capa not in distr_exact_capas:
-                self_exact_capas.remove(capa)
-                self_approx_capas.append(capa)
 
-        self.set_tags(**{"capabilities:exact": self_exact_capas})
-        self.set_tags(**{"capabilities:approx": self_approx_capas})
+        exact_capas = [c for c in self_exact_capas if c in distr_exact_capas]
+        approx_capas = self_approx_capas + [
+            c for c in self_exact_capas if c not in distr_exact_capas
+        ]
+
+        self.set_tags(**{"capabilities:exact": exact_capas})
+        self.set_tags(**{"capabilities:approx": approx_capas})
 
         # the measuretype of this distribution is discrete if the inner
         # distribution is discrete, otherwise it is mixed
