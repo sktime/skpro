@@ -1,9 +1,12 @@
 """Truncated distributions."""
+
 from typing import Tuple, Union
 
 import numpy as np
+import pandas as pd
 
 from skpro.distributions.base import BaseDistribution
+from skpro.distributions.base._base import is_scalar_notnone
 
 
 class TruncatedDistribution(BaseDistribution):
@@ -204,7 +207,16 @@ class TruncatedDistribution(BaseDistribution):
         return self._calculate_density(x, self.distribution.log_pmf, as_log=True)
 
     def _iloc(self, rowidx=None, colidx=None):
+        if is_scalar_notnone(rowidx) and is_scalar_notnone(colidx):
+            return self._iat(rowidx, colidx)
+        if is_scalar_notnone(rowidx):
+            rowidx = pd.Index([rowidx])
+        if is_scalar_notnone(colidx):
+            colidx = pd.Index([colidx])
+
         distr = self.distribution.iloc[rowidx, colidx]
+        lower = self._subset_param(self.lower, rowidx=rowidx, colidx=colidx)
+        upper = self._subset_param(self.upper, rowidx=rowidx, colidx=colidx)
 
         if rowidx is not None:
             new_index = self.index[rowidx]
@@ -219,8 +231,8 @@ class TruncatedDistribution(BaseDistribution):
         cls = type(self)
         return cls(
             distribution=distr,
-            lower=self.lower,
-            upper=self.upper,
+            lower=lower,
+            upper=upper,
             interval_type=self.interval_type,
             index=new_index,
             columns=new_columns,
@@ -229,12 +241,28 @@ class TruncatedDistribution(BaseDistribution):
     def _iat(self, rowidx=None, colidx=None):
         if rowidx is None or colidx is None:
             raise ValueError("iat method requires both row and column index")
-        self_subset = self.iloc[[rowidx], [colidx]]
+
+        if self.ndim == 0:
+            if rowidx != 0 or colidx != 0:
+                raise IndexError(
+                    f"index {rowidx}, {colidx} is out of bounds for scalar distribution"
+                )
+            distr_iat = self.distribution.iat[0, 0]
+        else:
+            self_subset = self.iloc[[rowidx], [colidx]]
+            distr_iat = self_subset.distribution.iat[0, 0]
+
+        lower_iat = self._subset_param(
+            self.lower, rowidx=rowidx, colidx=colidx, coerce_scalar=True
+        )
+        upper_iat = self._subset_param(
+            self.upper, rowidx=rowidx, colidx=colidx, coerce_scalar=True
+        )
 
         return type(self)(
-            distribution=self_subset.distribution.iat[0, 0],
-            lower=self.lower,
-            upper=self.upper,
+            distribution=distr_iat,
+            lower=lower_iat,
+            upper=upper_iat,
             interval_type=self.interval_type,
         )
 
