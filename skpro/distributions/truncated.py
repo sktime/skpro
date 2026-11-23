@@ -103,12 +103,14 @@ class TruncatedDistribution(BaseDistribution):
         self_exact_capas = self.get_tag("capabilities:exact", []).copy()
         self_approx_capas = self.get_tag("capabilities:approx", []).copy()
         distr_exact_capas = distribution.get_tag("capabilities:exact", []).copy()
+        new_exact_capas = []
         for capa in self_exact_capas:
             if capa not in distr_exact_capas:
-                self_exact_capas.remove(capa)
                 self_approx_capas.append(capa)
+            else:
+                new_exact_capas.append(capa)
 
-        self.set_tags(**{"capabilities:exact": self_exact_capas})
+        self.set_tags(**{"capabilities:exact": new_exact_capas})
         self.set_tags(**{"capabilities:approx": self_approx_capas})
 
         # the measure type of this distribution is discrete if the inner distribution
@@ -175,14 +177,11 @@ class TruncatedDistribution(BaseDistribution):
         offset = prob_at_lower
 
         shifted_p = p * factor + offset
+        shifted_p = np.clip(shifted_p, 0.0, 1.0)
 
-        # NB: some parameterizations of discrete distributions may lead to rounding
-        # errors, causing "off-by-one" issues in the quantile function. As a
-        # workaround we subtract a small epsilon value.
-        eps = np.finfo(p.dtype).eps
-        shifted_p = np.clip(shifted_p - eps, 0.0, 1.0)
-
-        return self.distribution.ppf(shifted_p)
+        res = self.distribution.ppf(shifted_p)
+        valid = (p >= 0.0) & (p <= 1.0)
+        return np.where(valid, res, np.nan)
 
     def _cdf(self, x):
         prob_at_lower, prob_at_upper = self._get_low_high_prob()
