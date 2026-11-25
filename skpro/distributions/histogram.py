@@ -440,7 +440,8 @@ class Histogram(_BaseArrayDistribution):
             if len(np.where(X < bins)[0]) and len(np.where(X >= bins)[0]):
                 lpdf = lpdf_arr[min(np.where(X < bins)[0]) - 1]
             else:
-                lpdf = 0
+                # outside of the bins, the pdf is 0
+                lpdf = -np.inf
             return lpdf
 
         x = np.array(x)
@@ -461,7 +462,7 @@ class Histogram(_BaseArrayDistribution):
                 if len(np.where(X < bins_hist)[0]) and len(np.where(X >= bins_hist)[0]):
                     lpdf_row.append(lpdf_arr[min(np.where(X < bins_hist)[0]) - 1])
                 else:
-                    lpdf_row.append(0)
+                    lpdf_row.append(-np.inf)
             lpdf.append(lpdf_row)
         lpdf = np.array(lpdf)
         return lpdf

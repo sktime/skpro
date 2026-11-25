@@ -171,9 +171,14 @@ class Weibull(BaseDistribution):
         k = self._bc_params["k"]
         scale = self._bc_params["scale"]
 
-        pdf_arr = (k / scale) * (x / scale) ** (k - 1) * np.exp(-((x / scale) ** k))
-        pdf_arr = pdf_arr * (x >= 0)  # if x < 0, pdf = 0
-        return pdf_arr
+        # x < 0 is outside the support, and a fractional power of it is nan
+        x_nonneg = np.where(x >= 0, x, 0.0)
+        pdf_arr = (
+            (k / scale)
+            * (x_nonneg / scale) ** (k - 1)
+            * np.exp(-((x_nonneg / scale) ** k))
+        )
+        return np.where(x >= 0, pdf_arr, 0.0)
 
     def _log_pdf(self, x):
         """Logarithmic probability density function.
@@ -191,9 +196,16 @@ class Weibull(BaseDistribution):
         k = self._bc_params["k"]
         scale = self._bc_params["scale"]
 
-        lpdf_arr = np.log(k / scale) + (k - 1) * np.log(x / scale) - (x / scale) ** k
-        lpdf_arr = lpdf_arr + np.log(x >= 0)  # if x < 0, pdf = 0, so log pdf = -inf
-        return lpdf_arr
+        x_pos = np.where(x > 0, x, scale)
+        lpdf_arr = (
+            np.log(k / scale) + (k - 1) * np.log(x_pos / scale) - (x_pos / scale) ** k
+        )
+        # at x = 0, the pdf is 0 for k > 1, k / scale for k = 1, and infinite for k < 1
+        lpdf_zero = np.where(
+            k > 1, -np.inf, np.where(k == 1, np.log(k / scale), np.inf)
+        )
+        lpdf_arr = np.where(x == 0, lpdf_zero, lpdf_arr)
+        return np.where(x >= 0, lpdf_arr, -np.inf)
 
     def _cdf(self, x):
         """Cumulative distribution function.
@@ -211,9 +223,9 @@ class Weibull(BaseDistribution):
         k = self._bc_params["k"]
         scale = self._bc_params["scale"]
 
-        cdf_arr = 1 - np.exp(-((x / scale) ** k))
-        cdf_arr = cdf_arr * (x >= 0)  # if x < 0, cdf = 0
-        return cdf_arr
+        x_nonneg = np.where(x >= 0, x, 0.0)
+        cdf_arr = 1 - np.exp(-((x_nonneg / scale) ** k))
+        return np.where(x >= 0, cdf_arr, 0.0)
 
     def _ppf(self, p):
         """Quantile function = percent point function = inverse cdf.
