@@ -49,9 +49,7 @@ def test_glm_with_offset_exposure():
     X["exp"] = np.arange(1, X.shape[0] + 1)
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
 
-    glm_reg = GLMRegressor(
-        family="Normal", link="Log", offset_var="off", exposure_var=-1
-    )
+    glm_reg = GLMRegressor(dist="Normal", link="Log", offset_var="off", exposure_var=-1)
     glm_reg.fit(X_train, y_train)
     y_pred = glm_reg.predict(X_test)
     y_pred_proba = glm_reg.predict_proba(X_test)
