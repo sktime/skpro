@@ -155,9 +155,8 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
             risk_scores = -risk_scores
         risk_scores = risk_scores.to_numpy()
 
-        ncomp_mat = np.zeros_like(y_true)
-        nconc_mat = np.zeros_like(y_true)
-        result = np.zeros_like(y_true)
+        ncomp_mat = np.zeros(y_true.shape, dtype=float)
+        nconc_mat = np.zeros(y_true.shape, dtype=float)
 
         # compute concordance index for each index
         for j in range(y_true.shape[1]):
@@ -190,7 +189,7 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
                 # handle ties in total of concordant pairs
                 if tie_score != 0:
                     nconc = nconc.astype(float)
-                    nconc += np.sum((yj != yij) & (rj == rij)) * tie_score
+                    nconc += np.sum((comp1 | comp2) & (rj == rij)) * tie_score
                     nconc += np.sum(xone_unc & (yj == yij) & (rj == rij)) * tie_score
 
                 # count comparable pairs
@@ -212,9 +211,10 @@ class ConcordanceHarrell(BaseSurvDistrMetric):
             # weighting is such that rows contain simple fractions
             # but the average over rows is not the overall C-index,
             # as number of comparable pairs is in general not the same for each index
-            ncomp_mat[ncomp_mat == 0] = 1  # handling of case 0 / 0, avoid nans
-            result = nconc_mat / ncomp_mat
-            result[ncomp_mat == 1] = tie_score  # handling of case 0 / 0
+            zero_comp = ncomp_mat == 0
+            denom = np.where(zero_comp, 1.0, ncomp_mat)
+            result = nconc_mat / denom
+            result[zero_comp] = tie_score  # handling of case 0 / 0
 
         res_df = pd.DataFrame(result, index=ix, columns=cols)
 
