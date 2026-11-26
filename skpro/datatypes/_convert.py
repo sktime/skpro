@@ -98,7 +98,7 @@ def get_convert_dict(soft_deps="present"):
     return convert_dict.copy()
 
 
-@lru_cache(maxsize=1)
+@lru_cache(maxsize=2)
 def generate_convert_dict(soft_deps="present"):
     """Generate convert_dict using lookup."""
     from skbase.utils.dependencies import _check_estimator_deps
@@ -182,8 +182,9 @@ def convert(
 
     Returns
     -------
-    converted_obj : to_type - object obj converted to to_type
-                    if obj was None, returns None
+    converted_obj : to_type
+        object obj converted to to_type;
+        if obj was None, returns None
     to_type : str, only returned if ``return_to_mtype=True``
         mtype of ``converted_obj`` - useful of ``to_type`` was a list
 
