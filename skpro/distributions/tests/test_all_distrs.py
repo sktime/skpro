@@ -55,6 +55,11 @@ METHODS_X_POS = ["energy", "pdf", "pmf", "cdf", "surv", "haz"]  # result non-neg
 METHODS_P = ["ppf"]
 METHODS_ROWWISE = ["energy"]  # results in one column
 
+# sample size, tolerance in standard errors, and seed for test_mean_vs_sample
+MEAN_SAMPLE_N = 1000
+MEAN_SAMPLE_K = 6
+MEAN_SAMPLE_SEED = 42
+
 
 class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTester):
     """Module level tests for all skpro parameter fitters."""
@@ -273,6 +278,54 @@ class TestAllDistributions(PackageConfig, DistributionFixtureGenerator, QuickTes
             assert np.allclose(x.values, x_approx.values)
         else:
             assert np.allclose(x, x_approx)
+
+    def test_mean_vs_sample(self, object_instance):
+        """Test that mean agrees with the mean of samples drawn with sample.
+
+        Draws ``MEAN_SAMPLE_N`` samples and allows a deviation of ``MEAN_SAMPLE_K``
+        standard errors per entry. The standard error is estimated from the sample
+        variance, so the value returned by ``var`` does not enter the tolerance.
+        If ``mean`` is approximate, an extra error term is added.
+        Only entries with finite ``mean`` and finite ``var`` are checked, since for
+        heavy tails the sample variance does not give a reliable standard error.
+        """
+        d = object_instance
+        n = MEAN_SAMPLE_N
+
+        mean = np.asarray(d.mean(), dtype=float)
+        checked = np.isfinite(mean) & np.isfinite(np.asarray(d.var(), dtype=float))
+        if not np.any(checked):
+            return
+
+        rng_state = np.random.get_state()
+        try:
+            np.random.seed(MEAN_SAMPLE_SEED)
+            spl = d.sample(n)
+        finally:
+            np.random.set_state(rng_state)
+
+        if d.ndim > 0:
+            levels = list(range(1, spl.index.nlevels))
+            grouped = spl.groupby(level=levels, sort=False)
+            spl_mean = grouped.mean().loc[d.index, d.columns].to_numpy(dtype=float)
+            spl_var = grouped.var().loc[d.index, d.columns].to_numpy(dtype=float)
+        else:
+            values = np.asarray(spl, dtype=float).ravel()
+            spl_mean = values.mean()
+            spl_var = values.var(ddof=1)
+
+        std_err_sq = spl_var / n
+        if "mean" in (d.get_tag("capabilities:approx") or []):
+            std_err_sq = std_err_sq + spl_var / d.get_tag("approx_mean_spl")
+        tol = MEAN_SAMPLE_K * np.sqrt(std_err_sq) + 1e-8
+
+        deviation = np.abs(spl_mean - mean)
+        tol = np.broadcast_to(tol, deviation.shape)
+        assert np.all(deviation[checked] <= tol[checked]), (
+            f"mean of {type(d).__name__} disagrees with the mean of {n} samples: "
+            f"largest deviation {np.max(deviation[checked])}, mean {mean}, "
+            f"sample mean {spl_mean}, tolerance {tol}"
+        )
 
     def test_index_columns_last_args(self, object_class):
         """Test that index and columns are the last arguments in __init__."""
