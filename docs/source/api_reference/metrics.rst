@@ -32,6 +32,8 @@ Quantile and interval prediction metrics
     EmpiricalCoverage
     ConstraintViolation
     IntervalWidth
+    Overestimated
+    Underestimated
 
 Distribution prediction metrics
 -------------------------------
