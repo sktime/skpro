@@ -104,11 +104,8 @@ class Beta(_ScipyAdapter):
             if xi <= 0:
                 return m - xi
             if xi >= 1:
-                # Use mean - xi + 2*(1 - 0) = mean - xi + 2
-                # since integral from 0 to 1 of CDF
-                cdf = lambda t: beta.cdf(t, a=a, b=b)  # noqa: E731
-                integral, _ = quad(cdf, 0, 1, limit=200)
-                return m - xi + 2 * integral
+                # X <= 1 <= xi, so |X - xi| = xi - X
+                return xi - m
             cdf = lambda t: beta.cdf(t, a=a, b=b)  # noqa: E731
             integral, _ = quad(cdf, 0, xi, limit=200)
             return m - xi + 2 * integral
