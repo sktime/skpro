@@ -3,7 +3,7 @@
 
 import numpy as np
 import pandas as pd
-from scipy.special import erf, erfinv
+from scipy.special import erf, erfc, erfinv
 
 from skpro.distributions.base import BaseDistribution
 
@@ -254,6 +254,13 @@ class Normal(BaseDistribution):
 
         icdf_arr = mu + sigma * np.sqrt(2) * erfinv(2 * p - 1)
         return icdf_arr
+
+    def _surv(self, x):
+        """Survival function, stable in the upper tail when cdf rounds to 1.0."""
+        mu = self._bc_params["mu"]
+        sigma = self._bc_params["sigma"]
+        z = (x - mu) / (sigma * np.sqrt(2))
+        return 0.5 * erfc(z)
 
     @classmethod
     def get_test_params(cls, parameter_set="default"):
