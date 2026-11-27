@@ -47,7 +47,6 @@ class BayesianLinearRegressor(BaseProbaRegressor):
         # packaging info
         # --------------
         "authors": ["meraldoantonio"],
-        "python_version": ">=3.10",
         "python_dependencies": [
             "pymc",
             "pymc_marketing",
