@@ -111,10 +111,11 @@ class IID(BaseDistribution):
             res = np.broadcast_to(one_dist_res, self.shape)
         else:
             if self._bc_cols:
+                distr = self._entry_distribution()
                 res = np.zeros(self.shape)
                 for i, j in np.ndindex(self.shape):
                     kwargs_ij = {k: v[i, j] for k, v in kwargs.items()}
-                    res[i, j] = getattr(self.distribution, method)(**kwargs_ij)
+                    res[i, j] = getattr(distr, method)(**kwargs_ij)
             elif method not in METHODS_TO_1D:
                 res = np.zeros(self.shape)
                 for i in range(self.shape[0]):
@@ -129,6 +130,17 @@ class IID(BaseDistribution):
         if method in METHODS_TO_1D and res.shape[1] > 1:
             res = np.mean(res, axis=1)[:, np.newaxis]
         return res
+
+    def _entry_distribution(self):
+        """Return the scalar distribution broadcast to all entries.
+
+        Used if columns are broadcast, i.e., ``distribution`` is scalar,
+        or has a single entry, which is then returned as a scalar distribution.
+        """
+        distr = self.distribution
+        if distr.ndim > 0:
+            distr = distr.iat[0, 0]
+        return distr
 
     # this should work once outer product is implemented
     def _broadcast_iid_future(self, method, **kwargs):
@@ -331,8 +343,9 @@ class IID(BaseDistribution):
         samples = np.zeros(target_shape)
 
         if self._bc_cols:
+            distr = self._entry_distribution()
             for i, j in np.ndindex(target_shape):
-                samples[i, j] = self.distribution.sample()
+                samples[i, j] = distr.sample()
         else:
             for i in range(target_shape[0]):
                 samples[i] = self.distribution.sample()
