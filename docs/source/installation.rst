@@ -6,7 +6,7 @@ Installation
 
 ``skpro`` currently supports:
 
-* Python versions 3.10, 3.11, 3.12, 3.13, and 3.14.
+* Python versions 3.11, 3.12, 3.13, 3.14, and 3.15.
 * Operating systems Mac OS X, Unix-like OS, Windows 8.1 and higher.
 
 See the full list of `precompiled wheels available on PyPI`_.
