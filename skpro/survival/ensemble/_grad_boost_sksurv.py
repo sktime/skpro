@@ -58,6 +58,10 @@ class SurvGradBoostSkSurv(_SksurvAdapter, BaseSurvReg):
         generally the best as it can provide a better approximation in
         some cases.
 
+        Ignored when the installed ``scikit-survival`` is 0.28 or newer,
+        which removed this argument from ``GradientBoostingSurvivalAnalysis``.
+        It is still forwarded to older releases that accept it.
+
     min_samples_split : int or float, optional, default: 2
         The minimum number of samples required to split an internal node:
 
@@ -222,6 +226,15 @@ class SurvGradBoostSkSurv(_SksurvAdapter, BaseSurvReg):
            "DART: Dropouts meet multiple additive regression trees,"
            in 18th International Conference on Artificial Intelligence and Statistics,
            2015, 489–497.
+
+    Examples
+    --------
+    >>> from skpro.survival.ensemble import SurvGradBoostSkSurv  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> reg = SurvGradBoostSkSurv(n_estimators=10)  # doctest: +SKIP
+    >>> reg.fit(X, y.abs())  # doctest: +SKIP
+    >>> y_pred = reg.predict_proba(X)  # doctest: +SKIP
     """
 
     _tags = {
@@ -392,6 +405,15 @@ class SurvGradBoostCompSkSurv(_SksurvAdapter, BaseSurvReg):
     ----------
     .. [1] Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., van der Laan, M. J.,
            "Survival ensembles", Biostatistics, 7(3), 355-73, 2006
+
+    Examples
+    --------
+    >>> from skpro.survival.ensemble import SurvGradBoostCompSkSurv  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> reg = SurvGradBoostCompSkSurv(n_estimators=10)  # doctest: +SKIP
+    >>> reg.fit(X, y.abs())  # doctest: +SKIP
+    >>> y_pred = reg.predict_proba(X)  # doctest: +SKIP
     """
 
     _tags = {

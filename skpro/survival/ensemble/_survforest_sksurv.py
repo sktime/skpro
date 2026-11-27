@@ -135,6 +135,15 @@ class SurvivalForestSkSurv(_SksurvAdapter, BaseSurvReg):
 
     .. [2] Ishwaran, H., Kogalur, U. B. (2007). Random survival forests for R.
            R News, 7(2), 25–31. https://cran.r-project.org/doc/Rnews/Rnews_2007-2.pdf.
+
+    Examples
+    --------
+    >>> from skpro.survival.ensemble import SurvivalForestSkSurv  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> reg = SurvivalForestSkSurv(n_estimators=10)  # doctest: +SKIP
+    >>> reg.fit(X, y.abs())  # doctest: +SKIP
+    >>> y_pred = reg.predict_proba(X)  # doctest: +SKIP
     """
 
     _tags = {
@@ -339,6 +348,15 @@ class SurvivalForestXtraSkSurv(_SksurvAdapter, BaseSurvReg):
     oob_score_ : float
         Concordance index of the training dataset obtained
         using an out-of-bag estimate.
+
+    Examples
+    --------
+    >>> from skpro.survival.ensemble import SurvivalForestXtraSkSurv  # doctest: +SKIP
+    >>> from sklearn.datasets import load_diabetes  # doctest: +SKIP
+    >>> X, y = load_diabetes(return_X_y=True, as_frame=True)  # doctest: +SKIP
+    >>> reg = SurvivalForestXtraSkSurv(n_estimators=10)  # doctest: +SKIP
+    >>> reg.fit(X, y.abs())  # doctest: +SKIP
+    >>> y_pred = reg.predict_proba(X)  # doctest: +SKIP
     """
 
     _tags = {
