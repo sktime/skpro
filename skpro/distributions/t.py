@@ -3,8 +3,7 @@
 
 import numpy as np
 import pandas as pd
-from scipy.integrate import quad
-from scipy.special import betaincinv, gamma, hyp2f1, loggamma
+from scipy.special import betaincinv, betaln, gamma, hyp2f1, loggamma
 from scipy.stats import t as student_t
 
 from skpro.distributions.base import BaseDistribution
@@ -209,64 +208,51 @@ class TDistribution(BaseDistribution):
     def _energy_self(self):
         r"""Energy of self, w.r.t. self.
 
-        Uses deterministic 1D quadrature:
-        \mathbb{E}|X-Y| = 2 \int_{-\infty}^{\infty} F(t)(1-F(t)) dt,
-        where F is the T-distribution CDF.
+        For :math:`\nu > 1` degrees of freedom and scale :math:`\sigma`,
+
+        .. math::
+            \mathbb{E}|X-Y| = \frac{4 \sigma \sqrt{\nu}\, B(\frac12, \nu - \frac12)}
+            {(\nu - 1)\, B(\frac12, \frac{\nu}{2})^2},
+
+        where :math:`B` is the beta function.
+        For :math:`\nu \le 1` the mean does not exist, and the energy is infinite.
         """
-        mu = self._bc_params["mu"]
-        sigma = self._bc_params["sigma"]
-        df = self._bc_params["df"]
+        sigma = self._bc_params["sigma"].astype(float)
+        df = self._bc_params["df"].astype(float)
 
-        def self_energy_cell(m, s, d):
-            def cdf_func(t):
-                # Transform to standard t-distribution
-                z = (t - m) / s
-                return student_t.cdf(z, d)
-
-            integral, _ = quad(
-                lambda t: cdf_func(t) * (1 - cdf_func(t)), -np.inf, np.inf, limit=200
-            )
-            return 2 * integral
-
-        vec_energy = np.vectorize(self_energy_cell)
-        energy_arr = vec_energy(mu, sigma, df)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            beta_ratio = np.exp(betaln(0.5, df - 0.5) - 2 * betaln(0.5, df / 2))
+            energy_arr = 4 * sigma * np.sqrt(df) * beta_ratio / (df - 1)
+        energy_arr = np.where(df <= 1, np.inf, energy_arr)
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
         return energy_arr
 
     def _energy_x(self, x):
         r"""Energy of self, w.r.t. a constant frame x.
 
-        Uses \mathbb{E}|X - x| = \mathbb{E}[X] - x + 2 \int_{-\infty}^{x} F(t) dt
-        (with appropriate handling for the mean when df <= 1).
+        For :math:`\nu > 1` degrees of freedom, with :math:`a = (x - \mu) / \sigma`,
+
+        .. math::
+            \mathbb{E}|X-x| = \sigma \left( a (2 F(a) - 1)
+            + 2 \frac{\nu + a^2}{\nu - 1} f(a) \right),
+
+        where :math:`F, f` are the cdf and pdf of the standard t-distribution.
+        For :math:`\nu \le 1` the mean does not exist, and the energy is infinite.
         """
-        mu = self._bc_params["mu"]
-        sigma = self._bc_params["sigma"]
-        df = self._bc_params["df"]
+        mu = self._bc_params["mu"].astype(float)
+        sigma = self._bc_params["sigma"].astype(float)
+        df = self._bc_params["df"].astype(float)
 
-        def energy_cell(m, s, d, xi):
-            # For df > 1, mean exists and equals mu
-            # For df <= 1, mean is undefined, but we can still compute the energy
-            if d > 1:
-                mean_val = m
-            else:
-                # For df <= 1, the distribution is heavy-tailed, mean doesn't exist
-                # But we can still compute E|X - x| using the CDF
-                mean_val = (
-                    0  # This is a placeholder; the actual formula doesn't need the mean
-                )
-
-            def cdf_func(t):
-                z = (t - m) / s
-                return student_t.cdf(z, d)
-
-            integral, _ = quad(cdf_func, -np.inf, xi, limit=200)
-            return mean_val - xi + 2 * integral
-
-        vec_energy = np.vectorize(energy_cell)
-        energy_arr = vec_energy(mu, sigma, df, x)
-        if np.ndim(energy_arr) > 1:
-            energy_arr = energy_arr.sum(axis=1)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            a = (x - mu) / sigma
+            energy_arr = sigma * (
+                a * (2 * student_t.cdf(a, df) - 1)
+                + 2 * (df + a**2) / (df - 1) * student_t.pdf(a, df)
+            )
+        energy_arr = np.where(df <= 1, np.inf, energy_arr)
+        if energy_arr.ndim > 0:
+            energy_arr = np.sum(energy_arr, axis=1)
         return energy_arr
 
     @classmethod
