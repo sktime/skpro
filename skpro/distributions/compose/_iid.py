@@ -127,7 +127,13 @@ class IID(BaseDistribution):
                     res[i] = getattr(self.distribution, method)(**kwargs_i)
 
         if method in METHODS_TO_1D and res.shape[1] > 1:
-            res = np.mean(res, axis=1)[:, np.newaxis]
+            if self._bc_cols:
+                # entries are i.i.d. copies of a scalar distribution,
+                # energy of a row is the sum of the entry-wise energies
+                res = np.sum(res, axis=1)[:, np.newaxis]
+            else:
+                # distribution is a row, its energy is already summed over columns
+                res = res[:, [0]]
         return res
 
     # this should work once outer product is implemented
