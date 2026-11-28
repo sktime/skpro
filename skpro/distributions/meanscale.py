@@ -124,7 +124,7 @@ class MeanScale(BaseDistribution):
         2D np.ndarray, same shape as ``self``
             expected value of distribution (entry-wise)
         """
-        return self._bc_params["mu"] + self.d.mean()
+        return self._bc_params["mu"] + self._bc_params["sigma"] * self.d.mean()
 
     def _var(self):
         r"""Return element/entry-wise variance of the distribution.
