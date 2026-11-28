@@ -34,6 +34,20 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         * The wrapper uses a best-effort strategy to call the appropriate
             fit/update/predict methods of the upstream estimator. If ondil's
             API changes in incompatible ways, this wrapper may need updates.
+
+    Examples
+    --------
+    Fit the regressor and predict a central 90% interval for each new observation.
+
+    >>> import pandas as pd
+    >>> from skpro.regression.ondil import OndilOnlineGamlss
+    >>> X = pd.DataFrame({"x": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]})
+    >>> y = pd.DataFrame({"y": [0.1, 1.2, 1.9, 3.2, 3.8, 5.1]})
+    >>> regressor = OndilOnlineGamlss().fit(X, y)
+    >>> X_new = pd.DataFrame({"x": [1.5, 2.5]})
+    >>> intervals = regressor.predict_interval(X_new, coverage=0.9)
+    >>> intervals.columns.to_list()
+    [('y', 0.9, 'lower'), ('y', 0.9, 'upper')]
     """
 
     _tags = {
@@ -46,9 +60,6 @@ class OndilOnlineGamlss(BaseProbaRegressor):
         "capability:update": True,
         "X_inner_mtype": "pd_DataFrame_Table",
         "y_inner_mtype": "pd_DataFrame_Table",
-        # CI and test flags
-        # -----------------
-        "tests:skip_by_name": ["test_class_has_doctest_example"],
     }
 
     def __init__(
