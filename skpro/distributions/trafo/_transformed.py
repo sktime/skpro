@@ -185,8 +185,14 @@ class TransformedDistribution(BaseDistribution):
         elif not self.assume_monotonic and self.inverse_transform is not None:
             return super().ppf(p)
 
+        # entries of self correspond to entries of self.distribution by position,
+        # so the inner distribution is passed its own index and columns
         if self.ndim != 0:
-            p = pd.DataFrame(p, index=self.index, columns=self.columns)
+            p = pd.DataFrame(
+                p,
+                index=self.distribution.index,
+                columns=self.distribution.columns,
+            )
 
         trafo = self.transform
 
@@ -227,7 +233,11 @@ class TransformedDistribution(BaseDistribution):
         inv_trafo = self.inverse_transform
 
         if self.ndim != 0:
-            x = pd.DataFrame(x, index=self.index, columns=self.columns)
+            x = pd.DataFrame(
+                x,
+                index=self.distribution.index,
+                columns=self.distribution.columns,
+            )
         else:
             x = pd.DataFrame([[float(x)]])
 
