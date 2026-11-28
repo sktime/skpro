@@ -130,9 +130,11 @@ class LogNormal(BaseDistribution):
         mu = self._bc_params["mu"]
         sigma = self._bc_params["sigma"]
 
-        pdf_arr = np.exp(-0.5 * ((np.log(x) - mu) / sigma) ** 2)
-        pdf_arr = pdf_arr / (x * sigma * np.sqrt(2 * np.pi))
-        return pdf_arr
+        in_support = x > 0
+        x_pos = np.where(in_support, x, 1.0)
+        pdf_arr = np.exp(-0.5 * ((np.log(x_pos) - mu) / sigma) ** 2)
+        pdf_arr = pdf_arr / (x_pos * sigma * np.sqrt(2 * np.pi))
+        return np.where(in_support, pdf_arr, 0.0)
 
     def _log_pdf(self, x):
         """Logarithmic probability density function.
@@ -150,9 +152,11 @@ class LogNormal(BaseDistribution):
         mu = self._bc_params["mu"]
         sigma = self._bc_params["sigma"]
 
-        lpdf_arr = -0.5 * ((np.log(x) - mu) / sigma) ** 2
-        lpdf_arr = lpdf_arr - np.log(x * sigma * np.sqrt(2 * np.pi))
-        return lpdf_arr
+        in_support = x > 0
+        x_pos = np.where(in_support, x, 1.0)
+        lpdf_arr = -0.5 * ((np.log(x_pos) - mu) / sigma) ** 2
+        lpdf_arr = lpdf_arr - np.log(x_pos * sigma * np.sqrt(2 * np.pi))
+        return np.where(in_support, lpdf_arr, -np.inf)
 
     def _cdf(self, x):
         """Cumulative distribution function.
@@ -170,7 +174,10 @@ class LogNormal(BaseDistribution):
         mu = self._bc_params["mu"]
         sigma = self._bc_params["sigma"]
 
-        cdf_arr = 0.5 + 0.5 * erf((np.log(x) - mu) / (sigma * np.sqrt(2)))
+        in_support = x > 0
+        x_pos = np.where(in_support, x, 1.0)
+        cdf_arr = 0.5 + 0.5 * erf((np.log(x_pos) - mu) / (sigma * np.sqrt(2)))
+        cdf_arr = np.where(in_support, cdf_arr, 0.0)
         return cdf_arr
 
     def _ppf(self, p):
