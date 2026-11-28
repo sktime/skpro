@@ -154,6 +154,9 @@ class Mixture(BaseMetaObject, BaseDistribution):
 
         vals = [getattr(d, method)(*args) for _, d in self._distributions]
 
+        if weights is None:
+            weights = self._weights
+
         if self.ndim > 0:
             return self._average_df(vals, weights=weights)
         else:
