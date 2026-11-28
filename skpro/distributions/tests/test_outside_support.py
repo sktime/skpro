@@ -7,6 +7,7 @@ import pytest
 from scipy import stats
 
 from skpro.distributions import Histogram, LogNormal, Weibull
+from skpro.tests.test_switch import run_test_module_changed
 
 X_GRID = [-3.0, -1.0, -0.5, 0.0, 0.5, 2.0]
 
@@ -17,6 +18,10 @@ def _check_against_scipy(d, ref, x):
     np.testing.assert_allclose(d.cdf(x), ref.cdf(x), rtol=1e-10, atol=1e-15)
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 @pytest.mark.parametrize("x", X_GRID)
 @pytest.mark.parametrize("mu, sigma", [(0.0, 1.0), (1.5, 0.3)])
 def test_lognormal_matches_scipy(mu, sigma, x):
@@ -26,6 +31,10 @@ def test_lognormal_matches_scipy(mu, sigma, x):
     _check_against_scipy(d, ref, x)
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 @pytest.mark.parametrize("x", X_GRID)
 @pytest.mark.parametrize("k", [0.5, 1.0, 1.5, 2.0])
 def test_weibull_matches_scipy(k, x):
@@ -35,6 +44,10 @@ def test_weibull_matches_scipy(k, x):
     _check_against_scipy(d, ref, x)
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_outside_support_array():
     """Values outside the support are handled elementwise on 2D distributions."""
     x = np.array([[-1.0, 0.0], [1.0, -2.0]])
@@ -49,6 +62,10 @@ def test_outside_support_array():
         assert not np.isnan(d.pdf(x).values).any()
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 @pytest.mark.parametrize("x", [-1.0, 5.0])
 def test_histogram_log_pdf_outside_bins(x):
     """Histogram log_pdf must be -inf where its pdf is 0."""
@@ -57,6 +74,10 @@ def test_histogram_log_pdf_outside_bins(x):
     assert d.log_pdf(x) == -np.inf
 
 
+@pytest.mark.skipif(
+    not run_test_module_changed("skpro.distributions"),
+    reason="run only if skpro.distributions has been changed",
+)
 def test_histogram_log_pdf_outside_bins_array():
     """Histogram log_pdf is -inf outside the bins, also for array distributions."""
     d = Histogram(
