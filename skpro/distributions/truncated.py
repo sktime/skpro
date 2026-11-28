@@ -122,6 +122,21 @@ class TruncatedDistribution(BaseDistribution):
         if inner_paramtype != "parametric":
             self.set_tags(**{"distr:paramtype": inner_paramtype})
 
+        if lower is not None and upper is not None:
+            if np.any(np.asarray(lower) > np.asarray(upper)):
+                raise ValueError(
+                    f"lower bound {lower} must not exceed upper bound {upper}"
+                )
+
+        prob_at_lower, prob_at_upper = self._get_low_high_prob()
+        trunc_mass = prob_at_upper - prob_at_lower
+        if np.any(np.asarray(trunc_mass) <= 0):
+            raise ValueError(
+                "Truncation interval has no probability mass; "
+                f"check lower={lower!r}, upper={upper!r}, "
+                f"interval_type={interval_type!r}."
+            )
+
     def _get_low_high_prob(self) -> Tuple[float, float]:
         prob_at_lower = (
             self.distribution.cdf(self.lower) if self.lower is not None else 0.0
